@@ -30,3 +30,14 @@ date, and AWS runtime". Registry versions checked 2026-09-20.
 
 - `spikes/d1-guarded-batch/README.md` — assertion-table + named CHECK lowering certified on live D1.
 - `spikes/dynamodb-conditional-tx/README.md` — transaction protocol certified on live DynamoDB; `TransactionConflict` retry and `unmarshall` findings.
+
+## Addendum 2026-09-20 (M3)
+
+- `@effect/sql-d1` 0.50 peers on Effect ^3.22 and cannot coexist with the
+  Effect 4 runtime. Effect 4 ships `effect/unstable/sql` (SqlClient /
+  SqlConnection) with no D1 driver and no batch primitive. Forge's SQL facade
+  seam therefore treats the D1 binding's `batch()` as the only atomic primitive
+  and layers Drizzle / Effect Connection over it for queries.
+- `@cloudflare/vitest-pool-workers` 0.22 requires vitest 4 and dropped the
+  `/config` entry; the D1 facade tests run through a harness Worker under
+  `wrangler dev --persist-to` instead.
