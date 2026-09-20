@@ -16,9 +16,17 @@ the same code that application clients use — and write
 
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
-| runtime-memory | in-process | 7 | 80 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1) | 7 | 80 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB) | 7 | 80 | 0 |
+| runtime-memory | in-process | 9 | 106 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2) | 9 | 106 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3) | 9 | 106 | 0 |
+
+M4 adds `blobs` (signed upload, verification, sealing, immutable download,
+rejection; real bytes through R2 and S3) and `csv-import` (inspect, mapping,
+upsert, in-file duplicates, per-row errors, commit through the changeset).
+The generic workspace (`https://forge-acme-workspace.gmac.workers.dev`,
+`?api=<base>`) was driven in a headless browser against both APIs:
+add row -> preview -> commit rendered the new record on each, with no
+console errors.
 
 D1 facades (`packages/runtime/test/d1-facades.test.ts`, real local D1 via
 the harness Worker): raw-d1, drizzle, effect-sql each pass all 7 scenarios

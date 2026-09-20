@@ -94,6 +94,8 @@ export interface HttpOptions {
   auth: AuthHost;
   requestId?: (req: Request) => string;
   maxBodyBytes?: number;
+  /** Allowed browser origins (exact, or "*"). Absent = no CORS headers. */
+  cors?: { origins: string[] };
 }
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -105,7 +107,32 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
   const problem = (e: ForgeError, requestId: string) =>
     new Response(JSON.stringify(e.problem(requestId)), { status: e.status, headers: { "content-type": "application/problem+json", "x-request-id": requestId } });
 
-  return async (req: Request): Promise<Response> => {
+  const corsHeaders = (req: Request): Record<string, string> => {
+    const origin = req.headers.get("origin");
+    if (!options.cors || !origin) return {};
+    const allowed = options.cors.origins.includes("*") ? "*" : options.cors.origins.includes(origin) ? origin : null;
+    if (!allowed) return {};
+    return {
+      "access-control-allow-origin": allowed,
+      "access-control-allow-methods": "GET,POST,PATCH,PUT,DELETE,OPTIONS",
+      "access-control-allow-headers": "content-type,if-match,idempotency-key,x-forge-tenant,x-forge-actor,authorization",
+      "access-control-expose-headers": "etag,x-request-id",
+      "access-control-max-age": "600",
+      vary: "origin",
+    };
+  };
+  const withCors = (req: Request, res: Response): Response => {
+    const h = corsHeaders(req);
+    if (Object.keys(h).length === 0) return res;
+    const headers = new Headers(res.headers);
+    for (const [k, v] of Object.entries(h)) headers.set(k, v);
+    return new Response(res.body, { status: res.status, headers });
+  };
+
+  return async (req: Request): Promise<Response> => withCors(req, await handle(req));
+
+  async function handle(req: Request): Promise<Response> {
+    if (req.method === "OPTIONS") return new Response(null, { status: 204 });
     const requestId = options.requestId?.(req) ?? crypto.randomUUID();
     const url = new URL(req.url);
     const path = url.pathname.split("/").filter(Boolean);
@@ -217,5 +244,5 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const headers: Record<string, string> = { ...JSON_HEADERS, "x-request-id": requestId };
     if (value && typeof value["version"] === "number") headers["etag"] = `"${value["version"]}"`;
     return new Response(JSON.stringify(value), { status: kind === "create" || kind === "changeset.propose" ? 201 : 200, headers });
-  };
+  }
 }

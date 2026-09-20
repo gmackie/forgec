@@ -1,6 +1,6 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "d466f5a0b699651b86cb4ee6a716fb0bdad862de347c7df61c2de6dd6d78b85d",
+  "buildHash": "e9c1fd1d085466b5829974adbca6035a3f646ddbc18c29601b592044fa66172d",
   "ir": {
     "version": "domain-ir/1",
     "package": {
@@ -467,6 +467,16 @@
             ],
             "lists": [
               {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
                 "name": "byTier",
                 "fields": [
                   "tier"
@@ -532,6 +542,15 @@
                 "http": {
                   "method": "GET",
                   "path": "/v1/customers/queries/by-code"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/Customer.list.all",
+                "kind": "list",
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/customers"
                 }
               },
               {
@@ -806,6 +825,16 @@
             "finds": [],
             "lists": [
               {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
                 "name": "byCustomer",
                 "fields": [
                   "customer"
@@ -964,6 +993,15 @@
                 "http": {
                   "method": "DELETE",
                   "path": "/v1/orders/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/Order.list.all",
+                "kind": "list",
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/orders"
                 }
               },
               {
@@ -1317,6 +1355,16 @@
             "finds": [],
             "lists": [
               {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
                 "name": "byOrder",
                 "fields": [
                   "order"
@@ -1373,6 +1421,15 @@
                 "http": {
                   "method": "DELETE",
                   "path": "/v1/order-documents/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.list.all",
+                "kind": "list",
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/order-documents"
                 }
               },
               {
@@ -1614,6 +1671,16 @@
             ],
             "lists": [
               {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
                 "name": "byCustomer",
                 "fields": [
                   "customer"
@@ -1671,6 +1738,15 @@
                 "http": {
                   "method": "GET",
                   "path": "/v1/sites/queries/by-customer-code"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/Site.list.all",
+                "kind": "list",
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/sites"
                 }
               },
               {
@@ -2151,6 +2227,17 @@
             "order": []
           },
           {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
             "name": "byTier",
             "kind": "list",
             "params": [
@@ -2216,6 +2303,15 @@
             "http": {
               "method": "GET",
               "path": "/v1/customers/queries/by-code"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/Customer.list.all",
+            "kind": "list",
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/customers"
             }
           },
           {
@@ -2426,6 +2522,17 @@
         },
         "queries": [
           {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
             "name": "byCustomer",
             "kind": "list",
             "params": [
@@ -2568,6 +2675,15 @@
             "http": {
               "method": "DELETE",
               "path": "/v1/orders/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/Order.list.all",
+            "kind": "list",
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/orders"
             }
           },
           {
@@ -2784,6 +2900,17 @@
         },
         "queries": [
           {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
             "name": "byOrder",
             "kind": "list",
             "params": [
@@ -2832,6 +2959,15 @@
             "http": {
               "method": "DELETE",
               "path": "/v1/order-documents/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.list.all",
+            "kind": "list",
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/order-documents"
             }
           },
           {
@@ -3021,6 +3157,17 @@
             "order": []
           },
           {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
             "name": "byCustomer",
             "kind": "list",
             "params": [
@@ -3078,6 +3225,15 @@
             "http": {
               "method": "GET",
               "path": "/v1/sites/queries/by-customer-code"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/Site.list.all",
+            "kind": "list",
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/sites"
             }
           },
           {
@@ -3940,6 +4096,21 @@
         ],
         "access": [
           {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
             "name": "byTier",
             "kind": "list",
             "partitionFields": [
@@ -3962,7 +4133,7 @@
           }
         ],
         "references": [],
-        "createActions": 5
+        "createActions": 6
       },
       {
         "id": "@acme/commerce/_/Order",
@@ -3971,6 +4142,21 @@
         "tenantScoped": true,
         "claims": [],
         "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
           {
             "name": "byCustomer",
             "kind": "list",
@@ -4026,7 +4212,7 @@
             "target": "@acme/commerce/_/Site"
           }
         ],
-        "createActions": 7
+        "createActions": 8
       },
       {
         "id": "@acme/commerce/_/OrderDocument",
@@ -4035,6 +4221,21 @@
         "tenantScoped": true,
         "claims": [],
         "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
           {
             "name": "byOrder",
             "kind": "list",
@@ -4063,7 +4264,7 @@
             "target": "@acme/commerce/_/Order"
           }
         ],
-        "createActions": 5
+        "createActions": 6
       },
       {
         "id": "@acme/commerce/_/Site",
@@ -4080,6 +4281,21 @@
           }
         ],
         "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
           {
             "name": "byCustomer",
             "kind": "list",
@@ -4108,7 +4324,677 @@
             "target": "@acme/commerce/_/Customer"
           }
         ],
-        "createActions": 6
+        "createActions": 7
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@acme/commerce",
+    "resources": [
+      {
+        "id": "@acme/commerce/_/Customer",
+        "name": "Customer",
+        "kind": "resource",
+        "label": "Customer",
+        "plural": "Customers",
+        "route": "customers",
+        "titleField": "name",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "code",
+            "label": "Code",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 3,
+            "maxLength": 32
+          },
+          {
+            "name": "name",
+            "label": "Name",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "widget": "email",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "tier",
+            "label": "Tier",
+            "widget": "select",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "options": [
+              {
+                "value": "standard",
+                "label": "Standard"
+              },
+              {
+                "value": "gold",
+                "label": "Gold"
+              },
+              {
+                "value": "enterprise",
+                "label": "Enterprise"
+              }
+            ]
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "deletedAt",
+            "label": "Deleted At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "name",
+          "code",
+          "email",
+          "tier"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@acme/commerce/_/Customer.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byTier",
+            "op": "@acme/commerce/_/Customer.list.byTier",
+            "params": [
+              "tier"
+            ],
+            "label": "By Tier"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byCode",
+            "op": "@acme/commerce/_/Customer.find.byCode",
+            "params": [
+              "code"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": true,
+        "versioned": true
+      },
+      {
+        "id": "@acme/commerce/_/Order",
+        "name": "Order",
+        "kind": "resource",
+        "label": "Order",
+        "plural": "Orders",
+        "route": "orders",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "customer",
+            "label": "Customer",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@acme/commerce/_/Customer",
+              "route": "customer",
+              "titleField": "name",
+              "lookup": "@acme/commerce/_/Customer.list.all",
+              "lookupParams": [],
+              "find": "@acme/commerce/_/Customer.find.byCode"
+            }
+          },
+          {
+            "name": "site",
+            "label": "Site",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "reference": {
+              "resource": "@acme/commerce/_/Site",
+              "route": "site",
+              "titleField": "name",
+              "lookup": "@acme/commerce/_/Site.list.all",
+              "lookupParams": [],
+              "find": "@acme/commerce/_/Site.find.byCustomerCode"
+            }
+          },
+          {
+            "name": "subtotal",
+            "label": "Subtotal",
+            "widget": "decimal",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "currency": "USD"
+          },
+          {
+            "name": "tax",
+            "label": "Tax",
+            "widget": "decimal",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "currency": "USD"
+          },
+          {
+            "name": "total",
+            "label": "Total",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "currency": "USD"
+          },
+          {
+            "name": "requestedOn",
+            "label": "Requested On",
+            "widget": "date",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "notes",
+            "label": "Notes",
+            "widget": "textarea",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "maxLength": 2000
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "status",
+            "label": "Status",
+            "widget": "status",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": false
+          }
+        ],
+        "tableColumns": [
+          "status",
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@acme/commerce/_/Order.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byCustomer",
+            "op": "@acme/commerce/_/Order.list.byCustomer",
+            "params": [
+              "customer"
+            ],
+            "label": "By Customer"
+          },
+          {
+            "name": "bySiteStatus",
+            "op": "@acme/commerce/_/Order.list.bySiteStatus",
+            "params": [
+              "site",
+              "status"
+            ],
+            "label": "By Site & Status"
+          }
+        ],
+        "finds": [],
+        "actions": [
+          {
+            "name": "approve",
+            "label": "Approve",
+            "op": "@acme/commerce/_/Order.status.approve",
+            "from": [
+              "Submitted"
+            ],
+            "to": "Approved",
+            "inputFields": []
+          },
+          {
+            "name": "complete",
+            "label": "Complete",
+            "op": "@acme/commerce/_/Order.status.complete",
+            "from": [
+              "Approved"
+            ],
+            "to": "Completed",
+            "inputFields": []
+          },
+          {
+            "name": "cancel",
+            "label": "Cancel",
+            "op": "@acme/commerce/_/Order.status.cancel",
+            "from": [
+              "Draft",
+              "Submitted",
+              "Approved"
+            ],
+            "to": "Cancelled",
+            "inputFields": [
+              {
+                "name": "reason",
+                "label": "Reason",
+                "widget": "textarea",
+                "required": true,
+                "editableOnCreate": true,
+                "editableOnUpdate": true,
+                "sortable": true,
+                "minLength": 1,
+                "maxLength": 500
+              }
+            ]
+          }
+        ],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@acme/commerce/_/OrderDocument",
+        "name": "OrderDocument",
+        "kind": "blob",
+        "label": "Order Document",
+        "plural": "Order Documents",
+        "route": "order-documents",
+        "titleField": "label",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "order",
+            "label": "Order",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@acme/commerce/_/Order",
+              "route": "order",
+              "titleField": "id",
+              "lookup": "@acme/commerce/_/Order.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "kind",
+            "label": "Kind",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 32
+          },
+          {
+            "name": "label",
+            "label": "Label",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "uploadState",
+            "label": "Upload State",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "mediaType",
+            "label": "Media Type",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "byteCount",
+            "label": "Byte Count",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "digest",
+            "label": "Digest",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "label",
+          "order",
+          "kind",
+          "mediaType",
+          "byteCount",
+          "digest",
+          "uploadState"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@acme/commerce/_/OrderDocument.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byOrder",
+            "op": "@acme/commerce/_/OrderDocument.list.byOrder",
+            "params": [
+              "order"
+            ],
+            "label": "By Order"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true,
+        "content": {
+          "mediaTypes": [
+            "application/pdf",
+            "image/png",
+            "image/jpeg"
+          ],
+          "maxBytes": 10485760
+        }
+      },
+      {
+        "id": "@acme/commerce/_/Site",
+        "name": "Site",
+        "kind": "resource",
+        "label": "Site",
+        "plural": "Sites",
+        "route": "sites",
+        "titleField": "name",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "customer",
+            "label": "Customer",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@acme/commerce/_/Customer",
+              "route": "customer",
+              "titleField": "name",
+              "lookup": "@acme/commerce/_/Customer.list.all",
+              "lookupParams": [],
+              "find": "@acme/commerce/_/Customer.find.byCode"
+            }
+          },
+          {
+            "name": "code",
+            "label": "Code",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 2,
+            "maxLength": 24
+          },
+          {
+            "name": "name",
+            "label": "Name",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "timezone",
+            "label": "Timezone",
+            "widget": "timezone",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "enabled",
+            "label": "Enabled",
+            "widget": "checkbox",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "name",
+          "customer",
+          "code",
+          "timezone",
+          "enabled"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@acme/commerce/_/Site.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byCustomer",
+            "op": "@acme/commerce/_/Site.list.byCustomer",
+            "params": [
+              "customer"
+            ],
+            "label": "By Customer"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byCustomerCode",
+            "op": "@acme/commerce/_/Site.find.byCustomerCode",
+            "params": [
+              "customer",
+              "code"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
       }
     ]
   }

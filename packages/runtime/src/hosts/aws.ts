@@ -45,6 +45,7 @@ export interface LambdaEnv {
   AWS_REGION?: string;
   CURSOR_SECRET: string;
   FORGE_AUTH?: string;
+  FORGE_CORS?: string;
 }
 
 export function createLambdaHandler(bundle: AppBundle, options: { auth?: AuthHost; env?: LambdaEnv } = {}) {
@@ -61,7 +62,7 @@ export function createLambdaHandler(bundle: AppBundle, options: { auth?: AuthHos
     Layer.succeed(Objects)(env.FORGE_BUCKET ? new S3ObjectStore(env.FORGE_BUCKET, env.AWS_REGION ?? "us-east-1") : new MemoryObjectStore()),
   );
   const engine = new Engine(model, layer);
-  const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID() }) : null;
+  const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
   return async (ev: ApiGatewayV2Event): Promise<ApiGatewayV2Result> => {
     if (!handler) return { statusCode: 401, headers: { "content-type": "application/problem+json" }, body: JSON.stringify({ code: "Unauthenticated", detail: "no authentication host configured" }) };
     const res = await handler(toRequest(ev));

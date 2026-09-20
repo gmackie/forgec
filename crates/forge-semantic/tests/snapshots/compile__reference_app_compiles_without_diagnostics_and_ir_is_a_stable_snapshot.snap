@@ -469,6 +469,16 @@ expression: out.ir.unwrap()
           ],
           "lists": [
             {
+              "name": "all",
+              "fields": [],
+              "order": [
+                {
+                  "field": "id",
+                  "direction": "asc"
+                }
+              ]
+            },
+            {
               "name": "byTier",
               "fields": [
                 "tier"
@@ -534,6 +544,15 @@ expression: out.ir.unwrap()
               "http": {
                 "method": "GET",
                 "path": "/v1/customers/queries/by-code"
+              }
+            },
+            {
+              "id": "@acme/commerce/_/Customer.list.all",
+              "kind": "list",
+              "query": "all",
+              "http": {
+                "method": "GET",
+                "path": "/v1/customers"
               }
             },
             {
@@ -808,6 +827,16 @@ expression: out.ir.unwrap()
           "finds": [],
           "lists": [
             {
+              "name": "all",
+              "fields": [],
+              "order": [
+                {
+                  "field": "id",
+                  "direction": "asc"
+                }
+              ]
+            },
+            {
               "name": "byCustomer",
               "fields": [
                 "customer"
@@ -966,6 +995,15 @@ expression: out.ir.unwrap()
               "http": {
                 "method": "DELETE",
                 "path": "/v1/orders/{id}"
+              }
+            },
+            {
+              "id": "@acme/commerce/_/Order.list.all",
+              "kind": "list",
+              "query": "all",
+              "http": {
+                "method": "GET",
+                "path": "/v1/orders"
               }
             },
             {
@@ -1319,6 +1357,16 @@ expression: out.ir.unwrap()
           "finds": [],
           "lists": [
             {
+              "name": "all",
+              "fields": [],
+              "order": [
+                {
+                  "field": "id",
+                  "direction": "asc"
+                }
+              ]
+            },
+            {
               "name": "byOrder",
               "fields": [
                 "order"
@@ -1375,6 +1423,15 @@ expression: out.ir.unwrap()
               "http": {
                 "method": "DELETE",
                 "path": "/v1/order-documents/{id}"
+              }
+            },
+            {
+              "id": "@acme/commerce/_/OrderDocument.list.all",
+              "kind": "list",
+              "query": "all",
+              "http": {
+                "method": "GET",
+                "path": "/v1/order-documents"
               }
             },
             {
@@ -1616,6 +1673,16 @@ expression: out.ir.unwrap()
           ],
           "lists": [
             {
+              "name": "all",
+              "fields": [],
+              "order": [
+                {
+                  "field": "id",
+                  "direction": "asc"
+                }
+              ]
+            },
+            {
               "name": "byCustomer",
               "fields": [
                 "customer"
@@ -1673,6 +1740,15 @@ expression: out.ir.unwrap()
               "http": {
                 "method": "GET",
                 "path": "/v1/sites/queries/by-customer-code"
+              }
+            },
+            {
+              "id": "@acme/commerce/_/Site.list.all",
+              "kind": "list",
+              "query": "all",
+              "http": {
+                "method": "GET",
+                "path": "/v1/sites"
               }
             },
             {

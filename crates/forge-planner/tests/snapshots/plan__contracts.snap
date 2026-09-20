@@ -188,6 +188,17 @@ expression: p.contracts
           "order": []
         },
         {
+          "name": "all",
+          "kind": "list",
+          "params": [],
+          "order": [
+            {
+              "field": "id",
+              "direction": "asc"
+            }
+          ]
+        },
+        {
           "name": "byTier",
           "kind": "list",
           "params": [
@@ -253,6 +264,15 @@ expression: p.contracts
           "http": {
             "method": "GET",
             "path": "/v1/customers/queries/by-code"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Customer.list.all",
+          "kind": "list",
+          "query": "all",
+          "http": {
+            "method": "GET",
+            "path": "/v1/customers"
           }
         },
         {
@@ -463,6 +483,17 @@ expression: p.contracts
       },
       "queries": [
         {
+          "name": "all",
+          "kind": "list",
+          "params": [],
+          "order": [
+            {
+              "field": "id",
+              "direction": "asc"
+            }
+          ]
+        },
+        {
           "name": "byCustomer",
           "kind": "list",
           "params": [
@@ -605,6 +636,15 @@ expression: p.contracts
           "http": {
             "method": "DELETE",
             "path": "/v1/orders/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Order.list.all",
+          "kind": "list",
+          "query": "all",
+          "http": {
+            "method": "GET",
+            "path": "/v1/orders"
           }
         },
         {
@@ -821,6 +861,17 @@ expression: p.contracts
       },
       "queries": [
         {
+          "name": "all",
+          "kind": "list",
+          "params": [],
+          "order": [
+            {
+              "field": "id",
+              "direction": "asc"
+            }
+          ]
+        },
+        {
           "name": "byOrder",
           "kind": "list",
           "params": [
@@ -869,6 +920,15 @@ expression: p.contracts
           "http": {
             "method": "DELETE",
             "path": "/v1/order-documents/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.list.all",
+          "kind": "list",
+          "query": "all",
+          "http": {
+            "method": "GET",
+            "path": "/v1/order-documents"
           }
         },
         {
@@ -1058,6 +1118,17 @@ expression: p.contracts
           "order": []
         },
         {
+          "name": "all",
+          "kind": "list",
+          "params": [],
+          "order": [
+            {
+              "field": "id",
+              "direction": "asc"
+            }
+          ]
+        },
+        {
           "name": "byCustomer",
           "kind": "list",
           "params": [
@@ -1115,6 +1186,15 @@ expression: p.contracts
           "http": {
             "method": "GET",
             "path": "/v1/sites/queries/by-customer-code"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Site.list.all",
+          "kind": "list",
+          "query": "all",
+          "http": {
+            "method": "GET",
+            "path": "/v1/sites"
           }
         },
         {

@@ -6,6 +6,7 @@ pub mod contracts;
 pub mod dynamo;
 pub mod naming;
 pub mod sql;
+pub mod ui;
 
 use forge_semantic::DomainIR;
 use serde::Serialize;
@@ -29,11 +30,12 @@ pub struct Plans {
     pub contracts: contracts::Contracts,
     pub sql: sql::SqlSchema,
     pub dynamo: dynamo::DynamoPlan,
+    pub ui: ui::UiDescriptor,
 }
 
 pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
     validate(ir)?;
-    Ok(Plans { contracts: contracts::plan(ir), sql: sql::plan(ir), dynamo: dynamo::plan(ir) })
+    Ok(Plans { contracts: contracts::plan(ir), sql: sql::plan(ir), dynamo: dynamo::plan(ir), ui: ui::plan(ir) })
 }
 
 /// Physical-plan validation shared by both targets (plan §3.3): never turn an

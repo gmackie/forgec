@@ -11,14 +11,20 @@
     "aws:bundle": "node deploy/aws/bundle.mjs",
     "aws:synth": "pnpm aws:bundle && cdk synth --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out",
     "aws:deploy": "pnpm aws:bundle && cdk deploy --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out --require-approval never --outputs-file deploy/aws/outputs.json",
-    "aws:destroy": "cdk destroy --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out --force"
+    "aws:destroy": "cdk destroy --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out --force",
+    "workspace:dev": "vite",
+    "workspace:build": "vite build",
+    "workspace:deploy": "pnpm workspace:build && wrangler deploy --config deploy/cloudflare/workspace.wrangler.jsonc"
   },
   "dependencies": {
     "@forge/runtime": "workspace:*",
     "effect": "4.0.0-rc.116",
     "@aws-sdk/client-dynamodb": "^3.1136.0",
     "@aws-sdk/lib-dynamodb": "^3.1136.0",
-    "@aws-sdk/util-dynamodb": "3.996.9"
+    "@aws-sdk/util-dynamodb": "3.996.9",
+    "@forge/react": "workspace:*",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250920.0",
@@ -28,6 +34,10 @@
     "aws-cdk-lib": "^2.270.0",
     "constructs": "^10.4.0",
     "esbuild": "^0.27.0",
-    "@types/node": "^24.0.0"
+    "@types/node": "^24.0.0",
+    "vite": "^8.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
   }
 }

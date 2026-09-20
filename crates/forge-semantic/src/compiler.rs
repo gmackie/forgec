@@ -849,6 +849,8 @@ impl<'a> Ctx<'a> {
             }
             lists.push(List { name: camel(&fs), fields: fs, order });
         }
+        // Every resource has a bounded default browse: tenant-scoped, paged, ordered by id.
+        lists.push(List { name: "all".into(), fields: vec![], order: vec![OrderKey { field: "id".into(), direction: "asc".into() }] });
         lists.sort_by(|a, b| a.name.cmp(&b.name));
 
         // rules
@@ -892,7 +894,8 @@ impl<'a> Ctx<'a> {
             push("find", Some(f.name.clone()), None, if allowed("find") { http("GET", &format!("/queries/{}", kebab(&f.fields))) } else { None });
         }
         for l in &lists {
-            push("list", Some(l.name.clone()), None, if allowed("list") { http("GET", &format!("/queries/{}", kebab(&l.fields))) } else { None });
+            let path = if l.fields.is_empty() { String::new() } else { format!("/queries/{}", kebab(&l.fields)) };
+            push("list", Some(l.name.clone()), None, if allowed("list") { http("GET", &path) } else { None });
         }
         if blob.is_some() {
             push("beginUpload", None, None, if allowed("beginUpload") { http("POST", "/{id}/upload") } else { None });

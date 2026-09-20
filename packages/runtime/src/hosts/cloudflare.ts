@@ -14,6 +14,7 @@ export interface WorkerEnv {
   BLOBS?: R2Like;
   CURSOR_SECRET: string;
   FORGE_AUTH?: string;
+  FORGE_CORS?: string;
 }
 
 export function createWorker(bundle: AppBundle, options: { auth?: AuthHost } = {}) {
@@ -35,7 +36,7 @@ export function createWorker(bundle: AppBundle, options: { auth?: AuthHost } = {
         Layer.succeed(Objects)(objects ?? new MemoryObjectStore()),
       );
       const engine = new Engine(model, layer);
-      const handler = createHttpHandler(model, engine, { auth, requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID() });
+      const handler = createHttpHandler(model, engine, { auth, requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) });
       return handler(request);
     },
   };

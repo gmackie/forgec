@@ -174,3 +174,15 @@ describe("lifecycle transitions", () => {
     expect(e.fields?.[0]?.code).toBe("RuleViolation");
   });
 });
+
+describe("default browse list", () => {
+  it("every resource lists all records ordered by id, paged and tenant-scoped", async () => {
+    for (const code of ["CCC", "AAA", "BBB"]) await run(engine.call("@acme/commerce/_/Customer.create", { code, name: code }, ctx));
+    await run(engine.call("@acme/commerce/_/Customer.create", { code: "ZZZ", name: "other" }, { ...ctx, tenant: "other" }));
+    const p1 = await run(engine.call("@acme/commerce/_/Customer.list.all", { params: {}, limit: 2 }, ctx));
+    expect(p1.items.map((i: any) => i.code)).toEqual(["CCC", "AAA"]); // seeded ids ascend in creation order
+    const p2 = await run(engine.call("@acme/commerce/_/Customer.list.all", { params: {}, limit: 2, cursor: p1.next }, ctx));
+    expect(p2.items.map((i: any) => i.code)).toEqual(["BBB"]);
+    expect(p2.next).toBeNull();
+  });
+});

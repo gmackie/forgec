@@ -119,11 +119,13 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/Customer.delete": { method: "DELETE", path: "/v1/customers/{id}", kind: "delete", resource: "Customer" },
   "@acme/commerce/_/Customer.restore": { method: "POST", path: "/v1/customers/{id}/restore", kind: "restore", resource: "Customer" },
   "@acme/commerce/_/Customer.find.byCode": { method: "GET", path: "/v1/customers/queries/by-code", kind: "find", resource: "Customer" },
+  "@acme/commerce/_/Customer.list.all": { method: "GET", path: "/v1/customers", kind: "list", resource: "Customer" },
   "@acme/commerce/_/Customer.list.byTier": { method: "GET", path: "/v1/customers/queries/by-tier", kind: "list", resource: "Customer" },
   "@acme/commerce/_/Order.create": { method: "POST", path: "/v1/orders", kind: "create", resource: "Order" },
   "@acme/commerce/_/Order.get": { method: "GET", path: "/v1/orders/{id}", kind: "get", resource: "Order" },
   "@acme/commerce/_/Order.update": { method: "PATCH", path: "/v1/orders/{id}", kind: "update", resource: "Order" },
   "@acme/commerce/_/Order.delete": { method: "DELETE", path: "/v1/orders/{id}", kind: "delete", resource: "Order" },
+  "@acme/commerce/_/Order.list.all": { method: "GET", path: "/v1/orders", kind: "list", resource: "Order" },
   "@acme/commerce/_/Order.list.byCustomer": { method: "GET", path: "/v1/orders/queries/by-customer", kind: "list", resource: "Order" },
   "@acme/commerce/_/Order.list.bySiteStatus": { method: "GET", path: "/v1/orders/queries/by-site-status", kind: "list", resource: "Order" },
   "@acme/commerce/_/Order.status.approve": { method: "POST", path: "/v1/orders/{id}/actions/approve", kind: "transition", resource: "Order" },
@@ -133,6 +135,7 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/OrderDocument.get": { method: "GET", path: "/v1/order-documents/{id}", kind: "get", resource: "OrderDocument" },
   "@acme/commerce/_/OrderDocument.update": { method: "PATCH", path: "/v1/order-documents/{id}", kind: "update", resource: "OrderDocument" },
   "@acme/commerce/_/OrderDocument.delete": { method: "DELETE", path: "/v1/order-documents/{id}", kind: "delete", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.list.all": { method: "GET", path: "/v1/order-documents", kind: "list", resource: "OrderDocument" },
   "@acme/commerce/_/OrderDocument.list.byOrder": { method: "GET", path: "/v1/order-documents/queries/by-order", kind: "list", resource: "OrderDocument" },
   "@acme/commerce/_/OrderDocument.beginUpload": { method: "POST", path: "/v1/order-documents/{id}/upload", kind: "beginUpload", resource: "OrderDocument" },
   "@acme/commerce/_/OrderDocument.finalizeUpload": { method: "POST", path: "/v1/order-documents/{id}/finalize", kind: "finalizeUpload", resource: "OrderDocument" },
@@ -142,6 +145,7 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/Site.update": { method: "PATCH", path: "/v1/sites/{id}", kind: "update", resource: "Site" },
   "@acme/commerce/_/Site.delete": { method: "DELETE", path: "/v1/sites/{id}", kind: "delete", resource: "Site" },
   "@acme/commerce/_/Site.find.byCustomerCode": { method: "GET", path: "/v1/sites/queries/by-customer-code", kind: "find", resource: "Site" },
+  "@acme/commerce/_/Site.list.all": { method: "GET", path: "/v1/sites", kind: "list", resource: "Site" },
   "@acme/commerce/_/Site.list.byCustomer": { method: "GET", path: "/v1/sites/queries/by-customer", kind: "list", resource: "Site" },
   "@acme/commerce/_/SubmitOrder": { method: "POST", path: "/v1/orders/{order}/submit", kind: "function", resource: "SubmitOrder" },
   "@acme/commerce/_/changesets.propose": { method: "POST", path: "/v1/changesets", kind: "changeset.propose", resource: "changesets" },
@@ -281,6 +285,7 @@ export interface CustomerApi {
   delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<CustomerRecord>;
   restore(id: string, expectedVersion: number, opts?: CallOptions): Promise<CustomerRecord>;
   findByCode(params: { code: string }): Promise<CustomerRecord | null>;
+  listAll(params: {  }, page?: PageOptions): Promise<Page<CustomerRecord>>;
   listByTier(params: { tier: "standard" | "gold" | "enterprise" }, page?: PageOptions): Promise<Page<CustomerRecord>>;
 }
 
@@ -289,6 +294,7 @@ export interface OrderApi {
   get(id: string): Promise<OrderRecord>;
   update(id: string, expectedVersion: number, patch: OrderPatch, opts?: CallOptions): Promise<OrderRecord>;
   delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<OrderRecord>;
+  listAll(params: {  }, page?: PageOptions): Promise<Page<OrderRecord>>;
   listByCustomer(params: { customer: string }, page?: PageOptions): Promise<Page<OrderRecord>>;
   listBySiteStatus(params: { site: string; status: "Draft" | "Completed" | "Cancelled" | "Submitted" | "Approved" }, page?: PageOptions): Promise<Page<OrderRecord>>;
   approve(id: string, expectedVersion: number, input: OrderApproveInput, opts?: CallOptions): Promise<OrderRecord>;
@@ -301,6 +307,7 @@ export interface OrderDocumentApi {
   get(id: string): Promise<OrderDocumentRecord>;
   update(id: string, expectedVersion: number, patch: OrderDocumentPatch, opts?: CallOptions): Promise<OrderDocumentRecord>;
   delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<OrderDocumentRecord>;
+  listAll(params: {  }, page?: PageOptions): Promise<Page<OrderDocumentRecord>>;
   listByOrder(params: { order: string }, page?: PageOptions): Promise<Page<OrderDocumentRecord>>;
   beginUpload(id: string, expectedVersion: number, input: { mediaType: string; byteCount: number }): Promise<{ record: OrderDocumentRecord; upload: SignedUrl }>;
   finalizeUpload(id: string, expectedVersion: number): Promise<OrderDocumentRecord>;
@@ -313,6 +320,7 @@ export interface SiteApi {
   update(id: string, expectedVersion: number, patch: SitePatch, opts?: CallOptions): Promise<SiteRecord>;
   delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<SiteRecord>;
   findByCustomerCode(params: { customer: string; code: string }): Promise<SiteRecord | null>;
+  listAll(params: {  }, page?: PageOptions): Promise<Page<SiteRecord>>;
   listByCustomer(params: { customer: string }, page?: PageOptions): Promise<Page<SiteRecord>>;
 }
 
@@ -348,6 +356,7 @@ export function createClient(options: ClientOptions): ForgeClient {
       delete: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/Customer.delete", { id, expectedVersion }, opts)),
       restore: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/Customer.restore", { id, expectedVersion }, opts)),
       findByCode: (params) => t.unwrapNullable(t.call("@acme/commerce/_/Customer.find.byCode", { params })),
+      listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/Customer.list.all", { params, ...page })),
       listByTier: (params, page) => t.unwrap(t.call("@acme/commerce/_/Customer.list.byTier", { params, ...page })),
     },
     orders: {
@@ -355,6 +364,7 @@ export function createClient(options: ClientOptions): ForgeClient {
       get: (id) => t.unwrap(t.call("@acme/commerce/_/Order.get", { id })),
       update: (id, expectedVersion, patch, opts) => t.unwrap(t.call("@acme/commerce/_/Order.update", { id, expectedVersion, patch }, opts)),
       delete: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/Order.delete", { id, expectedVersion }, opts)),
+      listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/Order.list.all", { params, ...page })),
       listByCustomer: (params, page) => t.unwrap(t.call("@acme/commerce/_/Order.list.byCustomer", { params, ...page })),
       listBySiteStatus: (params, page) => t.unwrap(t.call("@acme/commerce/_/Order.list.bySiteStatus", { params, ...page })),
       approve: (id, expectedVersion, input, opts) => t.unwrap(t.call("@acme/commerce/_/Order.status.approve", { id, expectedVersion, input }, opts)),
@@ -366,6 +376,7 @@ export function createClient(options: ClientOptions): ForgeClient {
       get: (id) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.get", { id })),
       update: (id, expectedVersion, patch, opts) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.update", { id, expectedVersion, patch }, opts)),
       delete: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.delete", { id, expectedVersion }, opts)),
+      listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.list.all", { params, ...page })),
       listByOrder: (params, page) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.list.byOrder", { params, ...page })),
       beginUpload: (id, expectedVersion, input) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.beginUpload", { id, expectedVersion, ...input })),
       finalizeUpload: (id, expectedVersion) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.finalizeUpload", { id, expectedVersion })),
@@ -377,6 +388,7 @@ export function createClient(options: ClientOptions): ForgeClient {
       update: (id, expectedVersion, patch, opts) => t.unwrap(t.call("@acme/commerce/_/Site.update", { id, expectedVersion, patch }, opts)),
       delete: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/Site.delete", { id, expectedVersion }, opts)),
       findByCustomerCode: (params) => t.unwrapNullable(t.call("@acme/commerce/_/Site.find.byCustomerCode", { params })),
+      listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/Site.list.all", { params, ...page })),
       listByCustomer: (params, page) => t.unwrap(t.call("@acme/commerce/_/Site.list.byCustomer", { params, ...page })),
     },
   };

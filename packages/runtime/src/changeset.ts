@@ -55,7 +55,8 @@ async function sha256(text: string): Promise<string> {
 /** Human-readable diff of business fields; server-owned bookkeeping (version, timestamps) is implied. */
 function diffOf(plan: CommitPlan): { path: string; before: unknown; after: unknown }[] {
   const out: { path: string; before: unknown; after: unknown }[] = [];
-  const serverOwned = new Set(plan.resource.fields.filter((f) => f.serverOwned && f.name !== "id" && !(plan.resource.lifecycle && f.name === plan.resource.lifecycle.field)).map((f) => f.name));
+  // `id` is shown for existing records (it names the row) but is noise on a create.
+  const serverOwned = new Set(plan.resource.fields.filter((f) => f.serverOwned && (f.name !== "id" || plan.kind === "create") && !(plan.resource.lifecycle && f.name === plan.resource.lifecycle.field)).map((f) => f.name));
   const keys = new Set([...Object.keys(plan.before ?? {}), ...Object.keys(plan.after)].filter((k) => !serverOwned.has(k)));
   for (const k of [...keys].sort()) {
     const b = plan.before?.[k] ?? null;

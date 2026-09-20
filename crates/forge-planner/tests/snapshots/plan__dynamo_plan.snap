@@ -25,6 +25,21 @@ expression: p.dynamo
       ],
       "access": [
         {
+          "name": "all",
+          "kind": "list",
+          "partitionFields": [],
+          "sortFields": [
+            "id"
+          ],
+          "sortDirections": [
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version"
+          ]
+        },
+        {
           "name": "byTier",
           "kind": "list",
           "partitionFields": [
@@ -47,7 +62,7 @@ expression: p.dynamo
         }
       ],
       "references": [],
-      "createActions": 5
+      "createActions": 6
     },
     {
       "id": "@acme/commerce/_/Order",
@@ -56,6 +71,21 @@ expression: p.dynamo
       "tenantScoped": true,
       "claims": [],
       "access": [
+        {
+          "name": "all",
+          "kind": "list",
+          "partitionFields": [],
+          "sortFields": [
+            "id"
+          ],
+          "sortDirections": [
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version"
+          ]
+        },
         {
           "name": "byCustomer",
           "kind": "list",
@@ -111,7 +141,7 @@ expression: p.dynamo
           "target": "@acme/commerce/_/Site"
         }
       ],
-      "createActions": 7
+      "createActions": 8
     },
     {
       "id": "@acme/commerce/_/OrderDocument",
@@ -120,6 +150,21 @@ expression: p.dynamo
       "tenantScoped": true,
       "claims": [],
       "access": [
+        {
+          "name": "all",
+          "kind": "list",
+          "partitionFields": [],
+          "sortFields": [
+            "id"
+          ],
+          "sortDirections": [
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version"
+          ]
+        },
         {
           "name": "byOrder",
           "kind": "list",
@@ -148,7 +193,7 @@ expression: p.dynamo
           "target": "@acme/commerce/_/Order"
         }
       ],
-      "createActions": 5
+      "createActions": 6
     },
     {
       "id": "@acme/commerce/_/Site",
@@ -165,6 +210,21 @@ expression: p.dynamo
         }
       ],
       "access": [
+        {
+          "name": "all",
+          "kind": "list",
+          "partitionFields": [],
+          "sortFields": [
+            "id"
+          ],
+          "sortDirections": [
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version"
+          ]
+        },
         {
           "name": "byCustomer",
           "kind": "list",
@@ -193,7 +253,7 @@ expression: p.dynamo
           "target": "@acme/commerce/_/Customer"
         }
       ],
-      "createActions": 6
+      "createActions": 7
     }
   ]
 }

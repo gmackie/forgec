@@ -111,3 +111,18 @@ describe("HTTP binding", () => {
     expect((await handler(req("PUT", `/v1/customers/${cust.id}`, {}))).status).toBe(405);
   });
 });
+
+describe("CORS", () => {
+  it("answers preflight and echoes an allowed origin on responses when configured", async () => {
+    const h = createHttpHandler(model, new Engine(model, testLayer(new MemoryStorage())), { auth: devHeaderAuth(), cors: { origins: ["http://localhost:5173"] } });
+    const pre = await h(new Request("https://api.test/v1/customers", { method: "OPTIONS", headers: { origin: "http://localhost:5173", "access-control-request-method": "POST", "access-control-request-headers": "content-type,if-match,x-forge-tenant" } }));
+    expect(pre.status).toBe(204);
+    expect(pre.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+    expect(pre.headers.get("access-control-allow-headers")).toContain("if-match");
+    expect(pre.headers.get("access-control-expose-headers")).toContain("etag");
+    const res = await h(req("POST", "/v1/customers", { code: "acme", name: "A" }, { origin: "http://localhost:5173" }));
+    expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+    const other = await h(req("GET", "/v1/customers/x", undefined, { origin: "https://evil.example" }));
+    expect(other.headers.get("access-control-allow-origin")).toBeNull();
+  });
+});

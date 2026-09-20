@@ -85,3 +85,34 @@ fn plans_reject_unbounded_or_uncovered_queries_rather_than_emitting_scans() {
     assert_eq!(err.code, "E-PLAN-001");
     assert!(err.message.contains("optional field `notes`"));
 }
+
+#[test]
+fn ui_descriptor_drives_tables_forms_relationships_and_actions() {
+    let p = acme();
+    insta::assert_json_snapshot!("ui", p.ui);
+    let cust = p.ui.resources.iter().find(|r| r.name == "Customer").unwrap();
+    assert_eq!(cust.route, "customers");
+    assert_eq!(cust.label, "Customer");
+    assert_eq!(cust.title_field, "name");
+    let code = cust.fields.iter().find(|f| f.name == "code").unwrap();
+    assert_eq!((code.editable_on_create, code.editable_on_update, code.widget.as_str()), (true, false, "text"));
+    let tier = cust.fields.iter().find(|f| f.name == "tier").unwrap();
+    assert_eq!(tier.widget, "select");
+    assert_eq!(tier.options.as_ref().unwrap().iter().map(|o| o.value.as_str()).collect::<Vec<_>>(), vec!["standard", "gold", "enterprise"]);
+    let version = cust.fields.iter().find(|f| f.name == "version").unwrap();
+    assert!(!version.editable_on_create && !version.editable_on_update && version.widget == "readonly");
+    let site = p.ui.resources.iter().find(|r| r.name == "Site").unwrap();
+    let customer = site.fields.iter().find(|f| f.name == "customer").unwrap();
+    assert_eq!(customer.widget, "reference");
+    assert_eq!(customer.reference.as_ref().unwrap().resource, "@acme/commerce/_/Customer");
+    assert_eq!(customer.reference.as_ref().unwrap().lookup, "@acme/commerce/_/Customer.list.all");
+    let order = p.ui.resources.iter().find(|r| r.name == "Order").unwrap();
+    assert_eq!(order.actions.iter().map(|a| a.name.as_str()).collect::<Vec<_>>(), vec!["approve", "complete", "cancel"]);
+    assert_eq!(order.actions[2].input_fields.iter().map(|f| f.name.as_str()).collect::<Vec<_>>(), vec!["reason"]);
+    let status = order.fields.iter().find(|f| f.name == "status").unwrap();
+    assert_eq!(status.widget, "status");
+    assert_eq!(order.lists.iter().map(|l| l.name.as_str()).collect::<Vec<_>>(), vec!["all", "byCustomer", "bySiteStatus"]);
+    let doc = p.ui.resources.iter().find(|r| r.name == "OrderDocument").unwrap();
+    assert_eq!(doc.kind, "blob");
+    assert!(!doc.fields.iter().any(|f| f.name == "stagedByteCount"));
+}

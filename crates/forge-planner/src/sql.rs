@@ -131,7 +131,12 @@ pub fn plan(ir: &DomainIR) -> SqlSchema {
                         cols.push(o.field.clone());
                     }
                 }
-                indexes.push(Index { name: format!("{tname}_ix_{}", naming::snake(&l.name)), table: tname.clone(), columns: key(&cols), unique: false, query: Some(l.name.clone()), constraint: None });
+                let columns = key(&cols);
+                // An index that is a prefix of (or equal to) the primary key is redundant (§10.4).
+                if primary_key.starts_with(&columns) || columns.starts_with(&primary_key) && columns.len() == primary_key.len() {
+                    continue;
+                }
+                indexes.push(Index { name: format!("{tname}_ix_{}", naming::snake(&l.name)), table: tname.clone(), columns, unique: false, query: Some(l.name.clone()), constraint: None });
             }
             let mut checks = Vec::new();
             if let Some(lc) = &r.lifecycle {
