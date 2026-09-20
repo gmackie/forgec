@@ -8,11 +8,11 @@ export interface CallStep {
   expect: { ok: unknown } | { error: string };
 }
 
-/** N concurrent calls of one operation; the invariant is a count of outcomes, not who wins. */
+/** Concurrent calls; the invariant is a count of outcomes (or a range), not who wins. */
 export interface RaceStep {
   name: string;
-  race: { op: string; inputs: unknown[] };
-  expect: { successes: number; failureCodes: string[] };
+  race: { op: string; inputs: unknown[] } | { calls: { op: string; input: unknown }[] };
+  expect: { successes: number | { min: number; max: number }; failureCodes: string[] };
 }
 
 export type Step = CallStep | RaceStep;
@@ -112,10 +112,13 @@ export async function runScenario(scenario: Scenario, target: Target, options: R
 
   for (const step of scenario.steps) {
     if ("race" in step) {
-      const outcomes = await Promise.all(step.race.inputs.map((i) => target.call(step.race.op, resolveRefs(i, raw, ids), base)));
+      const calls = "calls" in step.race ? step.race.calls : step.race.inputs.map((input) => ({ op: (step.race as { op: string }).op, input }));
+      const outcomes = await Promise.all(calls.map((c) => target.call(c.op, resolveRefs(c.input, raw, ids), base)));
       const successes = outcomes.filter((o) => o.ok).length;
       const codes = outcomes.filter((o) => !o.ok).map((o) => (o as { code: string }).code);
-      if (successes !== step.expect.successes) failures.push({ step: step.name, path: "successes", expected: step.expect.successes, actual: successes });
+      const want = step.expect.successes;
+      const okCount = typeof want === "number" ? successes === want : successes >= want.min && successes <= want.max;
+      if (!okCount) failures.push({ step: step.name, path: "successes", expected: want, actual: successes });
       for (const c of codes) {
         if (!step.expect.failureCodes.includes(c)) failures.push({ step: step.name, path: "failureCodes", expected: step.expect.failureCodes, actual: c });
       }

@@ -32,7 +32,7 @@ describe.skipIf(!table)("DynamoDB adapter (live)", () => {
   let ctx: { tenant: string; actor: string; requestId: string; idempotencyKey?: string };
   beforeAll(async () => {
     await ensureDynamoTable(table!, process.env["AWS_REGION"] ?? "us-east-1");
-    engine = new Engine(model, testLayer(new DynamoStorage({ table: table!, region: process.env["AWS_REGION"] ?? "us-east-1" }, model)));
+    engine = new Engine(model, testLayer(new DynamoStorage({ table: table!, region: process.env["AWS_REGION"] ?? "us-east-1" }, model), { runId: randomUUID().slice(0, 8) }));
     ctx = { tenant: `t-${randomUUID().slice(0, 8)}`, actor: "operator", requestId: "r" };
   }, 300_000);
 
@@ -99,5 +99,39 @@ describe.skipIf(!table)("DynamoDB adapter (live)", () => {
     expect(wins).toBe(1);
     expect(new Set(codes)).toEqual(new Set(["VersionConflict"]));
     expect((await run(engine.call("@acme/commerce/_/Customer.get", { id: c.id }, ctx))).version).toBe(2);
+  }, 60_000);
+});
+
+describe.skipIf(!table)("DynamoDB adapter (live) — M3 integrity", () => {
+  let engine: Engine;
+  let ctx: { tenant: string; actor: string; requestId: string };
+  beforeAll(async () => {
+    engine = new Engine(model, testLayer(new DynamoStorage({ table: table!, region: process.env["AWS_REGION"] ?? "us-east-1" }, model), { runId: randomUUID().slice(0, 8) }));
+    ctx = { tenant: `t-${randomUUID().slice(0, 8)}`, actor: "operator", requestId: "r" };
+  });
+
+  it("restrict-delete via dependent counters, hard delete of a child, delete racing child creates", async () => {
+    const c = await run(engine.call("@acme/commerce/_/Customer.create", { code: "PAR1", name: "Parent" }, ctx));
+    const s = await run(engine.call("@acme/commerce/_/Site.create", { customer: c.id, code: "hq", name: "HQ", timezone: "UTC" }, ctx));
+    expect((await fails(engine.call("@acme/commerce/_/Customer.delete", { id: c.id, expectedVersion: 1 }, ctx))).code).toBe("HasDependents");
+    await run(engine.call("@acme/commerce/_/Site.delete", { id: s.id, expectedVersion: 1 }, ctx));
+    expect((await fails(engine.call("@acme/commerce/_/Site.get", { id: s.id }, ctx))).code).toBe("NotFound");
+    expect(await run(engine.call("@acme/commerce/_/Site.list.byCustomer", { params: { customer: c.id } }, ctx))).toMatchObject({ items: [] });
+    // race: delete vs 4 child creates — never an orphan
+    const [del, ...creates] = await Promise.all([
+      Effect.runPromiseExit(engine.call("@acme/commerce/_/Customer.delete", { id: c.id, expectedVersion: 1 }, ctx)),
+      ...["r1", "r2", "r3", "r4"].map((code) => Effect.runPromiseExit(engine.call("@acme/commerce/_/Site.create", { customer: c.id, code, name: code, timezone: "UTC" }, ctx))),
+    ]);
+    const created = creates.filter((r) => r._tag === "Success").length;
+    const parent = await Effect.runPromiseExit(engine.call("@acme/commerce/_/Customer.get", { id: c.id }, ctx));
+    if (del._tag === "Success") {
+      expect(created).toBe(0);
+      expect(parent._tag).toBe("Failure"); // soft-deleted => NotFound
+    } else {
+      expect(created).toBeGreaterThan(0);
+      expect(parent._tag).toBe("Success");
+      const listed = await run(engine.call("@acme/commerce/_/Site.list.byCustomer", { params: { customer: c.id } }, ctx));
+      expect(listed.items).toHaveLength(created);
+    }
   }, 60_000);
 });

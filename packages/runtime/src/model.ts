@@ -95,6 +95,17 @@ export class Model {
     for (const c of bundle.contracts.resources) this.wireNames.set(c.id, c.wireName);
   }
 
+  /** (child resource, field) pairs that reference `resourceId`. */
+  dependentsOf(resourceId: string): { resource: Resource; field: string }[] {
+    const out: { resource: Resource; field: string }[] = [];
+    for (const r of this.resources) {
+      for (const f of r.fields) {
+        if (f.type.base.kind === "reference" && f.type.base.resource === resourceId && !f.synthesized) out.push({ resource: r, field: f.name });
+      }
+    }
+    return out;
+  }
+
   resource(id: string): Resource {
     const r = this.byId.get(id);
     if (!r) throw new Error(`unknown resource ${id}`);

@@ -1,0 +1,225 @@
+{
+  "id": "m3.integrity",
+  "title": "Restrict delete with dependents, hard delete of a child, delete racing child creates never orphans",
+  "steps": [
+    {
+      "name": "parent",
+      "op": "@acme/commerce/_/Customer.create",
+      "input": {
+        "code": "PARENT",
+        "name": "P"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:1",
+          "version": 1
+        }
+      }
+    },
+    {
+      "name": "child",
+      "op": "@acme/commerce/_/Site.create",
+      "input": {
+        "customer": "$parent.id",
+        "code": "hq",
+        "name": "HQ",
+        "timezone": "UTC"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:2"
+        }
+      }
+    },
+    {
+      "name": "blocked",
+      "op": "@acme/commerce/_/Customer.delete",
+      "input": {
+        "id": "$parent.id",
+        "expectedVersion": 1
+      },
+      "expect": {
+        "error": "HasDependents"
+      }
+    },
+    {
+      "name": "hardDeleteChild",
+      "op": "@acme/commerce/_/Site.delete",
+      "input": {
+        "id": "$child.id",
+        "expectedVersion": 1
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:2"
+        }
+      }
+    },
+    {
+      "name": "childGone",
+      "op": "@acme/commerce/_/Site.get",
+      "input": {
+        "id": "$child.id"
+      },
+      "expect": {
+        "error": "NotFound"
+      }
+    },
+    {
+      "name": "childUnlisted",
+      "op": "@acme/commerce/_/Site.list.byCustomer",
+      "input": {
+        "params": {
+          "customer": "$parent.id"
+        }
+      },
+      "expect": {
+        "ok": {
+          "items": [],
+          "next": null
+        }
+      }
+    },
+    {
+      "name": "codeFreed",
+      "op": "@acme/commerce/_/Site.create",
+      "input": {
+        "customer": "$parent.id",
+        "code": "hq",
+        "name": "HQ again",
+        "timezone": "UTC"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:3",
+          "code": "HQ"
+        }
+      }
+    },
+    {
+      "name": "cleanup",
+      "op": "@acme/commerce/_/Site.delete",
+      "input": {
+        "id": "$codeFreed.id",
+        "expectedVersion": 1
+      },
+      "expect": {
+        "ok": {}
+      }
+    },
+    {
+      "name": "deleteNow",
+      "op": "@acme/commerce/_/Customer.delete",
+      "input": {
+        "id": "$parent.id",
+        "expectedVersion": 1
+      },
+      "expect": {
+        "ok": {
+          "version": 2
+        }
+      }
+    },
+    {
+      "name": "noChildUnderDeleted",
+      "op": "@acme/commerce/_/Site.create",
+      "input": {
+        "customer": "$parent.id",
+        "code": "zz",
+        "name": "Z",
+        "timezone": "UTC"
+      },
+      "expect": {
+        "error": "ReferenceMissing"
+      }
+    },
+    {
+      "name": "parent2",
+      "op": "@acme/commerce/_/Customer.create",
+      "input": {
+        "code": "PARENT2",
+        "name": "P2"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:4",
+          "version": 1
+        }
+      }
+    },
+    {
+      "name": "raceDeleteVsCreates",
+      "race": {
+        "calls": [
+          {
+            "op": "@acme/commerce/_/Customer.delete",
+            "input": {
+              "id": "$parent2.id",
+              "expectedVersion": 1
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Site.create",
+            "input": {
+              "customer": "$parent2.id",
+              "code": "r1",
+              "name": "r1",
+              "timezone": "UTC"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Site.create",
+            "input": {
+              "customer": "$parent2.id",
+              "code": "r2",
+              "name": "r2",
+              "timezone": "UTC"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Site.create",
+            "input": {
+              "customer": "$parent2.id",
+              "code": "r3",
+              "name": "r3",
+              "timezone": "UTC"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Site.create",
+            "input": {
+              "customer": "$parent2.id",
+              "code": "r4",
+              "name": "r4",
+              "timezone": "UTC"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "successes": {
+          "min": 1,
+          "max": 4
+        },
+        "failureCodes": [
+          "HasDependents",
+          "ReferenceMissing"
+        ]
+      }
+    },
+    {
+      "name": "raceInvariant",
+      "op": "@acme/commerce/_/Site.list.byCustomer",
+      "input": {
+        "params": {
+          "customer": "$parent2.id"
+        }
+      },
+      "expect": {
+        "ok": {
+          "next": null
+        }
+      }
+    }
+  ]
+}

@@ -58,6 +58,12 @@ export class MemoryStorage implements StorageAdapter {
     return Effect.succeed({ records: page.map((x) => ({ ...x.rec })), hasMore: start + q.limit < keyed.length });
   }
 
+  countDependents(tenant: string, child: Resource, field: string, id: string): Effect.Effect<number, ForgeError> {
+    let n = 0;
+    for (const rec of this.table(tenant, child).values()) if (!rec["deletedAt"] && rec[field] === id) n++;
+    return Effect.succeed(n);
+  }
+
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError> {
     return Effect.succeed(this.receipts.get(`${tenant}|${operation}|${key}`) ?? null);
   }
@@ -84,12 +90,19 @@ export class MemoryStorage implements StorageAdapter {
       const target = this.table(plan.tenant, g.resource).get(g.id);
       if (!target || target["deletedAt"]) return Effect.fail(err("ReferenceMissing", `${g.field} does not reference a live record`));
     }
+    // restrict-delete guard at commit time
+    for (const d of plan.dependents) {
+      for (const rec of this.table(plan.tenant, d.resource).values()) {
+        if (!rec["deletedAt"] && rec[d.field] === plan.id) return Effect.fail(err("HasDependents", `${plan.resource.name} ${plan.id} has live dependents`));
+      }
+    }
     // apply
     for (const c of plan.claims) {
       if (c.before && c.before !== c.after) this.claims.delete(`${plan.tenant}|${c.before}`);
       if (c.after) this.claims.set(`${plan.tenant}|${c.after}`, plan.id);
     }
-    table.set(plan.id, { ...plan.after });
+    if (plan.hardDelete) table.delete(plan.id);
+    else table.set(plan.id, { ...plan.after });
     this.audits.push(plan.audit);
     this.outbox.push(...plan.outbox);
     if (plan.receipt) this.receipts.set(`${plan.tenant}|${plan.receipt.operation}|${plan.receipt.key}`, plan.receipt);

@@ -14,6 +14,11 @@ import { fieldOf, scaleOf, type List, type Model, type Resource, type Unique } f
 import type { CommitPlan, ListQuery, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export const PENDING_INDEX = "pending-index";
+
+/** Attribute on a parent entity counting live children of (child, field). */
+function depAttr(child: Resource, field: string, model: Model): string {
+  return `dep#${model.wireName(child.id)}#${field}`;
+}
 const RETRY_ATTEMPTS = 5;
 
 export interface DynamoOptions {
@@ -135,6 +140,7 @@ export class DynamoStorage implements StorageAdapter {
   }
 
   private toStored(r: Resource, item: Item): StoredRecord {
+    // dep#… counters and keys are physical metadata, never part of the record
     const rec: StoredRecord = {};
     for (const f of r.fields) if (!f.derived) rec[f.name] = item[f.name] === undefined ? null : item[f.name];
     return rec;
@@ -180,6 +186,19 @@ export class DynamoStorage implements StorageAdapter {
     });
   }
 
+  /**
+   * Restrict-delete on DynamoDB uses a per-(child, field) live-dependent counter on the parent
+   * entity (`dep#<child>#<field>`), maintained in the child's transaction (plan §11.4). The
+   * pre-check reads it; the delete transaction conditions on it being zero or absent.
+   */
+  countDependents(tenant: string, child: Resource, field: string, id: string): Effect.Effect<number, ForgeError> {
+    const parent = this.model.resource(fieldOf(child, field)!.type.base.kind === "reference" ? (fieldOf(child, field)!.type.base as { resource: string }).resource : "");
+    return this.wrap(async () => {
+      const out = await this.doc.send(new GetCommand({ TableName: this.table, Key: this.entityKey(tenant, parent, id), ConsistentRead: true, ProjectionExpression: "#c", ExpressionAttributeNames: { "#c": depAttr(child, field, this.model) } }));
+      return Number(out.Item?.[depAttr(child, field, this.model)] ?? 0);
+    });
+  }
+
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError> {
     return this.wrap(async () => {
       const out = await this.doc.send(new GetCommand({ TableName: this.table, Key: this.receiptKey(tenant, operation, key), ConsistentRead: true }));
@@ -211,12 +230,41 @@ export class DynamoStorage implements StorageAdapter {
       roles.push(role);
       items.push(item);
     };
-    const entity: Item = { ...this.entityKey(tenant, r, id), ...plan.after };
+    const entityKey = this.entityKey(tenant, r, id);
+    const depGuards = plan.dependents.map((d) => depAttr(d.resource, d.field, this.model));
     if (plan.kind === "create") {
-      push("entity", { Put: { TableName: this.table, Item: entity, ConditionExpression: "attribute_not_exists(PK)" } });
+      push("entity", { Put: { TableName: this.table, Item: { ...entityKey, ...plan.after }, ConditionExpression: "attribute_not_exists(PK)" } });
+    } else if (plan.hardDelete) {
+      const names: Record<string, string> = {};
+      const conds = ["attribute_exists(PK)"];
+      if (plan.expectedVersion !== null) conds.push("version = :v");
+      depGuards.forEach((a, i) => {
+        names[`#d${i}`] = a;
+        conds.push(`(attribute_not_exists(#d${i}) OR #d${i} = :zero)`);
+      });
+      push("entity", { Delete: { TableName: this.table, Key: entityKey, ConditionExpression: conds.join(" AND "), ExpressionAttributeValues: { ...(plan.expectedVersion !== null ? { ":v": plan.expectedVersion } : {}), ...(depGuards.length ? { ":zero": 0 } : {}) }, ...(depGuards.length ? { ExpressionAttributeNames: names } : {}), ReturnValuesOnConditionCheckFailure: "ALL_OLD" } });
     } else {
-      const cond = plan.expectedVersion !== null ? "attribute_exists(PK) AND version = :v" : "attribute_exists(PK)";
-      push("entity", { Put: { TableName: this.table, Item: entity, ConditionExpression: cond, ...(plan.expectedVersion !== null ? { ExpressionAttributeValues: { ":v": plan.expectedVersion } } : {}), ReturnValuesOnConditionCheckFailure: "ALL_OLD" } });
+      // Update (not Put) so dependent counters on this entity survive the write.
+      const fields = Object.keys(plan.after).filter((k) => !plan.resource.fields.find((f) => f.name === k)?.derived);
+      const names: Record<string, string> = {};
+      const values: Item = {};
+      const sets: string[] = [];
+      fields.forEach((k, i) => {
+        names[`#f${i}`] = k;
+        values[`:f${i}`] = plan.after[k] === undefined ? null : plan.after[k];
+        sets.push(`#f${i} = :f${i}`);
+      });
+      const conds = ["attribute_exists(PK)"];
+      if (plan.expectedVersion !== null) {
+        conds.push("version = :v");
+        values[":v"] = plan.expectedVersion;
+      }
+      depGuards.forEach((a, i) => {
+        names[`#d${i}`] = a;
+        conds.push(`(attribute_not_exists(#d${i}) OR #d${i} = :zero)`);
+        values[":zero"] = 0;
+      });
+      push("entity", { Update: { TableName: this.table, Key: entityKey, UpdateExpression: `SET ${sets.join(", ")}`, ConditionExpression: conds.join(" AND "), ExpressionAttributeNames: names, ExpressionAttributeValues: values, ReturnValuesOnConditionCheckFailure: "ALL_OLD" } });
     }
     // unique claims
     for (const c of plan.claims) {
@@ -229,16 +277,54 @@ export class DynamoStorage implements StorageAdapter {
     }
     // strong access items: one per list query; moved when partition or sort keys change
     for (const l of r.lists) {
-      const live = !plan.after["deletedAt"];
+      const live = !plan.hardDelete && !plan.after["deletedAt"];
       const beforeKey = plan.before && !plan.before["deletedAt"] ? { PK: this.accessPk(tenant, r, l, l.fields.map((f) => plan.before![f])), SK: this.accessSk(r, l, plan.before!) } : null;
       const afterKey = live ? { PK: this.accessPk(tenant, r, l, l.fields.map((f) => plan.after[f])), SK: this.accessSk(r, l, plan.after) } : null;
       const same = beforeKey && afterKey && beforeKey.PK === afterKey.PK && beforeKey.SK === afterKey.SK;
       if (beforeKey && !same) push("access", { Delete: { TableName: this.table, Key: beforeKey } });
       if (afterKey) push("access", { Put: { TableName: this.table, Item: { ...afterKey, record: plan.after, id, version: plan.after["version"] ?? null } } });
     }
-    // reference guards: ConditionCheck that the parent is live (no counter yet: restrict-delete arrives in M3)
+    // reference guards: the parent must be live; its live-dependent counter for (this resource, field)
+    // is incremented when the reference is created and decremented when it is removed or the child is
+    // hard-deleted. One Update per parent item (DynamoDB forbids two actions on one item).
+    const counterDeltas = new Map<string, { resource: Resource; id: string; deltas: Record<string, number> }>();
+    const bump = (parentRes: Resource, parentId: string, attr: string, delta: number) => {
+      const k = `${parentRes.id}|${parentId}`;
+      const e = counterDeltas.get(k) ?? { resource: parentRes, id: parentId, deltas: {} };
+      e.deltas[attr] = (e.deltas[attr] ?? 0) + delta;
+      counterDeltas.set(k, e);
+    };
+    for (const f of r.fields) {
+      if (f.type.base.kind !== "reference" || f.synthesized) continue;
+      const parentRes = this.model.resource(f.type.base.resource);
+      const attr = depAttr(r, f.name, this.model);
+      const beforeLive = plan.before && !plan.before["deletedAt"] ? plan.before[f.name] : null;
+      const afterLive = !plan.hardDelete && !plan.after["deletedAt"] ? plan.after[f.name] : null;
+      if (beforeLive !== afterLive) {
+        if (typeof beforeLive === "string") bump(parentRes, beforeLive, attr, -1);
+        if (typeof afterLive === "string") bump(parentRes, afterLive, attr, +1);
+      }
+    }
+    const guardIds = new Set(plan.references.map((g) => `${g.resource.id}|${g.id}`));
+    for (const [k, e] of counterDeltas) {
+      const names: Record<string, string> = {};
+      const values: Item = {};
+      const adds: string[] = [];
+      Object.entries(e.deltas).forEach(([attr, delta], i) => {
+        if (delta === 0) return;
+        names[`#c${i}`] = attr;
+        values[`:c${i}`] = delta;
+        adds.push(`#c${i} :c${i}`);
+      });
+      if (!adds.length) continue;
+      const mustBeLive = guardIds.has(k) && e.resource.decorators.softDelete;
+      const cond = mustBeLive ? "attribute_exists(PK) AND deletedAt = :null" : "attribute_exists(PK)";
+      if (mustBeLive) values[":null"] = null;
+      push("parent", { Update: { TableName: this.table, Key: this.entityKey(tenant, e.resource, e.id), UpdateExpression: `ADD ${adds.join(", ")}`, ConditionExpression: cond, ExpressionAttributeNames: names, ExpressionAttributeValues: values } });
+    }
     for (const g of plan.references) {
-      const live = g.resource.decorators.softDelete ? "attribute_exists(PK) AND attribute_not_exists(deletedAt) OR (attribute_exists(PK) AND deletedAt = :null)" : "attribute_exists(PK)";
+      if (counterDeltas.has(`${g.resource.id}|${g.id}`)) continue; // already guarded by the counter update
+      const live = g.resource.decorators.softDelete ? "attribute_exists(PK) AND deletedAt = :null" : "attribute_exists(PK)";
       push("parent", { ConditionCheck: { TableName: this.table, Key: this.entityKey(tenant, g.resource, g.id), ConditionExpression: live, ...(g.resource.decorators.softDelete ? { ExpressionAttributeValues: { ":null": null } } : {}) } });
     }
     const a = plan.audit;
@@ -284,7 +370,9 @@ export class DynamoStorage implements StorageAdapter {
         if (plan.kind === "create") return err("TransientConflict", "id collision");
         const old = failed.item;
         if (!old) return err("NotFound", `${plan.resource.name} ${plan.id} not found`);
-        return err("VersionConflict", `expected version ${plan.expectedVersion}, current is ${old["version"]}`);
+        if (plan.expectedVersion !== null && old["version"] !== plan.expectedVersion) return err("VersionConflict", `expected version ${plan.expectedVersion}, current is ${old["version"]}`);
+        if (plan.dependents.some((d) => Number(old[depAttr(d.resource, d.field, this.model)] ?? 0) > 0)) return err("HasDependents", `${plan.resource.name} ${plan.id} has live dependents`);
+        return err("TransientConflict", "entity condition failed");
       }
       case "claim": {
         const idx = reasons.findIndex((r) => r === failed);

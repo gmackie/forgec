@@ -106,6 +106,18 @@ export class D1Storage implements StorageAdapter {
     return this.map.toColumn(r.fields.find((x) => x.name === fieldName)!, after.values[i]);
   }
 
+  countDependents(tenant: string, child: Resource, field: string, id: string): Effect.Effect<number, ForgeError> {
+    const t = this.map.table(child);
+    const col = this.map.column(child, field).name;
+    const live = child.decorators.softDelete ? " AND deleted_at IS NULL" : "";
+    const tenantSql = child.decorators.tenant ? "tenant = ? AND " : "";
+    const binds = child.decorators.tenant ? [tenant, id] : [id];
+    return this.wrap(async () => {
+      const row = await this.db.prepare(`SELECT COUNT(*) AS n FROM ${t.name} WHERE ${tenantSql}${col} = ?${live}`).bind(...binds).first<{ n: number }>();
+      return Number(row?.n ?? 0);
+    });
+  }
+
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError> {
     return this.wrap(async () => {
       const row = await this.db.prepare("SELECT * FROM forge_receipt WHERE tenant = ? AND operation = ? AND key = ?").bind(tenant, operation, key).first<Record<string, unknown>>();
@@ -151,13 +163,24 @@ export class D1Storage implements StorageAdapter {
       preds.push(`EXISTS (SELECT 1 FROM ${gt.name} WHERE ${gkw.sql}${live})`);
       predBinds.push(...gkw.bind(tenant, g.id));
     }
+    for (const d of plan.dependents) {
+      const dt = this.map.table(d.resource);
+      const col = this.map.column(d.resource, d.field).name;
+      const live = d.resource.decorators.softDelete ? " AND deleted_at IS NULL" : "";
+      const tenantSql = d.resource.decorators.tenant ? "tenant = ? AND " : "";
+      preds.push(`NOT EXISTS (SELECT 1 FROM ${dt.name} WHERE ${tenantSql}${col} = ?${live})`);
+      if (d.resource.decorators.tenant) predBinds.push(tenant);
+      predBinds.push(id);
+    }
     stmts.push(this.db.prepare(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, (${preds.join(" AND ")})`).bind(plan.opId, ...predBinds));
 
     // 2. record write
     const row = this.map.toRow(r, plan.after);
     if (r.decorators.tenant) row["tenant"] = tenant;
     const cols = Object.keys(row);
-    if (plan.kind === "create") {
+    if (plan.hardDelete) {
+      stmts.push(this.db.prepare(`DELETE FROM ${t.name} WHERE ${kw.sql}`).bind(...kw.bind(tenant, id)));
+    } else if (plan.kind === "create") {
       stmts.push(this.db.prepare(`INSERT INTO ${t.name} (${cols.map((c) => `"${c}"`).join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`).bind(...cols.map((c) => row[c])));
     } else {
       const sets = cols.filter((c) => c !== "id" && c !== "tenant");
@@ -207,6 +230,7 @@ export class D1Storage implements StorageAdapter {
         const ok = await this.db.prepare(`SELECT 1 AS ok FROM ${gt.name} WHERE ${gkw.sql}${live}`).bind(...gkw.bind(tenant, g.id)).first().catch(() => null);
         if (!ok) return err("ReferenceMissing", `${g.field} does not reference a live record`);
       }
+      if (plan.dependents.length) return err("HasDependents", `${r.name} ${id} has live dependents`);
       return err("TransientConflict", "precondition changed concurrently");
     }
     const uq = /UNIQUE constraint failed: (.+?)(?::|$)/.exec(msg);

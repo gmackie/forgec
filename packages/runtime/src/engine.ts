@@ -158,8 +158,15 @@ export class Engine {
   }
 
   private audit(kind: string, r: Resource, id: string, after: Wire, ctx: CallContext, opId: string, at: string) {
-    const self = this;
     return { tenant: ctx.tenant, opId, resource: r.id, recordId: id, kind, newVersion: typeof after["version"] === "number" ? (after["version"] as number) : null, actor: ctx.actor, at };
+  }
+
+  /** Audited resources stage one change event per commit on their implicit `<Resource>.changes` channel. */
+  private changeEvent(r: Resource, kind: string, id: string, after: Wire, ctx: CallContext, opId: string, at: string) {
+    if (!r.decorators.audited) return [];
+    const message = ({ create: "Created", update: "Updated", delete: "Deleted", restore: "Restored" } as Record<string, string>)[kind] ?? "Transitioned";
+    const extra = kind.startsWith("status.") && r.lifecycle ? { action: kind.slice(7), status: after[r.lifecycle.field] } : {};
+    return [{ tenant: ctx.tenant, opId, ordinal: 0, channel: `${r.id}.changes`, message, payload: { id, version: after["version"] ?? null, ...extra }, createdAt: at }];
   }
 
   // ------------------------------------------------------------ create
@@ -186,8 +193,8 @@ export class Engine {
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "create", id, expectedVersion: null, before: null, after,
-        claims: self.claimChanges(r, null, after), references: guards,
-        audit: self.audit("create", r, id, after, ctx, opId, now), outbox: [],
+        claims: self.claimChanges(r, null, after), references: guards, dependents: [], hardDelete: false,
+        audit: self.audit("create", r, id, after, ctx, opId, now), outbox: self.changeEvent(r, "create", id, after, ctx, opId, now),
       };
       return yield* self.commitAndReturn(plan);
     });
@@ -284,8 +291,8 @@ export class Engine {
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "update", id, expectedVersion: expected, before, after,
-        claims: self.claimChanges(r, before, after), references: guards,
-        audit: self.audit("update", r, id, after, ctx, opId, now), outbox: [],
+        claims: self.claimChanges(r, before, after), references: guards, dependents: [], hardDelete: false,
+        audit: self.audit("update", r, id, after, ctx, opId, now), outbox: self.changeEvent(r, "update", id, after, ctx, opId, now),
       };
       return yield* self.commitAndReturn(plan);
     });
@@ -304,17 +311,28 @@ export class Engine {
       if (!r.decorators.softDelete && kind === "restore") return yield* Effect.fail(err("MethodNotAllowed", `${r.name} is not soft-deletable`));
       if (kind === "delete" && before["deletedAt"]) return yield* Effect.fail(err("AlreadyDeleted", `${r.name} ${id} is already deleted`));
       if (kind === "restore" && !before["deletedAt"]) return yield* Effect.fail(err("NotDeleted", `${r.name} ${id} is not deleted`));
+      const hardDelete = kind === "delete" && !r.decorators.softDelete;
       const after: Wire = { ...before };
       if (r.decorators.softDelete) after["deletedAt"] = kind === "delete" ? now : null;
       if (r.decorators.versioned) after["version"] = (before["version"] as number) + 1;
       if (r.decorators.timestamps) after["updatedAt"] = now;
+      // restrict-delete: pre-check for a good error, then the adapter re-checks at commit
+      const dependents = kind === "delete" ? self.model.dependentsOf(r.id) : [];
+      if (kind === "delete") {
+        const storage = yield* Storage;
+        for (const d of dependents) {
+          const n = yield* storage.countDependents(ctx.tenant, d.resource, d.field, id);
+          if (n > 0) return yield* Effect.fail(err("HasDependents", `${r.name} ${id} is referenced by ${n} live ${d.resource.name} record(s) through ${d.resource.name}.${d.field}`));
+        }
+      }
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind, id, expectedVersion: expected, before, after,
-        claims: [], references: [],
-        audit: self.audit(kind, r, id, after, ctx, opId, now), outbox: [],
+        claims: hardDelete ? self.claimChanges(r, before, {}) : [], references: [], dependents, hardDelete,
+        audit: self.audit(kind, r, id, after, ctx, opId, now), outbox: self.changeEvent(r, kind, id, after, ctx, opId, now),
       };
-      return yield* self.commitAndReturn(plan);
+      yield* (yield* Storage).commit(plan);
+      return hardDelete ? canonicalize(self.model, r, before) : canonicalize(self.model, r, after);
     });
   }
 
@@ -341,8 +359,8 @@ export class Engine {
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "transition", id, expectedVersion: expected, before, after,
-        claims: [], references: [],
-        audit: { ...self.audit(`status.${action}`, r, id, after, ctx, opId, now), payload: input }, outbox: [],
+        claims: [], references: [], dependents: [], hardDelete: false,
+        audit: { ...self.audit(`status.${action}`, r, id, after, ctx, opId, now), payload: input }, outbox: self.changeEvent(r, `status.${action}`, id, after, ctx, opId, now),
       };
       return yield* self.commitAndReturn(plan);
     });
