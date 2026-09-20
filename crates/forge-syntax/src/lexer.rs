@@ -86,15 +86,14 @@ pub fn tokenize(src: &str) -> Vec<Token> {
     for (res, range) in TokenKind::lexer(src).spanned() {
         let kind = res.unwrap_or(TokenKind::Error);
         // Coalesce adjacent error bytes into one token.
-        if kind == TokenKind::Error {
-            if let Some(last) = out.last_mut() {
+        if kind == TokenKind::Error
+            && let Some(last) = out.last_mut() {
                 let last: &mut Token = last;
                 if last.kind == TokenKind::Error && last.range.end == range.start {
                     last.range.end = range.end;
                     continue;
                 }
             }
-        }
         out.push(Token { kind, range });
     }
     out

@@ -1,0 +1,88 @@
+use std::path::PathBuf;
+use std::process::Command;
+
+fn forge() -> Command {
+    Command::new(env!("CARGO_BIN_EXE_forge"))
+}
+fn examples() -> PathBuf {
+    PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples"))
+}
+
+#[test]
+fn check_passes_for_the_reference_app_and_resolves_path_dependencies() {
+    let out = forge().args(["check", examples().join("acme").to_str().unwrap()]).output().unwrap();
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    let s = String::from_utf8_lossy(&out.stdout);
+    assert!(s.contains("@acme/commerce: ok"), "{s}");
+}
+
+#[test]
+fn check_fails_with_rendered_diagnostics_and_nonzero_exit() {
+    let dir = std::env::temp_dir().join(format!("forge-cli-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("src")).unwrap();
+    std::fs::write(dir.join("forge.toml"), "[package]\nname = \"@t/bad\"\nversion = \"0.1.0\"\n").unwrap();
+    std::fs::write(dir.join("src/a.forge"), "resource R {\n  id : id\n  x : Nope\n}\n").unwrap();
+    let out = forge().args(["check", dir.to_str().unwrap()]).output().unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    let s = String::from_utf8_lossy(&out.stderr);
+    assert!(s.contains("error[E-SYM-001]: src/a.forge:3:7: unknown name `Nope`"), "{s}");
+}
+
+#[test]
+fn inspect_emits_domain_ir_json_with_a_build_hash_that_is_stable() {
+    let a = forge().args(["inspect", examples().join("acme").to_str().unwrap()]).output().unwrap();
+    assert!(a.status.success(), "{}", String::from_utf8_lossy(&a.stderr));
+    let b = forge().args(["inspect", examples().join("acme").to_str().unwrap()]).output().unwrap();
+    assert_eq!(a.stdout, b.stdout);
+    let v: serde_json::Value = serde_json::from_slice(&a.stdout).unwrap();
+    assert_eq!(v["ir"]["version"], "domain-ir/1");
+    assert_eq!(v["buildHash"].as_str().unwrap().len(), 64);
+    assert_eq!(v["dependencies"][0]["package"], "@acme/payments");
+}
+
+#[test]
+fn fmt_check_reports_unformatted_files_and_fmt_rewrites_them() {
+    let dir = std::env::temp_dir().join(format!("forge-fmt-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("src")).unwrap();
+    std::fs::write(dir.join("forge.toml"), "[package]\nname = \"@t/fmt\"\nversion = \"0.1.0\"\n").unwrap();
+    std::fs::write(dir.join("src/a.forge"), "resource   R {\nid:id\n}\n").unwrap();
+    let out = forge().args(["fmt", "--check", dir.to_str().unwrap()]).output().unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stdout).contains("src/a.forge"));
+    let out = forge().args(["fmt", dir.to_str().unwrap()]).output().unwrap();
+    assert!(out.status.success());
+    assert_eq!(std::fs::read_to_string(dir.join("src/a.forge")).unwrap(), "resource R {\n  id : id\n}\n");
+    let out = forge().args(["fmt", "--check", dir.to_str().unwrap()]).output().unwrap();
+    assert!(out.status.success());
+}
+
+#[test]
+fn lock_pins_dependencies_and_check_detects_a_stale_lock() {
+    let dir = std::env::temp_dir().join(format!("forge-lock-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("app/src")).unwrap();
+    std::fs::create_dir_all(dir.join("lib/src")).unwrap();
+    std::fs::write(dir.join("lib/forge.toml"), "[package]\nname = \"@t/lib\"\nversion = \"1.0.0\"\n").unwrap();
+    std::fs::write(dir.join("lib/src/a.forge"), "export shape S {\n  a : text\n}\n").unwrap();
+    std::fs::write(dir.join("app/forge.toml"), "[package]\nname = \"@t/app\"\nversion = \"0.1.0\"\n\n[dependencies]\nlib = { path = \"../lib\" }\n").unwrap();
+    std::fs::write(dir.join("app/src/a.forge"), "import lib\nfunction F {\n  input lib.S\n}\n").unwrap();
+    let app = dir.join("app");
+
+    let out = forge().args(["lock", app.to_str().unwrap()]).output().unwrap();
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    let lock = std::fs::read_to_string(app.join("forge.lock")).unwrap();
+    assert!(lock.contains("name = \"@t/lib\""), "{lock}");
+    assert!(lock.contains("version = \"1.0.0\""), "{lock}");
+    assert!(lock.contains("hash = \"sha256:"), "{lock}");
+
+    assert!(forge().args(["check", app.to_str().unwrap()]).output().unwrap().status.success());
+
+    // Change the dependency's contract: the lock is now stale.
+    std::fs::write(dir.join("lib/src/a.forge"), "export shape S {\n  a : text\n  b : text\n}\n").unwrap();
+    let out = forge().args(["check", app.to_str().unwrap()]).output().unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("E-LOCK-001"));
+
+    assert!(forge().args(["lock", app.to_str().unwrap()]).output().unwrap().status.success());
+    assert!(forge().args(["check", app.to_str().unwrap()]).output().unwrap().status.success());
+}

@@ -4,5 +4,15 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
+description = "Forge compiler command line"
+
+[[bin]]
+name = "forge"
+path = "src/main.rs"
 
 [dependencies]
+forge-syntax = { path = "../forge-syntax" }
+forge-semantic = { path = "../forge-semantic" }
+clap.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true

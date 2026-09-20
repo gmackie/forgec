@@ -914,8 +914,7 @@ impl<'a> Parser<'a> {
     fn expr_bp(&mut self, min_bp: u8) {
         let cp = self.checkpoint();
         self.primary();
-        loop {
-            let Some((l, r)) = Self::binary_bp(self.current()) else { break };
+        while let Some((l, r)) = Self::binary_bp(self.current()) {
             if l < min_bp {
                 break;
             }

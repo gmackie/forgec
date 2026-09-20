@@ -193,11 +193,10 @@ pub fn format(parse: &Parse) -> String {
             if error_space {
                 line.push(" ".into());
             }
-        } else if let Some(p) = prev {
-            if !tight_before(t, p) {
+        } else if let Some(p) = prev
+            && !tight_before(t, p) {
                 line.push(" ".into());
             }
-        }
         error_space = false;
         line.push(t.text.clone());
         last_kind = t.kind;
