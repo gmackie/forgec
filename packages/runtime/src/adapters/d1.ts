@@ -22,6 +22,8 @@ export interface D1Stmt {
 }
 
 const RETRY_ATTEMPTS = 3;
+/** D1: 100 bound parameters per statement; a batch may hold many statements. Budget counts statements conservatively. */
+const D1_BATCH_STATEMENT_LIMIT = 100;
 
 export class D1Storage implements StorageAdapter {
   readonly name = "d1";
@@ -126,11 +128,38 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
+  budget(plans: CommitPlan[]): { actions: number; limit: number } {
+    return { actions: plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
+  }
+
+  getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {
+    return this.wrap(async () => {
+      const row = await this.db.prepare("SELECT version, body FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?").bind(tenant, kind, id).first<{ version: number; body: string }>();
+      return row ? { ...(JSON.parse(row.body) as Record<string, unknown>), _version: row.version } : null;
+    });
+  }
+
+  putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {
+    const { _version, ...rest } = doc as Record<string, unknown> & { _version?: unknown };
+    void _version;
+    const body = JSON.stringify(rest);
+    return this.wrap(async () => {
+      const res = expectedVersion === null
+        ? await this.db.prepare("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, ?)").bind(tenant, kind, id, body).run().catch(() => ({ meta: { changes: 0 } }))
+        : await this.db.prepare("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?").bind(body, tenant, kind, id, expectedVersion).run();
+      if (res.meta.changes !== 1) throw new Error("VersionConflict");
+    }).pipe(Effect.mapError((e) => (e.detail === "VersionConflict" ? err("VersionConflict", "document changed concurrently") : e)));
+  }
+
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError> {
+    return this.commitAll([plan]);
+  }
+
+  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
       for (let attempt = 1; ; attempt++) {
-        const outcome = yield* self.commitOnce(plan);
+        const outcome = yield* self.commitOnce(plans);
         if (outcome === "ok") return;
         if (outcome.code !== "TransientConflict" || attempt >= RETRY_ATTEMPTS) return yield* Effect.fail(outcome);
         yield* Effect.sleep(Math.floor(Math.random() * 25 * attempt));
@@ -138,7 +167,25 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
-  private commitOnce(plan: CommitPlan): Effect.Effect<"ok" | ForgeError, never> {
+  private commitOnce(plans: CommitPlan[]): Effect.Effect<"ok" | ForgeError, never> {
+    const stmts = plans.flatMap((p) => this.statementsFor(p));
+    return Effect.promise(async () => {
+      try {
+        await this.db.batch(stmts);
+        return "ok" as const;
+      } catch (e) {
+        // Find the plan whose precondition failed: diagnose each until one explains the failure.
+        for (const plan of plans) {
+          const outcome = await this.classify(e, plan);
+          if (outcome.code !== "TransientConflict" || plan === plans[plans.length - 1]) return outcome;
+        }
+        return err("TransientConflict", "batch failed");
+      }
+    });
+  }
+
+  /** Statements for one logical command; several commands concatenate into one atomic batch. */
+  private statementsFor(plan: CommitPlan): D1Stmt[] {
     const { resource: r, tenant, id } = plan;
     const t = this.map.table(r);
     const kw = this.keyWhere(r);
@@ -199,15 +246,7 @@ export class D1Storage implements StorageAdapter {
     }
     // 4. release the assertion row
     stmts.push(this.db.prepare("DELETE FROM _forge_assert WHERE op_id = ?").bind(plan.opId));
-
-    return Effect.promise(async () => {
-      try {
-        await this.db.batch(stmts);
-        return "ok" as const;
-      } catch (e) {
-        return await this.classify(e, plan);
-      }
-    });
+    return stmts;
   }
 
   /** Provider error -> stable outcome. The named CHECK identifies a failed precondition; a diagnostic read says which. */

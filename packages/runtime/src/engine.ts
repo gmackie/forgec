@@ -10,6 +10,7 @@ import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
 import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Transition, type Unique } from "./model.js";
 import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StoredRecord } from "./services.js";
+import { Changesets } from "./changeset.js";
 
 export interface CallContext {
   tenant: string;
@@ -43,31 +44,68 @@ export class Engine {
 
   private program(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
     const self = this;
+    if (opId.endsWith("/changesets.propose") || opId.endsWith("/changesets.preview") || opId.endsWith("/changesets.approve") || opId.endsWith("/changesets.commit") || opId.endsWith("/changesets.get")) {
+      return self.changesets.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
+    }
     const ref = self.model.operation(opId);
     if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     const { op, resource } = ref;
     const body = (input ?? {}) as Wire;
     switch (op.kind) {
-      case "create":
-        return self.withIdempotency(op.id, body, ctx, self.create(resource, body, ctx));
       case "get":
         return self.get(resource, String(body["id"]), ctx);
-      case "update":
-        return self.withIdempotency(op.id, body, ctx, self.update(resource, body, ctx));
-      case "delete":
-        return self.withIdempotency(op.id, body, ctx, self.deleteOrRestore(resource, body, ctx, "delete"));
-      case "restore":
-        return self.withIdempotency(op.id, body, ctx, self.deleteOrRestore(resource, body, ctx, "restore"));
       case "find":
         return self.find(resource, op.query!, body, ctx);
       case "list":
         return self.list(resource, op.id, op.query!, body, ctx);
+      case "create":
+      case "update":
+      case "delete":
+      case "restore":
       case "transition":
-        return self.withIdempotency(op.id, body, ctx, self.transition(resource, op.action!, body, ctx));
+        return self.withIdempotency(op.id, body, ctx, self.mutate(opId, body, ctx));
       default:
         return Effect.fail(err("MethodNotAllowed", `operation kind ${op.kind} is not executable`));
     }
   }
+
+  /** Build the commit plan for a mutation without persisting it (used by single calls and changeset preview). */
+  planFor(opId: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
+    const self = this;
+    const ref = self.model.operation(opId);
+    if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
+    const { op, resource } = ref;
+    switch (op.kind) {
+      case "create":
+        return self.create(resource, body, ctx);
+      case "update":
+        return self.update(resource, body, ctx);
+      case "delete":
+        return self.deleteOrRestore(resource, body, ctx, "delete");
+      case "restore":
+        return self.deleteOrRestore(resource, body, ctx, "restore");
+      case "transition":
+        return self.transition(resource, op.action!, body, ctx);
+      default:
+        return Effect.fail(err("MethodNotAllowed", `${opId} is not a mutation`));
+    }
+  }
+
+  /** Canonical public result of a committed plan. */
+  resultOf(plan: CommitPlan): Wire {
+    return canonicalize(this.model, plan.resource, plan.hardDelete ? plan.before! : plan.after);
+  }
+
+  private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+    const self = this;
+    return Effect.gen(function* () {
+      const plan = yield* self.planFor(opId, body, ctx);
+      yield* (yield* Storage).commit(plan);
+      return self.resultOf(plan);
+    });
+  }
+
+  readonly changesets = new Changesets(this);
 
   // ------------------------------------------------------------ helpers
   private claimKey(r: Resource, u: Unique, rec: Wire): string | null {
@@ -127,14 +165,6 @@ export class Engine {
     return Effect.fail(err("ValidationFailed", "a row rule was violated", { fields: failures.map((rule) => ({ path: "", code: "RuleViolation", message: describeRule(rule) })) }));
   }
 
-  private commitAndReturn(plan: CommitPlan): Effect.Effect<Wire, ForgeError, RuntimeServices> {
-    const self = this;
-    return Effect.gen(function* () {
-      const storage = yield* Storage;
-      yield* storage.commit(plan);
-      return canonicalize(self.model, plan.resource, plan.after);
-    });
-  }
 
   private expectedVersion(r: Resource, body: Wire): Effect.Effect<number | null, ForgeError> {
     const self = this;
@@ -170,7 +200,7 @@ export class Engine {
   }
 
   // ------------------------------------------------------------ create
-  private create(r: Resource, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  private create(r: Resource, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       const { value, errors } = decodeObject(self.model, body, { mode: "create", fields: r.fields });
@@ -196,7 +226,7 @@ export class Engine {
         claims: self.claimChanges(r, null, after), references: guards, dependents: [], hardDelete: false,
         audit: self.audit("create", r, id, after, ctx, opId, now), outbox: self.changeEvent(r, "create", id, after, ctx, opId, now),
       };
-      return yield* self.commitAndReturn(plan);
+      return plan;
     });
   }
 
@@ -270,7 +300,7 @@ export class Engine {
   }
 
   // ------------------------------------------------------------ update
-  private update(r: Resource, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  private update(r: Resource, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       const id = String(body["id"]);
@@ -294,12 +324,12 @@ export class Engine {
         claims: self.claimChanges(r, before, after), references: guards, dependents: [], hardDelete: false,
         audit: self.audit("update", r, id, after, ctx, opId, now), outbox: self.changeEvent(r, "update", id, after, ctx, opId, now),
       };
-      return yield* self.commitAndReturn(plan);
+      return plan;
     });
   }
 
   // ------------------------------------------------------------ delete/restore
-  private deleteOrRestore(r: Resource, body: Wire, ctx: CallContext, kind: "delete" | "restore"): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  private deleteOrRestore(r: Resource, body: Wire, ctx: CallContext, kind: "delete" | "restore"): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       const id = String(body["id"]);
@@ -331,13 +361,12 @@ export class Engine {
         claims: hardDelete ? self.claimChanges(r, before, {}) : [], references: [], dependents, hardDelete,
         audit: self.audit(kind, r, id, after, ctx, opId, now), outbox: self.changeEvent(r, kind, id, after, ctx, opId, now),
       };
-      yield* (yield* Storage).commit(plan);
-      return hardDelete ? canonicalize(self.model, r, before) : canonicalize(self.model, r, after);
+      return plan;
     });
   }
 
   // ------------------------------------------------------------ transition
-  private transition(r: Resource, action: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  private transition(r: Resource, action: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       const lc = r.lifecycle!;
@@ -362,7 +391,7 @@ export class Engine {
         claims: [], references: [], dependents: [], hardDelete: false,
         audit: { ...self.audit(`status.${action}`, r, id, after, ctx, opId, now), payload: input }, outbox: self.changeEvent(r, `status.${action}`, id, after, ctx, opId, now),
       };
-      return yield* self.commitAndReturn(plan);
+      return plan;
     });
   }
 

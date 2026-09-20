@@ -90,6 +90,13 @@ export interface StorageAdapter {
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError>;
   /** Atomic: record + claims + reference guards + audit + outbox + receipt, or nothing. */
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError>;
+  /** Atomic across several plans (a changeset within the physical budget). Adapters report their budget. */
+  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError>;
+  /** Physical actions one plan will consume, and the adapter's per-transaction ceiling. */
+  budget(plans: CommitPlan[]): { actions: number; limit: number };
+  /** Opaque JSON documents keyed by (tenant, kind, id): changesets, jobs, import staging. */
+  getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError>;
+  putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError>;
 }
 
 export class Clock extends Context.Service<Clock, { now(): string }>()("forge/Clock") {}

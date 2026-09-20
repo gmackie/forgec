@@ -17,6 +17,7 @@ export class MemoryStorage implements StorageAdapter {
   private audits: AuditEntry[] = [];
   private outbox: OutboxEntry[] = [];
   private receipts = new Map<string, Receipt>();
+  private documents = new Map<string, { version: number; doc: Record<string, unknown> }>();
 
   private table(tenant: string, r: Resource): Map<string, StoredRecord> {
     const k = `${tenant}|${r.id}`;
@@ -68,32 +69,74 @@ export class MemoryStorage implements StorageAdapter {
     return Effect.succeed(this.receipts.get(`${tenant}|${operation}|${key}`) ?? null);
   }
 
+  budget(plans: CommitPlan[]): { actions: number; limit: number } {
+    // The reference model has no physical ceiling; report the portable default so previews are comparable.
+    return { actions: plans.reduce((n, p) => n + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
+  }
+
+  getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {
+    const d = this.documents.get(`${tenant}|${kind}|${id}`);
+    return Effect.succeed(d ? structuredClone({ ...d.doc, _version: d.version }) : null);
+  }
+
+  putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {
+    const k = `${tenant}|${kind}|${id}`;
+    const cur = this.documents.get(k);
+    if ((cur?.version ?? null) !== expectedVersion) return Effect.fail(err("VersionConflict", "document changed concurrently"));
+    const { _version, ...rest } = doc as Record<string, unknown> & { _version?: unknown };
+    void _version;
+    this.documents.set(k, { version: (cur?.version ?? 0) + 1, doc: structuredClone(rest) });
+    return Effect.void;
+  }
+
+  /** Validate every plan against durable state first, then apply all: single-threaded, so atomic. */
+  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
+    const snapshot = { tables: structuredClone(this.tables), claims: new Map(this.claims), audits: [...this.audits], outbox: [...this.outbox], receipts: new Map(this.receipts) };
+    for (const p of plans) {
+      const r = this.commitSync(p);
+      if (r) {
+        this.tables = snapshot.tables;
+        this.claims = snapshot.claims;
+        this.audits = snapshot.audits;
+        this.outbox = snapshot.outbox;
+        this.receipts = snapshot.receipts;
+        return Effect.fail(r);
+      }
+    }
+    return Effect.void;
+  }
+
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError> {
+    const e = this.commitSync(plan);
+    return e ? Effect.fail(e) : Effect.void;
+  }
+
+  private commitSync(plan: CommitPlan): ForgeError | null {
     const table = this.table(plan.tenant, plan.resource);
     const current = table.get(plan.id) ?? null;
     // version guard, evaluated against durable state (not the engine's earlier read)
     if (plan.kind === "create") {
-      if (current) return Effect.fail(err("TransientConflict", "id collision"));
+      if (current) return (err("TransientConflict", "id collision"));
     } else {
-      if (!current) return Effect.fail(err("NotFound", `${plan.resource.name} ${plan.id} not found`));
-      if (plan.expectedVersion !== null && current["version"] !== plan.expectedVersion) return Effect.fail(err("VersionConflict", `expected version ${plan.expectedVersion}, current is ${current["version"]}`));
+      if (!current) return (err("NotFound", `${plan.resource.name} ${plan.id} not found`));
+      if (plan.expectedVersion !== null && current["version"] !== plan.expectedVersion) return (err("VersionConflict", `expected version ${plan.expectedVersion}, current is ${current["version"]}`));
     }
     // unique claims (retained by soft-deleted records)
     for (const c of plan.claims) {
       if (c.after && c.after !== c.before) {
         const holder = this.claims.get(`${plan.tenant}|${c.after}`);
-        if (holder && holder !== plan.id) return Effect.fail(err("UniqueConflict", `${c.unique.fields.join(", ")} already in use`, { constraint: `${plan.resource.id}.unique.${c.unique.name}` }));
+        if (holder && holder !== plan.id) return (err("UniqueConflict", `${c.unique.fields.join(", ")} already in use`, { constraint: `${plan.resource.id}.unique.${c.unique.name}` }));
       }
     }
     // reference guards: live in the same tenant at commit time
     for (const g of plan.references) {
       const target = this.table(plan.tenant, g.resource).get(g.id);
-      if (!target || target["deletedAt"]) return Effect.fail(err("ReferenceMissing", `${g.field} does not reference a live record`));
+      if (!target || target["deletedAt"]) return (err("ReferenceMissing", `${g.field} does not reference a live record`));
     }
     // restrict-delete guard at commit time
     for (const d of plan.dependents) {
       for (const rec of this.table(plan.tenant, d.resource).values()) {
-        if (!rec["deletedAt"] && rec[d.field] === plan.id) return Effect.fail(err("HasDependents", `${plan.resource.name} ${plan.id} has live dependents`));
+        if (!rec["deletedAt"] && rec[d.field] === plan.id) return (err("HasDependents", `${plan.resource.name} ${plan.id} has live dependents`));
       }
     }
     // apply
@@ -106,7 +149,7 @@ export class MemoryStorage implements StorageAdapter {
     this.audits.push(plan.audit);
     this.outbox.push(...plan.outbox);
     if (plan.receipt) this.receipts.set(`${plan.tenant}|${plan.receipt.operation}|${plan.receipt.key}`, plan.receipt);
-    return Effect.void;
+    return null;
   }
 
   /** Test helper. */

@@ -1,0 +1,45 @@
+{
+  "id": "m3.changesets",
+  "title": "Changesets: propose, preview with diffs and budget, approval binds the hash, atomic all-or-nothing, resumable per-row",
+  "steps": [
+    { "name": "seed", "op": "@acme/commerce/_/Customer.create", "input": { "code": "SEED", "name": "Seed" }, "expect": { "ok": { "id": "$id:1", "version": 1 } } },
+    { "name": "propose", "op": "@acme/commerce/_/changesets.propose", "input": { "mode": "atomic", "operations": [
+        { "op": "@acme/commerce/_/Customer.update", "input": { "id": "$seed.id", "expectedVersion": 1, "patch": { "name": "Seed Inc" } } },
+        { "op": "@acme/commerce/_/Customer.create", "input": { "code": "bulk1", "name": "Bulk One" } },
+        { "op": "@acme/commerce/_/Customer.create", "input": { "code": "bulk2", "name": "Bulk Two", "tier": "gold" } } ] },
+      "expect": { "ok": { "status": "proposed", "mode": "atomic", "operations": 3 } } },
+    { "name": "preview", "op": "@acme/commerce/_/changesets.preview", "input": { "id": "$propose.id" },
+      "expect": { "ok": { "status": "previewed", "items": [
+        { "index": 0, "status": "ok", "diff": [ { "path": "name", "before": "Seed", "after": "Seed Inc" } ] },
+        { "index": 1, "status": "ok" },
+        { "index": 2, "status": "ok" } ],
+        "budget": { "mode": "atomic", "logicalOperations": 3, "logicalLimit": 10, "atomicAllowed": true } } } },
+    { "name": "commitUnapproved", "op": "@acme/commerce/_/changesets.commit", "input": { "id": "$propose.id" }, "expect": { "error": "InvalidTransition" } },
+    { "name": "approveStale", "op": "@acme/commerce/_/changesets.approve", "input": { "id": "$propose.id", "contentHash": "nope" }, "expect": { "error": "VersionConflict" } },
+    { "name": "approve", "op": "@acme/commerce/_/changesets.approve", "input": { "id": "$propose.id", "contentHash": "$preview.contentHash" }, "expect": { "ok": { "status": "approved" } } },
+    { "name": "commit", "op": "@acme/commerce/_/changesets.commit", "input": { "id": "$propose.id" },
+      "expect": { "ok": { "status": "committed", "results": [ { "status": "committed", "result": { "name": "Seed Inc", "version": 2 } }, { "status": "committed", "result": { "code": "BULK1" } }, { "status": "committed", "result": { "code": "BULK2", "tier": "gold" } } ] } } },
+    { "name": "verify", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "bulk2" } }, "expect": { "ok": { "name": "Bulk Two", "tier": "gold", "version": 1 } } },
+    { "name": "atomicFail", "op": "@acme/commerce/_/changesets.propose", "input": { "mode": "atomic", "operations": [
+        { "op": "@acme/commerce/_/Customer.create", "input": { "code": "bulk3", "name": "Three" } },
+        { "op": "@acme/commerce/_/Customer.update", "input": { "id": "$seed.id", "expectedVersion": 1, "patch": { "name": "Stale" } } } ] },
+      "expect": { "ok": { "status": "proposed" } } },
+    { "name": "atomicPreview", "op": "@acme/commerce/_/changesets.preview", "input": { "id": "$atomicFail.id" },
+      "expect": { "ok": { "items": [ { "status": "ok" }, { "status": "error", "error": { "code": "VersionConflict" } } ], "budget": { "atomicAllowed": false } } } },
+    { "name": "atomicApprove", "op": "@acme/commerce/_/changesets.approve", "input": { "id": "$atomicFail.id", "contentHash": "$atomicPreview.contentHash" }, "expect": { "ok": { "status": "approved" } } },
+    { "name": "atomicCommit", "op": "@acme/commerce/_/changesets.commit", "input": { "id": "$atomicFail.id" },
+      "expect": { "ok": { "status": "failed", "results": [ { "status": "skipped" }, { "status": "error", "error": { "code": "VersionConflict" } } ] } } },
+    { "name": "nothingLeaked", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "bulk3" } }, "expect": { "error": "NotFound" } },
+    { "name": "resumable", "op": "@acme/commerce/_/changesets.propose", "input": { "operations": [
+        { "op": "@acme/commerce/_/Customer.update", "input": { "id": "$seed.id", "expectedVersion": 1, "patch": { "name": "Stale" } } },
+        { "op": "@acme/commerce/_/Customer.create", "input": { "code": "bulk4", "name": "Four" } } ] },
+      "expect": { "ok": { "mode": "resumable" } } },
+    { "name": "resumablePreview", "op": "@acme/commerce/_/changesets.preview", "input": { "id": "$resumable.id" }, "expect": { "ok": { "items": [ { "status": "error" }, { "status": "ok" } ] } } },
+    { "name": "resumableApprove", "op": "@acme/commerce/_/changesets.approve", "input": { "id": "$resumable.id", "contentHash": "$resumablePreview.contentHash" }, "expect": { "ok": { "status": "approved" } } },
+    { "name": "resumableCommit", "op": "@acme/commerce/_/changesets.commit", "input": { "id": "$resumable.id" },
+      "expect": { "ok": { "status": "partially-committed", "results": [ { "status": "error", "error": { "code": "VersionConflict" } }, { "status": "committed", "result": { "code": "BULK4" } } ] } } },
+    { "name": "resumableAgain", "op": "@acme/commerce/_/changesets.commit", "input": { "id": "$resumable.id" },
+      "expect": { "ok": { "status": "partially-committed", "results": [ { "status": "error" }, { "status": "committed" } ] } } },
+    { "name": "onlyOneFour", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "BULK4" } }, "expect": { "ok": { "name": "Four", "version": 1 } } }
+  ]
+}

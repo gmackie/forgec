@@ -20,6 +20,8 @@ function depAttr(child: Resource, field: string, model: Model): string {
   return `dep#${model.wireName(child.id)}#${field}`;
 }
 const RETRY_ATTEMPTS = 5;
+/** TransactWriteItems ceiling: 100 actions / 4 MB. */
+const DYNAMO_TX_LIMIT = 100;
 
 export interface DynamoOptions {
   table: string;
@@ -208,13 +210,62 @@ export class DynamoStorage implements StorageAdapter {
     });
   }
 
+  // ------------------------------------------------------------ documents
+  private documentKey(tenant: string, kind: string, id: string) {
+    return { PK: encodeIdentity(["T", tenant, "D", kind, id]), SK: "DOC" };
+  }
+
+  getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {
+    return this.wrap(async () => {
+      const out = await this.doc.send(new GetCommand({ TableName: this.table, Key: this.documentKey(tenant, kind, id), ConsistentRead: true }));
+      if (!out.Item) return null;
+      const { PK, SK, docVersion, ...rest } = out.Item as Item;
+      void PK;
+      void SK;
+      return { ...rest, _version: Number(docVersion) };
+    });
+  }
+
+  putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {
+    const { _version, ...rest } = doc as Record<string, unknown> & { _version?: unknown };
+    void _version;
+    const item: Item = { ...this.documentKey(tenant, kind, id), ...rest, docVersion: (expectedVersion ?? 0) + 1 };
+    return Effect.tryPromise({
+      try: () => this.doc.send(new TransactWriteCommand({ TransactItems: [{ Put: { TableName: this.table, Item: item, ConditionExpression: expectedVersion === null ? "attribute_not_exists(PK)" : "docVersion = :v", ...(expectedVersion !== null ? { ExpressionAttributeValues: { ":v": expectedVersion } } : {}) } }] })),
+      catch: (e) => ((e as Error).name === "TransactionCanceledException" ? err("VersionConflict", "document changed concurrently") : err("StorageUnavailable", String((e as Error).message))),
+    }).pipe(Effect.asVoid);
+  }
+
+  budget(plans: CommitPlan[]): { actions: number; limit: number } {
+    return { actions: plans.reduce((n, p) => n + this.buildTransaction(p).items.length, 0), limit: DYNAMO_TX_LIMIT };
+  }
+
   // ------------------------------------------------------------ commit
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError> {
+    return this.commitAll([plan]);
+  }
+
+  /** Several logical commands in one TransactWriteItems. Actions on the same item are coalesced by the planner
+   *  only for parent counters; distinct commands touching the same entity are rejected up front. */
+  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
-      const { items, roles } = self.buildTransaction(plan);
+      const items: TxItem[] = [];
+      const roles: Role[] = [];
+      const owners: CommitPlan[] = [];
+      const touched = new Set<string>();
+      for (const plan of plans) {
+        const key = `${plan.resource.id}|${plan.tenant}|${plan.id}`;
+        if (touched.has(key)) return yield* Effect.fail(err("BudgetExceeded", "an atomic changeset cannot contain two operations on the same record on DynamoDB"));
+        touched.add(key);
+        const built = self.buildTransaction(plan);
+        items.push(...built.items);
+        roles.push(...built.roles);
+        owners.push(...built.items.map(() => plan));
+      }
+      if (items.length > DYNAMO_TX_LIMIT) return yield* Effect.fail(err("BudgetExceeded", `${items.length} physical actions exceed the transaction limit of ${DYNAMO_TX_LIMIT}`));
       for (let attempt = 1; ; attempt++) {
-        const outcome = yield* self.send(items, roles, plan);
+        const outcome = yield* self.send(items, roles, owners, plans[0]!);
         if (outcome === "ok") return;
         if (outcome.code !== "TransientConflict" || attempt >= RETRY_ATTEMPTS) return yield* Effect.fail(outcome);
         yield* Effect.sleep(Math.floor(Math.random() * 40 * attempt));
@@ -345,19 +396,20 @@ export class DynamoStorage implements StorageAdapter {
     return this.claimKey(tenant, r, u, fields.map((f) => String(rec[f])));
   }
 
-  private send(items: TxItem[], roles: Role[], plan: CommitPlan): Effect.Effect<"ok" | ForgeError, never> {
+  private send(items: TxItem[], roles: Role[], owners: CommitPlan[], first: CommitPlan): Effect.Effect<"ok" | ForgeError, never> {
     return Effect.promise(async () => {
       try {
         // Deterministic token per logical command: a retried/replayed identical command is idempotent for 10 minutes.
-        await this.doc.send(new TransactWriteCommand({ TransactItems: items, ClientRequestToken: plan.opId.slice(0, 36) }));
+        await this.doc.send(new TransactWriteCommand({ TransactItems: items, ClientRequestToken: first.opId.slice(0, 36) }));
         return "ok" as const;
       } catch (e) {
-        return this.classify(e, roles, plan);
+        return this.classify(e, roles, owners, first);
       }
     });
   }
 
-  private classify(e: unknown, roles: Role[], plan: CommitPlan): ForgeError {
+  private classify(e: unknown, roles: Role[], owners: CommitPlan[], first: CommitPlan): ForgeError {
+    let plan = first;
     const ex = e as Error & { name: string; CancellationReasons?: { Code?: string; Message?: string; Item?: Record<string, AttributeValue> }[] };
     if (ex.name === "IdempotentParameterMismatchException") return err("TransientConflict", "client token collision");
     if (ex.name === "TransactionInProgressException") return err("TransientConflict", "transaction in progress");
@@ -365,6 +417,7 @@ export class DynamoStorage implements StorageAdapter {
     const reasons = (ex.CancellationReasons ?? []).map((r, i) => ({ role: roles[i], code: r.Code, item: r.Item ? unmarshall(r.Item) : undefined }));
     if (reasons.some((r) => r.code === "TransactionConflict")) return err("TransientConflict", "transaction conflict");
     const failed = reasons.find((r) => r.code === "ConditionalCheckFailed");
+    if (failed) plan = owners[reasons.indexOf(failed)] ?? first;
     switch (failed?.role) {
       case "entity": {
         if (plan.kind === "create") return err("TransientConflict", "id collision");
@@ -376,7 +429,8 @@ export class DynamoStorage implements StorageAdapter {
       }
       case "claim": {
         const idx = reasons.findIndex((r) => r === failed);
-        const claimIdx = roles.slice(0, idx).filter((r) => r === "claim").length;
+        const planStart = owners.indexOf(plan);
+        const claimIdx = roles.slice(planStart, idx).filter((r) => r === "claim").length;
         const changes = plan.claims.filter((c) => c.after && c.after !== c.before);
         const u = changes[Math.min(claimIdx, changes.length - 1)]?.unique;
         return err("UniqueConflict", "a record with the same unique key exists", u ? { constraint: `${plan.resource.id}.unique.${u.name}` } : {});

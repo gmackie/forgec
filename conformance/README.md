@@ -12,14 +12,18 @@ Remote runs go through the generated client (`fixtures/acme.client.ts`) —
 the same code that application clients use — and write
 `reports/<label>.json`.
 
-## M2 certification (2026-09-20)
+## Certification (2026-09-20)
 
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
-| runtime-memory | in-process | 5 | 48 | 0 |
-| cloudflare-local | `wrangler dev` + local D1 | 5 | 48 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1) | 5 | 48 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB) | 5 | 48 | 0 |
+| runtime-memory | in-process | 7 | 80 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1) | 7 | 80 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB) | 7 | 80 | 0 |
+
+M3 adds `integrity` (restrict-delete via dependents, hard delete, delete
+racing child creates) and `changesets` (propose/preview/approve/commit,
+atomic all-or-nothing with re-checked revisions, resumable per-row with
+re-entrant commit).
 
 Scenarios: `customer-crud` (create/read/patch/revisions/find/soft
 delete/restore/claim retention), `site-references` (composite uniqueness

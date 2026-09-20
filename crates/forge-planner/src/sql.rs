@@ -176,6 +176,14 @@ pub fn system_tables() -> Vec<Table> {
             checks: vec![],
         },
         Table {
+            name: "forge_document".into(),
+            resource: None,
+            columns: vec![col("tenant", "TEXT", false), col("kind", "TEXT", false), col("id", "TEXT", false), col("version", "INTEGER", false), col("body", "TEXT", false)],
+            primary_key: vec!["tenant".into(), "kind".into(), "id".into()],
+            foreign_keys: vec![],
+            checks: vec![],
+        },
+        Table {
             name: "forge_receipt".into(),
             resource: None,
             columns: vec![col("tenant", "TEXT", false), col("operation", "TEXT", false), col("key", "TEXT", false), col("request_hash", "TEXT", false), col("status", "INTEGER", false), col("response", "TEXT", false), col("created_at", "TEXT", false)],

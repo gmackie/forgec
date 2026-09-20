@@ -32,12 +32,30 @@ interface Route {
   ref: OperationRef;
 }
 
+/** Built-in routes (plan §12): changesets. Bound under the package's API prefix. */
+function builtinRoutes(model: Model): Route[] {
+  const pkg = model.bundle.ir.package.name;
+  const mk = (method: string, path: string, action: string): Route => ({
+    method,
+    segments: path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
+    ref: { op: { id: `${pkg}/_/changesets.${action}`, kind: `changeset.${action}`, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] },
+  });
+  return [
+    mk("POST", "/v1/changesets", "propose"),
+    mk("GET", "/v1/changesets/{id}", "get"),
+    mk("GET", "/v1/changesets/{id}/preview", "preview"),
+    mk("POST", "/v1/changesets/{id}/approve", "approve"),
+    mk("POST", "/v1/changesets/{id}/commit", "commit"),
+  ];
+}
+
 function compile(model: Model): Route[] {
   const routes: Route[] = model.httpOperations().map((ref) => ({
     method: ref.op.http!.method,
     segments: ref.op.http!.path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
     ref,
   }));
+  routes.push(...builtinRoutes(model));
   // Static segments win over parameters at the same position.
   routes.sort((a, b) => {
     const n = Math.max(a.segments.length, b.segments.length);
@@ -154,6 +172,17 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         input = { params: rest, ...(cursor ? { cursor } : {}), ...(limit ? { limit: Number(limit) } : {}) };
         break;
       }
+      case "changeset.propose":
+        input = (body ?? {}) as Record<string, unknown>;
+        break;
+      case "changeset.get":
+      case "changeset.preview":
+      case "changeset.commit":
+        input = { id: params["id"] };
+        break;
+      case "changeset.approve":
+        input = { id: params["id"], ...((body ?? {}) as Record<string, unknown>) };
+        break;
       default:
         return problem(err("MethodNotAllowed", `unsupported operation kind ${kind}`), requestId);
     }
@@ -169,6 +198,6 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const value = exit.value as Record<string, unknown>;
     const headers: Record<string, string> = { ...JSON_HEADERS, "x-request-id": requestId };
     if (value && typeof value["version"] === "number") headers["etag"] = `"${value["version"]}"`;
-    return new Response(JSON.stringify(value), { status: kind === "create" ? 201 : 200, headers });
+    return new Response(JSON.stringify(value), { status: kind === "create" || kind === "changeset.propose" ? 201 : 200, headers });
   };
 }
