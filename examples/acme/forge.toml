@@ -1,0 +1,26 @@
+[package]
+name = "@acme/commerce"
+version = "0.1.0"
+edition = "2026"
+
+[source]
+root = "src"
+entry = "src/index.forge"
+
+[dependencies]
+payments = { path = "../payments" }
+
+[compatibility]
+profile = "portable-v1"
+targets = ["cloudflare-d1", "aws-dynamodb"]
+
+[observability]
+window = "28d"
+
+[observability.slo.crud-read]
+availability = "99.9%"
+latency = { good = "99%", within = "500ms" }
+
+[observability.slo.crud-write]
+availability = "99.9%"
+latency = { good = "99%", within = "1s" }

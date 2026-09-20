@@ -1,0 +1,19 @@
+/// A business that buys from Acme. Not the tenant.
+export resource Customer
+  @tenant
+  @timestamps
+  @softDelete
+  @versioned
+  @audited
+  @crud("/v1/customers")
+{
+  id : id
+  code : CustomerCode @unique @immutable
+  name : text length 1..200
+  email : email?
+  tier : CustomerTier = CustomerTier.Standard
+
+  find by code
+  list by tier
+    order by name asc
+}

@@ -1,0 +1,51 @@
+---
+source: crates/forge-syntax/tests/parser.rs
+assertion_line: 55
+expression: parse(src).debug_tree()
+---
+ROOT@0..59
+  RESOURCE_DECL@0..58
+    IDENT@0..8 "resource"
+    IDENT@9..10 "R"
+    L_BRACE@11..12 "{"
+    NEWLINE@12..13 "\\n"
+    RULES_BLOCK@15..56
+      IDENT@15..20 "rules"
+      L_BRACE@21..22 "{"
+      NEWLINE@22..23 "\\n"
+      RULE@27..52
+        BINARY_EXPR@27..52
+          BINARY_EXPR@27..47
+            BINARY_EXPR@27..41
+              BINARY_EXPR@27..36
+                NAME_EXPR@27..28
+                  QUALIFIED_NAME@27..28
+                    IDENT@27..28 "a"
+                PLUS@29..30 "+"
+                BINARY_EXPR@31..36
+                  NAME_EXPR@31..32
+                    QUALIFIED_NAME@31..32
+                      IDENT@31..32 "b"
+                  STAR@33..34 "*"
+                  NAME_EXPR@35..36
+                    QUALIFIED_NAME@35..36
+                      IDENT@35..36 "c"
+              EQ_EQ@37..39 "=="
+              NAME_EXPR@40..41
+                QUALIFIED_NAME@40..41
+                  IDENT@40..41 "d"
+            AMP_AMP@42..44 "&&"
+            UNARY_EXPR@45..47
+              BANG@45..46 "!"
+              NAME_EXPR@46..47
+                QUALIFIED_NAME@46..47
+                  IDENT@46..47 "e"
+          PIPE_PIPE@48..50 "||"
+          NAME_EXPR@51..52
+            QUALIFIED_NAME@51..52
+              IDENT@51..52 "f"
+      NEWLINE@52..53 "\\n"
+      R_BRACE@55..56 "}"
+    NEWLINE@56..57 "\\n"
+    R_BRACE@57..58 "}"
+  NEWLINE@58..59 "\\n"

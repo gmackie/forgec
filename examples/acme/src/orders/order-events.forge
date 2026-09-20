@@ -1,0 +1,22 @@
+export channel OrderEvents {
+  distribution broadcast
+  delivery at-least-once
+
+  message OrderSubmitted {
+    order : Order
+    customer : Customer
+    revision : integer >= 1
+  }
+}
+
+channel PaymentEvents from payments.PaymentEvents {
+  recv-only
+}
+
+on OrderEvents.OrderSubmitted -> FulfillOrder
+
+source NightlyReconciliation {
+  cron "0 3 * * *"
+  timezone "UTC"
+  -> RebuildOrderSummary
+}

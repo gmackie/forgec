@@ -1,0 +1,48 @@
+shape SubmitOrderInput {
+  order : Order
+  expectedVersion : integer >= 1
+}
+
+export function SubmitOrder
+  @http(POST, "/v1/orders/{order}/submit")
+{
+  input SubmitOrderInput
+  output Order.Record
+
+  uses {
+    Order read
+    Order.status.submit
+    Site read
+    payments.AuthorizePayment
+  }
+
+  sends {
+    OrderSubmitted to OrderEvents
+  }
+
+  errors {
+    SiteDisabled
+    PaymentDeclined
+    PaymentUnavailable
+  }
+
+  slo {
+    availability 99.9% over 28d
+    latency 99% <= 1s over 28d
+  }
+}
+
+function FulfillOrder {
+  input OrderEvents.OrderSubmitted
+  output Order.Record
+
+  uses {
+    Order read
+  }
+}
+
+function RebuildOrderSummary {
+  uses {
+    Order read
+  }
+}

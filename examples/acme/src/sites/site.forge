@@ -1,0 +1,19 @@
+export resource Site
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @crud("/v1/sites")
+{
+  id : id
+  customer : Customer @immutable
+  code : text trim uppercase length 2..24 @immutable
+  name : text length 1..200
+  timezone : timezone
+  enabled : boolean = true
+
+  unique code within customer
+  find by customer, code
+  list by customer
+    order by name asc
+}

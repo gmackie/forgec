@@ -1,0 +1,12 @@
+[package]
+name = "@acme/payments"
+version = "0.1.0"
+edition = "2026"
+
+[source]
+root = "src"
+entry = "src/index.forge"
+
+[compatibility]
+profile = "portable-v1"
+targets = ["cloudflare-d1", "aws-dynamodb"]

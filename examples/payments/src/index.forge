@@ -1,0 +1,28 @@
+export shape AuthorizePaymentInput {
+  amount : money<USD> >= 0
+  reference : text length 1..64
+}
+
+export shape PaymentAuthorization {
+  authorizationId : text length 1..64
+}
+
+export function AuthorizePayment {
+  input AuthorizePaymentInput
+  output PaymentAuthorization
+
+  errors {
+    PaymentDeclined
+    PaymentUnavailable
+  }
+}
+
+export channel PaymentEvents {
+  distribution broadcast
+  delivery at-least-once
+
+  message PaymentCaptured {
+    authorizationId : text length 1..64
+    amount : money<USD> >= 0
+  }
+}

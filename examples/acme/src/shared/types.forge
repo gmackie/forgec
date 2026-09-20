@@ -1,0 +1,16 @@
+export enum CustomerTier {
+  Standard = "standard"
+  Gold = "gold"
+  Enterprise = "enterprise"
+}
+
+export type CustomerCode = text trim uppercase length 3..32
+
+export type OrderAmount = money<USD> >= 0
+
+export shape Address {
+  line1 : text length 1..200
+  line2 : text? length <= 200
+  city : text length 1..100
+  country : countryCode
+}

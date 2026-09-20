@@ -1,0 +1,39 @@
+export resource Order
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+{
+  id : id
+  customer : Customer @immutable
+  site : Site
+  subtotal : OrderAmount
+  tax : OrderAmount
+  total := subtotal + tax
+  requestedOn : date
+  notes : text? length <= 2000
+
+  rules {
+    site.customer == customer
+  }
+
+  lifecycle status {
+    initial Draft
+    terminal Completed
+    terminal Cancelled
+
+    submit: Draft -> Submitted
+    approve: Submitted -> Approved
+    complete: Approved -> Completed
+
+    cancel: Draft | Submitted | Approved -> Cancelled
+      input {
+        reason : text length 1..500
+      }
+  }
+
+  list by customer
+    order by createdAt desc
+  list by site, status
+    order by createdAt desc
+}
