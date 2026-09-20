@@ -9,6 +9,13 @@ importers:
   .: {}
 
   conformance:
+    dependencies:
+      '@forge/runtime':
+        specifier: workspace:*
+        version: link:../packages/runtime
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
     devDependencies:
       '@types/node':
         specifier: ^24.0.0

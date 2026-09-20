@@ -6,3 +6,5 @@ export * from "./errors.js";
 export * from "./model.js";
 export * from "./services.js";
 export * from "./testing.js";
+export * from "./http.js";
+export { MemoryStorage } from "./adapters/memory.js";

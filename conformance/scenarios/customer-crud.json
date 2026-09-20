@@ -1,0 +1,28 @@
+{
+  "id": "m2.customer-crud",
+  "title": "Customer: create, read, patch with revisions, find, soft delete, restore",
+  "steps": [
+    { "name": "create", "op": "@acme/commerce/_/Customer.create", "input": { "code": " acme ", "name": "Acme" },
+      "expect": { "ok": { "id": "$id:1", "version": 1, "deletedAt": null, "code": "ACME", "name": "Acme", "email": null, "tier": "standard" } } },
+    { "name": "read", "op": "@acme/commerce/_/Customer.get", "input": { "id": "$create.id" },
+      "expect": { "ok": { "id": "$id:1", "version": 1, "code": "ACME" } } },
+    { "name": "dup", "op": "@acme/commerce/_/Customer.create", "input": { "code": "acme", "name": "Other" }, "expect": { "error": "UniqueConflict" } },
+    { "name": "bad", "op": "@acme/commerce/_/Customer.create", "input": { "code": "ab", "name": "", "tier": "platinum" }, "expect": { "error": "ValidationFailed" } },
+    { "name": "unknownField", "op": "@acme/commerce/_/Customer.create", "input": { "code": "xyz1", "name": "X", "version": 2 }, "expect": { "error": "UnknownField" } },
+    { "name": "rename", "op": "@acme/commerce/_/Customer.update", "input": { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "Acme Inc", "email": "ops@acme.example" } },
+      "expect": { "ok": { "version": 2, "name": "Acme Inc", "email": "ops@acme.example", "code": "ACME" } } },
+    { "name": "stale", "op": "@acme/commerce/_/Customer.update", "input": { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "Nope" } }, "expect": { "error": "VersionConflict" } },
+    { "name": "noPrecondition", "op": "@acme/commerce/_/Customer.update", "input": { "id": "$create.id", "patch": { "name": "Nope" } }, "expect": { "error": "PreconditionRequired" } },
+    { "name": "immutable", "op": "@acme/commerce/_/Customer.update", "input": { "id": "$create.id", "expectedVersion": 2, "patch": { "code": "NEWC" } }, "expect": { "error": "UnknownField" } },
+    { "name": "clear", "op": "@acme/commerce/_/Customer.update", "input": { "id": "$create.id", "expectedVersion": 2, "patch": { "email": null } },
+      "expect": { "ok": { "version": 3, "email": null, "name": "Acme Inc" } } },
+    { "name": "find", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "acme" } }, "expect": { "ok": { "id": "$id:1", "version": 3 } } },
+    { "name": "findMissing", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "zzz" } }, "expect": { "error": "NotFound" } },
+    { "name": "delete", "op": "@acme/commerce/_/Customer.delete", "input": { "id": "$create.id", "expectedVersion": 3 }, "expect": { "ok": { "version": 4 } } },
+    { "name": "readDeleted", "op": "@acme/commerce/_/Customer.get", "input": { "id": "$create.id" }, "expect": { "error": "NotFound" } },
+    { "name": "deleteAgain", "op": "@acme/commerce/_/Customer.delete", "input": { "id": "$create.id", "expectedVersion": 4 }, "expect": { "error": "AlreadyDeleted" } },
+    { "name": "claimRetained", "op": "@acme/commerce/_/Customer.create", "input": { "code": "ACME", "name": "Again" }, "expect": { "error": "UniqueConflict" } },
+    { "name": "restore", "op": "@acme/commerce/_/Customer.restore", "input": { "id": "$create.id", "expectedVersion": 4 }, "expect": { "ok": { "version": 5, "deletedAt": null } } },
+    { "name": "restoreAgain", "op": "@acme/commerce/_/Customer.restore", "input": { "id": "$create.id", "expectedVersion": 5 }, "expect": { "error": "NotDeleted" } }
+  ]
+}

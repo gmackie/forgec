@@ -1,12 +1,21 @@
 import type { CallContext, CallResult, Target } from "./target.js";
 
-export interface Step {
+export interface CallStep {
   name: string;
   op: string;
   input: unknown;
   ctx?: Partial<CallContext>;
   expect: { ok: unknown } | { error: string };
 }
+
+/** N concurrent calls of one operation; the invariant is a count of outcomes, not who wins. */
+export interface RaceStep {
+  name: string;
+  race: { op: string; inputs: unknown[] };
+  expect: { successes: number; failureCodes: string[] };
+}
+
+export type Step = CallStep | RaceStep;
 
 export interface Scenario {
   id: string;
@@ -28,6 +37,11 @@ export interface Report {
   failures: Failure[];
   /** Normalized results per step, comparable across targets and runs. */
   results: Record<string, CallResult>;
+}
+
+export interface RunOptions {
+  /** Tenant for every step (remote targets get a fresh tenant per scenario). */
+  tenant?: string;
 }
 
 const DEFAULT_CTX: CallContext = { tenant: "acme", actor: "operator" };
@@ -88,16 +102,36 @@ function normalize(value: unknown, ids: string[]): unknown {
   return value;
 }
 
-export async function runScenario(scenario: Scenario, target: Target): Promise<Report> {
+export async function runScenario(scenario: Scenario, target: Target, options: RunOptions = {}): Promise<Report> {
   await target.reset();
   const results: Record<string, CallResult> = {};
   const raw: Record<string, CallResult> = {};
   const failures: Failure[] = [];
   const ids: string[] = [];
+  const base: CallContext = { ...DEFAULT_CTX, ...(options.tenant ? { tenant: options.tenant } : {}) };
 
   for (const step of scenario.steps) {
+    if ("race" in step) {
+      const outcomes = await Promise.all(step.race.inputs.map((i) => target.call(step.race.op, resolveRefs(i, raw, ids), base)));
+      const successes = outcomes.filter((o) => o.ok).length;
+      const codes = outcomes.filter((o) => !o.ok).map((o) => (o as { code: string }).code);
+      if (successes !== step.expect.successes) failures.push({ step: step.name, path: "successes", expected: step.expect.successes, actual: successes });
+      for (const c of codes) {
+        if (!step.expect.failureCodes.includes(c)) failures.push({ step: step.name, path: "failureCodes", expected: step.expect.failureCodes, actual: c });
+      }
+      const winner = outcomes.find((o) => o.ok);
+      if (winner) {
+        raw[step.name] = winner;
+        if (winner.ok && winner.value && typeof winner.value === "object" && "id" in (winner.value as object)) {
+          const id = (winner.value as { id: unknown }).id;
+          if (typeof id === "string" && !ids.includes(id)) ids.push(id);
+        }
+      }
+      results[step.name] = { ok: true, value: { successes, failureCodes: codes.sort() } };
+      continue;
+    }
     const input = resolveRefs(step.input, raw, ids);
-    const ctx = { ...DEFAULT_CTX, ...step.ctx };
+    const ctx = { ...base, ...step.ctx };
     const result = await target.call(step.op, input, ctx);
     raw[step.name] = result;
     if (result.ok && result.value && typeof result.value === "object" && "id" in (result.value as object)) {

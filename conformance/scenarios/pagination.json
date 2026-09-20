@@ -1,0 +1,18 @@
+{
+  "id": "m2.pagination",
+  "title": "Customer list by tier: declared order, tie-breaker, opaque cursor, bounded limit",
+  "steps": [
+    { "name": "a", "op": "@acme/commerce/_/Customer.create", "input": { "code": "AAA", "name": "Zed", "tier": "gold" }, "expect": { "ok": { "id": "$id:1" } } },
+    { "name": "b", "op": "@acme/commerce/_/Customer.create", "input": { "code": "BBB", "name": "Amy", "tier": "gold" }, "expect": { "ok": { "id": "$id:2" } } },
+    { "name": "c", "op": "@acme/commerce/_/Customer.create", "input": { "code": "CCC", "name": "Bob", "tier": "gold" }, "expect": { "ok": { "id": "$id:3" } } },
+    { "name": "d", "op": "@acme/commerce/_/Customer.create", "input": { "code": "DDD", "name": "Amy", "tier": "gold" }, "expect": { "ok": { "id": "$id:4" } } },
+    { "name": "e", "op": "@acme/commerce/_/Customer.create", "input": { "code": "EEE", "name": "Cat", "tier": "standard" }, "expect": { "ok": { "id": "$id:5" } } },
+    { "name": "p1", "op": "@acme/commerce/_/Customer.list.byTier", "input": { "params": { "tier": "gold" }, "limit": 2 },
+      "expect": { "ok": { "items": [ { "id": "$id:2", "name": "Amy" }, { "id": "$id:4", "name": "Amy" } ], "limit": 2 } } },
+    { "name": "p2", "op": "@acme/commerce/_/Customer.list.byTier", "input": { "params": { "tier": "gold" }, "limit": 2, "cursor": "$p1.next" },
+      "expect": { "ok": { "items": [ { "id": "$id:3", "name": "Bob" }, { "id": "$id:1", "name": "Zed" } ], "next": null } } },
+    { "name": "badCursor", "op": "@acme/commerce/_/Customer.list.byTier", "input": { "params": { "tier": "gold" }, "cursor": "nope" }, "expect": { "error": "InvalidCursor" } },
+    { "name": "capped", "op": "@acme/commerce/_/Customer.list.byTier", "input": { "params": { "tier": "gold" }, "limit": 999 }, "expect": { "ok": { "limit": 100, "next": null } } },
+    { "name": "badParam", "op": "@acme/commerce/_/Customer.list.byTier", "input": { "params": { "tier": "platinum" } }, "expect": { "error": "ValidationFailed" } }
+  ]
+}

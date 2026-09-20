@@ -1,0 +1,10 @@
+{
+  "id": "m2.idempotency",
+  "title": "Idempotency keys: replay returns the stored result; reuse with a different request conflicts",
+  "steps": [
+    { "name": "first", "op": "@acme/commerce/_/Customer.create", "input": { "code": "IDEM", "name": "Idem" }, "ctx": { "idempotencyKey": "key-1" }, "expect": { "ok": { "id": "$id:1", "version": 1 } } },
+    { "name": "replay", "op": "@acme/commerce/_/Customer.create", "input": { "code": "IDEM", "name": "Idem" }, "ctx": { "idempotencyKey": "key-1" }, "expect": { "ok": { "id": "$id:1", "version": 1 } } },
+    { "name": "mismatch", "op": "@acme/commerce/_/Customer.create", "input": { "code": "IDEM", "name": "Different" }, "ctx": { "idempotencyKey": "key-1" }, "expect": { "error": "IdempotencyMismatch" } },
+    { "name": "stillOne", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "IDEM" } }, "expect": { "ok": { "id": "$id:1", "name": "Idem" } } }
+  ]
+}

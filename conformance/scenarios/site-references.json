@@ -1,0 +1,21 @@
+{
+  "id": "m2.site-references",
+  "title": "Site: composite uniqueness within customer, references, tenant isolation",
+  "steps": [
+    { "name": "c1", "op": "@acme/commerce/_/Customer.create", "input": { "code": "ACME", "name": "Acme" }, "expect": { "ok": { "id": "$id:1" } } },
+    { "name": "c2", "op": "@acme/commerce/_/Customer.create", "input": { "code": "BETA", "name": "Beta" }, "expect": { "ok": { "id": "$id:2" } } },
+    { "name": "missingRef", "op": "@acme/commerce/_/Site.create", "input": { "customer": "cus_nope", "code": "hq", "name": "HQ", "timezone": "UTC" }, "expect": { "error": "ReferenceMissing" } },
+    { "name": "s1", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c1.id", "code": "hq", "name": "HQ", "timezone": "UTC" },
+      "expect": { "ok": { "id": "$id:3", "customer": "$id:1", "code": "HQ", "enabled": true, "version": 1 } } },
+    { "name": "dupWithin", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c1.id", "code": "HQ", "name": "Dup", "timezone": "UTC" }, "expect": { "error": "UniqueConflict" } },
+    { "name": "sameCodeOtherCustomer", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c2.id", "code": "HQ", "name": "Beta HQ", "timezone": "UTC" },
+      "expect": { "ok": { "id": "$id:4", "customer": "$id:2", "code": "HQ" } } },
+    { "name": "s3", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c1.id", "code": "ab", "name": "Annex", "timezone": "Europe/London", "enabled": false },
+      "expect": { "ok": { "id": "$id:5", "code": "AB", "enabled": false } } },
+    { "name": "findComposite", "op": "@acme/commerce/_/Site.find.byCustomerCode", "input": { "params": { "customer": "$c1.id", "code": "hq" } }, "expect": { "ok": { "id": "$id:3" } } },
+    { "name": "listByCustomer", "op": "@acme/commerce/_/Site.list.byCustomer", "input": { "params": { "customer": "$c1.id" } },
+      "expect": { "ok": { "items": [ { "id": "$id:5", "name": "Annex" }, { "id": "$id:3", "name": "HQ" } ], "next": null, "limit": 50 } } },
+    { "name": "otherTenantRead", "op": "@acme/commerce/_/Site.get", "input": { "id": "$s1.id" }, "ctx": { "tenant": "someone-else" }, "expect": { "error": "NotFound" } },
+    { "name": "otherTenantRef", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c1.id", "code": "xx", "name": "X", "timezone": "UTC" }, "ctx": { "tenant": "someone-else" }, "expect": { "error": "ReferenceMissing" } }
+  ]
+}

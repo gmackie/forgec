@@ -4,11 +4,16 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "run": "node --experimental-strip-types src/cli.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0",
     "vitest": "^5.0.0"
+  },
+  "dependencies": {
+    "@forge/runtime": "workspace:*",
+    "effect": "4.0.0-rc.116"
   }
 }

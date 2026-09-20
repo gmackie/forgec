@@ -1,0 +1,20 @@
+{
+  "id": "m2.concurrency",
+  "title": "Races: one winner for concurrent same-version updates and concurrent unique creates",
+  "steps": [
+    { "name": "create", "op": "@acme/commerce/_/Customer.create", "input": { "code": "RACE", "name": "Race" }, "expect": { "ok": { "id": "$id:1", "version": 1 } } },
+    { "name": "updateRace", "race": { "op": "@acme/commerce/_/Customer.update", "inputs": [
+        { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "W0" } },
+        { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "W1" } },
+        { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "W2" } },
+        { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "W3" } },
+        { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "W4" } },
+        { "id": "$create.id", "expectedVersion": 1, "patch": { "name": "W5" } } ] },
+      "expect": { "successes": 1, "failureCodes": ["VersionConflict"] } },
+    { "name": "afterRace", "op": "@acme/commerce/_/Customer.get", "input": { "id": "$create.id" }, "expect": { "ok": { "version": 2 } } },
+    { "name": "uniqueRace", "race": { "op": "@acme/commerce/_/Customer.create", "inputs": [
+        { "code": "SAME", "name": "N0" }, { "code": "same", "name": "N1" }, { "code": " Same ", "name": "N2" }, { "code": "SAME", "name": "N3" }, { "code": "SAME", "name": "N4" } ] },
+      "expect": { "successes": 1, "failureCodes": ["UniqueConflict"] } },
+    { "name": "onlyOne", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "same" } }, "expect": { "ok": { "code": "SAME", "version": 1 } } }
+  ]
+}
