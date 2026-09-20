@@ -1,0 +1,691 @@
+---
+source: crates/forge-planner/tests/plan.rs
+assertion_line: 123
+expression: p.messaging
+---
+{
+  "version": "messaging/1",
+  "channels": [
+    {
+      "id": "@acme/commerce/_/Customer.changes",
+      "name": "Customer.changes",
+      "distribution": "broadcast",
+      "delivery": "at-least-once",
+      "implicit": true,
+      "messages": [
+        {
+          "name": "Created",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Customer"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Updated",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Customer"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Deleted",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Customer"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Restored",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Customer"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "@acme/commerce/_/Order.changes",
+      "name": "Order.changes",
+      "distribution": "broadcast",
+      "delivery": "at-least-once",
+      "implicit": true,
+      "messages": [
+        {
+          "name": "Created",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Order"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Updated",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Order"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Deleted",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Order"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Restored",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Order"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Transitioned",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Order"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "action",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "text",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "status",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "text",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "@acme/commerce/_/OrderEvents",
+      "name": "OrderEvents",
+      "distribution": "broadcast",
+      "delivery": "at-least-once",
+      "implicit": false,
+      "messages": [
+        {
+          "name": "OrderSubmitted",
+          "fields": [
+            {
+              "name": "order",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Order"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": false,
+              "serverOwned": false,
+              "synthesized": false
+            },
+            {
+              "name": "customer",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Customer"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": false,
+              "serverOwned": false,
+              "synthesized": false
+            },
+            {
+              "name": "revision",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": [
+                  {
+                    "kind": "compare",
+                    "op": ">=",
+                    "value": {
+                      "type": "int",
+                      "value": "1"
+                    }
+                  }
+                ]
+              },
+              "immutable": false,
+              "serverOwned": false,
+              "synthesized": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "@acme/commerce/_/PaymentEvents",
+      "name": "PaymentEvents",
+      "contract": "@acme/payments/_/PaymentEvents",
+      "distribution": "broadcast",
+      "delivery": "at-least-once",
+      "direction": "recv-only",
+      "implicit": false,
+      "messages": [
+        {
+          "name": "PaymentCaptured",
+          "fields": [
+            {
+              "name": "authorizationId",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "text",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": [
+                  {
+                    "kind": "length",
+                    "min": 1,
+                    "max": 64
+                  }
+                ]
+              },
+              "immutable": false,
+              "serverOwned": false,
+              "synthesized": false
+            },
+            {
+              "name": "amount",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "money",
+                  "args": [
+                    "USD"
+                  ]
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": [
+                  {
+                    "kind": "compare",
+                    "op": ">=",
+                    "value": {
+                      "type": "int",
+                      "value": "0"
+                    }
+                  }
+                ]
+              },
+              "immutable": false,
+              "serverOwned": false,
+              "synthesized": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "@acme/commerce/_/Site.changes",
+      "name": "Site.changes",
+      "distribution": "broadcast",
+      "delivery": "at-least-once",
+      "implicit": true,
+      "messages": [
+        {
+          "name": "Created",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Site"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Updated",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Site"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Deleted",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Site"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        },
+        {
+          "name": "Restored",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "base": {
+                  "kind": "reference",
+                  "resource": "@acme/commerce/_/Site"
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            },
+            {
+              "name": "version",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "integer",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": []
+              },
+              "immutable": true,
+              "serverOwned": true,
+              "synthesized": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "subscriptions": [
+    {
+      "name": "fulfill-order",
+      "channel": "@acme/commerce/_/OrderEvents",
+      "message": "OrderSubmitted",
+      "handler": "@acme/commerce/_/FulfillOrder",
+      "queue": "forge-acme-commerce-fulfill-order"
+    }
+  ],
+  "senders": [
+    {
+      "function": "@acme/commerce/_/SubmitOrder",
+      "sends": [
+        [
+          "@acme/commerce/_/OrderEvents",
+          "OrderSubmitted"
+        ]
+      ]
+    }
+  ]
+}

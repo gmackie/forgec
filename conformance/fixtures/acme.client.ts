@@ -324,7 +324,12 @@ export interface SiteApi {
   listByCustomer(params: { customer: string }, page?: PageOptions): Promise<Page<SiteRecord>>;
 }
 
+export interface FunctionsApi {
+  submitOrder(input: Record<string, unknown>, opts?: CallOptions): Promise<unknown>;
+}
+
 export interface ForgeClient {
+  functions: FunctionsApi;
   call(op: string, input: unknown, opts?: CallOptions): Promise<CallResult>;
   changesets: ChangesetsApi;
   imports: ImportsApi;
@@ -344,6 +349,9 @@ export function createClient(options: ClientOptions): ForgeClient {
       preview: (id) => t.unwrap(t.call("@acme/commerce/_/changesets.preview", { id })),
       approve: (id, contentHash) => t.unwrap(t.call("@acme/commerce/_/changesets.approve", { id, contentHash })),
       commit: (id, opts) => t.unwrap(t.call("@acme/commerce/_/changesets.commit", { id }, opts)),
+    },
+    functions: {
+      submitOrder: (input, opts) => t.unwrap(t.call("@acme/commerce/_/SubmitOrder", input, opts)),
     },
     imports: {
       inspect: (input) => t.unwrap(t.call("@acme/commerce/_/imports.inspect", input)),

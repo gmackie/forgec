@@ -3,5 +3,6 @@
 import { createLambdaHandler } from "@forge/runtime/aws";
 import type { AppBundle } from "@forge/runtime";
 import bundle from "../../generated/app.json" with { type: "json" };
+import { externals, functions } from "../../impl/index.js";
 
-export const handler = createLambdaHandler(bundle as unknown as AppBundle);
+export const handler = createLambdaHandler(bundle as unknown as AppBundle, { functions, externals });

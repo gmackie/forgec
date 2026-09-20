@@ -16,9 +16,15 @@ the same code that application clients use — and write
 
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
-| runtime-memory | in-process | 9 | 106 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2) | 9 | 106 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3) | 9 | 106 | 0 |
+| runtime-memory | in-process | 10 | 119 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues) | 10 | 119 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS) | 10 | 119 | 0 |
+
+M5 adds `messaging` (implemented SubmitOrder with declared dependencies,
+domain errors, atomic transition + publication). Delivery was verified end to
+end on both clouds: the outbox row for OrderSubmitted reaches the
+`fulfill-order` queue (Cloudflare Queue / SQS) and the FulfillOrder consumer
+runs exactly once (processed ledger).
 
 M4 adds `blobs` (signed upload, verification, sealing, immutable download,
 rejection; real bytes through R2 and S3) and `csv-import` (inspect, mapping,

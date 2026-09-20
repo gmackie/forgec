@@ -44,17 +44,18 @@ export class ForgeError extends Data.TaggedError("ForgeError")<{
   fields?: ProblemField[];
   constraint?: string;
 }> {
+  /** Declared domain errors (`<function id>.<Name>`) are 409 unless declared otherwise. */
   get status(): number {
-    return ERROR_STATUS[this.code]?.status ?? 500;
+    return ERROR_STATUS[this.code]?.status ?? (this.code.includes("/") ? 409 : 500);
   }
   get retryable(): boolean {
     return ERROR_STATUS[this.code]?.retryable ?? false;
   }
   /** RFC 9457 body with the stable Forge extensions. */
   problem(requestId: string): Record<string, unknown> {
-    const meta = ERROR_STATUS[this.code] ?? ERROR_STATUS["Internal"]!;
+    const meta = ERROR_STATUS[this.code] ?? (this.code.includes("/") ? { status: 409, retryable: false, title: this.code.split(".").pop() ?? this.code } : ERROR_STATUS["Internal"]!);
     return {
-      type: `https://forge.dev/errors/${kebab(this.code)}`,
+      type: this.code.includes("/") ? `urn:forge:error:${this.code}` : `https://forge.dev/errors/${kebab(this.code)}`,
       title: meta.title,
       status: meta.status,
       code: this.code,

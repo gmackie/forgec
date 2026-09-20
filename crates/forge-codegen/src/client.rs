@@ -37,6 +37,13 @@ fn interface(out: &mut String, name: &str, schema: &JsonSchema) {
 fn plural(wire: &str) -> String {
     if wire.ends_with('s') { format!("{wire}es") } else { format!("{wire}s") }
 }
+fn lower_first(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        Some(f) => f.to_lowercase().collect::<String>() + c.as_str(),
+        None => String::new(),
+    }
+}
 fn upper_first(s: &str) -> String {
     let mut c = s.chars();
     match c.next() {
@@ -132,7 +139,13 @@ pub fn client_ts(c: &Contracts) -> String {
         let _ = writeln!(out, "}}\n");
     }
 
+    let _ = writeln!(out, "export interface FunctionsApi {{");
+    for f in c.functions.iter().filter(|f| f.http.is_some()) {
+        let _ = writeln!(out, "  {}(input: Record<string, unknown>, opts?: CallOptions): Promise<unknown>;", lower_first(&f.name));
+    }
+    let _ = writeln!(out, "}}\n");
     let _ = writeln!(out, "export interface ForgeClient {{");
+    let _ = writeln!(out, "  functions: FunctionsApi;");
     let _ = writeln!(out, "  call(op: string, input: unknown, opts?: CallOptions): Promise<CallResult>;");
     let _ = writeln!(out, "  changesets: ChangesetsApi;");
     let _ = writeln!(out, "  imports: ImportsApi;");
@@ -151,6 +164,11 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "      preview: (id) => t.unwrap(t.call({:?}, {{ id }})),", format!("{pkg}/_/changesets.preview"));
     let _ = writeln!(out, "      approve: (id, contentHash) => t.unwrap(t.call({:?}, {{ id, contentHash }})),", format!("{pkg}/_/changesets.approve"));
     let _ = writeln!(out, "      commit: (id, opts) => t.unwrap(t.call({:?}, {{ id }}, opts)),", format!("{pkg}/_/changesets.commit"));
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    functions: {{");
+    for f in c.functions.iter().filter(|f| f.http.is_some()) {
+        let _ = writeln!(out, "      {}: (input, opts) => t.unwrap(t.call({:?}, input, opts)),", lower_first(&f.name), f.id);
+    }
     let _ = writeln!(out, "    }},");
     let _ = writeln!(out, "    imports: {{");
     let _ = writeln!(out, "      inspect: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/imports.inspect"));

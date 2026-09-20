@@ -1,6 +1,7 @@
 /** Conformance target backed by the runtime engine and the in-memory adapter: the semantic reference. */
 import { Cause, Effect } from "effect";
 import { Engine, ForgeError, MemoryObjectStore, MemoryStorage, Model, testLayer, type AppBundle } from "@forge/runtime";
+import { externals, functions } from "../../examples/acme/impl/index.js";
 import type { CallContext, CallResult, Target } from "./target.js";
 
 export class RuntimeTarget implements Target {
@@ -16,7 +17,7 @@ export class RuntimeTarget implements Target {
 
   private build(): void {
     this.objects = new MemoryObjectStore();
-    this.engine = new Engine(this.model, testLayer(new MemoryStorage(), { objects: this.objects }));
+    this.engine = new Engine(this.model, testLayer(new MemoryStorage(), { objects: this.objects }), { functions, externals });
   }
 
   async reset(): Promise<void> {

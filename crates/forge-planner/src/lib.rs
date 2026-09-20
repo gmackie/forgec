@@ -4,6 +4,7 @@
 
 pub mod contracts;
 pub mod dynamo;
+pub mod messaging;
 pub mod naming;
 pub mod sql;
 pub mod ui;
@@ -31,11 +32,12 @@ pub struct Plans {
     pub sql: sql::SqlSchema,
     pub dynamo: dynamo::DynamoPlan,
     pub ui: ui::UiDescriptor,
+    pub messaging: messaging::MessagingPlan,
 }
 
 pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
     validate(ir)?;
-    Ok(Plans { contracts: contracts::plan(ir), sql: sql::plan(ir), dynamo: dynamo::plan(ir), ui: ui::plan(ir) })
+    Ok(Plans { contracts: contracts::plan(ir), sql: sql::plan(ir), dynamo: dynamo::plan(ir), ui: ui::plan(ir), messaging: messaging::plan(ir) })
 }
 
 /// Physical-plan validation shared by both targets (plan §3.3): never turn an

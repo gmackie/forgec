@@ -13,6 +13,8 @@ import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan,
 import { Changesets } from "./changeset.js";
 import { Blobs } from "./blobs.js";
 import { Imports } from "./imports.js";
+import { Functions, type ExternalBinding, type FunctionImpl } from "./functions.js";
+import type { Envelope } from "./dispatch.js";
 
 export interface CallContext {
   tenant: string;
@@ -36,12 +38,29 @@ export function stableJson(v: unknown): string {
   return JSON.stringify(v);
 }
 
+export interface EngineOptions {
+  functions?: FunctionImpl[];
+  externals?: Record<string, ExternalBinding>;
+}
+
 export class Engine {
-  constructor(readonly model: Model, private readonly layer: Layer.Layer<RuntimeServices>) {}
+  readonly functions: Functions;
+  constructor(readonly model: Model, readonly layer: Layer.Layer<RuntimeServices>, options: EngineOptions = {}) {
+    this.functions = new Functions(this, options.functions ?? [], options.externals ?? {});
+  }
 
   call(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError> {
     const self = this;
     return self.program(opId, input, ctx).pipe(Effect.provide(self.layer));
+  }
+
+  /** Same as call() but without providing the layer (for use inside function bodies that share it). */
+  callInternal(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
+    return this.program(opId, input, ctx);
+  }
+
+  consume(subscription: string, env: Envelope) {
+    return this.functions.consume(subscription, env);
   }
 
   private program(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
@@ -53,7 +72,11 @@ export class Engine {
       return self.imports.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
     }
     const ref = self.model.operation(opId);
-    if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
+    if (!ref) {
+      const fn = self.model.function(opId);
+      if (fn) return self.withIdempotency(opId, (input ?? {}) as Wire, ctx, self.functions.invoke(fn, input, ctx));
+      return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
+    }
     const { op, resource } = ref;
     const body = (input ?? {}) as Wire;
     switch (op.kind) {
@@ -450,6 +473,7 @@ export class Engine {
           getDocument: (...a) => storage.getDocument(...a),
           putDocument: (...a) => storage.putDocument(...a),
           outboxSweep: (...a) => storage.outboxSweep(...a),
+          outboxTenants: () => storage.outboxTenants(),
           outboxClaim: (...a) => storage.outboxClaim(...a),
           outboxProgress: (...a) => storage.outboxProgress(...a),
           outboxDead: (...a) => storage.outboxDead(...a),

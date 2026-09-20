@@ -8,10 +8,12 @@ and AWS (CDK / DynamoDB).
 - Decisions: `docs/decisions/`
 - M0 executable spikes: `spikes/` (`pnpm spike:d1`, `pnpm spike:dynamo`)
 
-Status: M0–M4 gates met (2026-09-20). CRUD, lifecycle actions, restrict
+Status: M0–M5 gates met (2026-09-20). CRUD, lifecycle actions, restrict
 delete, changesets, idempotent recovery, blobs (R2/S3) and CSV import run on
 both targets with one client and one React workspace; see
-`conformance/README.md`. Next: M5 (channels, fan-out, outbox dispatch).
+`conformance/README.md`. Implemented functions, channels and subscriptions deliver through Cloudflare
+Queues / SQS with per-subscription outbox status. Next: M6 (views, cache,
+projections, effective dating, hierarchy).
 
 ## Compiler (M1)
 

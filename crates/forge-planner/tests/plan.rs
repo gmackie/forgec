@@ -116,3 +116,30 @@ fn ui_descriptor_drives_tables_forms_relationships_and_actions() {
     assert_eq!(doc.kind, "blob");
     assert!(!doc.fields.iter().any(|f| f.name == "stagedByteCount"));
 }
+
+#[test]
+fn messaging_plan_has_one_durable_delivery_per_subscription_and_typed_envelopes() {
+    let p = acme();
+    insta::assert_json_snapshot!("messaging", p.messaging);
+    let m = &p.messaging;
+    // implicit change channels for audited resources + declared channels
+    let channels: Vec<&str> = m.channels.iter().map(|c| c.id.as_str()).collect();
+    assert!(channels.contains(&"@acme/commerce/_/OrderEvents"));
+    assert!(channels.contains(&"@acme/commerce/_/Customer.changes"));
+    let oe = m.channels.iter().find(|c| c.id == "@acme/commerce/_/OrderEvents").unwrap();
+    assert_eq!(oe.distribution, "broadcast");
+    assert_eq!(oe.messages.iter().map(|x| x.name.as_str()).collect::<Vec<_>>(), vec!["OrderSubmitted"]);
+    // `on OrderEvents.OrderSubmitted -> FulfillOrder` becomes one logical subscription with its own queue
+    let sub = m.subscriptions.iter().find(|s| s.handler == "@acme/commerce/_/FulfillOrder").unwrap();
+    assert_eq!(sub.channel, "@acme/commerce/_/OrderEvents");
+    assert_eq!(sub.message, "OrderSubmitted");
+    assert_eq!(sub.name, "fulfill-order");
+    assert_eq!(sub.queue, "forge-acme-commerce-fulfill-order");
+    // functions declare what they may send; the runtime refuses anything else
+    let f = m.senders.iter().find(|s| s.function == "@acme/commerce/_/SubmitOrder").unwrap();
+    assert_eq!(f.sends, vec![("@acme/commerce/_/OrderEvents".to_string(), "OrderSubmitted".to_string())]);
+    // imported recv-only channel: a subscription may consume it, never publish
+    let pe = m.channels.iter().find(|c| c.id == "@acme/commerce/_/PaymentEvents").unwrap();
+    assert_eq!(pe.contract.as_deref(), Some("@acme/payments/_/PaymentEvents"));
+    assert_eq!(pe.direction.as_deref(), Some("recv-only"));
+}

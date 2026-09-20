@@ -136,6 +136,9 @@ export class D1Storage implements StorageAdapter {
       delivered: r["delivered"] ? (JSON.parse(String(r["delivered"])) as string[]) : [],
     };
   }
+  outboxTenants(): Effect.Effect<string[], ForgeError> {
+    return this.wrap(async () => (await this.db.all<{ tenant: string }>(st("SELECT DISTINCT tenant FROM forge_outbox WHERE status = 'pending' LIMIT 1000"))).map((r) => r.tenant));
+  }
   outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError> {
     return this.wrap(async () => (await this.db.all(st("SELECT * FROM forge_outbox WHERE tenant = ? AND status = 'pending' AND (lease_until IS NULL OR lease_until < ?) ORDER BY created_at, op_id, ordinal LIMIT ?", tenant, now, limit))).map((r) => this.outboxRow(r)));
   }
@@ -233,9 +236,19 @@ export class D1Storage implements StorageAdapter {
   /** Statements for one logical command; several commands concatenate into one atomic batch. */
   private statementsFor(plan: CommitPlan): SqlStatement[] {
     const { resource: r, tenant, id } = plan;
+    const stmts: SqlStatement[] = [];
+    if (plan.kind === "publish") {
+      const a = plan.audit;
+      stmts.push(st("INSERT INTO forge_audit (tenant, op_id, resource, record_id, kind, new_version, actor, at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", a.tenant, a.opId, a.resource, a.recordId, a.kind, a.newVersion, a.actor, a.at, null));
+      for (const o of plan.outbox) stmts.push(st("INSERT INTO forge_outbox (tenant, op_id, ordinal, channel, message, payload, status, attempts, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?)", o.tenant, o.opId, o.ordinal, o.channel, o.message, JSON.stringify(o.payload), o.createdAt));
+      if (plan.receipt) {
+        const rc = plan.receipt;
+        stmts.push(st("INSERT INTO forge_receipt (tenant, operation, key, request_hash, status, response, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", rc.tenant, rc.operation, rc.key, rc.requestHash, rc.status, JSON.stringify(rc.response), rc.createdAt));
+      }
+      return stmts;
+    }
     const t = this.map.table(r);
     const kw = this.keyWhere(r);
-    const stmts: SqlStatement[] = [];
 
     // 1. assertion: every precondition, evaluated inside the batch
     const preds: string[] = [];

@@ -16,3 +16,5 @@ export { MemoryObjectStore } from "./adapters/memory-objects.js";
 export * from "./csv.js";
 export * from "./imports.js";
 export * from "./dispatch.js";
+export * from "./functions.js";
+export * from "./transports.js";

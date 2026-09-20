@@ -4,5 +4,6 @@
 import { createWorker } from "@forge/runtime/cloudflare";
 import type { AppBundle } from "@forge/runtime";
 import bundle from "../../generated/app.json";
+import { externals, functions } from "../../impl/index.js";
 
-export default createWorker(bundle as unknown as AppBundle);
+export default createWorker(bundle as unknown as AppBundle, { functions, externals });

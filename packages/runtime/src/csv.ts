@@ -28,7 +28,7 @@ export function parseCsv(bytes: Uint8Array, options: CsvOptions = {}): { header:
   const errors: CsvError[] = [];
   let text: string;
   try {
-    text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: false }).decode(bytes);
   } catch {
     errors.push({ line: 1, code: "InvalidEncoding", message: "input is not valid UTF-8" });
     return { header: [], rows: [], errors };

@@ -62,6 +62,10 @@ function compile(model: Model): Route[] {
     segments: ref.op.http!.path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
     ref,
   }));
+  for (const f of model.functions) {
+    if (!f.http) continue;
+    routes.push({ method: f.http.method, segments: f.http.path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })), ref: { op: { id: f.id, kind: "function", http: f.http }, resource: undefined as unknown as Route["ref"]["resource"] } });
+  }
   routes.push(...builtinRoutes(model));
   // Static segments win over parameters at the same position.
   routes.sort((a, b) => {
@@ -219,6 +223,10 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       case "import.inspect":
       case "import.stage":
         input = (body ?? {}) as Record<string, unknown>;
+        break;
+      case "function":
+        // Path parameters bind input fields by name (plan §5.4); If-Match supplies expectedVersion when declared.
+        input = { ...((body ?? {}) as Record<string, unknown>), ...params, ...(expectedVersion !== undefined ? { expectedVersion } : {}) };
         break;
       case "changeset.get":
       case "changeset.preview":

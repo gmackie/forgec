@@ -65,7 +65,7 @@ export interface CommitPlan {
   actor: string;
   at: string;
   resource: Resource;
-  kind: "create" | "update" | "delete" | "restore" | "transition";
+  kind: "create" | "update" | "delete" | "restore" | "transition" | "publish";
   id: string;
   expectedVersion: number | null;
   before: StoredRecord | null;
@@ -105,6 +105,8 @@ export interface StorageAdapter {
   budget(plans: CommitPlan[]): { actions: number; limit: number };
   // ---- outbox dispatch (plan §14); claim/complete are conditional and fenced by lease owner ----
   outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError>;
+  /** Tenants that currently have pending outbox rows (bounded). */
+  outboxTenants(): Effect.Effect<string[], ForgeError>;
   outboxClaim(row: { tenant: string; opId: string; ordinal: number }, owner: string, now: number, leaseMs: number): Effect.Effect<boolean, ForgeError>;
   /** Record progress for a lease holder: subscriptions delivered so far; `done` marks the row delivered, `dead` parks it. */
   outboxProgress(row: { tenant: string; opId: string; ordinal: number }, owner: string, update: { delivered: string[]; done?: boolean; dead?: boolean; releaseLease?: boolean }): Effect.Effect<boolean, ForgeError>;

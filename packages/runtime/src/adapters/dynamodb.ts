@@ -218,6 +218,17 @@ export class DynamoStorage implements StorageAdapter {
       leaseOwner: (i["leaseOwner"] as string | null) ?? null, leaseUntil: i["leaseUntil"] === undefined ? null : Number(i["leaseUntil"]), delivered: (i["delivered"] as string[] | undefined) ?? [],
     };
   }
+  /** A marker item per tenant in the "ALL" shard lets the sweep enumerate tenants with recent outbox activity. */
+  private tenantMarker(tenant: string, createdAt: string): TxItem {
+    return { Put: { TableName: this.table, Item: { PK: encodeIdentity(["OUTBOX-TENANT", tenant]), SK: "MARKER", tenant, pendingShard: "ALL", pendingAt: Date.parse(createdAt) } } };
+  }
+  /** Tenants with outbox activity (markers in the ALL shard; harmless if a tenant has nothing pending). */
+  outboxTenants(): Effect.Effect<string[], ForgeError> {
+    return this.wrap(async () => {
+      const out = await this.doc.send(new QueryCommand({ TableName: this.table, IndexName: PENDING_INDEX, KeyConditionExpression: "pendingShard = :s", ExpressionAttributeValues: { ":s": "ALL" }, Limit: 1000 }));
+      return [...new Set(((out.Items ?? []) as Item[]).map((i) => String(i["tenant"])))];
+    });
+  }
   outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError> {
     return this.wrap(async () => {
       const out = await this.doc.send(new QueryCommand({ TableName: this.table, IndexName: PENDING_INDEX, KeyConditionExpression: "pendingShard = :s", FilterExpression: "attribute_not_exists(leaseUntil) OR leaseUntil < :now", ExpressionAttributeValues: { ":s": encodeIdentity(["T", tenant]), ":now": now }, Limit: limit }));
@@ -325,6 +336,13 @@ export class DynamoStorage implements StorageAdapter {
         roles.push(...built.roles);
         owners.push(...built.items.map(() => plan));
       }
+      // One tenant marker per transaction (DynamoDB forbids two actions on one item).
+      const withOutbox = plans.filter((p) => p.outbox.length > 0);
+      if (withOutbox.length) {
+        items.push(self.tenantMarker(withOutbox[0]!.tenant, withOutbox[0]!.outbox[0]!.createdAt));
+        roles.push("outbox");
+        owners.push(withOutbox[0]!);
+      }
       if (items.length > DYNAMO_TX_LIMIT) return yield* Effect.fail(err("BudgetExceeded", `${items.length} physical actions exceed the transaction limit of ${DYNAMO_TX_LIMIT}`));
       for (let attempt = 1; ; attempt++) {
         const outcome = yield* self.send(items, roles, owners, plans[0]!);
@@ -343,6 +361,18 @@ export class DynamoStorage implements StorageAdapter {
       roles.push(role);
       items.push(item);
     };
+    if (plan.kind === "publish") {
+      const a = plan.audit;
+      push("audit", { Put: { TableName: this.table, Item: { ...this.auditKey(tenant, a.opId), resource: a.resource, recordId: a.recordId, kind: a.kind, newVersion: a.newVersion, actor: a.actor, at: a.at } } });
+      for (const o of plan.outbox) {
+        push("outbox", { Put: { TableName: this.table, Item: { ...this.outboxKey(tenant, o.opId, o.ordinal), tenant, opId: o.opId, ordinal: o.ordinal, channel: o.channel, message: o.message, payload: o.payload, status: "pending", attempts: 0, delivered: [], pendingShard: encodeIdentity(["T", tenant]), pendingAt: Date.parse(o.createdAt), createdAt: o.createdAt } } });
+      }
+      if (plan.receipt) {
+        const rc = plan.receipt;
+        push("receipt", { Put: { TableName: this.table, Item: { ...this.receiptKey(tenant, rc.operation, rc.key), requestHash: rc.requestHash, status: rc.status, response: rc.response, createdAt: rc.createdAt }, ConditionExpression: "attribute_not_exists(PK)" } });
+      }
+      return { items, roles };
+    }
     const entityKey = this.entityKey(tenant, r, id);
     const depGuards = plan.dependents.map((d) => depAttr(d.resource, d.field, this.model));
     if (plan.kind === "create") {

@@ -72,10 +72,27 @@ export interface Resource {
   operations: Operation[];
 }
 export interface EnumDecl { id: string; name: string; members: { name: string; value: string }[] }
-export interface Module { id: string; enums: EnumDecl[]; resources: Resource[] }
+export interface FunctionDecl {
+  id: string;
+  name: string;
+  input?: TypeSpec;
+  output?: TypeSpec;
+  uses: ({ kind: "resource"; resource: string; capability: string } | { kind: "transition"; resource: string; action: string } | { kind: "function"; function: string })[];
+  sends: { message: string; channel: string }[];
+  errors: string[];
+  http?: HttpBinding;
+  generated: boolean;
+}
+export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; messages: { name: string; fields: Field[] }[] }
+export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[] }
+export interface MessagingPlan {
+  channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
+  subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
+  senders: { function: string; sends: [string, string][] }[];
+}
 export interface DomainIR { version: string; package: { name: string }; modules: Module[] }
 export interface Contracts { version: string; resources: { id: string; name: string; wireName: string; operations: Operation[] }[]; functions: { id: string; name: string; http?: HttpBinding }[] }
-export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown }
+export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan }
 
 export interface OperationRef {
   op: Operation;
@@ -84,6 +101,8 @@ export interface OperationRef {
 
 export class Model {
   readonly resources: Resource[];
+  readonly functions: FunctionDecl[];
+  readonly channels: ChannelDecl[];
   readonly enums = new Map<string, EnumDecl>();
   private readonly byId = new Map<string, Resource>();
   private readonly ops = new Map<string, OperationRef>();
@@ -91,6 +110,8 @@ export class Model {
 
   constructor(readonly bundle: AppBundle) {
     this.resources = bundle.ir.modules.flatMap((m) => m.resources);
+    this.functions = bundle.ir.modules.flatMap((m) => m.functions ?? []);
+    this.channels = bundle.ir.modules.flatMap((m) => m.channels ?? []);
     for (const m of bundle.ir.modules) for (const e of m.enums) this.enums.set(e.id, e);
     for (const r of this.resources) {
       this.byId.set(r.id, r);
@@ -114,6 +135,19 @@ export class Model {
     const r = this.byId.get(id);
     if (!r) throw new Error(`unknown resource ${id}`);
     return r;
+  }
+  function(id: string): FunctionDecl | undefined {
+    return this.functions.find((f) => f.id === id);
+  }
+  /** Resolve a channel by stable id or local name (declared or implicit `<Resource>.changes`). */
+  channel(ref: string): { id: string; messages: string[]; direction?: string } | undefined {
+    const declared = this.channels.find((c) => c.id === ref || c.name === ref);
+    if (declared) return { id: declared.id, messages: declared.messages.map((m) => m.name), ...(declared.direction ? { direction: declared.direction } : {}) };
+    const planned = this.bundle.messaging?.channels.find((c) => c.id === ref || c.name === ref);
+    return planned ? { id: planned.id, messages: planned.messages.map((m) => m.name), ...(planned.direction ? { direction: planned.direction } : {}) } : undefined;
+  }
+  subscription(name: string) {
+    return this.bundle.messaging?.subscriptions.find((s) => s.name === name);
   }
   operation(id: string): OperationRef | undefined {
     return this.ops.get(id);

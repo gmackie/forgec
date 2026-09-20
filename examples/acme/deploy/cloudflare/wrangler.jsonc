@@ -6,6 +6,11 @@
   "workers_dev": true,
   "vars": { "FORGE_AUTH": "dev-headers", "FORGE_CORS": "http://localhost:5173,https://forge-acme-workspace.gmac.workers.dev" },
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "forge-acme-blobs" }],
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "queues": {
+    "producers": [{ "binding": "Q_FULFILL_ORDER", "queue": "forge-acme-commerce-fulfill-order" }],
+    "consumers": [{ "queue": "forge-acme-commerce-fulfill-order", "max_batch_size": 10, "max_retries": 5, "dead_letter_queue": "forge-acme-commerce-dlq" }]
+  },
   "d1_databases": [
     {
       "binding": "DB",

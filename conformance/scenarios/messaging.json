@@ -1,0 +1,19 @@
+{
+  "id": "m5.messaging",
+  "title": "Implemented function: declared dependencies, domain errors, atomic transition + publication, external binding, HTTP path binding",
+  "steps": [
+    { "name": "c", "op": "@acme/commerce/_/Customer.create", "input": { "code": "MSG", "name": "M" }, "expect": { "ok": { "id": "$id:1" } } },
+    { "name": "s", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c.id", "code": "hq", "name": "HQ", "timezone": "UTC" }, "expect": { "ok": { "id": "$id:2" } } },
+    { "name": "off", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c.id", "code": "off", "name": "Off", "timezone": "UTC", "enabled": false }, "expect": { "ok": { "id": "$id:3" } } },
+    { "name": "o", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "10.00", "tax": "1.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:4", "status": "Draft", "total": "11.00" } } },
+    { "name": "big", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "5000.00", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:5" } } },
+    { "name": "dark", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$off.id", "subtotal": "1.00", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:6" } } },
+    { "name": "stale", "op": "@acme/commerce/_/SubmitOrder", "input": { "order": "$o.id", "expectedVersion": 9 }, "expect": { "error": "VersionConflict" } },
+    { "name": "declined", "op": "@acme/commerce/_/SubmitOrder", "input": { "order": "$big.id", "expectedVersion": 1 }, "expect": { "error": "@acme/commerce/_/SubmitOrder.PaymentDeclined" } },
+    { "name": "disabled", "op": "@acme/commerce/_/SubmitOrder", "input": { "order": "$dark.id", "expectedVersion": 1 }, "expect": { "error": "@acme/commerce/_/SubmitOrder.SiteDisabled" } },
+    { "name": "stillDraft", "op": "@acme/commerce/_/Order.get", "input": { "id": "$big.id" }, "expect": { "ok": { "status": "Draft", "version": 1 } } },
+    { "name": "submit", "op": "@acme/commerce/_/SubmitOrder", "input": { "order": "$o.id", "expectedVersion": 1 }, "expect": { "ok": { "id": "$id:4", "status": "Submitted", "version": 2 } } },
+    { "name": "submitted", "op": "@acme/commerce/_/Order.get", "input": { "id": "$o.id" }, "expect": { "ok": { "status": "Submitted", "version": 2 } } },
+    { "name": "notFromSubmitted", "op": "@acme/commerce/_/SubmitOrder", "input": { "order": "$o.id", "expectedVersion": 2 }, "expect": { "error": "InvalidTransition" } }
+  ]
+}

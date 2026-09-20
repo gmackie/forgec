@@ -73,6 +73,9 @@ export class MemoryStorage implements StorageAdapter {
   private row(r: { tenant: string; opId: string; ordinal: number }): OutboxRow | undefined {
     return this.outbox.find((o) => o.tenant === r.tenant && o.opId === r.opId && o.ordinal === r.ordinal);
   }
+  outboxTenants(): Effect.Effect<string[], ForgeError> {
+    return Effect.succeed([...new Set(this.outbox.filter((o) => o.status === "pending").map((o) => o.tenant))]);
+  }
   outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError> {
     return Effect.succeed(this.outbox.filter((o) => o.tenant === tenant && o.status === "pending" && (o.leaseUntil === null || o.leaseUntil < now)).slice(0, limit).map((o) => ({ ...o, delivered: [...o.delivered] })));
   }
@@ -156,6 +159,12 @@ export class MemoryStorage implements StorageAdapter {
   }
 
   private commitSync(plan: CommitPlan): ForgeError | null {
+    if (plan.kind === "publish") {
+      this.audits.push(plan.audit);
+      this.outbox.push(...plan.outbox.map((o: OutboxEntry): OutboxRow => ({ ...o, status: "pending", attempts: 0, leaseOwner: null, leaseUntil: null, delivered: [] })));
+      if (plan.receipt) this.receipts.set(`${plan.tenant}|${plan.receipt.operation}|${plan.receipt.key}`, plan.receipt);
+      return null;
+    }
     const table = this.table(plan.tenant, plan.resource);
     const current = table.get(plan.id) ?? null;
     // version guard, evaluated against durable state (not the engine's earlier read)
