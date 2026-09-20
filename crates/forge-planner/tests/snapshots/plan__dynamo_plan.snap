@@ -114,6 +114,43 @@ expression: p.dynamo
       "createActions": 7
     },
     {
+      "id": "@acme/commerce/_/OrderDocument",
+      "name": "OrderDocument",
+      "wireName": "order_document",
+      "tenantScoped": true,
+      "claims": [],
+      "access": [
+        {
+          "name": "byOrder",
+          "kind": "list",
+          "partitionFields": [
+            "order"
+          ],
+          "sortFields": [
+            "createdAt",
+            "id"
+          ],
+          "sortDirections": [
+            "desc",
+            "desc"
+          ],
+          "projection": [
+            "id",
+            "version",
+            "order",
+            "createdAt"
+          ]
+        }
+      ],
+      "references": [
+        {
+          "field": "order",
+          "target": "@acme/commerce/_/Order"
+        }
+      ],
+      "createActions": 5
+    },
+    {
       "id": "@acme/commerce/_/Site",
       "name": "Site",
       "wireName": "site",

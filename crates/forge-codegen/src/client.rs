@@ -102,6 +102,9 @@ pub fn client_ts(c: &Contracts) -> String {
                 "update" => { let _ = writeln!(out, "  update(id: string, expectedVersion: number, patch: {}Patch, opts?: CallOptions): Promise<{rec}>;", r.name); }
                 "delete" => { let _ = writeln!(out, "  delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<{rec}>;"); }
                 "restore" => { let _ = writeln!(out, "  restore(id: string, expectedVersion: number, opts?: CallOptions): Promise<{rec}>;"); }
+                "beginUpload" => { let _ = writeln!(out, "  beginUpload(id: string, expectedVersion: number, input: {{ mediaType: string; byteCount: number }}): Promise<{{ record: {rec}; upload: SignedUrl }}>;"); }
+                "finalizeUpload" => { let _ = writeln!(out, "  finalizeUpload(id: string, expectedVersion: number): Promise<{rec}>;"); }
+                "download" => { let _ = writeln!(out, "  download(id: string): Promise<SignedUrl & {{ mediaType: string; byteCount: number; digest: string }}>;"); }
                 "find" | "list" => {
                     let q = r.queries.iter().find(|q| Some(&q.name) == op.query.as_ref()).unwrap();
                     let params: Vec<String> = q.params.iter().map(|p| format!("{p}: {}", ts_type(r.record.properties.get(p).unwrap_or(&Value::Null), false))).collect();
@@ -158,6 +161,9 @@ pub fn client_ts(c: &Contracts) -> String {
                 "update" => { let _ = writeln!(out, "      update: (id, expectedVersion, patch, opts) => t.unwrap(t.call({id:?}, {{ id, expectedVersion, patch }}, opts)),"); }
                 "delete" => { let _ = writeln!(out, "      delete: (id, expectedVersion, opts) => t.unwrap(t.call({id:?}, {{ id, expectedVersion }}, opts)),"); }
                 "restore" => { let _ = writeln!(out, "      restore: (id, expectedVersion, opts) => t.unwrap(t.call({id:?}, {{ id, expectedVersion }}, opts)),"); }
+                "beginUpload" => { let _ = writeln!(out, "      beginUpload: (id, expectedVersion, input) => t.unwrap(t.call({id:?}, {{ id, expectedVersion, ...input }})),"); }
+                "finalizeUpload" => { let _ = writeln!(out, "      finalizeUpload: (id, expectedVersion) => t.unwrap(t.call({id:?}, {{ id, expectedVersion }})),"); }
+                "download" => { let _ = writeln!(out, "      download: (id) => t.unwrap(t.call({id:?}, {{ id }})),"); }
                 "find" => { let _ = writeln!(out, "      find{}: (params) => t.unwrapNullable(t.call({id:?}, {{ params }})),", upper_first(op.query.as_ref().unwrap())); }
                 "list" => { let _ = writeln!(out, "      list{}: (params, page) => t.unwrap(t.call({id:?}, {{ params, ...page }})),", upper_first(op.query.as_ref().unwrap())); }
                 _ => {}
@@ -193,6 +199,7 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
+export interface SignedUrl { url: string; method: "PUT" | "GET"; headers?: Record<string, string>; expiresAt: string }
 export interface ProblemField { path: string; code: string; message: string }
 export interface Problem {
   type: string; title: string; status: number; code: string; detail?: string;
@@ -200,7 +207,11 @@ export interface Problem {
 }
 export type CallResult = { ok: true; value: unknown; version?: number } | { ok: false; code: string; status: number; problem: Problem };
 export class ForgeError extends Error {
-  constructor(public readonly problem: Problem) { super(`${problem.code}: ${problem.detail ?? problem.title}`); }
+  readonly problem: Problem;
+  constructor(problem: Problem) {
+    super(`${problem.code}: ${problem.detail ?? problem.title}`);
+    this.problem = problem;
+  }
   get code() { return this.problem.code; }
   get status() { return this.problem.status; }
 }
@@ -244,6 +255,12 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       headers["content-type"] = "application/json";
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});
+      headers["content-type"] = "application/json";
+    } else if (spec.kind === "beginUpload") {
+      const { id: _id, expectedVersion: _v, ...rest } = input;
+      void _id;
+      void _v;
+      body = JSON.stringify(rest);
       headers["content-type"] = "application/json";
     } else if (spec.kind === "transition") {
       body = JSON.stringify(input["input"] ?? {});

@@ -86,6 +86,7 @@ pub enum Declaration {
     Type(TypeDecl),
     Shape(ShapeDecl),
     Resource(ResourceDecl),
+    Blob(BlobDecl),
     Function(FunctionDecl),
     Channel(ChannelDecl),
     Source(SourceDecl),
@@ -100,6 +101,7 @@ impl Declaration {
             K::TYPE_DECL => Self::Type(TypeDecl(node)),
             K::SHAPE_DECL => Self::Shape(ShapeDecl(node)),
             K::RESOURCE_DECL => Self::Resource(ResourceDecl(node)),
+            K::BLOB_DECL => Self::Blob(BlobDecl(node)),
             K::FUNCTION_DECL => Self::Function(FunctionDecl(node)),
             K::CHANNEL_DECL => Self::Channel(ChannelDecl(node)),
             K::SOURCE_DECL => Self::Source(SourceDecl(node)),
@@ -115,6 +117,7 @@ impl Declaration {
             Self::Type(n) => &n.0,
             Self::Shape(n) => &n.0,
             Self::Resource(n) => &n.0,
+            Self::Blob(n) => &n.0,
             Self::Function(n) => &n.0,
             Self::Channel(n) => &n.0,
             Self::Source(n) => &n.0,
@@ -128,7 +131,7 @@ impl Declaration {
     pub fn name(&self) -> Option<SyntaxToken> {
         match self {
             Self::Module(_) | Self::Import(_) | Self::Subscription(_) => None,
-            _ => idents(self.syntax()).find(|t| !matches!(t.text(), "export" | "enum" | "type" | "shape" | "resource" | "function" | "channel" | "source")),
+            _ => idents(self.syntax()).find(|t| !matches!(t.text(), "export" | "enum" | "type" | "shape" | "resource" | "blob" | "function" | "channel" | "source")),
         }
     }
     pub fn doc(&self) -> Option<String> {
@@ -359,7 +362,7 @@ impl DecoratorArg {
 node!(ResourceDecl, RESOURCE_DECL);
 impl ResourceDecl {
     pub fn name(&self) -> Option<SyntaxToken> {
-        idents(&self.0).find(|t| !matches!(t.text(), "export" | "resource"))
+        idents(&self.0).find(|t| !matches!(t.text(), "export" | "resource" | "blob"))
     }
     pub fn decorators(&self) -> impl Iterator<Item = Decorator> + '_ {
         children(&self.0)
@@ -383,6 +386,43 @@ impl ResourceDecl {
         child(&self.0)
     }
 }
+// A blob declaration has a resource's shape plus a content policy.
+node!(BlobDecl, BLOB_DECL);
+impl BlobDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).find(|t| !matches!(t.text(), "export" | "blob"))
+    }
+    /// Reuse resource accessors: a blob's items are resource items.
+    pub fn as_resource(&self) -> ResourceDecl {
+        ResourceDecl(self.0.clone())
+    }
+    pub fn content(&self) -> Option<ContentBlock> {
+        child(&self.0)
+    }
+}
+node!(ContentBlock, CONTENT_BLOCK);
+impl ContentBlock {
+    /// (key, values) pairs; a scalar value is a one-element list.
+    pub fn items(&self) -> Vec<(String, Vec<String>)> {
+        children::<ContentItem>(&self.0)
+            .filter_map(|i| {
+                let key = idents(&i.0).next()?.text().to_string();
+                let values: Vec<String> = if let Some(list) = child::<ListLiteralNode>(&i.0) {
+                    list.0.children().filter_map(LiteralExpr::cast).map(|l| unq_lit(&l.text())).collect()
+                } else {
+                    tokens(&i.0).filter(|t| matches!(t.kind(), K::INT | K::STRING | K::DURATION)).map(|t| unq_lit(t.text())).collect()
+                };
+                Some((key, values))
+            })
+            .collect()
+    }
+}
+node!(ContentItem, CONTENT_ITEM);
+node!(ListLiteralNode, LIST_LITERAL);
+fn unq_lit(s: &str) -> String {
+    if s.starts_with('"') { unquote(s) } else { s.to_string() }
+}
+
 node!(UniqueDecl, UNIQUE_DECL);
 impl UniqueDecl {
     pub fn fields(&self) -> Vec<String> {

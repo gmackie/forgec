@@ -1,0 +1,17 @@
+/// Documents attached to an order: quotes, signed contracts, proof of delivery.
+export blob OrderDocument
+  @tenant
+  @crud("/v1/order-documents")
+{
+  order : Order @immutable
+  kind : text trim lowercase length 1..32
+  label : text length 1..200
+
+  content {
+    mediaTypes ["application/pdf", "image/png", "image/jpeg"]
+    maxBytes 10485760
+  }
+
+  list by order
+    order by createdAt desc
+}

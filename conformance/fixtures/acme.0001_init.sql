@@ -89,6 +89,28 @@ CREATE TABLE order_ (
   CONSTRAINT order__status CHECK (status IN ('Draft', 'Completed', 'Cancelled', 'Submitted', 'Approved'))
 );
 
+CREATE TABLE order_document (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "order_" TEXT NOT NULL,
+  "kind" TEXT NOT NULL,
+  "label" TEXT NOT NULL,
+  "version" INTEGER NOT NULL,
+  "created_at" TEXT NOT NULL,
+  "updated_at" TEXT NOT NULL,
+  "upload_state" TEXT NOT NULL,
+  "media_type" TEXT,
+  "byte_count" INTEGER,
+  "digest" TEXT,
+  "upload_attempt" INTEGER,
+  "staged_media_type" TEXT,
+  "staged_byte_count" INTEGER,
+  "content_generation" INTEGER,
+  "sealed_generation" TEXT,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, order_) REFERENCES order_ (tenant, id)
+);
+
 CREATE TABLE site (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
@@ -109,5 +131,6 @@ CREATE UNIQUE INDEX customer_uq_code ON customer (tenant, code);
 CREATE INDEX customer_ix_by_tier ON customer (tenant, tier, name, id);
 CREATE INDEX order__ix_by_customer ON order_ (tenant, customer, created_at, id);
 CREATE INDEX order__ix_by_site_status ON order_ (tenant, site, status, created_at, id);
+CREATE INDEX order_document_ix_by_order ON order_document (tenant, order_, created_at, id);
 CREATE UNIQUE INDEX site_uq_code_within_customer ON site (tenant, customer, code);
 CREATE INDEX site_ix_by_customer ON site (tenant, customer, name, id);

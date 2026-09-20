@@ -144,6 +144,9 @@ pub struct Field {
     pub immutable: bool,
     pub server_owned: bool,
     pub synthesized: bool,
+    /// Stored but never exposed on the wire (internal bookkeeping such as upload staging state).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub hidden: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub doc: Option<String>,
 }
@@ -196,6 +199,8 @@ pub struct EffectiveDated {
 pub struct Resource {
     pub id: String,
     pub name: String,
+    /// "resource" or "blob"
+    pub kind: String,
     pub exported: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub doc: Option<String>,
@@ -207,7 +212,16 @@ pub struct Resource {
     pub rules: Vec<Expr>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lifecycle: Option<Lifecycle>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<ContentPolicy>,
     pub operations: Vec<Operation>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentPolicy {
+    pub media_types: Vec<String>,
+    pub max_bytes: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

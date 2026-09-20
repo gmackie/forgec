@@ -9,7 +9,9 @@
     "./d1": "./src/adapters/d1.ts",
     "./dynamodb": "./src/adapters/dynamodb.ts",
     "./cloudflare": "./src/hosts/cloudflare.ts",
-    "./aws": "./src/hosts/aws.ts"
+    "./aws": "./src/hosts/aws.ts",
+    "./r2": "./src/adapters/r2.ts",
+    "./s3": "./src/adapters/s3.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
@@ -21,7 +23,9 @@
     "@aws-sdk/client-dynamodb": "^3.1136.0",
     "@aws-sdk/lib-dynamodb": "^3.1136.0",
     "@aws-sdk/util-dynamodb": "3.996.9",
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "@aws-sdk/client-s3": "^3.1136.0",
+    "@aws-sdk/s3-request-presigner": "^3.1136.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250920.0",

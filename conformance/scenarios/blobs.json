@@ -1,0 +1,267 @@
+{
+  "id": "m4.blobs",
+  "title": "Blob lifecycle: intent, signed upload, verification, sealing, immutable download, rejection",
+  "steps": [
+    {
+      "name": "c",
+      "op": "@acme/commerce/_/Customer.create",
+      "input": {
+        "code": "BLOB",
+        "name": "B"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:1"
+        }
+      }
+    },
+    {
+      "name": "s",
+      "op": "@acme/commerce/_/Site.create",
+      "input": {
+        "customer": "$c.id",
+        "code": "hq",
+        "name": "HQ",
+        "timezone": "UTC"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:2"
+        }
+      }
+    },
+    {
+      "name": "o",
+      "op": "@acme/commerce/_/Order.create",
+      "input": {
+        "customer": "$c.id",
+        "site": "$s.id",
+        "subtotal": "1.00",
+        "tax": "0.00",
+        "requestedOn": "2026-09-20"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:3"
+        }
+      }
+    },
+    {
+      "name": "doc",
+      "op": "@acme/commerce/_/OrderDocument.create",
+      "input": {
+        "order": "$o.id",
+        "kind": " Quote ",
+        "label": "Q1"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:4",
+          "version": 1,
+          "uploadState": "intent",
+          "kind": "quote",
+          "mediaType": null,
+          "byteCount": null,
+          "digest": null
+        }
+      }
+    },
+    {
+      "name": "notReady",
+      "op": "@acme/commerce/_/OrderDocument.download",
+      "input": {
+        "id": "$doc.id"
+      },
+      "expect": {
+        "error": "InvalidTransition"
+      }
+    },
+    {
+      "name": "badType",
+      "op": "@acme/commerce/_/OrderDocument.beginUpload",
+      "input": {
+        "id": "$doc.id",
+        "expectedVersion": 1,
+        "mediaType": "text/html",
+        "byteCount": 5
+      },
+      "expect": {
+        "error": "ValidationFailed"
+      }
+    },
+    {
+      "name": "tooBig",
+      "op": "@acme/commerce/_/OrderDocument.beginUpload",
+      "input": {
+        "id": "$doc.id",
+        "expectedVersion": 1,
+        "mediaType": "application/pdf",
+        "byteCount": 99999999
+      },
+      "expect": {
+        "error": "PayloadTooLarge"
+      }
+    },
+    {
+      "name": "begin",
+      "op": "@acme/commerce/_/OrderDocument.beginUpload",
+      "input": {
+        "id": "$doc.id",
+        "expectedVersion": 1,
+        "mediaType": "application/pdf",
+        "byteCount": 5
+      },
+      "expect": {
+        "ok": {
+          "record": {
+            "uploadState": "uploading",
+            "version": 2
+          },
+          "upload": {
+            "method": "PUT"
+          }
+        }
+      }
+    },
+    {
+      "name": "finalizeEmpty",
+      "op": "@acme/commerce/_/OrderDocument.finalizeUpload",
+      "input": {
+        "id": "$doc.id",
+        "expectedVersion": 2
+      },
+      "expect": {
+        "error": "ValidationFailed"
+      }
+    },
+    {
+      "name": "put",
+      "transfer": {
+        "from": "$begin.upload",
+        "text": "hello"
+      },
+      "expect": {
+        "status": "2xx"
+      }
+    },
+    {
+      "name": "finalize",
+      "op": "@acme/commerce/_/OrderDocument.finalizeUpload",
+      "input": {
+        "id": "$doc.id",
+        "expectedVersion": 2
+      },
+      "expect": {
+        "ok": {
+          "uploadState": "ready",
+          "version": 3,
+          "mediaType": "application/pdf",
+          "byteCount": 5,
+          "digest": "sha256:2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+        }
+      }
+    },
+    {
+      "name": "tamper",
+      "transfer": {
+        "from": "$begin.upload",
+        "text": "EVIL!"
+      },
+      "expect": {
+        "status": "2xx"
+      }
+    },
+    {
+      "name": "download",
+      "op": "@acme/commerce/_/OrderDocument.download",
+      "input": {
+        "id": "$doc.id"
+      },
+      "expect": {
+        "ok": {
+          "method": "GET",
+          "mediaType": "application/pdf",
+          "byteCount": 5
+        }
+      }
+    },
+    {
+      "name": "get",
+      "transfer": {
+        "from": "$download"
+      },
+      "expect": {
+        "status": "2xx",
+        "text": "hello"
+      }
+    },
+    {
+      "name": "reupload",
+      "op": "@acme/commerce/_/OrderDocument.beginUpload",
+      "input": {
+        "id": "$doc.id",
+        "expectedVersion": 3,
+        "mediaType": "image/png",
+        "byteCount": 3
+      },
+      "expect": {
+        "ok": {
+          "record": {
+            "uploadState": "uploading",
+            "version": 4
+          }
+        }
+      }
+    },
+    {
+      "name": "putWrongSize",
+      "transfer": {
+        "from": "$reupload.upload",
+        "text": "toolong"
+      },
+      "expect": {
+        "status": "4xx"
+      }
+    },
+    {
+      "name": "rejected",
+      "op": "@acme/commerce/_/OrderDocument.finalizeUpload",
+      "input": {
+        "id": "$doc.id",
+        "expectedVersion": 4
+      },
+      "expect": {
+        "error": "ValidationFailed"
+      }
+    },
+    {
+      "name": "stillServesSealed",
+      "op": "@acme/commerce/_/OrderDocument.download",
+      "input": {
+        "id": "$doc.id"
+      },
+      "expect": {
+        "error": "InvalidTransition"
+      }
+    },
+    {
+      "name": "listed",
+      "op": "@acme/commerce/_/OrderDocument.list.byOrder",
+      "input": {
+        "params": {
+          "order": "$o.id"
+        }
+      },
+      "expect": {
+        "ok": {
+          "items": [
+            {
+              "id": "$id:4",
+              "label": "Q1"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

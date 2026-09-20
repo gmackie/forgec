@@ -15,6 +15,7 @@ fn parses_every_reference_app_file_without_errors() {
         "acme/src/orders/order.forge",
         "acme/src/orders/order-events.forge",
         "acme/src/orders/fulfillment.forge",
+        "acme/src/orders/attachments.forge",
         "payments/src/index.forge",
     ] {
         let src = fixture(rel);
@@ -92,4 +93,13 @@ fn doc_comments_attach_to_the_following_declaration_field_and_member() {
     assert_eq!(r.fields().next().unwrap().doc().as_deref(), Some("the code"));
     let Declaration::Enum(e) = &decls[1] else { panic!() };
     assert_eq!(e.members().next().unwrap().doc().as_deref(), Some("gold doc"));
+}
+
+#[test]
+fn parses_blob_declarations_with_content_block() {
+    let src = fixture("acme/src/orders/attachments.forge");
+    let parsed = parse(&src);
+    assert!(parsed.errors().is_empty(), "{:?}", parsed.errors());
+    assert_eq!(parsed.syntax().text().to_string(), src);
+    insta::assert_snapshot!(parsed.debug_tree());
 }

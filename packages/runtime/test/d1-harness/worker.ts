@@ -9,7 +9,8 @@ import { drizzleD1Executor, effectSqlExecutor, rawD1Executor, type SqlExecutor }
 import { Engine } from "../../src/engine.js";
 import { createHttpHandler, devHeaderAuth } from "../../src/http.js";
 import { Model, type AppBundle } from "../../src/model.js";
-import { Clock, CursorSecret, IdGen, Storage } from "../../src/services.js";
+import { Clock, CursorSecret, IdGen, Objects, Storage } from "../../src/services.js";
+import { MemoryObjectStore } from "../../src/adapters/memory-objects.js";
 import { productionIds } from "../../src/hosts/ids.js";
 import bundle from "../../../../conformance/fixtures/acme.app.json";
 
@@ -26,6 +27,7 @@ export default {
       Layer.succeed(IdGen)(productionIds()),
       Layer.succeed(Storage)(new D1Storage(mk(env.DB), model)),
       Layer.succeed(CursorSecret)({ key: "harness" }),
+      Layer.succeed(Objects)(new MemoryObjectStore()),
     );
     const engine = new Engine(model, layer);
     return createHttpHandler(model, engine, { auth: devHeaderAuth() })(request);

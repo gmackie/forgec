@@ -46,6 +46,7 @@ export interface Field {
   immutable: boolean;
   serverOwned: boolean;
   synthesized: boolean;
+  hidden?: boolean;
 }
 export interface Unique { name: string; fields: string[]; within: string[] }
 export interface Find { name: string; fields: string[]; coveredBy: string }
@@ -55,9 +56,12 @@ export interface Transition { action: string; from: string[]; to: string; input:
 export interface Lifecycle { field: string; enumId: string; states: string[]; initial: string; terminals: string[]; transitions: Transition[] }
 export interface HttpBinding { method: string; path: string }
 export interface Operation { id: string; kind: string; query?: string; action?: string; http?: HttpBinding }
+export interface ContentPolicy { mediaTypes: string[]; maxBytes: number }
 export interface Resource {
   id: string;
   name: string;
+  kind: "resource" | "blob";
+  content?: ContentPolicy;
   decorators: { tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; crud?: { path: string; operations?: string[]; actions: string[] } };
   fields: Field[];
   uniques: Unique[];

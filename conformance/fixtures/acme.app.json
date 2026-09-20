@@ -1,6 +1,6 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "638b1bace24cb58d033af99aba0dd4e3bc36f3401473cfeba33ba344289b319c",
+  "buildHash": "d466f5a0b699651b86cb4ee6a716fb0bdad862de347c7df61c2de6dd6d78b85d",
   "ir": {
     "version": "domain-ir/1",
     "package": {
@@ -265,6 +265,7 @@
           {
             "id": "@acme/commerce/_/Customer",
             "name": "Customer",
+            "kind": "resource",
             "exported": true,
             "doc": "A business that buys from Acme. Not the tenant.",
             "decorators": {
@@ -547,6 +548,7 @@
           {
             "id": "@acme/commerce/_/Order",
             "name": "Order",
+            "kind": "resource",
             "exported": true,
             "decorators": {
               "tenant": true,
@@ -1017,8 +1019,401 @@
             ]
           },
           {
+            "id": "@acme/commerce/_/OrderDocument",
+            "name": "OrderDocument",
+            "kind": "blob",
+            "exported": true,
+            "doc": "Documents attached to an order: quotes, signed contracts, proof of delivery.",
+            "decorators": {
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "crud": {
+                "path": "/v1/order-documents",
+                "actions": []
+              },
+              "hierarchical": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "order",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce/_/Order"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "kind",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim",
+                    "lowercase"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 32
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 200
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "uploadState",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "mediaType",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "byteCount",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "digest",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "uploadAttempt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true,
+                "hidden": true
+              },
+              {
+                "name": "stagedMediaType",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true,
+                "hidden": true
+              },
+              {
+                "name": "stagedByteCount",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true,
+                "hidden": true
+              },
+              {
+                "name": "contentGeneration",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true,
+                "hidden": true
+              },
+              {
+                "name": "sealedGeneration",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true,
+                "hidden": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "byOrder",
+                "fields": [
+                  "order"
+                ],
+                "order": [
+                  {
+                    "field": "createdAt",
+                    "direction": "desc"
+                  },
+                  {
+                    "field": "id",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "content": {
+              "mediaTypes": [
+                "application/pdf",
+                "image/png",
+                "image/jpeg"
+              ],
+              "maxBytes": 10485760
+            },
+            "operations": [
+              {
+                "id": "@acme/commerce/_/OrderDocument.create",
+                "kind": "create",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/order-documents"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.get",
+                "kind": "get",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/order-documents/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.update",
+                "kind": "update",
+                "http": {
+                  "method": "PATCH",
+                  "path": "/v1/order-documents/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.delete",
+                "kind": "delete",
+                "http": {
+                  "method": "DELETE",
+                  "path": "/v1/order-documents/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.list.byOrder",
+                "kind": "list",
+                "query": "byOrder",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/order-documents/queries/by-order"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.beginUpload",
+                "kind": "beginUpload",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/order-documents/{id}/upload"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.finalizeUpload",
+                "kind": "finalizeUpload",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/order-documents/{id}/finalize"
+                }
+              },
+              {
+                "id": "@acme/commerce/_/OrderDocument.download",
+                "kind": "download",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/order-documents/{id}/content"
+                }
+              }
+            ]
+          },
+          {
             "id": "@acme/commerce/_/Site",
             "name": "Site",
+            "kind": "resource",
             "exported": true,
             "decorators": {
               "tenant": true,
@@ -2228,6 +2623,253 @@
         ]
       },
       {
+        "id": "@acme/commerce/_/OrderDocument",
+        "name": "OrderDocument",
+        "wireName": "order_document",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "uploadState": {
+              "type": "string",
+              "x-forge-type": "text",
+              "readOnly": true
+            },
+            "mediaType": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-type": "text",
+              "readOnly": true
+            },
+            "byteCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "digest": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-type": "text",
+              "readOnly": true
+            },
+            "order": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce/_/Order"
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 32,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "id",
+            "id",
+            "version",
+            "createdAt",
+            "updatedAt",
+            "uploadState",
+            "mediaType",
+            "byteCount",
+            "digest",
+            "order",
+            "kind",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "order": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce/_/Order"
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 32,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "order",
+            "kind",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 32,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byOrder",
+            "kind": "list",
+            "params": [
+              "order"
+            ],
+            "order": [
+              {
+                "field": "createdAt",
+                "direction": "desc"
+              },
+              {
+                "field": "id",
+                "direction": "desc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@acme/commerce/_/OrderDocument.create",
+            "kind": "create",
+            "http": {
+              "method": "POST",
+              "path": "/v1/order-documents"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.get",
+            "kind": "get",
+            "http": {
+              "method": "GET",
+              "path": "/v1/order-documents/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.update",
+            "kind": "update",
+            "http": {
+              "method": "PATCH",
+              "path": "/v1/order-documents/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.delete",
+            "kind": "delete",
+            "http": {
+              "method": "DELETE",
+              "path": "/v1/order-documents/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.list.byOrder",
+            "kind": "list",
+            "query": "byOrder",
+            "http": {
+              "method": "GET",
+              "path": "/v1/order-documents/queries/by-order"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.beginUpload",
+            "kind": "beginUpload",
+            "http": {
+              "method": "POST",
+              "path": "/v1/order-documents/{id}/upload"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.finalizeUpload",
+            "kind": "finalizeUpload",
+            "http": {
+              "method": "POST",
+              "path": "/v1/order-documents/{id}/finalize"
+            }
+          },
+          {
+            "id": "@acme/commerce/_/OrderDocument.download",
+            "kind": "download",
+            "http": {
+              "method": "GET",
+              "path": "/v1/order-documents/{id}/content"
+            }
+          }
+        ]
+      },
+      {
         "id": "@acme/commerce/_/Site",
         "name": "Site",
         "wireName": "site",
@@ -2688,6 +3330,148 @@
         ]
       },
       {
+        "name": "order_document",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "order_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "order",
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "kind",
+            "storage": "text"
+          },
+          {
+            "name": "label",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "label",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          },
+          {
+            "name": "upload_state",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "uploadState",
+            "storage": "text"
+          },
+          {
+            "name": "media_type",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "mediaType",
+            "storage": "text"
+          },
+          {
+            "name": "byte_count",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "field": "byteCount",
+            "storage": "integer"
+          },
+          {
+            "name": "digest",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "digest",
+            "storage": "text"
+          },
+          {
+            "name": "upload_attempt",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "field": "uploadAttempt",
+            "storage": "integer"
+          },
+          {
+            "name": "staged_media_type",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "stagedMediaType",
+            "storage": "text"
+          },
+          {
+            "name": "staged_byte_count",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "field": "stagedByteCount",
+            "storage": "integer"
+          },
+          {
+            "name": "content_generation",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "field": "contentGeneration",
+            "storage": "integer"
+          },
+          {
+            "name": "sealed_generation",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "sealedGeneration",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "order_"
+            ],
+            "references": "order_",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
         "name": "site",
         "resource": "@acme/commerce/_/Site",
         "columns": [
@@ -2828,6 +3612,18 @@
         ],
         "unique": false,
         "query": "bySiteStatus"
+      },
+      {
+        "name": "order_document_ix_by_order",
+        "table": "order_document",
+        "columns": [
+          "tenant",
+          "order_",
+          "created_at",
+          "id"
+        ],
+        "unique": false,
+        "query": "byOrder"
       },
       {
         "name": "site_uq_code_within_customer",
@@ -3231,6 +4027,43 @@
           }
         ],
         "createActions": 7
+      },
+      {
+        "id": "@acme/commerce/_/OrderDocument",
+        "name": "OrderDocument",
+        "wireName": "order_document",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "byOrder",
+            "kind": "list",
+            "partitionFields": [
+              "order"
+            ],
+            "sortFields": [
+              "createdAt",
+              "id"
+            ],
+            "sortDirections": [
+              "desc",
+              "desc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "order",
+              "createdAt"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "order",
+            "target": "@acme/commerce/_/Order"
+          }
+        ],
+        "createActions": 5
       },
       {
         "id": "@acme/commerce/_/Site",

@@ -27,7 +27,7 @@ pub fn parse_to_green(src: &str) -> (GreenNode, Vec<SyntaxError>) {
     (p.builder.finish(), p.errors)
 }
 
-const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "function", "channel", "source", "on", "import", "module", "export"];
+const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "function", "channel", "source", "on", "import", "module", "export"];
 
 impl<'a> Parser<'a> {
     // ---------------------------------------------------------------- cursor
@@ -214,10 +214,44 @@ impl<'a> Parser<'a> {
         }
     }
     /// Wrap everything up to the end of the line (or the closing brace) in an ERROR node.
+    /// Always consumes at least one token so callers cannot spin.
     fn recover_line(&mut self) {
         self.start(K::ERROR);
+        let mut consumed = false;
         while !self.at_line_end() {
             self.bump();
+            consumed = true;
+        }
+        if !consumed && !self.at_eof() {
+            self.bump();
+        }
+        self.finish();
+    }
+
+    /// Recovery for an unknown top-level declaration: skip it entirely, including
+    /// any brace-balanced body, so the next real declaration parses normally.
+    fn recover_declaration(&mut self) {
+        self.start(K::ERROR);
+        let mut depth = 0usize;
+        loop {
+            match self.current() {
+                TokenKind::Eof => break,
+                TokenKind::LBrace => {
+                    depth += 1;
+                    self.bump();
+                }
+                TokenKind::RBrace => {
+                    self.bump();
+                    if depth > 0 {
+                        depth -= 1;
+                        if depth == 0 {
+                            break;
+                        }
+                    }
+                }
+                TokenKind::Newline | TokenKind::Semicolon if depth == 0 => break,
+                _ => self.bump(),
+            }
         }
         self.finish();
     }
@@ -253,6 +287,7 @@ impl<'a> Parser<'a> {
             "type" => K::TYPE_DECL,
             "shape" => K::SHAPE_DECL,
             "resource" => K::RESOURCE_DECL,
+            "blob" => K::BLOB_DECL,
             "function" => K::FUNCTION_DECL,
             "channel" => K::CHANNEL_DECL,
             "source" => K::SOURCE_DECL,
@@ -261,7 +296,7 @@ impl<'a> Parser<'a> {
             "module" => K::MODULE_DECL,
             _ => {
                 self.error(format!("expected a declaration, found {}", self.describe()));
-                self.recover_line();
+                self.recover_declaration();
                 return;
             }
         };
@@ -275,6 +310,7 @@ impl<'a> Parser<'a> {
             K::TYPE_DECL => self.type_body(),
             K::SHAPE_DECL => self.shape_body(),
             K::RESOURCE_DECL => self.resource_body(),
+            K::BLOB_DECL => self.blob_body(),
             K::FUNCTION_DECL => self.function_body(),
             K::CHANNEL_DECL => self.channel_body(),
             K::SOURCE_DECL => self.source_body(),
@@ -708,6 +744,48 @@ impl<'a> Parser<'a> {
             }
         });
         self.finish();
+    }
+
+    // ------------------------------------------------------------------ blob
+    /// A blob is a resource (metadata fields, queries) plus a `content { ... }` policy block.
+    fn blob_body(&mut self) {
+        self.expect_ident("blob name");
+        self.header_decorators();
+        self.block(|p| {
+            if p.at_kw("content") && p.nth(1) == TokenKind::LBrace {
+                p.start(K::CONTENT_BLOCK);
+                p.bump();
+                p.block(|q| {
+                    if q.at(TokenKind::Ident) {
+                        q.start(K::CONTENT_ITEM);
+                        q.bump();
+                        match q.current() {
+                            TokenKind::Int | TokenKind::String | TokenKind::Duration => q.bump(),
+                            TokenKind::LBracket => {
+                                q.start(K::LIST_LITERAL);
+                                q.bump();
+                                while !q.at(TokenKind::RBracket) && !q.at_line_end() {
+                                    q.literal_or_error();
+                                    if q.at(TokenKind::Comma) {
+                                        q.bump();
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                q.expect(TokenKind::RBracket, "`]`");
+                                q.finish();
+                            }
+                            _ => q.error("expected a content policy value"),
+                        }
+                        q.finish();
+                        q.end_item();
+                    }
+                });
+                p.finish();
+            } else {
+                p.resource_item();
+            }
+        });
     }
 
     // -------------------------------------------------------------- function

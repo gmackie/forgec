@@ -15,6 +15,15 @@ export class HttpTarget implements Target {
   async reset(): Promise<void> {
     /* remote targets are not reset; scenarios run in fresh tenants */
   }
+  async transfer(signed: { url: string; method: string; headers?: Record<string, string> }, body?: Uint8Array): Promise<{ status: number; bytes: Uint8Array }> {
+    // The client always sends its real content-length (a mismatched header cannot even be transmitted);
+    // whether the store accepts bytes that differ from the upload intent is the server's decision.
+    const headers = { ...(signed.headers ?? {}) };
+    delete headers["content-length"];
+    const res = await fetch(signed.url, { method: signed.method, headers, body: body ? new Blob([body as BlobPart]) : null });
+    return { status: res.status, bytes: new Uint8Array(await res.arrayBuffer()) };
+  }
+
   async call(op: string, input: unknown, ctx: CallContext): Promise<CallResult> {
     const c = this.client.createClient({ baseUrl: this.baseUrl, tenant: ctx.tenant, actor: ctx.actor });
     const r = await c.call(op, input, ctx.idempotencyKey ? { idempotencyKey: ctx.idempotencyKey } : undefined);

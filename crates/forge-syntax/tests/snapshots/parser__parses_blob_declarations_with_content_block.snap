@@ -1,0 +1,113 @@
+---
+source: crates/forge-syntax/tests/parser.rs
+assertion_line: 104
+expression: parsed.debug_tree()
+---
+ROOT@0..396
+  BLOB_DECL@0..395
+    DOC_COMMENT@0..80 "/// Documents attached to an order: quotes, signed contracts, proof of delivery."
+    NEWLINE@80..81 "\\n"
+    IDENT@81..87 "export"
+    IDENT@88..92 "blob"
+    IDENT@93..106 "OrderDocument"
+    NEWLINE@106..107 "\\n"
+    DECORATOR@109..116
+      AT@109..110 "@"
+      IDENT@110..116 "tenant"
+    NEWLINE@116..117 "\\n"
+    DECORATOR@119..147
+      AT@119..120 "@"
+      IDENT@120..124 "crud"
+      DECORATOR_ARGS@124..147
+        L_PAREN@124..125 "("
+        DECORATOR_ARG@125..146
+          LITERAL_EXPR@125..146
+            STRING@125..146 "\"/v1/order-documents\""
+        R_PAREN@146..147 ")"
+    NEWLINE@147..148 "\\n"
+    L_BRACE@148..149 "{"
+    NEWLINE@149..150 "\\n"
+    FIELD_DECL@152..176
+      IDENT@152..157 "order"
+      COLON@158..159 ":"
+      TYPE_EXPR@160..165
+        TYPE_REF@160..165
+          QUALIFIED_NAME@160..165
+            IDENT@160..165 "Order"
+      DECORATOR@166..176
+        AT@166..167 "@"
+        IDENT@167..176 "immutable"
+    NEWLINE@176..177 "\\n"
+    FIELD_DECL@179..218
+      IDENT@179..183 "kind"
+      COLON@184..185 ":"
+      TYPE_EXPR@186..218
+        TYPE_REF@186..190
+          QUALIFIED_NAME@186..190
+            IDENT@186..190 "text"
+        REFINEMENT@191..195
+          IDENT@191..195 "trim"
+        REFINEMENT@196..205
+          IDENT@196..205 "lowercase"
+        REFINEMENT@206..218
+          IDENT@206..212 "length"
+          RANGE@213..218
+            INT@213..214 "1"
+            DOT_DOT@214..216 ".."
+            INT@216..218 "32"
+    NEWLINE@218..219 "\\n"
+    FIELD_DECL@221..247
+      IDENT@221..226 "label"
+      COLON@227..228 ":"
+      TYPE_EXPR@229..247
+        TYPE_REF@229..233
+          QUALIFIED_NAME@229..233
+            IDENT@229..233 "text"
+        REFINEMENT@234..247
+          IDENT@234..240 "length"
+          RANGE@241..247
+            INT@241..242 "1"
+            DOT_DOT@242..244 ".."
+            INT@244..247 "200"
+    NEWLINE@247..248 "\\n"
+    NEWLINE@248..249 "\\n"
+    CONTENT_BLOCK@251..348
+      IDENT@251..258 "content"
+      L_BRACE@259..260 "{"
+      NEWLINE@260..261 "\\n"
+      CONTENT_ITEM@265..322
+        IDENT@265..275 "mediaTypes"
+        LIST_LITERAL@276..322
+          L_BRACKET@276..277 "["
+          LITERAL_EXPR@277..294
+            STRING@277..294 "\"application/pdf\""
+          COMMA@294..295 ","
+          LITERAL_EXPR@296..307
+            STRING@296..307 "\"image/png\""
+          COMMA@307..308 ","
+          LITERAL_EXPR@309..321
+            STRING@309..321 "\"image/jpeg\""
+          R_BRACKET@321..322 "]"
+      NEWLINE@322..323 "\\n"
+      CONTENT_ITEM@327..344
+        IDENT@327..335 "maxBytes"
+        INT@336..344 "10485760"
+      NEWLINE@344..345 "\\n"
+      R_BRACE@347..348 "}"
+    NEWLINE@348..349 "\\n"
+    NEWLINE@349..350 "\\n"
+    LIST_DECL@352..393
+      IDENT@352..356 "list"
+      IDENT@357..359 "by"
+      FIELD_LIST@360..365
+        IDENT@360..365 "order"
+      NEWLINE@365..366 "\\n"
+      IDENT@370..375 "order"
+      IDENT@376..378 "by"
+      ORDER_LIST@379..393
+        ORDER_KEY@379..393
+          IDENT@379..388 "createdAt"
+          IDENT@389..393 "desc"
+    NEWLINE@393..394 "\\n"
+    R_BRACE@394..395 "}"
+  NEWLINE@395..396 "\\n"

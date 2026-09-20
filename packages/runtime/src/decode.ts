@@ -153,6 +153,7 @@ export function canonicalize(model: Model, r: Resource, stored: Wire): Wire {
   const out: Wire = {};
   const ordered = [r.fields.find((f) => f.name === "id"), ...r.fields.filter((f) => f.synthesized), ...r.fields.filter((f) => !f.synthesized && f.name !== "id")].filter((f): f is Field => !!f);
   for (const f of ordered) {
+    if (f.hidden) continue;
     if (f.derived) {
       out[f.name] = evalExpr(model, r, f.derived, stored, f.type);
     } else {

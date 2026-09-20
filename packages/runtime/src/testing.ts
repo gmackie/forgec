@@ -1,9 +1,10 @@
 /** Deterministic service implementations for tests and the in-memory target. */
 import { Layer } from "effect";
 import type { Resource } from "./model.js";
-import { Clock, CursorSecret, IdGen, Storage, type StorageAdapter } from "./services.js";
+import { MemoryObjectStore } from "./adapters/memory-objects.js";
+import { Clock, CursorSecret, IdGen, Objects, Storage, type ObjectStoreAdapter, type StorageAdapter } from "./services.js";
 
-export function testLayer(storage: StorageAdapter, opts: { start?: string; secret?: string; runId?: string } = {}) {
+export function testLayer(storage: StorageAdapter, opts: { start?: string; secret?: string; runId?: string; objects?: ObjectStoreAdapter } = {}) {
   let t = Date.parse(opts.start ?? "2026-01-01T00:00:00.000Z");
   const counters = new Map<string, number>();
   let ops = 0;
@@ -19,5 +20,5 @@ export function testLayer(storage: StorageAdapter, opts: { start?: string; secre
     },
     opId: () => `${runId}op_${String(++ops).padStart(6, "0")}`,
   });
-  return Layer.mergeAll(clock, ids, Layer.succeed(Storage)(storage), Layer.succeed(CursorSecret)({ key: opts.secret ?? "test-secret" }));
+  return Layer.mergeAll(clock, ids, Layer.succeed(Storage)(storage), Layer.succeed(CursorSecret)({ key: opts.secret ?? "test-secret" }), Layer.succeed(Objects)(opts.objects ?? new MemoryObjectStore()));
 }

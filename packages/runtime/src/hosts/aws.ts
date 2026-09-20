@@ -1,10 +1,12 @@
 /** AWS Lambda host (API Gateway HTTP API v2 payload -> Fetch Request -> Response -> v2 result). */
 import { Layer } from "effect";
 import { DynamoStorage } from "../adapters/dynamodb.js";
+import { S3ObjectStore } from "../adapters/s3.js";
+import { MemoryObjectStore } from "../adapters/memory-objects.js";
 import { Engine } from "../engine.js";
 import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
-import { Clock, CursorSecret, IdGen, Storage } from "../services.js";
+import { Clock, CursorSecret, IdGen, Objects, Storage } from "../services.js";
 import { productionIds } from "./ids.js";
 
 export interface ApiGatewayV2Event {
@@ -39,6 +41,7 @@ export async function toResult(res: Response): Promise<ApiGatewayV2Result> {
 
 export interface LambdaEnv {
   FORGE_TABLE: string;
+  FORGE_BUCKET?: string;
   AWS_REGION?: string;
   CURSOR_SECRET: string;
   FORGE_AUTH?: string;
@@ -55,6 +58,7 @@ export function createLambdaHandler(bundle: AppBundle, options: { auth?: AuthHos
     Layer.succeed(IdGen)(productionIds()),
     Layer.succeed(Storage)(storage),
     Layer.succeed(CursorSecret)({ key: env.CURSOR_SECRET }),
+    Layer.succeed(Objects)(env.FORGE_BUCKET ? new S3ObjectStore(env.FORGE_BUCKET, env.AWS_REGION ?? "us-east-1") : new MemoryObjectStore()),
   );
   const engine = new Engine(model, layer);
   const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID() }) : null;

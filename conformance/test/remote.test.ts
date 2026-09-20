@@ -23,7 +23,7 @@ describe.skipIf(!url)(`conformance against ${name} (${url})`, () => {
       const report = await runScenario(scenario, new HttpTarget(client, url!, name), { tenant: `t-${randomUUID().slice(0, 8)}` });
       reports.push(report);
       expect(report.failures).toEqual([]);
-    });
+    }, 60_000);
   }
   afterAll(() => {
     const dir = resolve(import.meta.dirname, "..", "reports");

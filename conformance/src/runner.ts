@@ -15,7 +15,15 @@ export interface RaceStep {
   expect: { successes: number | { min: number; max: number }; failureCodes: string[] };
 }
 
-export type Step = CallStep | RaceStep;
+/** PUT `bytes` (utf-8 text) to a signed upload from a prior step, or GET from a signed download. */
+export interface TransferStep {
+  name: string;
+  transfer: { from: string; text?: string };
+  /** `status` may be a class ("2xx", "4xx") — providers differ on the exact success code for a signed PUT. */
+  expect: { status: number | string; text?: string };
+}
+
+export type Step = CallStep | RaceStep | TransferStep;
 
 export interface Scenario {
   id: string;
@@ -85,7 +93,7 @@ function diff(expected: unknown, actual: unknown, path: string, out: Failure[], 
 }
 
 /** Deployment metadata that legitimately differs per run/target is dropped before comparison. */
-const VOLATILE = new Set(["createdAt", "updatedAt", "requestId", "etag"]);
+const VOLATILE = new Set(["createdAt", "updatedAt", "requestId", "etag", "expiresAt", "url"]);
 function normalize(value: unknown, ids: string[]): unknown {
   if (Array.isArray(value)) return value.map((v) => normalize(v, ids));
   if (value && typeof value === "object") {
@@ -111,6 +119,23 @@ export async function runScenario(scenario: Scenario, target: Target, options: R
   const base: CallContext = { ...DEFAULT_CTX, ...(options.tenant ? { tenant: options.tenant } : {}) };
 
   for (const step of scenario.steps) {
+    if ("transfer" in step) {
+      const signed = resolveRefs(step.transfer.from, raw, ids) as { url: string; method: string; headers?: Record<string, string> };
+      if (!target.transfer) {
+        failures.push({ step: step.name, path: "", expected: "target supports transfer", actual: "no transfer support" });
+        continue;
+      }
+      const res = await target.transfer(signed, step.transfer.text !== undefined ? new TextEncoder().encode(step.transfer.text) : undefined);
+      const want = step.expect.status;
+      const okStatus = typeof want === "number" ? res.status === want : String(res.status)[0] === want[0];
+      if (!okStatus) failures.push({ step: step.name, path: "status", expected: want, actual: res.status });
+      if (step.expect.text !== undefined) {
+        const text = new TextDecoder().decode(res.bytes);
+        if (text !== step.expect.text) failures.push({ step: step.name, path: "text", expected: step.expect.text, actual: text });
+      }
+      results[step.name] = { ok: true, value: { status: res.status } };
+      continue;
+    }
     if ("race" in step) {
       const calls = "calls" in step.race ? step.race.calls : step.race.inputs.map((input) => ({ op: (step.race as { op: string }).op, input }));
       const outcomes = await Promise.all(calls.map((c) => target.call(c.op, resolveRefs(c.input, raw, ids), base)));

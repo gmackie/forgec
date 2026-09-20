@@ -164,6 +164,15 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       case "transition":
         input = { id: params["id"], expectedVersion, input: body ?? {} };
         break;
+      case "beginUpload":
+        input = { id: params["id"], expectedVersion, ...((body ?? {}) as Record<string, unknown>) };
+        break;
+      case "finalizeUpload":
+        input = { id: params["id"], expectedVersion };
+        break;
+      case "download":
+        input = { id: params["id"] };
+        break;
       case "find":
       case "list": {
         const q: Record<string, string> = {};

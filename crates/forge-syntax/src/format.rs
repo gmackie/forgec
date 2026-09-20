@@ -21,7 +21,7 @@ struct Tok {
 }
 
 fn header_kind(k: K) -> bool {
-    matches!(k, K::RESOURCE_DECL | K::FUNCTION_DECL | K::CHANNEL_DECL | K::SOURCE_DECL)
+    matches!(k, K::RESOURCE_DECL | K::BLOB_DECL | K::FUNCTION_DECL | K::CHANNEL_DECL | K::SOURCE_DECL)
 }
 
 fn collect(node: &SyntaxNode, out: &mut Vec<Tok>) {

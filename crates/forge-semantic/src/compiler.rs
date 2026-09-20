@@ -55,6 +55,7 @@ enum SymKind {
     Type,
     Shape,
     Resource,
+    Blob,
     Function,
     Channel,
     Source,
@@ -179,6 +180,7 @@ impl<'a> Ctx<'a> {
                     Declaration::Type(_) => SymKind::Type,
                     Declaration::Shape(_) => SymKind::Shape,
                     Declaration::Resource(_) => SymKind::Resource,
+                    Declaration::Blob(_) => SymKind::Blob,
                     Declaration::Function(_) => SymKind::Function,
                     Declaration::Channel(_) => SymKind::Channel,
                     Declaration::Source(_) => SymKind::Source,
@@ -234,7 +236,7 @@ impl<'a> Ctx<'a> {
                     return Some(match s.kind {
                         SymKind::Enum => Resolved::Type(TypeBase::Enum { id }),
                         SymKind::Shape => Resolved::Type(TypeBase::Shape { id }),
-                        SymKind::Resource => Resolved::Type(TypeBase::Reference { resource: id }),
+                        SymKind::Resource | SymKind::Blob => Resolved::Type(TypeBase::Reference { resource: id }),
                         SymKind::Function => Resolved::Function(id),
                         SymKind::Channel => Resolved::Channel(id),
                         SymKind::Type => Resolved::Type(self.alias_base(module, a)),
@@ -254,7 +256,7 @@ impl<'a> Ctx<'a> {
                 if let Some(s) = self.sym(module, a) {
                     let id = self.id(module, a);
                     match s.kind {
-                        SymKind::Resource => {
+                        SymKind::Resource | SymKind::Blob => {
                             return match b.as_str() {
                                 "Record" => Some(Resolved::Type(TypeBase::Record { resource: id })),
                                 "Id" => Some(Resolved::Type(TypeBase::Identity { resource: id })),
@@ -325,7 +327,7 @@ impl<'a> Ctx<'a> {
                             return match s.kind {
                                 SymKind::Enum => TypeBase::Enum { id },
                                 SymKind::Shape => TypeBase::Shape { id },
-                                SymKind::Resource => TypeBase::Reference { resource: id },
+                                SymKind::Resource | SymKind::Blob => TypeBase::Reference { resource: id },
                                 SymKind::Type => self.alias_base(module, a),
                                 _ => TypeBase::Scalar { name: "text".into(), args: vec![] },
                             };
@@ -482,7 +484,7 @@ impl<'a> Ctx<'a> {
             }
             let ir = self.expr(&expr, module, file, scope);
             let ty = ir.as_ref().and_then(|e| self.infer(e, module, scope)).unwrap_or(TypeSpec { base: TypeBase::Scalar { name: "json".into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![] });
-            return Some(Field { name, ty, default: None, derived: ir, immutable: true, server_owned: true, synthesized: false, doc: fd.doc() });
+            return Some(Field { name, ty, default: None, derived: ir, immutable: true, server_owned: true, synthesized: false, hidden: false, doc: fd.doc() });
         }
         let te = fd.type_expr()?;
         let ty = self.type_spec(&te, module, file)?;
@@ -490,7 +492,7 @@ impl<'a> Ctx<'a> {
             Some(e) => self.default_literal(&e, &ty, module, file),
             None => None,
         };
-        Some(Field { name, ty, default, derived: None, immutable, server_owned: false, synthesized: false, doc: fd.doc() })
+        Some(Field { name, ty, default, derived: None, immutable, server_owned: false, synthesized: false, hidden: false, doc: fd.doc() })
     }
 
     fn default_literal(&mut self, e: &ast::Expr, ty: &TypeSpec, module: &str, file: usize) -> Option<Literal> {
@@ -686,7 +688,7 @@ impl<'a> Ctx<'a> {
 
     fn synthesized_fields(&self, d: &ResourceDecorators, has_lifecycle: bool, resource_id: &str) -> Vec<Field> {
         let scalar = |n: &str, optional: bool| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional, normalizers: vec![], constraints: vec![] };
-        let mk = |name: &str, ty: TypeSpec| Field { name: name.into(), ty, default: None, derived: None, immutable: false, server_owned: true, synthesized: true, doc: None };
+        let mk = |name: &str, ty: TypeSpec| Field { name: name.into(), ty, default: None, derived: None, immutable: false, server_owned: true, synthesized: true, hidden: false, doc: None };
         let mut out = Vec::new();
         if d.versioned {
             out.push(mk("version", scalar("integer", false)));
@@ -706,14 +708,18 @@ impl<'a> Ctx<'a> {
             out.push(mk("effectiveUntil", scalar("datetime", true)));
         }
         if d.hierarchical {
-            out.push(Field { name: "parent".into(), ty: TypeSpec { base: TypeBase::Reference { resource: resource_id.into() }, optional: true, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: false, server_owned: false, synthesized: true, doc: None });
+            out.push(Field { name: "parent".into(), ty: TypeSpec { base: TypeBase::Reference { resource: resource_id.into() }, optional: true, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: false, server_owned: false, synthesized: true, hidden: false, doc: None });
         }
         out
     }
 
-    fn resource(&mut self, r: &ast::ResourceDecl, module: &str, file: usize, exported: bool, enums_out: &mut Vec<EnumDecl>) -> Option<Resource> {
+    fn resource(&mut self, r: &ast::ResourceDecl, module: &str, file: usize, exported: bool, enums_out: &mut Vec<EnumDecl>, blob: Option<&ast::BlobDecl>) -> Option<Resource> {
         let name = r.name()?.text().to_string();
         let id = self.id(module, &name);
+        let content = match blob {
+            Some(b) => Some(self.content_policy(b, file)?),
+            None => None,
+        };
 
         // decorators
         for dec in r.decorators() {
@@ -746,6 +752,11 @@ impl<'a> Ctx<'a> {
                 fields.push(f);
             }
         }
+        if blob.is_some() && !declared_names.contains("id") {
+            // Blobs synthesize their id.
+            fields.insert(0, Field { name: "id".into(), ty: TypeSpec { base: TypeBase::Scalar { name: "id".into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: true, server_owned: true, synthesized: true, hidden: false, doc: None });
+            declared_names.insert("id".into());
+        }
         if !declared_names.contains("id") {
             self.err("E-RES-002", file, range_of(r), format!("resource `{name}` must declare `id : id`"), None);
         } else if let Some(f) = fields.iter_mut().find(|f| f.name == "id") {
@@ -755,7 +766,15 @@ impl<'a> Ctx<'a> {
                 self.err("E-RES-004", file, range_of(r), "`id` must have type `id`", None);
             }
         }
-        let synthesized = self.synthesized_fields(&decorators, r.lifecycle().is_some(), &id);
+        let mut decorators = decorators;
+        if blob.is_some() {
+            decorators.timestamps = true;
+            decorators.versioned = true;
+        }
+        let mut synthesized = self.synthesized_fields(&decorators, r.lifecycle().is_some(), &id);
+        if blob.is_some() {
+            synthesized.extend(blob_fields());
+        }
         for s in &synthesized {
             if declared_names.contains(&s.name) {
                 let tok = r.fields().find_map(|f| f.name().filter(|t| t.text() == s.name)).unwrap();
@@ -875,6 +894,11 @@ impl<'a> Ctx<'a> {
         for l in &lists {
             push("list", Some(l.name.clone()), None, if allowed("list") { http("GET", &format!("/queries/{}", kebab(&l.fields))) } else { None });
         }
+        if blob.is_some() {
+            push("beginUpload", None, None, if allowed("beginUpload") { http("POST", "/{id}/upload") } else { None });
+            push("finalizeUpload", None, None, if allowed("finalizeUpload") { http("POST", "/{id}/finalize") } else { None });
+            push("download", None, None, if allowed("download") { http("GET", "/{id}/content") } else { None });
+        }
         if let Some(lc) = &lifecycle {
             for t in &lc.transitions {
                 let exposed = crud.as_ref().is_some_and(|c| c.actions.iter().any(|a| a == &t.action));
@@ -891,7 +915,35 @@ impl<'a> Ctx<'a> {
             }
         }
 
-        Some(Resource { id, name, exported, doc: r.syntax().parent().and(None).or(ast::doc_of(r.syntax())), decorators, fields, uniques, finds, lists, rules, lifecycle, operations })
+        Some(Resource { id, name, kind: if blob.is_some() { "blob".into() } else { "resource".into() }, exported, doc: ast::doc_of(r.syntax()), decorators, fields, uniques, finds, lists, rules, lifecycle, content, operations })
+    }
+
+    fn content_policy(&mut self, b: &ast::BlobDecl, file: usize) -> Option<ContentPolicy> {
+        let Some(cb) = b.content() else {
+            self.err("E-BLOB-002", file, range_of(b), "a blob must declare a `content { mediaTypes [...] maxBytes N }` block", None);
+            return None;
+        };
+        let mut media_types = Vec::new();
+        let mut max_bytes: Option<u64> = None;
+        for (key, values) in cb.items() {
+            match key.as_str() {
+                "mediaTypes" => media_types = values,
+                "maxBytes" => max_bytes = values.first().and_then(|v| v.parse().ok()),
+                other => self.err("E-BLOB-003", file, range_of(&cb), format!("unknown content policy key `{other}`"), Some("known keys: mediaTypes, maxBytes".into())),
+            }
+        }
+        let max_bytes = match max_bytes {
+            Some(n) if n > 0 => n,
+            _ => {
+                self.err("E-BLOB-001", file, range_of(&cb), "content policy needs `maxBytes` greater than zero", None);
+                return None;
+            }
+        };
+        if media_types.is_empty() {
+            self.err("E-BLOB-001", file, range_of(&cb), "content policy needs at least one media type", None);
+            return None;
+        }
+        Some(ContentPolicy { media_types, max_bytes })
     }
 
     fn lifecycle(&mut self, l: &ast::LifecycleBlock, module: &str, file: usize, resource_id: &str, exported: bool, enums_out: &mut Vec<EnumDecl>) -> Option<Lifecycle> {
@@ -1192,7 +1244,12 @@ impl<'a> Ctx<'a> {
                     m.shapes.push(Shape { id, name, exported, doc: decl.doc(), fields });
                 }
                 (SymKind::Resource, Declaration::Resource(r)) => {
-                    if let Some(res) = self.resource(r, &module, file, exported, &mut extra_enums) {
+                    if let Some(res) = self.resource(r, &module, file, exported, &mut extra_enums, None) {
+                        m.resources.push(res);
+                    }
+                }
+                (SymKind::Blob, Declaration::Blob(b)) => {
+                    if let Some(res) = self.resource(&b.as_resource(), &module, file, exported, &mut extra_enums, Some(b)) {
                         m.resources.push(res);
                     }
                 }
@@ -1265,6 +1322,24 @@ impl<'a> Ctx<'a> {
             modules,
         }
     }
+}
+
+/// Server-owned upload lifecycle metadata every blob carries (plan §13).
+fn blob_fields() -> Vec<Field> {
+    let scalar = |n: &str, optional: bool| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional, normalizers: vec![], constraints: vec![] };
+    let mk = |name: &str, ty: TypeSpec, hidden: bool| Field { name: name.into(), ty, default: None, derived: None, immutable: false, server_owned: true, synthesized: true, hidden, doc: None };
+    vec![
+        mk("uploadState", scalar("text", false), false), // intent | uploading | uploaded | verifying | ready | rejected
+        mk("mediaType", scalar("text", true), false),
+        mk("byteCount", scalar("integer", true), false),
+        mk("digest", scalar("text", true), false),
+        // private staging/sealing bookkeeping
+        mk("uploadAttempt", scalar("integer", true), true),
+        mk("stagedMediaType", scalar("text", true), true),
+        mk("stagedByteCount", scalar("integer", true), true),
+        mk("contentGeneration", scalar("integer", true), true),
+        mk("sealedGeneration", scalar("text", true), true),
+    ]
 }
 
 fn short(id: &str) -> &str {

@@ -4,6 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as path from "node:path";
 
@@ -27,6 +28,14 @@ const table = new dynamodb.TableV2(stack, "Data", {
   ],
 });
 
+const bucket = new s3.Bucket(stack, "Blobs", {
+  bucketName: `forge-acme-${stage}-blobs-${cdk.Stack.of(stack).account}`,
+  blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+  encryption: s3.BucketEncryption.S3_MANAGED,
+  removalPolicy: cdk.RemovalPolicy.RETAIN,
+  cors: [{ allowedMethods: [s3.HttpMethods.PUT, s3.HttpMethods.GET], allowedOrigins: ["*"], allowedHeaders: ["*"] }],
+});
+
 const fn = new lambda.Function(stack, "Api", {
   runtime: lambda.Runtime.NODEJS_22_X,
   handler: "index.handler",
@@ -35,11 +44,13 @@ const fn = new lambda.Function(stack, "Api", {
   timeout: cdk.Duration.seconds(15),
   environment: {
     FORGE_TABLE: table.tableName,
+    FORGE_BUCKET: bucket.bucketName,
     FORGE_AUTH: "dev-headers", // development only; a production build requires a real auth host
     CURSOR_SECRET: process.env["FORGE_CURSOR_SECRET"] ?? "dev-cursor-secret-change-me",
   },
 });
 table.grantReadWriteData(fn);
+bucket.grantReadWrite(fn);
 
 const api = new apigwv2.HttpApi(stack, "HttpApi", { apiName: `forge-acme-${stage}` });
 api.addRoutes({ path: "/{proxy+}", methods: [apigwv2.HttpMethod.ANY], integration: new HttpLambdaIntegration("ApiIntegration", fn) });

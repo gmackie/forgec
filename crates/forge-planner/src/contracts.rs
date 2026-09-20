@@ -109,6 +109,9 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
     ordered.extend(r.fields.iter().filter(|f| f.synthesized));
     ordered.extend(r.fields.iter().filter(|f| !f.synthesized && f.name != "id"));
     for f in ordered {
+        if f.hidden {
+            continue;
+        }
         let schema = field_schema(ir, r, f);
         record.properties.insert(f.name.clone(), schema.clone());
         record.required.push(f.name.clone());

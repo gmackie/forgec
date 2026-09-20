@@ -15,6 +15,7 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
+export interface SignedUrl { url: string; method: "PUT" | "GET"; headers?: Record<string, string>; expiresAt: string }
 export interface ProblemField { path: string; code: string; message: string }
 export interface Problem {
   type: string; title: string; status: number; code: string; detail?: string;
@@ -22,7 +23,11 @@ export interface Problem {
 }
 export type CallResult = { ok: true; value: unknown; version?: number } | { ok: false; code: string; status: number; problem: Problem };
 export class ForgeError extends Error {
-  constructor(public readonly problem: Problem) { super(`${problem.code}: ${problem.detail ?? problem.title}`); }
+  readonly problem: Problem;
+  constructor(problem: Problem) {
+    super(`${problem.code}: ${problem.detail ?? problem.title}`);
+    this.problem = problem;
+  }
   get code() { return this.problem.code; }
   get status() { return this.problem.status; }
 }
@@ -66,6 +71,12 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       headers["content-type"] = "application/json";
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});
+      headers["content-type"] = "application/json";
+    } else if (spec.kind === "beginUpload") {
+      const { id: _id, expectedVersion: _v, ...rest } = input;
+      void _id;
+      void _v;
+      body = JSON.stringify(rest);
       headers["content-type"] = "application/json";
     } else if (spec.kind === "transition") {
       body = JSON.stringify(input["input"] ?? {});
@@ -112,6 +123,14 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/Order.status.approve": { method: "POST", path: "/v1/orders/{id}/actions/approve", kind: "transition", resource: "Order" },
   "@acme/commerce/_/Order.status.complete": { method: "POST", path: "/v1/orders/{id}/actions/complete", kind: "transition", resource: "Order" },
   "@acme/commerce/_/Order.status.cancel": { method: "POST", path: "/v1/orders/{id}/actions/cancel", kind: "transition", resource: "Order" },
+  "@acme/commerce/_/OrderDocument.create": { method: "POST", path: "/v1/order-documents", kind: "create", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.get": { method: "GET", path: "/v1/order-documents/{id}", kind: "get", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.update": { method: "PATCH", path: "/v1/order-documents/{id}", kind: "update", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.delete": { method: "DELETE", path: "/v1/order-documents/{id}", kind: "delete", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.list.byOrder": { method: "GET", path: "/v1/order-documents/queries/by-order", kind: "list", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.beginUpload": { method: "POST", path: "/v1/order-documents/{id}/upload", kind: "beginUpload", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.finalizeUpload": { method: "POST", path: "/v1/order-documents/{id}/finalize", kind: "finalizeUpload", resource: "OrderDocument" },
+  "@acme/commerce/_/OrderDocument.download": { method: "GET", path: "/v1/order-documents/{id}/content", kind: "download", resource: "OrderDocument" },
   "@acme/commerce/_/Site.create": { method: "POST", path: "/v1/sites", kind: "create", resource: "Site" },
   "@acme/commerce/_/Site.get": { method: "GET", path: "/v1/sites/{id}", kind: "get", resource: "Site" },
   "@acme/commerce/_/Site.update": { method: "PATCH", path: "/v1/sites/{id}", kind: "update", resource: "Site" },
@@ -196,6 +215,31 @@ export interface OrderCancelInput {
   reason: string;
 }
 
+export interface OrderDocumentRecord {
+  id: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  uploadState: string;
+  mediaType: string | null;
+  byteCount: number | null;
+  digest: string | null;
+  order: string;
+  kind: string;
+  label: string;
+}
+
+export interface OrderDocumentCreate {
+  order: string;
+  kind: string;
+  label: string;
+}
+
+export interface OrderDocumentPatch {
+  kind?: string;
+  label?: string;
+}
+
 export interface SiteRecord {
   id: string;
   version: number;
@@ -244,6 +288,17 @@ export interface OrderApi {
   cancel(id: string, expectedVersion: number, input: OrderCancelInput, opts?: CallOptions): Promise<OrderRecord>;
 }
 
+export interface OrderDocumentApi {
+  create(input: OrderDocumentCreate, opts?: CallOptions): Promise<OrderDocumentRecord>;
+  get(id: string): Promise<OrderDocumentRecord>;
+  update(id: string, expectedVersion: number, patch: OrderDocumentPatch, opts?: CallOptions): Promise<OrderDocumentRecord>;
+  delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<OrderDocumentRecord>;
+  listByOrder(params: { order: string }, page?: PageOptions): Promise<Page<OrderDocumentRecord>>;
+  beginUpload(id: string, expectedVersion: number, input: { mediaType: string; byteCount: number }): Promise<{ record: OrderDocumentRecord; upload: SignedUrl }>;
+  finalizeUpload(id: string, expectedVersion: number): Promise<OrderDocumentRecord>;
+  download(id: string): Promise<SignedUrl & { mediaType: string; byteCount: number; digest: string }>;
+}
+
 export interface SiteApi {
   create(input: SiteCreate, opts?: CallOptions): Promise<SiteRecord>;
   get(id: string): Promise<SiteRecord>;
@@ -258,6 +313,7 @@ export interface ForgeClient {
   changesets: ChangesetsApi;
   customers: CustomerApi;
   orders: OrderApi;
+  orderDocuments: OrderDocumentApi;
   sites: SiteApi;
 }
 
@@ -291,6 +347,16 @@ export function createClient(options: ClientOptions): ForgeClient {
       approve: (id, expectedVersion, input, opts) => t.unwrap(t.call("@acme/commerce/_/Order.status.approve", { id, expectedVersion, input }, opts)),
       complete: (id, expectedVersion, input, opts) => t.unwrap(t.call("@acme/commerce/_/Order.status.complete", { id, expectedVersion, input }, opts)),
       cancel: (id, expectedVersion, input, opts) => t.unwrap(t.call("@acme/commerce/_/Order.status.cancel", { id, expectedVersion, input }, opts)),
+    },
+    orderDocuments: {
+      create: (input, opts) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.create", input, opts)),
+      get: (id) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.get", { id })),
+      update: (id, expectedVersion, patch, opts) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.update", { id, expectedVersion, patch }, opts)),
+      delete: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.delete", { id, expectedVersion }, opts)),
+      listByOrder: (params, page) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.list.byOrder", { params, ...page })),
+      beginUpload: (id, expectedVersion, input) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.beginUpload", { id, expectedVersion, ...input })),
+      finalizeUpload: (id, expectedVersion) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.finalizeUpload", { id, expectedVersion })),
+      download: (id) => t.unwrap(t.call("@acme/commerce/_/OrderDocument.download", { id })),
     },
     sites: {
       create: (input, opts) => t.unwrap(t.call("@acme/commerce/_/Site.create", input, opts)),

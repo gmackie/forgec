@@ -99,10 +99,37 @@ export interface StorageAdapter {
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError>;
 }
 
+/** Object storage (R2 / S3 / memory). Keys are private; the portable API only exposes signed URLs and ObjectRefs. */
+export interface ObjectHead {
+  byteCount: number;
+  mediaType: string | null;
+  /** Provider-specific version/etag when the store supports immutable generations. */
+  generation: string | null;
+}
+export interface SignedUrl {
+  url: string;
+  method: "PUT" | "GET";
+  headers?: Record<string, string>;
+  expiresAt: string;
+}
+export interface ObjectStoreAdapter {
+  readonly name: string;
+  /** Presigned upload for a staging key; the client PUTs bytes directly. */
+  presignUpload(key: string, mediaType: string, byteCount: number, ttlSeconds: number): Effect.Effect<SignedUrl, ForgeError>;
+  head(key: string): Effect.Effect<ObjectHead | null, ForgeError>;
+  /** Streams the object and returns its digest; bounded by maxBytes. */
+  digest(key: string, maxBytes: number): Effect.Effect<{ sha256: string; byteCount: number }, ForgeError>;
+  /** Copy staging -> sealed immutable key. Returns the sealed generation. */
+  seal(stagingKey: string, sealedKey: string, mediaType: string): Effect.Effect<{ generation: string | null }, ForgeError>;
+  presignDownload(key: string, ttlSeconds: number, mediaType: string): Effect.Effect<SignedUrl, ForgeError>;
+  delete(key: string): Effect.Effect<void, ForgeError>;
+}
+
 export class Clock extends Context.Service<Clock, { now(): string }>()("forge/Clock") {}
 export class IdGen extends Context.Service<IdGen, { next(resource: Resource): string; opId(): string }>()("forge/IdGen") {}
 export class Storage extends Context.Service<Storage, StorageAdapter>()("forge/Storage") {}
 export class CursorSecret extends Context.Service<CursorSecret, { key: string }>()("forge/CursorSecret") {}
+export class Objects extends Context.Service<Objects, ObjectStoreAdapter>()("forge/Objects") {}
 
-export type RuntimeServices = Clock | IdGen | Storage | CursorSecret;
+export type RuntimeServices = Clock | IdGen | Storage | CursorSecret | Objects;
 export type { Field };

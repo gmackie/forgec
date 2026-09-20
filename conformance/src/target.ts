@@ -16,4 +16,6 @@ export interface Target {
   readonly name: string;
   reset(): Promise<void>;
   call(op: string, input: unknown, ctx: CallContext): Promise<CallResult>;
+  /** Transfer bytes to/from a signed URL returned by the target (blob scenarios). */
+  transfer?(signed: { url: string; method: string; headers?: Record<string, string> }, body?: Uint8Array): Promise<{ status: number; bytes: Uint8Array }>;
 }

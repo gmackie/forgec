@@ -156,3 +156,22 @@ fn diagnostics_carry_file_and_range_and_render_stably() {
     let out = compile(&p, &[]);
     insta::assert_snapshot!(out.render());
 }
+
+#[test]
+fn blob_elaborates_to_a_resource_with_content_policy_and_upload_operations() {
+    let p = inline("@t/x", &[("src/a.forge", "blob Doc\n  @tenant\n  @crud(\"/v1/docs\")\n{\n  label : text length 1..200\n\n  content {\n    mediaTypes [\"application/pdf\"]\n    maxBytes 1024\n  }\n}\n")]);
+    let out = compile(&p, &[]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let json = serde_json::to_value(out.ir.unwrap()).unwrap();
+    let r = &json["modules"][0]["resources"][0];
+    assert_eq!(r["kind"], "blob");
+    assert_eq!(r["content"], serde_json::json!({ "mediaTypes": ["application/pdf"], "maxBytes": 1024 }));
+    let names: Vec<&str> = r["fields"].as_array().unwrap().iter().map(|f| f["name"].as_str().unwrap()).collect();
+    for f in ["id", "label", "version", "createdAt", "updatedAt", "uploadState", "mediaType", "byteCount", "digest"] {
+        assert!(names.contains(&f), "missing {f} in {names:?}");
+    }
+    let ops: Vec<&str> = r["operations"].as_array().unwrap().iter().map(|o| o["id"].as_str().unwrap().rsplit('.').next().unwrap()).collect();
+    assert!(ops.contains(&"beginUpload") && ops.contains(&"finalizeUpload") && ops.contains(&"download"), "{ops:?}");
+    let bad = inline("@t/x", &[("src/a.forge", "blob Doc {\n  label : text\n  content {\n    maxBytes 0\n  }\n}\n")]);
+    assert_eq!(codes(bad), vec!["E-BLOB-001"]); // blobs synthesize their id
+}

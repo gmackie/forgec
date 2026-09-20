@@ -11,6 +11,7 @@ import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Transition, type Unique } from "./model.js";
 import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
 import { Changesets } from "./changeset.js";
+import { Blobs } from "./blobs.js";
 
 export interface CallContext {
   tenant: string;
@@ -64,6 +65,12 @@ export class Engine {
       case "restore":
       case "transition":
         return self.withIdempotency(op.id, body, ctx, self.mutate(opId, body, ctx));
+      case "beginUpload":
+        return self.blobs.beginUpload(resource, body, ctx);
+      case "finalizeUpload":
+        return self.blobs.finalizeUpload(resource, body, ctx);
+      case "download":
+        return self.blobs.download(resource, body, ctx);
       default:
         return Effect.fail(err("MethodNotAllowed", `operation kind ${op.kind} is not executable`));
     }
@@ -106,6 +113,7 @@ export class Engine {
   }
 
   readonly changesets = new Changesets(this);
+  readonly blobs = new Blobs(this);
 
   // ------------------------------------------------------------ helpers
   private claimKey(r: Resource, u: Unique, rec: Wire): string | null {
@@ -217,6 +225,12 @@ export class Engine {
       }
       if (r.decorators.softDelete) after["deletedAt"] = null;
       if (r.lifecycle) after[r.lifecycle.field] = r.lifecycle.initial;
+      if (r.kind === "blob") {
+        after["uploadState"] = "intent";
+        after["mediaType"] = null;
+        after["byteCount"] = null;
+        after["digest"] = null;
+      }
       const guards = self.referenceGuards(r, after, null);
       const refs = yield* self.loadReferences(r, after, ctx, guards);
       yield* self.checkRules(r, after, refs);

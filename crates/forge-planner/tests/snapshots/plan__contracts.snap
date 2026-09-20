@@ -660,6 +660,253 @@ expression: p.contracts
       ]
     },
     {
+      "id": "@acme/commerce/_/OrderDocument",
+      "name": "OrderDocument",
+      "wireName": "order_document",
+      "tenantScoped": true,
+      "softDelete": false,
+      "versioned": true,
+      "record": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "version": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "uploadState": {
+            "type": "string",
+            "x-forge-type": "text",
+            "readOnly": true
+          },
+          "mediaType": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-type": "text",
+            "readOnly": true
+          },
+          "byteCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer",
+            "readOnly": true
+          },
+          "digest": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-type": "text",
+            "readOnly": true
+          },
+          "order": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Order"
+          },
+          "kind": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 32,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest",
+          "order",
+          "kind",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "create": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Order"
+          },
+          "kind": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 32,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "order",
+          "kind",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "patch": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 32,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "queries": [
+        {
+          "name": "byOrder",
+          "kind": "list",
+          "params": [
+            "order"
+          ],
+          "order": [
+            {
+              "field": "createdAt",
+              "direction": "desc"
+            },
+            {
+              "field": "id",
+              "direction": "desc"
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "@acme/commerce/_/OrderDocument.create",
+          "kind": "create",
+          "http": {
+            "method": "POST",
+            "path": "/v1/order-documents"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.get",
+          "kind": "get",
+          "http": {
+            "method": "GET",
+            "path": "/v1/order-documents/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.update",
+          "kind": "update",
+          "http": {
+            "method": "PATCH",
+            "path": "/v1/order-documents/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.delete",
+          "kind": "delete",
+          "http": {
+            "method": "DELETE",
+            "path": "/v1/order-documents/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.list.byOrder",
+          "kind": "list",
+          "query": "byOrder",
+          "http": {
+            "method": "GET",
+            "path": "/v1/order-documents/queries/by-order"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.beginUpload",
+          "kind": "beginUpload",
+          "http": {
+            "method": "POST",
+            "path": "/v1/order-documents/{id}/upload"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.finalizeUpload",
+          "kind": "finalizeUpload",
+          "http": {
+            "method": "POST",
+            "path": "/v1/order-documents/{id}/finalize"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/OrderDocument.download",
+          "kind": "download",
+          "http": {
+            "method": "GET",
+            "path": "/v1/order-documents/{id}/content"
+          }
+        }
+      ]
+    },
+    {
       "id": "@acme/commerce/_/Site",
       "name": "Site",
       "wireName": "site",
