@@ -17,8 +17,22 @@ the same code that application clients use — and write
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
 | runtime-memory | in-process | 14 | 203 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows + Cron Triggers) | 14 | 203 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge) | 14 | 203 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows + Cron Triggers + Durable Objects) | 14 | 203 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge + API Gateway WebSocket) | 14 | 203 | 0 |
+
+M7 adds the realtime profile (`test/realtime.test.ts`, run with
+`FORGE_TARGET_URL` + `FORGE_TARGET_WS`): `OrderEvents` is bound with
+`@websocket("/v1/live/orders")`. Publications reach the stream ledger through
+the outbox (subscription `realtime:OrderEvents`), get a per-(tenant, stream)
+sequence number and a bounded replay window (256), then fan out: a Durable
+Object per (tenant, stream) with hibernating sockets on Cloudflare, an API
+Gateway WebSocket API with a document-backed connection registry on AWS.
+Verified live on both: subscribe → hello{latest}, ping/pong, an `OrderSubmitted`
+event with `seq: 1` after a submit over HTTP, and a fresh connection resuming
+by position (`resume after 0` → `resumed{replayed:1, gap:false}` + the frame),
+unknown streams rejected. Frames are text JSON capped at 64 KiB; delivery is
+at-least-once; connection identity is not preserved across reconnects — the
+position is.
 
 M7 adds `schedules`: `NightlyReconciliation` (`cron "0 3 * * *"`, UTC)
 compiles to an explicit recurrence IR (sets, 0/7 = Sunday, day-of-month OR

@@ -83,7 +83,8 @@ export interface FunctionDecl {
   http?: HttpBinding;
   generated: boolean;
 }
-export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; messages: { name: string; fields: Field[] }[] }
+export interface WebSocketBinding { path: string }
+export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; websocket?: WebSocketBinding; messages: { name: string; fields: Field[] }[] }
 export interface ViewDecl { id: string; name: string; source: string; by: string[]; where?: Expr; order: OrderKey[]; fields: string[] }
 export interface AggregateDecl { function: "count" | "sum" | "min" | "max"; field: string; alias: string; scale?: number }
 export interface ProjectionDecl { id: string; name: string; source: string; by: string[]; where?: Expr; aggregates: AggregateDecl[]; crud?: { path: string; operations?: string[]; actions: string[] } }
@@ -99,6 +100,7 @@ export type WorkflowStep =
   | { kind: "fail"; error: string };
 export interface WorkflowDecl { id: string; name: string; version: number; graphHash: string; input?: TypeSpec; output?: TypeSpec; errors: string[]; http?: HttpBinding; steps: WorkflowStep[] }
 export interface SchedulesPlan { version: string; schedules: { source: string; name: string; target: string; cloudflare: { cron?: string; tick: boolean }; aws: { expression: string; timezone: string } }[]; cloudflareCrons: string[] }
+export interface RealtimePlan { version: string; profile: { frame: string; maxFrameBytes: number; replayDepth: number; delivery: string; heartbeatSeconds: number }; streams: { channel: string; name: string; path: string; messages: string[] }[]; cloudflare: { binding: string; className: string }; aws: { apiName: string; routes: string[] } }
 export interface WorkflowsPlan { version: string; workflows: { id: string; name: string; version: number; graphHash: string; cloudflare: { name: string; binding: string; className: string }; aws: { stateMachine: string; definition: unknown } }[] }
 export interface SourceDecl { id: string; name: string; cron?: string; timezone?: string; target: string }
 export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[] }
@@ -109,7 +111,7 @@ export interface MessagingPlan {
 }
 export interface DomainIR { version: string; package: { name: string }; modules: Module[] }
 export interface Contracts { version: string; resources: { id: string; name: string; wireName: string; operations: Operation[] }[]; functions: { id: string; name: string; http?: HttpBinding }[] }
-export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan }
+export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan; realtime?: RealtimePlan }
 
 export interface OperationRef {
   op: Operation;

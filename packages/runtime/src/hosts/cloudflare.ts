@@ -8,6 +8,7 @@ import { Model, type AppBundle } from "../model.js";
 import { Dispatcher } from "../dispatch.js";
 import { internalSubscriptions, withProjections } from "../readmodels.js";
 import type { Instance, WorkflowDriver } from "../workflows.js";
+import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
 import type { WorkflowDecl } from "../model.js";
 import { cloudflareQueuesTransport, decodeEnvelope, type QueueLike } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
@@ -21,8 +22,16 @@ export interface WorkflowBindingLike {
   get(id: string): Promise<{ sendEvent(e: { type: string; payload: unknown }): Promise<void> }>;
 }
 
+/** Durable Object namespace surface used for realtime streams. */
+export interface RealtimeNamespaceLike {
+  idFromName(name: string): unknown;
+  get(id: unknown): { fetch(input: Request | string, init?: RequestInit): Promise<Response> };
+}
+
 export interface WorkerEnv {
   DB: D1Like;
+  /** Realtime Durable Object namespace (bundle.realtime.cloudflare.binding). */
+  REALTIME?: RealtimeNamespaceLike;
   BLOBS?: R2Like;
   CURSOR_SECRET: string;
   FORGE_AUTH?: string;
@@ -71,6 +80,77 @@ function cloudflareWorkflowDriver(model: Model, env: WorkerEnv): WorkflowDriver 
       }
     },
   };
+}
+
+/** One Durable Object per (tenant, stream) holds the live sockets; the Worker posts frames to it. */
+function cloudflareRealtimeHub(env: WorkerEnv): RealtimeHub | null {
+  if (!env.REALTIME) return null;
+  const ns = env.REALTIME;
+  return {
+    async broadcast(tenant, channel, frame: EventFrame) {
+      const stub = ns.get(ns.idFromName(`${tenant}|${channel}`));
+      await stub.fetch("https://realtime/broadcast", { method: "POST", body: JSON.stringify(frame), headers: { "content-type": "application/json" } });
+    },
+  };
+}
+
+/**
+ * The Durable Object body for realtime streams (`Base` is `DurableObject` from `cloudflare:workers`).
+ * Uses the WebSocket hibernation API: sockets survive the object being evicted, their subscription
+ * state lives in the socket attachment, and the session protocol is the shared one.
+ */
+export function createRealtimeObject<B extends abstract new (...args: any[]) => any>(Base: B, bundle: AppBundle, options: WorkerOptions = {}) {
+  const model = new Model(bundle);
+  abstract class ForgeRealtimeObject extends Base {
+    private engineFor(env: WorkerEnv): Engine {
+      const storage = new D1Storage(env.DB, model);
+      const layer = Layer.mergeAll(
+        Layer.succeed(Clock)({ now: () => new Date().toISOString() }),
+        Layer.succeed(IdGen)(productionIds()),
+        Layer.succeed(Storage)(storage),
+        Layer.succeed(CursorSecret)({ key: env.CURSOR_SECRET }),
+        Layer.succeed(Objects)(new MemoryObjectStore()),
+      );
+      return new Engine(model, layer, options);
+    }
+    async fetch(request: Request): Promise<Response> {
+      const self = this as unknown as { ctx: { acceptWebSocket(ws: WebSocket, tags?: string[]): void; getWebSockets(tag?: string): WebSocket[] }; env: WorkerEnv };
+      const url = new URL(request.url);
+      if (url.pathname === "/broadcast") {
+        const frame = (await request.json()) as EventFrame;
+        const text = JSON.stringify(frame);
+        for (const ws of self.ctx.getWebSockets()) {
+          const att = (ws as unknown as { deserializeAttachment(): { streams?: string[] } | null }).deserializeAttachment() ?? {};
+          if (att.streams?.includes(frame.stream)) {
+            try { ws.send(text); } catch { /* closing socket: the client resumes by position */ }
+          }
+        }
+        return new Response(null, { status: 204 });
+      }
+      if (request.headers.get("upgrade")?.toLowerCase() !== "websocket") return new Response("expected websocket", { status: 426 });
+      const tenant = request.headers.get("x-forge-tenant") ?? url.searchParams.get("tenant") ?? "";
+      const pair = new (globalThis as unknown as { WebSocketPair: new () => Record<0 | 1, WebSocket> }).WebSocketPair();
+      const [client, server] = [pair[0], pair[1]];
+      (server as unknown as { serializeAttachment(v: unknown): void }).serializeAttachment({ tenant, streams: [] });
+      self.ctx.acceptWebSocket(server, [tenant]);
+      return new Response(null, { status: 101, webSocket: client } as ResponseInit & { webSocket: WebSocket });
+    }
+    async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+      const self = this as unknown as { env: WorkerEnv };
+      const sock = ws as unknown as { deserializeAttachment(): { tenant: string; streams?: string[] }; serializeAttachment(v: unknown): void };
+      const att = sock.deserializeAttachment();
+      const session = new SessionProtocol(this.engineFor(self.env), att.tenant);
+      session.restore(att.streams ?? []);
+      const text = typeof message === "string" ? message : new TextDecoder().decode(message);
+      const replies = await session.handle(text);
+      sock.serializeAttachment({ tenant: att.tenant, streams: session.streams() });
+      for (const r of replies) ws.send(JSON.stringify(r));
+    }
+    async webSocketClose(ws: WebSocket, code: number): Promise<void> {
+      try { ws.close(code, "closed"); } catch { /* already closed */ }
+    }
+  }
+  return ForgeRealtimeObject;
 }
 
 /**
@@ -123,6 +203,7 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
     );
     const engine = new Engine(model, layer, options);
     engine.workflows.driver = cloudflareWorkflowDriver(model, env);
+    engine.realtime.hub = cloudflareRealtimeHub(env);
     const dispatcher = new Dispatcher(model, storage, withProjections(engine, cloudflareQueuesTransport(queueBindings(model, env))), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
     return { engine, storage, objects, dispatcher };
   };
@@ -170,6 +251,18 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       if (!auth) return new Response(JSON.stringify({ code: "Unauthenticated", detail: "no authentication host configured (set FORGE_AUTH=dev-headers for development)" }), { status: 401, headers: { "content-type": "application/problem+json" } });
       const url = new URL(request.url);
       const { engine, objects, dispatcher } = build(env, `${url.protocol}//${url.host}`);
+      // Realtime upgrade: authenticate (query-string headers for browsers), then hand the socket to the stream's object.
+      if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
+        const stream = engine.realtime.streamByPath(url.pathname);
+        if (!stream || !env.REALTIME) return new Response("no such stream", { status: 404 });
+        const principal = await auth.authenticate(upgradeAuthRequest(url, request.headers));
+        if (!("tenant" in principal)) return new Response(JSON.stringify(principal.problem(crypto.randomUUID())), { status: 401, headers: { "content-type": "application/problem+json" } });
+        const stub = env.REALTIME.get(env.REALTIME.idFromName(`${principal.tenant}|${stream.channel}`));
+        const forwarded = new Request(request.url, request);
+        forwarded.headers.set("x-forge-tenant", principal.tenant);
+        forwarded.headers.set("x-forge-actor", principal.actor);
+        return stub.fetch(forwarded);
+      }
       // Object bytes: the Worker-served equivalent of presigned URLs (bearer token, one key, one method).
       const m = /^\/_forge\/objects\/([^/]+)$/.exec(url.pathname);
       if (m && objects) return objects.serve(request, m[1]!);

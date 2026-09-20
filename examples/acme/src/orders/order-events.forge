@@ -1,4 +1,6 @@
-export channel OrderEvents {
+export channel OrderEvents
+  @websocket("/v1/live/orders")
+{
   distribution broadcast
   delivery at-least-once
 

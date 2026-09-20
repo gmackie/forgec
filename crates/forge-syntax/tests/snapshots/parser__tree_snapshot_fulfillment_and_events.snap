@@ -1,6 +1,6 @@
 ---
 source: crates/forge-syntax/tests/parser.rs
-assertion_line: 49
+assertion_line: 52
 expression: "format!(\"{}\\n{}\", parse(&a).debug_tree(), parse(&b).debug_tree())"
 ---
 ROOT@0..672
@@ -206,105 +206,116 @@ ROOT@0..672
     R_BRACE@670..671 "}"
   NEWLINE@671..672 "\\n"
 
-ROOT@0..392
-  CHANNEL_DECL@0..182
+ROOT@0..424
+  CHANNEL_DECL@0..214
     IDENT@0..6 "export"
     IDENT@7..14 "channel"
     IDENT@15..26 "OrderEvents"
-    L_BRACE@27..28 "{"
-    NEWLINE@28..29 "\\n"
-    DISTRIBUTION_DECL@31..53
-      IDENT@31..43 "distribution"
-      IDENT@44..53 "broadcast"
-    NEWLINE@53..54 "\\n"
-    DELIVERY_DECL@56..78
-      IDENT@56..64 "delivery"
-      IDENT@65..78 "at-least-once"
-    NEWLINE@78..79 "\\n"
-    NEWLINE@79..80 "\\n"
-    MESSAGE_DECL@82..180
-      IDENT@82..89 "message"
-      IDENT@90..104 "OrderSubmitted"
-      L_BRACE@105..106 "{"
-      NEWLINE@106..107 "\\n"
-      FIELD_DECL@111..124
-        IDENT@111..116 "order"
-        COLON@117..118 ":"
-        TYPE_EXPR@119..124
-          TYPE_REF@119..124
-            QUALIFIED_NAME@119..124
-              IDENT@119..124 "Order"
-      NEWLINE@124..125 "\\n"
-      FIELD_DECL@129..148
-        IDENT@129..137 "customer"
-        COLON@138..139 ":"
-        TYPE_EXPR@140..148
-          TYPE_REF@140..148
-            QUALIFIED_NAME@140..148
-              IDENT@140..148 "Customer"
-      NEWLINE@148..149 "\\n"
-      FIELD_DECL@153..176
-        IDENT@153..161 "revision"
-        COLON@162..163 ":"
-        TYPE_EXPR@164..176
-          TYPE_REF@164..171
-            QUALIFIED_NAME@164..171
-              IDENT@164..171 "integer"
-          REFINEMENT@172..176
-            GT_EQ@172..174 ">="
-            LITERAL_EXPR@175..176
-              INT@175..176 "1"
-      NEWLINE@176..177 "\\n"
-      R_BRACE@179..180 "}"
-    NEWLINE@180..181 "\\n"
-    R_BRACE@181..182 "}"
-  NEWLINE@182..183 "\\n"
-  NEWLINE@183..184 "\\n"
-  CHANNEL_DECL@184..249
-    IDENT@184..191 "channel"
-    IDENT@192..205 "PaymentEvents"
-    CHANNEL_FROM@206..233
-      IDENT@206..210 "from"
-      QUALIFIED_NAME@211..233
-        IDENT@211..219 "payments"
-        DOT@219..220 "."
-        IDENT@220..233 "PaymentEvents"
-    L_BRACE@234..235 "{"
-    NEWLINE@235..236 "\\n"
-    DIRECTION_DECL@238..247
-      IDENT@238..247 "recv-only"
-    NEWLINE@247..248 "\\n"
-    R_BRACE@248..249 "}"
-  NEWLINE@249..250 "\\n"
-  NEWLINE@250..251 "\\n"
-  SUBSCRIPTION_DECL@251..296
-    IDENT@251..253 "on"
-    QUALIFIED_NAME@254..280
-      IDENT@254..265 "OrderEvents"
-      DOT@265..266 "."
-      IDENT@266..280 "OrderSubmitted"
-    ARROW@281..283 "->"
-    QUALIFIED_NAME@284..296
-      IDENT@284..296 "FulfillOrder"
-  NEWLINE@296..297 "\\n"
-  NEWLINE@297..298 "\\n"
-  SOURCE_DECL@298..391
-    IDENT@298..304 "source"
-    IDENT@305..326 "NightlyReconciliation"
-    L_BRACE@327..328 "{"
-    NEWLINE@328..329 "\\n"
-    CRON_DECL@331..347
-      IDENT@331..335 "cron"
-      STRING@336..347 "\"0 3 * * *\""
-    NEWLINE@347..348 "\\n"
-    TIMEZONE_DECL@350..364
-      IDENT@350..358 "timezone"
-      STRING@359..364 "\"UTC\""
-    NEWLINE@364..365 "\\n"
-    TARGET_DECL@367..389
-      ARROW@367..369 "->"
-      QUALIFIED_NAME@370..389
-        IDENT@370..389 "RebuildOrderSummary"
-    NEWLINE@389..390 "\\n"
-    R_BRACE@390..391 "}"
-  NEWLINE@391..392 "\\n"
+    NEWLINE@26..27 "\\n"
+    DECORATOR@29..58
+      AT@29..30 "@"
+      IDENT@30..39 "websocket"
+      DECORATOR_ARGS@39..58
+        L_PAREN@39..40 "("
+        DECORATOR_ARG@40..57
+          LITERAL_EXPR@40..57
+            STRING@40..57 "\"/v1/live/orders\""
+        R_PAREN@57..58 ")"
+    NEWLINE@58..59 "\\n"
+    L_BRACE@59..60 "{"
+    NEWLINE@60..61 "\\n"
+    DISTRIBUTION_DECL@63..85
+      IDENT@63..75 "distribution"
+      IDENT@76..85 "broadcast"
+    NEWLINE@85..86 "\\n"
+    DELIVERY_DECL@88..110
+      IDENT@88..96 "delivery"
+      IDENT@97..110 "at-least-once"
+    NEWLINE@110..111 "\\n"
+    NEWLINE@111..112 "\\n"
+    MESSAGE_DECL@114..212
+      IDENT@114..121 "message"
+      IDENT@122..136 "OrderSubmitted"
+      L_BRACE@137..138 "{"
+      NEWLINE@138..139 "\\n"
+      FIELD_DECL@143..156
+        IDENT@143..148 "order"
+        COLON@149..150 ":"
+        TYPE_EXPR@151..156
+          TYPE_REF@151..156
+            QUALIFIED_NAME@151..156
+              IDENT@151..156 "Order"
+      NEWLINE@156..157 "\\n"
+      FIELD_DECL@161..180
+        IDENT@161..169 "customer"
+        COLON@170..171 ":"
+        TYPE_EXPR@172..180
+          TYPE_REF@172..180
+            QUALIFIED_NAME@172..180
+              IDENT@172..180 "Customer"
+      NEWLINE@180..181 "\\n"
+      FIELD_DECL@185..208
+        IDENT@185..193 "revision"
+        COLON@194..195 ":"
+        TYPE_EXPR@196..208
+          TYPE_REF@196..203
+            QUALIFIED_NAME@196..203
+              IDENT@196..203 "integer"
+          REFINEMENT@204..208
+            GT_EQ@204..206 ">="
+            LITERAL_EXPR@207..208
+              INT@207..208 "1"
+      NEWLINE@208..209 "\\n"
+      R_BRACE@211..212 "}"
+    NEWLINE@212..213 "\\n"
+    R_BRACE@213..214 "}"
+  NEWLINE@214..215 "\\n"
+  NEWLINE@215..216 "\\n"
+  CHANNEL_DECL@216..281
+    IDENT@216..223 "channel"
+    IDENT@224..237 "PaymentEvents"
+    CHANNEL_FROM@238..265
+      IDENT@238..242 "from"
+      QUALIFIED_NAME@243..265
+        IDENT@243..251 "payments"
+        DOT@251..252 "."
+        IDENT@252..265 "PaymentEvents"
+    L_BRACE@266..267 "{"
+    NEWLINE@267..268 "\\n"
+    DIRECTION_DECL@270..279
+      IDENT@270..279 "recv-only"
+    NEWLINE@279..280 "\\n"
+    R_BRACE@280..281 "}"
+  NEWLINE@281..282 "\\n"
+  NEWLINE@282..283 "\\n"
+  SUBSCRIPTION_DECL@283..328
+    IDENT@283..285 "on"
+    QUALIFIED_NAME@286..312
+      IDENT@286..297 "OrderEvents"
+      DOT@297..298 "."
+      IDENT@298..312 "OrderSubmitted"
+    ARROW@313..315 "->"
+    QUALIFIED_NAME@316..328
+      IDENT@316..328 "FulfillOrder"
+  NEWLINE@328..329 "\\n"
+  NEWLINE@329..330 "\\n"
+  SOURCE_DECL@330..423
+    IDENT@330..336 "source"
+    IDENT@337..358 "NightlyReconciliation"
+    L_BRACE@359..360 "{"
+    NEWLINE@360..361 "\\n"
+    CRON_DECL@363..379
+      IDENT@363..367 "cron"
+      STRING@368..379 "\"0 3 * * *\""
+    NEWLINE@379..380 "\\n"
+    TIMEZONE_DECL@382..396
+      IDENT@382..390 "timezone"
+      STRING@391..396 "\"UTC\""
+    NEWLINE@396..397 "\\n"
+    TARGET_DECL@399..421
+      ARROW@399..401 "->"
+      QUALIFIED_NAME@402..421
+        IDENT@402..421 "RebuildOrderSummary"
+    NEWLINE@421..422 "\\n"
+    R_BRACE@422..423 "}"
+  NEWLINE@423..424 "\\n"

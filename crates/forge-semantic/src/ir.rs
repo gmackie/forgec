@@ -519,6 +519,15 @@ pub struct Channel {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direction: Option<String>,
     pub messages: Vec<Message>,
+    /// Realtime profile (plan §19): outbound fan-out of this channel's messages over WebSocket.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub websocket: Option<WebSocketBinding>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WebSocketBinding {
+    pub path: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

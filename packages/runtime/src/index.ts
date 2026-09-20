@@ -22,3 +22,4 @@ export * from "./temporal.js";
 export * from "./readmodels.js";
 export * from "./workflows.js";
 export * from "./schedules.js";
+export * from "./realtime.js";

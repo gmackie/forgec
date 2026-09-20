@@ -1525,7 +1525,22 @@ impl<'a> Ctx<'a> {
             }
             messages.sort_by(|a, b| a.name.cmp(&b.name));
         }
-        Some(Channel { id, name, exported, contract, distribution: c.distribution().unwrap_or_else(|| "broadcast".into()), delivery: c.delivery().unwrap_or_else(|| "at-least-once".into()), direction: c.direction(), messages })
+        let mut websocket = None;
+        for d in c.decorators() {
+            let Some(n) = d.name() else { continue };
+            match n.text() {
+                "websocket" => {
+                    let path = d.args().first().and_then(|a| a.value()).and_then(|v| if let ArgValue::Literal(p) = v { Some(unq(&p)) } else { None });
+                    match path {
+                        Some(p) if p.starts_with('/') => websocket = Some(WebSocketBinding { path: p }),
+                        _ => self.err("E-DEC-002", file, range_of(&d), "`@websocket` requires a path literal, e.g. `@websocket(\"/v1/live/orders\")`", None),
+                    }
+                }
+                "label" => {}
+                other => self.err("E-DEC-001", file, tok_range(&n), format!("unknown channel decorator `@{other}`"), Some("channels accept `@websocket(path)` and `@label`".into())),
+            }
+        }
+        Some(Channel { id, name, exported, contract, distribution: c.distribution().unwrap_or_else(|| "broadcast".into()), delivery: c.delivery().unwrap_or_else(|| "at-least-once".into()), direction: c.direction(), messages, websocket })
     }
 
     // ------------------------------------------------------------ build

@@ -8,6 +8,8 @@
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "forge-acme-blobs" }],
   // Crons: the 5-minute outbox/workflow sweep plus every schedule's exact UTC cron (bundle.schedules.cloudflareCrons).
   "triggers": { "crons": ["*/5 * * * *", "0 3 * * *"] },
+  "durable_objects": { "bindings": [{ "name": "REALTIME", "class_name": "ForgeRealtime" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ForgeRealtime"] }],
   "workflows": [{ "name": "forge-acme-commerce-process-order", "binding": "WF_PROCESS_ORDER", "class_name": "ProcessOrderWorkflow" }],
   "queues": {
     "producers": [{ "binding": "Q_FULFILL_ORDER", "queue": "forge-acme-commerce-fulfill-order" }],

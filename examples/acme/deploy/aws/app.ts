@@ -11,6 +11,7 @@ import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as scheduler from "aws-cdk-lib/aws-scheduler";
+import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import bundle from "../../generated/app.json" with { type: "json" };
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
@@ -113,5 +114,17 @@ new events.Rule(stack, "OutboxSweep", { schedule: events.Schedule.rate(cdk.Durat
 const api = new apigwv2.HttpApi(stack, "HttpApi", { apiName: `forge-acme-${stage}` });
 api.addRoutes({ path: "/{proxy+}", methods: [apigwv2.HttpMethod.ANY], integration: new HttpLambdaIntegration("ApiIntegration", fn) });
 
+// Realtime (plan §19): one WebSocket API; the stream is the `stream` query parameter on connect.
+const wsApi = new apigwv2.WebSocketApi(stack, "RealtimeApi", {
+  apiName: `${bundle.realtime?.aws.apiName ?? "forge-realtime"}-${stage}`,
+  connectRouteOptions: { integration: new WebSocketLambdaIntegration("WsConnect", fn) },
+  disconnectRouteOptions: { integration: new WebSocketLambdaIntegration("WsDisconnect", fn) },
+  defaultRouteOptions: { integration: new WebSocketLambdaIntegration("WsDefault", fn) },
+});
+const wsStage = new apigwv2.WebSocketStage(stack, "RealtimeStage", { webSocketApi: wsApi, stageName: stage, autoDeploy: true });
+wsApi.grantManageConnections(fn);
+fn.addEnvironment("FORGE_WS_ENDPOINT", `https://${wsApi.apiId}.execute-api.${stack.region}.amazonaws.com/${stage}`);
+
 new cdk.CfnOutput(stack, "ApiUrl", { value: api.apiEndpoint });
+new cdk.CfnOutput(stack, "RealtimeUrl", { value: wsStage.url });
 new cdk.CfnOutput(stack, "TableName", { value: table.tableName });

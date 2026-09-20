@@ -709,6 +709,9 @@ impl ChannelDecl {
     pub fn name(&self) -> Option<SyntaxToken> {
         idents(&self.0).find(|t| !matches!(t.text(), "export" | "channel"))
     }
+    pub fn decorators(&self) -> impl Iterator<Item = Decorator> + '_ {
+        children(&self.0)
+    }
     pub fn from(&self) -> Option<QualifiedName> {
         child::<ChannelFrom>(&self.0).and_then(|f| child(&f.0))
     }

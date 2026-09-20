@@ -18,6 +18,7 @@ import { Temporal } from "./temporal.js";
 import { ReadModels } from "./readmodels.js";
 import { Workflows } from "./workflows.js";
 import { Schedules } from "./schedules.js";
+import { Realtime } from "./realtime.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -189,6 +190,7 @@ export class Engine {
   readonly readModels = new ReadModels(this);
   readonly workflows = new Workflows(this);
   readonly schedules = new Schedules(this);
+  readonly realtime = new Realtime(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {

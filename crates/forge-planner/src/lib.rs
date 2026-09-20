@@ -10,6 +10,7 @@ pub mod sql;
 pub mod ui;
 pub mod workflows;
 pub mod schedules;
+pub mod realtime;
 
 use forge_semantic::DomainIR;
 use serde::Serialize;
@@ -37,11 +38,12 @@ pub struct Plans {
     pub messaging: messaging::MessagingPlan,
     pub workflows: workflows::WorkflowsPlan,
     pub schedules: schedules::SchedulesPlan,
+    pub realtime: realtime::RealtimePlan,
 }
 
 pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
     validate(ir)?;
-    Ok(Plans { contracts: contracts::plan(ir), sql: sql::plan(ir), dynamo: dynamo::plan(ir), ui: ui::plan(ir), messaging: messaging::plan(ir), workflows: workflows::plan(ir), schedules: schedules::plan(ir) })
+    Ok(Plans { contracts: contracts::plan(ir), sql: sql::plan(ir), dynamo: dynamo::plan(ir), ui: ui::plan(ir), messaging: messaging::plan(ir), workflows: workflows::plan(ir), schedules: schedules::plan(ir), realtime: realtime::plan(ir) })
 }
 
 /// Physical-plan validation shared by both targets (plan §3.3): never turn an

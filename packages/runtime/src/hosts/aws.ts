@@ -10,6 +10,8 @@ import { Dispatcher } from "../dispatch.js";
 import { internalSubscriptions, withProjections } from "../readmodels.js";
 import { SendTaskSuccessCommand, SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import type { WorkflowDriver } from "../workflows.js";
+import { ApiGatewayManagementApiClient, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
+import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
 import { decodeEnvelope, sqsTransport } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
@@ -57,6 +59,16 @@ export interface LambdaEnv {
   FORGE_QUEUES?: string;
   /** JSON map: workflow name -> Step Functions state machine ARN. */
   FORGE_WORKFLOWS?: string;
+  /** API Gateway WebSocket management endpoint (https://{api}.execute-api.{region}.amazonaws.com/{stage}). */
+  FORGE_WS_ENDPOINT?: string;
+}
+
+/** API Gateway WebSocket route events ($connect / $disconnect / $default). */
+export interface WebSocketEvent {
+  requestContext: { routeKey: string; connectionId: string; eventType: "CONNECT" | "DISCONNECT" | "MESSAGE"; domainName?: string; stage?: string; requestId: string };
+  queryStringParameters?: Record<string, string>;
+  headers?: Record<string, string | undefined>;
+  body?: string;
 }
 
 export interface LambdaOptions extends EngineOptions {
@@ -98,12 +110,78 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
     },
   };
   engine.workflows.driver = driver;
+  // Realtime (plan §19): API Gateway WebSocket connections, registry in documents, fan-out via PostToConnection.
+  const REG = "_realtime"; // system tenant for the connection registry (connection ids are not tenant-scoped)
+  const mgmt = env.FORGE_WS_ENDPOINT ? new ApiGatewayManagementApiClient({ region: env.AWS_REGION ?? "us-east-1", endpoint: env.FORGE_WS_ENDPOINT }) : null;
+  const indexMutate = (tenant: string, channel: string, f: (ids: string[]) => string[]) =>
+    Effect.gen(function* () {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const cur = (yield* storage.getDocument(tenant, "realtime", `${channel}:connections`)) as { ids?: string[]; _version?: number } | null;
+        const r = yield* Effect.exit(storage.putDocument(tenant, "realtime", `${channel}:connections`, { ids: f(cur?.ids ?? []) }, cur?._version ?? null));
+        if (r._tag === "Success") return;
+      }
+    });
+  const post = async (connectionId: string, data: string): Promise<boolean> => {
+    if (!mgmt) return false;
+    try {
+      await mgmt.send(new PostToConnectionCommand({ ConnectionId: connectionId, Data: data }));
+      return true;
+    } catch (e) {
+      // GoneException: the client is gone; drop it from the registry on the way out.
+      return (e as { name?: string }).name === "GoneException" ? false : true;
+    }
+  };
+  const hub: RealtimeHub = {
+    async broadcast(tenant, channel, frame: EventFrame) {
+      const idx = (await Effect.runPromise(storage.getDocument(tenant, "realtime", `${channel}:connections`))) as { ids?: string[] } | null;
+      const text = JSON.stringify(frame);
+      const gone: string[] = [];
+      for (const id of idx?.ids ?? []) {
+        const conn = (await Effect.runPromise(storage.getDocument(REG, "realtime-conn", id))) as { streams?: string[] } | null;
+        if (!conn?.streams?.includes(channel)) continue;
+        if (!(await post(id, text))) gone.push(id);
+      }
+      if (gone.length) await Effect.runPromise(indexMutate(tenant, channel, (ids) => ids.filter((x) => !gone.includes(x))));
+    },
+  };
+  engine.realtime.hub = hub;
   const subscriptions: Record<string, string[]> = {};
   for (const s of model.bundle.messaging?.subscriptions ?? []) (subscriptions[s.channel] ??= []).push(s.name);
   const dispatcher = new Dispatcher(model, storage, withProjections(engine, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues)), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
   const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
 
-  return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent | WorkflowDriverEvent | ScheduleTickEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | WorkflowDriverResult | void> => {
+  return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent | WorkflowDriverEvent | ScheduleTickEvent | WebSocketEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | WorkflowDriverResult | void> => {
+    if ("requestContext" in ev && "routeKey" in ev.requestContext && ev.requestContext.eventType) {
+      const ws = ev as WebSocketEvent;
+      const { connectionId, eventType } = ws.requestContext;
+      if (eventType === "CONNECT") {
+        // One WebSocket endpoint: the stream path is the `stream` query parameter; auth comes from the query too.
+        if (!auth) return { statusCode: 401, headers: {}, body: "" };
+        const q = ws.queryStringParameters ?? {};
+        const stream = engine.realtime.streamByPath(q["stream"] ?? "");
+        if (!stream) return { statusCode: 404, headers: {}, body: "no such stream" };
+        const url = new URL(`https://${ws.requestContext.domainName ?? "ws"}/${ws.requestContext.stage ?? ""}`);
+        for (const [k, v] of Object.entries(q)) url.searchParams.set(k, v);
+        const principal = await auth.authenticate(upgradeAuthRequest(url, new Headers()));
+        if (!("tenant" in principal)) return { statusCode: 401, headers: {}, body: "" };
+        await Effect.runPromise(storage.putDocument(REG, "realtime-conn", connectionId, { tenant: principal.tenant, actor: principal.actor, channel: stream.channel, streams: [], since: new Date().toISOString() }, null).pipe(Effect.catch(() => Effect.void)));
+        await Effect.runPromise(indexMutate(principal.tenant, stream.channel, (ids) => (ids.includes(connectionId) ? ids : [...ids, connectionId])));
+        return { statusCode: 200, headers: {}, body: "" };
+      }
+      const conn = (await Effect.runPromise(storage.getDocument(REG, "realtime-conn", connectionId))) as { tenant: string; channel: string; streams: string[]; _version?: number } | null;
+      if (eventType === "DISCONNECT") {
+        if (conn) await Effect.runPromise(indexMutate(conn.tenant, conn.channel, (ids) => ids.filter((x) => x !== connectionId)));
+        return { statusCode: 200, headers: {}, body: "" };
+      }
+      if (!conn) return { statusCode: 410, headers: {}, body: "" };
+      const session = new SessionProtocol(engine, conn.tenant);
+      session.restore(conn.streams ?? []);
+      const replies = await session.handle(ws.body ?? "");
+      const { _version, ...rest } = conn;
+      await Effect.runPromise(storage.putDocument(REG, "realtime-conn", connectionId, { ...rest, streams: session.streams() }, _version ?? null).pipe(Effect.catch(() => Effect.void)));
+      for (const r of replies) await post(connectionId, JSON.stringify(r));
+      return { statusCode: 200, headers: {}, body: "" };
+    }
     if ("forge" in ev && ev.forge === "workflow.advance") {
       const st = await Effect.runPromise(engine.workflows.advance(ev.tenant, ev.id).pipe(Effect.provide(layer)));
       const dueAt = ((st["sleeping"] as { dueAt?: string } | undefined)?.dueAt ?? (st["waiting"] as { dueAt?: string } | undefined)?.dueAt) as string | undefined;
