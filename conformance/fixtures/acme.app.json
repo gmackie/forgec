@@ -4827,6 +4827,16 @@
         },
         "path": "/v1/workflows/process-order"
       }
+    ],
+    "schedules": [
+      {
+        "id": "@acme/commerce/_/NightlyReconciliation",
+        "name": "NightlyReconciliation",
+        "target": "@acme/commerce/_/RebuildOrderSummary",
+        "cron": "0 3 * * *",
+        "timezone": "UTC",
+        "path": "/v1/schedules/nightly-reconciliation"
+      }
     ]
   },
   "sql": {
@@ -8274,6 +8284,41 @@
           }
         }
       }
+    ]
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [
+      {
+        "source": "@acme/commerce/_/NightlyReconciliation",
+        "name": "NightlyReconciliation",
+        "target": "@acme/commerce/_/RebuildOrderSummary",
+        "recurrence": {
+          "kind": "cron",
+          "minutes": [
+            0
+          ],
+          "hours": [
+            3
+          ],
+          "daysOfMonth": "any",
+          "months": "any",
+          "daysOfWeek": "any",
+          "dayCombination": "or",
+          "timezone": "UTC"
+        },
+        "cloudflare": {
+          "cron": "0 3 * * *",
+          "tick": false
+        },
+        "aws": {
+          "expression": "cron(0 3 * * ? *)",
+          "timezone": "UTC"
+        }
+      }
+    ],
+    "cloudflareCrons": [
+      "0 3 * * *"
     ]
   }
 }

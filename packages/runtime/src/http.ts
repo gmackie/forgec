@@ -69,6 +69,10 @@ function readModelRoutes(model: Model): Route[] {
     routes.push(route("GET", `${base}/{id}`, `${p.id}.get`, "projection.get"));
   }
   for (const c of model.caches) routes.push(route("GET", `/v1/caches/${kebab(c.name)}`, `${c.id}.read`, "cache.read"));
+  for (const s of model.sources) {
+    routes.push(route("GET", `/v1/schedules/${kebab(s.name)}`, `${s.id}.status`, "schedule.status"));
+    routes.push(route("POST", `/v1/schedules/${kebab(s.name)}/tick`, `${s.id}.tick`, "schedule.tick"));
+  }
   for (const w of model.workflows) {
     const base = `/v1/workflows/${kebab(w.name)}`;
     routes.push(route(w.http?.method ?? "POST", w.http?.path ?? base, `${w.id}.start`, "workflow.start"));
@@ -283,6 +287,12 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       case "workflow.get":
       case "workflow.cancel":
         input = { id: params["id"] };
+        break;
+      case "schedule.status":
+        input = {};
+        break;
+      case "schedule.tick":
+        input = (body ?? {}) as Record<string, unknown>;
         break;
       case "workflow.signal":
         input = { message: params["message"], ...((body ?? {}) as Record<string, unknown>) };

@@ -136,9 +136,13 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       return { status: st["status"] as string, ...(dueAt ? { dueAt } : {}) };
     },
     /** Cron trigger: the durable outbox sweep (plan §14: waitUntil nudges are not a delivery guarantee). */
-    async scheduled(_event: unknown, env: WorkerEnv, ctx: { waitUntil(p: Promise<unknown>): void }): Promise<void> {
+    async scheduled(event: { cron?: string; scheduledTime?: number } | unknown, env: WorkerEnv, ctx: { waitUntil(p: Promise<unknown>): void }): Promise<void> {
       const { storage, dispatcher, engine } = build(env, "https://scheduled.invalid");
       const tenants = await Effect.runPromise(storage.outboxTenants());
+      // Schedules (plan §19): the trigger's scheduledTime is the intended instant; the ledger decides what is due.
+      const ev = (event ?? {}) as { cron?: string; scheduledTime?: number };
+      const now = new Date(ev.scheduledTime ?? Date.now()).toISOString();
+      ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(engine.schedules.tick(t, now)))));
       ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(dispatcher.sweep(t, { now: Date.now() })))));
       // Crashed `running` instances resume here; native drivers own timers.
       ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(engine.workflows.sweep(t)))));

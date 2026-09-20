@@ -1617,8 +1617,12 @@ impl<'a> Ctx<'a> {
                     let segs = t.segments();
                     let Some(Resolved::Function(target_id)) = self.resolve(&segs, &module, file, range_of(&t)) else { continue };
                     if let Some(cron) = s.cron()
-                        && cron.split_whitespace().count() != 5 {
-                            self.err("E-SRC-001", file, range_of(s), format!("cron expression `{cron}` must have five fields"), None);
+                        && let Err(e) = crate::cron::validate(&cron) {
+                            self.err("E-SRC-001", file, range_of(s), format!("invalid cron expression `{cron}`: {e}"), None);
+                        }
+                    if let Some(tz) = s.timezone()
+                        && !crate::cron::known_timezone(&tz) {
+                            self.err("E-SRC-003", file, range_of(s), format!("unknown timezone `{tz}`; use an IANA name such as `UTC` or `America/New_York`"), None);
                         }
                     m.sources.push(Source { id, name, cron: s.cron(), timezone: s.timezone(), target: target_id });
                 }

@@ -1,6 +1,7 @@
 //! Forge semantic layer: package loading, symbol resolution, checks, DomainIR.
 
 pub mod compiler;
+pub mod cron;
 pub mod diagnostics;
 pub mod ir;
 pub mod package;

@@ -181,6 +181,7 @@ fn main() -> Result<()> {
                 "ui": plans.ui,
                 "messaging": plans.messaging,
                 "workflows": plans.workflows,
+                "schedules": plans.schedules,
             });
             std::fs::write(out_dir.join("app.json"), serde_json::to_string_pretty(&bundle)?)?;
             std::fs::write(out_dir.join("d1/0001_init.sql"), forge_planner::sql::render_sqlite(&plans.sql))?;

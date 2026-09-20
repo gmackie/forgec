@@ -19,6 +19,19 @@ pub struct Contracts {
     pub projections: Vec<ProjectionContract>,
     pub caches: Vec<CacheContract>,
     pub workflows: Vec<WorkflowContract>,
+    pub schedules: Vec<ScheduleContract>,
+}
+
+/// A scheduled source (plan §19): `GET {path}` (ledger status), `POST {path}/tick` (`{ now }`, operator use).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ScheduleContract {
+    pub id: String,
+    pub name: String,
+    pub target: String,
+    pub cron: String,
+    pub timezone: String,
+    pub path: String,
 }
 
 /// A durable workflow (plan §15): `POST {start}` (the `@http` binding or `{path}`), `GET {path}/{id}`,
@@ -148,6 +161,7 @@ pub fn plan(ir: &DomainIR) -> Contracts {
     let mut projections = Vec::new();
     let mut caches = Vec::new();
     let mut workflows = Vec::new();
+    let mut schedules = Vec::new();
     let find_resource = |id: &str| ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.id == id);
     for m in &ir.modules {
         for r in &m.resources {
@@ -202,6 +216,10 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 path: p.crud.as_ref().map(|c| c.path.clone()).unwrap_or_else(|| format!("/v1/projections/{}", naming::kebab(&p.name))),
             });
         }
+        for s in &m.sources {
+            let Some(cron) = &s.cron else { continue };
+            schedules.push(ScheduleContract { id: s.id.clone(), name: s.name.clone(), target: s.target.clone(), cron: cron.clone(), timezone: s.timezone.clone().unwrap_or_else(|| "UTC".into()), path: format!("/v1/schedules/{}", naming::kebab(&s.name)) });
+        }
         for w in &m.workflows {
             let path = format!("/v1/workflows/{}", naming::kebab(&w.name));
             let mut signals = Vec::new();
@@ -231,7 +249,7 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             });
         }
     }
-    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches, workflows }
+    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches, workflows, schedules }
 }
 
 fn collect_signals(steps: &[Step], out: &mut Vec<(String, String)>) {

@@ -17,6 +17,7 @@ import { Functions, type ExternalBinding, type FunctionImpl } from "./functions.
 import { Temporal } from "./temporal.js";
 import { ReadModels } from "./readmodels.js";
 import { Workflows } from "./workflows.js";
+import { Schedules } from "./schedules.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -134,6 +135,9 @@ export class Engine {
     if (proj && action === "rebuild") return this.readModels.rebuild(proj, ctx);
     const cache = this.model.caches.find((c) => c.id === base);
     if (cache && action === "read") return this.readModels.read(cache, body, ctx);
+    const src = this.model.sources.find((s) => s.id === base);
+    if (src && action === "tick") return Effect.promise(() => Effect.runPromise(this.schedules.tick(ctx.tenant, String(body["now"] ?? new Date().toISOString())))).pipe(Effect.map((results) => ({ results })));
+    if (src && action === "status") return Effect.promise(() => Effect.runPromise(this.schedules.status(ctx.tenant))).pipe(Effect.map((all) => all.find((x) => x.source === src.id) ?? { source: src.id, lastOccurrence: null, next: null, skipped: [] }));
     const wf = this.model.workflows.find((w) => w.id === base);
     if (wf && action === "start") return this.workflows.start(wf, body, ctx);
     if (wf && action === "get") return this.workflows.get(wf, String(body["id"]), ctx);
@@ -184,6 +188,7 @@ export class Engine {
   readonly imports = new Imports(this);
   readonly readModels = new ReadModels(this);
   readonly workflows = new Workflows(this);
+  readonly schedules = new Schedules(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {

@@ -96,6 +96,10 @@ pub fn client_ts(c: &Contracts) -> String {
     for k in &c.caches {
         let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"cache.read\", resource: {:?} }},", format!("{}.read", k.id), k.http.path, k.name);
     }
+    for s in &c.schedules {
+        let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"schedule.status\", resource: {:?} }},", format!("{}.status", s.id), s.path, s.name);
+        let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: \"schedule.tick\", resource: {:?} }},", format!("{}.tick", s.id), format!("{}/tick", s.path), s.name);
+    }
     for w in &c.workflows {
         let _ = writeln!(out, "  {:?}: {{ method: {:?}, path: {:?}, kind: \"workflow.start\", resource: {:?} }},", format!("{}.start", w.id), w.start.method, w.start.path, w.name);
         let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"workflow.get\", resource: {:?} }},", format!("{}.get", w.id), format!("{}/{{id}}", w.path), w.name);
@@ -197,6 +201,11 @@ pub fn client_ts(c: &Contracts) -> String {
         let _ = writeln!(out, "    {}: {{ read(key: {{ {} }}): Promise<CacheRead<{}>> }};", lower_first(&k.name), keys.join("; "), value);
     }
     let _ = writeln!(out, "  }};");
+    let _ = writeln!(out, "  schedules: {{");
+    for s in &c.schedules {
+        let _ = writeln!(out, "    {}: {{ status(): Promise<ScheduleStatus>; tick(now?: string): Promise<{{ results: ScheduleTick[] }}> }};", lower_first(&s.name));
+    }
+    let _ = writeln!(out, "  }};");
     let _ = writeln!(out, "  workflows: {{");
     for w in &c.workflows {
         let msgs: Vec<String> = w.signals.iter().map(|(_, m)| format!("{m:?}")).collect();
@@ -238,6 +247,11 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "    caches: {{");
     for k in &c.caches {
         let _ = writeln!(out, "      {}: {{ read: (key) => t.unwrap(t.call({:?}, {{ key }})) }},", lower_first(&k.name), format!("{}.read", k.id));
+    }
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    schedules: {{");
+    for s in &c.schedules {
+        let _ = writeln!(out, "      {}: {{ status: () => t.unwrap(t.call({:?}, {{}})), tick: (now) => t.unwrap(t.call({:?}, now ? {{ now }} : {{}})) }},", lower_first(&s.name), format!("{}.status", s.id), format!("{}.tick", s.id));
     }
     let _ = writeln!(out, "    }},");
     let _ = writeln!(out, "    workflows: {{");
@@ -306,6 +320,8 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
 export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
+export interface ScheduleStatus { source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }
+export interface ScheduleTick { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }
 export interface WorkflowInstance { id: string; workflow: string; version: number; status: "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled"; input: Record<string, unknown>; bindings: Record<string, unknown>; history: { step: string; kind: string; at: string }[]; waiting?: { step: string; message: string; correlationKey: string; dueAt?: string }; sleeping?: { step: string; dueAt: string }; output?: unknown; error?: { code: string; detail?: string } }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
@@ -368,8 +384,8 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       void _m;
       body = JSON.stringify(rest);
       headers["content-type"] = "application/json";
-    } else if (spec.kind === "workflow.cancel") {
-      body = "{}";
+    } else if (spec.kind === "workflow.cancel" || spec.kind === "schedule.tick" || spec.kind === "projection.rebuild") {
+      body = JSON.stringify(input);
       headers["content-type"] = "application/json";
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});

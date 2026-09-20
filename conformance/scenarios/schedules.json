@@ -1,0 +1,20 @@
+{
+  "id": "m7.schedules",
+  "title": "Schedule occurrences: identity is schedule + intended instant (not delivery time), duplicate ticks are no-ops, missed runs catch up oldest-first within the window and older ones are recorded as skipped",
+  "steps": [
+    { "name": "c", "op": "@acme/commerce/_/Customer.create", "input": { "code": "SCH", "name": "S" }, "expect": { "ok": { "id": "$id:1" } } },
+    { "name": "fresh", "op": "@acme/commerce/_/NightlyReconciliation.status", "input": {}, "expect": { "ok": { "source": "@acme/commerce/_/NightlyReconciliation", "lastOccurrence": null, "skipped": [] } } },
+    { "name": "late", "op": "@acme/commerce/_/NightlyReconciliation.tick", "input": { "now": "2031-01-10T03:00:04Z" },
+      "expect": { "ok": { "results": [ { "source": "@acme/commerce/_/NightlyReconciliation", "occurrence": "2031-01-10T03:00:00.000Z", "outcome": "ran" } ] } } },
+    { "name": "dup", "op": "@acme/commerce/_/NightlyReconciliation.tick", "input": { "now": "2031-01-10T03:00:40Z" },
+      "expect": { "ok": { "results": [ { "occurrence": "2031-01-10T03:00:00.000Z", "outcome": "duplicate" } ] } } },
+    { "name": "quiet", "op": "@acme/commerce/_/NightlyReconciliation.tick", "input": { "now": "2031-01-10T12:00:00Z" }, "expect": { "ok": { "results": [] } } },
+    { "name": "catchUp", "op": "@acme/commerce/_/NightlyReconciliation.tick", "input": { "now": "2031-01-15T03:00:00Z" },
+      "expect": { "ok": { "results": [
+        { "occurrence": "2031-01-13T03:00:00.000Z", "outcome": "ran" },
+        { "occurrence": "2031-01-14T03:00:00.000Z", "outcome": "ran" },
+        { "occurrence": "2031-01-15T03:00:00.000Z", "outcome": "ran" } ] } } },
+    { "name": "status", "op": "@acme/commerce/_/NightlyReconciliation.status", "input": {},
+      "expect": { "ok": { "lastOccurrence": "2031-01-15T03:00:00.000Z", "next": "2031-01-16T03:00:00.000Z", "skipped": ["2031-01-11T03:00:00.000Z", "2031-01-12T03:00:00.000Z"] } } }
+  ]
+}

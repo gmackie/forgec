@@ -26,6 +26,8 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
 export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
+export interface ScheduleStatus { source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }
+export interface ScheduleTick { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }
 export interface WorkflowInstance { id: string; workflow: string; version: number; status: "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled"; input: Record<string, unknown>; bindings: Record<string, unknown>; history: { step: string; kind: string; at: string }[]; waiting?: { step: string; message: string; correlationKey: string; dueAt?: string }; sleeping?: { step: string; dueAt: string }; output?: unknown; error?: { code: string; detail?: string } }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
@@ -88,8 +90,8 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       void _m;
       body = JSON.stringify(rest);
       headers["content-type"] = "application/json";
-    } else if (spec.kind === "workflow.cancel") {
-      body = "{}";
+    } else if (spec.kind === "workflow.cancel" || spec.kind === "schedule.tick" || spec.kind === "projection.rebuild") {
+      body = JSON.stringify(input);
       headers["content-type"] = "application/json";
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});
@@ -192,6 +194,8 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/CustomerOrderSummary.status": { method: "GET", path: "/v1/customer-order-summaries/status", kind: "projection.status", resource: "CustomerOrderSummary" },
   "@acme/commerce/_/CustomerOrderSummary.rebuild": { method: "POST", path: "/v1/customer-order-summaries/rebuild", kind: "projection.rebuild", resource: "CustomerOrderSummary" },
   "@acme/commerce/_/CurrentSitePolicy.read": { method: "GET", path: "/v1/caches/current-site-policy", kind: "cache.read", resource: "CurrentSitePolicy" },
+  "@acme/commerce/_/NightlyReconciliation.status": { method: "GET", path: "/v1/schedules/nightly-reconciliation", kind: "schedule.status", resource: "NightlyReconciliation" },
+  "@acme/commerce/_/NightlyReconciliation.tick": { method: "POST", path: "/v1/schedules/nightly-reconciliation/tick", kind: "schedule.tick", resource: "NightlyReconciliation" },
   "@acme/commerce/_/ProcessOrder.start": { method: "POST", path: "/v1/orders/{order}/process", kind: "workflow.start", resource: "ProcessOrder" },
   "@acme/commerce/_/ProcessOrder.get": { method: "GET", path: "/v1/workflows/process-order/{id}", kind: "workflow.get", resource: "ProcessOrder" },
   "@acme/commerce/_/ProcessOrder.cancel": { method: "POST", path: "/v1/workflows/process-order/{id}/cancel", kind: "workflow.cancel", resource: "ProcessOrder" },
@@ -467,6 +471,9 @@ export interface ForgeClient {
   caches: {
     currentSitePolicy: { read(key: { site: string }): Promise<CacheRead<SitePolicyRecord | null>> };
   };
+  schedules: {
+    nightlyReconciliation: { status(): Promise<ScheduleStatus>; tick(now?: string): Promise<{ results: ScheduleTick[] }> };
+  };
   workflows: {
     processOrder: { start(input: Record<string, unknown>, opts?: CallOptions): Promise<WorkflowInstance>; get(id: string): Promise<WorkflowInstance>; cancel(id: string): Promise<WorkflowInstance>; signal(message: "PaymentCaptured", payload: Record<string, unknown>, messageId?: string): Promise<{ delivered: number; held: number }> };
   };
@@ -498,6 +505,9 @@ export function createClient(options: ClientOptions): ForgeClient {
     },
     caches: {
       currentSitePolicy: { read: (key) => t.unwrap(t.call("@acme/commerce/_/CurrentSitePolicy.read", { key })) },
+    },
+    schedules: {
+      nightlyReconciliation: { status: () => t.unwrap(t.call("@acme/commerce/_/NightlyReconciliation.status", {})), tick: (now) => t.unwrap(t.call("@acme/commerce/_/NightlyReconciliation.tick", now ? { now } : {})) },
     },
     workflows: {
       processOrder: { start: (input, opts) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.start", input, opts)), get: (id) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.get", { id })), cancel: (id) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.cancel", { id })), signal: (message, payload, messageId) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.signal", { message, payload, ...(messageId ? { messageId } : {}) })) },

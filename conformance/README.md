@@ -16,9 +16,22 @@ the same code that application clients use — and write
 
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
-| runtime-memory | in-process | 13 | 196 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows) | 13 | 196 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions) | 13 | 196 | 0 |
+| runtime-memory | in-process | 14 | 203 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows + Cron Triggers) | 14 | 203 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge) | 14 | 203 | 0 |
+
+M7 adds `schedules`: `NightlyReconciliation` (`cron "0 3 * * *"`, UTC)
+compiles to an explicit recurrence IR (sets, 0/7 = Sunday, day-of-month OR
+day-of-week) and to each provider's trigger (exact Cloudflare Cron Trigger and
+EventBridge `cron(0 3 * * ? *)`, or a periodic tick when a provider cannot
+express the rule, e.g. dom-OR-dow on EventBridge or any non-UTC schedule on
+Cloudflare). Occurrence identity is (schedule, intended instant): the scenario
+ticks with controlled `now` values and verifies a late delivery runs the
+intended 03:00 occurrence, a duplicate tick is a no-op, missed occurrences
+catch up oldest-first within a 3-day window and older ones are recorded as
+skipped, overlap policy `skip`. Local-time schedules are covered by DST
+fixtures in `packages/runtime/test/schedules.test.ts` (spring-forward gap
+skipped once, fall-back overlap fires once).
 
 M7 adds `workflows`: `ProcessOrder` (submit → wait for PaymentCaptured
 correlated by reference → short-payment choice → approve → parallel

@@ -103,7 +103,7 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   const dispatcher = new Dispatcher(model, storage, withProjections(engine, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues)), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
   const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
 
-  return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent | WorkflowDriverEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | WorkflowDriverResult | void> => {
+  return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent | WorkflowDriverEvent | ScheduleTickEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | WorkflowDriverResult | void> => {
     if ("forge" in ev && ev.forge === "workflow.advance") {
       const st = await Effect.runPromise(engine.workflows.advance(ev.tenant, ev.id).pipe(Effect.provide(layer)));
       const dueAt = ((st["sleeping"] as { dueAt?: string } | undefined)?.dueAt ?? (st["waiting"] as { dueAt?: string } | undefined)?.dueAt) as string | undefined;
@@ -135,6 +135,13 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
       }
       return { batchItemFailures: failures };
     }
+    if ("forge" in ev && ev.forge === "schedule.tick") {
+      // EventBridge delivers the intended instant in `time`; the ledger decides what is due.
+      const tenants = await Effect.runPromise(storage.outboxTenants());
+      const now = new Date((ev as { time?: string }).time ?? Date.now()).toISOString();
+      await Promise.all(tenants.map((t: string) => Effect.runPromise(engine.schedules.tick(t, now))));
+      return;
+    }
     if ("source" in ev && ev.source === "aws.events") {
       const tenants = await Effect.runPromise(storage.outboxTenants());
       await Promise.all(tenants.map((t: string) => Effect.runPromise(dispatcher.sweep(t, { now: Date.now() }))));
@@ -155,6 +162,12 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   };
 }
 
+export interface ScheduleTickEvent {
+  forge: "schedule.tick";
+  source?: string;
+  /** Intended occurrence instant (EventBridge `time`, or `<aws.scheduler.scheduled-time>`). */
+  time?: string;
+}
 export interface WorkflowDriverEvent {
   forge: "workflow.advance" | "workflow.wait";
   tenant: string;

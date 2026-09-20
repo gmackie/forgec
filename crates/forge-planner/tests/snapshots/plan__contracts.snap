@@ -1797,5 +1797,15 @@ expression: p.contracts
       },
       "path": "/v1/workflows/process-order"
     }
+  ],
+  "schedules": [
+    {
+      "id": "@acme/commerce/_/NightlyReconciliation",
+      "name": "NightlyReconciliation",
+      "target": "@acme/commerce/_/RebuildOrderSummary",
+      "cron": "0 3 * * *",
+      "timezone": "UTC",
+      "path": "/v1/schedules/nightly-reconciliation"
+    }
   ]
 }

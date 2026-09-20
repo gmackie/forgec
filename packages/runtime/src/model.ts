@@ -98,8 +98,10 @@ export type WorkflowStep =
   | { kind: "return"; value: Expr }
   | { kind: "fail"; error: string };
 export interface WorkflowDecl { id: string; name: string; version: number; graphHash: string; input?: TypeSpec; output?: TypeSpec; errors: string[]; http?: HttpBinding; steps: WorkflowStep[] }
+export interface SchedulesPlan { version: string; schedules: { source: string; name: string; target: string; cloudflare: { cron?: string; tick: boolean }; aws: { expression: string; timezone: string } }[]; cloudflareCrons: string[] }
 export interface WorkflowsPlan { version: string; workflows: { id: string; name: string; version: number; graphHash: string; cloudflare: { name: string; binding: string; className: string }; aws: { stateMachine: string; definition: unknown } }[] }
-export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[] }
+export interface SourceDecl { id: string; name: string; cron?: string; timezone?: string; target: string }
+export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[] }
 export interface MessagingPlan {
   channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
   subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
@@ -107,7 +109,7 @@ export interface MessagingPlan {
 }
 export interface DomainIR { version: string; package: { name: string }; modules: Module[] }
 export interface Contracts { version: string; resources: { id: string; name: string; wireName: string; operations: Operation[] }[]; functions: { id: string; name: string; http?: HttpBinding }[] }
-export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan }
+export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan }
 
 export interface OperationRef {
   op: Operation;
@@ -122,6 +124,7 @@ export class Model {
   readonly projections: ProjectionDecl[];
   readonly caches: CacheDecl[];
   readonly workflows: WorkflowDecl[];
+  readonly sources: SourceDecl[];
   readonly enums = new Map<string, EnumDecl>();
   private readonly byId = new Map<string, Resource>();
   private readonly ops = new Map<string, OperationRef>();
@@ -135,6 +138,7 @@ export class Model {
     this.projections = bundle.ir.modules.flatMap((m) => m.projections ?? []);
     this.caches = bundle.ir.modules.flatMap((m) => m.caches ?? []);
     this.workflows = bundle.ir.modules.flatMap((m) => m.workflows ?? []);
+    this.sources = bundle.ir.modules.flatMap((m) => m.sources ?? []);
     for (const m of bundle.ir.modules) for (const e of m.enums) this.enums.set(e.id, e);
     for (const r of this.resources) {
       this.byId.set(r.id, r);

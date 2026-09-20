@@ -10,6 +10,7 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as sfn from "aws-cdk-lib/aws-stepfunctions";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as scheduler from "aws-cdk-lib/aws-scheduler";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import bundle from "../../generated/app.json" with { type: "json" };
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
@@ -86,6 +87,25 @@ for (const w of workflowPlans) {
 if (workflowPlans.length) {
   fn.addToRolePolicy(new iam.PolicyStatement({ actions: ["states:StartExecution"], resources: Object.values(machineArns) }));
   fn.addToRolePolicy(new iam.PolicyStatement({ actions: ["states:SendTaskSuccess", "states:SendTaskFailure"], resources: ["*"] }));
+}
+// Schedules (plan §19): EventBridge rules deliver the intended instant (`time`); the ledger decides
+// what is due. Local-time schedules use EventBridge Scheduler (timezone-aware) via the same input.
+for (const s of bundle.schedules?.schedules ?? []) {
+  if (s.aws.timezone === "UTC") {
+    new events.Rule(stack, `Schedule-${s.name}`, {
+      schedule: events.Schedule.expression(s.aws.expression),
+      targets: [new targets.LambdaFunction(fn, { event: events.RuleTargetInput.fromObject({ forge: "schedule.tick", source: s.source, time: events.EventField.time }) })],
+    });
+  } else {
+    const role = new iam.Role(stack, `ScheduleRole-${s.name}`, { assumedBy: new iam.ServicePrincipal("scheduler.amazonaws.com") });
+    fn.grantInvoke(role);
+    new scheduler.CfnSchedule(stack, `Scheduler-${s.name}`, {
+      scheduleExpression: s.aws.expression,
+      scheduleExpressionTimezone: s.aws.timezone,
+      flexibleTimeWindow: { mode: "OFF" },
+      target: { arn: fn.functionArn, roleArn: role.roleArn, input: JSON.stringify({ forge: "schedule.tick", source: s.source, time: "<aws.scheduler.scheduled-time>" }) },
+    });
+  }
 }
 // Durable outbox sweep (plan §14): the request-time nudge is not a delivery guarantee.
 new events.Rule(stack, "OutboxSweep", { schedule: events.Schedule.rate(cdk.Duration.minutes(5)), targets: [new targets.LambdaFunction(fn)] });
