@@ -18,17 +18,13 @@ date, and AWS runtime". Registry versions checked 2026-09-20.
 | AWS SDK | `@aws-sdk/*` 3.1136.x | validated by the Dynamo spike |
 | aws-cdk-lib | 2.270.x | current; not yet exercised (CDK CLI not installed locally) |
 | Alchemy | 2.0.0-beta.79 | **only beta exists**; the Alchemy adapter must pin an exact beta and expect churn |
+| Effect | **4.0.0-rc** (currently rc.116) | decided 2026-09-20: the plan's R10 cites v4 docs; adopting the RC now avoids a 3→4 migration of every generated service interface before 1.0. Pin an exact RC per commit and track breakage in M2–M3. |
 
 ## Open — needs a decision before M1/M2 code depends on it
 
-1. **Effect 3.22 (stable) vs 4.0.0-rc (the plan's R10 cites v4 docs).**
-   The runtime, codecs, and every generated service interface depend on this.
-   v4 changes Schema and service/layer APIs; choosing 3.x now means a
-   migration before 1.0; choosing 4 RC means tracking RC breakage during
-   M2–M3. The spikes deliberately avoid Effect so this stays open.
-2. **AWS Lambda runtime.** `nodejs22.x` is the safe pin; verify whether
+1. **AWS Lambda runtime.** `nodejs22.x` is the safe pin; verify whether
    `nodejs24.x` is GA in us-east-1 before M2 provisions functions.
-3. **TypeScript 7** adoption point (see above).
+2. **TypeScript 7** adoption point (see above).
 
 ## Evidence produced by M0 spikes
 
