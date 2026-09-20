@@ -16,9 +16,22 @@ the same code that application clients use — and write
 
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
-| runtime-memory | in-process | 10 | 119 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues) | 10 | 119 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS) | 10 | 119 | 0 |
+| runtime-memory | in-process | 12 | 167 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues) | 12 | 167 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS) | 12 | 167 | 0 |
+
+M6 adds `temporal-hierarchy` (half-open effective dating with guarded
+overlap, cycle-safe hierarchy moves, bounded traversal) and
+`views-projections-cache`: a view lowered to the source's bounded list plus
+filter (a missing partition key is a validation error, never a scan); a
+projection that is `ProjectionNotReady` until its first rebuild, then
+maintains count and exact fixed-point sum from `Order.changes` through the
+same outbox as every other subscription (contribution ledger keyed by source
+id + revision, so stale or duplicate events never overwrite a newer
+contribution and a cancellation subtracts); and a cache reader whose
+`freshUntil = min(5m, next effective boundary)` and whose expired entries are
+rejected on read before any physical cleanup. Projections and caches use the
+existing document primitive, so no adapter grew a new storage shape.
 
 M5 adds `messaging` (implemented SubmitOrder with declared dependencies,
 domain errors, atomic transition + publication). Delivery was verified end to

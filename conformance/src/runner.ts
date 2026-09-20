@@ -6,6 +6,8 @@ export interface CallStep {
   input: unknown;
   ctx?: Partial<CallContext>;
   expect: { ok: unknown } | { error: string };
+  /** Retry the call until the expectation holds (asynchronous read models converge after the durable sweep). */
+  eventually?: { attempts: number; delayMs: number };
 }
 
 /** Concurrent calls; the invariant is a count of outcomes (or a range), not who wins. */
@@ -160,7 +162,21 @@ export async function runScenario(scenario: Scenario, target: Target, options: R
     }
     const input = resolveRefs(step.input, raw, ids);
     const ctx = { ...base, ...step.ctx };
-    const result = await target.call(step.op, input, ctx);
+    let result = await target.call(step.op, input, ctx);
+    // Asynchronous read models (projections) converge after the durable sweep: poll until the expectation holds.
+    if (step.eventually) {
+      const probe = (r: CallResult): boolean => {
+        if ("error" in step.expect) return !r.ok && r.code === step.expect.error;
+        if (!r.ok) return false;
+        const fs: Failure[] = [];
+        diff(normalize(resolveRefs(step.expect.ok, raw, ids, { ids: false }), ids), normalize(r.value, ids), "", fs, step.name);
+        return fs.length === 0;
+      };
+      for (let i = 1; i < step.eventually.attempts && !probe(result); i++) {
+        await new Promise((r) => setTimeout(r, step.eventually!.delayMs));
+        result = await target.call(step.op, input, ctx);
+      }
+    }
     raw[step.name] = result;
     if (result.ok && result.value && typeof result.value === "object" && "id" in (result.value as object)) {
       const id = (result.value as { id: unknown }).id;

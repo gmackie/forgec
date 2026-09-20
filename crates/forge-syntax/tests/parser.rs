@@ -16,6 +16,7 @@ fn parses_every_reference_app_file_without_errors() {
         "acme/src/orders/order-events.forge",
         "acme/src/orders/fulfillment.forge",
         "acme/src/orders/attachments.forge",
+        "acme/src/orders/summaries.forge",
         "payments/src/index.forge",
     ] {
         let src = fixture(rel);
@@ -98,6 +99,15 @@ fn doc_comments_attach_to_the_following_declaration_field_and_member() {
 #[test]
 fn parses_blob_declarations_with_content_block() {
     let src = fixture("acme/src/orders/attachments.forge");
+    let parsed = parse(&src);
+    assert!(parsed.errors().is_empty(), "{:?}", parsed.errors());
+    assert_eq!(parsed.syntax().text().to_string(), src);
+    insta::assert_snapshot!(parsed.debug_tree());
+}
+
+#[test]
+fn parses_cache_view_and_projection_declarations() {
+    let src = fixture("acme/src/orders/summaries.forge");
     let parsed = parse(&src);
     assert!(parsed.errors().is_empty(), "{:?}", parsed.errors());
     assert_eq!(parsed.syntax().text().to_string(), src);

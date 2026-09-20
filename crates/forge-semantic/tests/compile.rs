@@ -203,3 +203,36 @@ fn effective_dated_and_hierarchical_resources_synthesize_fields_and_operations()
     let bad = inline("@t/x", &[("src/a.forge", "resource P\n  @effectiveDated(uniqueBy: [nope])\n{\n  id : id\n  a : text\n}\n")]);
     assert_eq!(codes(bad), vec!["E-QRY-002"]);
 }
+
+#[test]
+fn views_projections_and_caches_elaborate_and_are_checked() {
+    let ex = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples"));
+    let pay = compile(&load_package(&ex.join("payments")).unwrap(), &[]).ir.unwrap();
+    let out = compile(&load_package(&ex.join("acme")).unwrap(), &[&pay]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let json = serde_json::to_value(out.ir.unwrap()).unwrap();
+    let m = &json["modules"][0];
+    let view = m["views"].as_array().unwrap().iter().find(|v| v["name"] == "PendingOrders").unwrap();
+    assert_eq!(view["source"], "@acme/commerce/_/Order");
+    assert_eq!(view["by"], serde_json::json!(["customer"]));
+    assert_eq!(view["fields"], serde_json::json!(["id", "site", "total", "requestedOn"]));
+    assert_eq!(view["order"][0]["field"], "createdAt");
+    assert_eq!(view["where"]["kind"], "binary");
+    let proj = m["projections"].as_array().unwrap().iter().find(|v| v["name"] == "CustomerOrderSummary").unwrap();
+    assert_eq!(proj["by"], serde_json::json!(["customer"]));
+    assert_eq!(proj["aggregates"], serde_json::json!([{ "function": "count", "field": "orders", "alias": "orders" }, { "function": "sum", "field": "total", "alias": "orderTotal", "scale": 2 }]));
+    assert_eq!(proj["crud"]["path"], "/v1/customer-order-summaries");
+    let cache = m["caches"].as_array().unwrap().iter().find(|v| v["name"] == "CurrentSitePolicy").unwrap();
+    assert_eq!(cache["keys"][0]["name"], "site");
+    assert_eq!(cache["loader"]["kind"], "call");
+    assert_eq!(cache["freshUntil"]["kind"], "call");
+
+    let bad_source = inline("@t/x", &[("src/a.forge", "view V {\n  from Nope\n  by a\n}\n")]);
+    assert_eq!(codes(bad_source), vec!["E-SYM-001"]);
+    let bad_field = inline("@t/x", &[("src/a.forge", "resource R {\n  id : id\n  a : text\n}\nview V {\n  from R\n  by a\n  fields id, nope\n}\n")]);
+    assert_eq!(codes(bad_field), vec!["E-QRY-002"]);
+    let ungrouped = inline("@t/x", &[("src/a.forge", "resource R {\n  id : id\n  n : integer\n}\nprojection P {\n  from R\n  sum n as total\n}\n")]);
+    assert_eq!(codes(ungrouped), vec!["E-PROJ-001"]);
+    let non_invertible = inline("@t/x", &[("src/a.forge", "resource R {\n  id : id\n  g : text\n  n : integer\n}\nprojection P {\n  from R\n  by g\n  max n as biggest\n}\n")]);
+    assert_eq!(codes(non_invertible), vec!["W-PROJ-002"]);
+}

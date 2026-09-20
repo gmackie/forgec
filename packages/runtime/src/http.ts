@@ -56,6 +56,25 @@ function builtinRoutes(model: Model): Route[] {
   ];
 }
 
+/** Views, projections and caches (plan §16–17) bind the same paths the generated client uses. */
+function readModelRoutes(model: Model): Route[] {
+  const seg = (path: string) => path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s }));
+  const route = (method: string, path: string, id: string, kind: string): Route => ({ method, segments: seg(path), ref: { op: { id, kind, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] } });
+  const routes: Route[] = [];
+  for (const v of model.views) routes.push(route("GET", `/v1/views/${kebab(v.name)}`, `${v.id}.query`, "view.query"));
+  for (const p of model.projections) {
+    const base = p.crud?.path ?? `/v1/projections/${kebab(p.name)}`;
+    routes.push(route("GET", `${base}/status`, `${p.id}.status`, "projection.status"));
+    routes.push(route("POST", `${base}/rebuild`, `${p.id}.rebuild`, "projection.rebuild"));
+    routes.push(route("GET", `${base}/{id}`, `${p.id}.get`, "projection.get"));
+  }
+  for (const c of model.caches) routes.push(route("GET", `/v1/caches/${kebab(c.name)}`, `${c.id}.read`, "cache.read"));
+  return routes;
+}
+function kebab(name: string): string {
+  return name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").toLowerCase();
+}
+
 function compile(model: Model): Route[] {
   const routes: Route[] = model.httpOperations().map((ref) => ({
     method: ref.op.http!.method,
@@ -67,6 +86,7 @@ function compile(model: Model): Route[] {
     routes.push({ method: f.http.method, segments: f.http.path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })), ref: { op: { id: f.id, kind: "function", http: f.http }, resource: undefined as unknown as Route["ref"]["resource"] } });
   }
   routes.push(...builtinRoutes(model));
+  routes.push(...readModelRoutes(model));
   // Static segments win over parameters at the same position.
   routes.sort((a, b) => {
     const n = Math.max(a.segments.length, b.segments.length);
@@ -242,8 +262,26 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       case "changeset.get":
       case "changeset.preview":
       case "changeset.commit":
+      case "projection.get":
         input = { id: params["id"] };
         break;
+      case "projection.status":
+      case "projection.rebuild":
+        input = {};
+        break;
+      case "view.query": {
+        const q: Record<string, string> = {};
+        for (const [k, v] of url.searchParams) q[k] = v;
+        const { cursor, limit, ...rest } = q;
+        input = { params: rest, ...(cursor ? { cursor } : {}), ...(limit ? { limit: Number(limit) } : {}) };
+        break;
+      }
+      case "cache.read": {
+        const key: Record<string, string> = {};
+        for (const [k, v] of url.searchParams) key[k] = v;
+        input = { key };
+        break;
+      }
       case "changeset.approve":
         input = { id: params["id"], ...((body ?? {}) as Record<string, unknown>) };
         break;

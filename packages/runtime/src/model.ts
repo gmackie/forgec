@@ -84,7 +84,11 @@ export interface FunctionDecl {
   generated: boolean;
 }
 export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; messages: { name: string; fields: Field[] }[] }
-export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[] }
+export interface ViewDecl { id: string; name: string; source: string; by: string[]; where?: Expr; order: OrderKey[]; fields: string[] }
+export interface AggregateDecl { function: "count" | "sum" | "min" | "max"; field: string; alias: string; scale?: number }
+export interface ProjectionDecl { id: string; name: string; source: string; by: string[]; where?: Expr; aggregates: AggregateDecl[]; crud?: { path: string; operations?: string[]; actions: string[] } }
+export interface CacheDecl { id: string; name: string; keys: Field[]; loader: Expr; freshUntil: Expr; staleUntil?: Expr }
+export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[] }
 export interface MessagingPlan {
   channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
   subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
@@ -103,6 +107,9 @@ export class Model {
   readonly resources: Resource[];
   readonly functions: FunctionDecl[];
   readonly channels: ChannelDecl[];
+  readonly views: ViewDecl[];
+  readonly projections: ProjectionDecl[];
+  readonly caches: CacheDecl[];
   readonly enums = new Map<string, EnumDecl>();
   private readonly byId = new Map<string, Resource>();
   private readonly ops = new Map<string, OperationRef>();
@@ -112,6 +119,9 @@ export class Model {
     this.resources = bundle.ir.modules.flatMap((m) => m.resources);
     this.functions = bundle.ir.modules.flatMap((m) => m.functions ?? []);
     this.channels = bundle.ir.modules.flatMap((m) => m.channels ?? []);
+    this.views = bundle.ir.modules.flatMap((m) => m.views ?? []);
+    this.projections = bundle.ir.modules.flatMap((m) => m.projections ?? []);
+    this.caches = bundle.ir.modules.flatMap((m) => m.caches ?? []);
     for (const m of bundle.ir.modules) for (const e of m.enums) this.enums.set(e.id, e);
     for (const r of this.resources) {
       this.byId.set(r.id, r);

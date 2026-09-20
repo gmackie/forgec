@@ -56,20 +56,7 @@ pub struct SenderPlan {
     pub sends: Vec<(String, String)>,
 }
 
-fn kebab(name: &str) -> String {
-    let mut s = String::new();
-    for (i, c) in name.chars().enumerate() {
-        if c.is_ascii_uppercase() {
-            if i > 0 {
-                s.push('-');
-            }
-            s.push(c.to_ascii_lowercase());
-        } else {
-            s.push(c);
-        }
-    }
-    s
-}
+use crate::naming::kebab;
 
 fn pkg_slug(name: &str) -> String {
     name.trim_start_matches('@').replace('/', "-").replace('_', "-")

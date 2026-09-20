@@ -1,6 +1,6 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "3e873fd7013afac199ccfd35033c739886aaa7ab48a2c9bb7a69c6efc9cdea9d",
+  "buildHash": "56d521d3673b1cddfa96a1b3406ea7c16fadbf8e303cf0c7472b37d5b6dd99cb",
   "ir": {
     "version": "domain-ir/1",
     "package": {
@@ -2558,6 +2558,170 @@
             "message": "OrderSubmitted",
             "handler": "@acme/commerce/_/FulfillOrder"
           }
+        ],
+        "views": [
+          {
+            "id": "@acme/commerce/_/PendingOrders",
+            "name": "PendingOrders",
+            "exported": true,
+            "doc": "Orders awaiting approval for a customer: a logical read-only query.",
+            "source": "@acme/commerce/_/Order",
+            "by": [
+              "customer"
+            ],
+            "where": {
+              "kind": "binary",
+              "op": "==",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "status"
+                ]
+              },
+              "rhs": {
+                "kind": "name",
+                "path": [
+                  "Order",
+                  "Status",
+                  "Submitted"
+                ]
+              }
+            },
+            "order": [
+              {
+                "field": "createdAt",
+                "direction": "desc"
+              },
+              {
+                "field": "id",
+                "direction": "desc"
+              }
+            ],
+            "fields": [
+              "id",
+              "site",
+              "total",
+              "requestedOn"
+            ]
+          }
+        ],
+        "projections": [
+          {
+            "id": "@acme/commerce/_/CustomerOrderSummary",
+            "name": "CustomerOrderSummary",
+            "exported": true,
+            "doc": "Rebuildable per-customer order totals (plan §17).",
+            "source": "@acme/commerce/_/Order",
+            "by": [
+              "customer"
+            ],
+            "where": {
+              "kind": "binary",
+              "op": "!=",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "status"
+                ]
+              },
+              "rhs": {
+                "kind": "name",
+                "path": [
+                  "Order",
+                  "Status",
+                  "Cancelled"
+                ]
+              }
+            },
+            "aggregates": [
+              {
+                "function": "count",
+                "field": "orders",
+                "alias": "orders"
+              },
+              {
+                "function": "sum",
+                "field": "total",
+                "alias": "orderTotal",
+                "scale": 2
+              }
+            ],
+            "crud": {
+              "path": "/v1/customer-order-summaries",
+              "operations": [
+                "get",
+                "list"
+              ],
+              "actions": []
+            }
+          }
+        ],
+        "caches": [
+          {
+            "id": "@acme/commerce/_/CurrentSitePolicy",
+            "name": "CurrentSitePolicy",
+            "exported": true,
+            "doc": "Current policy for a site: a reader with a hard freshness bound tied to\nthe next effective boundary (plan §16).",
+            "keys": [
+              {
+                "name": "site",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce/_/Site"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "loader": {
+              "kind": "call",
+              "callee": [
+                "SitePolicy",
+                "effective"
+              ],
+              "args": [
+                {
+                  "kind": "name",
+                  "path": [
+                    "site"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "now"
+                  ]
+                }
+              ]
+            },
+            "freshUntil": {
+              "kind": "call",
+              "callee": [
+                "min"
+              ],
+              "args": [
+                {
+                  "kind": "literal",
+                  "literal": {
+                    "type": "duration",
+                    "value": "5m"
+                  }
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "nextEffectiveBoundary"
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ]
@@ -4218,6 +4382,119 @@
           "PaymentUnavailable"
         ],
         "generated": false
+      }
+    ],
+    "views": [
+      {
+        "id": "@acme/commerce/_/PendingOrders",
+        "name": "PendingOrders",
+        "source": "@acme/commerce/_/Order",
+        "params": [
+          "customer"
+        ],
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "site": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce/_/Site"
+            },
+            "total": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "money",
+              "x-forge-currency": "USD",
+              "readOnly": true
+            },
+            "requestedOn": {
+              "type": "string",
+              "format": "date",
+              "x-forge-type": "date"
+            }
+          },
+          "required": [
+            "id",
+            "site",
+            "total",
+            "requestedOn"
+          ],
+          "additionalProperties": false
+        },
+        "order": [
+          {
+            "field": "createdAt",
+            "direction": "desc"
+          },
+          {
+            "field": "id",
+            "direction": "desc"
+          }
+        ],
+        "http": {
+          "method": "GET",
+          "path": "/v1/views/pending-orders"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "@acme/commerce/_/CustomerOrderSummary",
+        "name": "CustomerOrderSummary",
+        "source": "@acme/commerce/_/Order",
+        "by": [
+          "customer"
+        ],
+        "record": {
+          "type": "object",
+          "properties": {
+            "customer": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce/_/Customer"
+            },
+            "orders": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            },
+            "orderTotal": {
+              "type": "string",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 2
+            },
+            "generation": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "customer",
+            "orders",
+            "orderTotal",
+            "generation"
+          ],
+          "additionalProperties": false
+        },
+        "path": "/v1/customer-order-summaries"
+      }
+    ],
+    "caches": [
+      {
+        "id": "@acme/commerce/_/CurrentSitePolicy",
+        "name": "CurrentSitePolicy",
+        "keys": [
+          "site"
+        ],
+        "valueResource": "SitePolicy",
+        "http": {
+          "method": "GET",
+          "path": "/v1/caches/current-site-policy"
+        }
       }
     ]
   },

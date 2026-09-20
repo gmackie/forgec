@@ -15,6 +15,9 @@ import { Blobs } from "./blobs.js";
 import { Imports } from "./imports.js";
 import { Functions, type ExternalBinding, type FunctionImpl } from "./functions.js";
 import { Temporal } from "./temporal.js";
+import { ReadModels } from "./readmodels.js";
+import { testClocks } from "./testing.js";
+import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
 
 export interface CallContext {
@@ -76,6 +79,8 @@ export class Engine {
     if (!ref) {
       const fn = self.model.function(opId);
       if (fn) return self.withIdempotency(opId, (input ?? {}) as Wire, ctx, self.functions.invoke(fn, input, ctx));
+      const rm = self.readModel(opId, (input ?? {}) as Wire, ctx);
+      if (rm) return rm;
       return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     }
     const { op, resource } = ref;
@@ -114,6 +119,21 @@ export class Engine {
       default:
         return Effect.fail(err("MethodNotAllowed", `operation kind ${op.kind} is not executable`));
     }
+  }
+
+  /** Views (`.query`), projections (`.get|.status|.rebuild`) and caches (`.read`). */
+  private readModel(opId: string, body: Wire, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> | null {
+    const dot = opId.lastIndexOf(".");
+    const [base, action] = [opId.slice(0, dot), opId.slice(dot + 1)];
+    const view = this.model.views.find((v) => v.id === base);
+    if (view && action === "query") return this.readModels.view(view, body, ctx);
+    const proj = this.model.projections.find((p) => p.id === base);
+    if (proj && action === "get") return this.readModels.get(proj, body, ctx);
+    if (proj && action === "status") return this.readModels.status(proj, ctx);
+    if (proj && action === "rebuild") return this.readModels.rebuild(proj, ctx);
+    const cache = this.model.caches.find((c) => c.id === base);
+    if (cache && action === "read") return this.readModels.read(cache, body, ctx);
+    return null;
   }
 
   /** Build the commit plan for a mutation without persisting it (used by single calls and changeset preview). */
@@ -156,6 +176,38 @@ export class Engine {
   readonly blobs = new Blobs(this);
   readonly temporal = new Temporal(this);
   readonly imports = new Imports(this);
+  readonly readModels = new ReadModels(this);
+
+  /** Test hook: advance the deterministic test clock (no effect with production clocks). */
+  testClockJump(ms: number): void {
+    testClocks.at(-1)?.jump(ms);
+  }
+
+  /** Every projection is one durable logical subscription on its source's change channel. */
+  projectionSubscriptions(base: Record<string, string[]> = {}): Record<string, string[]> {
+    const out: Record<string, string[]> = Object.fromEntries(Object.entries(base).map(([k, v]) => [k, [...v]]));
+    for (const p of this.model.projections) (out[`${p.source}.changes`] ??= []).push(`projection:${p.name}`);
+    return out;
+  }
+
+  /** In-process transport that applies change events to projections (the cloud hosts route queue batches here). */
+  projectionTransport(): Transport {
+    const self = this;
+    return {
+      name: "projections",
+      send: (d) => {
+        const p = self.model.projections.find((x) => `projection:${x.name}` === d.subscription);
+        if (!p) return Effect.fail(new Error(`unknown projection subscription ${d.subscription}`));
+        return self.readModels.applyEvent(p, d.envelope).pipe(Effect.provide(self.layer), Effect.asVoid, Effect.mapError((e) => new Error(e.message)));
+      },
+    };
+  }
+
+  applyProjectionEvent(projectionId: string, env: Envelope): Promise<"applied" | "stale" | "ignored"> {
+    const p = this.model.projections.find((x) => x.id === projectionId);
+    if (!p) return Promise.reject(new Error(`unknown projection ${projectionId}`));
+    return Effect.runPromise(this.readModels.applyEvent(p, env).pipe(Effect.provide(this.layer)));
+  }
 
   // ------------------------------------------------------------ helpers
   claimKey(r: Resource, u: Unique, rec: Wire): string | null {

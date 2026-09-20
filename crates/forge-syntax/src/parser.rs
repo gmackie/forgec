@@ -27,7 +27,7 @@ pub fn parse_to_green(src: &str) -> (GreenNode, Vec<SyntaxError>) {
     (p.builder.finish(), p.errors)
 }
 
-const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "function", "channel", "source", "on", "import", "module", "export"];
+const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "cache", "view", "projection", "function", "channel", "source", "on", "import", "module", "export"];
 
 impl<'a> Parser<'a> {
     // ---------------------------------------------------------------- cursor
@@ -288,6 +288,9 @@ impl<'a> Parser<'a> {
             "shape" => K::SHAPE_DECL,
             "resource" => K::RESOURCE_DECL,
             "blob" => K::BLOB_DECL,
+            "cache" => K::CACHE_DECL,
+            "view" => K::VIEW_DECL,
+            "projection" => K::PROJECTION_DECL,
             "function" => K::FUNCTION_DECL,
             "channel" => K::CHANNEL_DECL,
             "source" => K::SOURCE_DECL,
@@ -311,6 +314,9 @@ impl<'a> Parser<'a> {
             K::SHAPE_DECL => self.shape_body(),
             K::RESOURCE_DECL => self.resource_body(),
             K::BLOB_DECL => self.blob_body(),
+            K::CACHE_DECL => self.cache_body(),
+            K::VIEW_DECL => self.query_body(),
+            K::PROJECTION_DECL => self.query_body(),
             K::FUNCTION_DECL => self.function_body(),
             K::CHANNEL_DECL => self.channel_body(),
             K::SOURCE_DECL => self.source_body(),
@@ -784,6 +790,108 @@ impl<'a> Parser<'a> {
                 p.finish();
             } else {
                 p.resource_item();
+            }
+        });
+    }
+
+    // -------------------------------------------------------------- cache
+    /// cache Name { key f : T ...; loader Callable(args); freshUntil expr }
+    fn cache_body(&mut self) {
+        self.expect_ident("cache name");
+        self.header_decorators();
+        self.block(|p| match p.current_text() {
+            "key" if p.nth(1) == TokenKind::Ident => {
+                p.start(K::KEY_DECL);
+                p.bump();
+                p.field_decl();
+                p.finish();
+                p.end_item();
+            }
+            "loader" => {
+                p.start(K::LOADER_DECL);
+                p.bump();
+                p.expr();
+                p.finish();
+                p.end_item();
+            }
+            "freshUntil" | "staleUntil" => {
+                p.start(K::FRESH_DECL);
+                p.bump();
+                p.expr();
+                p.finish();
+                p.end_item();
+            }
+            _ => {}
+        });
+    }
+
+    /// view/projection body: from R; where expr; by f, g; order by ...; fields a, b; count x; sum f as g; min/max f as g
+    fn query_body(&mut self) {
+        self.expect_ident("name");
+        self.header_decorators();
+        self.block(|p| {
+            let t = p.current_text();
+            match t {
+                "from" if p.nth(1) == TokenKind::Ident => {
+                    p.start(K::FROM_DECL);
+                    p.bump();
+                    p.qualified_name("source resource");
+                    p.finish();
+                    p.end_item();
+                }
+                "where" => {
+                    p.start(K::WHERE_DECL);
+                    p.bump();
+                    p.expr();
+                    p.finish();
+                    p.end_item();
+                }
+                "by" if p.nth(1) == TokenKind::Ident => {
+                    p.start(K::BY_DECL);
+                    p.bump();
+                    p.field_list();
+                    p.finish();
+                    p.end_item();
+                }
+                "order" if p.nth_text(1) == "by" => {
+                    p.start(K::ORDER_LIST);
+                    p.bump();
+                    p.bump();
+                    loop {
+                        p.start(K::ORDER_KEY);
+                        p.expect_ident("order field");
+                        if p.at_kw("asc") || p.at_kw("desc") {
+                            p.bump();
+                        }
+                        p.finish();
+                        if p.at(TokenKind::Comma) {
+                            p.bump();
+                        } else {
+                            break;
+                        }
+                    }
+                    p.finish();
+                    p.end_item();
+                }
+                "fields" if p.nth(1) == TokenKind::Ident => {
+                    p.start(K::FIELDS_DECL);
+                    p.bump();
+                    p.field_list();
+                    p.finish();
+                    p.end_item();
+                }
+                "count" | "sum" | "min" | "max" if p.nth(1) == TokenKind::Ident => {
+                    p.start(K::AGGREGATE_DECL);
+                    p.bump();
+                    p.bump();
+                    if p.at_kw("as") {
+                        p.bump();
+                        p.expect_ident("alias");
+                    }
+                    p.finish();
+                    p.end_item();
+                }
+                _ => {}
             }
         });
     }

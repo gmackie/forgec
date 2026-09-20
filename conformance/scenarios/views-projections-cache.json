@@ -1,0 +1,33 @@
+{
+  "id": "m6.views-projections-cache",
+  "title": "Bounded view over a partition, rebuildable projection maintained from change events (dedup, cancellation subtracts), cache-aside with effective-boundary freshness",
+  "steps": [
+    { "name": "c", "op": "@acme/commerce/_/Customer.create", "input": { "code": "VPC", "name": "V" }, "expect": { "ok": { "id": "$id:1" } } },
+    { "name": "s", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c.id", "code": "hq", "name": "HQ", "timezone": "UTC" }, "expect": { "ok": { "id": "$id:2" } } },
+    { "name": "notReady", "op": "@acme/commerce/_/CustomerOrderSummary.get", "input": { "id": "$c.id" }, "expect": { "error": "ProjectionNotReady" } },
+    { "name": "build", "op": "@acme/commerce/_/CustomerOrderSummary.rebuild", "input": {}, "expect": { "ok": { "status": "active" } } },
+    { "name": "empty", "op": "@acme/commerce/_/CustomerOrderSummary.get", "input": { "id": "$c.id" }, "expect": { "ok": { "customer": "$id:1", "orders": 0, "orderTotal": "0.00" } } },
+    { "name": "o1", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "10.50", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:3", "total": "10.50" } } },
+    { "name": "o2", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "20.25", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:4" } } },
+    { "name": "o3", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "5.00", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:5" } } },
+    { "name": "viewNeedsKey", "op": "@acme/commerce/_/PendingOrders.query", "input": { "params": {} }, "expect": { "error": "ValidationFailed" } },
+    { "name": "viewEmpty", "op": "@acme/commerce/_/PendingOrders.query", "input": { "params": { "customer": "$c.id" } }, "expect": { "ok": { "items": [], "next": null } } },
+    { "name": "submit2", "op": "@acme/commerce/_/SubmitOrder", "input": { "order": "$o2.id", "expectedVersion": 1 }, "expect": { "ok": { "status": "Submitted" } } },
+    { "name": "submit1", "op": "@acme/commerce/_/SubmitOrder", "input": { "order": "$o1.id", "expectedVersion": 1 }, "expect": { "ok": { "status": "Submitted" } } },
+    { "name": "view", "op": "@acme/commerce/_/PendingOrders.query", "input": { "params": { "customer": "$c.id" }, "limit": 10 },
+      "expect": { "ok": { "items": [ { "id": "$id:4", "site": "$id:2", "total": "20.25", "requestedOn": "2026-09-20" }, { "id": "$id:3", "site": "$id:2", "total": "10.50", "requestedOn": "2026-09-20" } ], "next": null } } },
+    { "name": "viewPage", "op": "@acme/commerce/_/PendingOrders.query", "input": { "params": { "customer": "$c.id" }, "limit": 1 }, "expect": { "ok": { "items": [ { "id": "$id:4" } ] } } },
+    { "name": "summed", "op": "@acme/commerce/_/CustomerOrderSummary.get", "input": { "id": "$c.id" }, "eventually": { "attempts": 20, "delayMs": 1000 },
+      "expect": { "ok": { "customer": "$id:1", "orders": 3, "orderTotal": "35.75" } } },
+    { "name": "cancel3", "op": "@acme/commerce/_/Order.status.cancel", "input": { "id": "$o3.id", "expectedVersion": 1, "input": { "reason": "dup" } }, "expect": { "ok": { "status": "Cancelled" } } },
+    { "name": "subtracted", "op": "@acme/commerce/_/CustomerOrderSummary.get", "input": { "id": "$c.id" }, "eventually": { "attempts": 20, "delayMs": 1000 },
+      "expect": { "ok": { "orders": 2, "orderTotal": "30.75" } } },
+    { "name": "status", "op": "@acme/commerce/_/CustomerOrderSummary.status", "input": {}, "expect": { "ok": { "status": "active" } } },
+    { "name": "rebuild", "op": "@acme/commerce/_/CustomerOrderSummary.rebuild", "input": {}, "expect": { "ok": { "status": "active" } } },
+    { "name": "rebuilt", "op": "@acme/commerce/_/CustomerOrderSummary.get", "input": { "id": "$c.id" }, "expect": { "ok": { "orders": 2, "orderTotal": "30.75", "generation": "$rebuild.generation" } } },
+    { "name": "p1", "op": "@acme/commerce/_/SitePolicy.create", "input": { "site": "$s.id", "maxOrderTotal": "100.00", "effectiveFrom": "2020-01-01T00:00:00Z" }, "expect": { "ok": { "id": "$id:6" } } },
+    { "name": "cacheNeedsKey", "op": "@acme/commerce/_/CurrentSitePolicy.read", "input": { "key": {} }, "expect": { "error": "ValidationFailed" } },
+    { "name": "miss", "op": "@acme/commerce/_/CurrentSitePolicy.read", "input": { "key": { "site": "$s.id" } }, "expect": { "ok": { "value": { "id": "$id:6", "maxOrderTotal": "100.00" }, "source": "loader" } } },
+    { "name": "hit", "op": "@acme/commerce/_/CurrentSitePolicy.read", "input": { "key": { "site": "$s.id" } }, "expect": { "ok": { "value": { "id": "$id:6" }, "source": "cache", "freshUntil": "$miss.freshUntil" } } }
+  ]
+}

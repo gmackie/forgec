@@ -6,6 +6,7 @@ import { Engine } from "../engine.js";
 import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
 import { Dispatcher } from "../dispatch.js";
+import { withProjections } from "../readmodels.js";
 import { cloudflareQueuesTransport, decodeEnvelope, type QueueLike } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
 import { Clock, CursorSecret, IdGen, Objects, Storage } from "../services.js";
@@ -51,7 +52,7 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       Layer.succeed(Objects)(objects ?? new MemoryObjectStore()),
     );
     const engine = new Engine(model, layer, options);
-    const dispatcher = new Dispatcher(model, storage, cloudflareQueuesTransport(queueBindings(model, env)), { subscriptions, leaseMs: 30_000, maxAttempts: 8 });
+    const dispatcher = new Dispatcher(model, storage, withProjections(engine, cloudflareQueuesTransport(queueBindings(model, env))), { subscriptions: engine.projectionSubscriptions(subscriptions), leaseMs: 30_000, maxAttempts: 8 });
     return { engine, storage, objects, dispatcher };
   };
 

@@ -56,6 +56,9 @@ enum SymKind {
     Shape,
     Resource,
     Blob,
+    Cache,
+    View,
+    Projection,
     Function,
     Channel,
     Source,
@@ -76,6 +79,8 @@ struct Ctx<'a> {
     symbols: BTreeMap<(String, String), Symbol>,
     /// Import aliases visible per module.
     imports: BTreeMap<String, BTreeSet<String>>,
+    /// Resources whose fields are being derived right now (recursion guard).
+    resolving: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -90,7 +95,7 @@ pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
     let mut files: Vec<&SourceFile> = pkg.files.iter().collect();
     files.sort_by_key(|a| norm_path(&a.path));
 
-    let mut ctx = Ctx { pkg, deps: BTreeMap::new(), diags: Vec::new(), files: Vec::new(), symbols: BTreeMap::new(), imports: BTreeMap::new() };
+    let mut ctx = Ctx { pkg, deps: BTreeMap::new(), diags: Vec::new(), files: Vec::new(), symbols: BTreeMap::new(), imports: BTreeMap::new(), resolving: Vec::new() };
     for (alias, name) in &pkg.dependencies {
         match deps.iter().find(|d| &d.package.name == name) {
             Some(d) => {
@@ -181,6 +186,9 @@ impl<'a> Ctx<'a> {
                     Declaration::Shape(_) => SymKind::Shape,
                     Declaration::Resource(_) => SymKind::Resource,
                     Declaration::Blob(_) => SymKind::Blob,
+                    Declaration::Cache(_) => SymKind::Cache,
+                    Declaration::View(_) => SymKind::View,
+                    Declaration::Projection(_) => SymKind::Projection,
                     Declaration::Function(_) => SymKind::Function,
                     Declaration::Channel(_) => SymKind::Channel,
                     Declaration::Source(_) => SymKind::Source,
@@ -240,8 +248,8 @@ impl<'a> Ctx<'a> {
                         SymKind::Function => Resolved::Function(id),
                         SymKind::Channel => Resolved::Channel(id),
                         SymKind::Type => Resolved::Type(self.alias_base(module, a)),
-                        SymKind::Source => {
-                            self.err("E-SYM-005", file, range, format!("`{a}` is a source and cannot be used here"), None);
+                        SymKind::Source | SymKind::Cache | SymKind::View | SymKind::Projection => {
+                            self.err("E-SYM-005", file, range, format!("`{a}` cannot be used as a type or dependency here"), None);
                             return None;
                         }
                     });
@@ -576,6 +584,23 @@ impl<'a> Ctx<'a> {
                 if i == 0 && path.len() == 2 && self.sym(module, seg).is_some_and(|s| s.kind == SymKind::Enum) {
                     return Some(());
                 }
+                // `Resource.Status.Member`: a lifecycle state literal.
+                if i == 0 && path.len() == 3 && path[1] == "Status" && self.sym(module, seg).is_some_and(|s| s.kind == SymKind::Resource) {
+                    if let Some(Symbol { decl: Declaration::Resource(rd), .. }) = self.sym(module, seg) {
+                        let states: Vec<String> = rd.lifecycle().map(|l| {
+                            let mut v: Vec<String> = Vec::new();
+                            for x in l.initials().filter_map(|x| x.state()).chain(l.terminals().filter_map(|x| x.state())) { v.push(x.text().to_string()); }
+                            for t in l.transitions() { for x in t.sources() { v.push(x.text().to_string()); } if let Some(t2) = t.target() { v.push(t2.text().to_string()); } }
+                            v
+                        }).unwrap_or_default();
+                        if states.iter().any(|x| x == &path[2]) {
+                            return Some(());
+                        }
+                        let sugg = suggest(&path[2], states.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{seg}.Status.{s}`?"));
+                        self.err("E-SYM-001", file, range, format!("`{}` is not a state of `{seg}`", path[2]), sugg);
+                        return None;
+                    }
+                }
                 let sugg = suggest(seg, fields.iter().map(|f| f.name.as_str())).map(|s| format!("did you mean `{s}`?"));
                 self.err("E-SYM-001", file, range, format!("unknown field `{}` on `{}`", seg, short(&current)), sugg);
                 return None;
@@ -596,20 +621,41 @@ impl<'a> Ctx<'a> {
     /// Declared + synthesized fields of a resource, by id (local or imported).
     fn resource_fields(&mut self, id: &str, module: &str) -> Vec<Field> {
         let local_prefix = format!("{}/{}/", self.pkg.name, module);
-        if let Some(name) = id.strip_prefix(&local_prefix)
-            && let Some(Symbol { decl: Declaration::Resource(r), file, .. }) = self.sym(module, name) {
-                let (r, file) = (r.clone(), *file);
+        if let Some(name) = id.strip_prefix(&local_prefix) {
+            let decl = match self.sym(module, name) {
+                Some(Symbol { decl: Declaration::Resource(r), file, .. }) => Some((r.clone(), *file, false)),
+                Some(Symbol { decl: Declaration::Blob(b), file, .. }) => Some((b.as_resource(), *file, true)),
+                _ => None,
+            };
+            if let Some((r, file, is_blob)) = decl {
                 let mut out = Vec::new();
                 let saved = self.diags.len();
+                let rid = self.id(module, name);
+                // Derived fields infer their type through resource_fields of the same resource; the nested
+                // call sees declared (non-derived) fields only, which bounds the recursion.
+                let nested = self.resolving.contains(&rid);
+                if !nested {
+                    self.resolving.push(rid.clone());
+                }
                 for fd in r.fields() {
-                    if let Some(f) = self.field(&fd, module, file, None, FIELD_DECORATORS) {
+                    if nested && fd.derived().is_some() {
+                        continue;
+                    }
+                    if let Some(f) = self.field(&fd, module, file, Some(rid.as_str()), FIELD_DECORATORS) {
                         out.push(f);
                     }
                 }
+                if !nested {
+                    self.resolving.pop();
+                }
                 self.diags.truncate(saved); // reported by the owning pass, not here
-                out.extend(self.synthesized_fields(&self.decorators_of(&r), r.lifecycle().is_some(), &self.id(module, name)));
+                out.extend(self.synthesized_fields(&self.decorators_of(&r), r.lifecycle().is_some(), &rid));
+                if is_blob {
+                    out.extend(blob_fields());
+                }
                 return out;
             }
+        }
         for d in self.deps.values() {
             if let Some(r) = d.find_resource(id) {
                 return r.fields.clone();
@@ -1276,6 +1322,19 @@ impl<'a> Ctx<'a> {
                         m.functions.push(func);
                     }
                 }
+                (SymKind::View, Declaration::View(q)) | (SymKind::Projection, Declaration::Projection(q)) => {
+                    if let Some(item) = self.query_decl(q, &module, file, exported, kind == SymKind::Projection) {
+                        match item {
+                            QueryItem::View(v) => m.views.push(v),
+                            QueryItem::Projection(p) => m.projections.push(p),
+                        }
+                    }
+                }
+                (SymKind::Cache, Declaration::Cache(c)) => {
+                    if let Some(cache) = self.cache(c, &module, file, exported) {
+                        m.caches.push(cache);
+                    }
+                }
                 (SymKind::Channel, Declaration::Channel(c)) => {
                     if let Some(ch) = self.channel(c, &module, file, exported) {
                         m.channels.push(ch);
@@ -1330,6 +1389,9 @@ impl<'a> Ctx<'a> {
             m.channels.sort_by(|a, b| a.id.cmp(&b.id));
             m.sources.sort_by(|a, b| a.id.cmp(&b.id));
             m.subscriptions.sort_by(|a, b| (&a.channel, &a.message, &a.handler).cmp(&(&b.channel, &b.message, &b.handler)));
+            m.views.sort_by(|a, b| a.id.cmp(&b.id));
+            m.projections.sort_by(|a, b| a.id.cmp(&b.id));
+            m.caches.sort_by(|a, b| a.id.cmp(&b.id));
         }
         let mut imports: Vec<Import> = self.pkg.dependencies.iter().map(|(alias, package)| Import { alias: alias.clone(), package: package.clone() }).collect();
         imports.sort_by(|a, b| a.alias.cmp(&b.alias));
@@ -1358,6 +1420,165 @@ fn blob_fields() -> Vec<Field> {
         mk("contentGeneration", scalar("integer", true), true),
         mk("sealedGeneration", scalar("text", true), true),
     ]
+}
+
+enum QueryItem {
+    View(View),
+    Projection(Projection),
+}
+
+impl<'a> Ctx<'a> {
+    /// Resolve a `from` source to a local resource id and its fields.
+    fn source_resource(&mut self, q: &ast::QueryDecl, module: &str, file: usize) -> Option<(String, Vec<Field>)> {
+        let from = match q.from() {
+            Some(f) => f,
+            None => {
+                self.err("E-QRY-003", file, range_of(q), "a view or projection needs `from <Resource>`", None);
+                return None;
+            }
+        };
+        match self.resolve(&from.segments(), module, file, range_of(&from))? {
+            Resolved::Type(TypeBase::Reference { resource }) => {
+                let fields = self.resource_fields(&resource, module);
+                Some((resource, fields))
+            }
+            _ => {
+                self.err("E-QRY-003", file, range_of(&from), format!("`{}` is not a resource", from.text()), None);
+                None
+            }
+        }
+    }
+
+    fn query_decl(&mut self, q: &ast::QueryDecl, module: &str, file: usize, exported: bool, is_projection: bool) -> Option<QueryItem> {
+        let name = q.name()?.text().to_string();
+        let id = self.id(module, &name);
+        let (source, fields) = self.source_resource(q, module, file)?;
+        let names: Vec<String> = fields.iter().map(|f| f.name.clone()).collect();
+        let check = |this: &mut Self, f: &str, what: &str| {
+            if !names.contains(&f.to_string()) {
+                this.err("E-QRY-002", file, range_of(q), format!("unknown field `{f}` in `{what}`"), suggest(f, names.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?")));
+            }
+        };
+        let by = q.by();
+        for f in &by {
+            check(self, f, "by");
+        }
+        let filter = match q.where_expr() {
+            Some(e) => self.expr(&e, module, file, Some(&source)),
+            None => None,
+        };
+        let mut crud = None;
+        for d in q.decorators() {
+            let Some(n) = d.name() else { continue };
+            match n.text() {
+                "crud" if is_projection => {
+                    if let Some(ArgValue::Literal(p)) = d.args().first().and_then(|a| a.value()) {
+                        crud = Some(CrudBinding { path: unq(&p), operations: Some(vec!["get".into(), "list".into()]), actions: vec![] });
+                    } else {
+                        self.err("E-DEC-002", file, range_of(&d), "`@crud` requires a route path", None);
+                    }
+                }
+                "http" if !is_projection => {}
+                other => self.err("E-DEC-001", file, tok_range(&n), format!("unknown decorator `@{other}` here"), None),
+            }
+        }
+        if is_projection {
+            let aggregates: Vec<Aggregate> = q
+                .aggregates()
+                .into_iter()
+                .map(|(function, field, alias)| {
+                    if function != "count" {
+                        check(self, &field, &function);
+                    }
+                    let scale = fields.iter().find(|f| f.name == field).and_then(|f| match &f.ty.base {
+                        TypeBase::Scalar { name, args } if name == "money" => Some(match args.first().map(|s| s.as_str()) { Some("JPY" | "KRW" | "CLP") => 0, Some("KWD" | "BHD") => 3, _ => 2 }),
+                        TypeBase::Scalar { name, args } if name == "decimal" => args.first().and_then(|a| a.parse().ok()).or(Some(2)),
+                        _ => None,
+                    });
+                    if matches!(function.as_str(), "min" | "max") {
+                        self.err("W-PROJ-002", file, range_of(q), format!("`{function}` is not invertible; deletions and decreases trigger group recomputation for `{alias}`"), None);
+                    }
+                    Aggregate { function, field, alias, scale }
+                })
+                .collect();
+            if by.is_empty() {
+                self.err("E-PROJ-001", file, range_of(q), "a projection must group with `by <fields>`; ungrouped aggregates need a bounded working set", Some("add `by <field>`".into()));
+            }
+            if aggregates.is_empty() {
+                self.err("E-PROJ-003", file, range_of(q), "a projection needs at least one aggregate (count, sum, min, max)", None);
+            }
+            Some(QueryItem::Projection(Projection { id, name, exported, doc: ast::doc_of(q.syntax()), source, by, filter, aggregates, crud }))
+        } else {
+            let mut out_fields = q.fields();
+            for f in &out_fields {
+                check(self, f, "fields");
+            }
+            if out_fields.is_empty() {
+                out_fields = names.clone();
+            }
+            if !out_fields.contains(&"id".to_string()) {
+                out_fields.insert(0, "id".into());
+            }
+            let mut order: Vec<OrderKey> = q.order().into_iter().map(|(field, direction)| OrderKey { field, direction }).collect();
+            for o in &order {
+                check(self, &o.field, "order by");
+            }
+            if !order.iter().any(|o| o.field == "id") {
+                let dir = order.last().map(|o| o.direction.clone()).unwrap_or_else(|| "asc".into());
+                order.push(OrderKey { field: "id".into(), direction: dir });
+            }
+            if by.is_empty() {
+                self.err("E-QRY-004", file, range_of(q), "a view must be bounded with `by <fields>` (an equality partition); unbounded views become scans", None);
+            }
+            Some(QueryItem::View(View { id, name, exported, doc: ast::doc_of(q.syntax()), source, by, filter, order, fields: out_fields, http: None }))
+        }
+    }
+
+    fn cache(&mut self, c: &ast::CacheDecl, module: &str, file: usize, exported: bool) -> Option<Cache> {
+        let name = c.name()?.text().to_string();
+        let id = self.id(module, &name);
+        let mut keys = Vec::new();
+        for k in c.keys() {
+            if let Some(f) = self.field(&k, module, file, None, &[]) {
+                keys.push(f);
+            }
+        }
+        if keys.is_empty() {
+            self.err("E-CACHE-001", file, range_of(c), "a cache needs at least one `key`", None);
+        }
+        let loader = match c.loader() {
+            Some(e) => self.expr(&e, module, file, None)?,
+            None => {
+                self.err("E-CACHE-002", file, range_of(c), "a cache needs a `loader`", None);
+                return None;
+            }
+        };
+        // Loader must be a call to a resource operation or function; validate the callee resolves.
+        if let Expr::Call { callee, .. } = &loader {
+            let (head, rest) = (callee.first().cloned().unwrap_or_default(), &callee[1.min(callee.len())..]);
+            let ok = self.sym(module, &head).is_some_and(|s| matches!(s.kind, SymKind::Resource | SymKind::Function)) && (rest.is_empty() || matches!(rest[0].as_str(), "effective" | "get" | "find" | "list"));
+            if !ok {
+                self.err("E-CACHE-003", file, range_of(c), format!("loader `{}` must call a resource query or a function", callee.join(".")), None);
+            }
+        } else {
+            self.err("E-CACHE-003", file, range_of(c), "loader must be a call", None);
+        }
+        let mut fresh_until = None;
+        let mut stale_until = None;
+        for (kind, e) in c.freshness() {
+            let ir = self.expr(&e, module, file, None);
+            if kind == "freshUntil" {
+                fresh_until = ir;
+            } else {
+                stale_until = ir;
+            }
+        }
+        let Some(fresh_until) = fresh_until else {
+            self.err("E-CACHE-004", file, range_of(c), "a cache needs an explicit `freshUntil`", None);
+            return None;
+        };
+        Some(Cache { id, name, exported, doc: ast::doc_of(c.syntax()), keys, loader, fresh_until, stale_until })
+    }
 }
 
 fn short(id: &str) -> &str {

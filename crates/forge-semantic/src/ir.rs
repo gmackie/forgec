@@ -43,6 +43,75 @@ pub struct Module {
     pub channels: Vec<Channel>,
     pub sources: Vec<Source>,
     pub subscriptions: Vec<Subscription>,
+    #[serde(default)]
+    pub views: Vec<View>,
+    #[serde(default)]
+    pub projections: Vec<Projection>,
+    #[serde(default)]
+    pub caches: Vec<Cache>,
+}
+
+/// A logical read-only query over declared data (plan §17): bounded, indexed, never a scan.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct View {
+    pub id: String,
+    pub name: String,
+    pub exported: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub doc: Option<String>,
+    pub source: String,
+    pub by: Vec<String>,
+    #[serde(rename = "where", skip_serializing_if = "Option::is_none")]
+    pub filter: Option<Expr>,
+    pub order: Vec<OrderKey>,
+    pub fields: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http: Option<HttpBinding>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Aggregate {
+    pub function: String,
+    pub field: String,
+    pub alias: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scale: Option<u32>,
+}
+
+/// A persistent, rebuildable read model maintained from source change events (plan §17).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Projection {
+    pub id: String,
+    pub name: String,
+    pub exported: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub doc: Option<String>,
+    pub source: String,
+    pub by: Vec<String>,
+    #[serde(rename = "where", skip_serializing_if = "Option::is_none")]
+    pub filter: Option<Expr>,
+    pub aggregates: Vec<Aggregate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub crud: Option<CrudBinding>,
+}
+
+/// A disposable value with an explicit loader and freshness contract (plan §16).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Cache {
+    pub id: String,
+    pub name: String,
+    pub exported: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub doc: Option<String>,
+    pub keys: Vec<Field>,
+    pub loader: Expr,
+    pub fresh_until: Expr,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stale_until: Option<Expr>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -1,0 +1,27 @@
+/// Current policy for a site: a reader with a hard freshness bound tied to
+/// the next effective boundary (plan §16).
+export cache CurrentSitePolicy {
+  key site : Site
+  loader SitePolicy.effective(site, now)
+  freshUntil min(5m, nextEffectiveBoundary)
+}
+
+/// Orders awaiting approval for a customer: a logical read-only query.
+export view PendingOrders {
+  from Order
+  where status == Order.Status.Submitted
+  by customer
+  order by createdAt desc
+  fields id, site, total, requestedOn
+}
+
+/// Rebuildable per-customer order totals (plan §17).
+export projection CustomerOrderSummary
+  @crud("/v1/customer-order-summaries")
+{
+  from Order
+  by customer
+  count orders
+  sum total as orderTotal
+  where status != Order.Status.Cancelled
+}

@@ -7,6 +7,7 @@ import { Engine } from "../engine.js";
 import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
 import { Dispatcher } from "../dispatch.js";
+import { withProjections } from "../readmodels.js";
 import { decodeEnvelope, sqsTransport } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
@@ -78,7 +79,7 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   const sqs = new SQSClient({ region: env.AWS_REGION ?? "us-east-1" });
   const subscriptions: Record<string, string[]> = {};
   for (const s of model.bundle.messaging?.subscriptions ?? []) (subscriptions[s.channel] ??= []).push(s.name);
-  const dispatcher = new Dispatcher(model, storage, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues), { subscriptions, leaseMs: 30_000, maxAttempts: 8 });
+  const dispatcher = new Dispatcher(model, storage, withProjections(engine, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues)), { subscriptions: engine.projectionSubscriptions(subscriptions), leaseMs: 30_000, maxAttempts: 8 });
   const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
 
   return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | void> => {

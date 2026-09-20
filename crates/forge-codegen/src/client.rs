@@ -85,8 +85,25 @@ pub fn client_ts(c: &Contracts) -> String {
     for (action, path) in [("inspect", "/v1/imports/inspect"), ("stage", "/v1/imports/stage")] {
         let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: {:?}, resource: \"imports\" }},", format!("{pkg}/_/imports.{action}"), path, format!("import.{action}"));
     }
+    for v in &c.views {
+        let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"view.query\", resource: {:?} }},", format!("{}.query", v.id), v.http.path, v.name);
+    }
+    for p in &c.projections {
+        let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"projection.get\", resource: {:?} }},", format!("{}.get", p.id), format!("{}/{{id}}", p.path), p.name);
+        let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"projection.status\", resource: {:?} }},", format!("{}.status", p.id), format!("{}/status", p.path), p.name);
+        let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: \"projection.rebuild\", resource: {:?} }},", format!("{}.rebuild", p.id), format!("{}/rebuild", p.path), p.name);
+    }
+    for k in &c.caches {
+        let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"cache.read\", resource: {:?} }},", format!("{}.read", k.id), k.http.path, k.name);
+    }
     let _ = writeln!(out, "}};\n");
 
+    for v in &c.views {
+        interface(&mut out, &format!("{}Row", v.name), &v.record);
+    }
+    for p in &c.projections {
+        interface(&mut out, &format!("{}Record", p.name), &p.record);
+    }
     for r in &c.resources {
         interface(&mut out, &format!("{}Record", r.name), &r.record);
         interface(&mut out, &format!("{}Create", r.name), &r.create);
@@ -156,6 +173,24 @@ pub fn client_ts(c: &Contracts) -> String {
     for r in &c.resources {
         let _ = writeln!(out, "  {}: {}Api;", camel_from_wire(&plural(&r.wire_name)), r.name);
     }
+    let _ = writeln!(out, "  views: {{");
+    for v in &c.views {
+        let params: Vec<String> = v.params.iter().map(|p| format!("{p}: string")).collect();
+        let _ = writeln!(out, "    {}: {{ query(params: {{ {} }}, page?: PageOptions): Promise<Page<{}Row>> }};", lower_first(&v.name), params.join("; "), v.name);
+    }
+    let _ = writeln!(out, "  }};");
+    let _ = writeln!(out, "  projections: {{");
+    for p in &c.projections {
+        let _ = writeln!(out, "    {}: {{ get(id: string): Promise<{}Record>; status(): Promise<ProjectionStatus>; rebuild(): Promise<ProjectionStatus> }};", lower_first(&p.name), p.name);
+    }
+    let _ = writeln!(out, "  }};");
+    let _ = writeln!(out, "  caches: {{");
+    for k in &c.caches {
+        let keys: Vec<String> = k.keys.iter().map(|p| format!("{p}: string")).collect();
+        let value = k.value_resource.as_ref().map(|r| format!("{r}Record | null")).unwrap_or_else(|| "unknown".into());
+        let _ = writeln!(out, "    {}: {{ read(key: {{ {} }}): Promise<CacheRead<{}>> }};", lower_first(&k.name), keys.join("; "), value);
+    }
+    let _ = writeln!(out, "  }};");
     let _ = writeln!(out, "}}\n");
 
     let _ = writeln!(out, "export function createClient(options: ClientOptions): ForgeClient {{");
@@ -177,6 +212,21 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "    imports: {{");
     let _ = writeln!(out, "      inspect: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/imports.inspect"));
     let _ = writeln!(out, "      stage: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/imports.stage"));
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    views: {{");
+    for v in &c.views {
+        let _ = writeln!(out, "      {}: {{ query: (params, page) => t.unwrap(t.call({:?}, {{ params, ...(page ?? {{}}) }})) }},", lower_first(&v.name), format!("{}.query", v.id));
+    }
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    projections: {{");
+    for p in &c.projections {
+        let _ = writeln!(out, "      {}: {{ get: (id) => t.unwrap(t.call({:?}, {{ id }})), status: () => t.unwrap(t.call({:?}, {{}})), rebuild: () => t.unwrap(t.call({:?}, {{}})) }},", lower_first(&p.name), format!("{}.get", p.id), format!("{}.status", p.id), format!("{}.rebuild", p.id));
+    }
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    caches: {{");
+    for k in &c.caches {
+        let _ = writeln!(out, "      {}: {{ read: (key) => t.unwrap(t.call({:?}, {{ key }})) }},", lower_first(&k.name), format!("{}.read", k.id));
+    }
     let _ = writeln!(out, "    }},");
     for r in &c.resources {
         let _ = writeln!(out, "    {}: {{", camel_from_wire(&plural(&r.wire_name)));
@@ -237,6 +287,8 @@ export interface ChangesetsApi {
   commit(id: string, opts?: CallOptions): Promise<Changeset>;
 }
 export interface Page<T> { items: T[]; next: string | null; limit: number }
+export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
+export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
 export interface SignedUrl { url: string; method: "PUT" | "GET"; headers?: Record<string, string>; expiresAt: string }
@@ -281,9 +333,9 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     if (typeof input["expectedVersion"] === "number") headers["if-match"] = `"${input["expectedVersion"]}"`;
     let url = base + fillPath(spec.path, input);
     let body: string | null = null;
-    if (spec.kind === "find" || spec.kind === "list" || spec.kind === "effective") {
+    if (spec.kind === "find" || spec.kind === "list" || spec.kind === "effective" || spec.kind === "view.query" || spec.kind === "cache.read") {
       const q = new URLSearchParams();
-      for (const [k, v] of Object.entries((input["params"] ?? {}) as Record<string, unknown>)) q.set(k, String(v));
+      for (const [k, v] of Object.entries((input[spec.kind === "cache.read" ? "key" : "params"] ?? {}) as Record<string, unknown>)) q.set(k, String(v));
       if (input["cursor"]) q.set("cursor", String(input["cursor"]));
       if (input["limit"]) q.set("limit", String(input["limit"]));
       const qs = q.toString();

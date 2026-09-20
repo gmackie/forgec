@@ -1,0 +1,174 @@
+---
+source: crates/forge-syntax/tests/parser.rs
+assertion_line: 114
+expression: parsed.debug_tree()
+---
+ROOT@0..742
+  CACHE_DECL@0..258
+    DOC_COMMENT@0..75 "/// Current policy for a site: a reader with a hard freshness bound tied to"
+    NEWLINE@75..76 "\\n"
+    DOC_COMMENT@76..120 "/// the next effective boundary (plan §16)."
+    NEWLINE@120..121 "\\n"
+    IDENT@121..127 "export"
+    IDENT@128..133 "cache"
+    IDENT@134..151 "CurrentSitePolicy"
+    L_BRACE@152..153 "{"
+    NEWLINE@153..154 "\\n"
+    KEY_DECL@156..171
+      IDENT@156..159 "key"
+      FIELD_DECL@160..171
+        IDENT@160..164 "site"
+        COLON@165..166 ":"
+        TYPE_EXPR@167..171
+          TYPE_REF@167..171
+            QUALIFIED_NAME@167..171
+              IDENT@167..171 "Site"
+    NEWLINE@171..172 "\\n"
+    LOADER_DECL@174..212
+      IDENT@174..180 "loader"
+      CALL_EXPR@181..212
+        NAME_EXPR@181..201
+          QUALIFIED_NAME@181..201
+            IDENT@181..191 "SitePolicy"
+            DOT@191..192 "."
+            IDENT@192..201 "effective"
+        ARG_LIST@201..212
+          L_PAREN@201..202 "("
+          NAME_EXPR@202..206
+            QUALIFIED_NAME@202..206
+              IDENT@202..206 "site"
+          COMMA@206..207 ","
+          NAME_EXPR@208..211
+            QUALIFIED_NAME@208..211
+              IDENT@208..211 "now"
+          R_PAREN@211..212 ")"
+    NEWLINE@212..213 "\\n"
+    FRESH_DECL@215..256
+      IDENT@215..225 "freshUntil"
+      CALL_EXPR@226..256
+        NAME_EXPR@226..229
+          QUALIFIED_NAME@226..229
+            IDENT@226..229 "min"
+        ARG_LIST@229..256
+          L_PAREN@229..230 "("
+          LITERAL_EXPR@230..232
+            DURATION@230..232 "5m"
+          COMMA@232..233 ","
+          NAME_EXPR@234..255
+            QUALIFIED_NAME@234..255
+              IDENT@234..255 "nextEffectiveBoundary"
+          R_PAREN@255..256 ")"
+    NEWLINE@256..257 "\\n"
+    R_BRACE@257..258 "}"
+  NEWLINE@258..259 "\\n"
+  NEWLINE@259..260 "\\n"
+  VIEW_DECL@260..493
+    DOC_COMMENT@260..331 "/// Orders awaiting approval for a customer: a logical read-only query."
+    NEWLINE@331..332 "\\n"
+    IDENT@332..338 "export"
+    IDENT@339..343 "view"
+    IDENT@344..357 "PendingOrders"
+    L_BRACE@358..359 "{"
+    NEWLINE@359..360 "\\n"
+    FROM_DECL@362..372
+      IDENT@362..366 "from"
+      QUALIFIED_NAME@367..372
+        IDENT@367..372 "Order"
+    NEWLINE@372..373 "\\n"
+    WHERE_DECL@375..413
+      IDENT@375..380 "where"
+      BINARY_EXPR@381..413
+        NAME_EXPR@381..387
+          QUALIFIED_NAME@381..387
+            IDENT@381..387 "status"
+        EQ_EQ@388..390 "=="
+        NAME_EXPR@391..413
+          QUALIFIED_NAME@391..413
+            IDENT@391..396 "Order"
+            DOT@396..397 "."
+            IDENT@397..403 "Status"
+            DOT@403..404 "."
+            IDENT@404..413 "Submitted"
+    NEWLINE@413..414 "\\n"
+    BY_DECL@416..427
+      IDENT@416..418 "by"
+      FIELD_LIST@419..427
+        IDENT@419..427 "customer"
+    NEWLINE@427..428 "\\n"
+    ORDER_LIST@430..453
+      IDENT@430..435 "order"
+      IDENT@436..438 "by"
+      ORDER_KEY@439..453
+        IDENT@439..448 "createdAt"
+        IDENT@449..453 "desc"
+    NEWLINE@453..454 "\\n"
+    FIELDS_DECL@456..491
+      IDENT@456..462 "fields"
+      FIELD_LIST@463..491
+        IDENT@463..465 "id"
+        COMMA@465..466 ","
+        IDENT@467..471 "site"
+        COMMA@471..472 ","
+        IDENT@473..478 "total"
+        COMMA@478..479 ","
+        IDENT@480..491 "requestedOn"
+    NEWLINE@491..492 "\\n"
+    R_BRACE@492..493 "}"
+  NEWLINE@493..494 "\\n"
+  NEWLINE@494..495 "\\n"
+  PROJECTION_DECL@495..741
+    DOC_COMMENT@495..549 "/// Rebuildable per-customer order totals (plan §17)."
+    NEWLINE@549..550 "\\n"
+    IDENT@550..556 "export"
+    IDENT@557..567 "projection"
+    IDENT@568..588 "CustomerOrderSummary"
+    NEWLINE@588..589 "\\n"
+    DECORATOR@591..628
+      AT@591..592 "@"
+      IDENT@592..596 "crud"
+      DECORATOR_ARGS@596..628
+        L_PAREN@596..597 "("
+        DECORATOR_ARG@597..627
+          LITERAL_EXPR@597..627
+            STRING@597..627 "\"/v1/customer-order-summaries\""
+        R_PAREN@627..628 ")"
+    NEWLINE@628..629 "\\n"
+    L_BRACE@629..630 "{"
+    NEWLINE@630..631 "\\n"
+    FROM_DECL@633..643
+      IDENT@633..637 "from"
+      QUALIFIED_NAME@638..643
+        IDENT@638..643 "Order"
+    NEWLINE@643..644 "\\n"
+    BY_DECL@646..657
+      IDENT@646..648 "by"
+      FIELD_LIST@649..657
+        IDENT@649..657 "customer"
+    NEWLINE@657..658 "\\n"
+    AGGREGATE_DECL@660..672
+      IDENT@660..665 "count"
+      IDENT@666..672 "orders"
+    NEWLINE@672..673 "\\n"
+    AGGREGATE_DECL@675..698
+      IDENT@675..678 "sum"
+      IDENT@679..684 "total"
+      IDENT@685..687 "as"
+      IDENT@688..698 "orderTotal"
+    NEWLINE@698..699 "\\n"
+    WHERE_DECL@701..739
+      IDENT@701..706 "where"
+      BINARY_EXPR@707..739
+        NAME_EXPR@707..713
+          QUALIFIED_NAME@707..713
+            IDENT@707..713 "status"
+        BANG_EQ@714..716 "!="
+        NAME_EXPR@717..739
+          QUALIFIED_NAME@717..739
+            IDENT@717..722 "Order"
+            DOT@722..723 "."
+            IDENT@723..729 "Status"
+            DOT@729..730 "."
+            IDENT@730..739 "Cancelled"
+    NEWLINE@739..740 "\\n"
+    R_BRACE@740..741 "}"
+  NEWLINE@741..742 "\\n"

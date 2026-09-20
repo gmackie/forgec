@@ -15,6 +15,47 @@ pub struct Contracts {
     pub package: String,
     pub resources: Vec<ResourceContract>,
     pub functions: Vec<FunctionContract>,
+    pub views: Vec<ViewContract>,
+    pub projections: Vec<ProjectionContract>,
+    pub caches: Vec<CacheContract>,
+}
+
+/// A bounded read-only query (plan §17): `GET {http.path}?<params>&limit&cursor`.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ViewContract {
+    pub id: String,
+    pub name: String,
+    pub source: String,
+    pub params: Vec<String>,
+    pub record: JsonSchema,
+    pub order: Vec<OrderKey>,
+    pub http: HttpBinding,
+}
+
+/// A rebuildable read model (plan §17): `GET {path}/{id}`, `GET {path}/status`, `POST {path}/rebuild`.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectionContract {
+    pub id: String,
+    pub name: String,
+    pub source: String,
+    pub by: Vec<String>,
+    pub record: JsonSchema,
+    pub path: String,
+}
+
+/// A cache reader (plan §16): `GET {http.path}?<keys>` returns `{ value, source, freshUntil }`.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CacheContract {
+    pub id: String,
+    pub name: String,
+    pub keys: Vec<String>,
+    /// Resource whose record (or null) is the cached value, when the loader is `<Resource>.effective(...)`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value_resource: Option<String>,
+    pub http: HttpBinding,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -86,6 +127,10 @@ pub struct FunctionContract {
 pub fn plan(ir: &DomainIR) -> Contracts {
     let mut resources = Vec::new();
     let mut functions = Vec::new();
+    let mut views = Vec::new();
+    let mut projections = Vec::new();
+    let mut caches = Vec::new();
+    let find_resource = |id: &str| ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.id == id);
     for m in &ir.modules {
         for r in &m.resources {
             resources.push(resource(ir, r));
@@ -93,8 +138,67 @@ pub fn plan(ir: &DomainIR) -> Contracts {
         for f in &m.functions {
             functions.push(FunctionContract { id: f.id.clone(), name: f.name.clone(), http: f.http.clone(), errors: f.errors.clone(), generated: f.generated });
         }
+        for v in &m.views {
+            let src = find_resource(&v.source).map(|r| resource(ir, r));
+            let mut record = JsonSchema { ty: "object".into(), ..Default::default() };
+            for f in &v.fields {
+                let schema = src.as_ref().and_then(|s| s.record.properties.get(f).cloned()).unwrap_or(json!({ "type": "string" }));
+                record.properties.insert(f.clone(), schema);
+                record.required.push(f.clone());
+            }
+            views.push(ViewContract {
+                id: v.id.clone(),
+                name: v.name.clone(),
+                source: v.source.clone(),
+                params: v.by.clone(),
+                record,
+                order: v.order.clone(),
+                http: HttpBinding { method: "GET".into(), path: format!("/v1/views/{}", naming::kebab(&v.name)) },
+            });
+        }
+        for p in &m.projections {
+            let src = find_resource(&p.source).map(|r| resource(ir, r));
+            let mut record = JsonSchema { ty: "object".into(), ..Default::default() };
+            for f in &p.by {
+                let schema = src.as_ref().and_then(|s| s.record.properties.get(f).cloned()).unwrap_or(json!({ "type": "string" }));
+                record.properties.insert(f.clone(), schema);
+                record.required.push(f.clone());
+            }
+            for a in &p.aggregates {
+                let schema = match (a.function.as_str(), a.scale) {
+                    ("count", _) => json!({ "type": "integer", "x-forge-type": "integer" }),
+                    (_, Some(scale)) => json!({ "type": "string", "x-forge-type": "decimal", "x-forge-scale": scale }),
+                    _ => src.as_ref().and_then(|s| s.record.properties.get(&a.field).cloned()).unwrap_or(json!({ "type": "number" })),
+                };
+                record.properties.insert(a.alias.clone(), schema);
+                record.required.push(a.alias.clone());
+            }
+            record.properties.insert("generation".into(), json!({ "type": "integer", "x-forge-type": "integer" }));
+            record.required.push("generation".into());
+            projections.push(ProjectionContract {
+                id: p.id.clone(),
+                name: p.name.clone(),
+                source: p.source.clone(),
+                by: p.by.clone(),
+                record,
+                path: p.crud.as_ref().map(|c| c.path.clone()).unwrap_or_else(|| format!("/v1/projections/{}", naming::kebab(&p.name))),
+            });
+        }
+        for c in &m.caches {
+            let value_resource = match &c.loader {
+                Expr::Call { callee, .. } if callee.len() == 2 && callee[1] == "effective" => ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.name == callee[0]).map(|r| r.name.clone()),
+                _ => None,
+            };
+            caches.push(CacheContract {
+                id: c.id.clone(),
+                name: c.name.clone(),
+                keys: c.keys.iter().map(|k| k.name.clone()).collect(),
+                value_resource,
+                http: HttpBinding { method: "GET".into(), path: format!("/v1/caches/{}", naming::kebab(&c.name)) },
+            });
+        }
     }
-    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions }
+    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches }
 }
 
 fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {

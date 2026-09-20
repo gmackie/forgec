@@ -172,8 +172,9 @@ export function evalExpr(model: Model, r: Resource, e: import("./model.js").Expr
       if (e.path.length === 1) return rec[e.path[0]!];
       // Enum.Member or path through a reference (resolved by the caller into `refs`).
       const [head, ...rest] = e.path;
-      const enumDecl = [...model.enums.values()].find((x) => x.name === head);
-      if (enumDecl && rest.length === 1) return enumDecl.members.find((m) => m.name === rest[0])?.value;
+      const enumName = e.path.slice(0, -1).join(".");
+      const enumDecl = [...model.enums.values()].find((x) => x.name === enumName);
+      if (enumDecl) return enumDecl.members.find((m) => m.name === e.path.at(-1))?.value;
       let cur: Wire | null | undefined = refs[head!];
       for (const seg of rest) cur = cur ? ((cur as Wire)[seg] as Wire | null) : null;
       return cur ?? null;

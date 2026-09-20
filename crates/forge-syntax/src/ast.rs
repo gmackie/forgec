@@ -87,6 +87,9 @@ pub enum Declaration {
     Shape(ShapeDecl),
     Resource(ResourceDecl),
     Blob(BlobDecl),
+    Cache(CacheDecl),
+    View(QueryDecl),
+    Projection(QueryDecl),
     Function(FunctionDecl),
     Channel(ChannelDecl),
     Source(SourceDecl),
@@ -102,6 +105,9 @@ impl Declaration {
             K::SHAPE_DECL => Self::Shape(ShapeDecl(node)),
             K::RESOURCE_DECL => Self::Resource(ResourceDecl(node)),
             K::BLOB_DECL => Self::Blob(BlobDecl(node)),
+            K::CACHE_DECL => Self::Cache(CacheDecl(node)),
+            K::VIEW_DECL => Self::View(QueryDecl(node)),
+            K::PROJECTION_DECL => Self::Projection(QueryDecl(node)),
             K::FUNCTION_DECL => Self::Function(FunctionDecl(node)),
             K::CHANNEL_DECL => Self::Channel(ChannelDecl(node)),
             K::SOURCE_DECL => Self::Source(SourceDecl(node)),
@@ -118,6 +124,8 @@ impl Declaration {
             Self::Shape(n) => &n.0,
             Self::Resource(n) => &n.0,
             Self::Blob(n) => &n.0,
+            Self::Cache(n) => &n.0,
+            Self::View(n) | Self::Projection(n) => &n.0,
             Self::Function(n) => &n.0,
             Self::Channel(n) => &n.0,
             Self::Source(n) => &n.0,
@@ -131,7 +139,7 @@ impl Declaration {
     pub fn name(&self) -> Option<SyntaxToken> {
         match self {
             Self::Module(_) | Self::Import(_) | Self::Subscription(_) => None,
-            _ => idents(self.syntax()).find(|t| !matches!(t.text(), "export" | "enum" | "type" | "shape" | "resource" | "blob" | "function" | "channel" | "source")),
+            _ => idents(self.syntax()).find(|t| !matches!(t.text(), "export" | "enum" | "type" | "shape" | "resource" | "blob" | "cache" | "view" | "projection" | "function" | "channel" | "source")),
         }
     }
     pub fn doc(&self) -> Option<String> {
@@ -422,6 +430,92 @@ node!(ListLiteralNode, LIST_LITERAL);
 fn unq_lit(s: &str) -> String {
     if s.starts_with('"') { unquote(s) } else { s.to_string() }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CacheDecl(SyntaxNode);
+impl AstNode for CacheDecl {
+    fn cast(node: SyntaxNode) -> Option<Self> {
+        (node.kind() == K::CACHE_DECL).then_some(Self(node))
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.0
+    }
+}
+impl CacheDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).find(|t| !matches!(t.text(), "export" | "cache"))
+    }
+    pub fn keys(&self) -> Vec<FieldDecl> {
+        children::<KeyDecl>(&self.0).filter_map(|k| child(&k.0)).collect()
+    }
+    pub fn loader(&self) -> Option<Expr> {
+        child::<LoaderDecl>(&self.0).and_then(|l| l.0.children().find_map(Expr::cast))
+    }
+    /// (kind, expr) for freshUntil / staleUntil
+    pub fn freshness(&self) -> Vec<(String, Expr)> {
+        children::<FreshDecl>(&self.0).filter_map(|f| Some((idents(&f.0).next()?.text().to_string(), f.0.children().find_map(Expr::cast)?))).collect()
+    }
+    pub fn decorators(&self) -> impl Iterator<Item = Decorator> + '_ {
+        children(&self.0)
+    }
+}
+node!(KeyDecl, KEY_DECL);
+node!(LoaderDecl, LOADER_DECL);
+node!(FreshDecl, FRESH_DECL);
+
+/// view / projection
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct QueryDecl(SyntaxNode);
+impl AstNode for QueryDecl {
+    fn cast(node: SyntaxNode) -> Option<Self> {
+        matches!(node.kind(), K::VIEW_DECL | K::PROJECTION_DECL).then_some(Self(node))
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.0
+    }
+}
+impl QueryDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).find(|t| !matches!(t.text(), "export" | "view" | "projection"))
+    }
+    pub fn from(&self) -> Option<QualifiedName> {
+        child::<FromDecl>(&self.0).and_then(|f| child(&f.0))
+    }
+    pub fn where_expr(&self) -> Option<Expr> {
+        child::<WhereDecl>(&self.0).and_then(|w| w.0.children().find_map(Expr::cast))
+    }
+    pub fn by(&self) -> Vec<String> {
+        child::<ByDecl>(&self.0).and_then(|b| child::<FieldList>(&b.0)).map(|f| f.names()).unwrap_or_default()
+    }
+    pub fn order(&self) -> Vec<(String, String)> {
+        child::<OrderList>(&self.0)
+            .map(|o| children::<OrderKey>(&o.0).filter_map(|k| { let mut it = idents(&k.0); let f = it.next()?.text().to_string(); let d = it.next().map(|d| d.text().to_string()).unwrap_or_else(|| "asc".into()); Some((f, d)) }).collect())
+            .unwrap_or_default()
+    }
+    pub fn fields(&self) -> Vec<String> {
+        child::<FieldsDecl>(&self.0).and_then(|b| child::<FieldList>(&b.0)).map(|f| f.names()).unwrap_or_default()
+    }
+    /// (function, field, alias)
+    pub fn aggregates(&self) -> Vec<(String, String, String)> {
+        children::<AggregateDecl>(&self.0)
+            .filter_map(|a| {
+                let toks: Vec<String> = idents(&a.0).map(|t| t.text().to_string()).collect();
+                let f = toks.first()?.clone();
+                let field = toks.get(1)?.clone();
+                let alias = if toks.get(2).map(|s| s.as_str()) == Some("as") { toks.get(3)?.clone() } else { field.clone() };
+                Some((f, field, alias))
+            })
+            .collect()
+    }
+    pub fn decorators(&self) -> impl Iterator<Item = Decorator> + '_ {
+        children(&self.0)
+    }
+}
+node!(FromDecl, FROM_DECL);
+node!(WhereDecl, WHERE_DECL);
+node!(ByDecl, BY_DECL);
+node!(FieldsDecl, FIELDS_DECL);
+node!(AggregateDecl, AGGREGATE_DECL);
 
 node!(UniqueDecl, UNIQUE_DECL);
 impl UniqueDecl {

@@ -1660,5 +1660,118 @@ expression: p.contracts
       ],
       "generated": false
     }
+  ],
+  "views": [
+    {
+      "id": "@acme/commerce/_/PendingOrders",
+      "name": "PendingOrders",
+      "source": "@acme/commerce/_/Order",
+      "params": [
+        "customer"
+      ],
+      "record": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "site": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Site"
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+            "x-forge-type": "money",
+            "x-forge-currency": "USD",
+            "readOnly": true
+          },
+          "requestedOn": {
+            "type": "string",
+            "format": "date",
+            "x-forge-type": "date"
+          }
+        },
+        "required": [
+          "id",
+          "site",
+          "total",
+          "requestedOn"
+        ],
+        "additionalProperties": false
+      },
+      "order": [
+        {
+          "field": "createdAt",
+          "direction": "desc"
+        },
+        {
+          "field": "id",
+          "direction": "desc"
+        }
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/v1/views/pending-orders"
+      }
+    }
+  ],
+  "projections": [
+    {
+      "id": "@acme/commerce/_/CustomerOrderSummary",
+      "name": "CustomerOrderSummary",
+      "source": "@acme/commerce/_/Order",
+      "by": [
+        "customer"
+      ],
+      "record": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Customer"
+          },
+          "orders": {
+            "type": "integer",
+            "x-forge-type": "integer"
+          },
+          "orderTotal": {
+            "type": "string",
+            "x-forge-type": "decimal",
+            "x-forge-scale": 2
+          },
+          "generation": {
+            "type": "integer",
+            "x-forge-type": "integer"
+          }
+        },
+        "required": [
+          "customer",
+          "orders",
+          "orderTotal",
+          "generation"
+        ],
+        "additionalProperties": false
+      },
+      "path": "/v1/customer-order-summaries"
+    }
+  ],
+  "caches": [
+    {
+      "id": "@acme/commerce/_/CurrentSitePolicy",
+      "name": "CurrentSitePolicy",
+      "keys": [
+        "site"
+      ],
+      "valueResource": "SitePolicy",
+      "http": {
+        "method": "GET",
+        "path": "/v1/caches/current-site-policy"
+      }
+    }
   ]
 }

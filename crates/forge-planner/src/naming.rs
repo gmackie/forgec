@@ -19,6 +19,11 @@ pub fn snake(name: &str) -> String {
     s
 }
 
+/// URL path segment for a declaration name (`PendingOrders` -> `pending-orders`).
+pub fn kebab(name: &str) -> String {
+    snake(name).replace('_', "-")
+}
+
 /// Table name for a resource.
 pub fn table(resource_name: &str) -> String {
     let s = snake(resource_name);

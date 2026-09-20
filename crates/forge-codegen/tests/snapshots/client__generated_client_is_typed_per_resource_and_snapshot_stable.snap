@@ -24,6 +24,8 @@ export interface ChangesetsApi {
   commit(id: string, opts?: CallOptions): Promise<Changeset>;
 }
 export interface Page<T> { items: T[]; next: string | null; limit: number }
+export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
+export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
 export interface SignedUrl { url: string; method: "PUT" | "GET"; headers?: Record<string, string>; expiresAt: string }
@@ -68,9 +70,9 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     if (typeof input["expectedVersion"] === "number") headers["if-match"] = `"${input["expectedVersion"]}"`;
     let url = base + fillPath(spec.path, input);
     let body: string | null = null;
-    if (spec.kind === "find" || spec.kind === "list" || spec.kind === "effective") {
+    if (spec.kind === "find" || spec.kind === "list" || spec.kind === "effective" || spec.kind === "view.query" || spec.kind === "cache.read") {
       const q = new URLSearchParams();
-      for (const [k, v] of Object.entries((input["params"] ?? {}) as Record<string, unknown>)) q.set(k, String(v));
+      for (const [k, v] of Object.entries((input[spec.kind === "cache.read" ? "key" : "params"] ?? {}) as Record<string, unknown>)) q.set(k, String(v));
       if (input["cursor"]) q.set("cursor", String(input["cursor"]));
       if (input["limit"]) q.set("limit", String(input["limit"]));
       const qs = q.toString();
@@ -176,7 +178,26 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/changesets.commit": { method: "POST", path: "/v1/changesets/{id}/commit", kind: "changeset.commit", resource: "changesets" },
   "@acme/commerce/_/imports.inspect": { method: "POST", path: "/v1/imports/inspect", kind: "import.inspect", resource: "imports" },
   "@acme/commerce/_/imports.stage": { method: "POST", path: "/v1/imports/stage", kind: "import.stage", resource: "imports" },
+  "@acme/commerce/_/PendingOrders.query": { method: "GET", path: "/v1/views/pending-orders", kind: "view.query", resource: "PendingOrders" },
+  "@acme/commerce/_/CustomerOrderSummary.get": { method: "GET", path: "/v1/customer-order-summaries/{id}", kind: "projection.get", resource: "CustomerOrderSummary" },
+  "@acme/commerce/_/CustomerOrderSummary.status": { method: "GET", path: "/v1/customer-order-summaries/status", kind: "projection.status", resource: "CustomerOrderSummary" },
+  "@acme/commerce/_/CustomerOrderSummary.rebuild": { method: "POST", path: "/v1/customer-order-summaries/rebuild", kind: "projection.rebuild", resource: "CustomerOrderSummary" },
+  "@acme/commerce/_/CurrentSitePolicy.read": { method: "GET", path: "/v1/caches/current-site-policy", kind: "cache.read", resource: "CurrentSitePolicy" },
 };
+
+export interface PendingOrdersRow {
+  id: string;
+  site: string;
+  total: string;
+  requestedOn: string;
+}
+
+export interface CustomerOrderSummaryRecord {
+  customer: string;
+  orders: number;
+  orderTotal: string;
+  generation: number;
+}
 
 export interface CustomerRecord {
   id: string;
@@ -424,6 +445,15 @@ export interface ForgeClient {
   orderDocuments: OrderDocumentApi;
   sites: SiteApi;
   sitePolicys: SitePolicyApi;
+  views: {
+    pendingOrders: { query(params: { customer: string }, page?: PageOptions): Promise<Page<PendingOrdersRow>> };
+  };
+  projections: {
+    customerOrderSummary: { get(id: string): Promise<CustomerOrderSummaryRecord>; status(): Promise<ProjectionStatus>; rebuild(): Promise<ProjectionStatus> };
+  };
+  caches: {
+    currentSitePolicy: { read(key: { site: string }): Promise<CacheRead<SitePolicyRecord | null>> };
+  };
 }
 
 export function createClient(options: ClientOptions): ForgeClient {
@@ -443,6 +473,15 @@ export function createClient(options: ClientOptions): ForgeClient {
     imports: {
       inspect: (input) => t.unwrap(t.call("@acme/commerce/_/imports.inspect", input)),
       stage: (input) => t.unwrap(t.call("@acme/commerce/_/imports.stage", input)),
+    },
+    views: {
+      pendingOrders: { query: (params, page) => t.unwrap(t.call("@acme/commerce/_/PendingOrders.query", { params, ...(page ?? {}) })) },
+    },
+    projections: {
+      customerOrderSummary: { get: (id) => t.unwrap(t.call("@acme/commerce/_/CustomerOrderSummary.get", { id })), status: () => t.unwrap(t.call("@acme/commerce/_/CustomerOrderSummary.status", {})), rebuild: () => t.unwrap(t.call("@acme/commerce/_/CustomerOrderSummary.rebuild", {})) },
+    },
+    caches: {
+      currentSitePolicy: { read: (key) => t.unwrap(t.call("@acme/commerce/_/CurrentSitePolicy.read", { key })) },
     },
     customers: {
       create: (input, opts) => t.unwrap(t.call("@acme/commerce/_/Customer.create", input, opts)),
