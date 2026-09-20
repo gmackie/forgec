@@ -39,9 +39,6 @@ fn tokens(node: &SyntaxNode) -> impl Iterator<Item = SyntaxToken> + '_ {
 fn idents(node: &SyntaxNode) -> impl Iterator<Item = SyntaxToken> + '_ {
     tokens(node).filter(|t| t.kind() == K::IDENT)
 }
-fn has_ident(node: &SyntaxNode, text: &str) -> bool {
-    idents(node).any(|t| t.text() == text)
-}
 fn string_token(node: &SyntaxNode) -> Option<String> {
     tokens(node).find(|t| t.kind() == K::STRING).map(|t| unquote(t.text()))
 }

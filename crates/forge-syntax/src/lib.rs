@@ -1,11 +1,13 @@
 //! Forge language front end: lexer, parser, lossless syntax tree, AST.
 
 pub mod ast;
+pub mod format;
 pub mod lexer;
 pub mod parser;
 pub mod syntax_kind;
 
 pub use ast::AstNode;
+pub use format::format;
 pub use parser::SyntaxError;
 pub use syntax_kind::{SyntaxKind, SyntaxNode, SyntaxToken};
 
