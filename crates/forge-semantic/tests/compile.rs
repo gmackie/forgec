@@ -123,6 +123,8 @@ fn decorator_checks() {
     assert_eq!(codes(collision), vec!["E-RES-001"]);
     let crud_args = inline("@t/x", &[("src/a.forge", "resource R\n  @crud\n{\n  id : id\n}\n")]);
     assert_eq!(codes(crud_args), vec!["E-DEC-002"]);
+    let unknown_action = inline("@t/x", &[("src/a.forge", "resource O\n  @crud(\"/v1/o\", actions: [aprove])\n{\n  id : id\n  lifecycle status {\n    initial Open\n    approve: Open -> Approved\n  }\n}\n")]);
+    assert_eq!(codes(unknown_action), vec!["E-DEC-004"]);
     let http_path_param = inline("@t/x", &[("src/a.forge", "shape In {\n  a : text\n}\nfunction F\n  @http(POST, \"/v1/f/{missing}\")\n{\n  input In\n}\n")]);
     assert_eq!(codes(http_path_param), vec!["E-HTTP-001"]);
 }

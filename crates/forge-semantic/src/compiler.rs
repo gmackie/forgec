@@ -665,8 +665,8 @@ impl<'a> Ctx<'a> {
                 "crud" => {
                     let args = dec.args();
                     if let Some(ArgValue::Literal(p)) = args.first().and_then(|a| a.value()) {
-                        let ops = args.iter().find(|a| a.label().as_deref() == Some("operations")).and_then(|a| a.value()).and_then(|v| if let ArgValue::List(l) = v { Some(l.into_iter().filter_map(|x| if let ArgValue::Name(n) = x { n.first().cloned() } else { None }).collect()) } else { None });
-                        d.crud = Some(CrudBinding { path: unq(&p), operations: ops });
+                        let names = |label: &str| args.iter().find(|a| a.label().as_deref() == Some(label)).and_then(|a| a.value()).and_then(|v| if let ArgValue::List(l) = v { Some(l.into_iter().filter_map(|x| if let ArgValue::Name(n) = x { n.first().cloned() } else { None }).collect::<Vec<String>>()) } else { None });
+                        d.crud = Some(CrudBinding { path: unq(&p), operations: names("operations"), actions: names("actions").unwrap_or_default() });
                     }
                 }
                 "effectiveDated" => {
@@ -874,7 +874,17 @@ impl<'a> Ctx<'a> {
         }
         if let Some(lc) = &lifecycle {
             for t in &lc.transitions {
-                push("transition", None, Some(t.action.clone()), None);
+                let exposed = crud.as_ref().is_some_and(|c| c.actions.iter().any(|a| a == &t.action));
+                push("transition", None, Some(t.action.clone()), if exposed { http("POST", &format!("/{{id}}/actions/{}", t.action)) } else { None });
+            }
+        }
+        if let Some(c) = &crud {
+            let known: Vec<String> = lifecycle.as_ref().map(|l| l.transitions.iter().map(|t| t.action.clone()).collect()).unwrap_or_default();
+            for a in &c.actions {
+                if !known.contains(a) {
+                    let sugg = suggest(a, known.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+                    self.err("E-DEC-004", file, range_of(r), format!("`@crud` exposes unknown lifecycle action `{a}`"), sugg);
+                }
             }
         }
 

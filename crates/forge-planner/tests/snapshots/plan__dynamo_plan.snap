@@ -1,0 +1,162 @@
+---
+source: crates/forge-planner/tests/plan.rs
+assertion_line: 57
+expression: p.dynamo
+---
+{
+  "version": "dynamo-plan/1",
+  "identityCodec": "identity.v1",
+  "sortCodec": "sort.v1",
+  "table": "data",
+  "pendingIndex": "pending-index",
+  "resources": [
+    {
+      "id": "@acme/commerce/_/Customer",
+      "name": "Customer",
+      "wireName": "customer",
+      "tenantScoped": true,
+      "claims": [
+        {
+          "name": "code",
+          "keyFields": [
+            "code"
+          ]
+        }
+      ],
+      "access": [
+        {
+          "name": "byTier",
+          "kind": "list",
+          "partitionFields": [
+            "tier"
+          ],
+          "sortFields": [
+            "name",
+            "id"
+          ],
+          "sortDirections": [
+            "asc",
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version",
+            "tier",
+            "name"
+          ]
+        }
+      ],
+      "references": [],
+      "createActions": 5
+    },
+    {
+      "id": "@acme/commerce/_/Order",
+      "name": "Order",
+      "wireName": "order",
+      "tenantScoped": true,
+      "claims": [],
+      "access": [
+        {
+          "name": "byCustomer",
+          "kind": "list",
+          "partitionFields": [
+            "customer"
+          ],
+          "sortFields": [
+            "createdAt",
+            "id"
+          ],
+          "sortDirections": [
+            "desc",
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version",
+            "customer",
+            "createdAt"
+          ]
+        },
+        {
+          "name": "bySiteStatus",
+          "kind": "list",
+          "partitionFields": [
+            "site",
+            "status"
+          ],
+          "sortFields": [
+            "createdAt",
+            "id"
+          ],
+          "sortDirections": [
+            "desc",
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version",
+            "site",
+            "status",
+            "createdAt"
+          ]
+        }
+      ],
+      "references": [
+        {
+          "field": "customer",
+          "target": "@acme/commerce/_/Customer"
+        },
+        {
+          "field": "site",
+          "target": "@acme/commerce/_/Site"
+        }
+      ],
+      "createActions": 7
+    },
+    {
+      "id": "@acme/commerce/_/Site",
+      "name": "Site",
+      "wireName": "site",
+      "tenantScoped": true,
+      "claims": [
+        {
+          "name": "code_within_customer",
+          "keyFields": [
+            "customer",
+            "code"
+          ]
+        }
+      ],
+      "access": [
+        {
+          "name": "byCustomer",
+          "kind": "list",
+          "partitionFields": [
+            "customer"
+          ],
+          "sortFields": [
+            "name",
+            "id"
+          ],
+          "sortDirections": [
+            "asc",
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version",
+            "customer",
+            "name"
+          ]
+        }
+      ],
+      "references": [
+        {
+          "field": "customer",
+          "target": "@acme/commerce/_/Customer"
+        }
+      ],
+      "createActions": 6
+    }
+  ]
+}

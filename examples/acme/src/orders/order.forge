@@ -3,6 +3,7 @@ export resource Order
   @timestamps
   @versioned
   @audited
+  @crud("/v1/orders", actions: [approve, complete, cancel])
 {
   id : id
   customer : Customer @immutable

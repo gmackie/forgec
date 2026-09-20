@@ -276,7 +276,8 @@ expression: out.ir.unwrap()
             "versioned": true,
             "audited": true,
             "crud": {
-              "path": "/v1/customers"
+              "path": "/v1/customers",
+              "actions": []
             },
             "hierarchical": false
           },
@@ -555,6 +556,14 @@ expression: out.ir.unwrap()
             "softDelete": false,
             "versioned": true,
             "audited": true,
+            "crud": {
+              "path": "/v1/orders",
+              "actions": [
+                "approve",
+                "complete",
+                "cancel"
+              ]
+            },
             "hierarchical": false
           },
           "fields": [
@@ -927,29 +936,53 @@ expression: out.ir.unwrap()
           "operations": [
             {
               "id": "@acme/commerce/_/Order.create",
-              "kind": "create"
+              "kind": "create",
+              "http": {
+                "method": "POST",
+                "path": "/v1/orders"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.get",
-              "kind": "get"
+              "kind": "get",
+              "http": {
+                "method": "GET",
+                "path": "/v1/orders/{id}"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.update",
-              "kind": "update"
+              "kind": "update",
+              "http": {
+                "method": "PATCH",
+                "path": "/v1/orders/{id}"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.delete",
-              "kind": "delete"
+              "kind": "delete",
+              "http": {
+                "method": "DELETE",
+                "path": "/v1/orders/{id}"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.list.byCustomer",
               "kind": "list",
-              "query": "byCustomer"
+              "query": "byCustomer",
+              "http": {
+                "method": "GET",
+                "path": "/v1/orders/queries/by-customer"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.list.bySiteStatus",
               "kind": "list",
-              "query": "bySiteStatus"
+              "query": "bySiteStatus",
+              "http": {
+                "method": "GET",
+                "path": "/v1/orders/queries/by-site-status"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.status.submit",
@@ -959,17 +992,29 @@ expression: out.ir.unwrap()
             {
               "id": "@acme/commerce/_/Order.status.approve",
               "kind": "transition",
-              "action": "approve"
+              "action": "approve",
+              "http": {
+                "method": "POST",
+                "path": "/v1/orders/{id}/actions/approve"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.status.complete",
               "kind": "transition",
-              "action": "complete"
+              "action": "complete",
+              "http": {
+                "method": "POST",
+                "path": "/v1/orders/{id}/actions/complete"
+              }
             },
             {
               "id": "@acme/commerce/_/Order.status.cancel",
               "kind": "transition",
-              "action": "cancel"
+              "action": "cancel",
+              "http": {
+                "method": "POST",
+                "path": "/v1/orders/{id}/actions/cancel"
+              }
             }
           ]
         },
@@ -984,7 +1029,8 @@ expression: out.ir.unwrap()
             "versioned": true,
             "audited": true,
             "crud": {
-              "path": "/v1/sites"
+              "path": "/v1/sites",
+              "actions": []
             },
             "hierarchical": false
           },

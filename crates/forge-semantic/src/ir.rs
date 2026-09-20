@@ -181,6 +181,8 @@ pub struct CrudBinding {
     pub path: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operations: Option<Vec<String>>,
+    /// Lifecycle actions explicitly published under `{path}/{id}/actions/<action>`.
+    pub actions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

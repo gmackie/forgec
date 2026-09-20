@@ -1,0 +1,16 @@
+[package]
+name = "forge-codegen"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Emitters: TypeScript client, SQL migrations, app bundle"
+
+[dependencies]
+forge-semantic = { path = "../forge-semantic" }
+forge-planner = { path = "../forge-planner" }
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
