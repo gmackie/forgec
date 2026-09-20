@@ -7,15 +7,27 @@
     "cf:dev": "wrangler dev --config deploy/cloudflare/wrangler.jsonc --port 8797",
     "cf:migrate:local": "wrangler d1 migrations apply forge-acme --local --config deploy/cloudflare/wrangler.jsonc",
     "cf:migrate:remote": "wrangler d1 migrations apply forge-acme --remote --config deploy/cloudflare/wrangler.jsonc",
-    "cf:deploy": "wrangler deploy --config deploy/cloudflare/wrangler.jsonc"
+    "cf:deploy": "wrangler deploy --config deploy/cloudflare/wrangler.jsonc",
+    "aws:bundle": "node deploy/aws/bundle.mjs",
+    "aws:synth": "pnpm aws:bundle && cdk synth --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out",
+    "aws:deploy": "pnpm aws:bundle && cdk deploy --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out --require-approval never --outputs-file deploy/aws/outputs.json",
+    "aws:destroy": "cdk destroy --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out --force"
   },
   "dependencies": {
     "@forge/runtime": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0-rc.116",
+    "@aws-sdk/client-dynamodb": "^3.1136.0",
+    "@aws-sdk/lib-dynamodb": "^3.1136.0",
+    "@aws-sdk/util-dynamodb": "3.996.9"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250920.0",
     "typescript": "^5.9.0",
-    "wrangler": "^4.83.0"
+    "wrangler": "^4.83.0",
+    "aws-cdk": "^2.1142.0",
+    "aws-cdk-lib": "^2.270.0",
+    "constructs": "^10.4.0",
+    "esbuild": "^0.27.0",
+    "@types/node": "^24.0.0"
   }
 }
