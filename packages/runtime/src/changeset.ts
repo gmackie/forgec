@@ -118,7 +118,7 @@ export class Changesets {
         return { op: o.op, input: (o.input ?? {}) as Wire };
       });
       const id = (yield* IdGen).opId();
-      const doc: Doc = { id, status: "proposed", mode, operations, actor: ctx.actor };
+      const doc: Doc = { id, status: "proposed", mode, operations, actor: ctx.actor, ...(body["source"] ? { source: body["source"] } : {}) };
       const saved = yield* self.save(doc, ctx);
       return self.view(saved);
     }).pipe(Effect.catchDefect((d) => (d instanceof ForgeError ? Effect.fail(d) : Effect.die(d))));

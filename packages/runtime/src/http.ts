@@ -40,7 +40,14 @@ function builtinRoutes(model: Model): Route[] {
     segments: path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
     ref: { op: { id: `${pkg}/_/changesets.${action}`, kind: `changeset.${action}`, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] },
   });
+  const imp = (method: string, path: string, action: string): Route => ({
+    method,
+    segments: path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
+    ref: { op: { id: `${pkg}/_/imports.${action}`, kind: `import.${action}`, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] },
+  });
   return [
+    imp("POST", "/v1/imports/inspect", "inspect"),
+    imp("POST", "/v1/imports/stage", "stage"),
     mk("POST", "/v1/changesets", "propose"),
     mk("GET", "/v1/changesets/{id}", "get"),
     mk("GET", "/v1/changesets/{id}/preview", "preview"),
@@ -182,6 +189,8 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         break;
       }
       case "changeset.propose":
+      case "import.inspect":
+      case "import.stage":
         input = (body ?? {}) as Record<string, unknown>;
         break;
       case "changeset.get":

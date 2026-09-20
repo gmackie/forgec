@@ -1,0 +1,21 @@
+{
+  "id": "m4.csv-import",
+  "title": "CSV import: inspect, stage with mapping + upsert, in-file duplicates, per-row errors, commit through the changeset",
+  "steps": [
+    { "name": "existing", "op": "@acme/commerce/_/Customer.create", "input": { "code": "ACME", "name": "Old", "tier": "gold" }, "expect": { "ok": { "id": "$id:1", "version": 1 } } },
+    { "name": "inspect", "op": "@acme/commerce/_/imports.inspect", "input": { "resource": "@acme/commerce/_/Customer", "csv": "Q29kZSxOYW1lLEVtYWlsLHRpZXIKYWNtZSxBY21lLGFAYi5jbyxnb2xkCg==" },
+      "expect": { "ok": { "header": ["Code", "Name", "Email", "tier"], "rows": 1, "suggestedMapping": { "Code": "code", "Name": "name", "Email": "email", "tier": "tier" }, "errors": [] } } },
+    { "name": "stage", "op": "@acme/commerce/_/imports.stage", "input": { "resource": "@acme/commerce/_/Customer", "upsertBy": "code", "mapping": { "code": "code", "name": "name", "email": "email", "tier": "tier" },
+        "csv": "Y29kZSxuYW1lLGVtYWlsLHRpZXIKIGFjbWUgLE5ldyBOYW1lLCwKYmV0YSxCZXRhLG9wc0BiZXRhLmNvLApiYWQsQmFkLCxwbGF0aW51bQpBQ01FLER1cCwsc3RhbmRhcmQK" },
+      "expect": { "ok": { "rows": 4, "staged": 3, "rowErrors": [ { "line": 5, "code": "DuplicateInFile", "path": "code" } ] } } },
+    { "name": "preview", "op": "@acme/commerce/_/changesets.preview", "input": { "id": "$stage.changeset" },
+      "expect": { "ok": { "items": [
+        { "status": "ok", "op": "@acme/commerce/_/Customer.update", "diff": [ { "path": "name", "before": "Old", "after": "New Name" } ] },
+        { "status": "ok", "op": "@acme/commerce/_/Customer.create", "result": { "code": "BETA", "tier": "standard", "email": "ops@beta.co" } },
+        { "status": "error", "error": { "code": "ValidationFailed" } } ] } } },
+    { "name": "approve", "op": "@acme/commerce/_/changesets.approve", "input": { "id": "$stage.changeset", "contentHash": "$preview.contentHash" }, "expect": { "ok": { "status": "approved" } } },
+    { "name": "commit", "op": "@acme/commerce/_/changesets.commit", "input": { "id": "$stage.changeset" },
+      "expect": { "ok": { "status": "partially-committed", "results": [ { "status": "committed", "result": { "name": "New Name", "tier": "gold", "version": 2 } }, { "status": "committed" }, { "status": "error" } ] } } },
+    { "name": "verify", "op": "@acme/commerce/_/Customer.find.byCode", "input": { "params": { "code": "beta" } }, "expect": { "ok": { "name": "Beta", "version": 1 } } }
+  ]
+}

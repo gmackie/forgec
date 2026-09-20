@@ -75,6 +75,9 @@ pub fn client_ts(c: &Contracts) -> String {
     for (action, method, path) in [("propose", "POST", "/v1/changesets"), ("get", "GET", "/v1/changesets/{id}"), ("preview", "GET", "/v1/changesets/{id}/preview"), ("approve", "POST", "/v1/changesets/{id}/approve"), ("commit", "POST", "/v1/changesets/{id}/commit")] {
         let _ = writeln!(out, "  {:?}: {{ method: {:?}, path: {:?}, kind: {:?}, resource: \"changesets\" }},", format!("{pkg}/_/changesets.{action}"), method, path, format!("changeset.{action}"));
     }
+    for (action, path) in [("inspect", "/v1/imports/inspect"), ("stage", "/v1/imports/stage")] {
+        let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: {:?}, resource: \"imports\" }},", format!("{pkg}/_/imports.{action}"), path, format!("import.{action}"));
+    }
     let _ = writeln!(out, "}};\n");
 
     for r in &c.resources {
@@ -132,6 +135,7 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "export interface ForgeClient {{");
     let _ = writeln!(out, "  call(op: string, input: unknown, opts?: CallOptions): Promise<CallResult>;");
     let _ = writeln!(out, "  changesets: ChangesetsApi;");
+    let _ = writeln!(out, "  imports: ImportsApi;");
     for r in &c.resources {
         let _ = writeln!(out, "  {}: {}Api;", camel_from_wire(&plural(&r.wire_name)), r.name);
     }
@@ -147,6 +151,10 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "      preview: (id) => t.unwrap(t.call({:?}, {{ id }})),", format!("{pkg}/_/changesets.preview"));
     let _ = writeln!(out, "      approve: (id, contentHash) => t.unwrap(t.call({:?}, {{ id, contentHash }})),", format!("{pkg}/_/changesets.approve"));
     let _ = writeln!(out, "      commit: (id, opts) => t.unwrap(t.call({:?}, {{ id }}, opts)),", format!("{pkg}/_/changesets.commit"));
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    imports: {{");
+    let _ = writeln!(out, "      inspect: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/imports.inspect"));
+    let _ = writeln!(out, "      stage: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/imports.stage"));
     let _ = writeln!(out, "    }},");
     for r in &c.resources {
         let _ = writeln!(out, "    {}: {{", camel_from_wire(&plural(&r.wire_name)));
@@ -189,6 +197,12 @@ export interface ChangesetOperation { op: string; input: unknown }
 export interface ChangesetItem { index: number; op: string; status: "ok" | "error" | "committed" | "skipped"; diff?: { path: string; before: unknown; after: unknown }[]; result?: unknown; error?: Problem }
 export interface ChangesetBudget { mode: string; logicalOperations: number; logicalLimit: number; physicalActions: number; physicalLimit: number; atomicAllowed: boolean }
 export interface Changeset { id: string; status: string; mode: "atomic" | "resumable"; operations: number; contentHash?: string; items?: ChangesetItem[]; budget?: ChangesetBudget; results?: ChangesetItem[] }
+export interface ImportInspection { header: string[]; rows: number; sample: string[][]; suggestedMapping: Record<string, string>; errors: { line: number; code: string; message: string }[] }
+export interface ImportStaged { changeset: string; rows: number; staged: number; rowErrors: { line: number; code: string; path?: string; message: string }[] }
+export interface ImportsApi {
+  inspect(input: { resource: string; csv: string }): Promise<ImportInspection>;
+  stage(input: { resource: string; csv: string; mapping: Record<string, string>; upsertBy?: string; mode?: "atomic" | "resumable" }): Promise<ImportStaged>;
+}
 export interface ChangesetsApi {
   propose(input: { mode?: "atomic" | "resumable"; operations: ChangesetOperation[] }, opts?: CallOptions): Promise<Changeset>;
   get(id: string): Promise<Changeset>;
@@ -248,7 +262,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       if (input["limit"]) q.set("limit", String(input["limit"]));
       const qs = q.toString();
       if (qs) url += "?" + qs;
-    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve") {
+    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
       const { id: _id, ...rest } = input;
       void _id;
       body = JSON.stringify(spec.kind === "changeset.approve" ? rest : input);

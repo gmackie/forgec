@@ -12,6 +12,7 @@ import { fieldOf, scaleOf, type List, type Model, type Resource, type Transition
 import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
 import { Changesets } from "./changeset.js";
 import { Blobs } from "./blobs.js";
+import { Imports } from "./imports.js";
 
 export interface CallContext {
   tenant: string;
@@ -45,8 +46,11 @@ export class Engine {
 
   private program(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
     const self = this;
-    if (opId.endsWith("/changesets.propose") || opId.endsWith("/changesets.preview") || opId.endsWith("/changesets.approve") || opId.endsWith("/changesets.commit") || opId.endsWith("/changesets.get")) {
+    if (/\/changesets\.(propose|preview|approve|commit|get)$/.test(opId)) {
       return self.changesets.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
+    }
+    if (/\/imports\.(inspect|stage)$/.test(opId)) {
+      return self.imports.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
     }
     const ref = self.model.operation(opId);
     if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
@@ -114,9 +118,10 @@ export class Engine {
 
   readonly changesets = new Changesets(this);
   readonly blobs = new Blobs(this);
+  readonly imports = new Imports(this);
 
   // ------------------------------------------------------------ helpers
-  private claimKey(r: Resource, u: Unique, rec: Wire): string | null {
+  claimKey(r: Resource, u: Unique, rec: Wire): string | null {
     const self = this;
     const fields = [...u.within, ...u.fields];
     const values = fields.map((f) => rec[f]);
