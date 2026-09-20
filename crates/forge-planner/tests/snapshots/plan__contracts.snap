@@ -1773,5 +1773,29 @@ expression: p.contracts
         "path": "/v1/caches/current-site-policy"
       }
     }
+  ],
+  "workflows": [
+    {
+      "id": "@acme/commerce/_/ProcessOrder",
+      "name": "ProcessOrder",
+      "version": 1,
+      "graphHash": "62f3c6c402b8d49d810c3c875825d095bc7763443a7f3e9f455999a005af7e21",
+      "errors": [
+        "Declined",
+        "PaymentTimeout",
+        "ShortPayment"
+      ],
+      "signals": [
+        [
+          "@acme/commerce/_/PaymentEvents",
+          "PaymentCaptured"
+        ]
+      ],
+      "start": {
+        "method": "POST",
+        "path": "/v1/orders/{order}/process"
+      },
+      "path": "/v1/workflows/process-order"
+    }
   ]
 }

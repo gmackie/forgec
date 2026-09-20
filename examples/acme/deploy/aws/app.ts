@@ -8,6 +8,8 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
+import * as sfn from "aws-cdk-lib/aws-stepfunctions";
+import * as iam from "aws-cdk-lib/aws-iam";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import bundle from "../../generated/app.json" with { type: "json" };
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
@@ -48,6 +50,12 @@ for (const sub of (bundle as any).messaging.subscriptions as { name: string; que
   queues[sub.name] = new sqs.Queue(stack, `Queue-${sub.name}`, { queueName: `${sub.queue}-${stage}`, visibilityTimeout: cdk.Duration.seconds(60), deadLetterQueue: { queue: dlq, maxReceiveCount: 5 } });
 }
 
+// Workflows (plan §15): one Step Functions Standard state machine per declared workflow. The Lambda
+// learns the ARNs by deterministic name (no circular dependency with the machine's Lambda reference).
+const workflowPlans = bundle.workflows?.workflows ?? [];
+const machineName = (w: { aws: { stateMachine: string } }) => `${w.aws.stateMachine}-${stage}`;
+const machineArns = Object.fromEntries(workflowPlans.map((w) => [w.name, stack.formatArn({ service: "states", resource: "stateMachine", resourceName: machineName(w), arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME })]));
+
 const fn = new lambda.Function(stack, "Api", {
   runtime: lambda.Runtime.NODEJS_22_X,
   handler: "index.handler",
@@ -60,6 +68,7 @@ const fn = new lambda.Function(stack, "Api", {
     FORGE_AUTH: "dev-headers", // development only; a production build requires a real auth host
     FORGE_CORS: "http://localhost:5173,https://forge-acme-workspace.gmac.workers.dev",
     FORGE_QUEUES: JSON.stringify(Object.fromEntries(Object.entries(queues).map(([name, q]) => [name, q.queueUrl]))),
+    FORGE_WORKFLOWS: JSON.stringify(machineArns),
     CURSOR_SECRET: process.env["FORGE_CURSOR_SECRET"] ?? "dev-cursor-secret-change-me",
   },
 });
@@ -68,6 +77,15 @@ bucket.grantReadWrite(fn);
 for (const q of Object.values(queues)) {
   q.grantSendMessages(fn);
   fn.addEventSource(new SqsEventSource(q, { batchSize: 10, reportBatchItemFailures: true }));
+}
+for (const w of workflowPlans) {
+  const definition = JSON.stringify(w.aws.definition).replaceAll("${LambdaArn}", fn.functionArn);
+  const sm = new sfn.StateMachine(stack, `Workflow-${w.name}`, { stateMachineName: machineName(w), stateMachineType: sfn.StateMachineType.STANDARD, definitionBody: sfn.DefinitionBody.fromString(definition), timeout: cdk.Duration.days(365) });
+  fn.grantInvoke(sm);
+}
+if (workflowPlans.length) {
+  fn.addToRolePolicy(new iam.PolicyStatement({ actions: ["states:StartExecution"], resources: Object.values(machineArns) }));
+  fn.addToRolePolicy(new iam.PolicyStatement({ actions: ["states:SendTaskSuccess", "states:SendTaskFailure"], resources: ["*"] }));
 }
 // Durable outbox sweep (plan §14): the request-time nudge is not a delivery guarantee.
 new events.Rule(stack, "OutboxSweep", { schedule: events.Schedule.rate(cdk.Duration.minutes(5)), targets: [new targets.LambdaFunction(fn)] });

@@ -29,7 +29,15 @@ interface CacheEntry extends Doc { value: Wire; freshUntil: string; loadedAt: st
  */
 export function withProjections(engine: Engine, fallback: Transport): Transport {
   const local = engine.projectionTransport();
-  return { name: `${fallback.name}+projections`, send: (d) => (d.subscription.startsWith("projection:") ? local.send(d) : fallback.send(d)) };
+  const workflows = engine.workflows.transport();
+  return {
+    name: `${fallback.name}+internal`,
+    send: (d) => (d.subscription.startsWith("projection:") ? local.send(d) : d.subscription.startsWith("workflow:") ? workflows.send(d) : fallback.send(d)),
+  };
+}
+/** Every in-process consumer's subscriptions (projections and workflow waits) merged over the host's. */
+export function internalSubscriptions(engine: Engine, base: Record<string, string[]> = {}): Record<string, string[]> {
+  return engine.workflows.subscriptions(engine.projectionSubscriptions(base));
 }
 
 export class ReadModels {
@@ -278,7 +286,7 @@ export class ReadModels {
   }
 }
 
-function durationMs(d: string): number {
+export function durationMs(d: string): number {
   const m = /^(\d+)(ms|s|m|h|d)$/.exec(d);
   if (!m) return 0;
   const n = Number(m[1]);

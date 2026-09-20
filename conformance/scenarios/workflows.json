@@ -1,0 +1,43 @@
+{
+  "id": "m7.workflows",
+  "title": "Durable workflow: idempotent start, activity exactly once, correlated signal via inbox (early and late), choice branch, catch into declared error, cancellation without undo, duplicate signals",
+  "steps": [
+    { "name": "c", "op": "@acme/commerce/_/Customer.create", "input": { "code": "WFL", "name": "W" }, "expect": { "ok": { "id": "$id:1" } } },
+    { "name": "s", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c.id", "code": "hq", "name": "HQ", "timezone": "UTC" }, "expect": { "ok": { "id": "$id:2" } } },
+    { "name": "o1", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "10.00", "tax": "1.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:3", "total": "11.00" } } },
+    { "name": "o2", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "20.00", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:4" } } },
+    { "name": "o3", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "30.00", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:5" } } },
+    { "name": "big", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "5000.00", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:6" } } },
+
+    { "name": "w1", "op": "@acme/commerce/_/ProcessOrder.start", "input": { "order": "$o1.id", "expectedVersion": 1 }, "ctx": { "idempotencyKey": "wf-start-1" },
+      "expect": { "ok": { "id": "$id:7", "version": 1, "status": "waiting", "waiting": { "step": "captured", "message": "PaymentCaptured", "correlationKey": "$id:3" } } } },
+    { "name": "w1again", "op": "@acme/commerce/_/ProcessOrder.start", "input": { "order": "$o1.id", "expectedVersion": 1 }, "ctx": { "idempotencyKey": "wf-start-1" }, "expect": { "ok": { "id": "$id:7" } } },
+    { "name": "submittedOnce", "op": "@acme/commerce/_/Order.get", "input": { "id": "$o1.id" }, "expect": { "ok": { "status": "Submitted", "version": 2 } } },
+
+    { "name": "pay1", "op": "@acme/commerce/_/ProcessOrder.signal", "input": { "message": "PaymentCaptured", "messageId": "pay-1", "payload": { "authorizationId": "auth_1", "reference": "$o1.id", "amount": "11.00" } }, "expect": { "ok": { "delivered": 1 } } },
+    { "name": "pay1dup", "op": "@acme/commerce/_/ProcessOrder.signal", "input": { "message": "PaymentCaptured", "messageId": "pay-1", "payload": { "authorizationId": "auth_1", "reference": "$o1.id", "amount": "11.00" } }, "expect": { "ok": { "delivered": 0 } } },
+    { "name": "w1approved", "op": "@acme/commerce/_/Order.get", "input": { "id": "$o1.id" }, "expect": { "ok": { "status": "Approved", "version": 3 } } },
+    { "name": "w1done", "op": "@acme/commerce/_/ProcessOrder.get", "input": { "id": "$w1.id" }, "eventually": { "attempts": 30, "delayMs": 1000 },
+      "expect": { "ok": { "status": "completed", "output": { "id": "$id:3", "status": "Approved" } } } },
+
+    { "name": "early", "op": "@acme/commerce/_/ProcessOrder.signal", "input": { "message": "PaymentCaptured", "messageId": "pay-2", "payload": { "authorizationId": "auth_2", "reference": "$o2.id", "amount": "20.00" } }, "expect": { "ok": { "delivered": 0, "held": 1 } } },
+    { "name": "w2", "op": "@acme/commerce/_/ProcessOrder.start", "input": { "order": "$o2.id", "expectedVersion": 1 }, "expect": { "ok": { "id": "$id:8", "status": "sleeping", "sleeping": { "step": "settle" } } } },
+    { "name": "w2approved", "op": "@acme/commerce/_/Order.get", "input": { "id": "$o2.id" }, "expect": { "ok": { "status": "Approved" } } },
+
+    { "name": "w3", "op": "@acme/commerce/_/ProcessOrder.start", "input": { "order": "$o3.id", "expectedVersion": 1 }, "expect": { "ok": { "id": "$id:9", "status": "waiting" } } },
+    { "name": "short", "op": "@acme/commerce/_/ProcessOrder.signal", "input": { "message": "PaymentCaptured", "messageId": "pay-3", "payload": { "authorizationId": "auth_3", "reference": "$o3.id", "amount": "1.00" } }, "expect": { "ok": { "delivered": 1 } } },
+    { "name": "w3failed", "op": "@acme/commerce/_/ProcessOrder.get", "input": { "id": "$w3.id" }, "expect": { "ok": { "status": "failed", "error": { "code": "@acme/commerce/_/ProcessOrder.ShortPayment" } } } },
+    { "name": "w3cancelled", "op": "@acme/commerce/_/Order.get", "input": { "id": "$o3.id" }, "expect": { "ok": { "status": "Cancelled" } } },
+
+    { "name": "declined", "op": "@acme/commerce/_/ProcessOrder.start", "input": { "order": "$big.id", "expectedVersion": 1 }, "expect": { "ok": { "id": "$id:10", "status": "failed", "error": { "code": "@acme/commerce/_/ProcessOrder.Declined" } } } },
+    { "name": "stillDraft", "op": "@acme/commerce/_/Order.get", "input": { "id": "$big.id" }, "expect": { "ok": { "status": "Draft", "version": 1 } } },
+
+    { "name": "o4", "op": "@acme/commerce/_/Order.create", "input": { "customer": "$c.id", "site": "$s.id", "subtotal": "40.00", "tax": "0.00", "requestedOn": "2026-09-20" }, "expect": { "ok": { "id": "$id:11" } } },
+    { "name": "w4", "op": "@acme/commerce/_/ProcessOrder.start", "input": { "order": "$o4.id", "expectedVersion": 1 }, "expect": { "ok": { "id": "$id:12", "status": "waiting" } } },
+    { "name": "cancel", "op": "@acme/commerce/_/ProcessOrder.cancel", "input": { "id": "$w4.id" }, "expect": { "ok": { "status": "cancelled" } } },
+    { "name": "cancelTwice", "op": "@acme/commerce/_/ProcessOrder.cancel", "input": { "id": "$w4.id" }, "expect": { "error": "InvalidTransition" } },
+    { "name": "notUndone", "op": "@acme/commerce/_/Order.get", "input": { "id": "$o4.id" }, "expect": { "ok": { "status": "Submitted" } } },
+    { "name": "lateSignal", "op": "@acme/commerce/_/ProcessOrder.signal", "input": { "message": "PaymentCaptured", "messageId": "pay-4", "payload": { "authorizationId": "auth_4", "reference": "$o4.id", "amount": "40.00" } }, "expect": { "ok": { "delivered": 0 } } },
+    { "name": "missing", "op": "@acme/commerce/_/ProcessOrder.get", "input": { "id": "wfp_nope" }, "expect": { "error": "NotFound" } }
+  ]
+}

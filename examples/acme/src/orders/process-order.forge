@@ -28,7 +28,7 @@ export workflow ProcessOrder
 
   parallel {
     step summary = RebuildOrderSummary()
-    step settle = sleep 1s
+    step settle = sleep 5s
   }
 
   return approve

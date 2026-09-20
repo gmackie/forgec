@@ -88,7 +88,18 @@ export interface ViewDecl { id: string; name: string; source: string; by: string
 export interface AggregateDecl { function: "count" | "sum" | "min" | "max"; field: string; alias: string; scale?: number }
 export interface ProjectionDecl { id: string; name: string; source: string; by: string[]; where?: Expr; aggregates: AggregateDecl[]; crud?: { path: string; operations?: string[]; actions: string[] } }
 export interface CacheDecl { id: string; name: string; keys: Field[]; loader: Expr; freshUntil: Expr; staleUntil?: Expr }
-export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[] }
+export type WorkflowTerminal = { kind: "return"; value: Expr } | { kind: "fail"; error: string };
+export type WorkflowStep =
+  | { kind: "call"; id: string; target: { kind: "function"; function: string } | { kind: "transition"; resource: string; action: string }; args: { name: string; value: Expr }[]; catches: { error: string; then: WorkflowTerminal }[] }
+  | { kind: "sleep"; id: string; duration: string }
+  | { kind: "wait"; id: string; channel: string; message: string; correlate?: { field: string; value: Expr }; timeout?: { duration: string; then: WorkflowTerminal } }
+  | { kind: "choice"; id: string; condition: Expr; then: WorkflowStep[]; otherwise: WorkflowStep[] }
+  | { kind: "parallel"; id: string; branches: WorkflowStep[][] }
+  | { kind: "return"; value: Expr }
+  | { kind: "fail"; error: string };
+export interface WorkflowDecl { id: string; name: string; version: number; graphHash: string; input?: TypeSpec; output?: TypeSpec; errors: string[]; http?: HttpBinding; steps: WorkflowStep[] }
+export interface WorkflowsPlan { version: string; workflows: { id: string; name: string; version: number; graphHash: string; cloudflare: { name: string; binding: string; className: string }; aws: { stateMachine: string; definition: unknown } }[] }
+export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[] }
 export interface MessagingPlan {
   channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
   subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
@@ -96,7 +107,7 @@ export interface MessagingPlan {
 }
 export interface DomainIR { version: string; package: { name: string }; modules: Module[] }
 export interface Contracts { version: string; resources: { id: string; name: string; wireName: string; operations: Operation[] }[]; functions: { id: string; name: string; http?: HttpBinding }[] }
-export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan }
+export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan }
 
 export interface OperationRef {
   op: Operation;
@@ -110,6 +121,7 @@ export class Model {
   readonly views: ViewDecl[];
   readonly projections: ProjectionDecl[];
   readonly caches: CacheDecl[];
+  readonly workflows: WorkflowDecl[];
   readonly enums = new Map<string, EnumDecl>();
   private readonly byId = new Map<string, Resource>();
   private readonly ops = new Map<string, OperationRef>();
@@ -122,6 +134,7 @@ export class Model {
     this.views = bundle.ir.modules.flatMap((m) => m.views ?? []);
     this.projections = bundle.ir.modules.flatMap((m) => m.projections ?? []);
     this.caches = bundle.ir.modules.flatMap((m) => m.caches ?? []);
+    this.workflows = bundle.ir.modules.flatMap((m) => m.workflows ?? []);
     for (const m of bundle.ir.modules) for (const e of m.enums) this.enums.set(e.id, e);
     for (const r of this.resources) {
       this.byId.set(r.id, r);

@@ -18,6 +18,23 @@ pub struct Contracts {
     pub views: Vec<ViewContract>,
     pub projections: Vec<ProjectionContract>,
     pub caches: Vec<CacheContract>,
+    pub workflows: Vec<WorkflowContract>,
+}
+
+/// A durable workflow (plan §15): `POST {start}` (the `@http` binding or `{path}`), `GET {path}/{id}`,
+/// `POST {path}/{id}/cancel`, `POST {path}/signals/{message}` with `{ messageId, payload }`.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkflowContract {
+    pub id: String,
+    pub name: String,
+    pub version: u32,
+    pub graph_hash: String,
+    pub errors: Vec<String>,
+    /// Messages the workflow waits on: (channel id, message name).
+    pub signals: Vec<(String, String)>,
+    pub start: HttpBinding,
+    pub path: String,
 }
 
 /// A bounded read-only query (plan §17): `GET {http.path}?<params>&limit&cursor`.
@@ -130,6 +147,7 @@ pub fn plan(ir: &DomainIR) -> Contracts {
     let mut views = Vec::new();
     let mut projections = Vec::new();
     let mut caches = Vec::new();
+    let mut workflows = Vec::new();
     let find_resource = |id: &str| ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.id == id);
     for m in &ir.modules {
         for r in &m.resources {
@@ -184,6 +202,21 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 path: p.crud.as_ref().map(|c| c.path.clone()).unwrap_or_else(|| format!("/v1/projections/{}", naming::kebab(&p.name))),
             });
         }
+        for w in &m.workflows {
+            let path = format!("/v1/workflows/{}", naming::kebab(&w.name));
+            let mut signals = Vec::new();
+            collect_signals(&w.steps, &mut signals);
+            workflows.push(WorkflowContract {
+                id: w.id.clone(),
+                name: w.name.clone(),
+                version: w.version,
+                graph_hash: w.graph_hash.clone(),
+                errors: w.errors.clone(),
+                signals,
+                start: w.http.clone().unwrap_or_else(|| HttpBinding { method: "POST".into(), path: path.clone() }),
+                path,
+            });
+        }
         for c in &m.caches {
             let value_resource = match &c.loader {
                 Expr::Call { callee, .. } if callee.len() == 2 && callee[1] == "effective" => ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.name == callee[0]).map(|r| r.name.clone()),
@@ -198,7 +231,25 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             });
         }
     }
-    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches }
+    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches, workflows }
+}
+
+fn collect_signals(steps: &[Step], out: &mut Vec<(String, String)>) {
+    for s in steps {
+        match s {
+            Step::Wait { channel, message, .. } => {
+                if !out.iter().any(|(c, m)| c == channel && m == message) {
+                    out.push((channel.clone(), message.clone()));
+                }
+            }
+            Step::Choice { then, otherwise, .. } => {
+                collect_signals(then, out);
+                collect_signals(otherwise, out);
+            }
+            Step::Parallel { branches, .. } => branches.iter().for_each(|b| collect_signals(b, out)),
+            _ => {}
+        }
+    }
 }
 
 fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {

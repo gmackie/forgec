@@ -16,9 +16,24 @@ the same code that application clients use — and write
 
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
-| runtime-memory | in-process | 12 | 167 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues) | 12 | 167 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS) | 12 | 167 | 0 |
+| runtime-memory | in-process | 13 | 196 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows) | 13 | 196 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions) | 13 | 196 | 0 |
+
+M7 adds `workflows`: `ProcessOrder` (submit → wait for PaymentCaptured
+correlated by reference → short-payment choice → approve → parallel
+summary/settle → return). The portable executor owns every step semantic; the
+provider driver owns timers: Cloudflare Workflows (`step.sleep`,
+`step.waitForEvent` bounded by the wait's deadline, woken by `sendEvent`) and
+Step Functions Standard (Wait state, `waitForTaskToken` callback woken by
+`SendTaskSuccess`). Verified live on both: idempotent start (one submit),
+duplicate signals dedup by messageId, an early signal held in the inbox and
+consumed when the waiter registers, a late signal after cancellation goes
+nowhere, a declared callee error caught into a declared terminal, an
+undeclared failure mapped to its code, cancellation that leaves completed
+effects in place, and several drivers advancing one instance converging on a
+single terminal outcome (CAS + reload-and-continue; activities are
+exactly-once through storage receipts).
 
 M6 adds `temporal-hierarchy` (half-open effective dating with guarded
 overlap, cycle-safe hierarchy moves, bounded traversal) and

@@ -13,7 +13,7 @@ describe("scenario runner against the in-memory semantic model", () => {
     it(`${scenario.id}: ${scenario.title}`, async () => {
       const report = await runScenario(scenario, new RuntimeTarget(bundle));
       expect(report.failures).toEqual([]);
-    });
+    }, 60_000);
   }
 
   it("reports a step whose result deviates, with a normalized diff", async () => {

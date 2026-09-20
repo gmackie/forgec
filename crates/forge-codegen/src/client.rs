@@ -96,6 +96,12 @@ pub fn client_ts(c: &Contracts) -> String {
     for k in &c.caches {
         let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"cache.read\", resource: {:?} }},", format!("{}.read", k.id), k.http.path, k.name);
     }
+    for w in &c.workflows {
+        let _ = writeln!(out, "  {:?}: {{ method: {:?}, path: {:?}, kind: \"workflow.start\", resource: {:?} }},", format!("{}.start", w.id), w.start.method, w.start.path, w.name);
+        let _ = writeln!(out, "  {:?}: {{ method: \"GET\", path: {:?}, kind: \"workflow.get\", resource: {:?} }},", format!("{}.get", w.id), format!("{}/{{id}}", w.path), w.name);
+        let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: \"workflow.cancel\", resource: {:?} }},", format!("{}.cancel", w.id), format!("{}/{{id}}/cancel", w.path), w.name);
+        let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: \"workflow.signal\", resource: {:?} }},", format!("{}.signal", w.id), format!("{}/signals/{{message}}", w.path), w.name);
+    }
     let _ = writeln!(out, "}};\n");
 
     for v in &c.views {
@@ -191,6 +197,12 @@ pub fn client_ts(c: &Contracts) -> String {
         let _ = writeln!(out, "    {}: {{ read(key: {{ {} }}): Promise<CacheRead<{}>> }};", lower_first(&k.name), keys.join("; "), value);
     }
     let _ = writeln!(out, "  }};");
+    let _ = writeln!(out, "  workflows: {{");
+    for w in &c.workflows {
+        let msgs: Vec<String> = w.signals.iter().map(|(_, m)| format!("{m:?}")).collect();
+        let _ = writeln!(out, "    {}: {{ start(input: Record<string, unknown>, opts?: CallOptions): Promise<WorkflowInstance>; get(id: string): Promise<WorkflowInstance>; cancel(id: string): Promise<WorkflowInstance>; signal(message: {}, payload: Record<string, unknown>, messageId?: string): Promise<{{ delivered: number; held: number }}> }};", lower_first(&w.name), if msgs.is_empty() { "never".to_string() } else { msgs.join(" | ") });
+    }
+    let _ = writeln!(out, "  }};");
     let _ = writeln!(out, "}}\n");
 
     let _ = writeln!(out, "export function createClient(options: ClientOptions): ForgeClient {{");
@@ -226,6 +238,11 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "    caches: {{");
     for k in &c.caches {
         let _ = writeln!(out, "      {}: {{ read: (key) => t.unwrap(t.call({:?}, {{ key }})) }},", lower_first(&k.name), format!("{}.read", k.id));
+    }
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    workflows: {{");
+    for w in &c.workflows {
+        let _ = writeln!(out, "      {}: {{ start: (input, opts) => t.unwrap(t.call({:?}, input, opts)), get: (id) => t.unwrap(t.call({:?}, {{ id }})), cancel: (id) => t.unwrap(t.call({:?}, {{ id }})), signal: (message, payload, messageId) => t.unwrap(t.call({:?}, {{ message, payload, ...(messageId ? {{ messageId }} : {{}}) }})) }},", lower_first(&w.name), format!("{}.start", w.id), format!("{}.get", w.id), format!("{}.cancel", w.id), format!("{}.signal", w.id));
     }
     let _ = writeln!(out, "    }},");
     for r in &c.resources {
@@ -289,6 +306,7 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
 export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
+export interface WorkflowInstance { id: string; workflow: string; version: number; status: "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled"; input: Record<string, unknown>; bindings: Record<string, unknown>; history: { step: string; kind: string; at: string }[]; waiting?: { step: string; message: string; correlationKey: string; dueAt?: string }; sleeping?: { step: string; dueAt: string }; output?: unknown; error?: { code: string; detail?: string } }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
 export interface SignedUrl { url: string; method: "PUT" | "GET"; headers?: Record<string, string>; expiresAt: string }
@@ -340,10 +358,18 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       if (input["limit"]) q.set("limit", String(input["limit"]));
       const qs = q.toString();
       if (qs) url += "?" + qs;
-    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
+    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "workflow.start" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
       const { id: _id, ...rest } = input;
       void _id;
       body = JSON.stringify(spec.kind === "changeset.approve" ? rest : input);
+      headers["content-type"] = "application/json";
+    } else if (spec.kind === "workflow.signal") {
+      const { message: _m, ...rest } = input;
+      void _m;
+      body = JSON.stringify(rest);
+      headers["content-type"] = "application/json";
+    } else if (spec.kind === "workflow.cancel") {
+      body = "{}";
       headers["content-type"] = "application/json";
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});

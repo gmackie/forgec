@@ -1,6 +1,6 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "56d521d3673b1cddfa96a1b3406ea7c16fadbf8e303cf0c7472b37d5b6dd99cb",
+  "buildHash": "b089a84ad404cf75e327f4db66c9e176eb5ee18fc6825623f0edf2af9a458c70",
   "ir": {
     "version": "domain-ir/1",
     "package": {
@@ -206,6 +206,53 @@
                   "optional": false,
                   "normalizers": [],
                   "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          },
+          {
+            "id": "@acme/commerce/_/ProcessOrderInput",
+            "name": "ProcessOrderInput",
+            "exported": false,
+            "fields": [
+              {
+                "name": "order",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce/_/Order"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "expectedVersion",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ]
                 },
                 "immutable": false,
                 "serverOwned": false,
@@ -2512,6 +2559,28 @@
                     "synthesized": false
                   },
                   {
+                    "name": "reference",
+                    "type": {
+                      "base": {
+                        "kind": "scalar",
+                        "name": "text",
+                        "args": []
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": [
+                        {
+                          "kind": "length",
+                          "min": 1,
+                          "max": 64
+                        }
+                      ]
+                    },
+                    "immutable": false,
+                    "serverOwned": false,
+                    "synthesized": false
+                  },
+                  {
                     "name": "amount",
                     "type": {
                       "base": {
@@ -2721,6 +2790,244 @@
                 }
               ]
             }
+          }
+        ],
+        "workflows": [
+          {
+            "id": "@acme/commerce/_/ProcessOrder",
+            "name": "ProcessOrder",
+            "exported": true,
+            "doc": "Durable order processing (plan §15): submit, wait for the payment capture\ncorrelated by reference, approve, then fan out bounded follow-ups.",
+            "version": 1,
+            "input": {
+              "base": {
+                "kind": "shape",
+                "id": "@acme/commerce/_/ProcessOrderInput"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "output": {
+              "base": {
+                "kind": "record",
+                "resource": "@acme/commerce/_/Order"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "errors": [
+              "Declined",
+              "PaymentTimeout",
+              "ShortPayment"
+            ],
+            "http": {
+              "method": "POST",
+              "path": "/v1/orders/{order}/process"
+            },
+            "steps": [
+              {
+                "kind": "call",
+                "id": "submit",
+                "target": {
+                  "kind": "function",
+                  "function": "@acme/commerce/_/SubmitOrder"
+                },
+                "args": [
+                  {
+                    "name": "order",
+                    "value": {
+                      "kind": "name",
+                      "path": [
+                        "input",
+                        "order"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "expectedVersion",
+                    "value": {
+                      "kind": "name",
+                      "path": [
+                        "input",
+                        "expectedVersion"
+                      ]
+                    }
+                  }
+                ],
+                "catches": [
+                  {
+                    "error": "PaymentDeclined",
+                    "then": {
+                      "kind": "fail",
+                      "error": "Declined"
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "wait",
+                "id": "captured",
+                "channel": "@acme/commerce/_/PaymentEvents",
+                "message": "PaymentCaptured",
+                "correlate": {
+                  "field": "reference",
+                  "value": {
+                    "kind": "name",
+                    "path": [
+                      "input",
+                      "order"
+                    ]
+                  }
+                },
+                "timeout": {
+                  "duration": "2d",
+                  "then": {
+                    "kind": "fail",
+                    "error": "PaymentTimeout"
+                  }
+                }
+              },
+              {
+                "kind": "choice",
+                "id": "short",
+                "condition": {
+                  "kind": "binary",
+                  "op": "<",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "captured",
+                      "amount"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "submit",
+                      "total"
+                    ]
+                  }
+                },
+                "then": [
+                  {
+                    "kind": "call",
+                    "id": "short",
+                    "target": {
+                      "kind": "transition",
+                      "resource": "@acme/commerce/_/Order",
+                      "action": "cancel"
+                    },
+                    "args": [
+                      {
+                        "name": "id",
+                        "value": {
+                          "kind": "name",
+                          "path": [
+                            "input",
+                            "order"
+                          ]
+                        }
+                      },
+                      {
+                        "name": "expectedVersion",
+                        "value": {
+                          "kind": "name",
+                          "path": [
+                            "submit",
+                            "version"
+                          ]
+                        }
+                      },
+                      {
+                        "name": "reason",
+                        "value": {
+                          "kind": "literal",
+                          "literal": {
+                            "type": "string",
+                            "value": "short payment"
+                          }
+                        }
+                      }
+                    ],
+                    "catches": []
+                  },
+                  {
+                    "kind": "fail",
+                    "error": "ShortPayment"
+                  }
+                ],
+                "otherwise": []
+              },
+              {
+                "kind": "call",
+                "id": "approve",
+                "target": {
+                  "kind": "transition",
+                  "resource": "@acme/commerce/_/Order",
+                  "action": "approve"
+                },
+                "args": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "name",
+                      "path": [
+                        "input",
+                        "order"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "expectedVersion",
+                    "value": {
+                      "kind": "name",
+                      "path": [
+                        "submit",
+                        "version"
+                      ]
+                    }
+                  }
+                ],
+                "catches": []
+              },
+              {
+                "kind": "parallel",
+                "id": "summary+settle",
+                "branches": [
+                  [
+                    {
+                      "kind": "call",
+                      "id": "summary",
+                      "target": {
+                        "kind": "function",
+                        "function": "@acme/commerce/_/RebuildOrderSummary"
+                      },
+                      "args": [],
+                      "catches": []
+                    }
+                  ],
+                  [
+                    {
+                      "kind": "sleep",
+                      "id": "settle",
+                      "duration": "5s"
+                    }
+                  ]
+                ]
+              },
+              {
+                "kind": "return",
+                "value": {
+                  "kind": "name",
+                  "path": [
+                    "approve"
+                  ]
+                }
+              }
+            ],
+            "graphHash": "62f3c6c402b8d49d810c3c875825d095bc7763443a7f3e9f455999a005af7e21"
           }
         ]
       }
@@ -4495,6 +4802,30 @@
           "method": "GET",
           "path": "/v1/caches/current-site-policy"
         }
+      }
+    ],
+    "workflows": [
+      {
+        "id": "@acme/commerce/_/ProcessOrder",
+        "name": "ProcessOrder",
+        "version": 1,
+        "graphHash": "62f3c6c402b8d49d810c3c875825d095bc7763443a7f3e9f455999a005af7e21",
+        "errors": [
+          "Declined",
+          "PaymentTimeout",
+          "ShortPayment"
+        ],
+        "signals": [
+          [
+            "@acme/commerce/_/PaymentEvents",
+            "PaymentCaptured"
+          ]
+        ],
+        "start": {
+          "method": "POST",
+          "path": "/v1/orders/{order}/process"
+        },
+        "path": "/v1/workflows/process-order"
       }
     ]
   },
@@ -7455,6 +7786,28 @@
                 "synthesized": false
               },
               {
+                "name": "reference",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
                 "name": "amount",
                 "type": {
                   "base": {
@@ -7810,6 +8163,116 @@
             "OrderSubmitted"
           ]
         ]
+      }
+    ]
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": [
+      {
+        "id": "@acme/commerce/_/ProcessOrder",
+        "name": "ProcessOrder",
+        "version": 1,
+        "graphHash": "62f3c6c402b8d49d810c3c875825d095bc7763443a7f3e9f455999a005af7e21",
+        "cloudflare": {
+          "name": "forge-acme-commerce-process-order",
+          "binding": "WF_PROCESS_ORDER",
+          "className": "ProcessOrderWorkflow"
+        },
+        "aws": {
+          "stateMachine": "forge-acme-commerce-process-order",
+          "definition": {
+            "Comment": "Forge workflow driver for @acme/commerce/_/ProcessOrder; all step semantics live in the portable executor.",
+            "StartAt": "Advance",
+            "States": {
+              "Advance": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke",
+                "Parameters": {
+                  "FunctionName": "${LambdaArn}",
+                  "Payload": {
+                    "forge": "workflow.advance",
+                    "tenant.$": "$.tenant",
+                    "id.$": "$.id"
+                  }
+                },
+                "ResultSelector": {
+                  "status.$": "$.Payload.status",
+                  "dueAt.$": "$.Payload.dueAt",
+                  "timeoutSeconds.$": "$.Payload.timeoutSeconds"
+                },
+                "ResultPath": "$.state",
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.TaskFailed",
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 2.0
+                  }
+                ],
+                "Next": "Route"
+              },
+              "Route": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "sleeping",
+                    "Next": "Sleep"
+                  },
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "waiting",
+                    "Next": "WaitForSignal"
+                  },
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "running",
+                    "Next": "Advance"
+                  }
+                ],
+                "Default": "Done"
+              },
+              "Sleep": {
+                "Type": "Wait",
+                "TimestampPath": "$.state.dueAt",
+                "Next": "Advance"
+              },
+              "WaitForSignal": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                "Parameters": {
+                  "FunctionName": "${LambdaArn}",
+                  "Payload": {
+                    "forge": "workflow.wait",
+                    "tenant.$": "$.tenant",
+                    "id.$": "$.id",
+                    "taskToken.$": "$$.Task.Token"
+                  }
+                },
+                "TimeoutSecondsPath": "$.state.timeoutSeconds",
+                "ResultPath": null,
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.Timeout"
+                    ],
+                    "ResultPath": null,
+                    "Next": "Advance"
+                  }
+                ],
+                "Next": "Advance"
+              },
+              "Done": {
+                "Type": "Succeed"
+              }
+            }
+          }
+        }
       }
     ]
   }

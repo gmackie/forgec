@@ -69,6 +69,13 @@ function readModelRoutes(model: Model): Route[] {
     routes.push(route("GET", `${base}/{id}`, `${p.id}.get`, "projection.get"));
   }
   for (const c of model.caches) routes.push(route("GET", `/v1/caches/${kebab(c.name)}`, `${c.id}.read`, "cache.read"));
+  for (const w of model.workflows) {
+    const base = `/v1/workflows/${kebab(w.name)}`;
+    routes.push(route(w.http?.method ?? "POST", w.http?.path ?? base, `${w.id}.start`, "workflow.start"));
+    routes.push(route("POST", `${base}/signals/{message}`, `${w.id}.signal`, "workflow.signal"));
+    routes.push(route("GET", `${base}/{id}`, `${w.id}.get`, "workflow.get"));
+    routes.push(route("POST", `${base}/{id}/cancel`, `${w.id}.cancel`, "workflow.cancel"));
+  }
   return routes;
 }
 function kebab(name: string): string {
@@ -268,6 +275,17 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       case "projection.status":
       case "projection.rebuild":
         input = {};
+        break;
+      case "workflow.start":
+        // Path parameters bind input fields by name, like function bindings.
+        input = { ...((body ?? {}) as Record<string, unknown>), ...params };
+        break;
+      case "workflow.get":
+      case "workflow.cancel":
+        input = { id: params["id"] };
+        break;
+      case "workflow.signal":
+        input = { message: params["message"], ...((body ?? {}) as Record<string, unknown>) };
         break;
       case "view.query": {
         const q: Record<string, string> = {};

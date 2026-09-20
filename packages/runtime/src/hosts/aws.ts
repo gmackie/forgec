@@ -7,7 +7,9 @@ import { Engine } from "../engine.js";
 import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
 import { Dispatcher } from "../dispatch.js";
-import { withProjections } from "../readmodels.js";
+import { internalSubscriptions, withProjections } from "../readmodels.js";
+import { SendTaskSuccessCommand, SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
+import type { WorkflowDriver } from "../workflows.js";
 import { decodeEnvelope, sqsTransport } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
@@ -53,6 +55,8 @@ export interface LambdaEnv {
   FORGE_CORS?: string;
   /** JSON map: subscription name -> SQS queue URL. */
   FORGE_QUEUES?: string;
+  /** JSON map: workflow name -> Step Functions state machine ARN. */
+  FORGE_WORKFLOWS?: string;
 }
 
 export interface LambdaOptions extends EngineOptions {
@@ -77,12 +81,44 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   const engine = new Engine(model, layer, options);
   const queues: Record<string, string> = env.FORGE_QUEUES ? (JSON.parse(env.FORGE_QUEUES) as Record<string, string>) : {};
   const sqs = new SQSClient({ region: env.AWS_REGION ?? "us-east-1" });
+  const machines: Record<string, string> = env.FORGE_WORKFLOWS ? (JSON.parse(env.FORGE_WORKFLOWS) as Record<string, string>) : {};
+  const sfn = new SFNClient({ region: env.AWS_REGION ?? "us-east-1" });
+  // Step Functions Standard drives instances: Wait states for sleeps, callback task tokens for waits.
+  const driver: WorkflowDriver = {
+    async started(tenant, wf, id) {
+      const arn = machines[wf.name];
+      if (!arn) return;
+      await sfn.send(new StartExecutionCommand({ stateMachineArn: arn, name: `${tenant}-${id}`.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 80), input: JSON.stringify({ tenant, id }) }));
+    },
+    async wake(tenant, _wf, inst) {
+      const token = inst.driver?.["taskToken"] as string | undefined;
+      if (!token) return;
+      await sfn.send(new SendTaskSuccessCommand({ taskToken: token, output: JSON.stringify({ woke: true }) })).catch(() => undefined);
+      await Effect.runPromise(engine.workflows.setDriverState(tenant, inst.id, { taskToken: null }).pipe(Effect.provide(layer))).catch(() => undefined);
+    },
+  };
+  engine.workflows.driver = driver;
   const subscriptions: Record<string, string[]> = {};
   for (const s of model.bundle.messaging?.subscriptions ?? []) (subscriptions[s.channel] ??= []).push(s.name);
-  const dispatcher = new Dispatcher(model, storage, withProjections(engine, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues)), { subscriptions: engine.projectionSubscriptions(subscriptions), leaseMs: 30_000, maxAttempts: 8 });
+  const dispatcher = new Dispatcher(model, storage, withProjections(engine, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues)), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
   const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
 
-  return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | void> => {
+  return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent | WorkflowDriverEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | WorkflowDriverResult | void> => {
+    if ("forge" in ev && ev.forge === "workflow.advance") {
+      const st = await Effect.runPromise(engine.workflows.advance(ev.tenant, ev.id).pipe(Effect.provide(layer)));
+      const dueAt = ((st["sleeping"] as { dueAt?: string } | undefined)?.dueAt ?? (st["waiting"] as { dueAt?: string } | undefined)?.dueAt) as string | undefined;
+      // Step Functions needs a numeric timeout for the callback wait; a wait without a deadline gets a year.
+      const timeoutSeconds = dueAt ? Math.max(1, Math.ceil((Date.parse(dueAt) - Date.now()) / 1000)) : 365 * 24 * 3600;
+      return { status: st["status"] as string, dueAt: dueAt ?? new Date(Date.now() + 1000).toISOString(), timeoutSeconds };
+    }
+    if ("forge" in ev && ev.forge === "workflow.wait") {
+      // Park the callback token; a signal consumed after this point wakes the execution immediately.
+      await Effect.runPromise(engine.workflows.setDriverState(ev.tenant, ev.id, { taskToken: ev.taskToken }).pipe(Effect.provide(layer)));
+      // Re-check after parking: a signal consumed in between would have found no token to wake.
+      const inst = await Effect.runPromise(engine.workflows.load(ev.tenant, ev.id).pipe(Effect.provide(layer)));
+      if (inst.status !== "waiting") await driver.wake(ev.tenant, model.workflows.find((w) => w.id === inst.workflow)!, inst);
+      return;
+    }
     if ("Records" in ev) {
       const failures: { itemIdentifier: string }[] = [];
       for (const r of ev.Records) {
@@ -102,6 +138,7 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
     if ("source" in ev && ev.source === "aws.events") {
       const tenants = await Effect.runPromise(storage.outboxTenants());
       await Promise.all(tenants.map((t: string) => Effect.runPromise(dispatcher.sweep(t, { now: Date.now() }))));
+      await Promise.all(tenants.map((t: string) => Effect.runPromise(engine.workflows.sweep(t))));
       return;
     }
     const apiEv = ev as ApiGatewayV2Event;
@@ -118,6 +155,17 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   };
 }
 
+export interface WorkflowDriverEvent {
+  forge: "workflow.advance" | "workflow.wait";
+  tenant: string;
+  id: string;
+  taskToken?: string;
+}
+export interface WorkflowDriverResult {
+  status: string;
+  dueAt: string;
+  timeoutSeconds: number;
+}
 export interface SqsEvent {
   Records: { messageId: string; body: string; eventSourceARN: string }[];
 }

@@ -21,6 +21,7 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
 export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
+export interface WorkflowInstance { id: string; workflow: string; version: number; status: "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled"; input: Record<string, unknown>; bindings: Record<string, unknown>; history: { step: string; kind: string; at: string }[]; waiting?: { step: string; message: string; correlationKey: string; dueAt?: string }; sleeping?: { step: string; dueAt: string }; output?: unknown; error?: { code: string; detail?: string } }
 export interface PageOptions { cursor?: string | null; limit?: number }
 export interface CallOptions { idempotencyKey?: string }
 export interface SignedUrl { url: string; method: "PUT" | "GET"; headers?: Record<string, string>; expiresAt: string }
@@ -72,10 +73,18 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       if (input["limit"]) q.set("limit", String(input["limit"]));
       const qs = q.toString();
       if (qs) url += "?" + qs;
-    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
+    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "workflow.start" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
       const { id: _id, ...rest } = input;
       void _id;
       body = JSON.stringify(spec.kind === "changeset.approve" ? rest : input);
+      headers["content-type"] = "application/json";
+    } else if (spec.kind === "workflow.signal") {
+      const { message: _m, ...rest } = input;
+      void _m;
+      body = JSON.stringify(rest);
+      headers["content-type"] = "application/json";
+    } else if (spec.kind === "workflow.cancel") {
+      body = "{}";
       headers["content-type"] = "application/json";
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});
@@ -178,6 +187,10 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/CustomerOrderSummary.status": { method: "GET", path: "/v1/customer-order-summaries/status", kind: "projection.status", resource: "CustomerOrderSummary" },
   "@acme/commerce/_/CustomerOrderSummary.rebuild": { method: "POST", path: "/v1/customer-order-summaries/rebuild", kind: "projection.rebuild", resource: "CustomerOrderSummary" },
   "@acme/commerce/_/CurrentSitePolicy.read": { method: "GET", path: "/v1/caches/current-site-policy", kind: "cache.read", resource: "CurrentSitePolicy" },
+  "@acme/commerce/_/ProcessOrder.start": { method: "POST", path: "/v1/orders/{order}/process", kind: "workflow.start", resource: "ProcessOrder" },
+  "@acme/commerce/_/ProcessOrder.get": { method: "GET", path: "/v1/workflows/process-order/{id}", kind: "workflow.get", resource: "ProcessOrder" },
+  "@acme/commerce/_/ProcessOrder.cancel": { method: "POST", path: "/v1/workflows/process-order/{id}/cancel", kind: "workflow.cancel", resource: "ProcessOrder" },
+  "@acme/commerce/_/ProcessOrder.signal": { method: "POST", path: "/v1/workflows/process-order/signals/{message}", kind: "workflow.signal", resource: "ProcessOrder" },
 };
 
 export interface PendingOrdersRow {
@@ -449,6 +462,9 @@ export interface ForgeClient {
   caches: {
     currentSitePolicy: { read(key: { site: string }): Promise<CacheRead<SitePolicyRecord | null>> };
   };
+  workflows: {
+    processOrder: { start(input: Record<string, unknown>, opts?: CallOptions): Promise<WorkflowInstance>; get(id: string): Promise<WorkflowInstance>; cancel(id: string): Promise<WorkflowInstance>; signal(message: "PaymentCaptured", payload: Record<string, unknown>, messageId?: string): Promise<{ delivered: number; held: number }> };
+  };
 }
 
 export function createClient(options: ClientOptions): ForgeClient {
@@ -477,6 +493,9 @@ export function createClient(options: ClientOptions): ForgeClient {
     },
     caches: {
       currentSitePolicy: { read: (key) => t.unwrap(t.call("@acme/commerce/_/CurrentSitePolicy.read", { key })) },
+    },
+    workflows: {
+      processOrder: { start: (input, opts) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.start", input, opts)), get: (id) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.get", { id })), cancel: (id) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.cancel", { id })), signal: (message, payload, messageId) => t.unwrap(t.call("@acme/commerce/_/ProcessOrder.signal", { message, payload, ...(messageId ? { messageId } : {}) })) },
     },
     customers: {
       create: (input, opts) => t.unwrap(t.call("@acme/commerce/_/Customer.create", input, opts)),

@@ -16,6 +16,7 @@ import { Imports } from "./imports.js";
 import { Functions, type ExternalBinding, type FunctionImpl } from "./functions.js";
 import { Temporal } from "./temporal.js";
 import { ReadModels } from "./readmodels.js";
+import { Workflows } from "./workflows.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -30,7 +31,7 @@ export interface CallContext {
 export const PAGE_DEFAULT = 50;
 export const PAGE_MAX = 100;
 
-async function sha256(text: string): Promise<string> {
+export async function sha256(text: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
@@ -133,6 +134,11 @@ export class Engine {
     if (proj && action === "rebuild") return this.readModels.rebuild(proj, ctx);
     const cache = this.model.caches.find((c) => c.id === base);
     if (cache && action === "read") return this.readModels.read(cache, body, ctx);
+    const wf = this.model.workflows.find((w) => w.id === base);
+    if (wf && action === "start") return this.workflows.start(wf, body, ctx);
+    if (wf && action === "get") return this.workflows.get(wf, String(body["id"]), ctx);
+    if (wf && action === "cancel") return this.workflows.cancel(wf, String(body["id"]), ctx);
+    if (wf && action === "signal") return this.workflows.signal(wf, String(body["message"]), String(body["messageId"] ?? crypto.randomUUID()), (body["payload"] ?? {}) as Wire, ctx);
     return null;
   }
 
@@ -177,6 +183,7 @@ export class Engine {
   readonly temporal = new Temporal(this);
   readonly imports = new Imports(this);
   readonly readModels = new ReadModels(this);
+  readonly workflows = new Workflows(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {

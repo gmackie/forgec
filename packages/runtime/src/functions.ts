@@ -8,7 +8,7 @@
 import { Effect } from "effect";
 import type { Wire } from "./decode.js";
 import { canonicalize } from "./decode.js";
-import type { CallContext, Engine } from "./engine.js";
+import { sha256, stableJson, type CallContext, type Engine } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
 import type { FunctionDecl, Resource } from "./model.js";
 import { Clock, IdGen, Storage, type CommitPlan, type OutboxEntry, type RuntimeServices } from "./services.js";
@@ -81,7 +81,12 @@ export class Functions {
         const host = plans[0];
         const outbox = pending.map((p, i) => ({ ...p, opId, ordinal: (host?.outbox.length ?? 0) + i, createdAt: now }));
         if (host) {
-          plans[0] = { ...host, outbox: [...host.outbox, ...outbox] };
+          // An idempotency key stores the function's result with its first plan: a replay returns it
+          // instead of re-running the body (plan §15 activity retries rely on this).
+          const receipt = ctx.idempotencyKey
+            ? { receipt: { tenant: ctx.tenant, operation: decl.id, key: ctx.idempotencyKey, requestHash: yield* Effect.promise(() => sha256(stableJson((input ?? {}) as Wire))), status: 200, response: (result ?? {}) as Wire, createdAt: now } }
+            : {};
+          plans[0] = { ...host, outbox: [...host.outbox, ...outbox], ...receipt };
           yield* storage.commitAll(plans);
         } else {
           yield* self.commitOutboxOnly(decl, ctx, outbox);

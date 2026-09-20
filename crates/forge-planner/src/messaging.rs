@@ -58,7 +58,7 @@ pub struct SenderPlan {
 
 use crate::naming::kebab;
 
-fn pkg_slug(name: &str) -> String {
+pub(crate) fn pkg_slug(name: &str) -> String {
     name.trim_start_matches('@').replace('/', "-").replace('_', "-")
 }
 

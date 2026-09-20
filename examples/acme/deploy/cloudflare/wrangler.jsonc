@@ -7,6 +7,7 @@
   "vars": { "FORGE_AUTH": "dev-headers", "FORGE_CORS": "http://localhost:5173,https://forge-acme-workspace.gmac.workers.dev" },
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "forge-acme-blobs" }],
   "triggers": { "crons": ["*/5 * * * *"] },
+  "workflows": [{ "name": "forge-acme-commerce-process-order", "binding": "WF_PROCESS_ORDER", "class_name": "ProcessOrderWorkflow" }],
   "queues": {
     "producers": [{ "binding": "Q_FULFILL_ORDER", "queue": "forge-acme-commerce-fulfill-order" }],
     "consumers": [{ "queue": "forge-acme-commerce-fulfill-order", "max_batch_size": 10, "max_retries": 5, "dead_letter_queue": "forge-acme-commerce-dlq" }]
