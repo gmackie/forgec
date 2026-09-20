@@ -6,7 +6,7 @@
 import { Effect } from "effect";
 import { err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
-import type { CommitPlan, ListQuery, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { CommitPlan, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 import { SqlMapping } from "./sql-mapping.js";
 import { rawD1Executor, type SqlExecutor, type SqlStatement } from "./sql-executor.js";
 
@@ -124,6 +124,45 @@ export class D1Storage implements StorageAdapter {
     return this.wrap(async () => {
       const row = await this.db.first<{ n: number }>(st(`SELECT COUNT(*) AS n FROM ${t.name} WHERE ${tenantSql}${col} = ?${live}`, ...binds));
       return Number(row?.n ?? 0);
+    });
+  }
+
+  // ---------------------------------------------------------- outbox dispatch (M0-certified lease protocol)
+  private outboxRow(r: Record<string, unknown>): OutboxRow {
+    return {
+      tenant: String(r["tenant"]), opId: String(r["op_id"]), ordinal: Number(r["ordinal"]), channel: String(r["channel"]), message: String(r["message"]),
+      payload: JSON.parse(String(r["payload"])), createdAt: String(r["created_at"]), status: r["status"] as OutboxRow["status"], attempts: Number(r["attempts"]),
+      leaseOwner: (r["lease_owner"] as string | null) ?? null, leaseUntil: r["lease_until"] === null || r["lease_until"] === undefined ? null : Number(r["lease_until"]),
+      delivered: r["delivered"] ? (JSON.parse(String(r["delivered"])) as string[]) : [],
+    };
+  }
+  outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError> {
+    return this.wrap(async () => (await this.db.all(st("SELECT * FROM forge_outbox WHERE tenant = ? AND status = 'pending' AND (lease_until IS NULL OR lease_until < ?) ORDER BY created_at, op_id, ordinal LIMIT ?", tenant, now, limit))).map((r) => this.outboxRow(r)));
+  }
+  outboxClaim(r: { tenant: string; opId: string; ordinal: number }, owner: string, now: number, leaseMs: number): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(async () => (await this.db.run(st("UPDATE forge_outbox SET lease_owner = ?, lease_until = ?, attempts = attempts + 1 WHERE tenant = ? AND op_id = ? AND ordinal = ? AND status = 'pending' AND (lease_until IS NULL OR lease_until < ?)", owner, now + leaseMs, r.tenant, r.opId, r.ordinal, now))).changes === 1);
+  }
+  outboxProgress(r: { tenant: string; opId: string; ordinal: number }, owner: string, u: { delivered: string[]; done?: boolean; dead?: boolean; releaseLease?: boolean }): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(async () => {
+      const cur = await this.db.first<{ delivered: string | null }>(st("SELECT delivered FROM forge_outbox WHERE tenant = ? AND op_id = ? AND ordinal = ? AND status = 'pending' AND lease_owner = ?", r.tenant, r.opId, r.ordinal, owner));
+      if (!cur) return false;
+      const merged = [...new Set([...(cur.delivered ? (JSON.parse(cur.delivered) as string[]) : []), ...u.delivered])];
+      const status = u.done ? "delivered" : u.dead ? "dead" : "pending";
+      const release = u.done || u.dead || u.releaseLease;
+      const res = await this.db.run(st(`UPDATE forge_outbox SET delivered = ?, status = ?${release ? ", lease_owner = NULL, lease_until = NULL" : ""} WHERE tenant = ? AND op_id = ? AND ordinal = ? AND status = 'pending' AND lease_owner = ?`, JSON.stringify(merged), status, r.tenant, r.opId, r.ordinal, owner));
+      return res.changes === 1;
+    });
+  }
+  outboxDead(tenant: string): Effect.Effect<OutboxRow[], ForgeError> {
+    return this.wrap(async () => (await this.db.all(st("SELECT * FROM forge_outbox WHERE tenant = ? AND status = 'dead' ORDER BY created_at", tenant))).map((r) => this.outboxRow(r)));
+  }
+  outboxRedrive(r: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(async () => (await this.db.run(st("UPDATE forge_outbox SET status = 'pending', attempts = 0, lease_owner = NULL, lease_until = NULL WHERE tenant = ? AND op_id = ? AND ordinal = ? AND status = 'dead'", r.tenant, r.opId, r.ordinal))).changes === 1);
+  }
+  markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(async () => {
+      const res = await this.db.run(st("INSERT OR IGNORE INTO forge_processed (tenant, subscription, message_id, at) VALUES (?, ?, ?, ?)", tenant, subscription, messageId, new Date().toISOString()));
+      return res.changes === 1;
     });
   }
 

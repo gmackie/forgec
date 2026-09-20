@@ -8,14 +8,15 @@ import { Effect } from "effect";
 import { compareBytes, encodeIdentity } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import type { List, Resource, Unique } from "../model.js";
-import type { AuditEntry, CommitPlan, ListQuery, OutboxEntry, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { AuditEntry, CommitPlan, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export class MemoryStorage implements StorageAdapter {
   readonly name = "memory";
   private tables = new Map<string, Map<string, StoredRecord>>(); // key: tenant|resource
   private claims = new Map<string, string>(); // tenant|claimKey -> record id
   private audits: AuditEntry[] = [];
-  private outbox: OutboxEntry[] = [];
+  private outbox: OutboxRow[] = [];
+  private processed = new Set<string>();
   private receipts = new Map<string, Receipt>();
   private documents = new Map<string, { version: number; doc: Record<string, unknown> }>();
 
@@ -67,6 +68,49 @@ export class MemoryStorage implements StorageAdapter {
 
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError> {
     return Effect.succeed(this.receipts.get(`${tenant}|${operation}|${key}`) ?? null);
+  }
+
+  private row(r: { tenant: string; opId: string; ordinal: number }): OutboxRow | undefined {
+    return this.outbox.find((o) => o.tenant === r.tenant && o.opId === r.opId && o.ordinal === r.ordinal);
+  }
+  outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError> {
+    return Effect.succeed(this.outbox.filter((o) => o.tenant === tenant && o.status === "pending" && (o.leaseUntil === null || o.leaseUntil < now)).slice(0, limit).map((o) => ({ ...o, delivered: [...o.delivered] })));
+  }
+  outboxClaim(r: { tenant: string; opId: string; ordinal: number }, owner: string, now: number, leaseMs: number): Effect.Effect<boolean, ForgeError> {
+    const o = this.row(r);
+    if (!o || o.status !== "pending" || (o.leaseUntil !== null && o.leaseUntil >= now)) return Effect.succeed(false);
+    o.leaseOwner = owner;
+    o.leaseUntil = now + leaseMs;
+    o.attempts += 1;
+    return Effect.succeed(true);
+  }
+  outboxProgress(r: { tenant: string; opId: string; ordinal: number }, owner: string, u: { delivered: string[]; done?: boolean; dead?: boolean; releaseLease?: boolean }): Effect.Effect<boolean, ForgeError> {
+    const o = this.row(r);
+    if (!o || o.status !== "pending" || o.leaseOwner !== owner) return Effect.succeed(false);
+    o.delivered = [...new Set([...o.delivered, ...u.delivered])];
+    if (u.done) o.status = "delivered";
+    if (u.dead) o.status = "dead";
+    if (u.done || u.dead || u.releaseLease) {
+      o.leaseOwner = null;
+      o.leaseUntil = null;
+    }
+    return Effect.succeed(true);
+  }
+  outboxDead(tenant: string): Effect.Effect<OutboxRow[], ForgeError> {
+    return Effect.succeed(this.outbox.filter((o) => o.tenant === tenant && o.status === "dead").map((o) => ({ ...o })));
+  }
+  outboxRedrive(r: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError> {
+    const o = this.row(r);
+    if (!o || o.status !== "dead") return Effect.succeed(false);
+    o.status = "pending";
+    o.attempts = 0;
+    return Effect.succeed(true);
+  }
+  markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
+    const k = `${tenant}|${subscription}|${messageId}`;
+    if (this.processed.has(k)) return Effect.succeed(false);
+    this.processed.add(k);
+    return Effect.succeed(true);
   }
 
   budget(plans: CommitPlan[]): { actions: number; limit: number } {
@@ -147,7 +191,7 @@ export class MemoryStorage implements StorageAdapter {
     if (plan.hardDelete) table.delete(plan.id);
     else table.set(plan.id, { ...plan.after });
     this.audits.push(plan.audit);
-    this.outbox.push(...plan.outbox);
+    this.outbox.push(...plan.outbox.map((o: OutboxEntry): OutboxRow => ({ ...o, status: "pending", attempts: 0, leaseOwner: null, leaseUntil: null, delivered: [] })));
     if (plan.receipt) this.receipts.set(`${plan.tenant}|${plan.receipt.operation}|${plan.receipt.key}`, plan.receipt);
     return null;
   }

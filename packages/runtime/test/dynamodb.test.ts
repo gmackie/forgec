@@ -135,3 +135,50 @@ describe.skipIf(!table)("DynamoDB adapter (live) — M3 integrity", () => {
     }
   }, 60_000);
 });
+
+describe.skipIf(!table)("DynamoDB adapter (live) — M5 dispatch", () => {
+  it("sweep/claim/progress/complete over the sparse index, dead-letter and redrive, consumer dedup", async () => {
+    const { Dispatcher } = await import("../src/dispatch.js");
+    const storage = new DynamoStorage({ table: table!, region: process.env["AWS_REGION"] ?? "us-east-1" }, model);
+    const engine = new Engine(model, testLayer(storage, { runId: randomUUID().slice(0, 8) }));
+    const tenant = `t-${randomUUID().slice(0, 8)}`;
+    const c = { tenant, actor: "operator", requestId: "r" };
+    await run(engine.call("@acme/commerce/_/Customer.create", { code: "DISP", name: "D" }, c));
+    const sent: string[] = [];
+    let fail = true;
+    const transport = { name: "t", send: (d: any) => (fail && d.subscription === "b" ? Effect.fail(new Error("down")) : Effect.sync(() => void sent.push(`${d.subscription}:${d.envelope.messageId}`))) };
+    const dispatcher = new Dispatcher(model, storage, transport, { subscriptions: { "@acme/commerce/_/Customer.changes": ["a", "b"] }, leaseMs: 100, maxAttempts: 2 });
+    // the sparse index is eventually consistent: wait for the row to appear
+    let r = { claimed: 0, delivered: 0, failed: 0, dead: 0 };
+    for (let i = 0; i < 20 && r.claimed === 0; i++) {
+      r = await Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }));
+      if (r.claimed === 0) await new Promise((res) => setTimeout(res, 300));
+    }
+    expect(r).toEqual({ claimed: 1, delivered: 1, failed: 1, dead: 0 });
+    await new Promise((res) => setTimeout(res, 150)); // lease expiry
+    let r2 = { claimed: 0, delivered: 0, failed: 0, dead: 0 };
+    for (let i = 0; i < 20 && r2.claimed === 0; i++) {
+      r2 = await Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }));
+      if (r2.claimed === 0) await new Promise((res) => setTimeout(res, 300));
+    }
+    expect(r2).toEqual({ claimed: 1, delivered: 0, failed: 1, dead: 1 }); // `a` not repeated; `b` fails again -> dead
+    let dead = await Effect.runPromise(dispatcher.dead(tenant));
+    for (let i = 0; i < 20 && dead.length === 0; i++) {
+      await new Promise((res) => setTimeout(res, 300));
+      dead = await Effect.runPromise(dispatcher.dead(tenant));
+    }
+    expect(dead.map((d) => [d.status, d.attempts, d.delivered])).toEqual([["dead", 2, ["a"]]]);
+    fail = false;
+    expect(await Effect.runPromise(dispatcher.redrive(tenant, dead[0]!.opId, 0))).toBe(true);
+    let r3 = { claimed: 0, delivered: 0, failed: 0, dead: 0 };
+    for (let i = 0; i < 20 && r3.claimed === 0; i++) {
+      r3 = await Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }));
+      if (r3.claimed === 0) await new Promise((res) => setTimeout(res, 300));
+    }
+    expect(r3).toEqual({ claimed: 1, delivered: 1, failed: 0, dead: 0 });
+    expect(sent.map((s) => s.split(":")[0])).toEqual(["a", "b"]);
+    const consumer = dispatcher.consumer("b", async () => {});
+    const env = { channel: "c", message: "M", tenant, opId: "x", ordinal: 0, messageId: "x:0", payload: {}, createdAt: "t" };
+    expect([await consumer(env), await consumer(env)]).toEqual(["processed", "duplicate"]);
+  }, 120_000);
+});

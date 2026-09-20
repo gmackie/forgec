@@ -449,6 +449,12 @@ export class Engine {
           budget: (...a) => storage.budget(...a),
           getDocument: (...a) => storage.getDocument(...a),
           putDocument: (...a) => storage.putDocument(...a),
+          outboxSweep: (...a) => storage.outboxSweep(...a),
+          outboxClaim: (...a) => storage.outboxClaim(...a),
+          outboxProgress: (...a) => storage.outboxProgress(...a),
+          outboxDead: (...a) => storage.outboxDead(...a),
+          outboxRedrive: (...a) => storage.outboxRedrive(...a),
+          markProcessed: (...a) => storage.markProcessed(...a),
           commit: (plan: CommitPlan) => storage.commit({ ...plan, receipt: { ...receipt, response: self.resultOf(plan) } }),
         };
         return yield* inner.pipe(Effect.provideService(Storage, wrapped));

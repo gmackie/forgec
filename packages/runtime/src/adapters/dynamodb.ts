@@ -5,13 +5,13 @@
  * ClientRequestToken derived from the operation id.
  */
 import { CreateTableCommand, DescribeTableCommand, DynamoDBClient, ResourceNotFoundException, UpdateTableCommand, waitUntilTableExists, type AttributeValue } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, QueryCommand, TransactWriteCommand, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, TransactWriteCommand, UpdateCommand, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { Effect } from "effect";
 import { encodeIdentity, sortKey } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Unique } from "../model.js";
-import type { CommitPlan, ListQuery, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { CommitPlan, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export const PENDING_INDEX = "pending-index";
 
@@ -210,6 +210,68 @@ export class DynamoStorage implements StorageAdapter {
     });
   }
 
+  // ------------------------------------------------------------ outbox dispatch (sparse pending GSI + fenced lease, M0-certified)
+  private outboxRowOf(i: Item): OutboxRow {
+    return {
+      tenant: String(i["tenant"]), opId: String(i["opId"]), ordinal: Number(i["ordinal"]), channel: String(i["channel"]), message: String(i["message"]),
+      payload: i["payload"], createdAt: String(i["createdAt"]), status: i["status"] as OutboxRow["status"], attempts: Number(i["attempts"] ?? 0),
+      leaseOwner: (i["leaseOwner"] as string | null) ?? null, leaseUntil: i["leaseUntil"] === undefined ? null : Number(i["leaseUntil"]), delivered: (i["delivered"] as string[] | undefined) ?? [],
+    };
+  }
+  outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError> {
+    return this.wrap(async () => {
+      const out = await this.doc.send(new QueryCommand({ TableName: this.table, IndexName: PENDING_INDEX, KeyConditionExpression: "pendingShard = :s", FilterExpression: "attribute_not_exists(leaseUntil) OR leaseUntil < :now", ExpressionAttributeValues: { ":s": encodeIdentity(["T", tenant]), ":now": now }, Limit: limit }));
+      return ((out.Items ?? []) as Item[]).map((i) => this.outboxRowOf(i));
+    });
+  }
+  private async conditional(cmd: UpdateCommand): Promise<boolean> {
+    try {
+      await this.doc.send(cmd);
+      return true;
+    } catch (e) {
+      if ((e as Error).name === "ConditionalCheckFailedException") return false;
+      throw e;
+    }
+  }
+  outboxClaim(r: { tenant: string; opId: string; ordinal: number }, owner: string, now: number, leaseMs: number): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(() => this.conditional(new UpdateCommand({ TableName: this.table, Key: this.outboxKey(r.tenant, r.opId, r.ordinal), UpdateExpression: "SET leaseOwner = :o, leaseUntil = :u, attempts = if_not_exists(attempts, :zero) + :one", ConditionExpression: "#s = :pending AND (attribute_not_exists(leaseUntil) OR leaseUntil < :now)", ExpressionAttributeNames: { "#s": "status" }, ExpressionAttributeValues: { ":o": owner, ":u": now + leaseMs, ":zero": 0, ":one": 1, ":pending": "pending", ":now": now } })));
+  }
+  outboxProgress(r: { tenant: string; opId: string; ordinal: number }, owner: string, u: { delivered: string[]; done?: boolean; dead?: boolean; releaseLease?: boolean }): Effect.Effect<boolean, ForgeError> {
+    const sets = ["delivered = list_append(if_not_exists(delivered, :empty), :d)"];
+    const removes: string[] = [];
+    const values: Item = { ":d": u.delivered, ":empty": [], ":pending": "pending", ":o": owner };
+    if (u.done) {
+      sets.push("#s = :ns");
+      values[":ns"] = "delivered";
+      removes.push("pendingShard", "pendingAt"); // leave the sparse index
+    } else if (u.dead) {
+      sets.push("#s = :ns", "pendingShard = :deadShard");
+      values[":ns"] = "dead";
+      values[":deadShard"] = encodeIdentity(["T", r.tenant, "dead"]); // parked in a listable shard
+    }
+    if (u.done || u.dead || u.releaseLease) removes.push("leaseOwner", "leaseUntil");
+    const expr = `SET ${sets.join(", ")}${removes.length ? ` REMOVE ${removes.join(", ")}` : ""}`;
+    return this.wrap(() => this.conditional(new UpdateCommand({ TableName: this.table, Key: this.outboxKey(r.tenant, r.opId, r.ordinal), UpdateExpression: expr, ConditionExpression: "#s = :pending AND leaseOwner = :o", ExpressionAttributeNames: { "#s": "status" }, ExpressionAttributeValues: values })));
+  }
+  outboxDead(tenant: string): Effect.Effect<OutboxRow[], ForgeError> {
+    return this.wrap(async () => {
+      const out = await this.doc.send(new QueryCommand({ TableName: this.table, IndexName: PENDING_INDEX, KeyConditionExpression: "pendingShard = :s", ExpressionAttributeValues: { ":s": encodeIdentity(["T", tenant, "dead"]) } }));
+      return ((out.Items ?? []) as Item[]).map((i) => this.outboxRowOf(i));
+    });
+  }
+  outboxRedrive(r: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(() => this.conditional(new UpdateCommand({ TableName: this.table, Key: this.outboxKey(r.tenant, r.opId, r.ordinal), UpdateExpression: "SET #s = :pending, attempts = :zero, pendingShard = :shard, pendingAt = :at REMOVE leaseOwner, leaseUntil", ConditionExpression: "#s = :dead", ExpressionAttributeNames: { "#s": "status" }, ExpressionAttributeValues: { ":pending": "pending", ":dead": "dead", ":zero": 0, ":shard": encodeIdentity(["T", r.tenant]), ":at": Date.now() } })));
+  }
+  markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
+    return Effect.tryPromise({
+      try: async () => {
+        await this.doc.send(new PutCommand({ TableName: this.table, Item: { PK: encodeIdentity(["T", tenant, "P", subscription, messageId]), SK: "PROCESSED", at: new Date().toISOString() }, ConditionExpression: "attribute_not_exists(PK)" }));
+        return true;
+      },
+      catch: (e) => ((e as Error).name === "ConditionalCheckFailedException" ? "dup" : err("StorageUnavailable", String((e as Error).message))),
+    }).pipe(Effect.catch((e) => (e === "dup" ? Effect.succeed(false) : Effect.fail(e as ForgeError))));
+  }
+
   // ------------------------------------------------------------ documents
   private documentKey(tenant: string, kind: string, id: string) {
     return { PK: encodeIdentity(["T", tenant, "D", kind, id]), SK: "DOC" };
@@ -381,7 +443,7 @@ export class DynamoStorage implements StorageAdapter {
     const a = plan.audit;
     push("audit", { Put: { TableName: this.table, Item: { ...this.auditKey(tenant, a.opId), resource: a.resource, recordId: a.recordId, kind: a.kind, newVersion: a.newVersion, actor: a.actor, at: a.at, ...(a.payload !== undefined ? { payload: a.payload } : {}) } } });
     for (const o of plan.outbox) {
-      push("outbox", { Put: { TableName: this.table, Item: { ...this.outboxKey(tenant, o.opId, o.ordinal), channel: o.channel, message: o.message, payload: o.payload, status: "pending", attempts: 0, pendingShard: encodeIdentity(["T", tenant]), pendingAt: Date.parse(o.createdAt), createdAt: o.createdAt } } });
+      push("outbox", { Put: { TableName: this.table, Item: { ...this.outboxKey(tenant, o.opId, o.ordinal), tenant, opId: o.opId, ordinal: o.ordinal, channel: o.channel, message: o.message, payload: o.payload, status: "pending", attempts: 0, delivered: [], pendingShard: encodeIdentity(["T", tenant]), pendingAt: Date.parse(o.createdAt), createdAt: o.createdAt } } });
     }
     if (plan.receipt) {
       const rc = plan.receipt;

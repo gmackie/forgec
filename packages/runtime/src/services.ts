@@ -25,6 +25,15 @@ export interface OutboxEntry {
   payload: unknown;
   createdAt: string;
 }
+/** Durable dispatch state of one outbox row. */
+export interface OutboxRow extends OutboxEntry {
+  status: "pending" | "delivered" | "dead";
+  attempts: number;
+  leaseOwner: string | null;
+  leaseUntil: number | null;
+  /** Subscriptions already delivered for this row (per-subscription status, plan §14). */
+  delivered: string[];
+}
 export interface Receipt {
   tenant: string;
   operation: string;
@@ -94,6 +103,15 @@ export interface StorageAdapter {
   commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError>;
   /** Physical actions one plan will consume, and the adapter's per-transaction ceiling. */
   budget(plans: CommitPlan[]): { actions: number; limit: number };
+  // ---- outbox dispatch (plan §14); claim/complete are conditional and fenced by lease owner ----
+  outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError>;
+  outboxClaim(row: { tenant: string; opId: string; ordinal: number }, owner: string, now: number, leaseMs: number): Effect.Effect<boolean, ForgeError>;
+  /** Record progress for a lease holder: subscriptions delivered so far; `done` marks the row delivered, `dead` parks it. */
+  outboxProgress(row: { tenant: string; opId: string; ordinal: number }, owner: string, update: { delivered: string[]; done?: boolean; dead?: boolean; releaseLease?: boolean }): Effect.Effect<boolean, ForgeError>;
+  outboxDead(tenant: string): Effect.Effect<OutboxRow[], ForgeError>;
+  outboxRedrive(row: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError>;
+  /** Consumer-side processed-message ledger (per subscription). Returns false when already recorded. */
+  markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError>;
   /** Opaque JSON documents keyed by (tenant, kind, id): changesets, jobs, import staging. */
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError>;
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError>;

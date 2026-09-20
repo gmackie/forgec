@@ -38,7 +38,16 @@ CREATE TABLE forge_outbox (
   "lease_until" INTEGER,
   "attempts" INTEGER NOT NULL,
   "created_at" TEXT NOT NULL,
+  "delivered" TEXT,
   PRIMARY KEY (tenant, op_id, ordinal)
+);
+
+CREATE TABLE forge_processed (
+  "tenant" TEXT NOT NULL,
+  "subscription" TEXT NOT NULL,
+  "message_id" TEXT NOT NULL,
+  "at" TEXT NOT NULL,
+  PRIMARY KEY (tenant, subscription, message_id)
 );
 
 CREATE TABLE forge_document (

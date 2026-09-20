@@ -15,3 +15,4 @@ export * from "./blobs.js";
 export { MemoryObjectStore } from "./adapters/memory-objects.js";
 export * from "./csv.js";
 export * from "./imports.js";
+export * from "./dispatch.js";
