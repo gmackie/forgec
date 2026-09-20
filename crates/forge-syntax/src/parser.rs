@@ -27,7 +27,7 @@ pub fn parse_to_green(src: &str) -> (GreenNode, Vec<SyntaxError>) {
     (p.builder.finish(), p.errors)
 }
 
-const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "cache", "view", "projection", "function", "channel", "source", "on", "import", "module", "export"];
+const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "cache", "view", "projection", "function", "channel", "source", "on", "import", "module", "export", "workflow"];
 
 impl<'a> Parser<'a> {
     // ---------------------------------------------------------------- cursor
@@ -294,6 +294,7 @@ impl<'a> Parser<'a> {
             "function" => K::FUNCTION_DECL,
             "channel" => K::CHANNEL_DECL,
             "source" => K::SOURCE_DECL,
+            "workflow" => K::WORKFLOW_DECL,
             "on" => K::SUBSCRIPTION_DECL,
             "import" => K::IMPORT_DECL,
             "module" => K::MODULE_DECL,
@@ -320,6 +321,7 @@ impl<'a> Parser<'a> {
             K::FUNCTION_DECL => self.function_body(),
             K::CHANNEL_DECL => self.channel_body(),
             K::SOURCE_DECL => self.source_body(),
+            K::WORKFLOW_DECL => self.workflow_body(),
             K::SUBSCRIPTION_DECL => self.subscription_body(),
             K::IMPORT_DECL => self.import_body(),
             K::MODULE_DECL => {
@@ -1072,6 +1074,199 @@ impl<'a> Parser<'a> {
                 p.end_item();
             }
         });
+    }
+
+    // -------------------------------------------------------------- workflow
+    /// `workflow Name @decorators { input T; output T; version N; steps...; errors { } }`
+    fn workflow_body(&mut self) {
+        self.expect_ident("workflow name");
+        self.header_decorators();
+        self.block(|p| p.workflow_item());
+    }
+
+    fn workflow_item(&mut self) {
+        match self.current_text() {
+            "input" if self.nth(1) == TokenKind::Ident => {
+                self.start(K::FUNCTION_INPUT);
+                self.bump();
+                self.start(K::TYPE_REF);
+                self.qualified_name("input type");
+                self.finish();
+                self.finish();
+                self.end_item();
+            }
+            "output" if self.nth(1) == TokenKind::Ident => {
+                self.start(K::FUNCTION_OUTPUT);
+                self.bump();
+                self.start(K::TYPE_REF);
+                self.qualified_name("output type");
+                self.finish();
+                self.finish();
+                self.end_item();
+            }
+            "version" if self.nth(1) == TokenKind::Int => {
+                self.start(K::WORKFLOW_VERSION);
+                self.bump();
+                self.bump();
+                self.finish();
+                self.end_item();
+            }
+            "errors" if self.nth(1) == TokenKind::LBrace => {
+                self.start(K::ERRORS_BLOCK);
+                self.bump();
+                self.block(|q| {
+                    if q.at(TokenKind::Ident) {
+                        q.start_decl(K::ERROR_DECL);
+                        q.bump();
+                        q.finish();
+                        q.end_item();
+                    }
+                });
+                self.finish();
+            }
+            _ => self.workflow_step(),
+        }
+    }
+
+    /// One step-graph item: `step`, `if`, `parallel`, `return`, `fail`.
+    fn workflow_step(&mut self) {
+        match self.current_text() {
+            "step" if self.nth(1) == TokenKind::Ident => {
+                self.start_decl(K::STEP_DECL);
+                self.bump();
+                self.bump(); // step name
+                self.expect(TokenKind::Eq, "`=`");
+                if self.at_kw("sleep") {
+                    self.start(K::STEP_SLEEP);
+                    self.bump();
+                    self.expect(TokenKind::Duration, "sleep duration");
+                    self.finish();
+                } else if self.at_kw("wait") {
+                    self.start(K::STEP_WAIT);
+                    self.bump();
+                    self.qualified_name("channel message");
+                    if self.kw_after_lines("where") {
+                        self.eat_lines();
+                        self.start(K::CORRELATE_CLAUSE);
+                        self.bump();
+                        self.expect_ident("message field");
+                        self.expect(TokenKind::EqEq, "`==`");
+                        self.expr();
+                        self.finish();
+                    }
+                    if self.kw_after_lines("timeout") {
+                        self.eat_lines();
+                        self.start(K::TIMEOUT_CLAUSE);
+                        self.bump();
+                        self.expect(TokenKind::Duration, "timeout duration");
+                        self.expect(TokenKind::Arrow, "`->`");
+                        self.terminal();
+                        self.finish();
+                    }
+                    self.finish();
+                } else {
+                    self.start(K::STEP_CALL);
+                    self.qualified_name("function or operation");
+                    self.named_args();
+                    // `catch Error -> terminal` continuation lines
+                    while self.kw_after_lines("catch") {
+                        self.eat_lines();
+                        self.start(K::CATCH_CLAUSE);
+                        self.bump();
+                        self.expect_ident("error name");
+                        self.expect(TokenKind::Arrow, "`->`");
+                        self.terminal();
+                        self.finish();
+                    }
+                    self.finish();
+                }
+                self.finish();
+                self.end_item();
+            }
+            "if" => {
+                self.start_decl(K::CHOICE_DECL);
+                self.bump();
+                self.expr();
+                self.start(K::THEN_BLOCK);
+                self.block(|p| p.workflow_step());
+                self.finish();
+                if self.at_kw("else") {
+                    self.start(K::ELSE_BLOCK);
+                    self.bump();
+                    self.block(|p| p.workflow_step());
+                    self.finish();
+                }
+                self.finish();
+                self.end_item();
+            }
+            "parallel" if self.nth(1) == TokenKind::LBrace => {
+                self.start_decl(K::PARALLEL_DECL);
+                self.bump();
+                self.block(|p| p.workflow_step());
+                self.finish();
+                self.end_item();
+            }
+            "return" | "fail" => {
+                self.terminal();
+                self.end_item();
+            }
+            _ => {}
+        }
+    }
+
+    /// True when the next significant token after newlines is the keyword (continuation lines).
+    fn kw_after_lines(&self, kw: &str) -> bool {
+        let mut i = self.pos;
+        while i < self.tokens.len() && matches!(self.tokens[i].kind, TokenKind::Whitespace | TokenKind::Comment | TokenKind::Newline | TokenKind::Semicolon) {
+            i += 1;
+        }
+        i < self.tokens.len() && self.tokens[i].kind == TokenKind::Ident && &self.src[self.tokens[i].range.clone()] == kw
+    }
+
+    /// `return expr` | `fail Error`
+    fn terminal(&mut self) {
+        if self.at_kw("return") {
+            self.start(K::RETURN_DECL);
+            self.bump();
+            self.expr();
+            self.finish();
+        } else if self.at_kw("fail") {
+            self.start(K::FAIL_DECL);
+            self.bump();
+            self.expect_ident("error name");
+            self.finish();
+        } else {
+            self.error(format!("expected `return` or `fail`, found {}", self.describe()));
+        }
+    }
+
+    /// `( name: expr, ... )` — every argument is named; positional arguments are an error.
+    fn named_args(&mut self) {
+        self.start(K::ARG_LIST);
+        if !self.expect(TokenKind::LParen, "`(`") {
+            self.finish();
+            return;
+        }
+        if !self.at(TokenKind::RParen) {
+            loop {
+                self.start(K::NAMED_ARG);
+                if self.at(TokenKind::Ident) && self.nth(1) == TokenKind::Colon {
+                    self.bump();
+                    self.bump();
+                } else {
+                    self.error("workflow arguments are named: `name: expr`");
+                }
+                self.expr();
+                self.finish();
+                if self.at(TokenKind::Comma) {
+                    self.bump();
+                } else {
+                    break;
+                }
+            }
+        }
+        self.expect(TokenKind::RParen, "`)`");
+        self.finish();
     }
 
     fn import_body(&mut self) {

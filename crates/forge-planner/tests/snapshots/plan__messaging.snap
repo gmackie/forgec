@@ -637,6 +637,28 @@ expression: p.messaging
               "synthesized": false
             },
             {
+              "name": "reference",
+              "type": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "text",
+                  "args": []
+                },
+                "optional": false,
+                "normalizers": [],
+                "constraints": [
+                  {
+                    "kind": "length",
+                    "min": 1,
+                    "max": 64
+                  }
+                ]
+              },
+              "immutable": false,
+              "serverOwned": false,
+              "synthesized": false
+            },
+            {
               "name": "amount",
               "type": {
                 "base": {

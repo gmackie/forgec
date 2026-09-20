@@ -62,6 +62,7 @@ enum SymKind {
     Function,
     Channel,
     Source,
+    Workflow,
 }
 
 struct Symbol {
@@ -84,6 +85,13 @@ struct Ctx<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// Per-workflow lowering state: declared step ids, names bound so far, declared errors.
+struct WfScope {
+    ids: Vec<String>,
+    bound: Vec<String>,
+    errors: Vec<String>,
+}
+
 enum Resolved {
     Type(TypeBase),
     Function(String),
@@ -192,6 +200,7 @@ impl<'a> Ctx<'a> {
                     Declaration::Function(_) => SymKind::Function,
                     Declaration::Channel(_) => SymKind::Channel,
                     Declaration::Source(_) => SymKind::Source,
+                    Declaration::Workflow(_) => SymKind::Workflow,
                     Declaration::Import(i) => {
                         let Some(path) = i.path() else { continue };
                         let alias = i.alias().map(|a| a.text().to_string()).unwrap_or_else(|| path.text());
@@ -248,7 +257,7 @@ impl<'a> Ctx<'a> {
                         SymKind::Function => Resolved::Function(id),
                         SymKind::Channel => Resolved::Channel(id),
                         SymKind::Type => Resolved::Type(self.alias_base(module, a)),
-                        SymKind::Source | SymKind::Cache | SymKind::View | SymKind::Projection => {
+                        SymKind::Source | SymKind::Cache | SymKind::View | SymKind::Projection | SymKind::Workflow => {
                             self.err("E-SYM-005", file, range, format!("`{a}` cannot be used as a type or dependency here"), None);
                             return None;
                         }
@@ -1228,6 +1237,260 @@ impl<'a> Ctx<'a> {
         (vec![], None)
     }
 
+    // ------------------------------------------------------------ workflows
+    fn workflow(&mut self, w: &ast::WorkflowDecl, module: &str, file: usize, exported: bool) -> Option<Workflow> {
+        let name = w.name()?.text().to_string();
+        let id = self.id(module, &name);
+        let input = w.input().and_then(|n| self.type_ref_spec(&n, module, file));
+        let output = w.output().and_then(|n| self.type_ref_spec(&n, module, file));
+        let errors: Vec<String> = w.errors().iter().map(|t| t.text().to_string()).collect();
+        let Some(version) = w.version().and_then(|t| t.text().parse::<u32>().ok()) else {
+            self.err("E-WF-004", file, range_of(w), "a workflow must pin `version N`; in-flight instances are bound to it", None);
+            return None;
+        };
+        let mut http = None;
+        for d in w.decorators() {
+            let Some(n) = d.name() else { continue };
+            match n.text() {
+                "http" => {
+                    let args = d.args();
+                    let method = args.first().and_then(|a| a.value()).and_then(|v| if let ArgValue::Name(m) = v { m.first().cloned() } else { None });
+                    let path = args.get(1).and_then(|a| a.value()).and_then(|v| if let ArgValue::Literal(p) = v { Some(unq(&p)) } else { None });
+                    match (method, path) {
+                        (Some(m), Some(p)) if HTTP_METHODS.contains(&m.as_str()) => {
+                            let input_fields: Vec<String> = input.as_ref().map(|t| self.fields_of_type(&t.base, module)).unwrap_or_default();
+                            for param in p.split('{').skip(1).filter_map(|s| s.split('}').next()) {
+                                if !input_fields.iter().any(|f| f == param) {
+                                    self.err("E-HTTP-001", file, range_of(&d), format!("path parameter `{{{param}}}` is not a field of the workflow input"), None);
+                                }
+                            }
+                            http = Some(HttpBinding { method: m, path: p });
+                        }
+                        _ => self.err("E-DEC-002", file, range_of(&d), "`@http` requires a method and a path, e.g. `@http(POST, \"/v1/x\")`", None),
+                    }
+                }
+                "label" => {}
+                other => self.err("E-DEC-001", file, tok_range(&n), format!("unknown workflow decorator `@{other}`"), None),
+            }
+        }
+        let mut scope = WfScope { ids: Vec::new(), bound: vec!["input".into()], errors: errors.clone() };
+        let steps = self.workflow_items(&w.items(), module, file, &mut scope);
+        let graph_hash = hash_hex(&serde_json::to_string(&(version, &steps)).unwrap_or_default());
+        Some(Workflow { id, name, exported, doc: ast::doc_of(w.syntax()), version, input, output, errors, http, steps, graph_hash })
+    }
+
+    fn workflow_items(&mut self, items: &[ast::StepItem], module: &str, file: usize, scope: &mut WfScope) -> Vec<Step> {
+        let mut out = Vec::new();
+        for item in items {
+            match item {
+                ast::StepItem::Step(s) => {
+                    let Some(name_tok) = s.name() else { continue };
+                    let sid = name_tok.text().to_string();
+                    if scope.ids.contains(&sid) {
+                        self.err("E-WF-001", file, tok_range(&name_tok), format!("duplicate step id `{sid}`; step ids are stable semantic identifiers"), None);
+                        continue;
+                    }
+                    scope.ids.push(sid.clone());
+                    let Some(body) = s.body() else { continue };
+                    let step = match body {
+                        ast::StepBody::Sleep(sl) => sl.duration().map(|d| Step::Sleep { id: sid.clone(), duration: d.text().to_string() }),
+                        ast::StepBody::Wait(wt) => self.workflow_wait(&sid, &wt, module, file, scope),
+                        ast::StepBody::Call(c) => self.workflow_call(&sid, &c, module, file, scope),
+                    };
+                    // The step's result is bound for everything after it.
+                    scope.bound.push(sid);
+                    if let Some(st) = step {
+                        out.push(st);
+                    }
+                }
+                ast::StepItem::Choice(c) => {
+                    let Some(cond) = c.condition().and_then(|e| self.workflow_expr(&e, module, file, scope)) else { continue };
+                    let then_items = c.then_items();
+                    let else_items = c.else_items();
+                    let first = |items: &[ast::StepItem]| items.iter().find_map(|i| if let ast::StepItem::Step(s) = i { s.name().map(|t| t.text().to_string()) } else { None });
+                    let id = first(&then_items).or_else(|| first(&else_items)).unwrap_or_else(|| format!("{}", scope.ids.len()));
+                    let then = self.workflow_items(&then_items, module, file, scope);
+                    let otherwise = self.workflow_items(&else_items, module, file, scope);
+                    out.push(Step::Choice { id, condition: cond, then, otherwise });
+                }
+                ast::StepItem::Parallel(p) => {
+                    let items = p.items();
+                    let names: Vec<String> = items.iter().filter_map(|i| if let ast::StepItem::Step(s) = i { s.name().map(|t| t.text().to_string()) } else { None }).collect();
+                    // Each branch is one step; branches see the same bindings and never each other's.
+                    let mut branches = Vec::new();
+                    let before = scope.bound.clone();
+                    for i in &items {
+                        scope.bound = before.clone();
+                        branches.push(self.workflow_items(std::slice::from_ref(i), module, file, scope));
+                    }
+                    scope.bound = before;
+                    scope.bound.extend(names.iter().cloned());
+                    out.push(Step::Parallel { id: names.join("+"), branches });
+                }
+                ast::StepItem::Return(r) => {
+                    if let Some(v) = r.value().and_then(|e| self.workflow_expr(&e, module, file, scope)) {
+                        out.push(Step::Return { value: v });
+                    }
+                }
+                ast::StepItem::Fail(f) => {
+                    if let Some(e) = self.workflow_fail(&f, file, scope) {
+                        out.push(Step::Fail { error: e });
+                    }
+                }
+            }
+        }
+        out
+    }
+
+    fn workflow_fail(&mut self, f: &ast::FailDecl, file: usize, scope: &WfScope) -> Option<String> {
+        let t = f.error()?;
+        if !scope.errors.iter().any(|e| e == t.text()) {
+            let sugg = suggest(t.text(), scope.errors.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+            self.err("E-WF-003", file, tok_range(&t), format!("`{}` is not a declared workflow error", t.text()), sugg);
+            return None;
+        }
+        Some(t.text().to_string())
+    }
+
+    fn workflow_terminal(&mut self, t: &ast::WorkflowTerminal, module: &str, file: usize, scope: &WfScope) -> Option<Terminal> {
+        match t {
+            ast::WorkflowTerminal::Return(r) => r.value().and_then(|e| self.workflow_expr(&e, module, file, scope)).map(|value| Terminal::Return { value }),
+            ast::WorkflowTerminal::Fail(f) => self.workflow_fail(f, file, scope).map(|error| Terminal::Fail { error }),
+        }
+    }
+
+    /// Bindings resolve to `input` or a step completed earlier on the path; literals and enum members pass through.
+    fn workflow_expr(&mut self, e: &ast::Expr, module: &str, file: usize, scope: &WfScope) -> Option<Expr> {
+        Some(match e {
+            ast::Expr::Binary(b) => Expr::Binary { op: b.op()?, lhs: Box::new(self.workflow_expr(&b.lhs()?, module, file, scope)?), rhs: Box::new(self.workflow_expr(&b.rhs()?, module, file, scope)?) },
+            ast::Expr::Unary(u) => Expr::Unary { op: u.op()?, operand: Box::new(self.workflow_expr(&u.operand()?, module, file, scope)?) },
+            ast::Expr::Paren(p) => self.workflow_expr(&p.inner()?, module, file, scope)?,
+            ast::Expr::Literal(l) => Expr::Literal { literal: literal_of(&l.text()) },
+            ast::Expr::Call(c) => {
+                self.err("E-WF-005", file, range_of(c), "calls are steps, not expressions; bind the result with `step name = ...`", None);
+                return None;
+            }
+            ast::Expr::Name(n) => {
+                let path = n.segments();
+                let head = path.first()?;
+                let is_enum = path.len() >= 2 && self.sym(module, head).is_some_and(|s| matches!(s.kind, SymKind::Enum | SymKind::Resource));
+                if !scope.bound.iter().any(|b| b == head) && !is_enum {
+                    let sugg = suggest(head, scope.bound.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+                    self.err("E-SYM-001", file, range_of(n), format!("`{head}` is not `input` or a step completed before this point"), sugg);
+                    return None;
+                }
+                Expr::Name { path }
+            }
+        })
+    }
+
+    fn workflow_wait(&mut self, sid: &str, wt: &ast::StepWait, module: &str, file: usize, scope: &WfScope) -> Option<Step> {
+        let msg = wt.message()?;
+        let segs = msg.segments();
+        let Some(Resolved::Type(TypeBase::Message { channel: contract, message })) = self.resolve(&segs, module, file, range_of(&msg)) else {
+            return None;
+        };
+        // Route on the local channel binding; the contract identifies the message shape.
+        let channel = if segs.len() == 2 && self.sym(module, &segs[0]).is_some() { self.id(module, &segs[0]) } else { contract.clone() };
+        let fields = self.fields_of_type(&TypeBase::Message { channel: contract, message: message.clone() }, module);
+        let mut correlate = None;
+        if let Some(c) = wt.correlate() {
+            let (Some(f), Some(v)) = (c.field(), c.value()) else { return None };
+            if !fields.iter().any(|x| x == f.text()) {
+                let sugg = suggest(f.text(), fields.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+                self.err("E-WF-002", file, tok_range(&f), format!("message `{}` has no field `{}` to correlate on", message, f.text()), sugg);
+                return None;
+            }
+            correlate = Some(Correlation { field: f.text().to_string(), value: self.workflow_expr(&v, module, file, scope)? });
+        }
+        let mut timeout = None;
+        if let Some(t) = wt.timeout() {
+            let (Some(d), Some(then)) = (t.duration(), t.then()) else { return None };
+            let then = self.workflow_terminal(&then, module, file, scope)?;
+            timeout = Some(Timeout { duration: d.text().to_string(), then });
+        }
+        Some(Step::Wait { id: sid.to_string(), channel, message, correlate, timeout })
+    }
+
+    fn workflow_call(&mut self, sid: &str, c: &ast::StepCall, module: &str, file: usize, scope: &WfScope) -> Option<Step> {
+        let t = c.target()?;
+        let segs = t.segments();
+        let (target, allowed, declared_errors): (CallTarget, Vec<String>, Vec<String>) = match self.resolve(&segs, module, file, range_of(&t))? {
+            Resolved::Function(function) => {
+                let (fields, errors) = self.function_contract(&function, module);
+                (CallTarget::Function { function }, fields, errors)
+            }
+            Resolved::Transition { resource, action } => {
+                let mut fields = vec!["id".to_string(), "expectedVersion".to_string()];
+                fields.extend(self.transition_input_fields(&resource, &action, module));
+                (CallTarget::Transition { resource, action }, fields, vec!["InvalidTransition".into(), "VersionConflict".into()])
+            }
+            _ => {
+                self.err("E-USE-001", file, range_of(&t), format!("`{}` is not callable from a workflow step", t.text()), None);
+                return None;
+            }
+        };
+        let mut args = Vec::new();
+        for a in c.args() {
+            let (Some(n), Some(v)) = (a.name(), a.value()) else { continue };
+            if !allowed.iter().any(|x| x == n.text()) {
+                let sugg = suggest(n.text(), allowed.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+                self.err("E-WF-006", file, tok_range(&n), format!("`{}` does not accept an argument `{}`", t.text(), n.text()), sugg);
+                continue;
+            }
+            if let Some(value) = self.workflow_expr(&v, module, file, scope) {
+                args.push(NamedArg { name: n.text().to_string(), value });
+            }
+        }
+        let mut catches = Vec::new();
+        for k in c.catches() {
+            let (Some(e), Some(then)) = (k.error(), k.then()) else { continue };
+            if !declared_errors.iter().any(|x| x == e.text()) {
+                let sugg = suggest(e.text(), declared_errors.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+                self.err("E-WF-007", file, tok_range(&e), format!("`{}` does not declare error `{}`", t.text(), e.text()), sugg);
+                continue;
+            }
+            if let Some(then) = self.workflow_terminal(&then, module, file, scope) {
+                catches.push(Catch { error: e.text().to_string(), then });
+            }
+        }
+        Some(Step::Call { id: sid.to_string(), target, args, catches })
+    }
+
+    /// (input field names, declared error names) of a function, local or imported.
+    fn function_contract(&mut self, id: &str, module: &str) -> (Vec<String>, Vec<String>) {
+        let local_prefix = format!("{}/{}/", self.pkg.name, module);
+        if let Some(name) = id.strip_prefix(&local_prefix)
+            && let Some(Symbol { decl: Declaration::Function(f), file, .. }) = self.sym(module, name) {
+                let (f, file) = (f.clone(), *file);
+                let fields = f.input().and_then(|n| self.type_ref_spec(&n, module, file)).map(|t| self.fields_of_type(&t.base, module)).unwrap_or_default();
+                return (fields, f.errors().iter().map(|t| t.text().to_string()).collect());
+            }
+        for d in self.deps.values() {
+            if let Some(f) = d.modules.iter().flat_map(|m| &m.functions).find(|f| f.id == id) {
+                let fields = f.input.as_ref().map(|t| self.fields_of_type(&t.base, module)).unwrap_or_default();
+                return (fields, f.errors.clone());
+            }
+        }
+        (vec![], vec![])
+    }
+
+    fn transition_input_fields(&mut self, resource: &str, action: &str, module: &str) -> Vec<String> {
+        let local_prefix = format!("{}/{}/", self.pkg.name, module);
+        if let Some(name) = resource.strip_prefix(&local_prefix)
+            && let Some(Symbol { decl: Declaration::Resource(r), .. }) = self.sym(module, name) {
+                let r = r.clone();
+                if let Some(lc) = r.lifecycle() {
+                    for t in lc.transitions() {
+                        if t.action().is_some_and(|a| a.text() == action) {
+                            return t.input().map(|i| i.fields().filter_map(|f| f.name().map(|n| n.text().to_string())).collect()).unwrap_or_default();
+                        }
+                    }
+                }
+            }
+        vec![]
+    }
+
     // ------------------------------------------------------------ channels
     fn channel(&mut self, c: &ast::ChannelDecl, module: &str, file: usize, exported: bool) -> Option<Channel> {
         let name = c.name()?.text().to_string();
@@ -1338,6 +1601,11 @@ impl<'a> Ctx<'a> {
                 (SymKind::Channel, Declaration::Channel(c)) => {
                     if let Some(ch) = self.channel(c, &module, file, exported) {
                         m.channels.push(ch);
+                    }
+                }
+                (SymKind::Workflow, Declaration::Workflow(w)) => {
+                    if let Some(wf) = self.workflow(w, &module, file, exported) {
+                        m.workflows.push(wf);
                     }
                 }
                 (SymKind::Source, Declaration::Source(s)) => {

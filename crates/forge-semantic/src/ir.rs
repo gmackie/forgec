@@ -49,6 +49,101 @@ pub struct Module {
     pub projections: Vec<Projection>,
     #[serde(default)]
     pub caches: Vec<Cache>,
+    #[serde(default)]
+    pub workflows: Vec<Workflow>,
+}
+
+/// Durable composition of capabilities with explicit control flow (plan §15).
+/// Step ids are the declared step names: semantic identifiers, never positions.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Workflow {
+    pub id: String,
+    pub name: String,
+    pub exported: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub doc: Option<String>,
+    /// Pinned by in-flight instances; a deployment never reinterprets their graph.
+    pub version: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub input: Option<TypeSpec>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output: Option<TypeSpec>,
+    pub errors: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http: Option<HttpBinding>,
+    pub steps: Vec<Step>,
+    /// SHA-256 of the canonical step graph: equal hashes are compatible implementations.
+    pub graph_hash: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum Step {
+    Call { id: String, target: CallTarget, args: Vec<NamedArg>, catches: Vec<Catch> },
+    Sleep { id: String, duration: String },
+    Wait { id: String, channel: String, message: String, #[serde(skip_serializing_if = "Option::is_none")] correlate: Option<Correlation>, #[serde(skip_serializing_if = "Option::is_none")] timeout: Option<Timeout> },
+    Choice { id: String, condition: Expr, then: Vec<Step>, otherwise: Vec<Step> },
+    Parallel { id: String, branches: Vec<Vec<Step>> },
+    Return { value: Expr },
+    Fail { error: String },
+}
+
+impl Step {
+    /// `kind:id` label used by tooling and tests.
+    pub fn kind(&self) -> String {
+        match self {
+            Step::Call { id, .. } => format!("call:{id}"),
+            Step::Sleep { id, .. } => format!("sleep:{id}"),
+            Step::Wait { id, .. } => format!("wait:{id}"),
+            Step::Choice { id, .. } => format!("choice:{id}"),
+            Step::Parallel { id, .. } => format!("parallel:{id}"),
+            Step::Return { .. } => "return".into(),
+            Step::Fail { .. } => "fail".into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum CallTarget {
+    Function { function: String },
+    Transition { resource: String, action: String },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NamedArg {
+    pub name: String,
+    pub value: Expr,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Catch {
+    pub error: String,
+    pub then: Terminal,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Correlation {
+    pub field: String,
+    pub value: Expr,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Timeout {
+    pub duration: String,
+    pub then: Terminal,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum Terminal {
+    Return { value: Expr },
+    Fail { error: String },
 }
 
 /// A logical read-only query over declared data (plan §17): bounded, indexed, never a scan.

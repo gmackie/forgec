@@ -1,0 +1,290 @@
+---
+source: crates/forge-syntax/tests/parser.rs
+assertion_line: 58
+expression: parse(&src).debug_tree()
+---
+ROOT@0..1059
+  SHAPE_DECL@0..76
+    IDENT@0..5 "shape"
+    IDENT@6..23 "ProcessOrderInput"
+    L_BRACE@24..25 "{"
+    NEWLINE@25..26 "\\n"
+    FIELD_DECL@28..41
+      IDENT@28..33 "order"
+      COLON@34..35 ":"
+      TYPE_EXPR@36..41
+        TYPE_REF@36..41
+          QUALIFIED_NAME@36..41
+            IDENT@36..41 "Order"
+    NEWLINE@41..42 "\\n"
+    FIELD_DECL@44..74
+      IDENT@44..59 "expectedVersion"
+      COLON@60..61 ":"
+      TYPE_EXPR@62..74
+        TYPE_REF@62..69
+          QUALIFIED_NAME@62..69
+            IDENT@62..69 "integer"
+        REFINEMENT@70..74
+          GT_EQ@70..72 ">="
+          LITERAL_EXPR@73..74
+            INT@73..74 "1"
+    NEWLINE@74..75 "\\n"
+    R_BRACE@75..76 "}"
+  NEWLINE@76..77 "\\n"
+  NEWLINE@77..78 "\\n"
+  WORKFLOW_DECL@78..1058
+    DOC_COMMENT@78..156 "/// Durable order processing (plan §15): submit, wait for the payment capture"
+    NEWLINE@156..157 "\\n"
+    DOC_COMMENT@157..227 "/// correlated by reference, approve, then fan out bounded follow-ups."
+    NEWLINE@227..228 "\\n"
+    IDENT@228..234 "export"
+    IDENT@235..243 "workflow"
+    IDENT@244..256 "ProcessOrder"
+    NEWLINE@256..257 "\\n"
+    DECORATOR@259..300
+      AT@259..260 "@"
+      IDENT@260..264 "http"
+      DECORATOR_ARGS@264..300
+        L_PAREN@264..265 "("
+        DECORATOR_ARG@265..269
+          QUALIFIED_NAME@265..269
+            IDENT@265..269 "POST"
+        COMMA@269..270 ","
+        DECORATOR_ARG@271..299
+          LITERAL_EXPR@271..299
+            STRING@271..299 "\"/v1/orders/{order}/process\""
+        R_PAREN@299..300 ")"
+    NEWLINE@300..301 "\\n"
+    L_BRACE@301..302 "{"
+    NEWLINE@302..303 "\\n"
+    FUNCTION_INPUT@305..328
+      IDENT@305..310 "input"
+      TYPE_REF@311..328
+        QUALIFIED_NAME@311..328
+          IDENT@311..328 "ProcessOrderInput"
+    NEWLINE@328..329 "\\n"
+    FUNCTION_OUTPUT@331..350
+      IDENT@331..337 "output"
+      TYPE_REF@338..350
+        QUALIFIED_NAME@338..350
+          IDENT@338..343 "Order"
+          DOT@343..344 "."
+          IDENT@344..350 "Record"
+    NEWLINE@350..351 "\\n"
+    WORKFLOW_VERSION@353..362
+      IDENT@353..360 "version"
+      INT@361..362 "1"
+    NEWLINE@362..363 "\\n"
+    NEWLINE@363..364 "\\n"
+    STEP_DECL@366..494
+      IDENT@366..370 "step"
+      IDENT@371..377 "submit"
+      EQ@378..379 "="
+      STEP_CALL@380..494
+        QUALIFIED_NAME@380..391
+          IDENT@380..391 "SubmitOrder"
+        ARG_LIST@391..451
+          L_PAREN@391..392 "("
+          NAMED_ARG@392..410
+            IDENT@392..397 "order"
+            COLON@397..398 ":"
+            NAME_EXPR@399..410
+              QUALIFIED_NAME@399..410
+                IDENT@399..404 "input"
+                DOT@404..405 "."
+                IDENT@405..410 "order"
+          COMMA@410..411 ","
+          NAMED_ARG@412..450
+            IDENT@412..427 "expectedVersion"
+            COLON@427..428 ":"
+            NAME_EXPR@429..450
+              QUALIFIED_NAME@429..450
+                IDENT@429..434 "input"
+                DOT@434..435 "."
+                IDENT@435..450 "expectedVersion"
+          R_PAREN@450..451 ")"
+        NEWLINE@451..452 "\\n"
+        CATCH_CLAUSE@456..494
+          IDENT@456..461 "catch"
+          IDENT@462..477 "PaymentDeclined"
+          ARROW@478..480 "->"
+          FAIL_DECL@481..494
+            IDENT@481..485 "fail"
+            IDENT@486..494 "Declined"
+    NEWLINE@494..495 "\\n"
+    NEWLINE@495..496 "\\n"
+    STEP_DECL@498..621
+      IDENT@498..502 "step"
+      IDENT@503..511 "captured"
+      EQ@512..513 "="
+      STEP_WAIT@514..621
+        IDENT@514..518 "wait"
+        QUALIFIED_NAME@519..548
+          IDENT@519..532 "PaymentEvents"
+          DOT@532..533 "."
+          IDENT@533..548 "PaymentCaptured"
+        NEWLINE@548..549 "\\n"
+        CORRELATE_CLAUSE@553..583
+          IDENT@553..558 "where"
+          IDENT@559..568 "reference"
+          EQ_EQ@569..571 "=="
+          NAME_EXPR@572..583
+            QUALIFIED_NAME@572..583
+              IDENT@572..577 "input"
+              DOT@577..578 "."
+              IDENT@578..583 "order"
+        NEWLINE@583..584 "\\n"
+        TIMEOUT_CLAUSE@588..621
+          IDENT@588..595 "timeout"
+          DURATION@596..598 "2d"
+          ARROW@599..601 "->"
+          FAIL_DECL@602..621
+            IDENT@602..606 "fail"
+            IDENT@607..621 "PaymentTimeout"
+    NEWLINE@621..622 "\\n"
+    NEWLINE@622..623 "\\n"
+    CHOICE_DECL@625..798
+      IDENT@625..627 "if"
+      BINARY_EXPR@628..658
+        NAME_EXPR@628..643
+          QUALIFIED_NAME@628..643
+            IDENT@628..636 "captured"
+            DOT@636..637 "."
+            IDENT@637..643 "amount"
+        LT@644..645 "<"
+        NAME_EXPR@646..658
+          QUALIFIED_NAME@646..658
+            IDENT@646..652 "submit"
+            DOT@652..653 "."
+            IDENT@653..658 "total"
+      THEN_BLOCK@659..798
+        L_BRACE@659..660 "{"
+        NEWLINE@660..661 "\\n"
+        STEP_DECL@665..772
+          IDENT@665..669 "step"
+          IDENT@670..675 "short"
+          EQ@676..677 "="
+          STEP_CALL@678..772
+            QUALIFIED_NAME@678..697
+              IDENT@678..683 "Order"
+              DOT@683..684 "."
+              IDENT@684..690 "status"
+              DOT@690..691 "."
+              IDENT@691..697 "cancel"
+            ARG_LIST@697..772
+              L_PAREN@697..698 "("
+              NAMED_ARG@698..713
+                IDENT@698..700 "id"
+                COLON@700..701 ":"
+                NAME_EXPR@702..713
+                  QUALIFIED_NAME@702..713
+                    IDENT@702..707 "input"
+                    DOT@707..708 "."
+                    IDENT@708..713 "order"
+              COMMA@713..714 ","
+              NAMED_ARG@715..746
+                IDENT@715..730 "expectedVersion"
+                COLON@730..731 ":"
+                NAME_EXPR@732..746
+                  QUALIFIED_NAME@732..746
+                    IDENT@732..738 "submit"
+                    DOT@738..739 "."
+                    IDENT@739..746 "version"
+              COMMA@746..747 ","
+              NAMED_ARG@748..771
+                IDENT@748..754 "reason"
+                COLON@754..755 ":"
+                LITERAL_EXPR@756..771
+                  STRING@756..771 "\"short payment\""
+              R_PAREN@771..772 ")"
+        NEWLINE@772..773 "\\n"
+        FAIL_DECL@777..794
+          IDENT@777..781 "fail"
+          IDENT@782..794 "ShortPayment"
+        NEWLINE@794..795 "\\n"
+        R_BRACE@797..798 "}"
+    NEWLINE@798..799 "\\n"
+    NEWLINE@799..800 "\\n"
+    STEP_DECL@802..887
+      IDENT@802..806 "step"
+      IDENT@807..814 "approve"
+      EQ@815..816 "="
+      STEP_CALL@817..887
+        QUALIFIED_NAME@817..837
+          IDENT@817..822 "Order"
+          DOT@822..823 "."
+          IDENT@823..829 "status"
+          DOT@829..830 "."
+          IDENT@830..837 "approve"
+        ARG_LIST@837..887
+          L_PAREN@837..838 "("
+          NAMED_ARG@838..853
+            IDENT@838..840 "id"
+            COLON@840..841 ":"
+            NAME_EXPR@842..853
+              QUALIFIED_NAME@842..853
+                IDENT@842..847 "input"
+                DOT@847..848 "."
+                IDENT@848..853 "order"
+          COMMA@853..854 ","
+          NAMED_ARG@855..886
+            IDENT@855..870 "expectedVersion"
+            COLON@870..871 ":"
+            NAME_EXPR@872..886
+              QUALIFIED_NAME@872..886
+                IDENT@872..878 "submit"
+                DOT@878..879 "."
+                IDENT@879..886 "version"
+          R_PAREN@886..887 ")"
+    NEWLINE@887..888 "\\n"
+    NEWLINE@888..889 "\\n"
+    PARALLEL_DECL@891..973
+      IDENT@891..899 "parallel"
+      L_BRACE@900..901 "{"
+      NEWLINE@901..902 "\\n"
+      STEP_DECL@906..942
+        IDENT@906..910 "step"
+        IDENT@911..918 "summary"
+        EQ@919..920 "="
+        STEP_CALL@921..942
+          QUALIFIED_NAME@921..940
+            IDENT@921..940 "RebuildOrderSummary"
+          ARG_LIST@940..942
+            L_PAREN@940..941 "("
+            R_PAREN@941..942 ")"
+      NEWLINE@942..943 "\\n"
+      STEP_DECL@947..969
+        IDENT@947..951 "step"
+        IDENT@952..958 "settle"
+        EQ@959..960 "="
+        STEP_SLEEP@961..969
+          IDENT@961..966 "sleep"
+          DURATION@967..969 "1s"
+      NEWLINE@969..970 "\\n"
+      R_BRACE@972..973 "}"
+    NEWLINE@973..974 "\\n"
+    NEWLINE@974..975 "\\n"
+    RETURN_DECL@977..991
+      IDENT@977..983 "return"
+      NAME_EXPR@984..991
+        QUALIFIED_NAME@984..991
+          IDENT@984..991 "approve"
+    NEWLINE@991..992 "\\n"
+    NEWLINE@992..993 "\\n"
+    ERRORS_BLOCK@995..1056
+      IDENT@995..1001 "errors"
+      L_BRACE@1002..1003 "{"
+      NEWLINE@1003..1004 "\\n"
+      ERROR_DECL@1008..1016
+        IDENT@1008..1016 "Declined"
+      NEWLINE@1016..1017 "\\n"
+      ERROR_DECL@1021..1035
+        IDENT@1021..1035 "PaymentTimeout"
+      NEWLINE@1035..1036 "\\n"
+      ERROR_DECL@1040..1052
+        IDENT@1040..1052 "ShortPayment"
+      NEWLINE@1052..1053 "\\n"
+      R_BRACE@1055..1056 "}"
+    NEWLINE@1056..1057 "\\n"
+    R_BRACE@1057..1058 "}"
+  NEWLINE@1058..1059 "\\n"

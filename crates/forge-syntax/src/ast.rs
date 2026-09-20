@@ -94,6 +94,7 @@ pub enum Declaration {
     Channel(ChannelDecl),
     Source(SourceDecl),
     Subscription(SubscriptionDecl),
+    Workflow(WorkflowDecl),
 }
 impl Declaration {
     pub fn cast(node: SyntaxNode) -> Option<Self> {
@@ -112,6 +113,7 @@ impl Declaration {
             K::CHANNEL_DECL => Self::Channel(ChannelDecl(node)),
             K::SOURCE_DECL => Self::Source(SourceDecl(node)),
             K::SUBSCRIPTION_DECL => Self::Subscription(SubscriptionDecl(node)),
+            K::WORKFLOW_DECL => Self::Workflow(WorkflowDecl(node)),
             _ => return None,
         })
     }
@@ -130,6 +132,7 @@ impl Declaration {
             Self::Channel(n) => &n.0,
             Self::Source(n) => &n.0,
             Self::Subscription(n) => &n.0,
+            Self::Workflow(n) => &n.0,
         }
     }
     pub fn is_exported(&self) -> bool {
@@ -757,6 +760,201 @@ impl SourceDecl {
 node!(CronDecl, CRON_DECL);
 node!(TimezoneDecl, TIMEZONE_DECL);
 node!(TargetDecl, TARGET_DECL);
+
+// -------------------------------------------------------------- workflows
+node!(WorkflowDecl, WORKFLOW_DECL);
+impl WorkflowDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).find(|t| !matches!(t.text(), "export" | "workflow"))
+    }
+    pub fn decorators(&self) -> impl Iterator<Item = Decorator> + '_ {
+        children(&self.0)
+    }
+    pub fn input(&self) -> Option<QualifiedName> {
+        child::<FunctionInput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| t.name())
+    }
+    pub fn output(&self) -> Option<QualifiedName> {
+        child::<FunctionOutput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| t.name())
+    }
+    pub fn version(&self) -> Option<SyntaxToken> {
+        child::<WorkflowVersion>(&self.0).and_then(|v| tokens(&v.0).find(|t| t.kind() == K::INT))
+    }
+    pub fn errors(&self) -> Vec<SyntaxToken> {
+        child::<ErrorsBlock>(&self.0).map(|b| children::<ErrorDecl>(&b.0).filter_map(|e| idents(&e.0).next()).collect()).unwrap_or_default()
+    }
+    /// Top-level step graph items in source order.
+    pub fn items(&self) -> Vec<StepItem> {
+        self.0.children().filter_map(StepItem::cast).collect()
+    }
+}
+node!(WorkflowVersion, WORKFLOW_VERSION);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum StepItem {
+    Step(StepDecl),
+    Choice(ChoiceDecl),
+    Parallel(ParallelDecl),
+    Return(ReturnDecl),
+    Fail(FailDecl),
+}
+impl StepItem {
+    pub fn cast(node: SyntaxNode) -> Option<Self> {
+        Some(match node.kind() {
+            K::STEP_DECL => Self::Step(StepDecl(node)),
+            K::CHOICE_DECL => Self::Choice(ChoiceDecl(node)),
+            K::PARALLEL_DECL => Self::Parallel(ParallelDecl(node)),
+            K::RETURN_DECL => Self::Return(ReturnDecl(node)),
+            K::FAIL_DECL => Self::Fail(FailDecl(node)),
+            _ => return None,
+        })
+    }
+    pub fn syntax(&self) -> &SyntaxNode {
+        match self {
+            Self::Step(n) => &n.0,
+            Self::Choice(n) => &n.0,
+            Self::Parallel(n) => &n.0,
+            Self::Return(n) => &n.0,
+            Self::Fail(n) => &n.0,
+        }
+    }
+}
+node!(StepDecl, STEP_DECL);
+impl StepDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).nth(1)
+    }
+    pub fn body(&self) -> Option<StepBody> {
+        self.0.children().find_map(StepBody::cast)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum StepBody {
+    Call(StepCall),
+    Sleep(StepSleep),
+    Wait(StepWait),
+}
+impl StepBody {
+    pub fn cast(node: SyntaxNode) -> Option<Self> {
+        Some(match node.kind() {
+            K::STEP_CALL => Self::Call(StepCall(node)),
+            K::STEP_SLEEP => Self::Sleep(StepSleep(node)),
+            K::STEP_WAIT => Self::Wait(StepWait(node)),
+            _ => return None,
+        })
+    }
+}
+node!(StepCall, STEP_CALL);
+impl StepCall {
+    pub fn target(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+    pub fn args(&self) -> Vec<NamedArg> {
+        child::<ArgList>(&self.0).map(|a| children(&a.0).collect()).unwrap_or_default()
+    }
+    pub fn catches(&self) -> impl Iterator<Item = CatchClause> + '_ {
+        children(&self.0)
+    }
+}
+node!(NamedArg, NAMED_ARG);
+impl NamedArg {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).next()
+    }
+    pub fn value(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+}
+node!(CatchClause, CATCH_CLAUSE);
+impl CatchClause {
+    pub fn error(&self) -> Option<SyntaxToken> {
+        idents(&self.0).nth(1)
+    }
+    pub fn then(&self) -> Option<WorkflowTerminal> {
+        self.0.children().find_map(WorkflowTerminal::cast)
+    }
+}
+node!(StepSleep, STEP_SLEEP);
+impl StepSleep {
+    pub fn duration(&self) -> Option<SyntaxToken> {
+        tokens(&self.0).find(|t| t.kind() == K::DURATION)
+    }
+}
+node!(StepWait, STEP_WAIT);
+impl StepWait {
+    pub fn message(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+    pub fn correlate(&self) -> Option<CorrelateClause> {
+        child(&self.0)
+    }
+    pub fn timeout(&self) -> Option<TimeoutClause> {
+        child(&self.0)
+    }
+}
+node!(CorrelateClause, CORRELATE_CLAUSE);
+impl CorrelateClause {
+    pub fn field(&self) -> Option<SyntaxToken> {
+        idents(&self.0).nth(1)
+    }
+    pub fn value(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+}
+node!(TimeoutClause, TIMEOUT_CLAUSE);
+impl TimeoutClause {
+    pub fn duration(&self) -> Option<SyntaxToken> {
+        tokens(&self.0).find(|t| t.kind() == K::DURATION)
+    }
+    pub fn then(&self) -> Option<WorkflowTerminal> {
+        self.0.children().find_map(WorkflowTerminal::cast)
+    }
+}
+node!(ChoiceDecl, CHOICE_DECL);
+impl ChoiceDecl {
+    pub fn condition(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+    pub fn then_items(&self) -> Vec<StepItem> {
+        child::<ThenBlock>(&self.0).map(|b| b.0.children().filter_map(StepItem::cast).collect()).unwrap_or_default()
+    }
+    pub fn else_items(&self) -> Vec<StepItem> {
+        child::<ElseBlock>(&self.0).map(|b| b.0.children().filter_map(StepItem::cast).collect()).unwrap_or_default()
+    }
+}
+node!(ThenBlock, THEN_BLOCK);
+node!(ElseBlock, ELSE_BLOCK);
+node!(ParallelDecl, PARALLEL_DECL);
+impl ParallelDecl {
+    pub fn items(&self) -> Vec<StepItem> {
+        self.0.children().filter_map(StepItem::cast).collect()
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum WorkflowTerminal {
+    Return(ReturnDecl),
+    Fail(FailDecl),
+}
+impl WorkflowTerminal {
+    pub fn cast(node: SyntaxNode) -> Option<Self> {
+        Some(match node.kind() {
+            K::RETURN_DECL => Self::Return(ReturnDecl(node)),
+            K::FAIL_DECL => Self::Fail(FailDecl(node)),
+            _ => return None,
+        })
+    }
+}
+node!(ReturnDecl, RETURN_DECL);
+impl ReturnDecl {
+    pub fn value(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+}
+node!(FailDecl, FAIL_DECL);
+impl FailDecl {
+    pub fn error(&self) -> Option<SyntaxToken> {
+        idents(&self.0).nth(1)
+    }
+}
 
 node!(SubscriptionDecl, SUBSCRIPTION_DECL);
 impl SubscriptionDecl {

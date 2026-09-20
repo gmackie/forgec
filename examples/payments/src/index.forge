@@ -23,6 +23,7 @@ export channel PaymentEvents {
 
   message PaymentCaptured {
     authorizationId : text length 1..64
+    reference : text length 1..64
     amount : money<USD> >= 0
   }
 }

@@ -1,0 +1,41 @@
+shape ProcessOrderInput {
+  order : Order
+  expectedVersion : integer >= 1
+}
+
+/// Durable order processing (plan §15): submit, wait for the payment capture
+/// correlated by reference, approve, then fan out bounded follow-ups.
+export workflow ProcessOrder
+  @http(POST, "/v1/orders/{order}/process")
+{
+  input ProcessOrderInput
+  output Order.Record
+  version 1
+
+  step submit = SubmitOrder(order: input.order, expectedVersion: input.expectedVersion)
+    catch PaymentDeclined -> fail Declined
+
+  step captured = wait PaymentEvents.PaymentCaptured
+    where reference == input.order
+    timeout 2d -> fail PaymentTimeout
+
+  if captured.amount < submit.total {
+    step short = Order.status.cancel(id: input.order, expectedVersion: submit.version, reason: "short payment")
+    fail ShortPayment
+  }
+
+  step approve = Order.status.approve(id: input.order, expectedVersion: submit.version)
+
+  parallel {
+    step summary = RebuildOrderSummary()
+    step settle = sleep 1s
+  }
+
+  return approve
+
+  errors {
+    Declined
+    PaymentTimeout
+    ShortPayment
+  }
+}

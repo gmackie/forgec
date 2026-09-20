@@ -15,6 +15,7 @@ const FILES: &[&str] = &[
     "acme/src/orders/fulfillment.forge",
     "acme/src/orders/attachments.forge",
     "acme/src/orders/summaries.forge",
+    "acme/src/orders/process-order.forge",
     "payments/src/index.forge",
 ];
 

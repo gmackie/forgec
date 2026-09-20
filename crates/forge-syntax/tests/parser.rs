@@ -17,6 +17,7 @@ fn parses_every_reference_app_file_without_errors() {
         "acme/src/orders/fulfillment.forge",
         "acme/src/orders/attachments.forge",
         "acme/src/orders/summaries.forge",
+        "acme/src/orders/process-order.forge",
         "payments/src/index.forge",
     ] {
         let src = fixture(rel);
@@ -49,6 +50,20 @@ fn tree_snapshot_fulfillment_and_events() {
     let a = fixture("acme/src/orders/fulfillment.forge");
     let b = fixture("acme/src/orders/order-events.forge");
     insta::assert_snapshot!(format!("{}\n{}", parse(&a).debug_tree(), parse(&b).debug_tree()));
+}
+
+#[test]
+fn tree_snapshot_workflow() {
+    let src = fixture("acme/src/orders/process-order.forge");
+    insta::assert_snapshot!(parse(&src).debug_tree());
+}
+
+#[test]
+fn workflow_step_errors_recover_per_item() {
+    let src = "workflow W {\n  step a = sleep\n  step b = F()\n}\n";
+    let parsed = parse(src);
+    assert_eq!(parsed.errors().len(), 1, "{:?}", parsed.errors());
+    assert!(parsed.debug_tree().contains("STEP_CALL"));
 }
 
 #[test]

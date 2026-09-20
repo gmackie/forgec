@@ -21,7 +21,7 @@ struct Tok {
 }
 
 fn header_kind(k: K) -> bool {
-    matches!(k, K::RESOURCE_DECL | K::BLOB_DECL | K::CACHE_DECL | K::VIEW_DECL | K::PROJECTION_DECL | K::FUNCTION_DECL | K::CHANNEL_DECL | K::SOURCE_DECL)
+    matches!(k, K::RESOURCE_DECL | K::BLOB_DECL | K::CACHE_DECL | K::VIEW_DECL | K::PROJECTION_DECL | K::FUNCTION_DECL | K::CHANNEL_DECL | K::SOURCE_DECL | K::WORKFLOW_DECL)
 }
 
 fn collect(node: &SyntaxNode, out: &mut Vec<Tok>) {
@@ -43,6 +43,7 @@ fn collect(node: &SyntaxNode, out: &mut Vec<Tok>) {
                     match n.kind() {
                         K::ORDER_LIST => first.starts_continuation = true,
                         K::INPUT_BLOCK => first.starts_continuation = true,
+                        K::CATCH_CLAUSE | K::CORRELATE_CLAUSE | K::TIMEOUT_CLAUSE => first.starts_continuation = true,
                         K::DECORATOR if header_kind(node.kind()) => first.header_decorator = true,
                         _ => {}
                     }
@@ -65,7 +66,7 @@ fn collect(node: &SyntaxNode, out: &mut Vec<Tok>) {
 fn tight_before(t: &Tok, prev: &Tok) -> bool {
     match t.kind {
         K::COMMA | K::R_PAREN | K::R_BRACKET | K::QUESTION | K::DOT | K::DOT_DOT => true,
-        K::COLON => matches!(t.parent, K::TRANSITION_DECL | K::DECORATOR_ARG),
+        K::COLON => matches!(t.parent, K::TRANSITION_DECL | K::DECORATOR_ARG | K::NAMED_ARG),
         K::L_PAREN => matches!(t.parent, K::DECORATOR_ARGS | K::ARG_LIST),
         K::LT if t.parent == K::TYPE_ARGS => true,
         K::GT if t.parent == K::TYPE_ARGS => true,

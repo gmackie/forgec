@@ -236,3 +236,25 @@ fn views_projections_and_caches_elaborate_and_are_checked() {
     let non_invertible = inline("@t/x", &[("src/a.forge", "resource R {\n  id : id\n  g : text\n  n : integer\n}\nprojection P {\n  from R\n  by g\n  max n as biggest\n}\n")]);
     assert_eq!(codes(non_invertible), vec!["W-PROJ-002"]);
 }
+
+#[test]
+fn workflow_lowers_to_a_step_graph_with_stable_ids_and_checks() {
+    let ir = forge_semantic::compile(&forge_semantic::load_package(&examples().join("acme")).unwrap(), &[&forge_semantic::compile(&forge_semantic::load_package(&examples().join("payments")).unwrap(), &[]).ir.unwrap()]).ir.unwrap();
+    let wf = ir.modules.iter().flat_map(|m| &m.workflows).find(|w| w.name == "ProcessOrder").expect("workflow");
+    assert_eq!(wf.version, 1);
+    assert_eq!(wf.http.as_ref().map(|h| h.path.as_str()), Some("/v1/orders/{order}/process"));
+    let kinds: Vec<String> = wf.steps.iter().map(|s| format!("{}", s.kind())).collect();
+    assert_eq!(kinds, ["call:submit", "wait:captured", "choice:short", "call:approve", "parallel:summary+settle", "return"]);
+    assert_eq!(wf.errors, ["Declined", "PaymentTimeout", "ShortPayment"]);
+    assert!(!wf.graph_hash.is_empty());
+
+    let base = "shape I { order : Order }\nresource Order { id : id }\nfunction F { input I }\nchannel C { message M { ref : text } }\n";
+    let bad = format!("{base}workflow W {{\n  input I\n  version 1\n  step a = F(order: input.order)\n  step a = sleep 1s\n  step w = wait C.M where nope == input.order\n  step w2 = wait C.M where ref == input.order timeout 1h -> fail T\n  step c = G()\n  step d = F(order: zzz.order)\n  return a\n}}\n");
+    let c = codes(inline("@t/x", &[("src/index.forge", &bad)]));
+    assert!(c.contains(&"E-WF-001".into()), "duplicate step id: {c:?}");
+    assert!(c.contains(&"E-WF-002".into()), "unknown wait message field: {c:?}");
+    assert!(c.contains(&"E-SYM-001".into()), "unknown callee / binding: {c:?}");
+    assert!(c.contains(&"E-WF-003".into()), "timeout fail must be a declared error: {c:?}");
+    let no_version = format!("{base}workflow W {{\n  input I\n  step a = F(order: input.order)\n  return a\n}}\n");
+    assert!(codes(inline("@t/x", &[("src/index.forge", &no_version)])).contains(&"E-WF-004".into()));
+}
