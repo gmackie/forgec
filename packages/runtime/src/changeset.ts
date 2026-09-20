@@ -229,9 +229,19 @@ export class Changesets {
       for (const [index, o] of doc.operations.entries()) {
         const prev = results[index]!;
         if (prev.status === "committed") continue;
-        const exit = yield* Effect.exit(self.engine.planFor(o.op, o.input, ctx).pipe(Effect.flatMap((plan) => storage.commit(plan).pipe(Effect.as(plan)))));
+        // Each row commits under its own receipt (changeset id + row index): a crash after a row's commit
+        // is replayed on resume instead of re-executed.
+        const rowKey = `cs:${doc.id}:${index}`;
+        const rowCtx: CallContext = { ...ctx, idempotencyKey: rowKey };
+        // Resolve Storage inside the effect so the receipt wrapper provided by withIdempotency is used.
+        const exec = Effect.gen(function* () {
+          const plan = yield* self.engine.planFor(o.op, o.input, rowCtx);
+          yield* (yield* Storage).commit(plan);
+          return self.engine.resultOf(plan);
+        });
+        const exit = yield* Effect.exit(self.engine.withIdempotency(o.op, o.input, rowCtx, exec, rowKey));
         if (exit._tag === "Success") {
-          results[index] = { index, op: o.op, status: "committed", result: self.engine.resultOf(exit.value) };
+          results[index] = { index, op: o.op, status: "committed", result: exit.value };
         } else {
           const e = Cause.squash(exit.cause);
           if (!(e instanceof ForgeError)) return yield* Effect.die(e);

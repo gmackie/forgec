@@ -9,7 +9,7 @@ import { decodeCursor, encodeCursor } from "./cursor.js";
 import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
 import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Transition, type Unique } from "./model.js";
-import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StoredRecord } from "./services.js";
+import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
 import { Changesets } from "./changeset.js";
 
 export interface CallContext {
@@ -396,9 +396,10 @@ export class Engine {
   }
 
   // ------------------------------------------------------------ idempotency
-  private withIdempotency(operation: string, body: Wire, ctx: CallContext, run: Effect.Effect<Wire, ForgeError, RuntimeServices>): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  /** Run a mutation under an idempotency receipt: replay on the same key + request, conflict on a different request. */
+  withIdempotency(operation: string, body: Wire, ctx: CallContext, run: Effect.Effect<Wire, ForgeError, RuntimeServices>, explicitKey?: string): Effect.Effect<Wire, ForgeError, RuntimeServices> {
     const self = this;
-    const key = ctx.idempotencyKey;
+    const key = explicitKey ?? ctx.idempotencyKey;
     if (!key) return run;
     return Effect.gen(function* () {
       const storage = yield* Storage;
@@ -417,12 +418,19 @@ export class Engine {
       // The receipt is attached to the plan by intercepting Storage.commit: we wrap the storage service.
       return Effect.gen(function* () {
         const storage = yield* Storage;
-        const wrapped = {
-          ...storage,
-          commit: (plan: CommitPlan) => {
-            const canonicalAfter = plan.after;
-            return storage.commit({ ...plan, receipt: { ...receipt, response: canonicalAfter } });
-          },
+        // Explicit delegation: spreading a class instance would drop prototype methods.
+        const wrapped: StorageAdapter = {
+          name: storage.name,
+          get: (...a) => storage.get(...a),
+          findUnique: (...a) => storage.findUnique(...a),
+          list: (...a) => storage.list(...a),
+          countDependents: (...a) => storage.countDependents(...a),
+          getReceipt: (...a) => storage.getReceipt(...a),
+          commitAll: (...a) => storage.commitAll(...a),
+          budget: (...a) => storage.budget(...a),
+          getDocument: (...a) => storage.getDocument(...a),
+          putDocument: (...a) => storage.putDocument(...a),
+          commit: (plan: CommitPlan) => storage.commit({ ...plan, receipt: { ...receipt, response: self.resultOf(plan) } }),
         };
         return yield* inner.pipe(Effect.provideService(Storage, wrapped));
       });
