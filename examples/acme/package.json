@@ -1,0 +1,21 @@
+{
+  "name": "@acme/commerce-deploy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cargo run -q -p forge-cli -- build .",
+    "cf:dev": "wrangler dev --config deploy/cloudflare/wrangler.jsonc --port 8797",
+    "cf:migrate:local": "wrangler d1 migrations apply forge-acme --local --config deploy/cloudflare/wrangler.jsonc",
+    "cf:migrate:remote": "wrangler d1 migrations apply forge-acme --remote --config deploy/cloudflare/wrangler.jsonc",
+    "cf:deploy": "wrangler deploy --config deploy/cloudflare/wrangler.jsonc"
+  },
+  "dependencies": {
+    "@forge/runtime": "workspace:*",
+    "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250920.0",
+    "typescript": "^5.9.0",
+    "wrangler": "^4.83.0"
+  }
+}

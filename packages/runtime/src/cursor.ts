@@ -7,6 +7,7 @@ export interface CursorState {
   v: number; // contract version
   t: string; // tenant fingerprint
   k: string[]; // encoded sort keys of the last item
+  r: unknown[]; // raw order-field values of the last item (for SQL keyset predicates)
   id: string; // tie-breaker
 }
 

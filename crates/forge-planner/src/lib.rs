@@ -44,6 +44,13 @@ fn validate(ir: &DomainIR) -> Result<(), PlanError> {
             for l in &r.lists {
                 for f in &l.fields {
                     let field = r.fields.iter().find(|x| &x.name == f).expect("checked by semantic pass");
+                    if l.order.iter().any(|o| o.direction != l.order[0].direction) {
+                        return Err(PlanError {
+                            code: "E-PLAN-002".into(),
+                            message: format!("`list by {}` mixes ascending and descending order keys; the portable profile requires one direction per query (DynamoDB serves a page with a single range scan direction).", l.fields.join(", ")),
+                            declaration: r.id.clone(),
+                        });
+                    }
                     if field.ty.optional {
                         return Err(PlanError {
                             code: "E-PLAN-001".into(),

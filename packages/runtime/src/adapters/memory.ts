@@ -30,7 +30,7 @@ export class MemoryStorage implements StorageAdapter {
     return Effect.succeed(rec ? { ...rec } : null);
   }
 
-  findUnique(tenant: string, r: Resource, _u: Unique, claimKey: string): Effect.Effect<StoredRecord | null, ForgeError> {
+  findUnique(tenant: string, r: Resource, _u: Unique, claimKey: string, _values: Record<string, unknown>): Effect.Effect<StoredRecord | null, ForgeError> {
     const id = this.claims.get(`${tenant}|${claimKey}`);
     return this.get(tenant, r, id ?? "");
   }

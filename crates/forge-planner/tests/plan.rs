@@ -65,6 +65,18 @@ fn dynamo_plan_has_entity_claim_and_access_families_per_resource() {
 }
 
 #[test]
+fn tie_breaker_follows_the_declared_direction_and_mixed_directions_are_rejected() {
+    use forge_semantic::Package;
+    let p = acme();
+    let order = p.contracts.resources.iter().find(|r| r.name == "Order").unwrap();
+    let by_customer = order.queries.iter().find(|q| q.name == "byCustomer").unwrap();
+    assert_eq!(by_customer.order.iter().map(|o| (o.field.as_str(), o.direction.as_str())).collect::<Vec<_>>(), vec![("createdAt", "desc"), ("id", "desc")]);
+    let mixed = Package::inline("@t/x", vec![("src/a.forge".into(), "resource R {\n  id : id\n  a : text\n  b : integer\n  list by a\n    order by b desc, a asc\n}\n".into())]);
+    let ir = compile(&mixed, &[]).ir.unwrap();
+    assert_eq!(plan(&ir).unwrap_err().code, "E-PLAN-002");
+}
+
+#[test]
 fn plans_reject_unbounded_or_uncovered_queries_rather_than_emitting_scans() {
     use forge_semantic::Package;
     let p = Package::inline("@t/x", vec![("src/a.forge".into(), "resource R {\n  id : id\n  notes : text? length <= 2000\n  list by notes\n}\n".into())]);

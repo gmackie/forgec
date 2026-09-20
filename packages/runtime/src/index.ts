@@ -8,3 +8,4 @@ export * from "./services.js";
 export * from "./testing.js";
 export * from "./http.js";
 export { MemoryStorage } from "./adapters/memory.js";
+export { D1Storage } from "./adapters/d1.js";

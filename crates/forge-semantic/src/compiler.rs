@@ -823,7 +823,10 @@ impl<'a> Ctx<'a> {
                 }
             }
             if !order.iter().any(|o| o.field == "id") {
-                order.push(OrderKey { field: "id".into(), direction: "asc".into() }); // deterministic tie-breaker
+                // Deterministic tie-breaker. Its direction follows the declared keys so a
+                // key-value store can serve the page with one reversed range scan.
+                let dir = order.last().map(|o| o.direction.clone()).unwrap_or_else(|| "asc".into());
+                order.push(OrderKey { field: "id".into(), direction: dir });
             }
             lists.push(List { name: camel(&fs), fields: fs, order });
         }

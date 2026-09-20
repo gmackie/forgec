@@ -66,15 +66,15 @@ export interface CommitPlan {
 export interface ListQuery {
   list: List;
   values: Record<string, unknown>;
-  /** Encoded sort keys + id of the last item on the previous page. */
-  after: { keys: string[]; id: string } | null;
+  /** Last item of the previous page: encoded sort keys (sort.v1), raw order-field values, and id. */
+  after: { keys: string[]; values: unknown[]; id: string } | null;
   limit: number;
 }
 
 export interface StorageAdapter {
   readonly name: string;
   get(tenant: string, resource: Resource, id: string): Effect.Effect<StoredRecord | null, ForgeError>;
-  findUnique(tenant: string, resource: Resource, unique: Unique, claimKey: string): Effect.Effect<StoredRecord | null, ForgeError>;
+  findUnique(tenant: string, resource: Resource, unique: Unique, claimKey: string, values: Record<string, unknown>): Effect.Effect<StoredRecord | null, ForgeError>;
   list(tenant: string, resource: Resource, q: ListQuery, sortKeys: (r: StoredRecord) => string[]): Effect.Effect<{ records: StoredRecord[]; hasMore: boolean }, ForgeError>;
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError>;
   /** Atomic: record + claims + reference guards + audit + outbox + receipt, or nothing. */

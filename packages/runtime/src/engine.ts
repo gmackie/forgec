@@ -220,7 +220,7 @@ export class Engine {
       const values = yield* self.queryValues(r, f.fields, body["params"]);
       const key = self.claimKey(r, unique, values);
       const storage = yield* Storage;
-      const rec = key ? yield* storage.findUnique(ctx.tenant, r, unique, key) : null;
+      const rec = key ? yield* storage.findUnique(ctx.tenant, r, unique, key, values) : null;
       if (!rec || rec["deletedAt"]) return yield* Effect.fail(err("NotFound", `${r.name} not found`));
       return canonicalize(self.model, r, rec);
     });
@@ -244,10 +244,10 @@ export class Engine {
       const rawLimit = body["limit"];
       const limit = typeof rawLimit === "number" && rawLimit > 0 ? Math.min(Math.floor(rawLimit), PAGE_MAX) : PAGE_DEFAULT;
       const secret = (yield* CursorSecret).key;
-      let after: { keys: string[]; id: string } | null = null;
+      let after: { keys: string[]; values: unknown[]; id: string } | null = null;
       if (typeof body["cursor"] === "string" && body["cursor"]) {
         const state = yield* decodeCursor(secret, body["cursor"], { q: opId, t: ctx.tenant });
-        after = { keys: state.k, id: state.id };
+        after = { keys: state.k, values: state.r, id: state.id };
       }
       const storage = yield* Storage;
       const keys = self.sortKeys(r, l);
@@ -256,7 +256,7 @@ export class Engine {
       let next: string | null = null;
       if (page.hasMore && page.records.length) {
         const last = page.records[page.records.length - 1]!;
-        next = yield* encodeCursor(secret, { q: opId, v: 1, t: ctx.tenant, k: keys(last), id: String(last["id"]) });
+        next = yield* encodeCursor(secret, { q: opId, v: 1, t: ctx.tenant, k: keys(last), r: l.order.map((o) => last[o.field] ?? null), id: String(last["id"]) });
       }
       return { items, next, limit };
     });
