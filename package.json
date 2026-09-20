@@ -1,0 +1,9 @@
+{
+  "name": "forge-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "spike:d1": "pnpm --filter @forge-spike/d1-guarded-batch test",
+    "spike:dynamo": "pnpm --filter @forge-spike/dynamodb-conditional-tx test"
+  }
+}

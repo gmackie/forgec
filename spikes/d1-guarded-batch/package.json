@@ -1,0 +1,18 @@
+{
+  "name": "@forge-spike/d1-guarded-batch",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "deploy": "wrangler deploy",
+    "migrate:remote": "wrangler d1 migrations apply forge-spike-guarded-batch --remote",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250920.0",
+    "@types/node": "^24.13.6",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0",
+    "wrangler": "^4.83.0"
+  }
+}
