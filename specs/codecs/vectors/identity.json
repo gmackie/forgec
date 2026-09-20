@@ -1,0 +1,93 @@
+{
+  "codec": "identity.v1",
+  "version": 1,
+  "cases": [
+    {
+      "name": "simple",
+      "params": {},
+      "input": [
+        "acme",
+        "customer",
+        "c1"
+      ],
+      "expect": "acme#customer#c1"
+    },
+    {
+      "name": "escape-hash",
+      "params": {},
+      "input": [
+        "a#b",
+        "c"
+      ],
+      "expect": "a\\#b#c"
+    },
+    {
+      "name": "escape-backslash",
+      "params": {},
+      "input": [
+        "a\\b",
+        "c"
+      ],
+      "expect": "a\\\\b#c"
+    },
+    {
+      "name": "no-collision",
+      "params": {},
+      "input_list": [
+        [
+          "a#b",
+          "c"
+        ],
+        [
+          "a",
+          "b#c"
+        ]
+      ],
+      "expect_distinct": true
+    },
+    {
+      "name": "empty-component",
+      "params": {},
+      "input": [
+        "a",
+        "",
+        "c"
+      ],
+      "expect": "a##c"
+    },
+    {
+      "name": "roundtrip",
+      "params": {},
+      "input": [
+        "x\\#y",
+        "#",
+        "\\"
+      ],
+      "expect": "x\\\\\\#y#\\##\\\\"
+    },
+    {
+      "name": "composite-sort-order-uses-escaped-form",
+      "params": {},
+      "input_list": [
+        [
+          "a#",
+          "1"
+        ],
+        [
+          "a",
+          "2"
+        ]
+      ],
+      "expect_order": [
+        [
+          "a",
+          "2"
+        ],
+        [
+          "a#",
+          "1"
+        ]
+      ]
+    }
+  ]
+}

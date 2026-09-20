@@ -1,0 +1,58 @@
+{
+  "codec": "enum",
+  "version": 1,
+  "cases": [
+    {
+      "name": "explicit-value",
+      "params": {
+        "members": {
+          "Standard": "standard",
+          "Gold": "gold"
+        }
+      },
+      "input": "gold",
+      "expect": "gold"
+    },
+    {
+      "name": "default-value-is-member-name",
+      "params": {
+        "members": {
+          "Draft": "Draft",
+          "Submitted": "Submitted"
+        }
+      },
+      "input": "Draft",
+      "expect": "Draft"
+    },
+    {
+      "name": "case-sensitive",
+      "params": {
+        "members": {
+          "Standard": "standard"
+        }
+      },
+      "input": "Standard",
+      "error": "InvalidEnumValue"
+    },
+    {
+      "name": "member-name-not-accepted-when-value-differs",
+      "params": {
+        "members": {
+          "Gold": "gold"
+        }
+      },
+      "input": "Gold",
+      "error": "InvalidEnumValue"
+    },
+    {
+      "name": "reject-number",
+      "params": {
+        "members": {
+          "Gold": "gold"
+        }
+      },
+      "input": 0,
+      "error": "InvalidEnumValue"
+    }
+  ]
+}

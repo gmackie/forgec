@@ -1,0 +1,174 @@
+{
+  "codec": "temporal",
+  "version": 1,
+  "cases": [
+    {
+      "name": "date-ok",
+      "params": {
+        "kind": "date"
+      },
+      "input": "2026-09-20",
+      "expect": "2026-09-20"
+    },
+    {
+      "name": "date-leap-day",
+      "params": {
+        "kind": "date"
+      },
+      "input": "2024-02-29",
+      "expect": "2024-02-29"
+    },
+    {
+      "name": "date-reject-feb-30",
+      "params": {
+        "kind": "date"
+      },
+      "input": "2026-02-30",
+      "error": "InvalidDate"
+    },
+    {
+      "name": "date-reject-non-leap",
+      "params": {
+        "kind": "date"
+      },
+      "input": "2026-02-29",
+      "error": "InvalidDate"
+    },
+    {
+      "name": "date-reject-time",
+      "params": {
+        "kind": "date"
+      },
+      "input": "2026-09-20T00:00:00Z",
+      "error": "InvalidDate"
+    },
+    {
+      "name": "date-reject-slashes",
+      "params": {
+        "kind": "date"
+      },
+      "input": "2026/09/20",
+      "error": "InvalidDate"
+    },
+    {
+      "name": "datetime-canonical",
+      "params": {
+        "kind": "datetime",
+        "precision": "ms"
+      },
+      "input": "2026-09-20T14:03:00.000Z",
+      "expect": "2026-09-20T14:03:00.000Z"
+    },
+    {
+      "name": "datetime-pads-ms",
+      "params": {
+        "kind": "datetime",
+        "precision": "ms"
+      },
+      "input": "2026-09-20T14:03:00Z",
+      "expect": "2026-09-20T14:03:00.000Z"
+    },
+    {
+      "name": "datetime-offset-normalized-to-utc",
+      "params": {
+        "kind": "datetime",
+        "precision": "ms"
+      },
+      "input": "2026-09-20T16:03:00+02:00",
+      "expect": "2026-09-20T14:03:00.000Z"
+    },
+    {
+      "name": "datetime-lowercase-z-rejected",
+      "params": {
+        "kind": "datetime",
+        "precision": "ms"
+      },
+      "input": "2026-09-20T14:03:00z",
+      "error": "InvalidDatetime"
+    },
+    {
+      "name": "datetime-reject-excess-precision",
+      "params": {
+        "kind": "datetime",
+        "precision": "ms"
+      },
+      "input": "2026-09-20T14:03:00.1234Z",
+      "error": "PrecisionExceeded"
+    },
+    {
+      "name": "datetime-reject-no-offset",
+      "params": {
+        "kind": "datetime",
+        "precision": "ms"
+      },
+      "input": "2026-09-20T14:03:00",
+      "error": "InvalidDatetime"
+    },
+    {
+      "name": "datetime-reject-leap-second",
+      "params": {
+        "kind": "datetime",
+        "precision": "ms"
+      },
+      "input": "2026-12-31T23:59:60Z",
+      "error": "InvalidDatetime"
+    },
+    {
+      "name": "datetime-second-precision-rejects-ms",
+      "params": {
+        "kind": "datetime",
+        "precision": "s"
+      },
+      "input": "2026-09-20T14:03:00.500Z",
+      "error": "PrecisionExceeded"
+    },
+    {
+      "name": "localtime-ok",
+      "params": {
+        "kind": "localTime"
+      },
+      "input": "09:30",
+      "expect": "09:30:00"
+    },
+    {
+      "name": "localtime-seconds",
+      "params": {
+        "kind": "localTime"
+      },
+      "input": "09:30:15",
+      "expect": "09:30:15"
+    },
+    {
+      "name": "localtime-reject-24",
+      "params": {
+        "kind": "localTime"
+      },
+      "input": "24:00",
+      "error": "InvalidLocalTime"
+    },
+    {
+      "name": "duration-ok",
+      "params": {
+        "kind": "duration"
+      },
+      "input": "PT90S",
+      "expect": "PT90S"
+    },
+    {
+      "name": "duration-days",
+      "params": {
+        "kind": "duration"
+      },
+      "input": "P2D",
+      "expect": "P2D"
+    },
+    {
+      "name": "duration-reject-month",
+      "params": {
+        "kind": "duration"
+      },
+      "input": "P1M",
+      "error": "InvalidDuration"
+    }
+  ]
+}

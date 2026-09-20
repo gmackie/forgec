@@ -7,8 +7,9 @@ delete race child creates into an orphan under a dependents-counter guard?
 What do client request tokens actually give us?
 
 **Answer: the protocol holds — validated against live DynamoDB (us-east-1)
-on 2026-09-20, 13 scenarios, 5 consecutive green runs.** Two findings change
-adapter design details (below).
+on 2026-09-20, 21 scenarios (commit protocol, strong access items, outbox
+lease over a sparse GSI), repeated green runs.** Four findings change adapter
+design details (below).
 
 ## Items and operations
 
@@ -71,6 +72,41 @@ exception, which lets one condition failure be split into `HasDependents` vs
 it must be passed through `unmarshall` explicitly. The first spike run failed
 on exactly this.
 
+### Finding 3 — under contention *every* transaction can lose
+
+Once each update carried five actions (entity, access-item delete + put,
+audit, outbox), eight concurrent updates on one entity were **all** cancelled
+with `TransactionConflict` — zero winners. DynamoDB does not guarantee that
+one of a set of colliding transactions commits. The bounded retry loop is
+therefore a liveness requirement of the shared mutation engine, not a
+performance nicety. With retry (5 attempts, jittered), the race consistently
+yields 1 winner and 7 `VersionConflict`.
+
+### Finding 4 — `ClientRequestToken` demands a byte-identical request
+
+Adding a per-attempt `pendingAt: Date.now()` to the outbox item silently turned
+every token replay into `IdempotentParameterMismatchException`. Every value
+that enters a transaction — timestamps, generated ids, ordinals — must be
+generated **once per logical command** (the plan's injected clock/ID
+services) and reused verbatim on retry and replay.
+
+### Strong access items (§11.2) and outbox sweep (§14)
+
+- An access item (`…#Q#byTier#<tier> / <name>#<id>` carrying `id`, `name`,
+  `version`) written in the entity's transaction is immediately visible to a
+  `ConsistentRead` query on its partition, in sort-key order. A rename moves
+  it (Delete old conditioned on `version`, Put new) atomically; a stale
+  update leaves it untouched. The update path loads the record with a
+  consistent read to find the old key, and the entity's version condition
+  proves that load was current at commit.
+- Outbox rows carry `pendingShard`/`pendingAt` only while pending, so a
+  **sparse GSI** (`pending-index`) lists exactly the undelivered work.
+  Sweeping an eventually consistent index is safe because claim and complete
+  are conditional updates on the base item (lease owner fencing, one winner
+  among 8 concurrent claimers, expired leases reclaimable). Creating the GSI
+  on a near-empty table took several minutes — GSI provisioning belongs in the
+  additive-infrastructure deployment phase, never in a request path.
+
 ### Error shape
 
 ```
@@ -109,7 +145,7 @@ Forge idempotency receipt (§12).
 
 ```
 pnpm install
-AWS_REGION=us-east-1 pnpm test    # creates table forge-spike-tx on first run
+AWS_REGION=us-east-1 pnpm test    # creates table forge-spike-tx and its pending-index GSI on first run
 ```
 
 Resource left in place: table `forge-spike-tx` (on-demand, tagged

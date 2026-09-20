@@ -145,6 +145,44 @@ async function handleRollbackProof(env: Env, r: { tenant: string; opId: string }
   }
 }
 
+/* ---------- outbox dispatcher primitives (plan §14) ---------- */
+
+interface ClaimRequest { tenant: string; opId: string; ordinal: number; owner: string; now: number; leaseMs: number }
+interface CompleteRequest { tenant: string; opId: string; ordinal: number; owner: string }
+
+/** Rows that are pending and either never leased or whose lease has expired. */
+async function handleOutboxSweep(env: Env, r: { tenant: string; now: number }): Promise<Response> {
+  const res = await env.DB
+    .prepare(
+      "SELECT op_id, ordinal, status, attempts, lease_owner, lease_until FROM outbox WHERE tenant = ?1 AND status = 'pending' AND (lease_until IS NULL OR lease_until < ?2) ORDER BY op_id, ordinal LIMIT 100",
+    )
+    .bind(r.tenant, r.now)
+    .all();
+  return json(res.results);
+}
+
+/** Conditional lease acquisition: exactly one dispatcher wins; attempts counts logical deliveries tried. */
+async function handleOutboxClaim(env: Env, r: ClaimRequest): Promise<Response> {
+  const res = await env.DB
+    .prepare(
+      "UPDATE outbox SET lease_owner = ?1, lease_until = ?2, attempts = attempts + 1 WHERE tenant = ?3 AND op_id = ?4 AND ordinal = ?5 AND status = 'pending' AND (lease_until IS NULL OR lease_until < ?6)",
+    )
+    .bind(r.owner, r.now + r.leaseMs, r.tenant, r.opId, r.ordinal, r.now)
+    .run();
+  return json({ ok: res.meta.changes === 1 });
+}
+
+/** Fenced completion: only the current lease holder may mark the row delivered. */
+async function handleOutboxComplete(env: Env, r: CompleteRequest): Promise<Response> {
+  const res = await env.DB
+    .prepare(
+      "UPDATE outbox SET status = 'delivered', lease_owner = NULL, lease_until = NULL WHERE tenant = ?1 AND op_id = ?2 AND ordinal = ?3 AND status = 'pending' AND lease_owner = ?4",
+    )
+    .bind(r.tenant, r.opId, r.ordinal, r.owner)
+    .run();
+  return json({ ok: res.meta.changes === 1 });
+}
+
 async function handleDump(env: Env, tenant: string): Promise<Response> {
   const [customer, audit, outbox, asserts] = await env.DB.batch([
     env.DB.prepare("SELECT * FROM customer WHERE tenant = ?1 ORDER BY id").bind(tenant),
@@ -192,6 +230,12 @@ export default {
         return handleRollbackProof(env, body as { tenant: string; opId: string });
       case "/dump":
         return handleDump(env, (body as { tenant: string }).tenant);
+      case "/outbox/sweep":
+        return handleOutboxSweep(env, body as { tenant: string; now: number });
+      case "/outbox/claim":
+        return handleOutboxClaim(env, body as unknown as ClaimRequest);
+      case "/outbox/complete":
+        return handleOutboxComplete(env, body as unknown as CompleteRequest);
       default:
         return json({ error: "not found" }, 404);
     }

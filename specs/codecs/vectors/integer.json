@@ -1,0 +1,76 @@
+{
+  "codec": "integer",
+  "version": 1,
+  "cases": [
+    {
+      "name": "zero",
+      "params": {},
+      "input": 0,
+      "expect": 0
+    },
+    {
+      "name": "negative",
+      "params": {},
+      "input": -42,
+      "expect": -42
+    },
+    {
+      "name": "max-safe",
+      "params": {},
+      "input": 9007199254740991,
+      "expect": 9007199254740991
+    },
+    {
+      "name": "min-safe",
+      "params": {},
+      "input": -9007199254740991,
+      "expect": -9007199254740991
+    },
+    {
+      "name": "reject-fraction",
+      "params": {},
+      "input": 1.5,
+      "error": "InvalidInteger"
+    },
+    {
+      "name": "reject-integral-float-literal",
+      "params": {},
+      "input_json": "1.0",
+      "error": "InvalidInteger"
+    },
+    {
+      "name": "reject-exponent",
+      "params": {},
+      "input_json": "1e3",
+      "error": "InvalidInteger"
+    },
+    {
+      "name": "reject-over-safe",
+      "params": {},
+      "input_json": "9007199254740992",
+      "error": "OutOfRange"
+    },
+    {
+      "name": "reject-string",
+      "params": {},
+      "input": "1",
+      "error": "InvalidInteger"
+    },
+    {
+      "name": "min-constraint",
+      "params": {
+        "min": 1
+      },
+      "input": 0,
+      "error": "OutOfRange"
+    },
+    {
+      "name": "max-constraint",
+      "params": {
+        "max": 10
+      },
+      "input": 11,
+      "error": "OutOfRange"
+    }
+  ]
+}

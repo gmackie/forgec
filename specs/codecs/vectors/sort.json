@@ -1,0 +1,157 @@
+{
+  "codec": "sort.v1",
+  "version": 1,
+  "cases": [
+    {
+      "name": "int-zero",
+      "params": {
+        "type": "integer"
+      },
+      "input": 0,
+      "expect": "8000000000000000"
+    },
+    {
+      "name": "int-one",
+      "params": {
+        "type": "integer"
+      },
+      "input": 1,
+      "expect": "8000000000000001"
+    },
+    {
+      "name": "int-minus-one",
+      "params": {
+        "type": "integer"
+      },
+      "input": -1,
+      "expect": "7fffffffffffffff"
+    },
+    {
+      "name": "int-ten-after-two",
+      "params": {
+        "type": "integer"
+      },
+      "input_list": [
+        10,
+        2,
+        -5,
+        0
+      ],
+      "expect_order": [
+        -5,
+        0,
+        2,
+        10
+      ]
+    },
+    {
+      "name": "decimal-minor-units",
+      "params": {
+        "type": "decimal",
+        "scale": 2
+      },
+      "input": "1.50",
+      "expect": "8000000000000096"
+    },
+    {
+      "name": "decimal-order",
+      "params": {
+        "type": "decimal",
+        "scale": 2
+      },
+      "input_list": [
+        "10.00",
+        "9.99",
+        "-0.01",
+        "0.00"
+      ],
+      "expect_order": [
+        "-0.01",
+        "0.00",
+        "9.99",
+        "10.00"
+      ]
+    },
+    {
+      "name": "text-binary-order",
+      "params": {
+        "type": "text"
+      },
+      "input_list": [
+        "b",
+        "B",
+        "a",
+        "\u00e4",
+        "Z"
+      ],
+      "expect_order": [
+        "B",
+        "Z",
+        "a",
+        "b",
+        "\u00e4"
+      ]
+    },
+    {
+      "name": "text-nfc-before-compare",
+      "params": {
+        "type": "text"
+      },
+      "input_list": [
+        "e\u0301",
+        "\u00e9"
+      ],
+      "expect_order": [
+        "\u00e9",
+        "\u00e9"
+      ]
+    },
+    {
+      "name": "date-order",
+      "params": {
+        "type": "date"
+      },
+      "input_list": [
+        "2026-01-10",
+        "2025-12-31",
+        "2026-01-09"
+      ],
+      "expect_order": [
+        "2025-12-31",
+        "2026-01-09",
+        "2026-01-10"
+      ]
+    },
+    {
+      "name": "bool",
+      "params": {
+        "type": "boolean"
+      },
+      "input_list": [
+        true,
+        false
+      ],
+      "expect_order": [
+        false,
+        true
+      ]
+    },
+    {
+      "name": "null-first",
+      "params": {
+        "type": "text",
+        "optional": true
+      },
+      "input_list": [
+        "a",
+        null,
+        ""
+      ],
+      "expect_order": [
+        null,
+        "",
+        "a"
+      ]
+    }
+  ]
+}

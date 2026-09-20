@@ -1,0 +1,151 @@
+{
+  "codec": "decimal",
+  "version": 1,
+  "cases": [
+    {
+      "name": "canonical-two-places",
+      "params": {
+        "scale": 2
+      },
+      "input": "10",
+      "expect": "10.00"
+    },
+    {
+      "name": "pads-scale",
+      "params": {
+        "scale": 2
+      },
+      "input": "10.5",
+      "expect": "10.50"
+    },
+    {
+      "name": "strips-leading-zeros",
+      "params": {
+        "scale": 2
+      },
+      "input": "007.10",
+      "expect": "7.10"
+    },
+    {
+      "name": "negative",
+      "params": {
+        "scale": 2
+      },
+      "input": "-3.25",
+      "expect": "-3.25"
+    },
+    {
+      "name": "negative-zero-normalizes",
+      "params": {
+        "scale": 2
+      },
+      "input": "-0.00",
+      "expect": "0.00"
+    },
+    {
+      "name": "scale-zero",
+      "params": {
+        "scale": 0
+      },
+      "input": "42",
+      "expect": "42"
+    },
+    {
+      "name": "reject-excess-precision-never-rounds",
+      "params": {
+        "scale": 2
+      },
+      "input": "1.005",
+      "error": "PrecisionExceeded"
+    },
+    {
+      "name": "reject-number-type",
+      "params": {
+        "scale": 2
+      },
+      "input": 1.5,
+      "error": "InvalidDecimal"
+    },
+    {
+      "name": "reject-exponent",
+      "params": {
+        "scale": 2
+      },
+      "input": "1e2",
+      "error": "InvalidDecimal"
+    },
+    {
+      "name": "reject-plus-sign",
+      "params": {
+        "scale": 2
+      },
+      "input": "+1.00",
+      "error": "InvalidDecimal"
+    },
+    {
+      "name": "reject-trailing-dot",
+      "params": {
+        "scale": 2
+      },
+      "input": "1.",
+      "error": "InvalidDecimal"
+    },
+    {
+      "name": "reject-leading-dot",
+      "params": {
+        "scale": 2
+      },
+      "input": ".5",
+      "error": "InvalidDecimal"
+    },
+    {
+      "name": "min-constraint",
+      "params": {
+        "scale": 2,
+        "min": "0"
+      },
+      "input": "-0.01",
+      "error": "OutOfRange"
+    },
+    {
+      "name": "overflow-minor-units",
+      "params": {
+        "scale": 2
+      },
+      "input": "90071992547409.92",
+      "error": "OutOfRange"
+    },
+    {
+      "name": "money-jpy-scale-0",
+      "params": {
+        "currency": "JPY"
+      },
+      "input": "1200",
+      "expect": "1200"
+    },
+    {
+      "name": "money-jpy-rejects-fraction",
+      "params": {
+        "currency": "JPY"
+      },
+      "input": "1200.5",
+      "error": "PrecisionExceeded"
+    },
+    {
+      "name": "money-usd",
+      "params": {
+        "currency": "USD"
+      },
+      "input": "19.9",
+      "expect": "19.90"
+    },
+    {
+      "name": "money-kwd-scale-3",
+      "params": {
+        "currency": "KWD"
+      },
+      "input": "1.5",
+      "expect": "1.500"
+    }
+  ]
+}

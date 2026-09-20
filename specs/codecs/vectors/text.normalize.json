@@ -1,0 +1,100 @@
+{
+  "codec": "text.normalize",
+  "version": 1,
+  "cases": [
+    {
+      "name": "trim-both",
+      "params": {
+        "normalizers": [
+          "trim"
+        ]
+      },
+      "input": "  Acme  ",
+      "expect": "Acme"
+    },
+    {
+      "name": "trim-unicode-space",
+      "params": {
+        "normalizers": [
+          "trim"
+        ]
+      },
+      "input": "\u00a0Acme\u2003",
+      "expect": "Acme"
+    },
+    {
+      "name": "uppercase-ascii",
+      "params": {
+        "normalizers": [
+          "trim",
+          "uppercase"
+        ]
+      },
+      "input": " acme ",
+      "expect": "ACME"
+    },
+    {
+      "name": "uppercase-sharp-s",
+      "params": {
+        "normalizers": [
+          "uppercase"
+        ]
+      },
+      "input": "stra\u00dfe",
+      "expect": "STRASSE"
+    },
+    {
+      "name": "lowercase-no-locale",
+      "params": {
+        "normalizers": [
+          "lowercase"
+        ]
+      },
+      "input": "I",
+      "expect": "i"
+    },
+    {
+      "name": "nfc-compose",
+      "params": {
+        "normalizers": []
+      },
+      "input": "e\u0301",
+      "expect": "\u00e9"
+    },
+    {
+      "name": "order-matters-trim-after-upper",
+      "params": {
+        "normalizers": [
+          "uppercase",
+          "trim"
+        ]
+      },
+      "input": " a ",
+      "expect": "A"
+    },
+    {
+      "name": "reject-control",
+      "params": {
+        "normalizers": []
+      },
+      "input": "a\u0007b",
+      "error": "InvalidText"
+    },
+    {
+      "name": "allow-tab-newline",
+      "params": {
+        "normalizers": []
+      },
+      "input": "a\tb\nc",
+      "expect": "a\tb\nc"
+    },
+    {
+      "name": "reject-lone-surrogate",
+      "params": {
+        "normalizers": []
+      },
+      "input_json": "\"a\\ud800\"",
+      "error": "InvalidText"
+    }
+  ]
+}

@@ -93,7 +93,8 @@ describe("guarded update", () => {
     const losers = results.filter((r) => !r.ok).map(fail);
     observed["update-race-outcomes"] = losers.map((l) => l!.outcome);
     expect(winners).toHaveLength(1);
-    for (const l of losers) expect(["VersionConflict", "TransactionConflict"]).toContain(l!.outcome);
+    // With bounded retry inside the engine, every loser surfaces the semantic outcome.
+    for (const l of losers) expect(l!.outcome).toBe("VersionConflict");
     const e = await getEntity(T, "customer", "c1");
     expect(e?.["version"]).toBe(2);
     const items = await dumpTenant(T);
@@ -160,7 +161,8 @@ describe("referential integrity guard", () => {
 describe("client request token", () => {
   it("replaying an identical transaction with the same token succeeds without duplicating effects", async () => {
     const clientToken = randomUUID();
-    const cmd = { tenant: T, id: "c1", code: "ACME", name: "Acme", opId: "op-1", clientToken };
+    // `now` is generated once per logical command: a replay must be byte-identical or the token mismatches.
+    const cmd = { tenant: T, id: "c1", code: "ACME", name: "Acme", opId: "op-1", clientToken, now: 1_700_000_000_000 };
     expect(await createCustomer(cmd)).toEqual({ ok: true });
     const replay = await createCustomer(cmd);
     observed["token-replay"] = replay;
@@ -172,8 +174,8 @@ describe("client request token", () => {
 
   it("the same token with different content is rejected as IdempotentParameterMismatch", async () => {
     const clientToken = randomUUID();
-    await createCustomer({ tenant: T, id: "c1", code: "ACME", name: "Acme", opId: "op-1", clientToken });
-    const r = fail(await createCustomer({ tenant: T, id: "c1", code: "ACME", name: "Different", opId: "op-1", clientToken }));
+    await createCustomer({ tenant: T, id: "c1", code: "ACME", name: "Acme", opId: "op-1", clientToken, now: 1 });
+    const r = fail(await createCustomer({ tenant: T, id: "c1", code: "ACME", name: "Different", opId: "op-1", clientToken, now: 1 }));
     observed["token-mismatch"] = r;
     expect(r?.outcome).toBe("IdempotentParameterMismatch");
   });

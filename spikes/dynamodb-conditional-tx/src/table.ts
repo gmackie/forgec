@@ -3,11 +3,14 @@ import {
   DescribeTableCommand,
   DynamoDBClient,
   ResourceNotFoundException,
+  UpdateTableCommand,
   waitUntilTableExists,
 } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 export const TABLE = process.env["SPIKE_TABLE"] ?? "forge-spike-tx";
+/** Sparse GSI: only outbox items still pending carry pendingShard/pendingAt. */
+export const PENDING_INDEX = "pending-index";
 export const REGION = process.env["AWS_REGION"] ?? "us-east-1";
 
 export const raw = new DynamoDBClient({ region: REGION });
@@ -39,6 +42,43 @@ export async function ensureTable(): Promise<void> {
     }),
   );
   await waitUntilTableExists({ client: raw, maxWaitTime: 120 }, { TableName: TABLE });
+}
+
+export async function ensurePendingIndex(): Promise<void> {
+  const describe = async () => (await raw.send(new DescribeTableCommand({ TableName: TABLE }))).Table;
+  const t = await describe();
+  const existing = t?.GlobalSecondaryIndexes?.find((g) => g.IndexName === PENDING_INDEX);
+  if (!existing) {
+    await raw.send(
+      new UpdateTableCommand({
+        TableName: TABLE,
+        AttributeDefinitions: [
+          { AttributeName: "PK", AttributeType: "S" },
+          { AttributeName: "SK", AttributeType: "S" },
+          { AttributeName: "pendingShard", AttributeType: "S" },
+          { AttributeName: "pendingAt", AttributeType: "N" },
+        ],
+        GlobalSecondaryIndexUpdates: [
+          {
+            Create: {
+              IndexName: PENDING_INDEX,
+              KeySchema: [
+                { AttributeName: "pendingShard", KeyType: "HASH" },
+                { AttributeName: "pendingAt", KeyType: "RANGE" },
+              ],
+              Projection: { ProjectionType: "ALL" },
+            },
+          },
+        ],
+      }),
+    );
+  }
+  for (let i = 0; i < 120; i++) {
+    const g = (await describe())?.GlobalSecondaryIndexes?.find((x) => x.IndexName === PENDING_INDEX);
+    if (g?.IndexStatus === "ACTIVE") return;
+    await new Promise((r) => setTimeout(r, 2500));
+  }
+  throw new Error(`${PENDING_INDEX} did not become ACTIVE`);
 }
 
 /** Spike-only: everything for one tenant via a filtered scan. Real adapters never scan. */

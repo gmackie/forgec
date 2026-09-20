@@ -51,11 +51,22 @@ async function call<T>(path: string, body: unknown): Promise<T> {
   }
 }
 
+export interface OutboxRow extends Row {
+  op_id: string;
+  ordinal: number;
+  status: string;
+}
+
 export const spike = {
   reset: () => call<{ ok: true }>("/reset", {}),
+  outboxSweep: (tenant: string, now: number) => call<OutboxRow[]>("/outbox/sweep", { tenant, now }),
+  outboxClaim: (r: { tenant: string; opId: string; ordinal: number; owner: string; now: number; leaseMs: number }) =>
+    call<{ ok: boolean }>("/outbox/claim", r),
+  outboxComplete: (r: { tenant: string; opId: string; ordinal: number; owner: string }) => call<{ ok: boolean }>("/outbox/complete", r),
   seed: (tenant: string, id: string, name: string) => call<{ ok: true }>("/seed", { tenant, id, name }),
   update: (r: { tenant: string; id: string; expectedVersion: number; name: string; opId: string; variant: Variant }) =>
     call<UpdateResult>("/update", r),
   rollbackProof: (tenant: string, opId: string) => call<UpdateResult>("/rollback-proof", { tenant, opId }),
   dump: (tenant: string) => call<Dump>("/dump", { tenant }),
 };
+

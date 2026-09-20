@@ -8,7 +8,7 @@
  *   Audit    T#<tenant>#A#<opId>                       / AUDIT
  *   Outbox   T#<tenant>#O#<opId>                       / E#<ordinal>
  */
-import { TransactWriteCommand, GetCommand, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
+import { TransactWriteCommand, GetCommand, QueryCommand, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import type { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { doc, TABLE } from "./table.js";
@@ -21,10 +21,20 @@ export const key = {
   }),
   audit: (tenant: string, opId: string) => ({ PK: `T#${tenant}#A#${opId}`, SK: "AUDIT" }),
   outbox: (tenant: string, opId: string, ordinal: number) => ({ PK: `T#${tenant}#O#${opId}`, SK: `E#${ordinal}` }),
+  /** §11.2 access item: partition = query + equality values, sort = declared order key + id tie-breaker. */
+  accessByTier: (tenant: string, tier: string, name: string, id: string) => ({
+    PK: `T#${tenant}#R#customer#Q#byTier#${tier}`,
+    SK: `${name}#${id}`,
+  }),
 };
 
+/** Outbox item attributes at commit time: pending, and present in the sparse pending index. */
+function outboxItem(tenant: string, opId: string, ordinal: number, payload: Record<string, unknown>, now: number) {
+  return { ...key.outbox(tenant, opId, ordinal), ...payload, status: "pending", attempts: 0, pendingShard: `T#${tenant}`, pendingAt: now };
+}
+
 /** Logical role of each item in a transaction, aligned by index with TransactItems. */
-export type Role = "entity" | "claim" | "audit" | "outbox" | "parent";
+export type Role = "entity" | "claim" | "audit" | "outbox" | "parent" | "access";
 
 export type Outcome =
   | "AlreadyExists"
@@ -56,7 +66,20 @@ interface TxSpec {
   onConditionFailed: Partial<Record<Role, Outcome | ((item: Record<string, unknown> | undefined) => Outcome)>>;
 }
 
+/** Bounded retry of retryable operational conflicts (§9). Same items, same generated values, jittered backoff. */
+const MAX_ATTEMPTS = 5;
+
 async function run(spec: TxSpec): Promise<Result> {
+  let last: Result = { ok: false, outcome: "ProviderError", reasons: [], error: { name: "Unreachable", message: "" } };
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    last = await runOnce(spec);
+    if (last.ok || last.outcome !== "TransactionConflict") return last;
+    await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 50 * attempt)));
+  }
+  return last;
+}
+
+async function runOnce(spec: TxSpec): Promise<Result> {
   try {
     await doc.send(
       new TransactWriteCommand({
@@ -100,19 +123,24 @@ export interface CreateCustomer {
   name: string;
   opId: string;
   clientToken?: string;
+  tier?: string;
+  /** Command clock: generated once per logical command so replays are byte-identical. */
+  now?: number;
 }
 
-/** Entity + unique claim + audit + outbox in one transaction (§11.3, §11.5). */
+/** Entity + unique claim + access item + audit + outbox in one transaction (§11.2, §11.3, §11.5). */
 export function createCustomer(c: CreateCustomer): Promise<Result> {
+  const tier = c.tier ?? "standard";
+  const now = c.now ?? Date.now();
   return run({
-    roles: ["entity", "claim", "audit", "outbox"],
+    roles: ["entity", "claim", "access", "audit", "outbox"],
     clientToken: c.clientToken,
     onConditionFailed: { entity: "AlreadyExists", claim: "UniqueConflict" },
     items: [
       {
         Put: {
           TableName: TABLE,
-          Item: { ...key.entity(c.tenant, RES.customer, c.id), id: c.id, code: c.code, name: c.name, version: 1, active: true, dependents: 0 },
+          Item: { ...key.entity(c.tenant, RES.customer, c.id), id: c.id, code: c.code, name: c.name, tier, version: 1, active: true, dependents: 0 },
           ConditionExpression: "attribute_not_exists(PK)",
         },
       },
@@ -123,8 +151,9 @@ export function createCustomer(c: CreateCustomer): Promise<Result> {
           ConditionExpression: "attribute_not_exists(PK)",
         },
       },
+      { Put: { TableName: TABLE, Item: { ...key.accessByTier(c.tenant, tier, c.name, c.id), id: c.id, name: c.name, version: 1 } } },
       { Put: { TableName: TABLE, Item: { ...key.audit(c.tenant, c.opId), resource: RES.customer, recordId: c.id, newVersion: 1 } } },
-      { Put: { TableName: TABLE, Item: { ...key.outbox(c.tenant, c.opId, 0), type: "CustomerCreated", id: c.id } } },
+      { Put: { TableName: TABLE, Item: outboxItem(c.tenant, c.opId, 0, { type: "CustomerCreated", id: c.id }, now) } },
     ],
   });
 }
@@ -135,13 +164,34 @@ export interface UpdateCustomer {
   expectedVersion: number;
   name: string;
   opId: string;
+  now?: number;
 }
 
-/** Guarded update: condition on the expected version; audit + outbox ride in the same transaction. */
-export function updateCustomer(u: UpdateCustomer): Promise<Result> {
+/**
+ * Guarded update: condition on the expected version; access item move, audit
+ * and outbox ride in the same transaction. The current record is loaded with a
+ * consistent read to find the old access key; the version condition on the
+ * entity guarantees that load is still current when the transaction commits.
+ */
+export async function updateCustomer(u: UpdateCustomer): Promise<Result> {
+  const now = u.now ?? Date.now();
+  const current = await getEntity(u.tenant, RES.customer, u.id);
+  if (!current || current["version"] !== u.expectedVersion) {
+    return { ok: false, outcome: "VersionConflict", reasons: [], error: { name: "Preflight", message: "expected version does not match current record" } };
+  }
+  const tier = String(current["tier"]);
+  const oldAccess = key.accessByTier(u.tenant, tier, String(current["name"]), u.id);
+  const newAccess = key.accessByTier(u.tenant, tier, u.name, u.id);
+  const moveAccess: TxSpec["items"] =
+    oldAccess.SK === newAccess.SK
+      ? [{ Put: { TableName: TABLE, Item: { ...newAccess, id: u.id, name: u.name, version: u.expectedVersion + 1 } } }]
+      : [
+          { Delete: { TableName: TABLE, Key: oldAccess, ConditionExpression: "version = :v", ExpressionAttributeValues: { ":v": u.expectedVersion } } },
+          { Put: { TableName: TABLE, Item: { ...newAccess, id: u.id, name: u.name, version: u.expectedVersion + 1 } } },
+        ];
   return run({
-    roles: ["entity", "audit", "outbox"],
-    onConditionFailed: { entity: "VersionConflict" },
+    roles: ["entity", ...moveAccess.map((): Role => "access"), "audit", "outbox"],
+    onConditionFailed: { entity: "VersionConflict", access: "VersionConflict" },
     items: [
       {
         Update: {
@@ -153,8 +203,9 @@ export function updateCustomer(u: UpdateCustomer): Promise<Result> {
           ExpressionAttributeValues: { ":name": u.name, ":one": 1, ":v": u.expectedVersion, ":t": true },
         },
       },
+      ...moveAccess,
       { Put: { TableName: TABLE, Item: { ...key.audit(u.tenant, u.opId), resource: RES.customer, recordId: u.id, newVersion: u.expectedVersion + 1 } } },
-      { Put: { TableName: TABLE, Item: { ...key.outbox(u.tenant, u.opId, 0), type: "CustomerUpdated", id: u.id } } },
+      { Put: { TableName: TABLE, Item: outboxItem(u.tenant, u.opId, 0, { type: "CustomerUpdated", id: u.id }, now) } },
     ],
   });
 }
@@ -226,6 +277,19 @@ export function deleteCustomer(d: DeleteCustomer): Promise<Result> {
       { Put: { TableName: TABLE, Item: { ...key.audit(d.tenant, d.opId), resource: RES.customer, recordId: d.id, action: "delete" } } },
     ],
   });
+}
+
+/** Strong read of a named query's access partition (§11.2): consistent, ordered by the sort codec. */
+export async function queryByTier(tenant: string, tier: string): Promise<{ id: string; name: string; version: number }[]> {
+  const r = await doc.send(
+    new QueryCommand({
+      TableName: TABLE,
+      ConsistentRead: true,
+      KeyConditionExpression: "PK = :pk",
+      ExpressionAttributeValues: { ":pk": key.accessByTier(tenant, tier, "", "").PK },
+    }),
+  );
+  return (r.Items ?? []).map((i) => ({ id: String(i["id"]), name: String(i["name"]), version: Number(i["version"]) }));
 }
 
 export async function getEntity(tenant: string, resource: string, id: string): Promise<Record<string, unknown> | undefined> {
