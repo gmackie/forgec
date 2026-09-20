@@ -14,6 +14,7 @@ import { Changesets } from "./changeset.js";
 import { Blobs } from "./blobs.js";
 import { Imports } from "./imports.js";
 import { Functions, type ExternalBinding, type FunctionImpl } from "./functions.js";
+import { Temporal } from "./temporal.js";
 import type { Envelope } from "./dispatch.js";
 
 export interface CallContext {
@@ -92,6 +93,18 @@ export class Engine {
       case "restore":
       case "transition":
         return self.withIdempotency(op.id, body, ctx, self.mutate(opId, body, ctx));
+      case "effective":
+        return self.temporal.effective(resource, op.query!, body, ctx);
+      case "move":
+        return self.withIdempotency(op.id, body, ctx, Effect.gen(function* () {
+          const plan = yield* self.temporal.move(resource, body, ctx);
+          yield* (yield* Storage).commit(plan);
+          return self.resultOf(plan);
+        }));
+      case "children":
+        return self.temporal.children(resource, body, ctx);
+      case "ancestors":
+        return self.temporal.ancestors(resource, body, ctx);
       case "beginUpload":
         return self.blobs.beginUpload(resource, body, ctx);
       case "finalizeUpload":
@@ -141,6 +154,7 @@ export class Engine {
 
   readonly changesets = new Changesets(this);
   readonly blobs = new Blobs(this);
+  readonly temporal = new Temporal(this);
   readonly imports = new Imports(this);
 
   // ------------------------------------------------------------ helpers
@@ -161,7 +175,7 @@ export class Engine {
     const self = this;
     const out: ReferenceGuard[] = [];
     for (const f of r.fields) {
-      if (f.type.base.kind !== "reference" || f.synthesized) continue;
+      if (f.type.base.kind !== "reference" || (f.synthesized && f.name !== "parent")) continue;
       if (changed && !changed.has(f.name)) continue;
       const id = after[f.name];
       if (typeof id === "string") out.push({ field: f.name, resource: self.model.resource(f.type.base.resource), id });
@@ -262,10 +276,14 @@ export class Engine {
       const guards = self.referenceGuards(r, after, null);
       const refs = yield* self.loadReferences(r, after, ctx, guards);
       yield* self.checkRules(r, after, refs);
+      const interval = yield* self.temporal.intervalGuard(r, after, id);
+      yield* self.temporal.checkOverlap(r, interval, ctx);
+      const tree = yield* self.temporal.treeGuard(r, id, typeof after["parent"] === "string" ? (after["parent"] as string) : null, ctx);
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "create", id, expectedVersion: null, before: null, after,
         claims: self.claimChanges(r, null, after), references: guards, dependents: [], hardDelete: false,
+        ...(interval ? { interval } : {}), ...(tree ? { tree } : {}),
         audit: self.audit("create", r, id, after, ctx, opId, now), outbox: self.changeEvent(r, "create", id, after, ctx, opId, now),
       };
       return plan;
@@ -360,10 +378,15 @@ export class Engine {
       const guards = self.referenceGuards(r, after, new Set(Object.keys(patch)));
       const refs = yield* self.loadReferences(r, after, ctx, guards);
       yield* self.checkRules(r, after, refs);
+      const intervalChanged = "effectiveFrom" in patch || "effectiveUntil" in patch || r.decorators.effectiveDated?.uniqueBy.some((f) => f in patch);
+      const interval = intervalChanged ? yield* self.temporal.intervalGuard(r, after, id) : undefined;
+      yield* self.temporal.checkOverlap(r, interval, ctx);
+      const tree = "parent" in patch ? yield* self.temporal.treeGuard(r, id, typeof after["parent"] === "string" ? (after["parent"] as string) : null, ctx) : undefined;
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "update", id, expectedVersion: expected, before, after,
         claims: self.claimChanges(r, before, after), references: guards, dependents: [], hardDelete: false,
+        ...(interval ? { interval } : {}), ...(tree ? { tree } : {}),
         audit: self.audit("update", r, id, after, ctx, opId, now), outbox: self.changeEvent(r, "update", id, after, ctx, opId, now),
       };
       return plan;
@@ -479,6 +502,9 @@ export class Engine {
           outboxDead: (...a) => storage.outboxDead(...a),
           outboxRedrive: (...a) => storage.outboxRedrive(...a),
           markProcessed: (...a) => storage.markProcessed(...a),
+          overlapping: (...a) => storage.overlapping(...a),
+          effectiveAt: (...a) => storage.effectiveAt(...a),
+          children: (...a) => storage.children(...a),
           commit: (plan: CommitPlan) => storage.commit({ ...plan, receipt: { ...receipt, response: self.resultOf(plan) } }),
         };
         return yield* inner.pipe(Effect.provideService(Storage, wrapped));

@@ -6,7 +6,7 @@
 import { Effect } from "effect";
 import { err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
-import type { CommitPlan, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 import { SqlMapping } from "./sql-mapping.js";
 import { rawD1Executor, type SqlExecutor, type SqlStatement } from "./sql-executor.js";
 
@@ -125,6 +125,63 @@ export class D1Storage implements StorageAdapter {
       const row = await this.db.first<{ n: number }>(st(`SELECT COUNT(*) AS n FROM ${t.name} WHERE ${tenantSql}${col} = ?${live}`, ...binds));
       return Number(row?.n ?? 0);
     });
+  }
+
+  // ---------------------------------------------------------- effective dating and hierarchy (§18)
+  /** SQL for "a live row of the group overlaps [from, until)". Half-open: a.from < b.until AND b.from < a.until. */
+  private overlapSql(r: Resource, g: IntervalGuard): { sql: string; binds: unknown[] } {
+    const t = this.map.table(r);
+    const where: string[] = [];
+    const binds: unknown[] = [];
+    if (r.decorators.tenant) where.push("tenant = ?");
+    for (const [i, f] of g.groupFields.entries()) {
+      where.push(`${this.map.column(r, f).name} = ?`);
+      binds.push(this.map.toColumn(r.fields.find((x) => x.name === f)!, g.groupValues[i]));
+    }
+    where.push("id <> ?");
+    binds.push(g.excludeId);
+    if (r.decorators.softDelete) where.push("deleted_at IS NULL");
+    where.push("(effective_until IS NULL OR ? < effective_until)");
+    binds.push(g.from);
+    if (g.until !== null) {
+      where.push("effective_from < ?");
+      binds.push(g.until);
+    }
+    return { sql: `SELECT * FROM ${t.name} WHERE ${where.join(" AND ")}`, binds };
+  }
+  overlapping(tenant: string, r: Resource, g: IntervalGuard): Effect.Effect<StoredRecord[], ForgeError> {
+    const { sql, binds } = this.overlapSql(r, g);
+    const all = r.decorators.tenant ? [tenant, ...binds] : binds;
+    return this.wrap(async () => (await this.db.all(st(`${sql} LIMIT 10`, ...all))).map((row) => this.map.fromRow(r, row)));
+  }
+  effectiveAt(tenant: string, r: Resource, groupFields: string[], groupValues: unknown[], at: string): Effect.Effect<StoredRecord | null, ForgeError> {
+    const t = this.map.table(r);
+    const where: string[] = [];
+    const binds: unknown[] = [];
+    if (r.decorators.tenant) {
+      where.push("tenant = ?");
+      binds.push(tenant);
+    }
+    for (const [i, f] of groupFields.entries()) {
+      where.push(`${this.map.column(r, f).name} = ?`);
+      binds.push(this.map.toColumn(r.fields.find((x) => x.name === f)!, groupValues[i]));
+    }
+    if (r.decorators.softDelete) where.push("deleted_at IS NULL");
+    where.push("effective_from <= ?", "(effective_until IS NULL OR ? < effective_until)");
+    binds.push(at, at);
+    return this.wrap(async () => {
+      const row = await this.db.first(st(`SELECT * FROM ${t.name} WHERE ${where.join(" AND ")} LIMIT 1`, ...binds));
+      return row ? this.map.fromRow(r, row) : null;
+    });
+  }
+  children(tenant: string, r: Resource, parentField: string, id: string, limit: number): Effect.Effect<StoredRecord[], ForgeError> {
+    const t = this.map.table(r);
+    const col = this.map.column(r, parentField).name;
+    const order = r.fields.some((f) => f.name === "name") ? "name, id" : "id";
+    const live = r.decorators.softDelete ? " AND deleted_at IS NULL" : "";
+    const tenantSql = r.decorators.tenant ? "tenant = ? AND " : "";
+    const binds = r.decorators.tenant ? [tenant, id, limit] : [id, limit];
+    return this.wrap(async () => (await this.db.all(st(`SELECT * FROM ${t.name} WHERE ${tenantSql}${col} = ?${live} ORDER BY ${order} LIMIT ?`, ...binds))).map((row) => this.map.fromRow(r, row)));
   }
 
   // ---------------------------------------------------------- outbox dispatch (M0-certified lease protocol)
@@ -269,6 +326,27 @@ export class D1Storage implements StorageAdapter {
       preds.push(`EXISTS (SELECT 1 FROM ${gt.name} WHERE ${gkw.sql}${live})`);
       predBinds.push(...gkw.bind(tenant, g.id));
     }
+    if (plan.interval) {
+      // No overlapping live row in the group may exist at commit (evaluated inside the batch).
+      const { sql, binds } = this.overlapSql(r, plan.interval);
+      preds.push(`NOT EXISTS (${sql.replace("SELECT *", "SELECT 1")})`);
+      if (r.decorators.tenant) predBinds.push(tenant);
+      predBinds.push(...binds);
+    }
+    if (plan.tree) {
+      // The new parent must be live and none of its ancestors (as observed) may be this row; a recursive
+      // CTE re-derives the chain inside the batch so a concurrent move cannot slip a cycle past us.
+      const tkw = this.keyWhere(r);
+      const live = r.decorators.softDelete ? " AND deleted_at IS NULL" : "";
+      const tenantSql = r.decorators.tenant ? "tenant = ? AND " : "";
+      preds.push(`EXISTS (SELECT 1 FROM ${t.name} WHERE ${tkw.sql}${live})`);
+      predBinds.push(...tkw.bind(tenant, plan.tree.parentId));
+      preds.push(`NOT EXISTS (WITH RECURSIVE up(id, parent, depth) AS (SELECT id, parent, 0 FROM ${t.name} WHERE ${tenantSql}id = ? UNION ALL SELECT n.id, n.parent, up.depth + 1 FROM ${t.name} n JOIN up ON n.id = up.parent WHERE ${tenantSql}up.depth < 64) SELECT 1 FROM up WHERE id = ?)`);
+      if (r.decorators.tenant) predBinds.push(tenant);
+      predBinds.push(plan.tree.parentId);
+      if (r.decorators.tenant) predBinds.push(tenant);
+      predBinds.push(id);
+    }
     for (const d of plan.dependents) {
       const dt = this.map.table(d.resource);
       const col = this.map.column(d.resource, d.field).name;
@@ -328,6 +406,11 @@ export class D1Storage implements StorageAdapter {
         const ok = await this.db.first(st(`SELECT 1 AS ok FROM ${gt.name} WHERE ${gkw.sql}${live}`, ...gkw.bind(tenant, g.id))).catch(() => null);
         if (!ok) return err("ReferenceMissing", `${g.field} does not reference a live record`);
       }
+      if (plan.interval) {
+        const others = await this.db.all(st(this.overlapSql(r, plan.interval).sql + " LIMIT 1", ...(r.decorators.tenant ? [tenant] : []), ...this.overlapSql(r, plan.interval).binds)).catch(() => []);
+        if (others.length) return err("ValidationFailed", "interval overlaps a concurrently written record", { fields: [{ path: "effectiveFrom", code: "IntervalOverlap", message: "overlap at commit" }] });
+      }
+      if (plan.tree) return err("ValidationFailed", "move would create a cycle or the parent is not live", { fields: [{ path: "parent", code: "Cycle", message: "tree guard failed at commit" }] });
       if (plan.dependents.length) return err("HasDependents", `${r.name} ${id} has live dependents`);
       return err("TransientConflict", "precondition changed concurrently");
     }

@@ -1,0 +1,36 @@
+/// Per-site operating policy, effective-dated: at most one policy per site
+/// applies at any instant; intervals are half-open [from, until).
+export resource SitePolicy
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @effectiveDated(uniqueBy: [site])
+  @crud("/v1/site-policies")
+{
+  id : id
+  site : Site @immutable
+  maxOrderTotal : money<USD> >= 0
+  requiresApproval : boolean = false
+
+  list by site
+    order by effectiveFrom desc
+}
+
+/// Organizational units under a customer form a tree; moving a node never
+/// changes its identity.
+export resource Department
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @hierarchical
+  @crud("/v1/departments")
+{
+  id : id
+  customer : Customer @immutable
+  name : text length 1..100
+
+  list by customer
+    order by name asc
+}

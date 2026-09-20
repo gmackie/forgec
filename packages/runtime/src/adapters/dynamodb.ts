@@ -11,7 +11,7 @@ import { Effect } from "effect";
 import { encodeIdentity, sortKey } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Unique } from "../model.js";
-import type { CommitPlan, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export const PENDING_INDEX = "pending-index";
 
@@ -207,6 +207,45 @@ export class DynamoStorage implements StorageAdapter {
       if (!out.Item) return null;
       const i = out.Item as Item;
       return { tenant, operation, key, requestHash: String(i["requestHash"]), status: Number(i["status"]), response: i["response"], createdAt: String(i["createdAt"]) };
+    });
+  }
+
+  // ------------------------------------------------------------ effective dating and hierarchy (§18)
+  /** Interval rows of a group live under one partition (ordered by effectiveFrom) so neighbours are one bounded query. */
+  private intervalPk(tenant: string, r: Resource, groupValues: unknown[]): string {
+    return encodeIdentity(["T", tenant, "R", this.wire(r), "E", ...groupValues.map(String)]);
+  }
+  private groupGuardKey(tenant: string, r: Resource, groupValues: unknown[]) {
+    return { PK: this.intervalPk(tenant, r, groupValues), SK: "GUARD" };
+  }
+  private async groupRows(tenant: string, r: Resource, groupValues: unknown[]): Promise<StoredRecord[]> {
+    const out = await this.doc.send(new QueryCommand({ TableName: this.table, ConsistentRead: true, KeyConditionExpression: "PK = :pk AND begins_with(SK, :i)", ExpressionAttributeValues: { ":pk": this.intervalPk(tenant, r, groupValues), ":i": "I#" }, Limit: 500 }));
+    return ((out.Items ?? []) as Item[]).map((i) => this.toStored(r, i["record"] as Item)).filter((x) => !x["deletedAt"]);
+  }
+  private overlaps(rec: StoredRecord, g: IntervalGuard): boolean {
+    if (rec["id"] === g.excludeId) return false;
+    const from = String(rec["effectiveFrom"]);
+    const until = (rec["effectiveUntil"] as string | null) ?? null;
+    return (until === null || g.from < until) && (g.until === null || from < g.until);
+  }
+  overlapping(tenant: string, r: Resource, g: IntervalGuard): Effect.Effect<StoredRecord[], ForgeError> {
+    return this.wrap(async () => {
+      const guard = await this.doc.send(new GetCommand({ TableName: this.table, Key: this.groupGuardKey(tenant, r, g.groupValues), ConsistentRead: true }));
+      g.revision = Number(guard.Item?.["rev"] ?? 0);
+      return (await this.groupRows(tenant, r, g.groupValues)).filter((x) => this.overlaps(x, g));
+    });
+  }
+  effectiveAt(tenant: string, r: Resource, _groupFields: string[], groupValues: unknown[], at: string): Effect.Effect<StoredRecord | null, ForgeError> {
+    return this.wrap(async () => (await this.groupRows(tenant, r, groupValues)).find((x) => String(x["effectiveFrom"]) <= at && (x["effectiveUntil"] == null || at < String(x["effectiveUntil"]))) ?? null);
+  }
+  /** Children of a node live under a per-parent partition (an access family maintained in the entity transaction). */
+  private childPk(tenant: string, r: Resource, parentId: string): string {
+    return encodeIdentity(["T", tenant, "R", this.wire(r), "C", parentId]);
+  }
+  children(tenant: string, r: Resource, _parentField: string, id: string, limit: number): Effect.Effect<StoredRecord[], ForgeError> {
+    return this.wrap(async () => {
+      const out = await this.doc.send(new QueryCommand({ TableName: this.table, ConsistentRead: true, KeyConditionExpression: "PK = :pk", ExpressionAttributeValues: { ":pk": this.childPk(tenant, r, id) }, Limit: limit }));
+      return ((out.Items ?? []) as Item[]).map((i) => this.toStored(r, i["record"] as Item)).filter((x) => !x["deletedAt"]);
     });
   }
 
@@ -427,6 +466,44 @@ export class DynamoStorage implements StorageAdapter {
       if (beforeKey && !same) push("access", { Delete: { TableName: this.table, Key: beforeKey } });
       if (afterKey) push("access", { Put: { TableName: this.table, Item: { ...afterKey, record: plan.after, id, version: plan.after["version"] ?? null } } });
     }
+    // effective dating: an interval item per record in the group partition + a per-group revision guard.
+    // Every mutation of the group bumps the guard; planning read the group under the same revision, so a
+    // concurrent overlapping write is rejected by the guard condition (§18).
+    if (r.decorators.effectiveDated) {
+      const ed = r.decorators.effectiveDated;
+      const groupOf = (rec: StoredRecord | null) => (rec ? ed.uniqueBy.map((f) => rec[f]) : null);
+      const beforeGroup = plan.before && !plan.before["deletedAt"] ? groupOf(plan.before) : null;
+      const afterGroup = !plan.hardDelete && !plan.after["deletedAt"] ? groupOf(plan.after) : null;
+      const sk = (rec: StoredRecord) => `I#${String(rec["effectiveFrom"])}#${id}`;
+      if (beforeGroup && (!afterGroup || beforeGroup.join("\u0001") !== afterGroup.join("\u0001") || sk(plan.before!) !== sk(plan.after))) {
+        push("access", { Delete: { TableName: this.table, Key: { PK: this.intervalPk(tenant, r, beforeGroup), SK: sk(plan.before!) } } });
+      }
+      if (afterGroup) {
+        push("access", { Put: { TableName: this.table, Item: { PK: this.intervalPk(tenant, r, afterGroup), SK: sk(plan.after), record: plan.after, id } } });
+      }
+      if (plan.interval) {
+        const expected = plan.interval.revision ?? 0;
+        push("parent", { Update: { TableName: this.table, Key: this.groupGuardKey(tenant, r, plan.interval.groupValues), UpdateExpression: "SET rev = :next", ConditionExpression: "attribute_not_exists(rev) OR rev = :expected", ExpressionAttributeValues: { ":next": expected + 1, ":expected": expected } } });
+      }
+    }
+    // hierarchy: a child index item per node under its parent's partition, moved with the node
+    if (r.decorators.hierarchical) {
+      const bp = plan.before && !plan.before["deletedAt"] ? (plan.before["parent"] as string | null) : null;
+      const ap = !plan.hardDelete && !plan.after["deletedAt"] ? (plan.after["parent"] as string | null) : null;
+      if (bp && bp !== ap) push("access", { Delete: { TableName: this.table, Key: { PK: this.childPk(tenant, r, bp), SK: `${String(plan.before!["name"] ?? "")}#${id}` } } });
+      if (ap) push("access", { Put: { TableName: this.table, Item: { PK: this.childPk(tenant, r, ap), SK: `${String(plan.after["name"] ?? "")}#${id}`, record: plan.after, id } } });
+    }
+    // Tree pins: every observed ancestor must still have the parent we saw. Pins on items that also receive a
+    // counter Update below are folded into that Update (DynamoDB allows one action per item).
+    const pins = new Map<string, string | null>();
+    if (r.decorators.hierarchical && plan.tree) {
+      const chain = [plan.tree.parentId, ...plan.tree.ancestors.slice(1)];
+      for (let i = 0; i < chain.length; i++) {
+        const node = chain[i]!;
+        if (node === id) continue;
+        pins.set(node, plan.tree.ancestors[i + 1] ?? null);
+      }
+    }
     // reference guards: the parent must be live; its live-dependent counter for (this resource, field)
     // is incremented when the reference is created and decremented when it is removed or the child is
     // hard-deleted. One Update per parent item (DynamoDB forbids two actions on one item).
@@ -438,7 +515,7 @@ export class DynamoStorage implements StorageAdapter {
       counterDeltas.set(k, e);
     };
     for (const f of r.fields) {
-      if (f.type.base.kind !== "reference" || f.synthesized) continue;
+      if (f.type.base.kind !== "reference" || (f.synthesized && f.name !== "parent")) continue;
       const parentRes = this.model.resource(f.type.base.resource);
       const attr = depAttr(r, f.name, this.model);
       const beforeLive = plan.before && !plan.before["deletedAt"] ? plan.before[f.name] : null;
@@ -461,11 +538,30 @@ export class DynamoStorage implements StorageAdapter {
       });
       if (!adds.length) continue;
       const mustBeLive = guardIds.has(k) && e.resource.decorators.softDelete;
-      const cond = mustBeLive ? "attribute_exists(PK) AND deletedAt = :null" : "attribute_exists(PK)";
-      if (mustBeLive) values[":null"] = null;
-      push("parent", { Update: { TableName: this.table, Key: this.entityKey(tenant, e.resource, e.id), UpdateExpression: `ADD ${adds.join(", ")}`, ConditionExpression: cond, ExpressionAttributeNames: names, ExpressionAttributeValues: values } });
+      const conds = ["attribute_exists(PK)"];
+      if (mustBeLive) {
+        conds.push("deletedAt = :null");
+        values[":null"] = null;
+      }
+      // Hierarchy pin on this same item (tree guard) rides in the same Update.
+      if (e.resource.id === r.id && pins.has(e.id)) {
+        const expectedParent = pins.get(e.id) ?? null;
+        pins.delete(e.id);
+        if (expectedParent) {
+          conds.push("parent = :tp");
+          values[":tp"] = expectedParent;
+        } else {
+          conds.push("(attribute_not_exists(parent) OR parent = :tnull)");
+          values[":tnull"] = null;
+        }
+      }
+      push("parent", { Update: { TableName: this.table, Key: this.entityKey(tenant, e.resource, e.id), UpdateExpression: `ADD ${adds.join(", ")}`, ConditionExpression: conds.join(" AND "), ExpressionAttributeNames: names, ExpressionAttributeValues: values } });
+    }
+    for (const [node, expectedParent] of pins) {
+      push("parent", { ConditionCheck: { TableName: this.table, Key: this.entityKey(tenant, r, node), ConditionExpression: expectedParent ? "attribute_exists(PK) AND parent = :p" : "attribute_exists(PK) AND (attribute_not_exists(parent) OR parent = :null)", ExpressionAttributeValues: expectedParent ? { ":p": expectedParent } : { ":null": null } } });
     }
     for (const g of plan.references) {
+      if (g.field === "parent" && plan.tree) continue; // pinned by the tree guard's ConditionChecks
       if (counterDeltas.has(`${g.resource.id}|${g.id}`)) continue; // already guarded by the counter update
       const live = g.resource.decorators.softDelete ? "attribute_exists(PK) AND deletedAt = :null" : "attribute_exists(PK)";
       push("parent", { ConditionCheck: { TableName: this.table, Key: this.entityKey(tenant, g.resource, g.id), ConditionExpression: live, ...(g.resource.decorators.softDelete ? { ExpressionAttributeValues: { ":null": null } } : {}) } });
@@ -506,7 +602,7 @@ export class DynamoStorage implements StorageAdapter {
     if (ex.name === "IdempotentParameterMismatchException") return err("TransientConflict", "client token collision");
     if (ex.name === "TransactionInProgressException") return err("TransientConflict", "transaction in progress");
     if (ex.name !== "TransactionCanceledException") return err("StorageUnavailable", String(ex.message ?? e));
-    const reasons = (ex.CancellationReasons ?? []).map((r, i) => ({ role: roles[i], code: r.Code, item: r.Item ? unmarshall(r.Item) : undefined }));
+    const reasons = (ex.CancellationReasons ?? []).map((r, i) => ({ role: roles[i], code: r.Code, message: r.Message, item: r.Item ? unmarshall(r.Item) : undefined }));
     if (reasons.some((r) => r.code === "TransactionConflict")) return err("TransientConflict", "transaction conflict");
     const failed = reasons.find((r) => r.code === "ConditionalCheckFailed");
     if (failed) plan = owners[reasons.indexOf(failed)] ?? first;
@@ -528,11 +624,13 @@ export class DynamoStorage implements StorageAdapter {
         return err("UniqueConflict", "a record with the same unique key exists", u ? { constraint: `${plan.resource.id}.unique.${u.name}` } : {});
       }
       case "parent":
+        if (plan.interval) return err("ValidationFailed", "interval group changed concurrently; retry", { fields: [{ path: "effectiveFrom", code: "IntervalOverlap", message: "group revision guard failed" }] });
+        if (plan.tree) return err("ValidationFailed", "hierarchy changed concurrently; retry", { fields: [{ path: "parent", code: "Cycle", message: "tree guard failed at commit" }] });
         return err("ReferenceMissing", "referenced record is not live in this tenant");
       case "receipt":
         return err("TransientConflict", "receipt already written");
       default:
-        return err("StorageUnavailable", `transaction cancelled: ${reasons.map((r) => r.code).join(",")}`);
+        return err("StorageUnavailable", `transaction cancelled: ${reasons.map((r) => `${r.role}=${r.code}${r.message ? `(${r.message})` : ""}`).join(",")}`);
     }
   }
 }

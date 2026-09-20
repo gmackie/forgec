@@ -115,6 +115,10 @@ pub fn client_ts(c: &Contracts) -> String {
                 "beginUpload" => { let _ = writeln!(out, "  beginUpload(id: string, expectedVersion: number, input: {{ mediaType: string; byteCount: number }}): Promise<{{ record: {rec}; upload: SignedUrl }}>;"); }
                 "finalizeUpload" => { let _ = writeln!(out, "  finalizeUpload(id: string, expectedVersion: number): Promise<{rec}>;"); }
                 "download" => { let _ = writeln!(out, "  download(id: string): Promise<SignedUrl & {{ mediaType: string; byteCount: number; digest: string }}>;"); }
+                "effective" => { let _ = writeln!(out, "  effective(params: Record<string, string> & {{ at: string }}): Promise<{rec} | null>;"); }
+                "move" => { let _ = writeln!(out, "  move(id: string, expectedVersion: number, parent: string | null): Promise<{rec}>;"); }
+                "children" => { let _ = writeln!(out, "  children(id: string): Promise<Page<{rec}>>;"); }
+                "ancestors" => { let _ = writeln!(out, "  ancestors(id: string): Promise<Page<{rec}>>;"); }
                 "find" | "list" => {
                     let q = r.queries.iter().find(|q| Some(&q.name) == op.query.as_ref()).unwrap();
                     let params: Vec<String> = q.params.iter().map(|p| format!("{p}: {}", ts_type(r.record.properties.get(p).unwrap_or(&Value::Null), false))).collect();
@@ -190,6 +194,10 @@ pub fn client_ts(c: &Contracts) -> String {
                 "beginUpload" => { let _ = writeln!(out, "      beginUpload: (id, expectedVersion, input) => t.unwrap(t.call({id:?}, {{ id, expectedVersion, ...input }})),"); }
                 "finalizeUpload" => { let _ = writeln!(out, "      finalizeUpload: (id, expectedVersion) => t.unwrap(t.call({id:?}, {{ id, expectedVersion }})),"); }
                 "download" => { let _ = writeln!(out, "      download: (id) => t.unwrap(t.call({id:?}, {{ id }})),"); }
+                "effective" => { let _ = writeln!(out, "      effective: (params) => t.unwrapNullable(t.call({id:?}, {{ params }})),"); }
+                "move" => { let _ = writeln!(out, "      move: (id, expectedVersion, parent) => t.unwrap(t.call({id:?}, {{ id, expectedVersion, parent }})),"); }
+                "children" => { let _ = writeln!(out, "      children: (id) => t.unwrap(t.call({id:?}, {{ id }})),"); }
+                "ancestors" => { let _ = writeln!(out, "      ancestors: (id) => t.unwrap(t.call({id:?}, {{ id }})),"); }
                 "find" => { let _ = writeln!(out, "      find{}: (params) => t.unwrapNullable(t.call({id:?}, {{ params }})),", upper_first(op.query.as_ref().unwrap())); }
                 "list" => { let _ = writeln!(out, "      list{}: (params, page) => t.unwrap(t.call({id:?}, {{ params, ...page }})),", upper_first(op.query.as_ref().unwrap())); }
                 _ => {}
@@ -273,7 +281,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     if (typeof input["expectedVersion"] === "number") headers["if-match"] = `"${input["expectedVersion"]}"`;
     let url = base + fillPath(spec.path, input);
     let body: string | null = null;
-    if (spec.kind === "find" || spec.kind === "list") {
+    if (spec.kind === "find" || spec.kind === "list" || spec.kind === "effective") {
       const q = new URLSearchParams();
       for (const [k, v] of Object.entries((input["params"] ?? {}) as Record<string, unknown>)) q.set(k, String(v));
       if (input["cursor"]) q.set("cursor", String(input["cursor"]));
@@ -288,7 +296,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});
       headers["content-type"] = "application/json";
-    } else if (spec.kind === "beginUpload") {
+    } else if (spec.kind === "beginUpload" || spec.kind === "move") {
       const { id: _id, expectedVersion: _v, ...rest } = input;
       void _id;
       void _v;

@@ -203,8 +203,19 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         input = { id: params["id"], expectedVersion, input: body ?? {} };
         break;
       case "beginUpload":
+      case "move":
         input = { id: params["id"], expectedVersion, ...((body ?? {}) as Record<string, unknown>) };
         break;
+      case "children":
+      case "ancestors":
+        input = { id: params["id"] };
+        break;
+      case "effective": {
+        const q: Record<string, string> = {};
+        for (const [k, v] of url.searchParams) q[k] = v;
+        input = { params: q };
+        break;
+      }
       case "finalizeUpload":
         input = { id: params["id"], expectedVersion };
         break;

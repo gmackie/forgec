@@ -59,6 +59,23 @@ export interface DependentGuard {
   resource: Resource;
   field: string;
 }
+/** Effective-interval guard (plan §18): no other live record in the group may overlap [from, until). */
+export interface IntervalGuard {
+  groupFields: string[];
+  groupValues: unknown[];
+  from: string;
+  until: string | null;
+  excludeId: string;
+  /** Group revision observed when planning (key-value adapters condition on it). */
+  revision?: number;
+}
+/** Hierarchy guard: the new parent must be live, same tenant, and not a descendant of `id` (checked at commit). */
+export interface TreeGuard {
+  parentField: string;
+  parentId: string;
+  /** Ancestor chain of the new parent as observed during planning; adapters re-verify it. */
+  ancestors: string[];
+}
 export interface CommitPlan {
   tenant: string;
   opId: string;
@@ -76,6 +93,8 @@ export interface CommitPlan {
   dependents: DependentGuard[];
   /** True when the row is physically removed (no @softDelete). */
   hardDelete: boolean;
+  interval?: IntervalGuard;
+  tree?: TreeGuard;
   audit: AuditEntry;
   outbox: OutboxEntry[];
   receipt?: Receipt;
@@ -96,6 +115,12 @@ export interface StorageAdapter {
   list(tenant: string, resource: Resource, q: ListQuery, sortKeys: (r: StoredRecord) => string[]): Effect.Effect<{ records: StoredRecord[]; hasMore: boolean }, ForgeError>;
   /** Number of live records of `child` whose `field` references `id` (bounded: adapters may stop at 1). */
   countDependents(tenant: string, child: Resource, field: string, id: string): Effect.Effect<number, ForgeError>;
+  /** Live records in an effective-dating group overlapping [from, until) (bounded). Adapters may set guard.revision. */
+  overlapping(tenant: string, resource: Resource, guard: IntervalGuard): Effect.Effect<StoredRecord[], ForgeError>;
+  /** The live record of a group effective at `at`, if any. */
+  effectiveAt(tenant: string, resource: Resource, groupFields: string[], groupValues: unknown[], at: string): Effect.Effect<StoredRecord | null, ForgeError>;
+  /** Live children of `id` through `parentField`, ordered by name-ish sort keys (bounded). */
+  children(tenant: string, resource: Resource, parentField: string, id: string, limit: number): Effect.Effect<StoredRecord[], ForgeError>;
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError>;
   /** Atomic: record + claims + reference guards + audit + outbox + receipt, or nothing. */
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError>;

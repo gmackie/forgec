@@ -287,6 +287,213 @@ expression: p.contracts
       ]
     },
     {
+      "id": "@acme/commerce/_/Department",
+      "name": "Department",
+      "wireName": "department",
+      "tenantScoped": true,
+      "softDelete": false,
+      "versioned": true,
+      "record": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "version": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "parent": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@acme/commerce/_/Department"
+          },
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Customer"
+          },
+          "name": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent",
+          "customer",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "create": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Customer"
+          },
+          "name": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "customer",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "patch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "queries": [
+        {
+          "name": "all",
+          "kind": "list",
+          "params": [],
+          "order": [
+            {
+              "field": "id",
+              "direction": "asc"
+            }
+          ]
+        },
+        {
+          "name": "byCustomer",
+          "kind": "list",
+          "params": [
+            "customer"
+          ],
+          "order": [
+            {
+              "field": "name",
+              "direction": "asc"
+            },
+            {
+              "field": "id",
+              "direction": "asc"
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "@acme/commerce/_/Department.create",
+          "kind": "create",
+          "http": {
+            "method": "POST",
+            "path": "/v1/departments"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.get",
+          "kind": "get",
+          "http": {
+            "method": "GET",
+            "path": "/v1/departments/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.update",
+          "kind": "update",
+          "http": {
+            "method": "PATCH",
+            "path": "/v1/departments/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.delete",
+          "kind": "delete",
+          "http": {
+            "method": "DELETE",
+            "path": "/v1/departments/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.list.all",
+          "kind": "list",
+          "query": "all",
+          "http": {
+            "method": "GET",
+            "path": "/v1/departments"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.list.byCustomer",
+          "kind": "list",
+          "query": "byCustomer",
+          "http": {
+            "method": "GET",
+            "path": "/v1/departments/queries/by-customer"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.move",
+          "kind": "move",
+          "http": {
+            "method": "POST",
+            "path": "/v1/departments/{id}/move"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.children",
+          "kind": "children",
+          "http": {
+            "method": "GET",
+            "path": "/v1/departments/{id}/children"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/Department.ancestors",
+          "kind": "ancestors",
+          "http": {
+            "method": "GET",
+            "path": "/v1/departments/{id}/ancestors"
+          }
+        }
+      ]
+    },
+    {
       "id": "@acme/commerce/_/Order",
       "name": "Order",
       "wireName": "order",
@@ -1204,6 +1411,223 @@ expression: p.contracts
           "http": {
             "method": "GET",
             "path": "/v1/sites/queries/by-customer"
+          }
+        }
+      ]
+    },
+    {
+      "id": "@acme/commerce/_/SitePolicy",
+      "name": "SitePolicy",
+      "wireName": "site_policy",
+      "tenantScoped": true,
+      "softDelete": false,
+      "versioned": true,
+      "record": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "version": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "effectiveUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "site": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Site"
+          },
+          "maxOrderTotal": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+            "x-forge-type": "money",
+            "x-forge-currency": "USD",
+            "minimum": 0
+          },
+          "requiresApproval": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval"
+        ],
+        "additionalProperties": false
+      },
+      "create": {
+        "type": "object",
+        "properties": {
+          "site": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Site"
+          },
+          "maxOrderTotal": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+            "x-forge-type": "money",
+            "x-forge-currency": "USD",
+            "minimum": 0
+          },
+          "requiresApproval": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "site",
+          "maxOrderTotal"
+        ],
+        "additionalProperties": false
+      },
+      "patch": {
+        "type": "object",
+        "properties": {
+          "maxOrderTotal": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+            "x-forge-type": "money",
+            "x-forge-currency": "USD",
+            "minimum": 0
+          },
+          "requiresApproval": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "queries": [
+        {
+          "name": "all",
+          "kind": "list",
+          "params": [],
+          "order": [
+            {
+              "field": "id",
+              "direction": "asc"
+            }
+          ]
+        },
+        {
+          "name": "bySite",
+          "kind": "list",
+          "params": [
+            "site"
+          ],
+          "order": [
+            {
+              "field": "effectiveFrom",
+              "direction": "desc"
+            },
+            {
+              "field": "id",
+              "direction": "desc"
+            }
+          ]
+        }
+      ],
+      "operations": [
+        {
+          "id": "@acme/commerce/_/SitePolicy.create",
+          "kind": "create",
+          "http": {
+            "method": "POST",
+            "path": "/v1/site-policies"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/SitePolicy.get",
+          "kind": "get",
+          "http": {
+            "method": "GET",
+            "path": "/v1/site-policies/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/SitePolicy.update",
+          "kind": "update",
+          "http": {
+            "method": "PATCH",
+            "path": "/v1/site-policies/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/SitePolicy.delete",
+          "kind": "delete",
+          "http": {
+            "method": "DELETE",
+            "path": "/v1/site-policies/{id}"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/SitePolicy.list.all",
+          "kind": "list",
+          "query": "all",
+          "http": {
+            "method": "GET",
+            "path": "/v1/site-policies"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/SitePolicy.list.bySite",
+          "kind": "list",
+          "query": "bySite",
+          "http": {
+            "method": "GET",
+            "path": "/v1/site-policies/queries/by-site"
+          }
+        },
+        {
+          "id": "@acme/commerce/_/SitePolicy.effective.bySite",
+          "kind": "effective",
+          "query": "bySite",
+          "http": {
+            "method": "GET",
+            "path": "/v1/site-policies/effective/by-site"
           }
         }
       ]

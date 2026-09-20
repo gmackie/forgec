@@ -1,0 +1,34 @@
+{
+  "id": "m6.temporal-hierarchy",
+  "title": "Effective-dated policies (half-open, non-overlapping per site) and departmental hierarchy (cycle-safe moves, bounded traversal)",
+  "steps": [
+    { "name": "c", "op": "@acme/commerce/_/Customer.create", "input": { "code": "TMP", "name": "T" }, "expect": { "ok": { "id": "$id:1" } } },
+    { "name": "s", "op": "@acme/commerce/_/Site.create", "input": { "customer": "$c.id", "code": "hq", "name": "HQ", "timezone": "UTC" }, "expect": { "ok": { "id": "$id:2" } } },
+    { "name": "p1", "op": "@acme/commerce/_/SitePolicy.create", "input": { "site": "$s.id", "maxOrderTotal": "100.00", "effectiveFrom": "2026-01-01T00:00:00Z", "effectiveUntil": "2026-02-01T00:00:00Z" },
+      "expect": { "ok": { "id": "$id:3", "effectiveFrom": "2026-01-01T00:00:00.000Z", "effectiveUntil": "2026-02-01T00:00:00.000Z", "requiresApproval": false } } },
+    { "name": "empty", "op": "@acme/commerce/_/SitePolicy.create", "input": { "site": "$s.id", "maxOrderTotal": "1.00", "effectiveFrom": "2026-03-01T00:00:00Z", "effectiveUntil": "2026-03-01T00:00:00Z" }, "expect": { "error": "ValidationFailed" } },
+    { "name": "p2", "op": "@acme/commerce/_/SitePolicy.create", "input": { "site": "$s.id", "maxOrderTotal": "200.00", "effectiveFrom": "2026-02-01T00:00:00Z" }, "expect": { "ok": { "id": "$id:4", "effectiveUntil": null } } },
+    { "name": "overlap", "op": "@acme/commerce/_/SitePolicy.create", "input": { "site": "$s.id", "maxOrderTotal": "300.00", "effectiveFrom": "2026-01-15T00:00:00Z", "effectiveUntil": "2026-01-20T00:00:00Z" }, "expect": { "error": "ValidationFailed" } },
+    { "name": "later", "op": "@acme/commerce/_/SitePolicy.create", "input": { "site": "$s.id", "maxOrderTotal": "1.00", "effectiveFrom": "2027-01-01T00:00:00Z" }, "expect": { "error": "ValidationFailed" } },
+    { "name": "effJan", "op": "@acme/commerce/_/SitePolicy.effective.bySite", "input": { "params": { "site": "$s.id", "at": "2026-01-31T23:59:59Z" } }, "expect": { "ok": { "id": "$id:3", "maxOrderTotal": "100.00" } } },
+    { "name": "effFeb", "op": "@acme/commerce/_/SitePolicy.effective.bySite", "input": { "params": { "site": "$s.id", "at": "2026-02-01T00:00:00Z" } }, "expect": { "ok": { "id": "$id:4" } } },
+    { "name": "effNone", "op": "@acme/commerce/_/SitePolicy.effective.bySite", "input": { "params": { "site": "$s.id", "at": "2025-12-31T00:00:00Z" } }, "expect": { "error": "NotFound" } },
+    { "name": "grow", "op": "@acme/commerce/_/SitePolicy.update", "input": { "id": "$p1.id", "expectedVersion": 1, "patch": { "effectiveUntil": "2026-02-15T00:00:00Z" } }, "expect": { "error": "ValidationFailed" } },
+    { "name": "shrink", "op": "@acme/commerce/_/SitePolicy.update", "input": { "id": "$p1.id", "expectedVersion": 1, "patch": { "effectiveUntil": "2026-01-15T00:00:00Z" } }, "expect": { "ok": { "version": 2 } } },
+    { "name": "listBySite", "op": "@acme/commerce/_/SitePolicy.list.bySite", "input": { "params": { "site": "$s.id" } }, "expect": { "ok": { "items": [ { "id": "$id:4" }, { "id": "$id:3" } ] } } },
+    { "name": "root", "op": "@acme/commerce/_/Department.create", "input": { "customer": "$c.id", "name": "Root" }, "expect": { "ok": { "id": "$id:5", "parent": null } } },
+    { "name": "a", "op": "@acme/commerce/_/Department.create", "input": { "customer": "$c.id", "name": "A", "parent": "$root.id" }, "expect": { "ok": { "id": "$id:6", "parent": "$id:5" } } },
+    { "name": "b", "op": "@acme/commerce/_/Department.create", "input": { "customer": "$c.id", "name": "B", "parent": "$a.id" }, "expect": { "ok": { "id": "$id:7" } } },
+    { "name": "badParent", "op": "@acme/commerce/_/Department.create", "input": { "customer": "$c.id", "name": "X", "parent": "dep_nope" }, "expect": { "error": "ReferenceMissing" } },
+    { "name": "selfParent", "op": "@acme/commerce/_/Department.move", "input": { "id": "$a.id", "expectedVersion": 1, "parent": "$a.id" }, "expect": { "error": "ValidationFailed" } },
+    { "name": "cycle", "op": "@acme/commerce/_/Department.move", "input": { "id": "$root.id", "expectedVersion": 1, "parent": "$b.id" }, "expect": { "error": "ValidationFailed" } },
+    { "name": "move", "op": "@acme/commerce/_/Department.move", "input": { "id": "$b.id", "expectedVersion": 1, "parent": "$root.id" }, "expect": { "ok": { "id": "$id:7", "parent": "$id:5", "version": 2 } } },
+    { "name": "children", "op": "@acme/commerce/_/Department.children", "input": { "id": "$root.id" }, "expect": { "ok": { "items": [ { "name": "A" }, { "name": "B" } ] } } },
+    { "name": "ancestors", "op": "@acme/commerce/_/Department.ancestors", "input": { "id": "$b.id" }, "expect": { "ok": { "items": [ { "name": "Root" } ] } } },
+    { "name": "restrict", "op": "@acme/commerce/_/Department.delete", "input": { "id": "$root.id", "expectedVersion": 1 }, "expect": { "error": "HasDependents" } },
+    { "name": "cycleRace", "race": { "calls": [
+        { "op": "@acme/commerce/_/Department.move", "input": { "id": "$a.id", "expectedVersion": 1, "parent": "$b.id" } },
+        { "op": "@acme/commerce/_/Department.move", "input": { "id": "$b.id", "expectedVersion": 2, "parent": "$a.id" } } ] },
+      "expect": { "successes": { "min": 0, "max": 1 }, "failureCodes": ["ValidationFailed", "VersionConflict", "TransientConflict"] } }
+  ]
+}

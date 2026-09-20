@@ -62,7 +62,7 @@ export interface Resource {
   name: string;
   kind: "resource" | "blob";
   content?: ContentPolicy;
-  decorators: { tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; crud?: { path: string; operations?: string[]; actions: string[] } };
+  decorators: { tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; hierarchical?: boolean; effectiveDated?: { uniqueBy: string[] }; crud?: { path: string; operations?: string[]; actions: string[] } };
   fields: Field[];
   uniques: Unique[];
   finds: Find[];
@@ -125,7 +125,7 @@ export class Model {
     const out: { resource: Resource; field: string }[] = [];
     for (const r of this.resources) {
       for (const f of r.fields) {
-        if (f.type.base.kind === "reference" && f.type.base.resource === resourceId && !f.synthesized) out.push({ resource: r, field: f.name });
+        if (f.type.base.kind === "reference" && f.type.base.resource === resourceId && (!f.synthesized || f.name === "parent")) out.push({ resource: r, field: f.name });
       }
     }
     return out;

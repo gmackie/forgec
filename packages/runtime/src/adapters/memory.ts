@@ -8,7 +8,7 @@ import { Effect } from "effect";
 import { compareBytes, encodeIdentity } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import type { List, Resource, Unique } from "../model.js";
-import type { AuditEntry, CommitPlan, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export class MemoryStorage implements StorageAdapter {
   readonly name = "memory";
@@ -68,6 +68,38 @@ export class MemoryStorage implements StorageAdapter {
 
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError> {
     return Effect.succeed(this.receipts.get(`${tenant}|${operation}|${key}`) ?? null);
+  }
+
+  private overlapSync(tenant: string, r: Resource, g: IntervalGuard): StoredRecord[] {
+    const out: StoredRecord[] = [];
+    for (const rec of this.table(tenant, r).values()) {
+      if (rec["deletedAt"] || rec["id"] === g.excludeId) continue;
+      if (!g.groupFields.every((f, i) => rec[f] === g.groupValues[i])) continue;
+      const from = String(rec["effectiveFrom"]);
+      const until = (rec["effectiveUntil"] as string | null) ?? null;
+      // half-open intervals overlap iff a.from < b.until && b.from < a.until (null until = +inf)
+      const aBeforeBEnd = until === null || g.from < until;
+      const bBeforeAEnd = g.until === null || from < g.until;
+      if (aBeforeBEnd && bBeforeAEnd) out.push({ ...rec });
+    }
+    return out;
+  }
+  overlapping(tenant: string, r: Resource, g: IntervalGuard): Effect.Effect<StoredRecord[], ForgeError> {
+    return Effect.succeed(this.overlapSync(tenant, r, g));
+  }
+  effectiveAt(tenant: string, r: Resource, groupFields: string[], groupValues: unknown[], at: string): Effect.Effect<StoredRecord | null, ForgeError> {
+    for (const rec of this.table(tenant, r).values()) {
+      if (rec["deletedAt"]) continue;
+      if (!groupFields.every((f, i) => rec[f] === groupValues[i])) continue;
+      const from = String(rec["effectiveFrom"]);
+      const until = (rec["effectiveUntil"] as string | null) ?? null;
+      if (from <= at && (until === null || at < until)) return Effect.succeed({ ...rec });
+    }
+    return Effect.succeed(null);
+  }
+  children(tenant: string, r: Resource, parentField: string, id: string, limit: number): Effect.Effect<StoredRecord[], ForgeError> {
+    const rows = [...this.table(tenant, r).values()].filter((x) => !x["deletedAt"] && x[parentField] === id).sort((a, b) => compareBytes(String(a["name"] ?? a["id"]), String(b["name"] ?? b["id"])) || compareBytes(String(a["id"]), String(b["id"])));
+    return Effect.succeed(rows.slice(0, limit).map((x) => ({ ...x })));
   }
 
   private row(r: { tenant: string; opId: string; ordinal: number }): OutboxRow | undefined {
@@ -185,6 +217,21 @@ export class MemoryStorage implements StorageAdapter {
     for (const g of plan.references) {
       const target = this.table(plan.tenant, g.resource).get(g.id);
       if (!target || target["deletedAt"]) return (err("ReferenceMissing", `${g.field} does not reference a live record`));
+    }
+    // effective interval guard, re-evaluated against durable state
+    if (plan.interval && this.overlapSync(plan.tenant, plan.resource, plan.interval).length) return err("ValidationFailed", "interval overlaps a concurrently written record", { fields: [{ path: "effectiveFrom", code: "IntervalOverlap", message: "overlap at commit" }] });
+    // tree guard: the observed ancestor chain of the new parent must still hold and must not include this id
+    if (plan.tree) {
+      let cur: string | null = plan.tree.parentId;
+      const seen = new Set<string>();
+      for (let i = 0; i < 64 && cur; i++) {
+        if (cur === plan.id) return err("ValidationFailed", "move would create a cycle", { fields: [{ path: "parent", code: "Cycle", message: "cycle at commit" }] });
+        if (seen.has(cur)) return err("ValidationFailed", "cycle in hierarchy", { fields: [{ path: "parent", code: "Cycle", message: "existing cycle" }] });
+        seen.add(cur);
+        const rec = table.get(cur);
+        if (!rec || rec["deletedAt"]) return err("ReferenceMissing", "parent is not live");
+        cur = (rec[plan.tree.parentField] as string | null) ?? null;
+      }
     }
     // restrict-delete guard at commit time
     for (const d of plan.dependents) {

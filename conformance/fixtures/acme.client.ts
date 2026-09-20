@@ -63,7 +63,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     if (typeof input["expectedVersion"] === "number") headers["if-match"] = `"${input["expectedVersion"]}"`;
     let url = base + fillPath(spec.path, input);
     let body: string | null = null;
-    if (spec.kind === "find" || spec.kind === "list") {
+    if (spec.kind === "find" || spec.kind === "list" || spec.kind === "effective") {
       const q = new URLSearchParams();
       for (const [k, v] of Object.entries((input["params"] ?? {}) as Record<string, unknown>)) q.set(k, String(v));
       if (input["cursor"]) q.set("cursor", String(input["cursor"]));
@@ -78,7 +78,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     } else if (spec.kind === "update") {
       body = JSON.stringify(input["patch"] ?? {});
       headers["content-type"] = "application/json";
-    } else if (spec.kind === "beginUpload") {
+    } else if (spec.kind === "beginUpload" || spec.kind === "move") {
       const { id: _id, expectedVersion: _v, ...rest } = input;
       void _id;
       void _v;
@@ -121,6 +121,15 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/Customer.find.byCode": { method: "GET", path: "/v1/customers/queries/by-code", kind: "find", resource: "Customer" },
   "@acme/commerce/_/Customer.list.all": { method: "GET", path: "/v1/customers", kind: "list", resource: "Customer" },
   "@acme/commerce/_/Customer.list.byTier": { method: "GET", path: "/v1/customers/queries/by-tier", kind: "list", resource: "Customer" },
+  "@acme/commerce/_/Department.create": { method: "POST", path: "/v1/departments", kind: "create", resource: "Department" },
+  "@acme/commerce/_/Department.get": { method: "GET", path: "/v1/departments/{id}", kind: "get", resource: "Department" },
+  "@acme/commerce/_/Department.update": { method: "PATCH", path: "/v1/departments/{id}", kind: "update", resource: "Department" },
+  "@acme/commerce/_/Department.delete": { method: "DELETE", path: "/v1/departments/{id}", kind: "delete", resource: "Department" },
+  "@acme/commerce/_/Department.list.all": { method: "GET", path: "/v1/departments", kind: "list", resource: "Department" },
+  "@acme/commerce/_/Department.list.byCustomer": { method: "GET", path: "/v1/departments/queries/by-customer", kind: "list", resource: "Department" },
+  "@acme/commerce/_/Department.move": { method: "POST", path: "/v1/departments/{id}/move", kind: "move", resource: "Department" },
+  "@acme/commerce/_/Department.children": { method: "GET", path: "/v1/departments/{id}/children", kind: "children", resource: "Department" },
+  "@acme/commerce/_/Department.ancestors": { method: "GET", path: "/v1/departments/{id}/ancestors", kind: "ancestors", resource: "Department" },
   "@acme/commerce/_/Order.create": { method: "POST", path: "/v1/orders", kind: "create", resource: "Order" },
   "@acme/commerce/_/Order.get": { method: "GET", path: "/v1/orders/{id}", kind: "get", resource: "Order" },
   "@acme/commerce/_/Order.update": { method: "PATCH", path: "/v1/orders/{id}", kind: "update", resource: "Order" },
@@ -147,6 +156,13 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/Site.find.byCustomerCode": { method: "GET", path: "/v1/sites/queries/by-customer-code", kind: "find", resource: "Site" },
   "@acme/commerce/_/Site.list.all": { method: "GET", path: "/v1/sites", kind: "list", resource: "Site" },
   "@acme/commerce/_/Site.list.byCustomer": { method: "GET", path: "/v1/sites/queries/by-customer", kind: "list", resource: "Site" },
+  "@acme/commerce/_/SitePolicy.create": { method: "POST", path: "/v1/site-policies", kind: "create", resource: "SitePolicy" },
+  "@acme/commerce/_/SitePolicy.get": { method: "GET", path: "/v1/site-policies/{id}", kind: "get", resource: "SitePolicy" },
+  "@acme/commerce/_/SitePolicy.update": { method: "PATCH", path: "/v1/site-policies/{id}", kind: "update", resource: "SitePolicy" },
+  "@acme/commerce/_/SitePolicy.delete": { method: "DELETE", path: "/v1/site-policies/{id}", kind: "delete", resource: "SitePolicy" },
+  "@acme/commerce/_/SitePolicy.list.all": { method: "GET", path: "/v1/site-policies", kind: "list", resource: "SitePolicy" },
+  "@acme/commerce/_/SitePolicy.list.bySite": { method: "GET", path: "/v1/site-policies/queries/by-site", kind: "list", resource: "SitePolicy" },
+  "@acme/commerce/_/SitePolicy.effective.bySite": { method: "GET", path: "/v1/site-policies/effective/by-site", kind: "effective", resource: "SitePolicy" },
   "@acme/commerce/_/SubmitOrder": { method: "POST", path: "/v1/orders/{order}/submit", kind: "function", resource: "SubmitOrder" },
   "@acme/commerce/_/changesets.propose": { method: "POST", path: "/v1/changesets", kind: "changeset.propose", resource: "changesets" },
   "@acme/commerce/_/changesets.get": { method: "GET", path: "/v1/changesets/{id}", kind: "changeset.get", resource: "changesets" },
@@ -180,6 +196,25 @@ export interface CustomerPatch {
   name?: string;
   email?: string | null;
   tier?: "standard" | "gold" | "enterprise";
+}
+
+export interface DepartmentRecord {
+  id: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  parent: string | null;
+  customer: string;
+  name: string;
+}
+
+export interface DepartmentCreate {
+  customer: string;
+  name: string;
+}
+
+export interface DepartmentPatch {
+  name?: string;
 }
 
 export interface OrderRecord {
@@ -278,6 +313,29 @@ export interface SitePatch {
   enabled?: boolean;
 }
 
+export interface SitePolicyRecord {
+  id: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  effectiveFrom: string;
+  effectiveUntil: string | null;
+  site: string;
+  maxOrderTotal: string;
+  requiresApproval: boolean;
+}
+
+export interface SitePolicyCreate {
+  site: string;
+  maxOrderTotal: string;
+  requiresApproval?: boolean;
+}
+
+export interface SitePolicyPatch {
+  maxOrderTotal?: string;
+  requiresApproval?: boolean;
+}
+
 export interface CustomerApi {
   create(input: CustomerCreate, opts?: CallOptions): Promise<CustomerRecord>;
   get(id: string): Promise<CustomerRecord>;
@@ -287,6 +345,18 @@ export interface CustomerApi {
   findByCode(params: { code: string }): Promise<CustomerRecord | null>;
   listAll(params: {  }, page?: PageOptions): Promise<Page<CustomerRecord>>;
   listByTier(params: { tier: "standard" | "gold" | "enterprise" }, page?: PageOptions): Promise<Page<CustomerRecord>>;
+}
+
+export interface DepartmentApi {
+  create(input: DepartmentCreate, opts?: CallOptions): Promise<DepartmentRecord>;
+  get(id: string): Promise<DepartmentRecord>;
+  update(id: string, expectedVersion: number, patch: DepartmentPatch, opts?: CallOptions): Promise<DepartmentRecord>;
+  delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<DepartmentRecord>;
+  listAll(params: {  }, page?: PageOptions): Promise<Page<DepartmentRecord>>;
+  listByCustomer(params: { customer: string }, page?: PageOptions): Promise<Page<DepartmentRecord>>;
+  move(id: string, expectedVersion: number, parent: string | null): Promise<DepartmentRecord>;
+  children(id: string): Promise<Page<DepartmentRecord>>;
+  ancestors(id: string): Promise<Page<DepartmentRecord>>;
 }
 
 export interface OrderApi {
@@ -324,6 +394,16 @@ export interface SiteApi {
   listByCustomer(params: { customer: string }, page?: PageOptions): Promise<Page<SiteRecord>>;
 }
 
+export interface SitePolicyApi {
+  create(input: SitePolicyCreate, opts?: CallOptions): Promise<SitePolicyRecord>;
+  get(id: string): Promise<SitePolicyRecord>;
+  update(id: string, expectedVersion: number, patch: SitePolicyPatch, opts?: CallOptions): Promise<SitePolicyRecord>;
+  delete(id: string, expectedVersion: number, opts?: CallOptions): Promise<SitePolicyRecord>;
+  listAll(params: {  }, page?: PageOptions): Promise<Page<SitePolicyRecord>>;
+  listBySite(params: { site: string }, page?: PageOptions): Promise<Page<SitePolicyRecord>>;
+  effective(params: Record<string, string> & { at: string }): Promise<SitePolicyRecord | null>;
+}
+
 export interface FunctionsApi {
   submitOrder(input: Record<string, unknown>, opts?: CallOptions): Promise<unknown>;
 }
@@ -334,9 +414,11 @@ export interface ForgeClient {
   changesets: ChangesetsApi;
   imports: ImportsApi;
   customers: CustomerApi;
+  departments: DepartmentApi;
   orders: OrderApi;
   orderDocuments: OrderDocumentApi;
   sites: SiteApi;
+  sitePolicys: SitePolicyApi;
 }
 
 export function createClient(options: ClientOptions): ForgeClient {
@@ -366,6 +448,17 @@ export function createClient(options: ClientOptions): ForgeClient {
       findByCode: (params) => t.unwrapNullable(t.call("@acme/commerce/_/Customer.find.byCode", { params })),
       listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/Customer.list.all", { params, ...page })),
       listByTier: (params, page) => t.unwrap(t.call("@acme/commerce/_/Customer.list.byTier", { params, ...page })),
+    },
+    departments: {
+      create: (input, opts) => t.unwrap(t.call("@acme/commerce/_/Department.create", input, opts)),
+      get: (id) => t.unwrap(t.call("@acme/commerce/_/Department.get", { id })),
+      update: (id, expectedVersion, patch, opts) => t.unwrap(t.call("@acme/commerce/_/Department.update", { id, expectedVersion, patch }, opts)),
+      delete: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/Department.delete", { id, expectedVersion }, opts)),
+      listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/Department.list.all", { params, ...page })),
+      listByCustomer: (params, page) => t.unwrap(t.call("@acme/commerce/_/Department.list.byCustomer", { params, ...page })),
+      move: (id, expectedVersion, parent) => t.unwrap(t.call("@acme/commerce/_/Department.move", { id, expectedVersion, parent })),
+      children: (id) => t.unwrap(t.call("@acme/commerce/_/Department.children", { id })),
+      ancestors: (id) => t.unwrap(t.call("@acme/commerce/_/Department.ancestors", { id })),
     },
     orders: {
       create: (input, opts) => t.unwrap(t.call("@acme/commerce/_/Order.create", input, opts)),
@@ -398,6 +491,15 @@ export function createClient(options: ClientOptions): ForgeClient {
       findByCustomerCode: (params) => t.unwrapNullable(t.call("@acme/commerce/_/Site.find.byCustomerCode", { params })),
       listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/Site.list.all", { params, ...page })),
       listByCustomer: (params, page) => t.unwrap(t.call("@acme/commerce/_/Site.list.byCustomer", { params, ...page })),
+    },
+    sitePolicys: {
+      create: (input, opts) => t.unwrap(t.call("@acme/commerce/_/SitePolicy.create", input, opts)),
+      get: (id) => t.unwrap(t.call("@acme/commerce/_/SitePolicy.get", { id })),
+      update: (id, expectedVersion, patch, opts) => t.unwrap(t.call("@acme/commerce/_/SitePolicy.update", { id, expectedVersion, patch }, opts)),
+      delete: (id, expectedVersion, opts) => t.unwrap(t.call("@acme/commerce/_/SitePolicy.delete", { id, expectedVersion }, opts)),
+      listAll: (params, page) => t.unwrap(t.call("@acme/commerce/_/SitePolicy.list.all", { params, ...page })),
+      listBySite: (params, page) => t.unwrap(t.call("@acme/commerce/_/SitePolicy.list.bySite", { params, ...page })),
+      effective: (params) => t.unwrapNullable(t.call("@acme/commerce/_/SitePolicy.effective.bySite", { params })),
     },
   };
 }

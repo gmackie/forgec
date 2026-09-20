@@ -114,7 +114,7 @@ export function decodeObject(model: Model, input: unknown, opts: DecodeOptions):
     return { value: {}, errors: err("MalformedRequest", "expected a JSON object") };
   }
   const obj = input as Wire;
-  const writable = opts.fields.filter((f) => !f.serverOwned && !f.synthesized && f.derived === undefined && (opts.mode !== "patch" || !f.immutable));
+  const writable = opts.fields.filter((f) => !f.serverOwned && (!f.synthesized || ["parent", "effectiveFrom", "effectiveUntil"].includes(f.name)) && f.derived === undefined && (opts.mode !== "patch" || !f.immutable));
   const allowed = new Set(writable.map((f) => f.name));
   const unknown = Object.keys(obj).filter((k) => !allowed.has(k));
   if (unknown.length) {

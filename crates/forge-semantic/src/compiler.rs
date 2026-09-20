@@ -704,8 +704,9 @@ impl<'a> Ctx<'a> {
             out.push(mk("status", TypeSpec { base: TypeBase::Status { resource: resource_id.into() }, optional: false, normalizers: vec![], constraints: vec![] }));
         }
         if d.effective_dated.is_some() {
-            out.push(mk("effectiveFrom", scalar("datetime", false)));
-            out.push(mk("effectiveUntil", scalar("datetime", true)));
+            // Authored by the caller (§18): required start, optional end; validated and guarded at commit.
+            out.push(Field { name: "effectiveFrom".into(), ty: scalar("datetime", false), default: None, derived: None, immutable: false, server_owned: false, synthesized: true, hidden: false, doc: None });
+            out.push(Field { name: "effectiveUntil".into(), ty: scalar("datetime", true), default: None, derived: None, immutable: false, server_owned: false, synthesized: true, hidden: false, doc: None });
         }
         if d.hierarchical {
             out.push(Field { name: "parent".into(), ty: TypeSpec { base: TypeBase::Reference { resource: resource_id.into() }, optional: true, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: false, server_owned: false, synthesized: true, hidden: false, doc: None });
@@ -896,6 +897,20 @@ impl<'a> Ctx<'a> {
         for l in &lists {
             let path = if l.fields.is_empty() { String::new() } else { format!("/queries/{}", kebab(&l.fields)) };
             push("list", Some(l.name.clone()), None, if allowed("list") { http("GET", &path) } else { None });
+        }
+        if let Some(ed) = &decorators.effective_dated {
+            for f in &ed.unique_by {
+                if !field_names.contains(f) {
+                    self.err("E-QRY-002", file, range_of(r), format!("unknown field `{f}` in `@effectiveDated(uniqueBy)`"), suggest(f, field_names.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?")));
+                }
+            }
+            // `effective(<uniqueBy>, at)` returns zero-or-one by contract (§18)
+            push("effective", Some(camel(&ed.unique_by)), None, if allowed("effective") { http("GET", &format!("/effective/{}", kebab(&ed.unique_by))) } else { None });
+        }
+        if decorators.hierarchical {
+            push("move", None, None, if allowed("move") { http("POST", "/{id}/move") } else { None });
+            push("children", None, None, if allowed("children") { http("GET", "/{id}/children") } else { None });
+            push("ancestors", None, None, if allowed("ancestors") { http("GET", "/{id}/ancestors") } else { None });
         }
         if blob.is_some() {
             push("beginUpload", None, None, if allowed("beginUpload") { http("POST", "/{id}/upload") } else { None });

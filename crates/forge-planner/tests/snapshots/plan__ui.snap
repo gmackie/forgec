@@ -152,6 +152,122 @@ expression: p.ui
       "versioned": true
     },
     {
+      "id": "@acme/commerce/_/Department",
+      "name": "Department",
+      "kind": "resource",
+      "label": "Department",
+      "plural": "Departments",
+      "route": "departments",
+      "titleField": "name",
+      "fields": [
+        {
+          "name": "id",
+          "label": "Id",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "customer",
+          "label": "Customer",
+          "widget": "reference",
+          "required": true,
+          "editableOnCreate": true,
+          "editableOnUpdate": false,
+          "sortable": false,
+          "reference": {
+            "resource": "@acme/commerce/_/Customer",
+            "route": "customer",
+            "titleField": "name",
+            "lookup": "@acme/commerce/_/Customer.list.all",
+            "lookupParams": [],
+            "find": "@acme/commerce/_/Customer.find.byCode"
+          }
+        },
+        {
+          "name": "name",
+          "label": "Name",
+          "widget": "text",
+          "required": true,
+          "editableOnCreate": true,
+          "editableOnUpdate": true,
+          "sortable": true,
+          "minLength": 1,
+          "maxLength": 100
+        },
+        {
+          "name": "version",
+          "label": "Version",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "createdAt",
+          "label": "Created At",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "updatedAt",
+          "label": "Updated At",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "parent",
+          "label": "Parent",
+          "widget": "reference",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": false,
+          "reference": {
+            "resource": "@acme/commerce/_/Department",
+            "route": "department",
+            "titleField": "name",
+            "lookup": "@acme/commerce/_/Department.list.all",
+            "lookupParams": []
+          }
+        }
+      ],
+      "tableColumns": [
+        "name",
+        "customer",
+        "parent"
+      ],
+      "lists": [
+        {
+          "name": "all",
+          "op": "@acme/commerce/_/Department.list.all",
+          "params": [],
+          "label": "All"
+        },
+        {
+          "name": "byCustomer",
+          "op": "@acme/commerce/_/Department.list.byCustomer",
+          "params": [
+            "customer"
+          ],
+          "label": "By Customer"
+        }
+      ],
+      "finds": [],
+      "actions": [],
+      "softDelete": false,
+      "versioned": true
+    },
+    {
       "id": "@acme/commerce/_/Order",
       "name": "Order",
       "kind": "resource",
@@ -667,6 +783,135 @@ expression: p.ui
           ]
         }
       ],
+      "actions": [],
+      "softDelete": false,
+      "versioned": true
+    },
+    {
+      "id": "@acme/commerce/_/SitePolicy",
+      "name": "SitePolicy",
+      "kind": "resource",
+      "label": "Site Policy",
+      "plural": "Site Policys",
+      "route": "site-policys",
+      "titleField": "id",
+      "fields": [
+        {
+          "name": "id",
+          "label": "Id",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "site",
+          "label": "Site",
+          "widget": "reference",
+          "required": true,
+          "editableOnCreate": true,
+          "editableOnUpdate": false,
+          "sortable": false,
+          "reference": {
+            "resource": "@acme/commerce/_/Site",
+            "route": "site",
+            "titleField": "name",
+            "lookup": "@acme/commerce/_/Site.list.all",
+            "lookupParams": [],
+            "find": "@acme/commerce/_/Site.find.byCustomerCode"
+          }
+        },
+        {
+          "name": "maxOrderTotal",
+          "label": "Max Order Total",
+          "widget": "decimal",
+          "required": true,
+          "editableOnCreate": true,
+          "editableOnUpdate": true,
+          "sortable": true,
+          "currency": "USD"
+        },
+        {
+          "name": "requiresApproval",
+          "label": "Requires Approval",
+          "widget": "checkbox",
+          "required": false,
+          "editableOnCreate": true,
+          "editableOnUpdate": true,
+          "sortable": true
+        },
+        {
+          "name": "version",
+          "label": "Version",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "createdAt",
+          "label": "Created At",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "updatedAt",
+          "label": "Updated At",
+          "widget": "readonly",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "effectiveFrom",
+          "label": "Effective From",
+          "widget": "datetime",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        },
+        {
+          "name": "effectiveUntil",
+          "label": "Effective Until",
+          "widget": "datetime",
+          "required": false,
+          "editableOnCreate": false,
+          "editableOnUpdate": false,
+          "sortable": true
+        }
+      ],
+      "tableColumns": [
+        "id",
+        "site",
+        "maxOrderTotal",
+        "requiresApproval",
+        "effectiveFrom",
+        "effectiveUntil"
+      ],
+      "lists": [
+        {
+          "name": "all",
+          "op": "@acme/commerce/_/SitePolicy.list.all",
+          "params": [],
+          "label": "All"
+        },
+        {
+          "name": "bySite",
+          "op": "@acme/commerce/_/SitePolicy.list.bySite",
+          "params": [
+            "site"
+          ],
+          "label": "By Site"
+        }
+      ],
+      "finds": [],
       "actions": [],
       "softDelete": false,
       "versioned": true

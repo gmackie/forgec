@@ -175,3 +175,31 @@ fn blob_elaborates_to_a_resource_with_content_policy_and_upload_operations() {
     let bad = inline("@t/x", &[("src/a.forge", "blob Doc {\n  label : text\n  content {\n    maxBytes 0\n  }\n}\n")]);
     assert_eq!(codes(bad), vec!["E-BLOB-001"]); // blobs synthesize their id
 }
+
+#[test]
+fn effective_dated_and_hierarchical_resources_synthesize_fields_and_operations() {
+    let ex = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples"));
+    let pay = compile(&load_package(&ex.join("payments")).unwrap(), &[]).ir.unwrap();
+    let out = compile(&load_package(&ex.join("acme")).unwrap(), &[&pay]);
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let json = serde_json::to_value(out.ir.unwrap()).unwrap();
+    let res = json["modules"][0]["resources"].as_array().unwrap();
+    let policy = res.iter().find(|r| r["name"] == "SitePolicy").unwrap();
+    let names: Vec<&str> = policy["fields"].as_array().unwrap().iter().map(|f| f["name"].as_str().unwrap()).collect();
+    assert!(names.contains(&"effectiveFrom") && names.contains(&"effectiveUntil"), "{names:?}");
+    // effectiveFrom is writable on create (server-owned would make it unsettable); effectiveUntil too
+    let ef = policy["fields"].as_array().unwrap().iter().find(|f| f["name"] == "effectiveFrom").unwrap();
+    assert_eq!(ef["serverOwned"], false);
+    assert_eq!(policy["decorators"]["effectiveDated"]["uniqueBy"], serde_json::json!(["site"]));
+    let ops: Vec<&str> = policy["operations"].as_array().unwrap().iter().map(|o| o["id"].as_str().unwrap().rsplit('/').next().unwrap()).collect();
+    assert!(ops.contains(&"SitePolicy.effective.bySite"), "{ops:?}");
+    let dept = res.iter().find(|r| r["name"] == "Department").unwrap();
+    let dnames: Vec<&str> = dept["fields"].as_array().unwrap().iter().map(|f| f["name"].as_str().unwrap()).collect();
+    assert!(dnames.contains(&"parent"));
+    let dops: Vec<&str> = dept["operations"].as_array().unwrap().iter().map(|o| o["id"].as_str().unwrap().rsplit('/').next().unwrap()).collect();
+    for o in ["Department.move", "Department.children", "Department.ancestors"] {
+        assert!(dops.contains(&o), "missing {o} in {dops:?}");
+    }
+    let bad = inline("@t/x", &[("src/a.forge", "resource P\n  @effectiveDated(uniqueBy: [nope])\n{\n  id : id\n  a : text\n}\n")]);
+    assert_eq!(codes(bad), vec!["E-QRY-002"]);
+}

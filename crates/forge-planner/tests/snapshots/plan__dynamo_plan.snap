@@ -65,6 +65,62 @@ expression: p.dynamo
       "createActions": 6
     },
     {
+      "id": "@acme/commerce/_/Department",
+      "name": "Department",
+      "wireName": "department",
+      "tenantScoped": true,
+      "claims": [],
+      "access": [
+        {
+          "name": "all",
+          "kind": "list",
+          "partitionFields": [],
+          "sortFields": [
+            "id"
+          ],
+          "sortDirections": [
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version"
+          ]
+        },
+        {
+          "name": "byCustomer",
+          "kind": "list",
+          "partitionFields": [
+            "customer"
+          ],
+          "sortFields": [
+            "name",
+            "id"
+          ],
+          "sortDirections": [
+            "asc",
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version",
+            "customer",
+            "name"
+          ]
+        }
+      ],
+      "references": [
+        {
+          "field": "customer",
+          "target": "@acme/commerce/_/Customer"
+        },
+        {
+          "field": "parent",
+          "target": "@acme/commerce/_/Department"
+        }
+      ],
+      "createActions": 7
+    },
+    {
       "id": "@acme/commerce/_/Order",
       "name": "Order",
       "wireName": "order",
@@ -254,6 +310,58 @@ expression: p.dynamo
         }
       ],
       "createActions": 7
+    },
+    {
+      "id": "@acme/commerce/_/SitePolicy",
+      "name": "SitePolicy",
+      "wireName": "site_policy",
+      "tenantScoped": true,
+      "claims": [],
+      "access": [
+        {
+          "name": "all",
+          "kind": "list",
+          "partitionFields": [],
+          "sortFields": [
+            "id"
+          ],
+          "sortDirections": [
+            "asc"
+          ],
+          "projection": [
+            "id",
+            "version"
+          ]
+        },
+        {
+          "name": "bySite",
+          "kind": "list",
+          "partitionFields": [
+            "site"
+          ],
+          "sortFields": [
+            "effectiveFrom",
+            "id"
+          ],
+          "sortDirections": [
+            "desc",
+            "desc"
+          ],
+          "projection": [
+            "id",
+            "version",
+            "site",
+            "effectiveFrom"
+          ]
+        }
+      ],
+      "references": [
+        {
+          "field": "site",
+          "target": "@acme/commerce/_/Site"
+        }
+      ],
+      "createActions": 6
     }
   ]
 }

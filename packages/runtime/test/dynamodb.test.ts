@@ -182,3 +182,35 @@ describe.skipIf(!table)("DynamoDB adapter (live) — M5 dispatch", () => {
     expect([await consumer(env), await consumer(env)]).toEqual(["processed", "duplicate"]);
   }, 120_000);
 });
+
+describe.skipIf(!table)("DynamoDB adapter (live) — M6 temporal + hierarchy", () => {
+  it("interval overlap guard, effective lookup, tree moves with restrict-delete", async () => {
+    const storage = new DynamoStorage({ table: table!, region: process.env["AWS_REGION"] ?? "us-east-1" }, model);
+    const engine = new Engine(model, testLayer(storage, { runId: randomUUID().slice(0, 8) }));
+    const c = { tenant: `t-${randomUUID().slice(0, 8)}`, actor: "operator", requestId: "r" };
+    const cust = await run(engine.call("@acme/commerce/_/Customer.create", { code: "TMP", name: "T" }, c));
+    const site = await run(engine.call("@acme/commerce/_/Site.create", { customer: cust.id, code: "hq", name: "HQ", timezone: "UTC" }, c));
+    const P = "@acme/commerce/_/SitePolicy";
+    await run(engine.call(`${P}.create`, { site: site.id, maxOrderTotal: "100.00", effectiveFrom: "2026-01-01T00:00:00Z", effectiveUntil: "2026-02-01T00:00:00Z" }, c));
+    await run(engine.call(`${P}.create`, { site: site.id, maxOrderTotal: "200.00", effectiveFrom: "2026-02-01T00:00:00Z" }, c));
+    expect((await fails(engine.call(`${P}.create`, { site: site.id, maxOrderTotal: "1.00", effectiveFrom: "2026-01-10T00:00:00Z", effectiveUntil: "2026-01-11T00:00:00Z" }, c))).fields?.[0]?.code).toBe("IntervalOverlap");
+    expect((await run(engine.call(`${P}.effective.bySite`, { params: { site: site.id, at: "2026-01-15T00:00:00Z" } }, c))).maxOrderTotal).toBe("100.00");
+    expect((await run(engine.call(`${P}.effective.bySite`, { params: { site: site.id, at: "2028-01-15T00:00:00Z" } }, c))).maxOrderTotal).toBe("200.00");
+    // concurrent overlapping creates in one group: at most one wins
+    const cust2 = await run(engine.call("@acme/commerce/_/Customer.create", { code: "TMP2", name: "T" }, c));
+    const s2 = await run(engine.call("@acme/commerce/_/Site.create", { customer: cust2.id, code: "bb", name: "B", timezone: "UTC" }, c));
+    const race = await Promise.all([0, 1, 2].map((i) => Effect.runPromiseExit(engine.call(`${P}.create`, { site: s2.id, maxOrderTotal: `${i}.00`, effectiveFrom: "2026-05-01T00:00:00Z", effectiveUntil: "2026-06-01T00:00:00Z" }, c))));
+    expect(race.filter((r) => r._tag === "Success").length).toBe(1);
+    const D = "@acme/commerce/_/Department";
+    const root = await run(engine.call(`${D}.create`, { customer: cust.id, name: "Root" }, c));
+    const a = await run(engine.call(`${D}.create`, { customer: cust.id, name: "A", parent: root.id }, c));
+    const b = await run(engine.call(`${D}.create`, { customer: cust.id, name: "B", parent: a.id }, c));
+    expect((await fails(engine.call(`${D}.move`, { id: root.id, expectedVersion: 1, parent: b.id }, c))).fields?.[0]?.code).toBe("Cycle");
+    await run(engine.call(`${D}.move`, { id: b.id, expectedVersion: 1, parent: root.id }, c));
+    expect((await run(engine.call(`${D}.children`, { id: root.id }, c))).items.map((x: any) => x.name)).toEqual(["A", "B"]);
+    expect((await fails(engine.call(`${D}.delete`, { id: root.id, expectedVersion: 1 }, c))).code).toBe("HasDependents");
+    await run(engine.call(`${D}.delete`, { id: b.id, expectedVersion: 2 }, c));
+    await run(engine.call(`${D}.delete`, { id: a.id, expectedVersion: 1 }, c));
+    await run(engine.call(`${D}.delete`, { id: root.id, expectedVersion: 1 }, c));
+  }, 120_000);
+});

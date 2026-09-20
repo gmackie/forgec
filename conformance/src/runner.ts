@@ -144,8 +144,8 @@ export async function runScenario(scenario: Scenario, target: Target, options: R
       const want = step.expect.successes;
       const okCount = typeof want === "number" ? successes === want : successes >= want.min && successes <= want.max;
       if (!okCount) failures.push({ step: step.name, path: "successes", expected: want, actual: successes });
-      for (const c of codes) {
-        if (!step.expect.failureCodes.includes(c)) failures.push({ step: step.name, path: "failureCodes", expected: step.expect.failureCodes, actual: c });
+      for (const o of outcomes) {
+        if (!o.ok && !step.expect.failureCodes.includes(o.code)) failures.push({ step: step.name, path: "failureCodes", expected: step.expect.failureCodes, actual: `${o.code}: ${JSON.stringify((o as { detail?: unknown }).detail ?? null).slice(0, 300)}` });
       }
       const winner = outcomes.find((o) => o.ok);
       if (winner) {
