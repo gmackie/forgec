@@ -8,9 +8,10 @@ and AWS (CDK / DynamoDB).
 - Decisions: `docs/decisions/`
 - M0 executable spikes: `spikes/` (`pnpm spike:d1`, `pnpm spike:dynamo`)
 
-Status: M0–M2 gates met (2026-09-20). The reference app's CRUD runs on both
-targets with one client; see `conformance/README.md` for the certification
-table. Next: M3 (mutation integrity, changesets, bulk).
+Status: M0–M3 gates met (2026-09-20). CRUD, lifecycle actions, restrict
+delete, changesets (atomic + resumable) and idempotent recovery run on both
+targets with one client; see `conformance/README.md`. Next: M4 (workspace,
+blobs, CSV).
 
 ## Compiler (M1)
 

@@ -56,7 +56,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     if (opts?.idempotencyKey) headers["idempotency-key"] = opts.idempotencyKey;
     if (typeof input["expectedVersion"] === "number") headers["if-match"] = `"${input["expectedVersion"]}"`;
     let url = base + fillPath(spec.path, input);
-    let body: string | undefined;
+    let body: string | null = null;
     if (spec.kind === "find" || spec.kind === "list") {
       const q = new URLSearchParams();
       for (const [k, v] of Object.entries((input["params"] ?? {}) as Record<string, unknown>)) q.set(k, String(v));

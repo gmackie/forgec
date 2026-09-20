@@ -8,6 +8,7 @@ import { err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
 import type { CommitPlan, ListQuery, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 import { SqlMapping } from "./sql-mapping.js";
+import { rawD1Executor, type SqlExecutor, type SqlStatement } from "./sql-executor.js";
 
 /** Minimal structural type for the D1 binding so this module has no hard dependency on workers-types. */
 export interface D1Like {
@@ -21,15 +22,21 @@ export interface D1Stmt {
   run(): Promise<{ meta: { changes: number } }>;
 }
 
+const st = (sql: string, ...params: unknown[]): SqlStatement => ({ sql, params });
+
 const RETRY_ATTEMPTS = 3;
 /** D1: 100 bound parameters per statement; a batch may hold many statements. Budget counts statements conservatively. */
 const D1_BATCH_STATEMENT_LIMIT = 100;
 
 export class D1Storage implements StorageAdapter {
-  readonly name = "d1";
+  readonly name: string;
   private readonly map: SqlMapping;
+  private readonly db: SqlExecutor;
 
-  constructor(private readonly db: D1Like, model: Model) {
+  /** Accepts a raw D1 binding or any SqlExecutor facade over one. */
+  constructor(db: D1Like | SqlExecutor, model: Model) {
+    this.db = "facade" in db ? db : rawD1Executor(db);
+    this.name = `d1/${this.db.facade}`;
     this.map = new SqlMapping(model);
   }
 
@@ -45,7 +52,7 @@ export class D1Storage implements StorageAdapter {
     const t = this.map.table(r);
     const kw = this.keyWhere(r);
     return this.wrap(async () => {
-      const row = await this.db.prepare(`SELECT * FROM ${t.name} WHERE ${kw.sql}`).bind(...kw.bind(tenant, id)).first<Record<string, unknown>>();
+      const row = await this.db.first(st(`SELECT * FROM ${t.name} WHERE ${kw.sql}`, ...kw.bind(tenant, id)));
       return row ? this.map.fromRow(r, row) : null;
     });
   }
@@ -56,7 +63,7 @@ export class D1Storage implements StorageAdapter {
     const where = [...(r.decorators.tenant ? ["tenant = ?"] : []), ...fields.map((f) => `${this.map.column(r, f).name} = ?`)].join(" AND ");
     const binds = [...(r.decorators.tenant ? [tenant] : []), ...fields.map((f) => this.map.toColumn(r.fields.find((x) => x.name === f)!, values[f]))];
     return this.wrap(async () => {
-      const row = await this.db.prepare(`SELECT * FROM ${t.name} WHERE ${where}`).bind(...binds).first<Record<string, unknown>>();
+      const row = await this.db.first(st(`SELECT * FROM ${t.name} WHERE ${where}`, ...binds));
       return row ? this.map.fromRow(r, row) : null;
     });
   }
@@ -97,7 +104,7 @@ export class D1Storage implements StorageAdapter {
     const sql = `SELECT * FROM ${t.name} WHERE ${where.join(" AND ")} ORDER BY ${orderBy} LIMIT ?`;
     binds.push(q.limit + 1);
     return this.wrap(async () => {
-      const { results } = await this.db.prepare(sql).bind(...binds).all<Record<string, unknown>>();
+      const results = await this.db.all(st(sql, ...binds));
       const rows = results.slice(0, q.limit).map((row) => this.map.fromRow(r, row));
       return { records: rows, hasMore: results.length > q.limit };
     });
@@ -115,14 +122,14 @@ export class D1Storage implements StorageAdapter {
     const tenantSql = child.decorators.tenant ? "tenant = ? AND " : "";
     const binds = child.decorators.tenant ? [tenant, id] : [id];
     return this.wrap(async () => {
-      const row = await this.db.prepare(`SELECT COUNT(*) AS n FROM ${t.name} WHERE ${tenantSql}${col} = ?${live}`).bind(...binds).first<{ n: number }>();
+      const row = await this.db.first<{ n: number }>(st(`SELECT COUNT(*) AS n FROM ${t.name} WHERE ${tenantSql}${col} = ?${live}`, ...binds));
       return Number(row?.n ?? 0);
     });
   }
 
   getReceipt(tenant: string, operation: string, key: string): Effect.Effect<Receipt | null, ForgeError> {
     return this.wrap(async () => {
-      const row = await this.db.prepare("SELECT * FROM forge_receipt WHERE tenant = ? AND operation = ? AND key = ?").bind(tenant, operation, key).first<Record<string, unknown>>();
+      const row = await this.db.first(st("SELECT * FROM forge_receipt WHERE tenant = ? AND operation = ? AND key = ?", tenant, operation, key));
       if (!row) return null;
       return { tenant, operation, key, requestHash: String(row["request_hash"]), status: Number(row["status"]), response: JSON.parse(String(row["response"])), createdAt: String(row["created_at"]) };
     });
@@ -134,7 +141,7 @@ export class D1Storage implements StorageAdapter {
 
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {
     return this.wrap(async () => {
-      const row = await this.db.prepare("SELECT version, body FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?").bind(tenant, kind, id).first<{ version: number; body: string }>();
+      const row = await this.db.first<{ version: number; body: string }>(st("SELECT version, body FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", tenant, kind, id));
       return row ? { ...(JSON.parse(row.body) as Record<string, unknown>), _version: row.version } : null;
     });
   }
@@ -145,9 +152,9 @@ export class D1Storage implements StorageAdapter {
     const body = JSON.stringify(rest);
     return this.wrap(async () => {
       const res = expectedVersion === null
-        ? await this.db.prepare("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, ?)").bind(tenant, kind, id, body).run().catch(() => ({ meta: { changes: 0 } }))
-        : await this.db.prepare("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?").bind(body, tenant, kind, id, expectedVersion).run();
-      if (res.meta.changes !== 1) throw new Error("VersionConflict");
+        ? await this.db.run(st("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, ?)", tenant, kind, id, body)).catch(() => ({ changes: 0 }))
+        : await this.db.run(st("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?", body, tenant, kind, id, expectedVersion));
+      if (res.changes !== 1) throw new Error("VersionConflict");
     }).pipe(Effect.mapError((e) => (e.detail === "VersionConflict" ? err("VersionConflict", "document changed concurrently") : e)));
   }
 
@@ -168,7 +175,7 @@ export class D1Storage implements StorageAdapter {
   }
 
   private commitOnce(plans: CommitPlan[]): Effect.Effect<"ok" | ForgeError, never> {
-    const stmts = plans.flatMap((p) => this.statementsFor(p));
+    const stmts: SqlStatement[] = plans.flatMap((p) => this.statementsFor(p));
     return Effect.promise(async () => {
       try {
         await this.db.batch(stmts);
@@ -185,11 +192,11 @@ export class D1Storage implements StorageAdapter {
   }
 
   /** Statements for one logical command; several commands concatenate into one atomic batch. */
-  private statementsFor(plan: CommitPlan): D1Stmt[] {
+  private statementsFor(plan: CommitPlan): SqlStatement[] {
     const { resource: r, tenant, id } = plan;
     const t = this.map.table(r);
     const kw = this.keyWhere(r);
-    const stmts: D1Stmt[] = [];
+    const stmts: SqlStatement[] = [];
 
     // 1. assertion: every precondition, evaluated inside the batch
     const preds: string[] = [];
@@ -219,33 +226,33 @@ export class D1Storage implements StorageAdapter {
       if (d.resource.decorators.tenant) predBinds.push(tenant);
       predBinds.push(id);
     }
-    stmts.push(this.db.prepare(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, (${preds.join(" AND ")})`).bind(plan.opId, ...predBinds));
+    stmts.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, (${preds.join(" AND ")})`, plan.opId, ...predBinds));
 
     // 2. record write
     const row = this.map.toRow(r, plan.after);
     if (r.decorators.tenant) row["tenant"] = tenant;
     const cols = Object.keys(row);
     if (plan.hardDelete) {
-      stmts.push(this.db.prepare(`DELETE FROM ${t.name} WHERE ${kw.sql}`).bind(...kw.bind(tenant, id)));
+      stmts.push(st(`DELETE FROM ${t.name} WHERE ${kw.sql}`, ...kw.bind(tenant, id)));
     } else if (plan.kind === "create") {
-      stmts.push(this.db.prepare(`INSERT INTO ${t.name} (${cols.map((c) => `"${c}"`).join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`).bind(...cols.map((c) => row[c])));
+      stmts.push(st(`INSERT INTO ${t.name} (${cols.map((c) => `"${c}"`).join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`, ...cols.map((c) => row[c])));
     } else {
       const sets = cols.filter((c) => c !== "id" && c !== "tenant");
-      stmts.push(this.db.prepare(`UPDATE ${t.name} SET ${sets.map((c) => `"${c}" = ?`).join(", ")} WHERE ${kw.sql}`).bind(...sets.map((c) => row[c]), ...kw.bind(tenant, id)));
+      stmts.push(st(`UPDATE ${t.name} SET ${sets.map((c) => `"${c}" = ?`).join(", ")} WHERE ${kw.sql}`, ...sets.map((c) => row[c]), ...kw.bind(tenant, id)));
     }
 
     // 3. audit, outbox, receipt
     const a = plan.audit;
-    stmts.push(this.db.prepare("INSERT INTO forge_audit (tenant, op_id, resource, record_id, kind, new_version, actor, at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(a.tenant, a.opId, a.resource, a.recordId, a.kind, a.newVersion, a.actor, a.at, a.payload === undefined ? null : JSON.stringify(a.payload)));
+    stmts.push(st("INSERT INTO forge_audit (tenant, op_id, resource, record_id, kind, new_version, actor, at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", a.tenant, a.opId, a.resource, a.recordId, a.kind, a.newVersion, a.actor, a.at, a.payload === undefined ? null : JSON.stringify(a.payload)));
     for (const o of plan.outbox) {
-      stmts.push(this.db.prepare("INSERT INTO forge_outbox (tenant, op_id, ordinal, channel, message, payload, status, attempts, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?)").bind(o.tenant, o.opId, o.ordinal, o.channel, o.message, JSON.stringify(o.payload), o.createdAt));
+      stmts.push(st("INSERT INTO forge_outbox (tenant, op_id, ordinal, channel, message, payload, status, attempts, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?)", o.tenant, o.opId, o.ordinal, o.channel, o.message, JSON.stringify(o.payload), o.createdAt));
     }
     if (plan.receipt) {
       const rc = plan.receipt;
-      stmts.push(this.db.prepare("INSERT INTO forge_receipt (tenant, operation, key, request_hash, status, response, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(rc.tenant, rc.operation, rc.key, rc.requestHash, rc.status, JSON.stringify(rc.response), rc.createdAt));
+      stmts.push(st("INSERT INTO forge_receipt (tenant, operation, key, request_hash, status, response, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", rc.tenant, rc.operation, rc.key, rc.requestHash, rc.status, JSON.stringify(rc.response), rc.createdAt));
     }
     // 4. release the assertion row
-    stmts.push(this.db.prepare("DELETE FROM _forge_assert WHERE op_id = ?").bind(plan.opId));
+    stmts.push(st("DELETE FROM _forge_assert WHERE op_id = ?", plan.opId));
     return stmts;
   }
 
@@ -256,7 +263,7 @@ export class D1Storage implements StorageAdapter {
       const { resource: r, tenant, id } = plan;
       const t = this.map.table(r);
       const kw = this.keyWhere(r);
-      const current = await this.db.prepare(`SELECT version FROM ${t.name} WHERE ${kw.sql}`).bind(...kw.bind(tenant, id)).first<{ version?: number }>().catch(() => null);
+      const current = await this.db.first<{ version?: number }>(st(`SELECT version FROM ${t.name} WHERE ${kw.sql}`, ...kw.bind(tenant, id))).catch(() => null);
       if (plan.kind === "create" && current) return err("TransientConflict", "id collision");
       if (plan.kind !== "create") {
         if (!current) return err("NotFound", `${r.name} ${id} not found`);
@@ -266,7 +273,7 @@ export class D1Storage implements StorageAdapter {
         const gt = this.map.table(g.resource);
         const gkw = this.keyWhere(g.resource);
         const live = g.resource.decorators.softDelete ? " AND deleted_at IS NULL" : "";
-        const ok = await this.db.prepare(`SELECT 1 AS ok FROM ${gt.name} WHERE ${gkw.sql}${live}`).bind(...gkw.bind(tenant, g.id)).first().catch(() => null);
+        const ok = await this.db.first(st(`SELECT 1 AS ok FROM ${gt.name} WHERE ${gkw.sql}${live}`, ...gkw.bind(tenant, g.id))).catch(() => null);
         if (!ok) return err("ReferenceMissing", `${g.field} does not reference a live record`);
       }
       if (plan.dependents.length) return err("HasDependents", `${r.name} ${id} has live dependents`);

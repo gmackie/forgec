@@ -20,6 +20,12 @@ the same code that application clients use — and write
 | cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1) | 7 | 80 | 0 |
 | aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB) | 7 | 80 | 0 |
 
+D1 facades (`packages/runtime/test/d1-facades.test.ts`, real local D1 via
+the harness Worker): raw-d1, drizzle, effect-sql each pass all 7 scenarios
+(21/21). Drizzle's `batch()` only accepts its own query objects, so the
+atomic batch is always the D1 binding's — a facade choice never changes
+semantics.
+
 M3 adds `integrity` (restrict-delete via dependents, hard delete, delete
 racing child creates) and `changesets` (propose/preview/approve/commit,
 atomic all-or-nothing with re-checked revisions, resumable per-row with
