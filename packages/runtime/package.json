@@ -1,0 +1,27 @@
+{
+  "name": "@forge/runtime",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./codecs": "./src/codecs.ts",
+    "./memory": "./src/adapters/memory.ts",
+    "./d1": "./src/adapters/d1.ts",
+    "./dynamodb": "./src/adapters/dynamodb.ts",
+    "./cloudflare": "./src/hosts/cloudflare.ts",
+    "./aws": "./src/hosts/aws.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250920.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0"
+  }
+}

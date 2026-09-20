@@ -86,3 +86,27 @@ fn lock_pins_dependencies_and_check_detects_a_stale_lock() {
     assert!(forge().args(["lock", app.to_str().unwrap()]).output().unwrap().status.success());
     assert!(forge().args(["check", app.to_str().unwrap()]).output().unwrap().status.success());
 }
+
+#[test]
+fn build_writes_the_generated_bundle_migration_and_client() {
+    let out_dir = std::env::temp_dir().join(format!("forge-build-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&out_dir);
+    let out = forge().args(["build", examples().join("acme").to_str().unwrap(), "--out", out_dir.to_str().unwrap()]).output().unwrap();
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    let bundle: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(out_dir.join("app.json")).unwrap()).unwrap();
+    assert_eq!(bundle["version"], "app-bundle/1");
+    assert_eq!(bundle["ir"]["version"], "domain-ir/1");
+    assert_eq!(bundle["contracts"]["version"], "contracts/1");
+    assert_eq!(bundle["sql"]["dialect"], "sqlite");
+    assert_eq!(bundle["dynamo"]["version"], "dynamo-plan/1");
+    assert_eq!(bundle["buildHash"].as_str().unwrap().len(), 64);
+    let ddl = std::fs::read_to_string(out_dir.join("d1/0001_init.sql")).unwrap();
+    assert!(ddl.contains("CREATE TABLE customer"));
+    let client = std::fs::read_to_string(out_dir.join("client.ts")).unwrap();
+    assert!(client.contains("export function createClient"));
+    // building again is byte-identical
+    let again = forge().args(["build", examples().join("acme").to_str().unwrap(), "--out", out_dir.to_str().unwrap()]).output().unwrap();
+    assert!(again.status.success());
+    let bundle2 = std::fs::read_to_string(out_dir.join("app.json")).unwrap();
+    assert_eq!(serde_json::to_string(&bundle).unwrap(), serde_json::to_string(&serde_json::from_str::<serde_json::Value>(&bundle2).unwrap()).unwrap());
+}
