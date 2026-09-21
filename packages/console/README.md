@@ -318,9 +318,8 @@ sign-out races and draft revision preservation.
 
 The Deployments screen manages configured immutable releases through a private deployment
 controller: deploy with a configuration snapshot, inspect progress and logs, restart, stop,
-and roll back to a previous release and its configuration. The bundled controller uses Docker.
-Native Cloudflare deployment provisioning is not included; the console itself still runs on
-Workers or Node. The HTTP controller boundary allows other providers to be installed locally.
+and roll back to a previous release and its configuration. The bundled controller supports Docker and Cloudflare Workers.
+The console itself runs on Workers or Node. The HTTP controller boundary allows other providers to be installed locally.
 
 Build the console, then build the runner from the repository root:
 
@@ -370,3 +369,37 @@ Results remain in browser session memory. Build/revision preconditions reject st
 External runtimes must advertise invocation-preconditions; GET function input binding is currently
 unsupported in the playground. Deployment status records the last action's health check, not
 continuous monitoring.
+
+
+### Cloudflare Workers targets
+
+Set `kind: "cloudflare"` on both the console deployment connection and the runner target.
+A runner target supplies `cloudflare: {accountId, subdomain, prefix}`; prefix must start
+with `forge-` and be unique to this controller/target. A release supplies `module` (an
+absolute path to a single bundled ES module) and `moduleDigest` (its SHA-256), in place
+of the Docker image. The OCI artifact digest still identifies the signed Forge contract.
+
+The runner verifies module integrity, uploads a uniquely named Worker, probes health and
+switches the active pointer. Replaced Workers are removed; rollback reuploads the retained
+release module/configuration. Keep release files immutable and available for rollback.
+The ownership journal in the runner data volume removes interrupted candidates on startup
+while preserving the active Worker, including when paused. Use one runner per target.
+
+Protected environment values are uploaded as secret bindings. Operator-configured
+`cloudflare.bindings` can reference retained D1/R2/KV resources using Cloudflare's upload
+metadata format; resource creation and migrations remain the release pipeline's responsibility.
+These bindings cannot be replaced by UI environment values. Only workers.dev endpoints are
+managed here; custom domains/routes and scheduled triggers are not provisioned.
+
+Use `wrangler login` to establish runner credentials and mount its configuration directory
+read/write at `/root/.wrangler`, separate from the browser-facing console. Wrangler refreshes
+OAuth automatically. A dedicated login/profile is recommended for an unattended runner:
+refresh-token rotation means the credential store should have one owner. Alternatively set
+`CLOUDFLARE_API_TOKEN` on the runner with scoped Workers permissions. Never put credentials in
+console configuration text or source control. The runner image includes pinned Wrangler.
+
+Workers expose **Pause endpoint** and **Resume endpoint**, not a process restart. Pausing
+disables its workers.dev endpoint and previews, retaining the Worker for resumption. Status is
+the last action health check; the console playground routes to the recorded active deployment.
+Build the included pure-function Worker with `node scripts/build-playground.mjs`; its output
+is `generated/playground/worker.mjs`. Stateful apps require retained storage bindings.

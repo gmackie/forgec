@@ -8,9 +8,19 @@ import {
   type Release,
 } from "../deployment-control.js";
 export interface RunnerRelease extends Release {
-  image: string;
+  image?: string;
+  module?: string;
+  moduleDigest?: string;
 }
 export interface RunnerTarget {
+  kind?: "docker" | "cloudflare";
+  cloudflare?: {
+    accountId: string;
+    subdomain: string;
+    prefix: string;
+    compatibilityDate?: string;
+    bindings?: Array<{ name: string; type: string; [key: string]: unknown }>;
+  };
   id: string;
   name: string;
   releases: RunnerRelease[];
@@ -20,6 +30,8 @@ export interface RunnerTarget {
   healthPath?: string;
 }
 export interface Instance {
+  kind?: "docker" | "cloudflare";
+  accountId?: string;
   url: string;
   handle: string;
   healthPath?: string;
@@ -31,7 +43,8 @@ export interface Provider {
     target: RunnerTarget,
   ): Promise<Instance>;
   stop(instance: Instance): Promise<void>;
-  restart(instance: Instance): Promise<void>;
+  retire?(instance: Instance): Promise<void>;
+  restart(instance: Instance, options?: { wasStopped: boolean }): Promise<void>;
 }
 interface StoredRun extends DeploymentRun {
   requestId: string;
@@ -90,10 +103,17 @@ export class DeploymentController {
     const target = this.target(id),
       state = this.read(id);
     return {
-      releases: target.releases.map(({ image, ...release }) => release),
+      releases: target.releases.map(
+        ({ image, module, moduleDigest, ...release }) => release,
+      ),
       activeDeployment: state.activeDeployment,
       deployments: state.deployments.map(
-        ({ instance, requestId, fingerprint, ...run }) => run,
+        ({ instance, requestId, fingerprint, ...run }) => ({
+          ...run,
+          ...(instance?.kind === "cloudflare"
+            ? { runtimeUrl: instance.url }
+            : {}),
+        }),
       ),
     };
   }
@@ -221,12 +241,18 @@ export class DeploymentController {
           r.logs.push("App stopped. Data and release history retained.");
         });
       } else if (current.action === "restart") {
-        await this.provider.restart(previous!.instance!);
+        await this.provider.restart(previous!.instance!, {
+          wasStopped: previous!.status === "stopped",
+        });
         update((r, state) => {
           r.status = "healthy";
           r.instance = previous!.instance!;
           state.activeDeployment = r.id;
-          r.logs.push("Runtime restarted and healthy.");
+          r.logs.push(
+            target.kind === "cloudflare"
+              ? "Worker endpoint enabled and healthy."
+              : "Runtime restarted and healthy.",
+          );
         });
       } else {
         const instance = await this.provider.deploy(release, id, {
@@ -246,7 +272,8 @@ export class DeploymentController {
           previous.instance.handle !== instance.handle
         ) {
           try {
-            await this.provider.stop(previous.instance);
+            await (this.provider.retire?.(previous.instance) ??
+              this.provider.stop(previous.instance));
             update((r) =>
               r.logs.push(
                 "Previous runtime stopped; release retained for rollback.",

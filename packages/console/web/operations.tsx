@@ -119,7 +119,9 @@ export function FunctionPlayground({
       );
       if (ticket !== epoch.current) return;
       setResult(reply);
-      setHistory((h) => [{ ...reply, operation, name: selected.summary }, ...h].slice(0, 10));
+      setHistory((h) =>
+        [{ ...reply, operation, name: selected.summary }, ...h].slice(0, 10),
+      );
     } catch (e) {
       if (ticket === epoch.current) setError((e as Error).message);
     } finally {
@@ -565,6 +567,16 @@ export function DeploymentWorkspace({
                   <p className="muted small">
                     Status at the last deployment action.
                   </p>
+                  {active?.runtimeUrl && (
+                    <a
+                      className="ops-route"
+                      href={active.runtimeUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Worker endpoint ↗
+                    </a>
+                  )}
                 </div>
                 <div>
                   <p className="eyebrow">NEXT RELEASE</p>
@@ -615,7 +627,9 @@ export function DeploymentWorkspace({
                     disabled={!active || !!progressing}
                     onClick={() => review("restart")}
                   >
-                    Restart
+                    {configured?.kind === "cloudflare"
+                      ? "Resume endpoint"
+                      : "Restart"}
                   </Button>
                   <Button
                     variant="ghost"
@@ -624,7 +638,9 @@ export function DeploymentWorkspace({
                     }
                     onClick={() => review("stop")}
                   >
-                    Stop app
+                    {configured?.kind === "cloudflare"
+                      ? "Pause endpoint"
+                      : "Stop app"}
                   </Button>
                 </div>
               </section>
@@ -720,8 +736,12 @@ export function DeploymentWorkspace({
                   : confirm === "rollback"
                     ? "Confirm rollback"
                     : confirm === "restart"
-                      ? "Restart app"
-                      : "Confirm stop"}
+                      ? configured?.kind === "cloudflare"
+                        ? "Resume endpoint"
+                        : "Restart app"
+                      : configured?.kind === "cloudflare"
+                        ? "Pause endpoint"
+                        : "Confirm stop"}
               </Button>
             </footer>
           </Dialog>

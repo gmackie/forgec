@@ -4,6 +4,7 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { timingSafeEqual } from "node:crypto";
 import { DeploymentController, type RunnerTarget } from "./controller.js";
+import { CloudflareProvider } from "./cloudflare.js";
 import { DockerProvider } from "./docker.js";
 import { Problem } from "../model.js";
 const token = process.env.RUNNER_TOKEN;
@@ -26,10 +27,48 @@ for (const t of targets) {
 const database = process.env.RUNNER_DB || "/data/deployments.sqlite";
 await mkdir(dirname(database), { recursive: true });
 const db = new DatabaseSync(database);
-const provider = new DockerProvider(process.env.DOCKER_SOCKET);
+const docker = new DockerProvider(process.env.DOCKER_SOCKET);
+const cloudflare = new CloudflareProvider(
+  undefined,
+  undefined,
+  undefined,
+  dirname(database) + "/cloudflare",
+);
+const provider = {
+  deploy: (
+    release: import("./controller.js").RunnerRelease,
+    id: string,
+    target: RunnerTarget,
+  ) =>
+    (target.kind === "cloudflare" ? cloudflare : docker).deploy(
+      release,
+      id,
+      target,
+    ),
+  retire: (instance: import("./controller.js").Instance) =>
+    instance.kind === "cloudflare"
+      ? cloudflare.retire(instance)
+      : docker.stop(instance),
+  stop: (instance: import("./controller.js").Instance) =>
+    (instance.kind === "cloudflare" ? cloudflare : docker).stop(instance),
+  restart: (
+    instance: import("./controller.js").Instance,
+    options?: { wasStopped: boolean },
+  ) =>
+    instance.kind === "cloudflare"
+      ? cloudflare.restart(instance, options)
+      : docker.restart(instance),
+};
 const controller = new DeploymentController(db, targets, provider);
 for (const target of targets)
-  await provider.reconcile(target.id, controller.retainedInstance(target.id));
+  if (target.kind === "cloudflare")
+    await cloudflare.reconcile(
+      target,
+      controller.retainedInstance(target.id),
+      !controller.runtime(target.id),
+    );
+  else
+    await docker.reconcile(target.id, controller.retainedInstance(target.id));
 createServer(async (req, res) => {
   const respond = (status: number, data: unknown) => {
     res.writeHead(status, {
