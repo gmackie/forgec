@@ -1,0 +1,17 @@
+{
+  "name": "@forge/interfaces",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Non-Effect interfaces over one operation model: RPC bindings, MCP server, generic API CLI and SDK conformance (M14).",
+  "exports": {
+    "./rpc": { "types": "./dist/rpc.d.ts", "source": "./src/rpc.ts", "import": "./dist/rpc.js", "default": "./dist/rpc.js" },
+    "./mcp": { "types": "./dist/mcp.d.ts", "source": "./src/mcp.ts", "import": "./dist/mcp.js", "default": "./dist/mcp.js" },
+    "./cli": { "types": "./dist/cli.d.ts", "source": "./src/cli.ts", "import": "./dist/cli.js", "default": "./dist/cli.js" }
+  },
+  "bin": { "forge-api": "./bin/forge-api.mjs" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run", "build": "tsc -p tsconfig.build.json" },
+  "dependencies": { "@forge/runtime": "workspace:*" },
+  "devDependencies": { "@types/node": "^24.0.0", "effect": "4.0.0-rc.116", "typescript": "^5.9.0", "vitest": "^5.0.0" }
+}

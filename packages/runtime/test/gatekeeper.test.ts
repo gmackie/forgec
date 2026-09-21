@@ -113,6 +113,26 @@ describe("authorizer decisions in the pipeline", () => {
     expect((await fails(engine.call(`${N}/Customer.create`, { code: "NEW", name: "N" }, agent7))).code).toBe("NotPermitted");
   });
 
+  it("policies are evaluated independently: a missing attribute for one policy never blocks another that allows", async () => {
+    // agent-8 has no "writer" attribute: the write policy cannot apply to it, the read policy still does.
+    engine.gatekeeper.authorizer = localAuthorizer({
+      policies: [
+        { id: "contacts-write", actions: [`${N}/Contact.*`], purpose: `${G}/CustomerSupport`, requires: [{ pip: "hr", attribute: "writer" }], where: [] },
+        { id: "contacts-read", actions: [`${N}/Contact.get`], purpose: `${G}/CustomerSupport`, requires: [], where: [] },
+      ],
+      pips: [{ name: "hr", attributes: { "agent-7": { writer: true } }, freshnessMs: 60_000 }],
+      epoch: 1,
+      knownObligations: [],
+    });
+    const agent8: CallContext = { ...agent7, actor: "agent-8" };
+    expect((await run(engine.call(`${N}/Contact.get`, { id: ids.contactA }, agent8))).name).toBe("Ann");
+    expect(engine.gatekeeper.lastDecision).toMatchObject({ effect: "allow", policy: "contacts-read" });
+    // but the missing attribute still denies what only the write policy could allow, naming the cause
+    expect((await fails(engine.call(`${N}/Contact.update`, { id: ids.contactA, expectedVersion: 1, patch: { email: "x@example.com" } }, agent8))).code).toBe("NotFound");
+    expect(engine.gatekeeper.lastDecision?.reason).toMatch(/hr\.writer is missing/);
+    expect((await run(engine.call(`${N}/Contact.update`, { id: ids.contactA, expectedVersion: 1, patch: { email: "x@example.com" } }, agent7))).email).toBe("x@example.com");
+  });
+
   it("PAR-111: a cached allow under epoch N cannot survive a revocation at epoch N+1", async () => {
     expect((await run(engine.call(`${N}/Contact.get`, { id: ids.contactA }, agent7))).name).toBe("Ann");
     expect(engine.gatekeeper.cacheStats().hits).toBe(0);

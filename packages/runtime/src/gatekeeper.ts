@@ -132,15 +132,21 @@ export function localAuthorizer(o: { policies: Policy[]; pips: PipProvider[]; ep
         const decisionId = crypto.randomUUID();
         const deny = (reason: string, policy?: string): Decision => ({ effect: "deny", decisionId, ...(policy ? { policy } : {}), obligations: [], epoch: o.epoch, expiresAt, reason });
         if (ps.length === 0) return deny("no policy permits this action for this purpose");
+        // Each policy stands alone: one that cannot apply (missing/stale attribute, unimplementable
+        // obligation) is skipped, never a reason to allow; the first cause is reported when none allows.
+        let firstCause: Decision | null = null;
+        const skip = (reason: string, policy: string) => { firstCause ??= deny(reason, policy); };
         for (const p of ps) {
+          let applies = true;
           for (const r of p.requires) {
             const a = req.attributes.find((x) => x.pip === r.pip && x.attribute === r.attribute);
-            if (!a) return deny(`required attribute ${r.pip}.${r.attribute} is missing`, p.id);
-            if (a.expiresAt <= new Date().toISOString()) return deny(`required attribute ${r.pip}.${r.attribute} is stale`, p.id);
+            if (!a) { skip(`required attribute ${r.pip}.${r.attribute} is missing`, p.id); applies = false; break; }
+            if (a.expiresAt <= new Date().toISOString()) { skip(`required attribute ${r.pip}.${r.attribute} is stale`, p.id); applies = false; break; }
           }
+          if (!applies) continue;
           const obligations = p.obligations ?? [];
           const unknown = obligations.find((ob) => !o.knownObligations.includes(ob.kind));
-          if (unknown) return deny(`mandatory obligation ${unknown.kind} is not implemented by this runtime`, p.id);
+          if (unknown) { skip(`mandatory obligation ${unknown.kind} is not implemented by this runtime`, p.id); continue; }
           let ok = true;
           const rowFilter: RowFilter[] = [];
           for (const c of p.where) {
@@ -155,7 +161,7 @@ export function localAuthorizer(o: { policies: Policy[]; pips: PipProvider[]; ep
           }
           if (ok) return { effect: "allow", decisionId, policy: p.id, rowFilter, obligations, epoch: o.epoch, expiresAt };
         }
-        return deny("no applicable policy allows this record", ps[0]!.id);
+        return firstCause ?? deny("no applicable policy allows this record", ps[0]!.id);
       }),
   };
 }

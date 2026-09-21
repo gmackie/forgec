@@ -177,6 +177,8 @@ export interface HttpOptions {
   adminMaxBodyBytes?: number;
   /** Allowed browser origins (exact, or "*"). Absent = no CORS headers. */
   cors?: { origins: string[] };
+  /** Extra authenticated endpoints by exact path (e.g. an MCP server at `/forge/mcp`). */
+  mounts?: Record<string, (req: Request, principal: Principal, requestId: string) => Promise<Response>>;
 }
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -221,6 +223,9 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     // authenticate before routing: anonymous callers learn nothing about the API shape
     const principal = await options.auth.authenticate(req);
     if (principal instanceof ForgeError) return problem(principal, requestId);
+
+    const mount = options.mounts?.[url.pathname];
+    if (mount) return mount(req, principal, requestId);
 
     // FORGE-056: bounded discovery metadata. Compatibility evaluation input, never deployment trust:
     // a client that finds a different digest runs `forge compat`, it does not assume equivalence.
