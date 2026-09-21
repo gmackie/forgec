@@ -107,6 +107,18 @@ jobs:
           name: differential-report
           path: conformance/reports/differential.json
 
+  workflows:
+    name: workflow files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: "24.x", cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      # an unparseable workflow fails as a run named after the file, with no log
+      - run: node scripts/check-workflows.mjs
+
   packaging:
     name: packaging dry-run
     runs-on: ubuntu-latest
@@ -140,4 +152,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit --audit-level high || echo "::warning::pnpm audit reported advisories"
       - uses: rustsec/audit-check@v2
-        with: { token: ${{ secrets.GITHUB_TOKEN }} }
+        with: { token: "${{ secrets.GITHUB_TOKEN }}" }

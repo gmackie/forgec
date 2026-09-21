@@ -18,8 +18,9 @@ permissions:
 jobs:
   mirror:
     runs-on: ubuntu-latest
-    # A fork has no mirror credentials and should not try.
-    if: github.repository == 'gmackorg/forgegraph'
+    # No repository-name guard: a fork simply has no FORGEJO_TOKEN and the step
+    # below skips. Gating on the name means the guard rots every time the
+    # canonical repository moves, which is exactly when mirroring matters.
     steps:
       - uses: actions/checkout@v5
         with: { fetch-depth: 0 }
