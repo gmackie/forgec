@@ -95,6 +95,8 @@ pub enum Declaration {
     Source(SourceDecl),
     Subscription(SubscriptionDecl),
     Workflow(WorkflowDecl),
+    Purpose(PurposeDecl),
+    DataClass(DataClassDecl),
 }
 impl Declaration {
     pub fn cast(node: SyntaxNode) -> Option<Self> {
@@ -114,6 +116,8 @@ impl Declaration {
             K::SOURCE_DECL => Self::Source(SourceDecl(node)),
             K::SUBSCRIPTION_DECL => Self::Subscription(SubscriptionDecl(node)),
             K::WORKFLOW_DECL => Self::Workflow(WorkflowDecl(node)),
+            K::PURPOSE_DECL => Self::Purpose(PurposeDecl(node)),
+            K::DATA_CLASS_DECL => Self::DataClass(DataClassDecl(node)),
             _ => return None,
         })
     }
@@ -133,6 +137,8 @@ impl Declaration {
             Self::Source(n) => &n.0,
             Self::Subscription(n) => &n.0,
             Self::Workflow(n) => &n.0,
+            Self::Purpose(n) => &n.0,
+            Self::DataClass(n) => &n.0,
         }
     }
     pub fn is_exported(&self) -> bool {
@@ -141,6 +147,8 @@ impl Declaration {
     /// The declared name (None for import/module/subscription).
     pub fn name(&self) -> Option<SyntaxToken> {
         match self {
+            Self::Purpose(p) => p.name(),
+            Self::DataClass(d) => d.name(),
             Self::Module(_) | Self::Import(_) | Self::Subscription(_) => None,
             _ => idents(self.syntax()).find(|t| !matches!(t.text(), "export" | "enum" | "type" | "shape" | "resource" | "blob" | "cache" | "view" | "projection" | "function" | "channel" | "source")),
         }
@@ -204,6 +212,9 @@ node!(TypeDecl, TYPE_DECL);
 impl TypeDecl {
     pub fn name(&self) -> Option<SyntaxToken> {
         idents(&self.0).find(|t| !matches!(t.text(), "export" | "type"))
+    }
+    pub fn decorators(&self) -> impl Iterator<Item = Decorator> + '_ {
+        children(&self.0)
     }
     pub fn type_expr(&self) -> Option<TypeExpr> {
         child(&self.0)
@@ -392,6 +403,12 @@ impl ResourceDecl {
     }
     pub fn rules(&self) -> Option<RulesBlock> {
         child(&self.0)
+    }
+    pub fn capabilities(&self) -> impl Iterator<Item = CapabilityDecl> + '_ {
+        children(&self.0)
+    }
+    pub fn purpose_bindings(&self) -> impl Iterator<Item = PurposeBinding> + '_ {
+        children(&self.0)
     }
     pub fn lifecycle(&self) -> Option<LifecycleBlock> {
         child(&self.0)
@@ -654,6 +671,13 @@ impl FunctionDecl {
     pub fn output(&self) -> Option<QualifiedName> {
         child::<FunctionOutput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| t.name())
     }
+    /// `Record<Purpose>`: the purpose type argument on the output (edition 2027).
+    pub fn output_purpose(&self) -> Option<QualifiedName> {
+        child::<FunctionOutput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| child::<TypeArgs>(&t.0)).and_then(|a| children::<TypeArg>(&a.0).next()).and_then(|a| child(&a.0))
+    }
+    pub fn purpose(&self) -> Option<QualifiedName> {
+        child::<FunctionPurpose>(&self.0).and_then(|p| child(&p.0))
+    }
     pub fn uses(&self) -> Vec<UseDecl> {
         child::<UsesBlock>(&self.0).map(|b| children(&b.0).collect()).unwrap_or_default()
     }
@@ -677,6 +701,10 @@ impl UseDecl {
     }
     pub fn capability(&self) -> Option<String> {
         tokens(&self.0).filter(|t| t.kind() == K::IDENT).last().filter(|t| matches!(t.text(), "read" | "write" | "create" | "delete")).map(|t| t.text().to_string())
+    }
+    /// `for Purpose` on a dependency (edition 2027).
+    pub fn purpose(&self) -> Option<QualifiedName> {
+        child::<UsePurpose>(&self.0).and_then(|u| child(&u.0))
     }
 }
 node!(SendsBlock, SENDS_BLOCK);
@@ -958,6 +986,71 @@ impl FailDecl {
         idents(&self.0).nth(1)
     }
 }
+
+// ------------------------------------------------------------- governance (edition 2027)
+node!(PurposeDecl, PURPOSE_DECL);
+impl PurposeDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).find(|t| !matches!(t.text(), "export" | "purpose"))
+    }
+    pub fn extends(&self) -> Option<QualifiedName> {
+        child::<ExtendsClause>(&self.0).and_then(|e| child(&e.0))
+    }
+}
+node!(DataClassDecl, DATA_CLASS_DECL);
+impl DataClassDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).find(|t| !matches!(t.text(), "export" | "dataClass"))
+    }
+    pub fn extends(&self) -> Option<QualifiedName> {
+        child::<ExtendsClause>(&self.0).and_then(|e| child(&e.0))
+    }
+}
+node!(ExtendsClause, EXTENDS_CLAUSE);
+node!(CapabilityDecl, CAPABILITY_DECL);
+impl CapabilityDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).nth(1)
+    }
+    pub fn items(&self) -> impl Iterator<Item = CapabilityItem> + '_ {
+        children(&self.0)
+    }
+}
+node!(CapabilityItem, CAPABILITY_ITEM);
+impl CapabilityItem {
+    /// `includes X` -> Some(X)
+    pub fn includes(&self) -> Option<SyntaxToken> {
+        let mut it = idents(&self.0);
+        match it.next() {
+            Some(t) if t.text() == "includes" => it.next(),
+            _ => None,
+        }
+    }
+    pub fn deny(&self) -> bool {
+        idents(&self.0).next().is_some_and(|t| t.text() == "deny")
+    }
+    pub fn verb(&self) -> Option<SyntaxToken> {
+        idents(&self.0).find(|t| matches!(t.text(), "read" | "update" | "create" | "filter" | "order" | "actions"))
+    }
+    pub fn names(&self) -> Vec<QualifiedName> {
+        child::<NameSet>(&self.0).map(|n| children(&n.0).collect()).unwrap_or_default()
+    }
+    pub fn name_tokens(&self) -> Vec<SyntaxToken> {
+        child::<NameSet>(&self.0).map(|n| children::<QualifiedName>(&n.0).filter_map(|q| idents(&q.0).next()).collect()).unwrap_or_default()
+    }
+}
+node!(NameSet, NAME_SET);
+node!(PurposeBinding, PURPOSE_BINDING);
+impl PurposeBinding {
+    pub fn purpose(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+    pub fn uses(&self) -> Vec<SyntaxToken> {
+        children::<UsePurpose>(&self.0).filter_map(|u| idents(&u.0).nth(1)).collect()
+    }
+}
+node!(UsePurpose, USE_PURPOSE);
+node!(FunctionPurpose, FUNCTION_PURPOSE);
 
 node!(SubscriptionDecl, SUBSCRIPTION_DECL);
 impl SubscriptionDecl {

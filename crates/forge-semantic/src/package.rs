@@ -25,6 +25,15 @@ pub struct Package {
     pub dependency_paths: Vec<(String, PathBuf)>,
     /// `[observability]` from forge.toml: SLO window and per-class targets.
     pub observability: crate::ir::ObservabilityConfig,
+    /// `[extensions.<name>]` pins: manifest path (relative to the package root) and expected sha256.
+    pub extensions: Vec<Extension>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Extension {
+    pub name: String,
+    pub manifest: PathBuf,
+    pub sha256: String,
 }
 
 impl Package {
@@ -39,6 +48,7 @@ impl Package {
             dependencies: Vec::new(),
             dependency_paths: Vec::new(),
             observability: crate::ir::ObservabilityConfig::default(),
+            extensions: Vec::new(),
         }
     }
 }
@@ -54,6 +64,13 @@ struct Manifest {
     compatibility: Compatibility,
     #[serde(default)]
     observability: ManifestObservability,
+    #[serde(default)]
+    extensions: indexmap::IndexMap<String, ManifestExtension>,
+}
+#[derive(Debug, Deserialize)]
+struct ManifestExtension {
+    manifest: String,
+    sha256: String,
 }
 #[derive(Debug, Deserialize, Default)]
 struct ManifestObservability {
@@ -163,6 +180,7 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
         files,
         dependencies,
         dependency_paths,
+        extensions: m.extensions.iter().map(|(name, e)| Extension { name: name.clone(), manifest: root.join(&e.manifest), sha256: e.sha256.clone() }).collect(),
         observability: crate::ir::ObservabilityConfig {
             window: m.observability.window.unwrap_or_else(|| "28d".into()),
             slo: m.observability.slo.into_iter().map(|(class, s)| (class, crate::ir::SloTarget { availability: s.availability, latency_good: s.latency.good, latency_within: s.latency.within })).collect(),

@@ -1,0 +1,162 @@
+{
+  "schema_version": "1",
+  "resource": "@acme/commerce.Contact",
+  "capabilities": {
+    "Identity": {
+      "includes": [],
+      "allow": {
+        "read": [
+          "id",
+          "name"
+        ]
+      },
+      "deny": {}
+    },
+    "ContactRead": {
+      "includes": [
+        "Identity"
+      ],
+      "allow": {
+        "read": [
+          "customer",
+          "email"
+        ],
+        "filter": [
+          "customer"
+        ]
+      },
+      "deny": {}
+    },
+    "ContactMaintenance": {
+      "includes": [
+        "ContactRead"
+      ],
+      "allow": {
+        "update": [
+          "email"
+        ]
+      },
+      "deny": {}
+    },
+    "SupportRecord": {
+      "includes": [
+        "ContactMaintenance"
+      ],
+      "allow": {
+        "read": [
+          "supportNotes"
+        ],
+        "update": [
+          "supportNotes"
+        ]
+      },
+      "deny": {}
+    },
+    "AgentSupport": {
+      "includes": [
+        "SupportRecord"
+      ],
+      "allow": {},
+      "deny": {
+        "read": [
+          "supportNotes"
+        ],
+        "update": [
+          "supportNotes"
+        ],
+        "actions": [
+          "export"
+        ]
+      }
+    },
+    "BroadSupport": {
+      "includes": [
+        "SupportRecord"
+      ],
+      "allow": {
+        "actions": [
+          "export"
+        ]
+      },
+      "deny": {}
+    },
+    "ReincludeAttempt": {
+      "includes": [
+        "AgentSupport",
+        "BroadSupport"
+      ],
+      "allow": {},
+      "deny": {}
+    }
+  },
+  "purpose_map": {
+    "ParentCommunication": [
+      "ContactRead"
+    ],
+    "CustomerSupport": [
+      "SupportRecord"
+    ]
+  },
+  "taxonomy": {
+    "SpecializedSupport": {
+      "extends": "CustomerSupport"
+    }
+  },
+  "expected": {
+    "ContactRead": {
+      "read": [
+        "customer",
+        "email",
+        "id",
+        "name"
+      ],
+      "filter": [
+        "customer"
+      ]
+    },
+    "SupportRecord": {
+      "read": [
+        "customer",
+        "email",
+        "id",
+        "name",
+        "supportNotes"
+      ],
+      "filter": [
+        "customer"
+      ],
+      "update": [
+        "email",
+        "supportNotes"
+      ]
+    },
+    "AgentSupport": {
+      "read": [
+        "customer",
+        "email",
+        "id",
+        "name"
+      ],
+      "filter": [
+        "customer"
+      ],
+      "update": [
+        "email"
+      ]
+    },
+    "ReincludeAttempt": {
+      "read": [
+        "customer",
+        "email",
+        "id",
+        "name"
+      ],
+      "filter": [
+        "customer"
+      ],
+      "update": [
+        "email"
+      ]
+    }
+  }
+}

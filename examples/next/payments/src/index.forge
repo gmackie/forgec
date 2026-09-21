@@ -1,0 +1,23 @@
+import governance
+
+// Contract only. Importing it implies no implementation, deployment or grant.
+export shape AuthorizePaymentInput {
+  paymentRequestId : text length 1..128
+  orderReference : text length 1..128
+  amount : money<USD> > 0
+}
+
+export shape PaymentAuthorization {
+  authorizationId : text length 1..64
+}
+
+export function AuthorizePayment {
+  purpose governance.PaymentProcessing
+  input AuthorizePaymentInput
+  output PaymentAuthorization
+
+  errors {
+    PaymentDeclined
+    PaymentUnavailable
+  }
+}

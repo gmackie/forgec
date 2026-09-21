@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1",
+  "requestId": "example-checkout-payment",
+  "status": "pending",
+  "caller": {
+    "action": "@acme/commerce.SubmitOrder",
+    "securityEffectDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "callee": {
+    "action": "@acme/payments.AuthorizePayment",
+    "supportedContract": "example-version-envelope"
+  },
+  "rootPurpose": "@acme/governance.OrderFulfillment",
+  "effectivePurpose": "@acme/governance.PaymentProcessing",
+  "audience": "payments-test",
+  "environment": "test",
+  "scope": {
+    "tenant": "acme-test"
+  },
+  "inputFields": [
+    "paymentRequestId",
+    "orderReference",
+    "amount"
+  ],
+  "assurance": "workload-bound",
+  "delegation": "no-transitive-authority",
+  "activation": {
+    "permitted": false,
+    "missing": [
+      "callee owner review",
+      "signed grant publication",
+      "trusted deployment identity",
+      "policy snapshot activation"
+    ]
+  },
+  "note": "Illustrative digests only; no approval/signature/deployment is claimed."
+}

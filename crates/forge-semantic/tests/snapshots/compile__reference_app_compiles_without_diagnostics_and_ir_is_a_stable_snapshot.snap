@@ -348,7 +348,8 @@ expression: out.ir.unwrap()
               "path": "/v1/customers",
               "actions": []
             },
-            "hierarchical": false
+            "hierarchical": false,
+            "purposeScoped": false
           },
           "fields": [
             {
@@ -632,7 +633,9 @@ expression: out.ir.unwrap()
                 "path": "/v1/customers/queries/by-tier"
               }
             }
-          ]
+          ],
+          "capabilities": [],
+          "purposeBindings": []
         },
         {
           "id": "@acme/commerce/_/Department",
@@ -650,7 +653,8 @@ expression: out.ir.unwrap()
               "path": "/v1/departments",
               "actions": []
             },
-            "hierarchical": true
+            "hierarchical": true,
+            "purposeScoped": false
           },
           "fields": [
             {
@@ -876,7 +880,9 @@ expression: out.ir.unwrap()
                 "path": "/v1/departments/{id}/ancestors"
               }
             }
-          ]
+          ],
+          "capabilities": [],
+          "purposeBindings": []
         },
         {
           "id": "@acme/commerce/_/Order",
@@ -897,7 +903,8 @@ expression: out.ir.unwrap()
                 "cancel"
               ]
             },
-            "hierarchical": false
+            "hierarchical": false,
+            "purposeScoped": false
           },
           "fields": [
             {
@@ -1368,7 +1375,9 @@ expression: out.ir.unwrap()
                 "path": "/v1/orders/{id}/actions/cancel"
               }
             }
-          ]
+          ],
+          "capabilities": [],
+          "purposeBindings": []
         },
         {
           "id": "@acme/commerce/_/OrderDocument",
@@ -1386,7 +1395,8 @@ expression: out.ir.unwrap()
               "path": "/v1/order-documents",
               "actions": []
             },
-            "hierarchical": false
+            "hierarchical": false,
+            "purposeScoped": false
           },
           "fields": [
             {
@@ -1779,7 +1789,9 @@ expression: out.ir.unwrap()
                 "path": "/v1/order-documents/{id}/content"
               }
             }
-          ]
+          ],
+          "capabilities": [],
+          "purposeBindings": []
         },
         {
           "id": "@acme/commerce/_/Site",
@@ -1796,7 +1808,8 @@ expression: out.ir.unwrap()
               "path": "/v1/sites",
               "actions": []
             },
-            "hierarchical": false
+            "hierarchical": false,
+            "purposeScoped": false
           },
           "fields": [
             {
@@ -2072,7 +2085,9 @@ expression: out.ir.unwrap()
                 "path": "/v1/sites/queries/by-customer"
               }
             }
-          ]
+          ],
+          "capabilities": [],
+          "purposeBindings": []
         },
         {
           "id": "@acme/commerce/_/SitePolicy",
@@ -2095,7 +2110,8 @@ expression: out.ir.unwrap()
                 "site"
               ]
             },
-            "hierarchical": false
+            "hierarchical": false,
+            "purposeScoped": false
           },
           "fields": [
             {
@@ -2348,7 +2364,9 @@ expression: out.ir.unwrap()
                 "path": "/v1/site-policies/effective/by-site"
               }
             }
-          ]
+          ],
+          "capabilities": [],
+          "purposeBindings": []
         }
       ],
       "functions": [
@@ -3055,7 +3073,10 @@ expression: out.ir.unwrap()
           ],
           "graphHash": "62f3c6c402b8d49d810c3c875825d095bc7763443a7f3e9f455999a005af7e21"
         }
-      ]
+      ],
+      "purposes": [],
+      "dataClasses": []
     }
-  ]
+  ],
+  "requires": []
 }

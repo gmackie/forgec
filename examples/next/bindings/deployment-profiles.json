@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "draft-1",
+  "profiles": [
+    {
+      "id": "cloudflare-d1",
+      "compute": "cloudflare-workers",
+      "engine": "d1",
+      "provider": "cloudflare",
+      "queryFacade": "effect-sql",
+      "connection": "binding",
+      "deploymentTool": "alchemy",
+      "workflow": "cloudflare-workflows",
+      "classification": "original-regression-target",
+      "certification": "not-executed",
+      "provisioning": "attach-existing-first",
+      "secrets": "references-only"
+    },
+    {
+      "id": "aws-dynamodb",
+      "compute": "aws-lambda",
+      "engine": "dynamodb",
+      "provider": "aws",
+      "queryFacade": "native-plan",
+      "connection": "aws-sdk",
+      "deploymentTool": "cdk",
+      "workflow": "step-functions-standard",
+      "classification": "original-regression-target",
+      "certification": "not-executed",
+      "provisioning": "attach-existing-first",
+      "secrets": "references-only"
+    },
+    {
+      "id": "node-postgres",
+      "compute": "node",
+      "engine": "postgresql",
+      "provider": "self-hosted",
+      "queryFacade": "effect-sql",
+      "connection": "pooled-pg",
+      "deploymentTool": "docker-compose",
+      "workflow": "temporal",
+      "classification": "new-required-profile",
+      "certification": "not-executed",
+      "provisioning": "attach-existing-first",
+      "secrets": "references-only"
+    },
+    {
+      "id": "workers-neon-postgres",
+      "compute": "cloudflare-workers",
+      "engine": "postgresql",
+      "provider": "neon",
+      "queryFacade": "drizzle",
+      "connection": "hyperdrive-no-query-cache",
+      "deploymentTool": "alchemy",
+      "workflow": "cloudflare-workflows",
+      "classification": "qualification-required",
+      "certification": "not-executed",
+      "provisioning": "attach-existing-first",
+      "secrets": "references-only"
+    },
+    {
+      "id": "lambda-planetscale-postgres",
+      "compute": "aws-lambda",
+      "engine": "postgresql",
+      "provider": "planetscale-postgres",
+      "queryFacade": "effect-sql",
+      "connection": "tested-pooled-driver",
+      "deploymentTool": "cdk",
+      "workflow": "step-functions-standard",
+      "classification": "qualification-required",
+      "certification": "not-executed",
+      "provisioning": "attach-existing-first",
+      "secrets": "references-only"
+    },
+    {
+      "id": "node-turso",
+      "compute": "node",
+      "engine": "sqlite-compatible",
+      "provider": "turso-specific-engine",
+      "queryFacade": "tested-facade",
+      "connection": "pinned-sdk",
+      "deploymentTool": "docker-compose",
+      "workflow": null,
+      "classification": "qualification-required",
+      "certification": "not-executed",
+      "provisioning": "attach-existing-first",
+      "secrets": "references-only"
+    }
+  ]
+}

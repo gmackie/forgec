@@ -1,0 +1,77 @@
+{
+  "schema_version": "1",
+  "requirements": [
+    {
+      "feature": "Adapter independence and Postgres",
+      "baseline": "Existing D1/Alchemy and Dynamo/CDK",
+      "milestone": "M10",
+      "implementation_delta": "New provider/driver/runtime matrices preserve original mutation/query contracts."
+    },
+    {
+      "feature": "Data classification and concrete subject lineage",
+      "baseline": "Existing codecs, fields, relationships and provenance",
+      "milestone": "M11",
+      "implementation_delta": "Extend semantic metadata; do not add redundant global PII booleans."
+    },
+    {
+      "feature": "Purpose and reusable capability fragments",
+      "baseline": "Existing generated services and uses",
+      "milestone": "M12",
+      "implementation_delta": "Compile static field/action/query ceilings with explicit inclusion and sticky denial."
+    },
+    {
+      "feature": "Gatekeeper, PIPs, delegation and revocation",
+      "baseline": "Existing auth hooks, tenant scope and audit",
+      "milestone": "M13",
+      "implementation_delta": "Dynamic enforcement narrows the compiled ceiling on every operation."
+    },
+    {
+      "feature": "OpenAPI, RPC, MCP, CLI and SDKs",
+      "baseline": "Existing operation descriptors, HTTP and clients",
+      "milestone": "M14",
+      "implementation_delta": "Use the same scoped InterfaceIR; do not introduce new privileged paths."
+    },
+    {
+      "feature": "Registry/catalog/inventory",
+      "baseline": "Existing packages, locks and explicit exports",
+      "milestone": "M15",
+      "implementation_delta": "Immutable artifacts plus rebuildable indexes; no hot-path dependency."
+    },
+    {
+      "feature": "Dependency approval PRs and grants",
+      "baseline": "Existing cross-package uses and ownership slots",
+      "milestone": "M16",
+      "implementation_delta": "Callee approval is separate from caller declaration and runtime activation."
+    },
+    {
+      "feature": "Diff, migration, rollback and release notes",
+      "baseline": "M8 compatibility/migration tooling",
+      "milestone": "M17",
+      "implementation_delta": "Add governance/security dimensions without replacing previous storage guarantees."
+    },
+    {
+      "feature": "Neon/PlanetScale/Turso, Terraform/Docker/Nix",
+      "baseline": "Existing target plans and external binding support",
+      "milestone": "M18",
+      "implementation_delta": "Certify exact compositions; components are not universal portability proof."
+    },
+    {
+      "feature": "Subject rights, retention and recovery",
+      "baseline": "Existing blob/job/cache/projection infrastructure",
+      "milestone": "M19",
+      "implementation_delta": "Generate bounded reviewed plans with unknowns and no resurrection."
+    },
+    {
+      "feature": "Dashboards and compliance evidence",
+      "baseline": "M8 OTel/SLIs/SLOs and release evidence",
+      "milestone": "M20",
+      "implementation_delta": "Extend emitted metadata and evidence, preserving privacy and coverage limits."
+    },
+    {
+      "feature": "Provider-neutral release",
+      "baseline": "M8 conformance certification",
+      "milestone": "M21",
+      "implementation_delta": "No advertised combination passes without recorded actual evidence."
+    }
+  ]
+}

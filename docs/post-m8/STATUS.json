@@ -1,0 +1,57 @@
+{
+  "version": "post-m8-status/1",
+  "milestones": {
+    "M9": {
+      "status": "done",
+      "tickets": {
+        "FORGE-027": {
+          "status": "done",
+          "evidence": [
+            "specs/m8-baseline.json (64 passed / 11 pending with reasons)",
+            "scripts/post-m8/m8-baseline.ts"
+          ]
+        },
+        "FORGE-028": {
+          "status": "done",
+          "evidence": [
+            "specs/language/next-edition.md",
+            "examples/next/* (edition 2027 fixtures: parse lossless, fmt fixed point, compile clean)",
+            "crates/forge-semantic/tests/compile.rs: edition_2027_governance_declarations_lower_and_are_gated, digests_survive_folder_moves_and_discovery_order"
+          ]
+        },
+        "FORGE-029": {
+          "status": "done",
+          "evidence": [
+            "DomainIR::digests() (source/wire/docs/security) + app.json `digests`",
+            "tests: separate_semantic_digests, security_only_change_moves_only_the_security_digest, ir_loading_fails_closed_on_unknown_critical_features",
+            "runtime Model fails closed (packages/runtime/test/model-loading.test.ts)"
+          ]
+        },
+        "FORGE-030": {
+          "status": "done",
+          "evidence": [
+            "packages/contracts/capability-manifest (schema/validator/resolver, 4 tests)",
+            "[extensions] pins verified by forge check (E-EXT-001/002)",
+            "dependency_resolution_never_executes_package_code"
+          ]
+        },
+        "FORGE-031": {
+          "status": "done",
+          "evidence": [
+            "specs/security/threat-model.md (T1\u2013T15 with pending items named)"
+          ]
+        }
+      },
+      "scenarios": {
+        "PAR-076": "specs/m8-baseline.json",
+        "PAR-077": "digests_survive_folder_moves_and_discovery_order",
+        "PAR-078": "digests_survive_folder_moves_and_discovery_order + ir_is_identical_regardless_of_file_order_and_path_separators",
+        "PAR-079": "separate_semantic_digests",
+        "PAR-080": "security_only_change_moves_only_the_security_digest",
+        "PAR-081": "ir_loading_fails_closed_on_unknown_critical_features + model-loading.test.ts",
+        "PAR-082": "dependency_resolution_never_executes_package_code + check_validates_pinned_extension_manifests_without_executing_them",
+        "PAR-083": "ir_loading_fails_closed_on_unknown_critical_features (M8 artifact loads by rule; future artifact diagnosed)"
+      }
+    }
+  }
+}

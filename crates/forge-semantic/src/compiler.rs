@@ -11,8 +11,10 @@ use std::collections::{BTreeMap, BTreeSet};
 pub const SCALARS: &[&str] = &[
     "id", "text", "integer", "decimal", "money", "boolean", "date", "datetime", "localTime", "duration", "email", "timezone", "countryCode", "url", "json",
 ];
-const RESOURCE_DECORATORS: &[&str] = &["tenant", "timestamps", "softDelete", "versioned", "audited", "crud", "effectiveDated", "hierarchical", "label"];
-const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label"];
+const RESOURCE_DECORATORS: &[&str] = &["tenant", "timestamps", "softDelete", "versioned", "audited", "crud", "effectiveDated", "hierarchical", "label", "purposeScoped", "subject"];
+const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data"];
+/// Declarations and decorators that need `edition = "2027"`.
+const EDITION_2027_DECORATORS: &[&str] = &["purposeScoped", "subject", "data"];
 const FUNCTION_DECORATORS: &[&str] = &["http", "label"];
 const HTTP_METHODS: &[&str] = &["GET", "POST", "PUT", "PATCH", "DELETE"];
 const DEFAULT_MODULE: &str = "_";
@@ -63,6 +65,8 @@ enum SymKind {
     Channel,
     Source,
     Workflow,
+    Purpose,
+    DataClass,
 }
 
 struct Symbol {
@@ -201,6 +205,8 @@ impl<'a> Ctx<'a> {
                     Declaration::Channel(_) => SymKind::Channel,
                     Declaration::Source(_) => SymKind::Source,
                     Declaration::Workflow(_) => SymKind::Workflow,
+                    Declaration::Purpose(_) => SymKind::Purpose,
+                    Declaration::DataClass(_) => SymKind::DataClass,
                     Declaration::Import(i) => {
                         let Some(path) = i.path() else { continue };
                         let alias = i.alias().map(|a| a.text().to_string()).unwrap_or_else(|| path.text());
@@ -257,7 +263,7 @@ impl<'a> Ctx<'a> {
                         SymKind::Function => Resolved::Function(id),
                         SymKind::Channel => Resolved::Channel(id),
                         SymKind::Type => Resolved::Type(self.alias_base(module, a)),
-                        SymKind::Source | SymKind::Cache | SymKind::View | SymKind::Projection | SymKind::Workflow => {
+                        SymKind::Source | SymKind::Cache | SymKind::View | SymKind::Projection | SymKind::Workflow | SymKind::Purpose | SymKind::DataClass => {
                             self.err("E-SYM-005", file, range, format!("`{a}` cannot be used as a type or dependency here"), None);
                             return None;
                         }
@@ -473,7 +479,7 @@ impl<'a> Ctx<'a> {
                 None => self.err("E-TYPE-004", file, range_of(&r), "unrecognized refinement", None),
             }
         }
-        Some(TypeSpec { base, optional: te.is_optional(), normalizers, constraints })
+        Some(TypeSpec { base, optional: te.is_optional(), normalizers, constraints, purpose: None, data_class: None })
     }
 
     // ------------------------------------------------------------ fields
@@ -500,7 +506,7 @@ impl<'a> Ctx<'a> {
                 self.err("E-DEC-003", file, range_of(fd), format!("derived field `{name}` cannot carry decorators"), None);
             }
             let ir = self.expr(&expr, module, file, scope);
-            let ty = ir.as_ref().and_then(|e| self.infer(e, module, scope)).unwrap_or(TypeSpec { base: TypeBase::Scalar { name: "json".into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![] });
+            let ty = ir.as_ref().and_then(|e| self.infer(e, module, scope)).unwrap_or(TypeSpec { base: TypeBase::Scalar { name: "json".into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None });
             return Some(Field { name, ty, default: None, derived: ir, immutable: true, server_owned: true, synthesized: false, hidden: false, doc: fd.doc() });
         }
         let te = fd.type_expr()?;
@@ -581,6 +587,53 @@ impl<'a> Ctx<'a> {
                 Expr::Name { path }
             }
         })
+    }
+
+    fn require_edition_2027(&mut self, file: usize, range: (usize, usize), what: &str) {
+        if self.pkg.edition != "2027" {
+            self.err("E-ED-001", file, range, format!("{what} requires `edition = \"2027\"` in forge.toml (this package is edition {})", self.pkg.edition), Some("see specs/language/next-edition.md".into()));
+        }
+    }
+
+    /// Purpose id for `Name` (local) or `alias.Name` (imported, exported only).
+    fn resolve_purpose(&mut self, segs: &[String], module: &str, file: usize, range: (usize, usize)) -> Option<String> {
+        match segs {
+            [a] => {
+                if self.sym(module, a).is_some_and(|s| s.kind == SymKind::Purpose) {
+                    return Some(self.id(module, a));
+                }
+            }
+            [a, b] if self.is_import(module, a) => {
+                let dep = self.deps[a];
+                if let Some(p) = dep.modules.iter().flat_map(|m| &m.purposes).find(|p| &p.name == b) {
+                    if p.exported {
+                        return Some(p.id.clone());
+                    }
+                    self.err("E-SYM-003", file, range, format!("purpose `{}` exists in `{}` but is not exported", b, dep.package.name), None);
+                    return None;
+                }
+            }
+            _ => {}
+        }
+        let known: Vec<String> = self.symbols.iter().filter(|((m, _), s)| m == module && s.kind == SymKind::Purpose).map(|((_, n), _)| n.clone()).collect();
+        let sugg = suggest(&segs.join("."), known.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+        self.err("E-GOV-003", file, range, format!("unknown purpose `{}`", segs.join(".")), sugg);
+        None
+    }
+
+    fn resolve_data_class(&mut self, segs: &[String], module: &str, file: usize, range: (usize, usize)) -> Option<String> {
+        match segs {
+            [a] if self.sym(module, a).is_some_and(|s| s.kind == SymKind::DataClass) => return Some(self.id(module, a)),
+            [a, b] if self.is_import(module, a) => {
+                let dep = self.deps[a];
+                if let Some(d) = dep.modules.iter().flat_map(|m| &m.data_classes).find(|d| &d.name == b && d.exported) {
+                    return Some(d.id.clone());
+                }
+            }
+            _ => {}
+        }
+        self.err("E-GOV-006", file, range, format!("unknown data class `{}`", segs.join(".")), None);
+        None
     }
 
     /// Validate `a.b.c` against a resource's fields, following references.
@@ -674,7 +727,7 @@ impl<'a> Ctx<'a> {
     }
 
     fn infer(&mut self, e: &Expr, module: &str, scope: Option<&str>) -> Option<TypeSpec> {
-        let scalar = |n: &str| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![] };
+        let scalar = |n: &str| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None };
         Some(match e {
             Expr::Binary { op, lhs, .. } => match op.as_str() {
                 "+" | "-" | "*" | "/" => self.infer(lhs, module, scope)?,
@@ -699,7 +752,7 @@ impl<'a> Ctx<'a> {
                         && let TypeBase::Reference { resource } = &f.ty.base {
                             current = resource.clone();
                         }
-                    ty = Some(TypeSpec { base: f.ty.base.clone(), optional: f.ty.optional, normalizers: vec![], constraints: vec![] });
+                    ty = Some(TypeSpec { base: f.ty.base.clone(), optional: f.ty.optional, normalizers: vec![], constraints: vec![], purpose: None, data_class: None });
                 }
                 ty?
             }
@@ -719,6 +772,10 @@ impl<'a> Ctx<'a> {
                 "versioned" => d.versioned = true,
                 "audited" => d.audited = true,
                 "hierarchical" => d.hierarchical = true,
+                "purposeScoped" => d.purpose_scoped = true,
+                "subject" => {
+                    d.subject = dec.args().first().and_then(|a| a.value()).and_then(|v| if let ArgValue::Name(n) = v { n.first().cloned() } else { None });
+                }
                 "crud" => {
                     let args = dec.args();
                     if let Some(ArgValue::Literal(p)) = args.first().and_then(|a| a.value()) {
@@ -742,7 +799,7 @@ impl<'a> Ctx<'a> {
     }
 
     fn synthesized_fields(&self, d: &ResourceDecorators, has_lifecycle: bool, resource_id: &str) -> Vec<Field> {
-        let scalar = |n: &str, optional: bool| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional, normalizers: vec![], constraints: vec![] };
+        let scalar = |n: &str, optional: bool| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional, normalizers: vec![], constraints: vec![], purpose: None, data_class: None };
         let mk = |name: &str, ty: TypeSpec| Field { name: name.into(), ty, default: None, derived: None, immutable: false, server_owned: true, synthesized: true, hidden: false, doc: None };
         let mut out = Vec::new();
         if d.versioned {
@@ -756,7 +813,7 @@ impl<'a> Ctx<'a> {
             out.push(mk("deletedAt", scalar("datetime", true)));
         }
         if has_lifecycle {
-            out.push(mk("status", TypeSpec { base: TypeBase::Status { resource: resource_id.into() }, optional: false, normalizers: vec![], constraints: vec![] }));
+            out.push(mk("status", TypeSpec { base: TypeBase::Status { resource: resource_id.into() }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None }));
         }
         if d.effective_dated.is_some() {
             // Authored by the caller (§18): required start, optional end; validated and guarded at commit.
@@ -764,7 +821,7 @@ impl<'a> Ctx<'a> {
             out.push(Field { name: "effectiveUntil".into(), ty: scalar("datetime", true), default: None, derived: None, immutable: false, server_owned: false, synthesized: true, hidden: false, doc: None });
         }
         if d.hierarchical {
-            out.push(Field { name: "parent".into(), ty: TypeSpec { base: TypeBase::Reference { resource: resource_id.into() }, optional: true, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: false, server_owned: false, synthesized: true, hidden: false, doc: None });
+            out.push(Field { name: "parent".into(), ty: TypeSpec { base: TypeBase::Reference { resource: resource_id.into() }, optional: true, normalizers: vec![], constraints: vec![], purpose: None, data_class: None }, default: None, derived: None, immutable: false, server_owned: false, synthesized: true, hidden: false, doc: None });
         }
         out
     }
@@ -810,7 +867,7 @@ impl<'a> Ctx<'a> {
         }
         if blob.is_some() && !declared_names.contains("id") {
             // Blobs synthesize their id.
-            fields.insert(0, Field { name: "id".into(), ty: TypeSpec { base: TypeBase::Scalar { name: "id".into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: true, server_owned: true, synthesized: true, hidden: false, doc: None });
+            fields.insert(0, Field { name: "id".into(), ty: TypeSpec { base: TypeBase::Scalar { name: "id".into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None }, default: None, derived: None, immutable: true, server_owned: true, synthesized: true, hidden: false, doc: None });
             declared_names.insert("id".into());
         }
         if !declared_names.contains("id") {
@@ -988,7 +1045,71 @@ impl<'a> Ctx<'a> {
             }
         }
 
-        Some(Resource { id, name, kind: if blob.is_some() { "blob".into() } else { "resource".into() }, exported, doc: ast::doc_of(r.syntax()), decorators, fields, uniques, finds, lists, rules, lifecycle, content, operations })
+        // ---- edition 2027: governance surface
+        for dec in r.decorators() {
+            if let Some(n) = dec.name()
+                && EDITION_2027_DECORATORS.contains(&n.text()) {
+                    self.require_edition_2027(file, tok_range(&n), &format!("`@{}`", n.text()));
+                }
+        }
+        if decorators.subject.is_some() && !matches!(decorators.subject.as_deref(), Some("person" | "organization" | "device")) {
+            self.err("E-GOV-005", file, range_of(r), "`@subject` kind must be `person`, `organization` or `device`", None);
+        }
+        let field_names: Vec<String> = fields.iter().map(|f| f.name.clone()).collect();
+        let action_names: Vec<String> = lifecycle.as_ref().map(|l| l.transitions.iter().map(|t| format!("status.{}", t.action)).collect()).unwrap_or_default();
+        let cap_names: Vec<String> = r.capabilities().filter_map(|c| c.name().map(|t| t.text().to_string())).collect();
+        let mut capabilities: Vec<Capability> = Vec::new();
+        for c in r.capabilities() {
+            let Some(cn) = c.name() else { continue };
+            self.require_edition_2027(file, tok_range(&cn), "`capability`");
+            let mut includes = Vec::new();
+            let mut atoms = Vec::new();
+            for item in c.items() {
+                if let Some(inc) = item.includes() {
+                    if !cap_names.iter().any(|x| x == inc.text()) {
+                        let sugg = suggest(inc.text(), cap_names.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+                        self.err("E-GOV-001", file, tok_range(&inc), format!("capability `{}` includes unknown capability `{}`", cn.text(), inc.text()), sugg);
+                        continue;
+                    }
+                    if inc.text() == cn.text() {
+                        self.err("E-GOV-001", file, tok_range(&inc), format!("capability `{}` cannot include itself", cn.text()), None);
+                        continue;
+                    }
+                    includes.push(inc.text().to_string());
+                    continue;
+                }
+                let Some(verb) = item.verb() else { continue };
+                let names: Vec<String> = item.names().iter().map(|q| q.text()).collect();
+                for (q, tok) in item.names().iter().zip(item.name_tokens()) {
+                    let ok = match verb.text() {
+                        "actions" => action_names.iter().any(|a| *a == q.text()) || q.text() == "export",
+                        _ => field_names.iter().any(|f| *f == q.text()),
+                    };
+                    if !ok {
+                        let cands: Vec<&str> = if verb.text() == "actions" { action_names.iter().map(|s| s.as_str()).chain(std::iter::once("export")).collect() } else { field_names.iter().map(|s| s.as_str()).collect() };
+                        let sugg = suggest(&q.text(), cands).map(|s| format!("did you mean `{s}`?"));
+                        self.err("E-GOV-002", file, tok_range(&tok), format!("capability `{}`: `{}` is not a {} of `{name}`", cn.text(), q.text(), if verb.text() == "actions" { "lifecycle action" } else { "field" }), sugg);
+                    }
+                }
+                atoms.push(CapabilityAtom { deny: item.deny(), verb: verb.text().to_string(), names });
+            }
+            capabilities.push(Capability { name: cn.text().to_string(), includes, atoms });
+        }
+        let mut purpose_bindings = Vec::new();
+        for b in r.purpose_bindings() {
+            let Some(p) = b.purpose() else { continue };
+            self.require_edition_2027(file, range_of(&p), "`for Purpose { use .. }`");
+            let Some(purpose) = self.resolve_purpose(&p.segments(), module, file, range_of(&p)) else { continue };
+            for u in b.uses() {
+                if !cap_names.iter().any(|x| x == u.text()) {
+                    let sugg = suggest(u.text(), cap_names.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
+                    self.err("E-GOV-004", file, tok_range(&u), format!("`for {}` uses unknown capability `{}`", p.text(), u.text()), sugg);
+                    continue;
+                }
+                purpose_bindings.push(PurposeBinding { purpose: purpose.clone(), capability: u.text().to_string() });
+            }
+        }
+        Some(Resource { id, name, kind: if blob.is_some() { "blob".into() } else { "resource".into() }, exported, doc: ast::doc_of(r.syntax()), decorators, fields, uniques, finds, lists, rules, lifecycle, content, operations, capabilities, purpose_bindings })
     }
 
     fn content_policy(&mut self, b: &ast::BlobDecl, file: usize) -> Option<ContentPolicy> {
@@ -1159,7 +1280,7 @@ impl<'a> Ctx<'a> {
             match self.resolve(&segs, module, file, range_of(&t)) {
                 Some(Resolved::Type(TypeBase::Reference { resource })) => uses.push(Use::Resource { resource, capability: u.capability().unwrap_or_else(|| "read".into()) }),
                 Some(Resolved::Transition { resource, action }) => uses.push(Use::Transition { resource, action }),
-                Some(Resolved::Function(function)) => uses.push(Use::Function { function }),
+                Some(Resolved::Function(function)) => uses.push(Use::Function { function, purpose: None }),
                 Some(_) => self.err("E-USE-001", file, range_of(&t), format!("`{}` cannot be used as a dependency", t.text()), None),
                 None => {}
             }
@@ -1182,14 +1303,38 @@ impl<'a> Ctx<'a> {
                 self.err("E-USE-002", file, range_of(&ch), format!("`{}` is not a channel", ch.text()), None);
             }
         }
+        let purpose = match f.purpose() {
+            Some(q) => {
+                self.require_edition_2027(file, range_of(&q), "`purpose` in a function");
+                self.resolve_purpose(&q.segments(), module, file, range_of(&q))
+            }
+            None => None,
+        };
+        let mut output = output;
+        if let Some(q) = f.output_purpose() {
+            self.require_edition_2027(file, range_of(&q), "`Record<Purpose>`");
+            if let Some(p) = self.resolve_purpose(&q.segments(), module, file, range_of(&q))
+                && let Some(o) = output.as_mut() {
+                    o.purpose = Some(p);
+                }
+        }
+        for (u, ir_use) in f.uses().iter().zip(uses.iter_mut()) {
+            if let Some(q) = u.purpose() {
+                self.require_edition_2027(file, range_of(&q), "`for Purpose` on a dependency");
+                if let Some(p) = self.resolve_purpose(&q.segments(), module, file, range_of(&q))
+                    && let Use::Function { purpose, .. } = ir_use {
+                        *purpose = Some(p);
+                    }
+            }
+        }
         let errors: Vec<String> = f.errors().iter().map(|t| t.text().to_string()).collect();
         let slo = f.slo().iter().filter_map(|s| s.parts()).map(|(k, target, within, window)| if k == "latency" { Slo::Latency { target, within: within.unwrap_or_default(), window } } else { Slo::Availability { target, window } }).collect();
-        Some(Function { id, name, exported, doc: ast::doc_of(f.syntax()), input, output, uses, sends, errors, slo, http, generated: false })
+        Some(Function { id, name, exported, doc: ast::doc_of(f.syntax()), input, output, uses, sends, errors, slo, http, generated: false, purpose })
     }
 
     fn type_ref_spec(&mut self, n: &ast::QualifiedName, module: &str, file: usize) -> Option<TypeSpec> {
         match self.resolve(&n.segments(), module, file, range_of(n))? {
-            Resolved::Type(base) => Some(TypeSpec { base, optional: false, normalizers: vec![], constraints: vec![] }),
+            Resolved::Type(base) => Some(TypeSpec { base, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None }),
             _ => {
                 self.err("E-TYPE-001", file, range_of(n), format!("`{}` is not a type", n.text()), None);
                 None
@@ -1571,10 +1716,41 @@ impl<'a> Ctx<'a> {
                     m.enums.push(EnumDecl { id, name, exported, synthesized: false, doc: decl.doc(), members });
                 }
                 (SymKind::Type, Declaration::Type(t)) => {
-                    if let Some(te) = t.type_expr()
-                        && let Some(ty) = self.type_spec(&te, &module, file) {
-                            m.types.push(TypeAlias { id, name, exported, ty });
+                    let mut data_class = None;
+                    for dec in t.decorators() {
+                        let Some(n) = dec.name() else { continue };
+                        if n.text() == "data" {
+                            self.require_edition_2027(file, tok_range(&n), "`@data`");
+                            if let Some(ArgValue::Name(segs)) = dec.args().first().and_then(|a| a.value()) {
+                                data_class = self.resolve_data_class(&segs, &module, file, range_of(&dec));
+                            } else {
+                                self.err("E-DEC-002", file, range_of(&dec), "`@data` requires a data class name", None);
+                            }
+                        } else if n.text() != "label" {
+                            self.err("E-DEC-001", file, tok_range(&n), format!("unknown type decorator `@{}`", n.text()), None);
                         }
+                    }
+                    if let Some(te) = t.type_expr()
+                        && let Some(mut ty) = self.type_spec(&te, &module, file) {
+                            ty.data_class = data_class.clone();
+                            m.types.push(TypeAlias { id, name, exported, ty, data_class });
+                        }
+                }
+                (SymKind::Purpose, Declaration::Purpose(p)) => {
+                    self.require_edition_2027(file, range_of(p), "`purpose`");
+                    let extends = match p.extends() {
+                        Some(q) => self.resolve_purpose(&q.segments(), &module, file, range_of(&q)),
+                        None => None,
+                    };
+                    m.purposes.push(Purpose { id, name, exported, doc: decl.doc(), extends });
+                }
+                (SymKind::DataClass, Declaration::DataClass(d)) => {
+                    self.require_edition_2027(file, range_of(d), "`dataClass`");
+                    let extends = d.extends().map(|q| q.text()).unwrap_or_default();
+                    if !extends.starts_with("data.") {
+                        self.err("E-GOV-006", file, range_of(d), format!("data class `{name}` must extend a taxonomy node under `data.`"), None);
+                    }
+                    m.data_classes.push(DataClass { id, name, exported, doc: decl.doc(), extends });
                 }
                 (SymKind::Shape, Declaration::Shape(s)) => {
                     let mut fields = Vec::new();
@@ -1682,8 +1858,10 @@ impl<'a> Ctx<'a> {
         }
         let mut imports: Vec<Import> = self.pkg.dependencies.iter().map(|(alias, package)| Import { alias: alias.clone(), package: package.clone() }).collect();
         imports.sort_by(|a, b| a.alias.cmp(&b.alias));
+        let requires = if self.pkg.edition == "2027" && modules.iter().any(|m| !m.purposes.is_empty() || !m.data_classes.is_empty() || m.resources.iter().any(|r| !r.capabilities.is_empty() || r.decorators.purpose_scoped)) { vec!["governance/1".into()] } else { vec![] };
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
+            requires,
             package: PackageInfo { name: self.pkg.name.clone(), version: self.pkg.version.clone(), edition: self.pkg.edition.clone(), profile: self.pkg.profile.clone(), targets: self.pkg.targets.clone(), observability: self.pkg.observability.clone() },
             imports,
             modules,
@@ -1693,7 +1871,7 @@ impl<'a> Ctx<'a> {
 
 /// Server-owned upload lifecycle metadata every blob carries (plan §13).
 fn blob_fields() -> Vec<Field> {
-    let scalar = |n: &str, optional: bool| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional, normalizers: vec![], constraints: vec![] };
+    let scalar = |n: &str, optional: bool| TypeSpec { base: TypeBase::Scalar { name: n.into(), args: vec![] }, optional, normalizers: vec![], constraints: vec![], purpose: None, data_class: None };
     let mk = |name: &str, ty: TypeSpec, hidden: bool| Field { name: name.into(), ty, default: None, derived: None, immutable: false, server_owned: true, synthesized: true, hidden, doc: None };
     vec![
         mk("uploadState", scalar("text", false), false), // intent | uploading | uploaded | verifying | ready | rejected

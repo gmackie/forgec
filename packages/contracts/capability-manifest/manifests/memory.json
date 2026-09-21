@@ -1,0 +1,128 @@
+{
+  "version": "capability-manifest/1",
+  "id": "@forge/runtime/memory",
+  "kind": "adapter",
+  "adapterVersion": "0.1.0",
+  "engine": {
+    "name": "in-memory reference",
+    "version": "0.1.0"
+  },
+  "runtime": {
+    "name": "node",
+    "version": "22"
+  },
+  "isolation": [
+    "single-threaded"
+  ],
+  "consistency": [
+    "strong"
+  ],
+  "capabilities": [
+    {
+      "id": "mutation.atomic-batch",
+      "support": "native",
+      "bound": {
+        "actions": 1000
+      },
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.runtime-memory"
+        }
+      ]
+    },
+    {
+      "id": "mutation.conditional-write",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.runtime-memory"
+        }
+      ]
+    },
+    {
+      "id": "query.strong-read",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.runtime-memory"
+        }
+      ]
+    },
+    {
+      "id": "query.keyset-pagination",
+      "support": "native",
+      "bound": {
+        "limit": 100
+      },
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.runtime-memory"
+        }
+      ]
+    },
+    {
+      "id": "query.unbounded-join",
+      "support": "unsupported",
+      "assumptions": [
+        "portable profile refuses scans and unbounded joins at compile time"
+      ]
+    },
+    {
+      "id": "storage.ttl-cleanup",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "test",
+          "ref": "packages/runtime/test/views-projections-cache.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "workflow.native-driver",
+      "support": "bounded-emulation",
+      "assumptions": [
+        "the reference sweep is the timer; no durable driver"
+      ],
+      "evidence": [
+        {
+          "kind": "test",
+          "ref": "packages/runtime/test/workflows.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "messaging.durable-queue",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.runtime-memory"
+        }
+      ]
+    },
+    {
+      "id": "blob.signed-transfer",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.runtime-memory"
+        }
+      ]
+    },
+    {
+      "id": "realtime.sessions",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "test",
+          "ref": "conformance/test/realtime.test.ts"
+        }
+      ]
+    }
+  ]
+}

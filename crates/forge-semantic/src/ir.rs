@@ -12,6 +12,28 @@ pub struct DomainIR {
     pub package: PackageInfo,
     pub imports: Vec<Import>,
     pub modules: Vec<Module>,
+    /// Critical features a consumer must understand (plan §4.2, fail closed): a reader that does
+    /// not know one of these refuses the artifact instead of dropping semantics.
+    #[serde(default)]
+    pub requires: Vec<String>,
+}
+
+/// Features this compiler/runtime build understands. Unknown `requires` entries fail closed.
+pub const KNOWN_FEATURES: &[&str] = &["governance/1"];
+
+impl DomainIR {
+    /// Load an IR produced by another build: version and critical features must be understood.
+    pub fn load(v: &serde_json::Value) -> Result<DomainIR, String> {
+        let version = v["version"].as_str().unwrap_or("");
+        if version != DOMAIN_IR_VERSION {
+            return Err(format!("unsupported IR version `{version}` (this build reads {DOMAIN_IR_VERSION})"));
+        }
+        let ir: DomainIR = serde_json::from_value(v.clone()).map_err(|e| format!("malformed IR: {e}"))?;
+        if let Some(f) = ir.requires.iter().find(|f| !KNOWN_FEATURES.contains(&f.as_str())) {
+            return Err(format!("IR requires unknown critical feature `{f}`; refusing to interpret it partially"));
+        }
+        Ok(ir)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -75,6 +97,63 @@ pub struct Module {
     pub caches: Vec<Cache>,
     #[serde(default)]
     pub workflows: Vec<Workflow>,
+    /// Edition 2027 governance vocabulary (plan D07/D11): meaning, never authority.
+    #[serde(default)]
+    pub purposes: Vec<Purpose>,
+    #[serde(default)]
+    pub data_classes: Vec<DataClass>,
+}
+
+/// Intent context. `extends` is taxonomy meaning only; it grants no field or action authority.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Purpose {
+    pub id: String,
+    pub name: String,
+    pub exported: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub doc: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extends: Option<String>,
+}
+
+/// Classification facet: describes data, not access rights.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DataClass {
+    pub id: String,
+    pub name: String,
+    pub exported: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub doc: Option<String>,
+    /// Taxonomy parent (`data.contact.email`).
+    pub extends: String,
+}
+
+/// Resource-local capability fragment (plan §8.2): grants union through `includes`; denials stay sticky.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Capability {
+    pub name: String,
+    pub includes: Vec<String>,
+    pub atoms: Vec<CapabilityAtom>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CapabilityAtom {
+    pub deny: bool,
+    /// read | update | create | filter | order | actions
+    pub verb: String,
+    pub names: Vec<String>,
+}
+
+/// `for Purpose { use Capability }`: the only way a purpose acquires a resource surface.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PurposeBinding {
+    pub purpose: String,
+    pub capability: String,
 }
 
 /// Durable composition of capabilities with explicit control flow (plan §15).
@@ -262,6 +341,9 @@ pub struct TypeAlias {
     pub exported: bool,
     #[serde(rename = "type")]
     pub ty: TypeSpec,
+    /// Edition 2027: `@data(Class)`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub data_class: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -271,6 +353,12 @@ pub struct TypeSpec {
     pub optional: bool,
     pub normalizers: Vec<String>,
     pub constraints: Vec<Constraint>,
+    /// Edition 2027: `Record<Purpose>` — the purpose surface a record type is scoped to.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<String>,
+    /// Edition 2027: classification attached through `@data(Class)` on the field or its alias.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub data_class: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -364,6 +452,12 @@ pub struct ResourceDecorators {
     pub hierarchical: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
+    /// Edition 2027: every interface exposes this resource through a purpose surface.
+    #[serde(default)]
+    pub purpose_scoped: bool,
+    /// Edition 2027: subject binding kind (`person`, `organization`, `device`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subject: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -403,6 +497,10 @@ pub struct Resource {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub content: Option<ContentPolicy>,
     pub operations: Vec<Operation>,
+    #[serde(default)]
+    pub capabilities: Vec<Capability>,
+    #[serde(default)]
+    pub purpose_bindings: Vec<PurposeBinding>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -505,6 +603,9 @@ pub struct Function {
     pub http: Option<HttpBinding>,
     /// True when the body is generated (CRUD, bare transitions); false means `impl/` must supply it.
     pub generated: bool,
+    /// Edition 2027: the purpose this function runs under.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -512,7 +613,7 @@ pub struct Function {
 pub enum Use {
     Resource { resource: String, capability: String },
     Transition { resource: String, action: String },
-    Function { function: String },
+    Function { function: String, #[serde(default, skip_serializing_if = "Option::is_none")] purpose: Option<String> },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -610,5 +711,76 @@ impl DomainIR {
         use sha2::Digest;
         let bytes = serde_json::to_vec(self).expect("serialize");
         hex::encode(sha2::Sha256::digest(bytes))
+    }
+
+    /// FORGE-029: domain-separated digests. `source` covers everything; `wire` the operation/value
+    /// contracts (no docs, no governance); `docs` documentation only; `security` the governance
+    /// surface (classification, purposes, capabilities, bindings, subjects) plus the wire field set.
+    pub fn digests(&self) -> Digests {
+        use sha2::Digest;
+        // Canonical form: object keys sorted (the IR serializer preserves declaration order, which is
+        // not part of the contract), arrays kept ordered.
+        let h = |domain: &str, v: &serde_json::Value| hex::encode(sha2::Sha256::digest(format!("forge:{domain}:{}", serde_json::to_string(&canonical(v)).expect("serialize")).as_bytes()));
+        let full = serde_json::to_value(self).expect("serialize");
+        let mut wire = full.clone();
+        strip_keys(&mut wire, &["doc", "label", "purposes", "dataClasses", "capabilities", "purposeBindings", "purposeScoped", "subject", "dataClass", "purpose"]);
+        let mut docs = serde_json::Value::Array(vec![]);
+        collect_keys(&full, "doc", &mut docs);
+        let mut security = full.clone();
+        strip_keys(&mut security, &["doc", "label"]);
+        Digests { source: h("source", &full), wire: h("wire", &wire), docs: h("docs", &docs), security: h("security", &security) }
+    }
+}
+
+/// Separate semantic digests (plan §4.3).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Digests {
+    pub source: String,
+    pub wire: String,
+    pub docs: String,
+    pub security: String,
+}
+
+fn canonical(v: &serde_json::Value) -> serde_json::Value {
+    match v {
+        serde_json::Value::Object(m) => {
+            let mut keys: Vec<&String> = m.keys().collect();
+            keys.sort();
+            let mut out = serde_json::Map::new();
+            for k in keys {
+                out.insert(k.clone(), canonical(&m[k]));
+            }
+            serde_json::Value::Object(out)
+        }
+        serde_json::Value::Array(a) => serde_json::Value::Array(a.iter().map(canonical).collect()),
+        other => other.clone(),
+    }
+}
+
+fn strip_keys(v: &mut serde_json::Value, keys: &[&str]) {
+    match v {
+        serde_json::Value::Object(m) => {
+            for k in keys {
+                m.remove(*k);
+            }
+            for x in m.values_mut() {
+                strip_keys(x, keys);
+            }
+        }
+        serde_json::Value::Array(a) => a.iter_mut().for_each(|x| strip_keys(x, keys)),
+        _ => {}
+    }
+}
+fn collect_keys(v: &serde_json::Value, key: &str, out: &mut serde_json::Value) {
+    match v {
+        serde_json::Value::Object(m) => {
+            if let Some(d) = m.get(key) {
+                out.as_array_mut().unwrap().push(d.clone());
+            }
+            m.values().for_each(|x| collect_keys(x, key, out));
+        }
+        serde_json::Value::Array(a) => a.iter().for_each(|x| collect_keys(x, key, out)),
+        _ => {}
     }
 }

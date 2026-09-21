@@ -132,6 +132,7 @@ fn main() -> Result<()> {
         Cmd::Check { path } => {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             verify_lock(&path, &loaded.deps)?;
+            verify_extensions(&loaded.package)?;
             eprint!("{}", loaded.compilation.render());
             let errors = loaded.compilation.diagnostics.iter().filter(|d| d.is_error()).count();
             let warnings = loaded.compilation.diagnostics.len() - errors;
@@ -182,6 +183,7 @@ fn main() -> Result<()> {
             let bundle = serde_json::json!({
                 "version": "app-bundle/1",
                 "buildHash": build_hash(&ir, &loaded.deps),
+                "digests": ir.digests(),
                 "ir": ir,
                 "contracts": plans.contracts,
                 "sql": plans.sql,
@@ -208,6 +210,12 @@ fn main() -> Result<()> {
         Cmd::Compat { old, new } => {
             let o: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&old)?)?;
             let n: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&new)?)?;
+            // Fail closed on artifacts this build cannot interpret (plan §4.2).
+            for (label, v) in [("old", &o), ("new", &n)] {
+                if let Err(e) = DomainIR::load(&v["ir"]) {
+                    bail!("{label} bundle: {e}");
+                }
+            }
             let report = compat::compare(&o, &n);
             println!("{}", serde_json::to_string_pretty(&report)?);
             if report.verdict == "breaking" {
@@ -220,10 +228,44 @@ fn main() -> Result<()> {
             let Some(ir) = loaded.compilation.ir else { std::process::exit(1) };
             let out = serde_json::json!({
                 "buildHash": build_hash(&ir, &loaded.deps),
+                "digests": ir.digests(),
                 "dependencies": loaded.deps.iter().map(|(name, d)| serde_json::json!({ "package": name, "hash": d.content_hash() })).collect::<Vec<_>>(),
                 "ir": ir,
             });
             println!("{}", serde_json::to_string_pretty(&out)?);
+        }
+    }
+    Ok(())
+}
+
+/// FORGE-030: pinned extension manifests are read as bytes, digest-checked and shape-validated.
+/// They declare capabilities; nothing in them is ever executed by the compiler.
+fn verify_extensions(pkg: &forge_semantic::Package) -> Result<()> {
+    const FORBIDDEN: &[&str] = &["main", "exports", "scripts", "bin", "module", "require", "install", "postinstall", "code", "script"];
+    for e in &pkg.extensions {
+        let bytes = std::fs::read(&e.manifest).with_context(|| format!("extension `{}`: {}", e.name, e.manifest.display()))?;
+        let digest = { use sha2::Digest; hex::encode(sha2::Sha256::digest(&bytes)) };
+        if digest != e.sha256.trim_start_matches("sha256:") {
+            bail!("error[E-EXT-001]: extension `{}` manifest digest {digest} does not match the pinned {}; review the change and re-pin", e.name, e.sha256);
+        }
+        let v: serde_json::Value = serde_json::from_slice(&bytes).with_context(|| format!("error[E-EXT-002]: extension `{}` manifest is not JSON", e.name))?;
+        let Some(obj) = v.as_object() else { bail!("error[E-EXT-002]: extension `{}` manifest must be an object", e.name) };
+        if let Some(k) = obj.keys().find(|k| FORBIDDEN.contains(&k.as_str())) {
+            bail!("error[E-EXT-002]: extension `{}` manifest carries an executable entry `{k}`; manifests declare capabilities and never run", e.name);
+        }
+        if obj.get("version").and_then(|x| x.as_str()) != Some("capability-manifest/1") {
+            bail!("error[E-EXT-002]: extension `{}` manifest version must be capability-manifest/1", e.name);
+        }
+        for k in ["id", "kind", "adapterVersion", "engine", "runtime", "capabilities"] {
+            if obj.get(k).is_none() {
+                bail!("error[E-EXT-002]: extension `{}` manifest is missing `{k}`", e.name);
+            }
+        }
+        for c in obj["capabilities"].as_array().cloned().unwrap_or_default() {
+            let support = c["support"].as_str().unwrap_or("");
+            if support != "unsupported" && c["evidence"].as_array().is_none_or(|a| a.is_empty()) {
+                bail!("error[E-EXT-002]: extension `{}` claims `{}` as {support} without evidence references (no self-certification)", e.name, c["id"]);
+            }
         }
     }
     Ok(())

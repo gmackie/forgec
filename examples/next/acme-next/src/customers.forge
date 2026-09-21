@@ -1,0 +1,83 @@
+enum CustomerTier {
+  Standard = "standard"
+  Gold = "gold"
+  Enterprise = "enterprise"
+}
+
+type CustomerCode = text trim uppercase length 3..32
+
+/// Acme is the tenant. A Customer is an organization, not automatically a person.
+export resource Customer
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @purposeScoped
+{
+  id : id
+  code : CustomerCode @unique @immutable
+  name : text length 1..200
+  tier : CustomerTier = CustomerTier.Standard
+
+  capability Directory {
+    read { id code name tier }
+    filter { code tier }
+    order { name }
+  }
+
+  for governance.CustomerSupport { use Directory }
+  for governance.OrderFulfillment { use Directory }
+
+  find by code
+  list by tier
+    order by name asc
+}
+
+export resource Contact
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @purposeScoped
+  @subject(person)
+{
+  id : id
+  customer : Customer
+  name : text length 1..200
+  email : governance.ContactEmailValue
+  supportNotes : governance.SupportNoteValue?
+
+  capability Identity {
+    read { id name }
+  }
+
+  capability ContactRead {
+    includes Identity
+    read { customer email }
+    filter { customer }
+  }
+
+  capability ContactMaintenance {
+    includes ContactRead
+    update { email }
+  }
+
+  capability SupportRecord {
+    includes ContactMaintenance
+    read { supportNotes }
+    update { supportNotes }
+  }
+
+  capability AgentSupport {
+    includes SupportRecord
+    deny read { supportNotes }
+    deny update { supportNotes }
+    deny actions { export }
+  }
+
+  for governance.ParentCommunication { use ContactRead }
+  for governance.CustomerSupport { use SupportRecord }
+
+  list by customer
+    order by name asc
+}

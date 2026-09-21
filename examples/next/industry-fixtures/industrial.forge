@@ -1,0 +1,8 @@
+// Restricted nonpersonal information; handling is organization-defined.
+resource ProcessRecipe @tenant @record(industrial) {
+  id : id
+  formula : text @data(data.intellectualProperty.formula)
+  setpoint : decimal @data(data.operational.setpoint)
+  safetyThreshold : decimal @data(data.operational.safetyLimit)
+}
+// Confidentiality and integrity requirements do not imply person/PII subjects.

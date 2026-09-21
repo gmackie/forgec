@@ -24,3 +24,12 @@ latency = { good = "99%", within = "500ms" }
 [observability.slo.crud-write]
 availability = "99.9%"
 latency = { good = "99%", within = "1s" }
+
+# Pinned adapter capability manifests (plan §3.3): validated by digest and shape, never executed.
+[extensions.cloudflare-d1]
+manifest = "../../packages/contracts/capability-manifest/manifests/d1.json"
+sha256 = "2e17b58d8852ae00eab890c9461735c88959d6adf53421db1c2b6895040bcbf1"
+
+[extensions.aws-dynamodb]
+manifest = "../../packages/contracts/capability-manifest/manifests/dynamodb.json"
+sha256 = "3036a24ea47491ea67322af89f6c798d3866beeb8e21982e89f1e78224321a94"

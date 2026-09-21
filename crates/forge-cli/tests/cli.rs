@@ -213,3 +213,38 @@ fn lsp_publishes_diagnostics_and_formats() {
     send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "method": "exit", "params": null }));
     assert!(child.wait().unwrap().success());
 }
+
+/// FORGE-030: pinned extension manifests are validated by digest and shape; nothing in them runs.
+#[test]
+fn check_validates_pinned_extension_manifests_without_executing_them() {
+    let dir = std::env::temp_dir().join(format!("forge-ext-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("app/src")).unwrap();
+    std::fs::create_dir_all(dir.join("ext")).unwrap();
+    std::fs::write(dir.join("app/src/a.forge"), "resource R {\n  id : id\n}\n").unwrap();
+    let manifest = r#"{"version":"capability-manifest/1","id":"@x/adapter","kind":"adapter","adapterVersion":"1.0.0","engine":{"name":"sqlite","version":"3"},"runtime":{"name":"node","version":"22"},"capabilities":[{"id":"query.strong-read","support":"native","evidence":[{"kind":"test","ref":"t"}]}]}"#;
+    std::fs::write(dir.join("ext/manifest.json"), manifest).unwrap();
+    let digest = {
+        use sha2::Digest;
+        hex::encode(sha2::Sha256::digest(manifest.as_bytes()))
+    };
+    let toml = |d: &str| format!("[package]\nname = \"@t/app\"\nversion = \"0.1.0\"\n\n[extensions.adapter]\nmanifest = \"../ext/manifest.json\"\nsha256 = \"{d}\"\n");
+    std::fs::write(dir.join("app/forge.toml"), toml(&digest)).unwrap();
+    let ok = forge().args(["check", dir.join("app").to_str().unwrap()]).output().unwrap();
+    assert!(ok.status.success(), "{}", String::from_utf8_lossy(&ok.stderr));
+
+    // Tampered manifest: digest mismatch is E-EXT-001.
+    std::fs::write(dir.join("ext/manifest.json"), manifest.replace("\"native\"", "\"bounded-emulation\"")).unwrap();
+    let bad = forge().args(["check", dir.join("app").to_str().unwrap()]).output().unwrap();
+    assert_eq!(bad.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&bad.stderr).contains("E-EXT-001"));
+
+    // Code-bearing manifest with a correct digest: E-EXT-002 (declares, never runs).
+    let code = manifest.replace("\"kind\":\"adapter\"", "\"kind\":\"adapter\",\"main\":\"./index.js\"");
+    std::fs::write(dir.join("ext/manifest.json"), &code).unwrap();
+    let d2 = { use sha2::Digest; hex::encode(sha2::Sha256::digest(code.as_bytes())) };
+    std::fs::write(dir.join("app/forge.toml"), toml(&d2)).unwrap();
+    let code_out = forge().args(["check", dir.join("app").to_str().unwrap()]).output().unwrap();
+    assert_eq!(code_out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&code_out.stderr).contains("E-EXT-002"));
+}

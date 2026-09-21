@@ -128,3 +128,20 @@ fn parses_cache_view_and_projection_declarations() {
     assert_eq!(parsed.syntax().text().to_string(), src);
     insta::assert_snapshot!(parsed.debug_tree());
 }
+
+#[test]
+fn edition_2027_governance_fixtures_parse_losslessly() {
+    for rel in ["next/governance/src/index.forge", "next/payments/src/index.forge", "next/acme-next/src/index.forge", "next/acme-next/src/customers.forge", "next/acme-next/src/orders.forge"] {
+        let src = fixture(rel);
+        let parsed = parse(&src);
+        assert!(parsed.errors().is_empty(), "{rel}: {:?}", parsed.errors());
+        assert_eq!(parsed.syntax().text().to_string(), src, "{rel}: tree is not lossless");
+    }
+}
+
+#[test]
+fn tree_snapshot_governance() {
+    let a = fixture("next/governance/src/index.forge");
+    let b = fixture("next/acme-next/src/customers.forge");
+    insta::assert_snapshot!(format!("{}\n{}", parse(&a).debug_tree(), parse(&b).debug_tree()));
+}

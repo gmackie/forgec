@@ -1,0 +1,131 @@
+{
+  "version": "capability-manifest/1",
+  "id": "@forge/runtime/dynamodb",
+  "kind": "adapter",
+  "adapterVersion": "0.1.0",
+  "engine": {
+    "name": "dynamodb",
+    "version": "2012-08-10"
+  },
+  "runtime": {
+    "name": "node",
+    "version": "22"
+  },
+  "isolation": [
+    "transact-write"
+  ],
+  "consistency": [
+    "strong (ConsistentRead)"
+  ],
+  "capabilities": [
+    {
+      "id": "mutation.atomic-batch",
+      "support": "native",
+      "bound": {
+        "actions": 100
+      },
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.aws-dynamodb"
+        }
+      ]
+    },
+    {
+      "id": "mutation.conditional-write",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.aws-dynamodb"
+        }
+      ]
+    },
+    {
+      "id": "query.strong-read",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.aws-dynamodb"
+        }
+      ]
+    },
+    {
+      "id": "query.keyset-pagination",
+      "support": "native",
+      "bound": {
+        "limit": 100
+      },
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.aws-dynamodb"
+        }
+      ]
+    },
+    {
+      "id": "query.unbounded-join",
+      "support": "unsupported",
+      "assumptions": [
+        "portable profile refuses scans and unbounded joins at compile time"
+      ]
+    },
+    {
+      "id": "storage.ttl-cleanup",
+      "support": "bounded-emulation",
+      "assumptions": [
+        "DynamoDB TTL deletion is asynchronous and may lag by days; readers reject expired entries"
+      ],
+      "evidence": [
+        {
+          "kind": "vendor-doc",
+          "ref": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
+        }
+      ]
+    },
+    {
+      "id": "workflow.native-driver",
+      "support": "native",
+      "assumptions": [
+        "Step Functions Standard drives the portable executor"
+      ],
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.aws-dynamodb"
+        }
+      ]
+    },
+    {
+      "id": "messaging.durable-queue",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.aws-dynamodb"
+        }
+      ]
+    },
+    {
+      "id": "blob.signed-transfer",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.aws-dynamodb"
+        }
+      ]
+    },
+    {
+      "id": "realtime.sessions",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "test",
+          "ref": "conformance/test/realtime.test.ts"
+        }
+      ]
+    }
+  ]
+}

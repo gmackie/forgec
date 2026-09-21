@@ -1,0 +1,21 @@
+// Illustrates subject links; not a FERPA/COPPA compliance template.
+purpose AttendanceOperations
+
+enum AttendanceStatus { Present Absent Excused }
+resource Guardian @tenant @subject(person) {
+  id : id
+  name : personName
+  email : email
+}
+resource Student @tenant @subject(person) @record(education) {
+  id : id
+  name : personName
+  guardian : Guardian
+}
+resource AttendanceRecord @tenant @subject(from: student) @record(education) {
+  id : id
+  student : Student
+  date : date
+  status : AttendanceStatus
+}
+// Student erasure does not automatically delete Guardian or other students' data.

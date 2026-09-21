@@ -1,0 +1,605 @@
+---
+source: crates/forge-syntax/tests/parser.rs
+assertion_line: 146
+expression: "format!(\"{}\\n{}\", parse(&a).debug_tree(), parse(&b).debug_tree())"
+---
+ROOT@0..668
+  COMMENT@0..77 "// Cross-cutting governance vocabulary (edition 2027). Taxonomy relationships"
+  NEWLINE@77..78 "\\n"
+  COMMENT@78..118 "// describe meaning and grant no access."
+  NEWLINE@118..119 "\\n"
+  PURPOSE_DECL@119..150
+    IDENT@119..125 "export"
+    IDENT@126..133 "purpose"
+    IDENT@134..150 "ServiceProvision"
+  NEWLINE@150..151 "\\n"
+  PURPOSE_DECL@151..206
+    IDENT@151..157 "export"
+    IDENT@158..165 "purpose"
+    IDENT@166..181 "CustomerSupport"
+    EXTENDS_CLAUSE@182..206
+      IDENT@182..189 "extends"
+      QUALIFIED_NAME@190..206
+        IDENT@190..206 "ServiceProvision"
+  NEWLINE@206..207 "\\n"
+  PURPOSE_DECL@207..266
+    IDENT@207..213 "export"
+    IDENT@214..221 "purpose"
+    IDENT@222..241 "ParentCommunication"
+    EXTENDS_CLAUSE@242..266
+      IDENT@242..249 "extends"
+      QUALIFIED_NAME@250..266
+        IDENT@250..266 "ServiceProvision"
+  NEWLINE@266..267 "\\n"
+  PURPOSE_DECL@267..323
+    IDENT@267..273 "export"
+    IDENT@274..281 "purpose"
+    IDENT@282..298 "OrderFulfillment"
+    EXTENDS_CLAUSE@299..323
+      IDENT@299..306 "extends"
+      QUALIFIED_NAME@307..323
+        IDENT@307..323 "ServiceProvision"
+  NEWLINE@323..324 "\\n"
+  PURPOSE_DECL@324..381
+    IDENT@324..330 "export"
+    IDENT@331..338 "purpose"
+    IDENT@339..356 "PaymentProcessing"
+    EXTENDS_CLAUSE@357..381
+      IDENT@357..364 "extends"
+      QUALIFIED_NAME@365..381
+        IDENT@365..381 "OrderFulfillment"
+  NEWLINE@381..382 "\\n"
+  PURPOSE_DECL@382..406
+    IDENT@382..388 "export"
+    IDENT@389..396 "purpose"
+    IDENT@397..406 "Marketing"
+  NEWLINE@406..407 "\\n"
+  NEWLINE@407..408 "\\n"
+  DATA_CLASS_DECL@408..464
+    IDENT@408..414 "export"
+    IDENT@415..424 "dataClass"
+    IDENT@425..437 "ContactEmail"
+    EXTENDS_CLAUSE@438..464
+      IDENT@438..445 "extends"
+      QUALIFIED_NAME@446..464
+        IDENT@446..450 "data"
+        DOT@450..451 "."
+        IDENT@451..458 "contact"
+        DOT@458..459 "."
+        IDENT@459..464 "email"
+  NEWLINE@464..465 "\\n"
+  DATA_CLASS_DECL@465..533
+    IDENT@465..471 "export"
+    IDENT@472..481 "dataClass"
+    IDENT@482..498 "SupportNarrative"
+    EXTENDS_CLAUSE@499..533
+      IDENT@499..506 "extends"
+      QUALIFIED_NAME@507..533
+        IDENT@507..511 "data"
+        DOT@511..512 "."
+        IDENT@512..525 "communication"
+        DOT@525..526 "."
+        IDENT@526..533 "content"
+  NEWLINE@533..534 "\\n"
+  NEWLINE@534..535 "\\n"
+  TYPE_DECL@535..592
+    IDENT@535..541 "export"
+    IDENT@542..546 "type"
+    IDENT@547..564 "ContactEmailValue"
+    EQ@565..566 "="
+    TYPE_EXPR@567..572
+      TYPE_REF@567..572
+        QUALIFIED_NAME@567..572
+          IDENT@567..572 "email"
+    DECORATOR@573..592
+      AT@573..574 "@"
+      IDENT@574..578 "data"
+      DECORATOR_ARGS@578..592
+        L_PAREN@578..579 "("
+        DECORATOR_ARG@579..591
+          QUALIFIED_NAME@579..591
+            IDENT@579..591 "ContactEmail"
+        R_PAREN@591..592 ")"
+  NEWLINE@592..593 "\\n"
+  TYPE_DECL@593..667
+    IDENT@593..599 "export"
+    IDENT@600..604 "type"
+    IDENT@605..621 "SupportNoteValue"
+    EQ@622..623 "="
+    TYPE_EXPR@624..643
+      TYPE_REF@624..628
+        QUALIFIED_NAME@624..628
+          IDENT@624..628 "text"
+      REFINEMENT@629..643
+        IDENT@629..635 "length"
+        RANGE@636..643
+          INT@636..637 "0"
+          DOT_DOT@637..639 ".."
+          INT@639..643 "4000"
+    DECORATOR@644..667
+      AT@644..645 "@"
+      IDENT@645..649 "data"
+      DECORATOR_ARGS@649..667
+        L_PAREN@649..650 "("
+        DECORATOR_ARG@650..666
+          QUALIFIED_NAME@650..666
+            IDENT@650..666 "SupportNarrative"
+        R_PAREN@666..667 ")"
+  NEWLINE@667..668 "\\n"
+
+ROOT@0..1635
+  ENUM_DECL@0..89
+    IDENT@0..4 "enum"
+    IDENT@5..17 "CustomerTier"
+    L_BRACE@18..19 "{"
+    NEWLINE@19..20 "\\n"
+    ENUM_MEMBER@22..43
+      IDENT@22..30 "Standard"
+      EQ@31..32 "="
+      STRING@33..43 "\"standard\""
+    NEWLINE@43..44 "\\n"
+    ENUM_MEMBER@46..59
+      IDENT@46..50 "Gold"
+      EQ@51..52 "="
+      STRING@53..59 "\"gold\""
+    NEWLINE@59..60 "\\n"
+    ENUM_MEMBER@62..87
+      IDENT@62..72 "Enterprise"
+      EQ@73..74 "="
+      STRING@75..87 "\"enterprise\""
+    NEWLINE@87..88 "\\n"
+    R_BRACE@88..89 "}"
+  NEWLINE@89..90 "\\n"
+  NEWLINE@90..91 "\\n"
+  TYPE_DECL@91..143
+    IDENT@91..95 "type"
+    IDENT@96..108 "CustomerCode"
+    EQ@109..110 "="
+    TYPE_EXPR@111..143
+      TYPE_REF@111..115
+        QUALIFIED_NAME@111..115
+          IDENT@111..115 "text"
+      REFINEMENT@116..120
+        IDENT@116..120 "trim"
+      REFINEMENT@121..130
+        IDENT@121..130 "uppercase"
+      REFINEMENT@131..143
+        IDENT@131..137 "length"
+        RANGE@138..143
+          INT@138..139 "3"
+          DOT_DOT@139..141 ".."
+          INT@141..143 "32"
+  NEWLINE@143..144 "\\n"
+  NEWLINE@144..145 "\\n"
+  RESOURCE_DECL@145..708
+    DOC_COMMENT@145..227 "/// Acme is the tenant. A Customer is an organization, not automatically a person."
+    NEWLINE@227..228 "\\n"
+    IDENT@228..234 "export"
+    IDENT@235..243 "resource"
+    IDENT@244..252 "Customer"
+    NEWLINE@252..253 "\\n"
+    DECORATOR@255..262
+      AT@255..256 "@"
+      IDENT@256..262 "tenant"
+    NEWLINE@262..263 "\\n"
+    DECORATOR@265..276
+      AT@265..266 "@"
+      IDENT@266..276 "timestamps"
+    NEWLINE@276..277 "\\n"
+    DECORATOR@279..289
+      AT@279..280 "@"
+      IDENT@280..289 "versioned"
+    NEWLINE@289..290 "\\n"
+    DECORATOR@292..300
+      AT@292..293 "@"
+      IDENT@293..300 "audited"
+    NEWLINE@300..301 "\\n"
+    DECORATOR@303..317
+      AT@303..304 "@"
+      IDENT@304..317 "purposeScoped"
+    NEWLINE@317..318 "\\n"
+    L_BRACE@318..319 "{"
+    NEWLINE@319..320 "\\n"
+    FIELD_DECL@322..329
+      IDENT@322..324 "id"
+      COLON@325..326 ":"
+      TYPE_EXPR@327..329
+        TYPE_REF@327..329
+          QUALIFIED_NAME@327..329
+            IDENT@327..329 "id"
+    NEWLINE@329..330 "\\n"
+    FIELD_DECL@332..370
+      IDENT@332..336 "code"
+      COLON@337..338 ":"
+      TYPE_EXPR@339..351
+        TYPE_REF@339..351
+          QUALIFIED_NAME@339..351
+            IDENT@339..351 "CustomerCode"
+      DECORATOR@352..359
+        AT@352..353 "@"
+        IDENT@353..359 "unique"
+      DECORATOR@360..370
+        AT@360..361 "@"
+        IDENT@361..370 "immutable"
+    NEWLINE@370..371 "\\n"
+    FIELD_DECL@373..398
+      IDENT@373..377 "name"
+      COLON@378..379 ":"
+      TYPE_EXPR@380..398
+        TYPE_REF@380..384
+          QUALIFIED_NAME@380..384
+            IDENT@380..384 "text"
+        REFINEMENT@385..398
+          IDENT@385..391 "length"
+          RANGE@392..398
+            INT@392..393 "1"
+            DOT_DOT@393..395 ".."
+            INT@395..398 "200"
+    NEWLINE@398..399 "\\n"
+    FIELD_DECL@401..444
+      IDENT@401..405 "tier"
+      COLON@406..407 ":"
+      TYPE_EXPR@408..420
+        TYPE_REF@408..420
+          QUALIFIED_NAME@408..420
+            IDENT@408..420 "CustomerTier"
+      EQ@421..422 "="
+      DEFAULT_VALUE@423..444
+        NAME_EXPR@423..444
+          QUALIFIED_NAME@423..444
+            IDENT@423..435 "CustomerTier"
+            DOT@435..436 "."
+            IDENT@436..444 "Standard"
+    NEWLINE@444..445 "\\n"
+    NEWLINE@445..446 "\\n"
+    CAPABILITY_DECL@448..549
+      IDENT@448..458 "capability"
+      IDENT@459..468 "Directory"
+      L_BRACE@469..470 "{"
+      NEWLINE@470..471 "\\n"
+      CAPABILITY_ITEM@475..501
+        IDENT@475..479 "read"
+        NAME_SET@480..501
+          L_BRACE@480..481 "{"
+          QUALIFIED_NAME@482..484
+            IDENT@482..484 "id"
+          QUALIFIED_NAME@485..489
+            IDENT@485..489 "code"
+          QUALIFIED_NAME@490..494
+            IDENT@490..494 "name"
+          QUALIFIED_NAME@495..499
+            IDENT@495..499 "tier"
+          R_BRACE@500..501 "}"
+      NEWLINE@501..502 "\\n"
+      CAPABILITY_ITEM@506..526
+        IDENT@506..512 "filter"
+        NAME_SET@513..526
+          L_BRACE@513..514 "{"
+          QUALIFIED_NAME@515..519
+            IDENT@515..519 "code"
+          QUALIFIED_NAME@520..524
+            IDENT@520..524 "tier"
+          R_BRACE@525..526 "}"
+      NEWLINE@526..527 "\\n"
+      CAPABILITY_ITEM@531..545
+        IDENT@531..536 "order"
+        NAME_SET@537..545
+          L_BRACE@537..538 "{"
+          QUALIFIED_NAME@539..543
+            IDENT@539..543 "name"
+          R_BRACE@544..545 "}"
+      NEWLINE@545..546 "\\n"
+      R_BRACE@548..549 "}"
+    NEWLINE@549..550 "\\n"
+    NEWLINE@550..551 "\\n"
+    PURPOSE_BINDING@553..601
+      IDENT@553..556 "for"
+      QUALIFIED_NAME@557..583
+        IDENT@557..567 "governance"
+        DOT@567..568 "."
+        IDENT@568..583 "CustomerSupport"
+      L_BRACE@584..585 "{"
+      USE_PURPOSE@586..599
+        IDENT@586..589 "use"
+        IDENT@590..599 "Directory"
+      R_BRACE@600..601 "}"
+    NEWLINE@601..602 "\\n"
+    PURPOSE_BINDING@604..653
+      IDENT@604..607 "for"
+      QUALIFIED_NAME@608..635
+        IDENT@608..618 "governance"
+        DOT@618..619 "."
+        IDENT@619..635 "OrderFulfillment"
+      L_BRACE@636..637 "{"
+      USE_PURPOSE@638..651
+        IDENT@638..641 "use"
+        IDENT@642..651 "Directory"
+      R_BRACE@652..653 "}"
+    NEWLINE@653..654 "\\n"
+    NEWLINE@654..655 "\\n"
+    FIND_DECL@657..669
+      IDENT@657..661 "find"
+      IDENT@662..664 "by"
+      FIELD_LIST@665..669
+        IDENT@665..669 "code"
+    NEWLINE@669..670 "\\n"
+    LIST_DECL@672..706
+      IDENT@672..676 "list"
+      IDENT@677..679 "by"
+      FIELD_LIST@680..684
+        IDENT@680..684 "tier"
+      NEWLINE@684..685 "\\n"
+      IDENT@689..694 "order"
+      IDENT@695..697 "by"
+      ORDER_LIST@698..706
+        ORDER_KEY@698..706
+          IDENT@698..702 "name"
+          IDENT@703..706 "asc"
+    NEWLINE@706..707 "\\n"
+    R_BRACE@707..708 "}"
+  NEWLINE@708..709 "\\n"
+  NEWLINE@709..710 "\\n"
+  RESOURCE_DECL@710..1634
+    IDENT@710..716 "export"
+    IDENT@717..725 "resource"
+    IDENT@726..733 "Contact"
+    NEWLINE@733..734 "\\n"
+    DECORATOR@736..743
+      AT@736..737 "@"
+      IDENT@737..743 "tenant"
+    NEWLINE@743..744 "\\n"
+    DECORATOR@746..757
+      AT@746..747 "@"
+      IDENT@747..757 "timestamps"
+    NEWLINE@757..758 "\\n"
+    DECORATOR@760..770
+      AT@760..761 "@"
+      IDENT@761..770 "versioned"
+    NEWLINE@770..771 "\\n"
+    DECORATOR@773..781
+      AT@773..774 "@"
+      IDENT@774..781 "audited"
+    NEWLINE@781..782 "\\n"
+    DECORATOR@784..798
+      AT@784..785 "@"
+      IDENT@785..798 "purposeScoped"
+    NEWLINE@798..799 "\\n"
+    DECORATOR@801..817
+      AT@801..802 "@"
+      IDENT@802..809 "subject"
+      DECORATOR_ARGS@809..817
+        L_PAREN@809..810 "("
+        DECORATOR_ARG@810..816
+          QUALIFIED_NAME@810..816
+            IDENT@810..816 "person"
+        R_PAREN@816..817 ")"
+    NEWLINE@817..818 "\\n"
+    L_BRACE@818..819 "{"
+    NEWLINE@819..820 "\\n"
+    FIELD_DECL@822..829
+      IDENT@822..824 "id"
+      COLON@825..826 ":"
+      TYPE_EXPR@827..829
+        TYPE_REF@827..829
+          QUALIFIED_NAME@827..829
+            IDENT@827..829 "id"
+    NEWLINE@829..830 "\\n"
+    FIELD_DECL@832..851
+      IDENT@832..840 "customer"
+      COLON@841..842 ":"
+      TYPE_EXPR@843..851
+        TYPE_REF@843..851
+          QUALIFIED_NAME@843..851
+            IDENT@843..851 "Customer"
+    NEWLINE@851..852 "\\n"
+    FIELD_DECL@854..879
+      IDENT@854..858 "name"
+      COLON@859..860 ":"
+      TYPE_EXPR@861..879
+        TYPE_REF@861..865
+          QUALIFIED_NAME@861..865
+            IDENT@861..865 "text"
+        REFINEMENT@866..879
+          IDENT@866..872 "length"
+          RANGE@873..879
+            INT@873..874 "1"
+            DOT_DOT@874..876 ".."
+            INT@876..879 "200"
+    NEWLINE@879..880 "\\n"
+    FIELD_DECL@882..918
+      IDENT@882..887 "email"
+      COLON@888..889 ":"
+      TYPE_EXPR@890..918
+        TYPE_REF@890..918
+          QUALIFIED_NAME@890..918
+            IDENT@890..900 "governance"
+            DOT@900..901 "."
+            IDENT@901..918 "ContactEmailValue"
+    NEWLINE@918..919 "\\n"
+    FIELD_DECL@921..964
+      IDENT@921..933 "supportNotes"
+      COLON@934..935 ":"
+      TYPE_EXPR@936..964
+        TYPE_REF@936..963
+          QUALIFIED_NAME@936..963
+            IDENT@936..946 "governance"
+            DOT@946..947 "."
+            IDENT@947..963 "SupportNoteValue"
+        QUESTION@963..964 "?"
+    NEWLINE@964..965 "\\n"
+    NEWLINE@965..966 "\\n"
+    CAPABILITY_DECL@968..1014
+      IDENT@968..978 "capability"
+      IDENT@979..987 "Identity"
+      L_BRACE@988..989 "{"
+      NEWLINE@989..990 "\\n"
+      CAPABILITY_ITEM@994..1010
+        IDENT@994..998 "read"
+        NAME_SET@999..1010
+          L_BRACE@999..1000 "{"
+          QUALIFIED_NAME@1001..1003
+            IDENT@1001..1003 "id"
+          QUALIFIED_NAME@1004..1008
+            IDENT@1004..1008 "name"
+          R_BRACE@1009..1010 "}"
+      NEWLINE@1010..1011 "\\n"
+      R_BRACE@1013..1014 "}"
+    NEWLINE@1014..1015 "\\n"
+    NEWLINE@1015..1016 "\\n"
+    CAPABILITY_DECL@1018..1120
+      IDENT@1018..1028 "capability"
+      IDENT@1029..1040 "ContactRead"
+      L_BRACE@1041..1042 "{"
+      NEWLINE@1042..1043 "\\n"
+      CAPABILITY_ITEM@1047..1064
+        IDENT@1047..1055 "includes"
+        IDENT@1056..1064 "Identity"
+      NEWLINE@1064..1065 "\\n"
+      CAPABILITY_ITEM@1069..1092
+        IDENT@1069..1073 "read"
+        NAME_SET@1074..1092
+          L_BRACE@1074..1075 "{"
+          QUALIFIED_NAME@1076..1084
+            IDENT@1076..1084 "customer"
+          QUALIFIED_NAME@1085..1090
+            IDENT@1085..1090 "email"
+          R_BRACE@1091..1092 "}"
+      NEWLINE@1092..1093 "\\n"
+      CAPABILITY_ITEM@1097..1116
+        IDENT@1097..1103 "filter"
+        NAME_SET@1104..1116
+          L_BRACE@1104..1105 "{"
+          QUALIFIED_NAME@1106..1114
+            IDENT@1106..1114 "customer"
+          R_BRACE@1115..1116 "}"
+      NEWLINE@1116..1117 "\\n"
+      R_BRACE@1119..1120 "}"
+    NEWLINE@1120..1121 "\\n"
+    NEWLINE@1121..1122 "\\n"
+    CAPABILITY_DECL@1124..1205
+      IDENT@1124..1134 "capability"
+      IDENT@1135..1153 "ContactMaintenance"
+      L_BRACE@1154..1155 "{"
+      NEWLINE@1155..1156 "\\n"
+      CAPABILITY_ITEM@1160..1180
+        IDENT@1160..1168 "includes"
+        IDENT@1169..1180 "ContactRead"
+      NEWLINE@1180..1181 "\\n"
+      CAPABILITY_ITEM@1185..1201
+        IDENT@1185..1191 "update"
+        NAME_SET@1192..1201
+          L_BRACE@1192..1193 "{"
+          QUALIFIED_NAME@1194..1199
+            IDENT@1194..1199 "email"
+          R_BRACE@1200..1201 "}"
+      NEWLINE@1201..1202 "\\n"
+      R_BRACE@1204..1205 "}"
+    NEWLINE@1205..1206 "\\n"
+    NEWLINE@1206..1207 "\\n"
+    CAPABILITY_DECL@1209..1325
+      IDENT@1209..1219 "capability"
+      IDENT@1220..1233 "SupportRecord"
+      L_BRACE@1234..1235 "{"
+      NEWLINE@1235..1236 "\\n"
+      CAPABILITY_ITEM@1240..1267
+        IDENT@1240..1248 "includes"
+        IDENT@1249..1267 "ContactMaintenance"
+      NEWLINE@1267..1268 "\\n"
+      CAPABILITY_ITEM@1272..1293
+        IDENT@1272..1276 "read"
+        NAME_SET@1277..1293
+          L_BRACE@1277..1278 "{"
+          QUALIFIED_NAME@1279..1291
+            IDENT@1279..1291 "supportNotes"
+          R_BRACE@1292..1293 "}"
+      NEWLINE@1293..1294 "\\n"
+      CAPABILITY_ITEM@1298..1321
+        IDENT@1298..1304 "update"
+        NAME_SET@1305..1321
+          L_BRACE@1305..1306 "{"
+          QUALIFIED_NAME@1307..1319
+            IDENT@1307..1319 "supportNotes"
+          R_BRACE@1320..1321 "}"
+      NEWLINE@1321..1322 "\\n"
+      R_BRACE@1324..1325 "}"
+    NEWLINE@1325..1326 "\\n"
+    NEWLINE@1326..1327 "\\n"
+    CAPABILITY_DECL@1329..1477
+      IDENT@1329..1339 "capability"
+      IDENT@1340..1352 "AgentSupport"
+      L_BRACE@1353..1354 "{"
+      NEWLINE@1354..1355 "\\n"
+      CAPABILITY_ITEM@1359..1381
+        IDENT@1359..1367 "includes"
+        IDENT@1368..1381 "SupportRecord"
+      NEWLINE@1381..1382 "\\n"
+      CAPABILITY_ITEM@1386..1412
+        IDENT@1386..1390 "deny"
+        IDENT@1391..1395 "read"
+        NAME_SET@1396..1412
+          L_BRACE@1396..1397 "{"
+          QUALIFIED_NAME@1398..1410
+            IDENT@1398..1410 "supportNotes"
+          R_BRACE@1411..1412 "}"
+      NEWLINE@1412..1413 "\\n"
+      CAPABILITY_ITEM@1417..1445
+        IDENT@1417..1421 "deny"
+        IDENT@1422..1428 "update"
+        NAME_SET@1429..1445
+          L_BRACE@1429..1430 "{"
+          QUALIFIED_NAME@1431..1443
+            IDENT@1431..1443 "supportNotes"
+          R_BRACE@1444..1445 "}"
+      NEWLINE@1445..1446 "\\n"
+      CAPABILITY_ITEM@1450..1473
+        IDENT@1450..1454 "deny"
+        IDENT@1455..1462 "actions"
+        NAME_SET@1463..1473
+          L_BRACE@1463..1464 "{"
+          QUALIFIED_NAME@1465..1471
+            IDENT@1465..1471 "export"
+          R_BRACE@1472..1473 "}"
+      NEWLINE@1473..1474 "\\n"
+      R_BRACE@1476..1477 "}"
+    NEWLINE@1477..1478 "\\n"
+    NEWLINE@1478..1479 "\\n"
+    PURPOSE_BINDING@1481..1535
+      IDENT@1481..1484 "for"
+      QUALIFIED_NAME@1485..1515
+        IDENT@1485..1495 "governance"
+        DOT@1495..1496 "."
+        IDENT@1496..1515 "ParentCommunication"
+      L_BRACE@1516..1517 "{"
+      USE_PURPOSE@1518..1533
+        IDENT@1518..1521 "use"
+        IDENT@1522..1533 "ContactRead"
+      R_BRACE@1534..1535 "}"
+    NEWLINE@1535..1536 "\\n"
+    PURPOSE_BINDING@1538..1590
+      IDENT@1538..1541 "for"
+      QUALIFIED_NAME@1542..1568
+        IDENT@1542..1552 "governance"
+        DOT@1552..1553 "."
+        IDENT@1553..1568 "CustomerSupport"
+      L_BRACE@1569..1570 "{"
+      USE_PURPOSE@1571..1588
+        IDENT@1571..1574 "use"
+        IDENT@1575..1588 "SupportRecord"
+      R_BRACE@1589..1590 "}"
+    NEWLINE@1590..1591 "\\n"
+    NEWLINE@1591..1592 "\\n"
+    LIST_DECL@1594..1632
+      IDENT@1594..1598 "list"
+      IDENT@1599..1601 "by"
+      FIELD_LIST@1602..1610
+        IDENT@1602..1610 "customer"
+      NEWLINE@1610..1611 "\\n"
+      IDENT@1615..1620 "order"
+      IDENT@1621..1623 "by"
+      ORDER_LIST@1624..1632
+        ORDER_KEY@1624..1632
+          IDENT@1624..1628 "name"
+          IDENT@1629..1632 "asc"
+    NEWLINE@1632..1633 "\\n"
+    R_BRACE@1633..1634 "}"
+  NEWLINE@1634..1635 "\\n"

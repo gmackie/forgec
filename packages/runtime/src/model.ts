@@ -104,13 +104,18 @@ export interface RealtimePlan { version: string; profile: { frame: string; maxFr
 export interface ObservabilityPlan { version: string; dimensions: string[]; classification: Record<string, string>; window: string; operations: { operation: string; kind: string; resource?: string; class: string; slo: { availability: string; latencyGood: string; latencyWithinMs: number; window: string }; histogramBoundariesMs: number[]; businessErrors: string[] }[] }
 export interface WorkflowsPlan { version: string; workflows: { id: string; name: string; version: number; graphHash: string; cloudflare: { name: string; binding: string; className: string }; aws: { stateMachine: string; definition: unknown } }[] }
 export interface SourceDecl { id: string; name: string; cron?: string; timezone?: string; target: string }
-export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[] }
+export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[]; purposes?: PurposeDecl[]; dataClasses?: DataClassDecl[] }
 export interface MessagingPlan {
   channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
   subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
   senders: { function: string; sends: [string, string][] }[];
 }
-export interface DomainIR { version: string; package: { name: string }; modules: Module[] }
+export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
+export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
+/** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
+export const KNOWN_FEATURES = ["governance/1"];
+export const DOMAIN_IR_VERSION = "domain-ir/1";
+export interface DomainIR { version: string; package: { name: string; edition?: string }; modules: Module[]; requires?: string[] }
 export interface Contracts { version: string; resources: { id: string; name: string; wireName: string; operations: Operation[] }[]; functions: { id: string; name: string; http?: HttpBinding }[] }
 export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan; realtime?: RealtimePlan; observability?: ObservabilityPlan }
 
@@ -133,7 +138,18 @@ export class Model {
   private readonly ops = new Map<string, OperationRef>();
   readonly wireNames = new Map<string, string>();
 
+  readonly purposes: PurposeDecl[];
+  readonly dataClasses: DataClassDecl[];
+
   constructor(readonly bundle: AppBundle) {
+    // Fail closed (plan §4.2): an artifact from a newer compiler with critical semantics this
+    // runtime does not know is refused rather than interpreted partially. An M8 bundle (no
+    // `requires`, no governance fields) loads by rule: every new field defaults to empty.
+    if (bundle.ir.version !== DOMAIN_IR_VERSION) throw new Error(`unsupported IR version ${bundle.ir.version} (this runtime reads ${DOMAIN_IR_VERSION})`);
+    const unknown = (bundle.ir.requires ?? []).find((f) => !KNOWN_FEATURES.includes(f));
+    if (unknown) throw new Error(`bundle requires unknown critical feature ${unknown}; refusing to run it partially`);
+    this.purposes = bundle.ir.modules.flatMap((m) => m.purposes ?? []);
+    this.dataClasses = bundle.ir.modules.flatMap((m) => m.dataClasses ?? []);
     this.resources = bundle.ir.modules.flatMap((m) => m.resources);
     this.functions = bundle.ir.modules.flatMap((m) => m.functions ?? []);
     this.channels = bundle.ir.modules.flatMap((m) => m.channels ?? []);

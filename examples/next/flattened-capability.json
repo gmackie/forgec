@@ -1,0 +1,44 @@
+{
+  "resource": "@acme/commerce.Contact",
+  "purpose": "@acme/governance.CustomerSupport",
+  "allow": [
+    {
+      "verb": "read",
+      "path": "id"
+    },
+    {
+      "verb": "read",
+      "path": "name"
+    },
+    {
+      "verb": "read",
+      "path": "customer"
+    },
+    {
+      "verb": "read",
+      "path": "email"
+    },
+    {
+      "verb": "update",
+      "path": "email"
+    },
+    {
+      "verb": "filter",
+      "path": "customer"
+    }
+  ],
+  "deny": [
+    {
+      "verb": "read",
+      "path": "supportNotes"
+    },
+    {
+      "verb": "update",
+      "path": "supportNotes"
+    },
+    {
+      "verb": "actions",
+      "path": "export"
+    }
+  ]
+}

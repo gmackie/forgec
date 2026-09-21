@@ -6,7 +6,7 @@
 use forge_semantic::{compile, load_package};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
-use std::io::{BufRead, Read, Write};
+use std::io::{BufRead, Write};
 use std::path::{Path, PathBuf};
 
 fn read_message(input: &mut impl BufRead) -> Option<Value> {
@@ -24,7 +24,7 @@ fn read_message(input: &mut impl BufRead) -> Option<Value> {
         }
     }
     let mut buf = vec![0u8; len];
-    input.read_exact(&mut buf).ok()?;
+    std::io::Read::read_exact(input, &mut buf).ok()?;
     serde_json::from_slice(&buf).ok()
 }
 

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "draft-1",
+  "note": "A proposed interface-binding manifest; not a new source construct.",
+  "interfaces": [
+    {
+      "name": "HumanSupport",
+      "transport": "http",
+      "path": "/support",
+      "purpose": "CustomerSupport",
+      "surfaces": [
+        {
+          "resource": "Contact",
+          "capability": "SupportRecord",
+          "operations": [
+            "read",
+            "listByCustomer",
+            "update"
+          ]
+        }
+      ],
+      "authentication": "required-host-binding"
+    },
+    {
+      "name": "SupportAgent",
+      "transport": "mcp",
+      "path": "/mcp",
+      "purpose": "CustomerSupport",
+      "surfaces": [
+        {
+          "resource": "Contact",
+          "capability": "AgentSupport",
+          "operations": [
+            "read",
+            "listByCustomer",
+            "update"
+          ]
+        }
+      ],
+      "authentication": "required-host-binding"
+    },
+    {
+      "name": "ParentCommunication",
+      "transport": "http",
+      "path": "/communications",
+      "purpose": "ParentCommunication",
+      "surfaces": [
+        {
+          "resource": "Contact",
+          "capability": "ContactRead",
+          "operations": [
+            "read",
+            "listByCustomer"
+          ]
+        }
+      ],
+      "authentication": "required-host-binding"
+    }
+  ],
+  "invariants": [
+    "Exposure does not grant row/action authority.",
+    "Every operation is reauthorized.",
+    "Parent purpose access is not inherited.",
+    "CLI and SDK schemas derive from the same surface."
+  ]
+}

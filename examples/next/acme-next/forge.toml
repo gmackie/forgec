@@ -1,0 +1,15 @@
+[package]
+name = "@acme/commerce-next"
+version = "0.2.0"
+edition = "2027"
+
+[source]
+root = "src"
+
+[dependencies]
+governance = { path = "../governance" }
+payments = { path = "../payments" }
+
+[compatibility]
+profile = "portable-v1"
+targets = ["cloudflare-d1", "aws-dynamodb"]

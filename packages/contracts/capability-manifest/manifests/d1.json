@@ -1,0 +1,131 @@
+{
+  "version": "capability-manifest/1",
+  "id": "@forge/runtime/d1",
+  "kind": "adapter",
+  "adapterVersion": "0.1.0",
+  "engine": {
+    "name": "sqlite (Cloudflare D1)",
+    "version": "3"
+  },
+  "runtime": {
+    "name": "workerd",
+    "version": "2026-09-01"
+  },
+  "isolation": [
+    "batch-atomic"
+  ],
+  "consistency": [
+    "strong (single primary)"
+  ],
+  "capabilities": [
+    {
+      "id": "mutation.atomic-batch",
+      "support": "native",
+      "bound": {
+        "actions": 100
+      },
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.cloudflare-d1"
+        }
+      ]
+    },
+    {
+      "id": "mutation.conditional-write",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.cloudflare-d1"
+        }
+      ]
+    },
+    {
+      "id": "query.strong-read",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.cloudflare-d1"
+        }
+      ]
+    },
+    {
+      "id": "query.keyset-pagination",
+      "support": "native",
+      "bound": {
+        "limit": 100
+      },
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.cloudflare-d1"
+        }
+      ]
+    },
+    {
+      "id": "query.unbounded-join",
+      "support": "unsupported",
+      "assumptions": [
+        "portable profile refuses scans and unbounded joins at compile time"
+      ]
+    },
+    {
+      "id": "storage.ttl-cleanup",
+      "support": "bounded-emulation",
+      "assumptions": [
+        "expired cache entries are rejected on read; physical cleanup runs in the cron sweep"
+      ],
+      "evidence": [
+        {
+          "kind": "test",
+          "ref": "packages/runtime/test/views-projections-cache.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "workflow.native-driver",
+      "support": "native",
+      "assumptions": [
+        "Cloudflare Workflows drives the portable executor"
+      ],
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.cloudflare-d1"
+        }
+      ]
+    },
+    {
+      "id": "messaging.durable-queue",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.cloudflare-d1"
+        }
+      ]
+    },
+    {
+      "id": "blob.signed-transfer",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "conformance-report",
+          "ref": "conformance/certification/latest.json#targets.cloudflare-d1"
+        }
+      ]
+    },
+    {
+      "id": "realtime.sessions",
+      "support": "native",
+      "evidence": [
+        {
+          "kind": "test",
+          "ref": "conformance/test/realtime.test.ts"
+        }
+      ]
+    }
+  ]
+}

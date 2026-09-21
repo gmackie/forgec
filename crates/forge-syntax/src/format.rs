@@ -18,10 +18,19 @@ struct Tok {
     brace_after_header_decorators: bool,
     /// Set on `@` of a decorator that belongs to a declaration header.
     header_decorator: bool,
+    /// Braces kept on one line (`read { a b }`, `for P { use C }`).
+    inline_brace: bool,
 }
 
 fn header_kind(k: K) -> bool {
     matches!(k, K::RESOURCE_DECL | K::BLOB_DECL | K::CACHE_DECL | K::VIEW_DECL | K::PROJECTION_DECL | K::FUNCTION_DECL | K::CHANNEL_DECL | K::SOURCE_DECL | K::WORKFLOW_DECL)
+}
+
+/// A `for Purpose { use X }` block stays inline when it holds exactly one `use` and no comments.
+fn single_line_block(node: &SyntaxNode) -> bool {
+    let uses = node.children().filter(|c| c.kind() == K::USE_PURPOSE).count();
+    let comments = node.descendants_with_tokens().filter(|e| matches!(e.kind(), K::COMMENT | K::DOC_COMMENT)).count();
+    uses == 1 && comments == 0
 }
 
 fn collect(node: &SyntaxNode, out: &mut Vec<Tok>) {
@@ -35,6 +44,7 @@ fn collect(node: &SyntaxNode, out: &mut Vec<Tok>) {
                 starts_continuation: false,
                 brace_after_header_decorators: t.kind() == K::L_BRACE && has_header_decorators,
                 header_decorator: false,
+                inline_brace: matches!(t.kind(), K::L_BRACE | K::R_BRACE) && (node.kind() == K::NAME_SET || (node.kind() == K::PURPOSE_BINDING && single_line_block(node))),
             }),
             NodeOrToken::Node(n) => {
                 let start = out.len();
@@ -96,6 +106,7 @@ pub fn format(parse: &Parse) -> String {
     let mut last_kind = K::NEWLINE; // previous non-whitespace token kind
     let mut suppress_blank = true; // no blank line at file start or right after `{`
     let mut error_space = false; // whitespace seen inside an ERROR region
+    let mut inline_depth = 0usize; // > 0 while inside `{ ... }` kept on one line
 
     fn flush(out: &mut String, line: &mut Vec<String>, line_indent: usize, pending_blank: &mut bool, lines_emitted: &mut usize) {
         if line.is_empty() {
@@ -121,6 +132,9 @@ pub fn format(parse: &Parse) -> String {
                 continue;
             }
             K::NEWLINE => {
+                if inline_depth > 0 {
+                    continue;
+                }
                 if line.is_empty() {
                     if last_kind == K::NEWLINE && !suppress_blank {
                         pending_blank = true;
@@ -147,6 +161,13 @@ pub fn format(parse: &Parse) -> String {
                 prev = Some(t);
                 last_kind = t.kind;
                 suppress_blank = false;
+                continue;
+            }
+            K::R_BRACE if t.inline_brace => {
+                inline_depth = inline_depth.saturating_sub(1);
+                line.push(" }".into());
+                prev = Some(t);
+                last_kind = t.kind;
                 continue;
             }
             K::R_BRACE => {
@@ -201,7 +222,9 @@ pub fn format(parse: &Parse) -> String {
         error_space = false;
         line.push(t.text.clone());
         last_kind = t.kind;
-        if t.kind == K::L_BRACE {
+        if t.kind == K::L_BRACE && t.inline_brace {
+            inline_depth += 1;
+        } else if t.kind == K::L_BRACE {
             // A block opened on a continuation line (`input {`) nests from that line's indent.
             let base = if t.parent == K::INPUT_BLOCK { line_indent } else { indent };
             depth_stack.push(base);

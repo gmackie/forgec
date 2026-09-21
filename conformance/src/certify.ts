@@ -35,7 +35,12 @@ function vitest(files: string[], env: Record<string, string | undefined>): { ok:
 }
 
 const bundle = JSON.parse(readFileSync(resolve(root, "fixtures", "acme.app.json"), "utf8")) as { buildHash: string; ir: { package: { name: string; version: string; profile: string } }; contracts: { version: string } };
-const commit = (() => { try { return execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim(); } catch { return "unknown"; } })();
+const commit = (() => {
+  for (const [cmd, args] of [["jj", ["log", "--no-pager", "-r", "@-", "--no-graph", "-T", "commit_id"]], ["git", ["rev-parse", "HEAD"]]] as const) {
+    try { const v = execFileSync(cmd, [...args], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); if (/^[0-9a-f]{40}$/.test(v)) return v; } catch { /* next */ }
+  }
+  return "unknown";
+})();
 
 const report: Record<string, unknown> = {
   version: "certification/1",

@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "scope": "planning-package validation only",
+  "baseline_tasks": 26,
+  "new_tasks": 65,
+  "baseline_scenario_specifications": 75,
+  "new_scenario_specifications": 104,
+  "total_scenario_specifications": 179,
+  "milestones": 13,
+  "json_files_parsed": 15,
+  "toml_files_parsed": 6,
+  "dependency_dags": "passed",
+  "id_cross_references": "passed",
+  "draft_capability_json_schema": "not-run: jsonschema not installed",
+  "capability_algebra": {
+    "status": "passed",
+    "scope": "finite Python set-algebra reference model",
+    "fixture_checks": 5,
+    "universe_atoms": 3,
+    "enumerated_states": 64,
+    "property_checks": {
+      "idempotence": 64,
+      "commutativity": 4096,
+      "associativity": 262144,
+      "denial_preservation": 4096,
+      "runtime_attenuation": 512
+    },
+    "not_established": [
+      "Correctness of a Forge parser/compiler or generated TypeScript",
+      "Gatekeeper/OPA authorization or real runtime isolation",
+      "Any live database, deployment, compliance or conformance result"
+    ]
+  },
+  "not_run": [
+    "Forge compilation",
+    "TypeScript/Effect type checking",
+    "179 Forge conformance scenarios",
+    "Cloud deployments or Terraform/CDK/Alchemy execution",
+    "Authorization penetration tests",
+    "Legal/compliance assessment"
+  ],
+  "plan_sha256": "62e7bb56d5115e746fe9897f5f2f7e409f3796756431d03ba01550f4061cf0b7",
+  "plan_word_count": 16873
+}

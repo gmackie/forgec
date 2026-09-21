@@ -1,0 +1,14 @@
+// Cross-cutting governance vocabulary (edition 2027). Taxonomy relationships
+// describe meaning and grant no access.
+export purpose ServiceProvision
+export purpose CustomerSupport extends ServiceProvision
+export purpose ParentCommunication extends ServiceProvision
+export purpose OrderFulfillment extends ServiceProvision
+export purpose PaymentProcessing extends OrderFulfillment
+export purpose Marketing
+
+export dataClass ContactEmail extends data.contact.email
+export dataClass SupportNarrative extends data.communication.content
+
+export type ContactEmailValue = email @data(ContactEmail)
+export type SupportNoteValue = text length 0..4000 @data(SupportNarrative)

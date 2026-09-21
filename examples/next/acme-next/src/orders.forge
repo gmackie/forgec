@@ -1,0 +1,89 @@
+export resource Site
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @purposeScoped
+{
+  id : id
+  customer : Customer @immutable
+  code : text trim uppercase length 2..24 @immutable
+  name : text length 1..200
+  enabled : boolean = true
+
+  capability FulfillmentRead {
+    read { id customer code name enabled }
+    filter { customer }
+  }
+
+  for governance.OrderFulfillment { use FulfillmentRead }
+
+  unique code within customer
+  find by customer, code
+  list by customer
+    order by code asc
+}
+
+export resource Order
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @purposeScoped
+{
+  id : id
+  customer : Customer @immutable
+  site : Site
+  total : money<USD> >= 0
+
+  lifecycle status {
+    initial Draft
+    terminal Completed
+    terminal Cancelled
+
+    submit: Draft -> Submitted
+    approve: Submitted -> Approved
+    complete: Approved -> Completed
+    cancel: Draft | Submitted | Approved -> Cancelled
+      input {
+        reason : text length 1..500
+      }
+  }
+
+  capability Fulfillment {
+    read { id customer site total status }
+    filter { customer status }
+    actions { status.submit status.approve status.cancel }
+  }
+
+  for governance.OrderFulfillment { use Fulfillment }
+
+  list by customer
+    order by createdAt desc
+}
+
+shape SubmitOrderInput {
+  order : Order
+  expectedVersion : integer >= 1
+}
+
+export function SubmitOrder
+  @http(POST, "/v1/orders/{order}/submit")
+{
+  purpose governance.OrderFulfillment
+  input SubmitOrderInput
+  output Order.Record<governance.OrderFulfillment>
+
+  uses {
+    Order read
+    Order.status.submit
+    Site read
+    payments.AuthorizePayment for governance.PaymentProcessing
+  }
+
+  errors {
+    SiteDisabled
+    PaymentDeclined
+    PaymentUnavailable
+  }
+}

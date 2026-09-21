@@ -27,7 +27,7 @@ pub fn parse_to_green(src: &str) -> (GreenNode, Vec<SyntaxError>) {
     (p.builder.finish(), p.errors)
 }
 
-const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "cache", "view", "projection", "function", "channel", "source", "on", "import", "module", "export", "workflow"];
+const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "cache", "view", "projection", "function", "channel", "source", "on", "import", "module", "export", "workflow", "dataClass"]; // `purpose` is also a function item, so it does not signal an unclosed block
 
 impl<'a> Parser<'a> {
     // ---------------------------------------------------------------- cursor
@@ -295,6 +295,8 @@ impl<'a> Parser<'a> {
             "channel" => K::CHANNEL_DECL,
             "source" => K::SOURCE_DECL,
             "workflow" => K::WORKFLOW_DECL,
+            "purpose" => K::PURPOSE_DECL,
+            "dataClass" => K::DATA_CLASS_DECL,
             "on" => K::SUBSCRIPTION_DECL,
             "import" => K::IMPORT_DECL,
             "module" => K::MODULE_DECL,
@@ -322,6 +324,26 @@ impl<'a> Parser<'a> {
             K::CHANNEL_DECL => self.channel_body(),
             K::SOURCE_DECL => self.source_body(),
             K::WORKFLOW_DECL => self.workflow_body(),
+            K::PURPOSE_DECL => {
+                // edition 2027: `purpose Name [extends Parent]`
+                self.expect_ident("purpose name");
+                if self.at_kw("extends") {
+                    self.start(K::EXTENDS_CLAUSE);
+                    self.bump();
+                    self.qualified_name("parent purpose");
+                    self.finish();
+                }
+                self.end_item();
+            }
+            K::DATA_CLASS_DECL => {
+                // edition 2027: `dataClass Name extends data.a.b`
+                self.expect_ident("data class name");
+                self.start(K::EXTENDS_CLAUSE);
+                self.expect_kw("extends");
+                self.qualified_name("parent classification");
+                self.finish();
+                self.end_item();
+            }
             K::SUBSCRIPTION_DECL => self.subscription_body(),
             K::IMPORT_DECL => self.import_body(),
             K::MODULE_DECL => {
@@ -391,6 +413,10 @@ impl<'a> Parser<'a> {
         self.expect_ident("type name");
         self.expect(TokenKind::Eq, "`=`");
         self.type_expr();
+        // edition 2027: `@data(Class)` classification on an alias
+        while self.at(TokenKind::At) {
+            self.decorator();
+        }
         self.end_item();
     }
 
@@ -506,6 +532,7 @@ impl<'a> Parser<'a> {
         loop {
             match (expect_arg, self.raw_kind(i)) {
                 (true, TokenKind::Ident | TokenKind::Int | TokenKind::String) => expect_arg = false,
+                (false, TokenKind::Dot) => expect_arg = true, // qualified type argument (`governance.Purpose`)
                 (false, TokenKind::Comma) => expect_arg = true,
                 (false, TokenKind::Gt) => return true,
                 _ => return false,
@@ -692,6 +719,56 @@ impl<'a> Parser<'a> {
             self.finish();
         } else if t == "lifecycle" && n1 == TokenKind::Ident {
             self.lifecycle_block();
+        } else if t == "capability" && n1 == TokenKind::Ident {
+            // edition 2027: resource-local capability fragment
+            self.start_decl(K::CAPABILITY_DECL);
+            self.bump();
+            self.bump();
+            self.block(|p| p.capability_item());
+            self.finish();
+        } else if t == "for" && n1 == TokenKind::Ident {
+            // edition 2027: `for Purpose { use Capability }`
+            self.start_decl(K::PURPOSE_BINDING);
+            self.bump();
+            self.qualified_name("purpose");
+            self.block(|p| {
+                if p.at_kw("use") {
+                    p.start(K::USE_PURPOSE);
+                    p.bump();
+                    p.expect_ident("capability name");
+                    p.finish();
+                    p.end_item();
+                }
+            });
+            self.finish();
+        }
+    }
+    /// `includes Name` | [deny] (read|update|create|filter|order|actions) { names }
+    fn capability_item(&mut self) {
+        if self.at_kw("includes") {
+            self.start(K::CAPABILITY_ITEM);
+            self.bump();
+            self.expect_ident("included capability");
+            self.finish();
+            self.end_item();
+            return;
+        }
+        let verb_at = if self.at_kw("deny") { 1 } else { 0 };
+        if matches!(self.nth_text(verb_at), "read" | "update" | "create" | "filter" | "order" | "actions") && self.nth(verb_at + 1) == TokenKind::LBrace {
+            self.start(K::CAPABILITY_ITEM);
+            if verb_at == 1 {
+                self.bump();
+            }
+            self.bump();
+            self.start(K::NAME_SET);
+            self.expect(TokenKind::LBrace, "`{`");
+            while self.at(TokenKind::Ident) {
+                self.qualified_name("name");
+            }
+            self.expect(TokenKind::RBrace, "`}`");
+            self.finish();
+            self.finish();
+            self.end_item();
         }
     }
     fn field_list(&mut self) {
@@ -904,6 +981,14 @@ impl<'a> Parser<'a> {
         self.header_decorators();
         self.block(|p| {
             match p.current_text() {
+                "purpose" if p.nth(1) == TokenKind::Ident => {
+                    // edition 2027
+                    p.start(K::FUNCTION_PURPOSE);
+                    p.bump();
+                    p.qualified_name("purpose");
+                    p.finish();
+                    p.end_item();
+                }
                 "input" if p.nth(1) == TokenKind::Ident => {
                     p.start(K::FUNCTION_INPUT);
                     p.bump();
@@ -916,9 +1001,7 @@ impl<'a> Parser<'a> {
                 "output" if p.nth(1) == TokenKind::Ident => {
                     p.start(K::FUNCTION_OUTPUT);
                     p.bump();
-                    p.start(K::TYPE_REF);
-                    p.qualified_name("output type");
-                    p.finish();
+                    p.type_ref_with_args();
                     p.finish();
                     p.end_item();
                 }
@@ -931,6 +1014,12 @@ impl<'a> Parser<'a> {
                             q.qualified_name("dependency");
                             if q.at(TokenKind::Ident) && matches!(q.current_text(), "read" | "write" | "create" | "delete") {
                                 q.bump();
+                            }
+                            if q.at_kw("for") {
+                                q.start(K::USE_PURPOSE);
+                                q.bump();
+                                q.qualified_name("purpose");
+                                q.finish();
                             }
                             q.finish();
                             q.end_item();
@@ -1266,6 +1355,33 @@ impl<'a> Parser<'a> {
             }
         }
         self.expect(TokenKind::RParen, "`)`");
+        self.finish();
+    }
+
+    /// `QualifiedName [ "<" TypeArgs ">" ]` as a TYPE_REF (function outputs may be purpose-scoped records).
+    fn type_ref_with_args(&mut self) {
+        self.start(K::TYPE_REF);
+        self.qualified_name("type");
+        if self.at(TokenKind::Lt) && self.type_args_ahead() {
+            self.start(K::TYPE_ARGS);
+            self.bump();
+            loop {
+                self.start(K::TYPE_ARG);
+                match self.current() {
+                    TokenKind::Ident => self.qualified_name("type argument"),
+                    TokenKind::Int | TokenKind::String => self.bump(),
+                    _ => self.error("expected type argument"),
+                }
+                self.finish();
+                if self.at(TokenKind::Comma) {
+                    self.bump();
+                } else {
+                    break;
+                }
+            }
+            self.expect(TokenKind::Gt, "`>`");
+            self.finish();
+        }
         self.finish();
     }
 

@@ -258,3 +258,131 @@ fn workflow_lowers_to_a_step_graph_with_stable_ids_and_checks() {
     let no_version = format!("{base}workflow W {{\n  input I\n  step a = F(order: input.order)\n  return a\n}}\n");
     assert!(codes(inline("@t/x", &[("src/index.forge", &no_version)])).contains(&"E-WF-004".into()));
 }
+
+#[test]
+fn edition_2027_governance_declarations_lower_and_are_gated() {
+    // Edition 2026: a governance declaration is diagnosed, never ignored.
+    let old = inline("@t/x", &[("src/a.forge", "purpose Support\nresource R {\n  id : id\n  capability C {\n    read { id }\n  }\n  for Support { use C }\n}\n")]);
+    assert!(codes(old).contains(&"E-ED-001".into()));
+
+    let gov = load_package(&examples().join("next/governance")).unwrap();
+    let g = compile(&gov, &[]);
+    assert!(g.diagnostics.is_empty(), "{:#?}", g.diagnostics);
+    let gir = g.ir.unwrap();
+    assert_eq!(gir.package.edition, "2027");
+    let gm = &gir.modules[0];
+    let mut purposes: Vec<(&str, Option<&str>)> = gm.purposes.iter().map(|p| (p.name.as_str(), p.extends.as_deref())).collect();
+    purposes.sort();
+    assert_eq!(purposes, vec![("CustomerSupport", Some("@acme/governance/_/ServiceProvision")), ("Marketing", None), ("OrderFulfillment", Some("@acme/governance/_/ServiceProvision")), ("ParentCommunication", Some("@acme/governance/_/ServiceProvision")), ("PaymentProcessing", Some("@acme/governance/_/OrderFulfillment")), ("ServiceProvision", None)]);
+    assert_eq!(gm.data_classes.iter().map(|d| (d.name.as_str(), d.extends.as_str())).collect::<Vec<_>>(), vec![("ContactEmail", "data.contact.email"), ("SupportNarrative", "data.communication.content")]);
+    assert_eq!(gm.types.iter().find(|t| t.name == "ContactEmailValue").unwrap().data_class.as_deref(), Some("@acme/governance/_/ContactEmail"));
+
+    let pay = compile(&load_package(&examples().join("next/payments")).unwrap(), &[&gir]);
+    assert!(pay.diagnostics.is_empty(), "{:#?}", pay.diagnostics);
+    let pir = pay.ir.unwrap();
+    let acme = compile(&load_package(&examples().join("next/acme-next")).unwrap(), &[&gir, &pir]);
+    assert!(acme.diagnostics.is_empty(), "{:#?}", acme.diagnostics);
+    let ir = acme.ir.unwrap();
+    let contact = ir.find_resource("@acme/commerce-next/_/Contact").unwrap();
+    assert!(contact.decorators.purpose_scoped);
+    assert_eq!(contact.decorators.subject.as_deref(), Some("person"));
+    assert_eq!(contact.capabilities.iter().map(|c| c.name.as_str()).collect::<Vec<_>>(), ["Identity", "ContactRead", "ContactMaintenance", "SupportRecord", "AgentSupport"]);
+    let agent = contact.capabilities.iter().find(|c| c.name == "AgentSupport").unwrap();
+    assert_eq!(agent.includes, vec!["SupportRecord"]);
+    assert!(agent.atoms.iter().any(|a| a.deny && a.verb == "read" && a.names == vec!["supportNotes"]));
+    assert_eq!(contact.purpose_bindings.iter().map(|b| (b.purpose.as_str(), b.capability.as_str())).collect::<Vec<_>>(), vec![("@acme/governance/_/ParentCommunication", "ContactRead"), ("@acme/governance/_/CustomerSupport", "SupportRecord")]);
+    let submit = ir.modules[0].functions.iter().find(|f| f.name == "SubmitOrder").unwrap();
+    assert_eq!(submit.purpose.as_deref(), Some("@acme/governance/_/OrderFulfillment"));
+    assert!(submit.uses.iter().any(|u| matches!(u, forge_semantic::ir::Use::Function { function, purpose: Some(p) } if function == "@acme/payments/_/AuthorizePayment" && p == "@acme/governance/_/PaymentProcessing")));
+    assert_eq!(submit.output.as_ref().map(|t| t.purpose.clone()).flatten().as_deref(), Some("@acme/governance/_/OrderFulfillment"));
+    // Errors: unknown purpose / capability / field in a capability.
+    let bad = inline("@t/y", &[("src/a.forge", "purpose P\nresource R {\n  id : id\n  x : text\n  capability C {\n    includes Nope\n    read { id zzz }\n  }\n  for Q { use C }\n  for P { use Missing }\n}\n")]);
+    let c = codes_edition(bad, "2027");
+    assert!(c.contains(&"E-GOV-001".into()), "unknown included capability: {c:?}");
+    assert!(c.contains(&"E-GOV-002".into()), "unknown field in capability: {c:?}");
+    assert!(c.contains(&"E-GOV-003".into()), "unknown purpose: {c:?}");
+    assert!(c.contains(&"E-GOV-004".into()), "unknown capability in binding: {c:?}");
+}
+
+fn codes_edition(mut pkg: Package, edition: &str) -> Vec<String> {
+    pkg.edition = edition.into();
+    codes(pkg)
+}
+
+#[test]
+fn separate_semantic_digests() {
+    // FORGE-029: a documentation edit changes the docs digest only; an added output field changes wire and security digests.
+    let base = "export resource R\n  @crud(\"/v1/r\")\n{\n  id : id\n  a : text\n}\n";
+    let doc = "/// documented\nexport resource R\n  @crud(\"/v1/r\")\n{\n  id : id\n  a : text\n}\n";
+    let field = "export resource R\n  @crud(\"/v1/r\")\n{\n  id : id\n  a : text\n  b : text?\n}\n";
+    let d = |src: &str| compile(&inline("@t/z", &[("src/a.forge", src)]), &[]).ir.unwrap().digests();
+    let (b, dd, f) = (d(base), d(doc), d(field));
+    if b.wire != dd.wire {
+        let a = serde_json::to_string_pretty(&compile(&inline("@t/z", &[("src/a.forge", base)]), &[]).ir.unwrap()).unwrap();
+        let c = serde_json::to_string_pretty(&compile(&inline("@t/z", &[("src/a.forge", doc)]), &[]).ir.unwrap()).unwrap();
+        for (x, y) in a.lines().zip(c.lines()) { if x != y { eprintln!("DIFF {x} | {y}"); } }
+    }
+    assert_eq!(b.wire, dd.wire);
+    assert_eq!(b.security, dd.security);
+    assert_ne!(b.docs, dd.docs);
+    assert_ne!(b.wire, f.wire);
+    assert_ne!(b.security, f.security);
+    assert_ne!(b.source, dd.source);
+}
+
+/// PAR-077 / PAR-078: identity and digests survive folder moves, discovery order and path separators.
+#[test]
+fn digests_survive_folder_moves_and_discovery_order() {
+    let a = inline("@t/x", &[("src/a/customer.forge", "export resource Customer\n  @crud(\"/v1/customers\")\n{\n  id : id\n  name : text\n}\n"), ("src/b/site.forge", "resource Site {\n  id : id\n  customer : Customer\n}\n")]);
+    let b = inline("@t/x", &[("src/zzz/moved.forge", "resource Site {\n  id : id\n  customer : Customer\n}\n"), ("src\\other\\customer.forge", "export resource Customer\n  @crud(\"/v1/customers\")\n{\n  id : id\n  name : text\n}\n")]);
+    let (da, db) = (compile(&a, &[]).ir.unwrap().digests(), compile(&b, &[]).ir.unwrap().digests());
+    assert_eq!(da, db);
+}
+
+/// PAR-080: a security-only change (new external effect, same I/O) moves the security digest, not the wire digest.
+#[test]
+fn security_only_change_moves_only_the_security_digest() {
+    let base = "channel C {\n  message M {\n    a : text\n  }\n}\nshape I {\n  a : text\n}\nfunction F {\n  input I\n}\n";
+    let effect = "channel C {\n  message M {\n    a : text\n  }\n}\nshape I {\n  a : text\n}\nfunction F {\n  input I\n  sends {\n    M to C\n  }\n}\n";
+    let d = |src: &str| compile(&inline("@t/s", &[("src/a.forge", src)]), &[]).ir.unwrap().digests();
+    let (b, e) = (d(base), d(effect));
+    assert_ne!(b.security, e.security);
+    assert_ne!(b.source, e.source);
+}
+
+/// PAR-081 / PAR-083: unknown critical features and unsupported versions fail closed; M8 artifacts load by rule.
+#[test]
+fn ir_loading_fails_closed_on_unknown_critical_features() {
+    let ir = compile(&inline("@t/m8", &[("src/a.forge", "resource R {\n  id : id\n}\n")]), &[]).ir.unwrap();
+    let mut v = serde_json::to_value(&ir).unwrap();
+    // An M8 artifact has no `requires`, no governance fields: it loads with defaults (the conversion rule).
+    v.as_object_mut().unwrap().remove("requires");
+    let loaded = forge_semantic::ir::DomainIR::load(&v).unwrap();
+    assert!(loaded.requires.is_empty());
+    assert!(loaded.modules[0].purposes.is_empty());
+    v["requires"] = serde_json::json!(["capability-algebra/9"]);
+    let err = forge_semantic::ir::DomainIR::load(&v).unwrap_err();
+    assert!(err.contains("capability-algebra/9"), "{err}");
+    v["requires"] = serde_json::json!([]);
+    v["version"] = serde_json::json!("domain-ir/7");
+    assert!(forge_semantic::ir::DomainIR::load(&v).unwrap_err().contains("domain-ir/7"));
+}
+
+/// PAR-082: resolving a path dependency reads only forge.toml and .forge sources; nothing in the package executes.
+#[test]
+fn dependency_resolution_never_executes_package_code() {
+    let dir = std::env::temp_dir().join(format!("forge-noexec-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("lib/src")).unwrap();
+    let canary = dir.join("CANARY");
+    std::fs::write(dir.join("lib/forge.toml"), "[package]\nname = \"@t/lib\"\nversion = \"1.0.0\"\n").unwrap();
+    std::fs::write(dir.join("lib/src/a.forge"), "export shape S {\n  a : text\n}\n").unwrap();
+    std::fs::write(dir.join("lib/package.json"), format!("{{\"scripts\":{{\"postinstall\":\"touch {}\"}}}}", canary.display())).unwrap();
+    std::fs::write(dir.join("lib/install.sh"), format!("#!/bin/sh\ntouch {}\n", canary.display())).unwrap();
+    std::fs::write(dir.join("lib/build.rs"), format!("fn main() {{ std::fs::write({:?}, \"\").unwrap(); }}", canary.display())).unwrap();
+    let pkg = load_package(&dir.join("lib")).unwrap();
+    let out = compile(&pkg, &[]);
+    assert!(out.diagnostics.is_empty());
+    assert!(!canary.exists(), "package code must never run during resolution");
+    assert_eq!(pkg.files.iter().map(|f| f.path.as_str()).collect::<Vec<_>>(), ["src/a.forge"]);
+}

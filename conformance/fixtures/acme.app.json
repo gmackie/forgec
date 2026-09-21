@@ -1,6 +1,12 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "f3eddedaa59e775d66baf06a58af750c9d3f6aaa31c7f2318f159449e13f5a9b",
+  "buildHash": "693d221a70f7768df402a99030fa793c635f2eb61332e62a4e866d0a1f697d35",
+  "digests": {
+    "source": "dbfa0e34e2e4f6df8455200ab88c28903bf91708296b9b4a1ce44e2619fdd57f",
+    "wire": "07f77f64124dc0e95d578b25df58d309d640631442db2e1f2c465c33d5f63844",
+    "docs": "87abd0df55590b47d345ea6fb19c55af331e4584e6812abc3a24a8e8e71d969f",
+    "security": "56e3d8b93dd83a1cc19eec0ee388cf4a630d4d8c3e0d38a71f02736ccad4b095"
+  },
   "ir": {
     "version": "domain-ir/1",
     "package": {
@@ -346,7 +352,8 @@
                 "path": "/v1/customers",
                 "actions": []
               },
-              "hierarchical": false
+              "hierarchical": false,
+              "purposeScoped": false
             },
             "fields": [
               {
@@ -630,7 +637,9 @@
                   "path": "/v1/customers/queries/by-tier"
                 }
               }
-            ]
+            ],
+            "capabilities": [],
+            "purposeBindings": []
           },
           {
             "id": "@acme/commerce/_/Department",
@@ -648,7 +657,8 @@
                 "path": "/v1/departments",
                 "actions": []
               },
-              "hierarchical": true
+              "hierarchical": true,
+              "purposeScoped": false
             },
             "fields": [
               {
@@ -874,7 +884,9 @@
                   "path": "/v1/departments/{id}/ancestors"
                 }
               }
-            ]
+            ],
+            "capabilities": [],
+            "purposeBindings": []
           },
           {
             "id": "@acme/commerce/_/Order",
@@ -895,7 +907,8 @@
                   "cancel"
                 ]
               },
-              "hierarchical": false
+              "hierarchical": false,
+              "purposeScoped": false
             },
             "fields": [
               {
@@ -1366,7 +1379,9 @@
                   "path": "/v1/orders/{id}/actions/cancel"
                 }
               }
-            ]
+            ],
+            "capabilities": [],
+            "purposeBindings": []
           },
           {
             "id": "@acme/commerce/_/OrderDocument",
@@ -1384,7 +1399,8 @@
                 "path": "/v1/order-documents",
                 "actions": []
               },
-              "hierarchical": false
+              "hierarchical": false,
+              "purposeScoped": false
             },
             "fields": [
               {
@@ -1777,7 +1793,9 @@
                   "path": "/v1/order-documents/{id}/content"
                 }
               }
-            ]
+            ],
+            "capabilities": [],
+            "purposeBindings": []
           },
           {
             "id": "@acme/commerce/_/Site",
@@ -1794,7 +1812,8 @@
                 "path": "/v1/sites",
                 "actions": []
               },
-              "hierarchical": false
+              "hierarchical": false,
+              "purposeScoped": false
             },
             "fields": [
               {
@@ -2070,7 +2089,9 @@
                   "path": "/v1/sites/queries/by-customer"
                 }
               }
-            ]
+            ],
+            "capabilities": [],
+            "purposeBindings": []
           },
           {
             "id": "@acme/commerce/_/SitePolicy",
@@ -2093,7 +2114,8 @@
                   "site"
                 ]
               },
-              "hierarchical": false
+              "hierarchical": false,
+              "purposeScoped": false
             },
             "fields": [
               {
@@ -2346,7 +2368,9 @@
                   "path": "/v1/site-policies/effective/by-site"
                 }
               }
-            ]
+            ],
+            "capabilities": [],
+            "purposeBindings": []
           }
         ],
         "functions": [
@@ -3053,9 +3077,12 @@
             ],
             "graphHash": "62f3c6c402b8d49d810c3c875825d095bc7763443a7f3e9f455999a005af7e21"
           }
-        ]
+        ],
+        "purposes": [],
+        "dataClasses": []
       }
-    ]
+    ],
+    "requires": []
   },
   "contracts": {
     "version": "contracts/1",

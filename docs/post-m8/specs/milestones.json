@@ -1,0 +1,233 @@
+{
+  "schema_version": "1",
+  "baseline": "M8",
+  "milestones": [
+    {
+      "id": "M9",
+      "title": "Baseline capture, edition and extension contracts",
+      "dependencies": [],
+      "objective": "Establish a measured M8 baseline and stable semantic extension boundaries.",
+      "ticket_ids": [
+        "FORGE-027",
+        "FORGE-028",
+        "FORGE-029",
+        "FORGE-030",
+        "FORGE-031"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M10",
+      "title": "Composable adapters, PostgreSQL and Node",
+      "dependencies": [
+        "M9"
+      ],
+      "objective": "Break the provider/runtime/deployment coupling without breaking M8 semantics.",
+      "ticket_ids": [
+        "FORGE-032",
+        "FORGE-033",
+        "FORGE-034",
+        "FORGE-035",
+        "FORGE-036"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M11",
+      "title": "Data taxonomy, subject bindings and lineage",
+      "dependencies": [
+        "M9"
+      ],
+      "objective": "Make data meaning and coverage precise without hardcoding industry or legal policy.",
+      "ticket_ids": [
+        "FORGE-037",
+        "FORGE-038",
+        "FORGE-039",
+        "FORGE-040",
+        "FORGE-041"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M12",
+      "title": "Purpose and composable capability compiler",
+      "dependencies": [
+        "M11"
+      ],
+      "objective": "Compile explicit business purpose into concrete maximum field/action surfaces.",
+      "ticket_ids": [
+        "FORGE-042",
+        "FORGE-043",
+        "FORGE-044",
+        "FORGE-045",
+        "FORGE-046"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M13",
+      "title": "Invocation identity, Gatekeeper and runtime enforcement",
+      "dependencies": [
+        "M10",
+        "M12"
+      ],
+      "objective": "Enforce current authority at every protected operation without contaminating portable logic.",
+      "ticket_ids": [
+        "FORGE-047",
+        "FORGE-048",
+        "FORGE-049",
+        "FORGE-050",
+        "FORGE-051"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M14",
+      "title": "OpenAPI, RPC, MCP, API CLI and SDK interfaces",
+      "dependencies": [
+        "M13"
+      ],
+      "objective": "Expose one minimized operation model to humans, agents and non-Effect clients.",
+      "ticket_ids": [
+        "FORGE-052",
+        "FORGE-053",
+        "FORGE-054",
+        "FORGE-055",
+        "FORGE-056"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M15",
+      "title": "Registry, derived catalog and deployment inventory",
+      "dependencies": [
+        "M14"
+      ],
+      "objective": "Distribute immutable contracts and index them without becoming the application hot path.",
+      "ticket_ids": [
+        "FORGE-057",
+        "FORGE-058",
+        "FORGE-059",
+        "FORGE-060",
+        "FORGE-061"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M16",
+      "title": "Callee-owned dependency grants and approval PRs",
+      "dependencies": [
+        "M15",
+        "M13"
+      ],
+      "objective": "Turn cross-service uses edges into reviewed, activated, purpose-bound privileges.",
+      "ticket_ids": [
+        "FORGE-062",
+        "FORGE-063",
+        "FORGE-064",
+        "FORGE-065",
+        "FORGE-066"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M17",
+      "title": "Semantic diff, governance migration and rollout control",
+      "dependencies": [
+        "M16",
+        "M10"
+      ],
+      "objective": "Make source-to-production changes reviewable and resumable across state and authority.",
+      "ticket_ids": [
+        "FORGE-067",
+        "FORGE-068",
+        "FORGE-069",
+        "FORGE-070",
+        "FORGE-071"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M18",
+      "title": "Managed providers and deployment portability packs",
+      "dependencies": [
+        "M17"
+      ],
+      "objective": "Certify additional combinations rather than announcing universal matrix support.",
+      "ticket_ids": [
+        "FORGE-072",
+        "FORGE-073",
+        "FORGE-074",
+        "FORGE-075",
+        "FORGE-076"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M19",
+      "title": "Subject rights, retention and recovery evidence",
+      "dependencies": [
+        "M17",
+        "M11",
+        "M13"
+      ],
+      "objective": "Generate bounded, auditable governance operations over declared data flows.",
+      "ticket_ids": [
+        "FORGE-077",
+        "FORGE-078",
+        "FORGE-079",
+        "FORGE-080",
+        "FORGE-081"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M20",
+      "title": "Generated dashboards, privacy-safe telemetry and evidence",
+      "dependencies": [
+        "M18",
+        "M19",
+        "M16",
+        "M14"
+      ],
+      "objective": "Connect semantic contracts to measured runtime behavior without leaking governed data.",
+      "ticket_ids": [
+        "FORGE-082",
+        "FORGE-083",
+        "FORGE-084",
+        "FORGE-085",
+        "FORGE-086"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    },
+    {
+      "id": "M21",
+      "title": "Cross-profile certification and governed release",
+      "dependencies": [
+        "M20"
+      ],
+      "objective": "Release only the combinations and security claims the evidence supports.",
+      "ticket_ids": [
+        "FORGE-087",
+        "FORGE-088",
+        "FORGE-089",
+        "FORGE-090",
+        "FORGE-091"
+      ],
+      "release_gate": "All milestone acceptance criteria and associated scenarios pass on required profiles; missing evidence remains pending.",
+      "status": "planned"
+    }
+  ]
+}

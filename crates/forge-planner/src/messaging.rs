@@ -73,8 +73,8 @@ pub fn plan(ir: &DomainIR) -> MessagingPlan {
         }
         for r in &m.resources {
             if r.decorators.audited {
-                let id_field = |n: &str, ty: &str| Field { name: n.into(), ty: TypeSpec { base: TypeBase::Scalar { name: ty.into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: true, server_owned: true, synthesized: true, hidden: false, doc: None };
-                let fields = vec![Field { name: "id".into(), ty: TypeSpec { base: TypeBase::Reference { resource: r.id.clone() }, optional: false, normalizers: vec![], constraints: vec![] }, default: None, derived: None, immutable: true, server_owned: true, synthesized: true, hidden: false, doc: None }, id_field("version", "integer")];
+                let id_field = |n: &str, ty: &str| Field { name: n.into(), ty: TypeSpec { base: TypeBase::Scalar { name: ty.into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None }, default: None, derived: None, immutable: true, server_owned: true, synthesized: true, hidden: false, doc: None };
+                let fields = vec![Field { name: "id".into(), ty: TypeSpec { base: TypeBase::Reference { resource: r.id.clone() }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None }, default: None, derived: None, immutable: true, server_owned: true, synthesized: true, hidden: false, doc: None }, id_field("version", "integer")];
                 let mut messages: Vec<MessagePlan> = ["Created", "Updated", "Deleted", "Restored"].iter().map(|n| MessagePlan { name: (*n).into(), fields: fields.clone() }).collect();
                 if r.lifecycle.is_some() {
                     let mut f = fields.clone();
