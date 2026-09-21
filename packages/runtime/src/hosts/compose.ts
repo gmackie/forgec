@@ -85,6 +85,20 @@ export function composeRuntime(c: RuntimeComposition): ComposedRuntime {
   return { model, engine, store: c.store, dispatcher, sweep, sweepAll };
 }
 
+/**
+ * Assurance profiles (plan §10.4, PAR-114). A shared process can only offer `workload-bound`:
+ * the callee trusts the workload's dispatcher to name the function, so a compromised workload can
+ * impersonate a sibling. `isolated-callable` needs an attested execution boundary the deployment
+ * actually provides; a request for it from a shared process is downgraded, never granted.
+ */
+export type AssuranceLevel = "workload-bound" | "isolated-callable";
+export function assuranceProfile(deployment: { isolation: "shared-process" | "attested-boundary"; attestation?: string }, requested: AssuranceLevel): { requested: AssuranceLevel; granted: AssuranceLevel; reason?: string } {
+  if (requested === "isolated-callable" && (deployment.isolation !== "attested-boundary" || !deployment.attestation)) {
+    return { requested, granted: "workload-bound", reason: "a shared process cannot attest which function executed; a compromised workload could impersonate a sibling function" };
+  }
+  return { requested, granted: requested };
+}
+
 /** Every declared subscription, consumed in-process. */
 function defaultSubscriptions(model: Model): Record<string, string[]> {
   const out: Record<string, string[]> = {};

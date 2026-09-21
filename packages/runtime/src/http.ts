@@ -11,6 +11,10 @@ import type { Model, OperationRef } from "./model.js";
 export interface Principal {
   tenant: string;
   actor: string;
+  issuer?: string;
+  /** Purposes the credential allows; a requested purpose outside this set is refused. */
+  purposes?: string[];
+  workload?: string;
 }
 export interface AuthHost {
   authenticate(req: Request): Promise<Principal | ForgeError>;
@@ -342,6 +346,9 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
 
     const trace = spanFromTraceparent(req.headers.get("traceparent"));
     const purposeHeader = req.headers.get("x-forge-purpose");
+    if (purposeHeader && principal.purposes && !principal.purposes.includes(purposeHeader)) {
+      return problem(err("NotPermitted", "the credential does not allow the requested purpose"), requestId);
+    }
     const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace, ...(purposeHeader ? { purpose: purposeHeader } : {}), ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
     const exit = await Effect.runPromiseExit(engine.call(route.ref.op.id, input, ctx));
     if (exit._tag === "Failure") {

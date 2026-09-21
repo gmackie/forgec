@@ -199,6 +199,51 @@
         "PAR-106": "by construction (no expansion operation); documented",
         "PAR-107": "scope.test.ts"
       }
+    },
+    "M13": {
+      "status": "done",
+      "tickets": {
+        "FORGE-047": {
+          "status": "done",
+          "evidence": [
+            "packages/runtime/src/auth.ts jwtAuth (issuer/audience/alg pinned by config, HS256 + JWK RS256/ES256, exp/nbf with bounded skew, explicit claim map \u2192 tenant/actor/purposes/workload); Principal.purposes bounds x-forge-purpose; PAR-108 test: forged headers ignored, wrong audience/expired refused"
+          ]
+        },
+        "FORGE-048": {
+          "status": "done",
+          "evidence": [
+            "gatekeeper.ts: canonical AuthzRequest (principal, action, purpose, current+candidate state, PIP values with observedAt/expiresAt, requestId) \u2192 typed Decision (allow/deny, decisionId, rowFilter, obligations, epoch, expiresAt); Authorizer interface usable by a remote Gatekeeper/OPA adapter; localAuthorizer typed evaluator; PAR-115 unknown obligation / missing / stale attribute deny"
+          ]
+        },
+        "FORGE-049": {
+          "status": "done",
+          "evidence": [
+            "per-record gates in get/find/list (PAR-109; denied reads read as NotFound), mutations authorize current AND candidate state (PAR-110), idempotency replay re-authorized before disclosing the stored response (PAR-112), maintenance contexts carry explicit service authority"
+          ]
+        },
+        "FORGE-050": {
+          "status": "done",
+          "evidence": [
+            "typed filter subset (eq/in/ne on record fields from constants or PIP-mapped values); list plans exact (predicate on query parameters) | candidate (bounded per-row residual within the page) | unsupported (refused, never a hidden scan) (PAR-113); decision cache keyed by policy epoch with bounded TTL (PAR-111)"
+          ]
+        },
+        "FORGE-051": {
+          "status": "partial",
+          "evidence": [
+            "assuranceProfile(): shared process \u2192 workload-bound only, isolated-callable requires an attested boundary (PAR-114); epoch bump revokes cached allows; signed snapshot refresh / high-water marks / OPA bundle verification not implemented"
+          ]
+        }
+      },
+      "scenarios": {
+        "PAR-108": "gatekeeper.test.ts",
+        "PAR-109": "gatekeeper.test.ts",
+        "PAR-110": "gatekeeper.test.ts",
+        "PAR-111": "gatekeeper.test.ts",
+        "PAR-112": "gatekeeper.test.ts",
+        "PAR-113": "gatekeeper.test.ts (exact/candidate/unsupported)",
+        "PAR-114": "gatekeeper.test.ts assuranceProfile",
+        "PAR-115": "gatekeeper.test.ts"
+      }
     }
   }
 }

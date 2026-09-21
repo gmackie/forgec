@@ -23,6 +23,7 @@ import { Telemetry, type TraceContext } from "./telemetry.js";
 import { Portability } from "./portability.js";
 import { Governance } from "./governance.js";
 import { Scope } from "./scope.js";
+import { Gatekeeper } from "./gatekeeper.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -242,6 +243,8 @@ export class Engine {
     return Effect.gen(function* () {
       if (yield* self.portability.isFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
       const plan = yield* self.planFor(opId, body, ctx);
+      // Authorize current AND candidate state (PAR-110): a permitted update cannot move the record out of scope.
+      yield* self.gatekeeper.requireWrite(opId, plan.resource, ctx, plan.before ? canonicalize(self.model, plan.resource, plan.before) : null, canonicalize(self.model, plan.resource, plan.after));
       yield* (yield* Storage).commit(plan);
       return self.resultOf(plan);
     });
@@ -259,6 +262,7 @@ export class Engine {
   readonly portability = new Portability(this);
   readonly governance = new Governance(this);
   readonly scope = new Scope(this);
+  readonly gatekeeper = new Gatekeeper(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {
@@ -439,7 +443,9 @@ export class Engine {
       const storage = yield* Storage;
       const rec = yield* storage.get(ctx.tenant, r, id);
       if (!rec || rec["deletedAt"]) return yield* Effect.fail(err("NotFound", `${r.name} ${id} not found`));
-      return canonicalize(self.model, r, rec);
+      const canon = canonicalize(self.model, r, rec);
+      yield* self.gatekeeper.requireRead(`${r.id}.get`, r, ctx, canon); // per record, every time (PAR-109)
+      return canon;
     });
   }
 
@@ -461,7 +467,9 @@ export class Engine {
       const storage = yield* Storage;
       const rec = key ? yield* storage.findUnique(ctx.tenant, r, unique, key, values) : null;
       if (!rec || rec["deletedAt"]) return yield* Effect.fail(err("NotFound", `${r.name} not found`));
-      return canonicalize(self.model, r, rec);
+      const canon = canonicalize(self.model, r, rec);
+      yield* self.gatekeeper.requireRead(`${r.id}.find.${query}`, r, ctx, canon);
+      return canon;
     });
   }
 
@@ -491,13 +499,28 @@ export class Engine {
       const storage = yield* Storage;
       const keys = self.sortKeys(r, l);
       const page = yield* storage.list(ctx.tenant, r, { list: l, values, after, limit }, keys);
-      const items = page.records.map((rec) => canonicalize(self.model, r, rec));
+      let items = page.records.map((rec) => canonicalize(self.model, r, rec));
+      // Policy filtering (plan §9.2): exact when the predicate is on the query's own parameters, otherwise a
+      // bounded residual check per row of this page; an unresolvable predicate is refused, never a hidden scan.
+      const plan = self.gatekeeper.listPlan(opId, r, ctx, values);
+      if (plan.kind === "unsupported") return yield* Effect.fail(err("NotPermitted", plan.reason ?? "policy filter cannot be planned"));
+      if (plan.kind === "exact") {
+        const denied = plan.filter.some((c) => (c.op === "in" && !c.values.includes(values[c.field])) || (c.op === "eq" && values[c.field] !== c.values[0]) || (c.op === "ne" && c.values.includes(values[c.field])));
+        if (denied) items = [];
+      } else if (plan.kind === "candidate") {
+        const kept: Wire[] = [];
+        for (const it of items) {
+          const d = yield* self.gatekeeper.decide(opId, "read", r, ctx, it);
+          if (d.effect === "allow") kept.push(it);
+        }
+        items = kept;
+      }
       let next: string | null = null;
       if (page.hasMore && page.records.length) {
         const last = page.records[page.records.length - 1]!;
         next = yield* encodeCursor(secret, { q: opId, v: 1, t: ctx.tenant, k: keys(last), r: l.order.map((o) => last[o.field] ?? null), id: String(last["id"]) });
       }
-      return { items, next, limit };
+      return { items, next, limit, ...(plan.kind !== "none" ? { plan: { kind: plan.kind, ...(plan.policy ? { policy: plan.policy } : {}) } } : {}) };
     });
   }
 
@@ -614,7 +637,12 @@ export class Engine {
       const existing = yield* storage.getReceipt(ctx.tenant, operation, key);
       if (existing) {
         if (existing.requestHash !== requestHash) return yield* Effect.fail(err("IdempotencyMismatch", "idempotency key reused with a different request"));
-        return existing.response as Wire;
+        // Reuse repeats no effect, but the stored response is disclosed only under current authority (PAR-112).
+        const ref = self.model.operation(operation);
+        const stored = existing.response as Wire;
+        const d = yield* self.gatekeeper.decide(operation, "replay", ref?.resource ?? null, ctx, stored && typeof stored === "object" && "id" in stored ? stored : undefined);
+        if (d.effect !== "allow") return yield* Effect.fail(err("NotPermitted", "the stored result of this request is no longer accessible under current authority"));
+        return stored;
       }
       const clock = yield* Clock;
       const receipt: Receipt = { tenant: ctx.tenant, operation, key, requestHash, status: 200, response: null, createdAt: clock.now() };

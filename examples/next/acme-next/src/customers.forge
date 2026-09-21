@@ -13,6 +13,7 @@ export resource Customer
   @versioned
   @audited
   @purposeScoped
+  @crud("/v1/customers")
 {
   id : id
   code : CustomerCode @unique @immutable
@@ -40,6 +41,7 @@ export resource Contact
   @audited
   @purposeScoped
   @subject(person)
+  @crud("/v1/contacts")
 {
   id : id
   customer : Customer

@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "28c2f065f245f2de708c47a2837c554b02dbdd5fe8e3fa4a5833f54e6b4d5664",
+  "buildHash": "6e6546ce29f5e8ca8e4dd69082eb25b2ca5f94992dc5d82e1af7b0be8b7a8453",
   "digests": {
-    "source": "151d05d490b5b8cc638d176b707d850da618be9db83432e709aae237265440b3",
-    "wire": "526819a03fc409ae2d35ffabdf96553156b1d495010a7af76b7963904fe08b74",
+    "source": "aa2a1933f9ac07f06a7947a7c0e3f29525c57f51ff60db60940f538f9c099e63",
+    "wire": "52a61a6271047680b79de394056ff643e1053fedbc5c5a345cfb682fb1831775",
     "docs": "1cb9c39e22c289cd9ee0cc848a51e8f5065150a791ea91f72a6023a07827821b",
-    "security": "960dda82948901a3d5c4d8e1f6a710a528287e964147ddfcb7e9bb2fcea2b8b0"
+    "security": "61d8a0efb4cfa0acf45b4d9256206663ba0f9e9a6c57f78a42b102daf8b350b7"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -173,6 +173,10 @@
               "softDelete": false,
               "versioned": true,
               "audited": true,
+              "crud": {
+                "path": "/v1/contacts",
+                "actions": []
+              },
               "hierarchical": false,
               "purposeScoped": true,
               "subject": {
@@ -349,29 +353,53 @@
             "operations": [
               {
                 "id": "@acme/commerce-next/_/Contact.create",
-                "kind": "create"
+                "kind": "create",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/contacts"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Contact.get",
-                "kind": "get"
+                "kind": "get",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/contacts/{id}"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Contact.update",
-                "kind": "update"
+                "kind": "update",
+                "http": {
+                  "method": "PATCH",
+                  "path": "/v1/contacts/{id}"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Contact.delete",
-                "kind": "delete"
+                "kind": "delete",
+                "http": {
+                  "method": "DELETE",
+                  "path": "/v1/contacts/{id}"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Contact.list.all",
                 "kind": "list",
-                "query": "all"
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/contacts"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Contact.list.byCustomer",
                 "kind": "list",
-                "query": "byCustomer"
+                "query": "byCustomer",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/contacts/queries/by-customer"
+                }
               }
             ],
             "capabilities": [
@@ -509,6 +537,10 @@
               "softDelete": false,
               "versioned": true,
               "audited": true,
+              "crud": {
+                "path": "/v1/customers",
+                "actions": []
+              },
               "hierarchical": false,
               "purposeScoped": true
             },
@@ -697,34 +729,62 @@
             "operations": [
               {
                 "id": "@acme/commerce-next/_/Customer.create",
-                "kind": "create"
+                "kind": "create",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/customers"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Customer.get",
-                "kind": "get"
+                "kind": "get",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/customers/{id}"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Customer.update",
-                "kind": "update"
+                "kind": "update",
+                "http": {
+                  "method": "PATCH",
+                  "path": "/v1/customers/{id}"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Customer.delete",
-                "kind": "delete"
+                "kind": "delete",
+                "http": {
+                  "method": "DELETE",
+                  "path": "/v1/customers/{id}"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Customer.find.byCode",
                 "kind": "find",
-                "query": "byCode"
+                "query": "byCode",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/customers/queries/by-code"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Customer.list.all",
                 "kind": "list",
-                "query": "all"
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/customers"
+                }
               },
               {
                 "id": "@acme/commerce-next/_/Customer.list.byTier",
                 "kind": "list",
-                "query": "byTier"
+                "query": "byTier",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/customers/queries/by-tier"
+                }
               }
             ],
             "capabilities": [
@@ -1647,29 +1707,53 @@
         "operations": [
           {
             "id": "@acme/commerce-next/_/Contact.create",
-            "kind": "create"
+            "kind": "create",
+            "http": {
+              "method": "POST",
+              "path": "/v1/contacts"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Contact.get",
-            "kind": "get"
+            "kind": "get",
+            "http": {
+              "method": "GET",
+              "path": "/v1/contacts/{id}"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Contact.update",
-            "kind": "update"
+            "kind": "update",
+            "http": {
+              "method": "PATCH",
+              "path": "/v1/contacts/{id}"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Contact.delete",
-            "kind": "delete"
+            "kind": "delete",
+            "http": {
+              "method": "DELETE",
+              "path": "/v1/contacts/{id}"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Contact.list.all",
             "kind": "list",
-            "query": "all"
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/contacts"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Contact.list.byCustomer",
             "kind": "list",
-            "query": "byCustomer"
+            "query": "byCustomer",
+            "http": {
+              "method": "GET",
+              "path": "/v1/contacts/queries/by-customer"
+            }
           }
         ]
       },
@@ -1849,34 +1933,62 @@
         "operations": [
           {
             "id": "@acme/commerce-next/_/Customer.create",
-            "kind": "create"
+            "kind": "create",
+            "http": {
+              "method": "POST",
+              "path": "/v1/customers"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Customer.get",
-            "kind": "get"
+            "kind": "get",
+            "http": {
+              "method": "GET",
+              "path": "/v1/customers/{id}"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Customer.update",
-            "kind": "update"
+            "kind": "update",
+            "http": {
+              "method": "PATCH",
+              "path": "/v1/customers/{id}"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Customer.delete",
-            "kind": "delete"
+            "kind": "delete",
+            "http": {
+              "method": "DELETE",
+              "path": "/v1/customers/{id}"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Customer.find.byCode",
             "kind": "find",
-            "query": "byCode"
+            "query": "byCode",
+            "http": {
+              "method": "GET",
+              "path": "/v1/customers/queries/by-code"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Customer.list.all",
             "kind": "list",
-            "query": "all"
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/customers"
+            }
           },
           {
             "id": "@acme/commerce-next/_/Customer.list.byTier",
             "kind": "list",
-            "query": "byTier"
+            "query": "byTier",
+            "http": {
+              "method": "GET",
+              "path": "/v1/customers/queries/by-tier"
+            }
           }
         ]
       },

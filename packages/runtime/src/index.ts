@@ -27,3 +27,5 @@ export * from "./telemetry.js";
 export * from "./portability.js";
 export * from "./governance.js";
 export * from "./scope.js";
+export * from "./gatekeeper.js";
+export * from "./auth.js";
