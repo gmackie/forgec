@@ -1,4 +1,6 @@
 import React, {
+  lazy,
+  Suspense,
   useEffect,
   useState,
   useRef,
@@ -36,8 +38,11 @@ type Api = <T>(
   body?: unknown,
   revision?: number,
 ) => Promise<T>;
-type Page = "Apps" | "Registry" | "Activity" | "Settings";
+const ForgeEditor = lazy(() => import("./editor/editor.js").then(m => ({ default: m.ForgeEditor })));
+
+type Page = "Editor" | "Apps" | "Registry" | "Activity" | "Settings";
 const pages = [
+  { name: "Editor", icon: SquaresFourIcon },
   { name: "Apps", icon: SquaresFourIcon },
   { name: "Registry", icon: PackageIcon },
   { name: "Activity", icon: ClockCounterClockwiseIcon },
@@ -433,7 +438,7 @@ function Confirm({
 export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
   const [token, setToken] = useState(""),
     [state, setState] = useState<ViewState | null>(null),
-    [page, setPage] = useState<Page>("Apps");
+    [page, setPage] = useState<Page>("Editor");
   const [selectedApp, setSelectedApp] = useState<string | null>(null),
     [selectedPackage, setSelectedPackage] = useState<PackageSummary | null>(
       null,
@@ -659,6 +664,7 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
           </div>
         </header>
         <main className="content">
+          {page === "Editor" ? <Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor /></Suspense> : null}
           <ErrorMessage error={error} />
           {notice ? (
             <p className="notice" role="status">

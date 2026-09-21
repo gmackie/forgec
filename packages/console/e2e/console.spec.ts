@@ -22,6 +22,7 @@ test("operator manages apps, config, and OCI packages without off-origin browser
     .getByLabel("Administrator token")
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
+  await page.getByRole("button", { name: "Apps", exact: true }).click();
   await page.getByRole("button", { name: "Register app", exact: true }).click();
   await page.getByLabel("App name").fill(`Commerce ${Date.now()}`);
   await page.getByLabel("Description").fill("Orders, payments and fulfillment");

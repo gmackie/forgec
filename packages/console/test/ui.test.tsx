@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from "react";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import {
   render,
   screen,
@@ -14,6 +14,7 @@ import { emptyState, type StateStore } from "../src/model.js";
 import { createApi } from "../src/api.js";
 
 import { Console } from "../web/console.js";
+vi.mock("../web/editor/editor.js", () => ({ ForgeEditor: () => <div>Editor placeholder</div> }));
 afterEach(cleanup);
 it("uses the live API to sign in, register an app, inspect settings, and sign out", async () => {
   const token = "long-test-administrator-token-123456";
@@ -43,6 +44,7 @@ it("uses the live API to sign in, register an app, inspect settings, and sign ou
   });
   fireEvent.click(screen.getByRole("button", { name: "Connect to instance" }));
   await screen.findByText("Independent Forge");
+  fireEvent.click(screen.getByRole("button", { name: "Apps" }));
   fireEvent.click(screen.getByRole("button", { name: "Register app" }));
   fireEvent.change(screen.getByLabelText("App name"), {
     target: { value: "Commerce" },
@@ -134,6 +136,7 @@ it("keeps the revision that was loaded with a dialog draft", async () => {
   });
   fireEvent.click(screen.getByRole("button", { name: "Connect to instance" }));
   await screen.findByText("Draft Forge");
+  fireEvent.click(screen.getByRole("button", { name: "Apps" }));
   fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
   fireEvent.click(screen.getByRole("button", { name: "Register app" }));
   refreshComplete!(Response.json({ ...initial, revision: 1 }));

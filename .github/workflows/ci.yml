@@ -64,6 +64,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       # the Node-host and cutover suites need a second database on the same server
       - run: PGPASSWORD=forge psql -h localhost -U forge -d postgres -c "CREATE DATABASE forge_node" -c "CREATE DATABASE forge_temporal"
@@ -91,6 +93,10 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @forgegraph/console... build
       - run: pnpm --filter @forgegraph/console typecheck
@@ -140,6 +146,8 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r run build
@@ -171,6 +179,8 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r run build
@@ -193,6 +203,8 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit --audit-level high || echo "::warning::pnpm audit reported advisories"

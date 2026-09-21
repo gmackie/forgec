@@ -34,6 +34,7 @@ const types: Record<string, string> = {
   ".js": "text/javascript",
   ".css": "text/css",
   ".svg": "image/svg+xml",
+  ".wasm": "application/wasm",
   ".ico": "image/x-icon",
 };
 const server = createServer(async (req, res) => {
@@ -76,7 +77,7 @@ const server = createServer(async (req, res) => {
                 types[extname(file)] || "application/octet-stream",
               "cache-control": pathname.startsWith("/assets/")
                 ? "public,max-age=31536000,immutable"
-                : "no-cache",
+                : "no-cache, no-transform",
             },
           });
         } catch {
@@ -87,7 +88,7 @@ const server = createServer(async (req, res) => {
                 {
                   headers: {
                     "content-type": "text/html; charset=utf-8",
-                    "cache-control": "no-cache",
+                    "cache-control": "no-cache, no-transform",
                   },
                 },
               );

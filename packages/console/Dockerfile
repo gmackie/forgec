@@ -1,7 +1,15 @@
+FROM rust:1.97-bookworm AS compiler
+WORKDIR /source
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+RUN rustup target add wasm32-unknown-unknown && cargo build --locked --release --target wasm32-unknown-unknown -p forgegraph-editor
+
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 COPY . .
+COPY --from=compiler /source/target/wasm32-unknown-unknown/release/forgegraph_editor.wasm /build/editor.wasm
+ENV FORGE_EDITOR_WASM=/build/editor.wasm
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @forgegraph/console build
 

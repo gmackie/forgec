@@ -1,4 +1,4 @@
-# Forge management console
+# Forge visual editor and management console
 
 A self-hosted **Cloudflare Kumo + React + Effect** application for managing Forge apps,
 environment configuration, and a signed package registry backed by **OCI Distribution**.
@@ -15,6 +15,35 @@ environment configuration, and a signed package registry backed by **OCI Distrib
 Configuration is an inventory of desired settings. Saving does **not** deploy infrastructure,
 apply settings to running applications, or probe an endpoint. The UI marks deployments
 unverified. This first version is a single-administrator console, not a multi-tenant service.
+
+## Visual .forge editor
+
+The **Editor** is the landing page. It edits source files directly using a structured visual
+document, with Kumo controls and a relationship graph. Open existing `.forge` files or begin
+with the included example, create resources/shapes/enums/types/purposes/data classes, edit
+field types and optionality, select the built-in Forge data taxonomy, change length bounds,
+and edit capability include/allow/deny matrices and purpose bindings. Other syntax appears
+as nested editable syntax blocks, with exact source editing available for every construct.
+
+The Rust lossless parser and semantic compiler run as WebAssembly in a browser worker.
+Visual edits patch UTF-16 source ranges and preserve unrelated text and comments. Source
+and visual views share undo/redo history. Diagnostics identify actual Forge language errors.
+The relationship graph shows references, purpose bindings and inheritance in the active file.
+Classification describes data; purpose inheritance itself never grants access.
+
+**File storage:** drafts are saved in this browser’s local storage, independently of the
+server’s app inventory. Download `.forge` files to save source to disk; export/import a draft
+JSON to transfer all open files. Opening files replaces the browser workspace and can be
+undone. The editor does not write to a local Git checkout, commit changes or publish artifacts.
+The first version supports 50 files / 500 KB, uses edition 2027 and the portable profile, and
+checks the open files without resolving external package dependencies. Run `forgec check`
+in the actual project for dependency-aware validation. Changing a declaration name edits
+that source token; it does not automatically rename references in other locations.
+
+Build prerequisite: Rust 1.97+ with `rustup target add wasm32-unknown-unknown`.
+`pnpm build` builds the compiler module automatically. The Dockerfile includes a Rust build
+stage; deployed Node/Workers instances serve static WASM and need no Rust toolchain.
+No source text is sent to the server or any external compiler service.
 
 ## Architecture and independence
 
@@ -212,7 +241,7 @@ and grant lifecycle management are not exposed. No remote app is contacted autom
 
 - Full TypeScript workspace: **394 passed**, 126 existing environment-dependent tests skipped.
 - All workspace typechecks and packaging checks passed.
-- Console suite: **17 passed**, including real OCI Distribution integration.
+- Console suite: **24 passed**, including real OCI Distribution integration.
 - Chromium acceptance passed against Node, the built Docker container, and local workerd/D1:
   app creation, environment editing, OCI publication, verified contract browsing, mobile layout,
   and no off-origin browser requests.

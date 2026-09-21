@@ -1,0 +1,87 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Forge visual editor</title><style>
+  :root {
+    --bg: #0f1117; --surface: #181b23; --ink: #e9e7e2; --muted: #98a0ad;
+    --line: #2a2f3b; --accent: #f3b66b; --accent-soft: #1f3a2c;
+    --warn: #e6c069; --warn-soft: #3a3120; --bad: #ef9a94; --bad-soft: #3a2422;
+    --info: #8cc0e8; --info-soft: #1e2f3d;
+    --hero: linear-gradient(135deg, #392718 0%, #0f1117 55%, #1e2f3d 100%);
+    --display: "Avenir Next", Futura, "Segoe UI", sans-serif;
+    --body: Georgia, Palatino, serif;
+    --mono: Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.65 var(--body); }
+  main { max-width: 880px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+  /* ── Hero ─────────────────────────────────────────── */
+  header.hero {
+    background: var(--hero); border-bottom: 1px solid var(--line);
+    padding: 4rem 1.5rem 2.5rem; margin-bottom: 2rem;
+  }
+  .hero-inner { max-width: 880px; margin: 0 auto; }
+  h1 { font: 800 2.6rem/1.15 var(--display); letter-spacing: -.02em; margin: 0 0 .5rem; }
+  .kicker { font: 600 .8rem var(--display); text-transform: uppercase; letter-spacing: .18em; color: var(--accent); margin-bottom: .75rem; }
+  .meta { color: var(--muted); font: .9rem var(--display); }
+  .meta span + span::before { content: "·"; margin: 0 .5rem; }
+
+  h2 { font: 700 1.35rem var(--display); margin: 2.75rem 0 .75rem; padding-bottom: .35rem; border-bottom: 1px solid var(--line); }
+  h3 { font: 650 1.05rem var(--display); margin: 1.5rem 0 .5rem; }
+  p { margin: .5rem 0 1rem; }
+
+  .badge {
+    display: inline-block; padding: .12rem .6rem; border-radius: 999px;
+    font: 600 .72rem var(--display); letter-spacing: .03em; vertical-align: middle;
+  }
+  .badge.draft    { background: var(--info-soft);   color: var(--info); }
+  .badge.approved { background: var(--accent-soft); color: var(--accent); }
+  .badge.risk     { background: var(--warn-soft);   color: var(--warn); }
+  .badge.blocked  { background: var(--bad-soft);    color: var(--bad); }
+  .badge.done     { background: var(--accent-soft); color: var(--accent); }
+  .badge.todo     { background: var(--line);        color: var(--muted); }
+
+  /* ── Stat tiles ───────────────────────────────────── */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .75rem; margin: 1.5rem 0; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.1rem; }
+  .stat b { display: block; font: 800 2rem/1.1 var(--display); color: var(--accent); }
+  .stat span { color: var(--muted); font: .8rem var(--display); text-transform: uppercase; letter-spacing: .08em; }
+
+  /* ── Phase progress bar (one segment per phase) ───── */
+  .progress { display: flex; gap: 4px; height: 10px; margin: .75rem 0 2rem; }
+  .progress i { flex: 1; border-radius: 5px; background: var(--line); }
+  .progress i.done { background: var(--accent); }
+  .progress i.active { background: var(--info); }
+
+  /* ── Timeline ─────────────────────────────────────── */
+  .timeline { list-style: none; margin: 1rem 0; padding: 0 0 0 1.4rem; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 1.1rem; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -1.75rem; top: .35rem;
+    width: .65rem; height: .65rem; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--muted);
+  }
+  .timeline li.done::before { background: var(--accent); border-color: var(--accent); }
+  .timeline li.active::before { border-color: var(--info); background: var(--info-soft); }
+  .timeline b { font-family: var(--display); }
+
+  table { width: 100%; border-collapse: collapse; margin: .75rem 0 1.25rem; font-size: .92rem; }
+  th { text-align: left; color: var(--muted); font: 600 .75rem var(--display); text-transform: uppercase; letter-spacing: .06em; }
+  th, td { padding: .5rem .65rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: .1rem .35rem; font: .85em var(--mono); }
+  pre { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; overflow-x: auto; font: .85rem/1.5 var(--mono); }
+  pre code { border: none; background: none; padding: 0; }
+  ul { padding-left: 1.3rem; }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.25rem; margin: 1rem 0; }
+  .goals { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .goals { grid-template-columns: 1fr; } }
+  .goals h3 { margin-top: 0; }
+
+  details { border: 1px solid var(--line); border-radius: 10px; padding: .6rem .9rem; margin: .6rem 0; background: var(--surface); }
+  summary { cursor: pointer; font: 600 1em var(--display); }
+  .callout { border-left: 3px solid var(--warn); background: var(--warn-soft); border-radius: 0 10px 10px 0; padding: .75rem 1rem; margin: 1rem 0; }
+
+  figure.diagram { margin: 1.25rem 0 .25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; overflow-x: auto; text-align: center; }
+  figure.diagram svg { max-width: 100%; height: auto; }
+  figure.diagram figcaption { color: var(--muted); font: .85rem var(--display); margin-top: .75rem; }
+</style></head><body><header class="hero"><div class="hero-inner"><div class="kicker">Forge / visual language</div><h1>The language, made tangible <span class="badge approved">Implemented and deployed</span></h1><p class="meta">2026-09-21 · forge @ visual-editor · Codex</p></div></header><main><h2>Overview</h2><p>A structured visual document for creating and modifying .forge files. Resource cards, field controls, nested capabilities and purpose bindings are direct projections of the real Forge syntax tree. A relationship graph and synchronized source view support the document.</p><div class="stats"><div class="stat"><b>1</b><span>Source of truth: .forge</span></div><div class="stat"><b>0</b><span>Remote compiler calls</span></div><div class="stat"><b>2</b><span>Synchronized editing views</span></div></div><h2>Goals &amp; Non-goals</h2><p>Open and create files; edit declarations, fields, Forge taxonomy classifications, purposes and explicit capability bindings; inspect relationships and real compiler diagnostics; undo and redo; download edited source. Preserve comments and unedited constructs. Use Kumo for controls, labels as well as color, clear type and nesting hierarchy.</p><p>External dependency resolution, collaborative editing and Git synchronization are follow-up work. Existing app configuration and OCI registry remain supporting tools. Compilation happens locally in a browser worker, using the Rust parser and compiler compiled to WebAssembly.</p><h2>Phase 1 — Language bridge</h2><table><tr><th>Task</th><th>Files</th><th>Verification</th><th>Status</th></tr><tr><td>Lossless tree, UTF-16 source spans, native taxonomy and diagnostics via WASM</td><td>crates/forgegraph-editor; console build</td><td>Rust tests and actual WASM invocation</td><td>Done</td></tr></table><h2>Phase 2 — Visual document</h2><table><tr><th>Task</th><th>Files</th><th>Verification</th><th>Status</th></tr><tr><td>Source-preserving edits, resource cards, field types, classification, purpose and capability controls</td><td>console editor model and components</td><td>Source round-trip and UI regression tests</td><td>Done</td></tr></table><h2>Phase 3 — Workspace and acceptance</h2><table><tr><th>Task</th><th>Files</th><th>Verification</th><th>Status</th></tr><tr><td>Files, graph, source view, diagnostics, undo/redo, export and persistence</td><td>console editor workspace</td><td>Browser opens real source, edits visually, checks source and exports</td><td>Done</td></tr></table><h2>Risks &amp; Mitigations</h2><ul><li>Lossy regeneration: patch precise source ranges rather than regenerate entire files.</li><li>Unicode spans: translate compiler byte offsets to browser UTF-16 offsets.</li><li>Incomplete syntax: preserve source and report diagnostics; unsupported constructs retain source editing.</li><li>Browser responsiveness: compile off the main thread, reject stale results and bound source size.</li><li>Governance drift: obtain taxonomy from the same compiler; purpose inheritance never implies a grant.</li></ul><h2>Verification</h2><p>Rust parser/compiler tests and clippy passed. Console: 24 tests passed, including actual WASM source edits and OCI integration. Browser workflows passed for visual editing, source preservation, undo, native taxonomy selection, capability edits, graph navigation, file download and mobile layout. Multi-file acceptance verifies purpose selection across files and downloaded source contents. Docker image builds with a Rust-to-WASM stage. Public browser checks at forge.gmac.io passed: visual edit, source synchronization, undo, relationship graph and registry access, with no page errors or off-origin requests. The production container is healthy. CI status is reported on GitHub PR #1.</p><h2>Open Questions</h2><p>Primary interaction resolved: structured visual document with relationship graph. Source remains editable and authoritative.</p></main></body></html>

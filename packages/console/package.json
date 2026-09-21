@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "vite build && node scripts/build.mjs",
+    "dev": "node scripts/build-editor.mjs && vite --host 127.0.0.1",
+    "build": "node scripts/build-editor.mjs && vite build && node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "start": "node dist/server.mjs",
