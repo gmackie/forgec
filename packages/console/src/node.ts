@@ -4,6 +4,7 @@ import { resolve, extname, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import { Readable } from "node:stream";
+import { gitRepositories } from "./git.js";
 import { createApi } from "./api.js";
 import { SqliteState } from "./sqlite.js";
 import { registryFrom, secure, type Config } from "./config.js";
@@ -27,6 +28,7 @@ const api = createApi({
   name: config.INSTANCE_NAME || "Forge",
   runtime: "Docker / Node",
   registry: await registryFrom(config),
+  git: gitRepositories(config),
 });
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "web");
 const types: Record<string, string> = {

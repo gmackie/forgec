@@ -61,9 +61,16 @@ interface Props {
   analysis: Analysis;
   onChange: (value: string) => void;
   onError: (error: string) => void;
+  selection?: { node: SyntaxNode; owner: SyntaxNode };
 }
-export function VisualDocument({ source, analysis, onChange, onError }: Props) {
-  const declarations = children(analysis.tree);
+export function VisualDocument({
+  source,
+  analysis,
+  onChange,
+  onError,
+  selection,
+}: Props) {
+  const declarations = selection ? [selection.node] : children(analysis.tree);
   const purposes = analysis.symbols
     .filter((n) => n.kind === "PURPOSE_DECL")
     .map((n) => n.name);
@@ -165,7 +172,9 @@ export function VisualDocument({ source, analysis, onChange, onError }: Props) {
       textOf(source, n).startsWith("@data("),
     );
     const cls = classNode ? textOf(source, classNode).slice(6, -1) : "";
-    const expression = children(node).find(n => n.kind === "DEFAULT_VALUE" || n.kind === "DERIVED_VALUE");
+    const expression = children(node).find(
+      (n) => n.kind === "DEFAULT_VALUE" || n.kind === "DERIVED_VALUE",
+    );
     const optional = type?.children.find((n) => n.kind === "QUESTION");
     return (
       <div className="forge-field" key={node.start}>
@@ -191,7 +200,9 @@ export function VisualDocument({ source, analysis, onChange, onError }: Props) {
             />
           </div>
         )}
-        {!ref && expression?.kind === "DERIVED_VALUE" && <Badge variant="outline">Calculated</Badge>}
+        {!ref && expression?.kind === "DERIVED_VALUE" && (
+          <Badge variant="outline">Calculated</Badge>
+        )}
         <div className="classification-control">
           <span className="editor-label">Data class</span>
           <Select
@@ -245,11 +256,15 @@ export function VisualDocument({ source, analysis, onChange, onError }: Props) {
         </Button>
         {expression && (
           <div className="field-expression">
-            <span className="editor-label">{expression.kind === "DERIVED_VALUE" ? "Calculated from" : "Default value"}</span>
+            <span className="editor-label">
+              {expression.kind === "DERIVED_VALUE"
+                ? "Calculated from"
+                : "Default value"}
+            </span>
             <Edit
               label={`${expression.kind === "DERIVED_VALUE" ? "Calculation" : "Default value"} for ${nameOf(source, node)}`}
               value={textOf(source, expression)}
-              onCommit={v => replace(expression, v)}
+              onCommit={(v) => replace(expression, v)}
             />
           </div>
         )}
@@ -501,6 +516,12 @@ export function VisualDocument({ source, analysis, onChange, onError }: Props) {
       </section>
     );
   }
+  if (selection?.node.kind === "CAPABILITY_DECL")
+    return (
+      <div className="visual-document">
+        {capability(selection.node, selection.owner)}
+      </div>
+    );
   return (
     <div className="visual-document">
       {declarations.map((node) => {

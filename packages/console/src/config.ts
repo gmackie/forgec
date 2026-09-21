@@ -1,5 +1,7 @@
 import { OciRegistry } from "./oci.js";
 export interface Config {
+  GIT_PROJECTS_JSON?: string;
+  GITHUB_TOKEN?: string;
   ADMIN_TOKEN?: string;
   INSTANCE_NAME?: string;
   INSTANCE_AUTHORITY?: string;

@@ -3,25 +3,27 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { children, nameOf } from "./model.js";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Banner } from "@cloudflare/kumo/components/banner";
-import {
-  ArrowCounterClockwiseIcon,
-  ArrowClockwiseIcon,
-  DownloadSimpleIcon,
-  FolderOpenIcon,
-  PlusIcon,
-} from "@phosphor-icons/react";
 import type { Analysis, Project } from "./language.js";
-import { VisualDocument } from "./document.js";
+import { VisualDocument, Edit } from "./document.js";
 import { Relationships } from "./graph.js";
+import {
+  appDeclarations,
+  categories,
+  declarationSummary,
+  type Category,
+} from "./app-model.js";
+import { ReadDocument } from "./read-document.js";
+import { patch } from "./model.js";
+import type { GitProject, GitSnapshot } from "../../src/git.js";
 import { example } from "./example.js";
 import "./editor.css";
 const storageKey = "forge.visual-editor.v1";
 function initial(): Project {
   try {
-    const p = JSON.parse(localStorage.getItem(storageKey) || "null");
+    const stored = JSON.parse(localStorage.getItem(storageKey) || "null");
+    const p = stored?.project ?? stored;
     if (
       p &&
       typeof p.name === "string" &&
@@ -37,7 +39,58 @@ function initial(): Project {
   } catch {}
   return structuredClone(example);
 }
-export function ForgeEditor() {
+export function ForgeEditor({ token = "" }: { token?: string }) {
+  const [editing, setEditing] = useState(false);
+  const [repositories, setRepositories] = useState<GitProject[]>([]);
+  const [repository, setRepository] = useState<GitSnapshot | null>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+      return saved?.repository?.revision &&
+        Array.isArray(saved.repository.files)
+        ? saved.repository
+        : null;
+    } catch {
+      return null;
+    }
+  });
+  const [connectOpen, setConnectOpen] = useState(false);
+  const [repoId, setRepoId] = useState("");
+  const [gitBusy, setGitBusy] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [commitMessage, setCommitMessage] = useState("");
+  const [notice, setNotice] = useState("");
+  async function gitApi(path: string, body?: unknown) {
+    const response = await fetch(`/api/git/projects${path}`, {
+      method: body ? "POST" : "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    const data = await response.json();
+    if (!response.ok) throw Error(data.error || "Git request failed");
+    return data;
+  }
+  useEffect(() => {
+    let live = true;
+    void gitApi("")
+      .then((data) => {
+        if (live) {
+          setRepositories(data.projects);
+          setRepoId(data.projects[0]?.id || "");
+        }
+      })
+      .catch((e) => {
+        if (live) setError(String(e));
+      });
+    return () => {
+      live = false;
+    };
+  }, [token]);
+  const [category, setCategory] = useState<Category>("Resources");
+  const [selected, setSelected] = useState("");
+  const [search, setSearch] = useState("");
   const [history, setHistory] = useState<{
     past: Project[];
     present: Project;
@@ -59,12 +112,10 @@ export function ForgeEditor() {
     [saved, setSaved] = useState(""),
     [workerEpoch, setWorkerEpoch] = useState(0);
   const [newKind, setNewKind] = useState("resource"),
-    [newName, setNewName] = useState(""),
-    [newFile, setNewFile] = useState("");
+    [newName, setNewName] = useState("");
   const worker = useRef<Worker | null>(null),
     seq = useRef(0),
-    fileInput = useRef<HTMLInputElement>(null),
-    sourceRef = useRef<HTMLTextAreaElement>(null);
+    fileInput = useRef<HTMLInputElement>(null);
   const current = useRef(project);
   current.current = project;
   const requestSources = useRef(
@@ -157,14 +208,14 @@ export function ForgeEditor() {
   }, [project, workerEpoch]);
   useEffect(() => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify(project));
+      localStorage.setItem(storageKey, JSON.stringify({ project, repository }));
       setSaved("Draft saved in this browser");
     } catch {
       setSaved(
         "Browser storage unavailable — download your files to keep them",
       );
     }
-  }, [project]);
+  }, [project, repository]);
   const download = (path: string, text: string) => {
     const url = URL.createObjectURL(
       new Blob([text], { type: "text/plain;charset=utf-8" }),
@@ -202,6 +253,7 @@ export function ForgeEditor() {
         ) > 500000
       )
         throw Error("Invalid Forge draft.");
+      setRepository(null);
       commit(p);
       return;
     }
@@ -226,48 +278,195 @@ export function ForgeEditor() {
       );
       return;
     }
+    setRepository(null);
     commit({ ...current.current, files: opened, currentFile: opened[0]!.path });
   }
+  const changedFiles = repository
+    ? [
+        ...new Set([
+          ...repository.files.map((f) => f.path),
+          ...project.files.map((f) => f.path),
+        ]),
+      ]
+        .map((path) => ({
+          path,
+          before: repository.files.find((f) => f.path === path)?.text,
+          after: project.files.find((f) => f.path === path)?.text,
+        }))
+        .filter((f) => f.before !== f.after)
+    : [];
+  async function loadRepository() {
+    setGitBusy(true);
+    setError("");
+    try {
+      const snapshot: GitSnapshot = await gitApi(`/${repoId}`);
+      if (!snapshot.files.length)
+        throw Error("This source directory contains no Forge files.");
+      const next = {
+        name: snapshot.name,
+        files: snapshot.files,
+        currentFile: snapshot.files[0]!.path,
+      };
+      setHistory({ past: [], present: next, future: [] });
+      setRepository(snapshot);
+      setSelected("");
+      setCategory("Resources");
+      setEditing(false);
+      setConnectOpen(false);
+      setNotice("Loaded committed application model.");
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setGitBusy(false);
+    }
+  }
+  async function createCommit() {
+    if (!repository || !ready || !commitMessage.trim()) return;
+    setGitBusy(true);
+    setError("");
+    try {
+      const result = await gitApi(`/${repository.id}/commits`, {
+        base: repository.revision,
+        message: commitMessage,
+        files: project.files,
+      });
+      setRepository({
+        ...repository,
+        revision: result.revision,
+        files: structuredClone(project.files),
+      });
+      setHistory((h) => ({ ...h, past: [], future: [] }));
+      setReviewOpen(false);
+      setCommitMessage("");
+      setEditing(false);
+      setNotice(
+        `Committed ${result.revision.slice(0, 8)} to ${repository.branch}.`,
+      );
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setGitBusy(false);
+    }
+  }
   const diagnostics = analysis?.result.diagnostics ?? [];
+  const entries = analysis ? appDeclarations(project, analysis.result) : [];
+  const visible = entries.filter(
+    (e) =>
+      e.category === category &&
+      e.name.toLowerCase().includes(search.toLowerCase()),
+  );
+  const entry =
+    entries.find((e) => e.id === selected && e.category === category) ??
+    visible[0];
+  const choose = (id: string) => {
+    const e = entries.find((e) => e.id === id);
+    if (!e) return;
+    setSelected(id);
+    setCategory(e.category);
+    setHistory((h) => ({
+      ...h,
+      present: { ...h.present, currentFile: e.path },
+    }));
+    setView("visual");
+  };
+  useEffect(() => {
+    if (entry && entry.path !== project.currentFile) {
+      setHistory((h) => ({
+        ...h,
+        present: { ...h.present, currentFile: entry.path },
+      }));
+    }
+  }, [entry?.path, project.currentFile]);
+  const replaceEntry = (text: string) => {
+    if (!ready || !editing || gitBusy || !entry) return;
+    commit({
+      ...project,
+      files: project.files.map((f) =>
+        f.path === entry.path ? { ...f, text } : f,
+      ),
+    });
+  };
   return (
-    <div className="forge-editor">
+    <div className="forge-editor app-studio">
       <div className="editor-title">
         <div>
-          <p className="eyebrow">FORGE STUDIO</p>
-          <h1>A language you can shape.</h1>
+          <p className="eyebrow">FORGE STUDIO · APPLICATION</p>
+          <h1>{project.name}</h1>
           <p className="muted">
-            Edit the model visually. Keep the source yours.
+            {editing
+              ? "Editing a draft. Review changes before committing."
+              : "Explore your application model."}
           </p>
         </div>
-        <Badge variant="outline">Local compiler · edition 2027</Badge>
+        <Badge variant="outline">
+          {repository
+            ? `${repository.branch} · ${repository.revision.slice(0, 8)}${changedFiles.length ? " · Uncommitted changes" : ""}`
+            : "Local demo / draft"}
+        </Badge>
       </div>
-      <Dialog.Root open={showDemo} onOpenChange={setShowDemo}>
-        <Dialog size="base" className="editor">
-          <Dialog.Title className="dialog-title">Load the service desk demo?</Dialog.Title>
-          <Dialog.Description className="muted">
-            Explore seven files with customers, tickets, service plans, purposes,
-            events, and an escalation workflow. This replaces your browser draft.
-            Export it first to keep a copy, or use Undo immediately after loading.
-          </Dialog.Description>
-          <footer className="dialog-footer">
-            <Button onClick={() => setShowDemo(false)}>Cancel</Button>
-            <Button variant="primary" onClick={() => {
-              commit(structuredClone(example));
-              setView("visual");
-              setError("");
-              setShowDemo(false);
-            }}>Replace draft with demo</Button>
-          </footer>
-        </Dialog>
-      </Dialog.Root>
       <div className="editor-toolbar">
-        <Button onClick={() => setShowDemo(true)}>Load demo</Button>
         <Button
-          icon={<FolderOpenIcon />}
-          onClick={() => fileInput.current?.click()}
+          disabled={gitBusy}
+          variant={editing ? "secondary" : "primary"}
+          onClick={() => {
+            setEditing(!editing);
+            setView("visual");
+          }}
         >
-          Open .forge files
+          {editing ? "Read view" : "Edit draft"}
         </Button>
+        {editing && (
+          <>
+            <Button
+              aria-label="Undo edit"
+              disabled={!history.past.length}
+              onClick={undo}
+            >
+              Undo
+            </Button>
+            <Button
+              aria-label="Redo edit"
+              disabled={!history.future.length}
+              onClick={redo}
+            >
+              Redo
+            </Button>
+          </>
+        )}
+        <Button disabled={gitBusy} onClick={() => setConnectOpen(true)}>
+          {repository ? "Change repository" : "Connect Git"}
+        </Button>
+        {repository && (
+          <Button
+            variant="primary"
+            disabled={gitBusy || !changedFiles.length}
+            onClick={() => setReviewOpen(true)}
+          >
+            Review changes ({changedFiles.length})
+          </Button>
+        )}
+        <span className="declaration-spacer" />
+        <details className="studio-project-tools">
+          <summary>Project tools</summary>
+          <div className="editor-row">
+            <Button disabled={gitBusy} onClick={() => setShowDemo(true)}>
+              Load demo
+            </Button>
+            <Button
+              disabled={gitBusy || !!repository}
+              onClick={() => fileInput.current?.click()}
+            >
+              Open .forge files
+            </Button>
+            <Button
+              onClick={() =>
+                download("forge-draft.json", JSON.stringify(project, null, 2))
+              }
+            >
+              Export draft
+            </Button>
+          </div>
+        </details>
         <input
           ref={fileInput}
           type="file"
@@ -279,38 +478,162 @@ export function ForgeEditor() {
             e.target.value = "";
           }}
         />
-        <Button
-          icon={<DownloadSimpleIcon />}
-          onClick={() => download(file.path, file.text)}
-        >
-          Download file
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() =>
-            download("forge-draft.json", JSON.stringify(project, null, 2))
-          }
-        >
-          Export draft
-        </Button>
-        <span className="declaration-spacer" />
-        <Button
-          aria-label="Undo edit"
-          icon={<ArrowCounterClockwiseIcon />}
-          disabled={!history.past.length}
-          onClick={undo}
-        >
-          Undo
-        </Button>
-        <Button
-          aria-label="Redo edit"
-          icon={<ArrowClockwiseIcon />}
-          disabled={!history.future.length}
-          onClick={redo}
-        >
-          Redo
-        </Button>
       </div>
+      <Dialog.Root open={showDemo} onOpenChange={setShowDemo}>
+        <Dialog className="editor">
+          <Dialog.Title className="dialog-title">
+            Load the service desk demo?
+          </Dialog.Title>
+          <Dialog.Description>
+            This replaces your browser draft, disconnects Git, and clears undo
+            history. Export your changes first to keep a copy.
+          </Dialog.Description>
+          <footer className="dialog-footer">
+            <Button onClick={() => setShowDemo(false)}>Cancel</Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setRepository(null);
+                setHistory({
+                  past: [],
+                  present: structuredClone(example),
+                  future: [],
+                });
+                setSelected("");
+                setCategory("Resources");
+                setShowDemo(false);
+                setEditing(false);
+              }}
+            >
+              Replace draft with demo
+            </Button>
+          </footer>
+        </Dialog>
+      </Dialog.Root>
+      <Dialog.Root
+        open={connectOpen}
+        onOpenChange={(open) => {
+          if (!gitBusy) setConnectOpen(open);
+        }}
+      >
+        <Dialog className="editor">
+          <Dialog.Title className="dialog-title">
+            Connect a Git application
+          </Dialog.Title>
+          <Dialog.Description>
+            Load a committed snapshot from an instance-configured repository.
+            This replaces your browser draft and its undo history. Export any
+            changes you want to keep first.
+          </Dialog.Description>
+          {repositories.length ? (
+            <Select
+              aria-label="Git application"
+              value={repoId}
+              items={Object.fromEntries(
+                repositories.map((r) => [
+                  r.id,
+                  `${r.name} · ${r.repository} / ${r.branch}`,
+                ]),
+              )}
+              onValueChange={(v) => setRepoId(String(v))}
+            />
+          ) : (
+            <p className="muted">
+              No repositories are configured. The instance operator can add
+              GitHub repositories with GIT_PROJECTS_JSON and a server-side
+              GITHUB_TOKEN.
+            </p>
+          )}
+          <footer className="dialog-footer">
+            <Button disabled={gitBusy} onClick={() => setConnectOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              loading={gitBusy}
+              disabled={!repoId}
+              onClick={() => void loadRepository()}
+            >
+              Load repository
+            </Button>
+          </footer>
+          {error && <p role="alert">{error}</p>}
+        </Dialog>
+      </Dialog.Root>
+      <Dialog.Root
+        open={reviewOpen}
+        onOpenChange={(open) => {
+          if (!gitBusy) setReviewOpen(open);
+        }}
+      >
+        <Dialog className="editor" size="xl">
+          <Dialog.Title className="dialog-title">Review changes</Dialog.Title>
+          <Dialog.Description>
+            Commit to {repository?.repository} on {repository?.branch}. Git will
+            reject the commit if this branch has changed since revision{" "}
+            {repository?.revision.slice(0, 8)}.
+          </Dialog.Description>
+          <div className="commit-changes">
+            {changedFiles.map((f) => (
+              <details key={f.path} open>
+                <summary>
+                  {f.path} ·{" "}
+                  {f.before === undefined
+                    ? "Added"
+                    : f.after === undefined
+                      ? "Deleted"
+                      : "Modified"}
+                </summary>
+                <div className="commit-diff">
+                  <div>
+                    <h4>Committed</h4>
+                    <pre>{f.before ?? "Not present"}</pre>
+                  </div>
+                  <div>
+                    <h4>Draft</h4>
+                    <pre>{f.after ?? "Deleted"}</pre>
+                  </div>
+                </div>
+              </details>
+            ))}
+          </div>
+          <Textarea
+            aria-label="Commit message"
+            placeholder="Describe why you changed this application"
+            value={commitMessage}
+            onChange={(e) => setCommitMessage(e.target.value)}
+            disabled={gitBusy}
+          />
+          <p className="muted small">
+            {diagnostics.filter((d) => d.severity === "error").length} compiler
+            errors. Fix errors before committing.
+          </p>
+          <footer className="dialog-footer">
+            <Button disabled={gitBusy} onClick={() => setReviewOpen(false)}>
+              Keep editing
+            </Button>
+            <Button
+              variant="primary"
+              loading={gitBusy}
+              disabled={
+                !changedFiles.length ||
+                !commitMessage.trim() ||
+                !ready ||
+                diagnostics.some((d) => d.severity === "error")
+              }
+              onClick={() => void createCommit()}
+            >
+              Commit changes
+            </Button>
+          </footer>
+          {error && <p role="alert">{error}</p>}
+        </Dialog>
+      </Dialog.Root>
+      {notice && (
+        <p role="status" className="studio-notice">
+          {notice}
+        </p>
+      )}
       {error && (
         <div role="alert">
           <Banner variant="error" title={error} />
@@ -324,250 +647,227 @@ export function ForgeEditor() {
           </Button>
         </div>
       )}
-      <div className="editor-workspace">
-        <aside className="editor-files">
-          <h2>Project files</h2>
+      <div
+        className="app-kind-tabs"
+        role="tablist"
+        aria-label="Application declarations"
+      >
+        {categories.map((c) => (
+          <Button
+            key={c}
+            role="tab"
+            aria-selected={category === c}
+            variant={category === c ? "secondary" : "ghost"}
+            onClick={() => {
+              setCategory(c);
+              setSelected("");
+              setSearch("");
+              setView("visual");
+            }}
+          >
+            {c}{" "}
+            <span className="kind-count">
+              {entries.filter((e) => e.category === c).length}
+            </span>
+          </Button>
+        ))}
+      </div>
+      <div className="app-browser">
+        <aside className="app-declarations">
           <Input
-            label="Package name"
-            value={project.name}
-            onChange={(e) => commit({ ...project, name: e.target.value })}
+            aria-label="Find declaration"
+            placeholder={`Find ${category.toLowerCase()}…`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
-          <nav aria-label="Forge files">
-            {project.files.map((f) => (
+          <nav aria-label={category}>
+            {visible.map((e) => (
               <Button
-                variant="ghost"
-                key={f.path}
-                className={f.path === file.path ? "file-active" : ""}
-                onClick={() => commit({ ...project, currentFile: f.path })}
+                key={e.id}
+                variant={entry?.id === e.id ? "secondary" : "ghost"}
+                onClick={() => choose(e.id)}
               >
-                {f.path}
+                {e.name}
+                {e.module !== "_" && <small>{e.module}</small>}
               </Button>
             ))}
           </nav>
-          {ready && analysis && (
-            <nav aria-label="Declarations in this file" className="document-outline">
-              <h2>In this file</h2>
-              {children(analysis.result.tree).filter(n => n.kind.endsWith("_DECL")).map(n => (
-                <Button key={n.start} variant="ghost" size="sm" onClick={() => {
-                  setView("visual");
-                  setTimeout(() => document.getElementById(`declaration-${n.start}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
-                }}>{nameOf(file.text, n) || n.kind.replace("_DECL", "").toLowerCase()}</Button>
-              ))}
-            </nav>
+          {!visible.length && (
+            <p className="muted">No matching {category.toLowerCase()}.</p>
           )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const path = newFile.trim().endsWith(".forge")
-                ? newFile.trim()
-                : newFile.trim() + ".forge";
-              if (
-                !/^[A-Za-z0-9_./-]+\.forge$/.test(path) ||
-                path.startsWith("/") ||
-                path.split("/").includes("..") ||
-                project.files.some((f) => f.path === path)
-              ) {
-                setError("Use a unique relative .forge path.");
-                return;
-              }
-              commit({
-                ...project,
-                files: [...project.files, { path, text: "" }],
-                currentFile: path,
-              });
-              setNewFile("");
-            }}
-          >
-            <Input
-              aria-label="New file name"
-              placeholder="new-model.forge"
-              value={newFile}
-              onChange={(e) => setNewFile(e.target.value)}
-              required
-            />
-            <Button type="submit" size="sm" icon={<PlusIcon />}>
-              New file
-            </Button>
-          </form>
-          <p className="muted small">
-            Files stay in your browser. Download .forge files to save them to
-            your project.
-          </p>
         </aside>
-        <section className="editor-document">
-          <div className="document-tabs">
-            <strong>{file.path}</strong>
-            <div role="group" aria-label="Editor view">
-              {(["visual", "split", "source", "graph"] as const).map((v) => (
-                <Button
-                  key={v}
-                  size="sm"
-                  variant={view === v ? "secondary" : "ghost"}
-                  aria-pressed={view === v}
-                  onClick={() => setView(v)}
-                >
-                  {v === "visual"
-                    ? "Document"
-                    : v === "split"
-                      ? "Split"
-                      : v === "source"
-                        ? "Source"
-                        : "Relationships"}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <form
-            className="declaration-builder"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(newName)) return;
-              const templates: Record<string, string> = {
-                resource: `export resource ${newName}\n  @tenant\n  @timestamps\n  @versioned\n{\n  id : id\n}`,
-                shape: `export shape ${newName} {\n  value : text\n}`,
-                purpose: `export purpose ${newName}`,
-                dataClass: `export dataClass ${newName} extends data.unknown`,
-                enum: `export enum ${newName} {\n  First = "first"\n}`,
-                type: `export type ${newName} = text`,
-              };
-              update(
-                file.text +
-                  (file.text.endsWith("\n") ? "\n" : "\n\n") +
-                  templates[newKind] +
-                  "\n",
-              );
-              setNewName("");
-            }}
-          >
-            <Select
-              aria-label="Declaration kind"
-              value={newKind}
-              onValueChange={(v) => setNewKind(String(v))}
-              items={{
-                resource: "Resource",
-                shape: "Shape",
-                purpose: "Purpose",
-                dataClass: "Data class",
-                enum: "Enum",
-                type: "Type alias",
-              }}
-            />
-            <Input
-              aria-label="New declaration name"
-              placeholder="Declaration name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              pattern="[A-Za-z_][A-Za-z0-9_]*"
-              required
-            />
-            <Button type="submit" size="sm" icon={<PlusIcon />}>
-              Add declaration
-            </Button>
-          </form>
-          <div className={`document-views view-${view}`}>
-            {(view === "visual" || view === "split") && (
-              <fieldset
-                disabled={!ready}
-                className="visual-fieldset"
-                aria-label="Visual Forge document"
-              >
-                {analysis ? (
-                  <VisualDocument
-                    key={analysis.id}
-                    source={analysis.text}
-                    analysis={analysis.result}
-                    onChange={(value) => {
-                      if (ready) update(value);
-                    }}
-                    onError={setError}
-                  />
+        <section className="app-detail" aria-busy={!ready}>
+          {entry ? (
+            <>
+              <header className="app-detail-heading">
+                <div>
+                  <p className="eyebrow">{entry.category}</p>
+                  <h2>{entry.name}</h2>
+                  <p className="muted">{declarationSummary(entry)}</p>
+                </div>
+                <div className="editor-row">
+                  <Button size="sm" onClick={() => setView("visual")}>
+                    Document
+                  </Button>
+                  <Button size="sm" onClick={() => setView("source")}>
+                    Source
+                  </Button>
+                  <Button size="sm" onClick={() => setView("graph")}>
+                    Relationships
+                  </Button>
+                </div>
+              </header>
+              {view === "visual" &&
+                (!editing ? (
+                  <ReadDocument entry={entry} />
                 ) : (
-                  <p className="editor-loading">Loading the Forge language…</p>
-                )}
-              </fieldset>
-            )}
-            {(view === "source" || view === "split") && (
-              <div className="source-pane">
-                <label htmlFor="forge-source">Synchronized .forge source</label>
-                <Textarea
-                  ref={sourceRef}
-                  id="forge-source"
-                  aria-label="Forge source"
-                  spellCheck={false}
-                  value={file.text}
-                  onChange={(e) => update(e.target.value)}
+                  <fieldset
+                    className="visual-fieldset"
+                    disabled={!ready || gitBusy}
+                    aria-label="Visual Forge document"
+                  >
+                    {analysis && (
+                      <VisualDocument
+                        key={`${analysis.id}:${entry.id}`}
+                        source={entry.source}
+                        analysis={analysis.result}
+                        selection={entry}
+                        onChange={replaceEntry}
+                        onError={setError}
+                      />
+                    )}
+                  </fieldset>
+                ))}
+              {view === "source" && (
+                <div className="source-pane">
+                  <label htmlFor="forge-source">
+                    {entry.name} · {entry.path}
+                  </label>
+                  {editing ? (
+                    <Edit
+                      key={entry.id}
+                      multiline
+                      label="Forge source"
+                      value={entry.source.slice(
+                        entry.node.start,
+                        entry.node.end,
+                      )}
+                      onCommit={(value) =>
+                        replaceEntry(patch(entry.source, entry.node, value))
+                      }
+                    />
+                  ) : (
+                    <Textarea
+                      id="forge-source"
+                      aria-label="Forge source"
+                      readOnly
+                      value={entry.source.slice(
+                        entry.node.start,
+                        entry.node.end,
+                      )}
+                    />
+                  )}
+                  <Button onClick={() => download(entry.path, entry.source)}>
+                    Download file
+                  </Button>
+                </div>
+              )}
+              {view === "graph" && ready && analysis && (
+                <Relationships
+                  analysis={analysis.result}
+                  source={file.text}
+                  currentFile={file.path}
+                  onOpenFile={(path) => {
+                    const target = entries.find((e) => e.path === path);
+                    if (target) choose(target.id);
+                  }}
+                  onSelect={(node) => {
+                    const target = entries.find(
+                      (e) =>
+                        e.path === file.path && e.node.start === node.start,
+                    );
+                    if (target) choose(target.id);
+                  }}
                 />
-              </div>
-            )}
-            {view === "graph" && ready && analysis && (
-              <Relationships
-                currentFile={file.path}
-                onOpenFile={(path) => {
-                  commit({ ...project, currentFile: path });
-                  setView("visual");
-                }}
-                analysis={analysis.result}
-                source={analysis.text}
-                onSelect={(n) => {
-                  setView("visual");
-                  setTimeout(
-                    () =>
-                      document
-                        .getElementById(`declaration-${n.start}`)
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "center",
-                        }),
-                    0,
-                  );
+              )}
+            </>
+          ) : (
+            <div className="editor-empty">
+              {analysis
+                ? `No ${category.toLowerCase()} yet.`
+                : "Loading the Forge application…"}
+            </div>
+          )}
+          {editing && (
+            <form
+              className="declaration-builder"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(newName)) return;
+                const templates: Record<string, string> = {
+                  resource: `export resource ${newName} @tenant @timestamps @versioned {\n  id : id\n}`,
+                  shape: `export shape ${newName} {\n  value : text\n}`,
+                  purpose: `export purpose ${newName}`,
+                  dataClass: `export dataClass ${newName} extends data.unknown`,
+                  enum: `export enum ${newName} {\n  First = "first"\n}`,
+                  type: `export type ${newName} = text`,
+                  function: `export function ${newName} {\n}`,
+                  source: `source ${newName} {\n  cron "0 8 * * *"\n  timezone "UTC"\n}`,
+                };
+                update(file.text + "\n" + templates[newKind] + "\n");
+                setNewName("");
+              }}
+            >
+              <Select
+                aria-label="Declaration kind"
+                value={newKind}
+                onValueChange={(v) => setNewKind(String(v))}
+                items={{
+                  resource: "Resource",
+                  shape: "Shape",
+                  purpose: "Purpose",
+                  dataClass: "Data class",
+                  enum: "Enum",
+                  type: "Type alias",
+                  function: "Function",
+                  source: "Source",
                 }}
               />
-            )}
-          </div>
-          <footer className="editor-status">
-            <span>{saved || "Saving browser draft…"}</span>
-            <span role="status">
-              {ready
-                ? `${diagnostics.filter((d) => d.severity === "error").length} errors · ${diagnostics.filter((d) => d.severity === "warning").length} warnings`
-                : "Checking source…"}
-            </span>
-          </footer>
-          <details
-            className="editor-diagnostics"
-            open={diagnostics.some((d) => d.severity === "error")}
-          >
-            <summary>Forge diagnostics ({diagnostics.length})</summary>
-            <p className="muted small">
-              Checks use the real compiler on the open files. External
-              dependency resolution requires the package build.
-            </p>
-            {diagnostics.map((d, i) => (
-              <button
-                type="button"
-                key={i}
-                className={`diagnostic diagnostic-${d.severity}`}
-                onClick={() => {
-                  commit({ ...project, currentFile: d.file });
-                  setView("source");
-                  setTimeout(() => {
-                    sourceRef.current?.focus();
-                    sourceRef.current?.setSelectionRange(d.start, d.end);
-                  }, 0);
-                }}
-              >
-                <strong>{d.code}</strong>
-                <span>
-                  {d.file} · {d.message}
-                  {d.suggestion && <small>{d.suggestion}</small>}
-                </span>
-              </button>
-            ))}
-            {!diagnostics.length && ready && (
-              <p>No compiler diagnostics for the open files.</p>
-            )}
-          </details>
+              <Input
+                aria-label="New declaration name"
+                placeholder="Declaration name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                required
+              />
+              <Button type="submit">Add declaration</Button>
+            </form>
+          )}
         </section>
       </div>
+      <footer className="editor-status">
+        <span>{saved}</span>
+        <span role="status">
+          {ready
+            ? `${diagnostics.filter((d) => d.severity === "error").length} errors · ${diagnostics.filter((d) => d.severity === "warning").length} warnings`
+            : "Checking source…"}
+        </span>
+      </footer>
+      <details
+        className="editor-diagnostics"
+        open={diagnostics.some((d) => d.severity === "error")}
+      >
+        <summary>Forge diagnostics ({diagnostics.length})</summary>
+        {diagnostics.map((d, i) => (
+          <div className={`diagnostic diagnostic-${d.severity}`} key={i}>
+            <strong>{d.code}</strong>
+            <span>
+              {d.message}
+              <small>{d.file}</small>
+            </span>
+          </div>
+        ))}
+      </details>
     </div>
   );
 }

@@ -25,6 +25,7 @@ export interface Diagnostic {
 }
 export interface Analysis {
   tree: SyntaxNode;
+  documents: { path: string; module: string; tree: SyntaxNode }[];
   symbols: { name: string; kind: string; file: string }[];
   diagnostics: Diagnostic[];
   taxonomy: {

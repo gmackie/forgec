@@ -7,6 +7,7 @@ import {
   type StateStore,
   type ViewState,
 } from "./model.js";
+import { gitCommitSchema, type GitRepository } from "./git.js";
 import type { OciRegistry } from "./oci.js";
 const name = z.string().trim().min(1).max(120);
 const appInput = z
@@ -63,6 +64,7 @@ export interface ApiOptions {
   name: string;
   runtime: string;
   registry: OciRegistry | null;
+  git?: GitRepository[];
 }
 class Management extends Context.Service<Management, ApiOptions>()(
   "forge-console/Management",
@@ -187,6 +189,24 @@ function route(request: Request) {
         return yield* Effect.fail(
           new Problem(403, "Cross-origin writes are not allowed."),
         );
+    }
+    if (path === "/git/projects" && method === "GET")
+      return json({ projects: (o.git ?? []).map((g) => g.project) });
+    const gitRoute = path.match(/^\/git\/projects\/([a-z0-9-]+)(\/commits)?$/);
+    if (gitRoute) {
+      const repository = o.git?.find((g) => g.project.id === gitRoute[1]);
+      if (!repository)
+        return yield* Effect.fail(
+          new Problem(404, "Git project is not configured on this instance."),
+        );
+      if (method === "GET" && !gitRoute[2])
+        return json(yield* attempt(() => repository.snapshot()));
+      if (method === "POST" && gitRoute[2]) {
+        const input = yield* attempt(async () =>
+          decode(gitCommitSchema, await body(request)),
+        );
+        return json(yield* attempt(() => repository.commit(input)), 201);
+      }
     }
     if (path === "/state" && method === "GET")
       return json(view(yield* attempt(() => o.store.read()), o));

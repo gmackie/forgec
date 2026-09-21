@@ -664,7 +664,7 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
           </div>
         </header>
         <main className="content">
-          {page === "Editor" ? <Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor /></Suspense> : null}
+          {page === "Editor" ? <Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} /></Suspense> : null}
           <ErrorMessage error={error} />
           {notice ? (
             <p className="notice" role="status">

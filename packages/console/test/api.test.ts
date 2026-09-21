@@ -133,3 +133,60 @@ it("durably reserves package versions across storage instances", async () => {
     false,
   );
 });
+
+it("requires authentication and exposes only configured Git projects", async () => {
+  const { call } = setup();
+  expect(
+    (await call("/git/projects", "GET", undefined, undefined, false)).status,
+  ).toBe(401);
+  expect(await (await call("/git/projects")).json()).toEqual({ projects: [] });
+  expect((await call("/git/projects/arbitrary")).status).toBe(404);
+  expect(
+    (
+      await call("/git/projects/arbitrary/commits", "POST", {
+        base: "a".repeat(40),
+        message: "Change",
+        files: [],
+      })
+    ).status,
+  ).toBe(404);
+});
+
+it("returns 400 for malformed Git commit input without calling the provider", async () => {
+  const { GitRepository } = await import("../src/git.js");
+  const db = new DatabaseSync(":memory:");
+  const api = createApi({
+    store: new SqliteState(db),
+    token,
+    authority: "local.test",
+    name: "Test",
+    runtime: "test",
+    registry: null,
+    git: [
+      new GitRepository(
+        {
+          id: "demo",
+          name: "Demo",
+          repository: "owner/repo",
+          branch: "main",
+          root: "src",
+        },
+        "private",
+        async () => {
+          throw Error("Must not call provider");
+        },
+      ),
+    ],
+  });
+  const response = await api(
+    new Request("http://localhost/api/git/projects/demo/commits", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ base: "bad" }),
+    }),
+  );
+  expect(response.status).toBe(400);
+});

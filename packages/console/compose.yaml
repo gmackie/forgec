@@ -9,6 +9,8 @@ services:
       ADMIN_TOKEN: ${ADMIN_TOKEN:?Set a token of at least 32 characters}
       INSTANCE_NAME: ${INSTANCE_NAME:-Forge}
       INSTANCE_AUTHORITY: ${INSTANCE_AUTHORITY:?Set your instance authority}
+      GIT_PROJECTS_JSON: ${GIT_PROJECTS_JSON:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8787}
       SIGNING_KEY_JWK: ${SIGNING_KEY_JWK:?Set the private Ed25519 JWK}
       SIGNING_KEY_ID: ${SIGNING_KEY_ID:-instance-v1}
