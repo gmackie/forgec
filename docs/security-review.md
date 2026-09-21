@@ -24,13 +24,13 @@ boundary, and `assuranceProfile()` reports `workload-bound` for a shared process
 
 | threat | test | result |
 |---|---|---|
-| malicious package with install hooks | `crates/forge-semantic/tests/compile.rs::dependency_resolution_never_executes_package_code` | never executed |
-| malicious OpenAPI (remote refs, SSRF hosts, pinned digests) | `crates/forge-codegen/tests/openapi_import.rs` (PAR-116) | refused offline |
+| malicious package with install hooks | `crates/forgegraph-semantic/tests/compile.rs::dependency_resolution_never_executes_package_code` | never executed |
+| malicious OpenAPI (remote refs, SSRF hosts, pinned digests) | `crates/forgegraph-codegen/tests/openapi_import.rs` (PAR-116) | refused offline |
 | foreign id passed as a Forge reference | `compile.rs::workflow_arguments_are_type_checked_against_the_callee_contract` (E-WF-008) | compile error |
 | forged identity / purpose headers | `packages/runtime/test/gatekeeper.test.ts` PAR-108 | ignored under JWT auth |
 | cross-tenant reads | every profile: NotFound for other tenants (`http.test.ts`, differential) | no disclosure |
 | policy races / stale allows | `gatekeeper.test.ts` PAR-111/112, `registry/test/snapshots.test.ts`, `adversarial.test.ts` PAR-173 | epochs revoke cached allows; queued old work refused |
-| capability composition widening | `crates/forge-semantic/tests/capability_fuzz.rs` (PAR-174) | matches reference algebra under permutation and wrapper attacks |
+| capability composition widening | `crates/forgegraph-semantic/tests/capability_fuzz.rs` (PAR-174) | matches reference algebra under permutation and wrapper attacks |
 | tampered artifact / registry response | `registry/test/artifacts.test.ts` PAR-125, `adversarial.test.ts` PAR-175 | digest or signature refused before activation |
 | CI PR overlays, bot escalation | `registry/test/grants.test.ts` PAR-133/136, `adversarial.test.ts` | projected away; no execution path; path/repo escalation refused |
 | forged or altered grants; activation without snapshot ack | `grants.test.ts` PAR-137/138, `adversarial.test.ts` | refused |

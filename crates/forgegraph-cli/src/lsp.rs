@@ -3,7 +3,7 @@
 //! diagnostics (with suggestions) are published for the edited file;
 //! `textDocument/formatting` returns the canonical formatting. Hand-rolled
 //! JSON-RPC keeps the compiler core free of server frameworks.
-use forge_semantic::{compile, load_package};
+use forgegraph_semantic::{compile, load_package};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
@@ -108,7 +108,7 @@ impl Server {
             .cloned()
             .or_else(|| std::fs::read_to_string(file).ok())
             .unwrap_or_default();
-        let deps: Vec<forge_semantic::DomainIR> = pkg
+        let deps: Vec<forgegraph_semantic::DomainIR> = pkg
             .dependency_paths
             .iter()
             .filter_map(|(_, p)| load_package(p).ok())
@@ -125,7 +125,7 @@ impl Server {
                 };
                 json!({
                     "range": { "start": position(&text, d.start), "end": position(&text, d.end.max(d.start + 1)) },
-                    "severity": if matches!(d.severity, forge_semantic::diagnostics::Severity::Error) { 1 } else { 2 },
+                    "severity": if matches!(d.severity, forgegraph_semantic::diagnostics::Severity::Error) { 1 } else { 2 },
                     "code": d.code,
                     "source": "forge",
                     "message": message,
@@ -188,7 +188,7 @@ pub fn run() -> anyhow::Result<()> {
                     .cloned()
                     .or_else(|| std::fs::read_to_string(&path).ok())
                     .unwrap_or_default();
-                let formatted = forge_syntax::format(&forge_syntax::parse(&text));
+                let formatted = forgegraph_syntax::format(&forgegraph_syntax::parse(&text));
                 let edits = if formatted == text {
                     json!([])
                 } else {

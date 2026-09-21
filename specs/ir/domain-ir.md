@@ -1,7 +1,7 @@
 # DomainIR (`domain-ir/1`)
 
 The package-level semantic model emitted by `forge inspect` and consumed by
-every planner and emitter. Rust types live in `crates/forge-semantic/src/ir.rs`
+every planner and emitter. Rust types live in `crates/forgegraph-semantic/src/ir.rs`
 and are the normative definition; this page explains the shape and the
 determinism rules.
 
@@ -15,7 +15,7 @@ determinism rules.
 - Every `list by` gets an `id asc` tie-breaker appended unless `id` is
   already an order key.
 - No file paths, timestamps or machine-specific data appear in the IR. The
-  snapshot test in `forge-semantic` compiles the reference app with reversed
+  snapshot test in `forgegraph-semantic` compiles the reference app with reversed
   file order and backslash paths and requires byte-identical output.
 - `content_hash()` is SHA-256 of the canonical JSON; `forge inspect` combines
   it with dependency hashes and the compiler version into `buildHash`.

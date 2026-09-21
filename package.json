@@ -10,7 +10,8 @@
     "differential": "pnpm --filter @forgegraph/conformance differential",
     "release:manifest": "node --experimental-strip-types scripts/release-manifest.ts",
     "release:check": "node scripts/check-packaging.mjs",
-    "lint:workflows": "node scripts/check-workflows.mjs"
+    "lint:workflows": "node scripts/check-workflows.mjs",
+    "release:names": "node scripts/check-crate-names.mjs"
   },
   "license": "Apache-2.0",
   "type": "module",

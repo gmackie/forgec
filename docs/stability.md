@@ -31,8 +31,8 @@ something changes. Each package records its tier in `package.json` under
 | crate | tier | notes |
 | --- | --- | --- |
 | `forgegraph-cli` | stable candidate | The `forgec` command line and its output formats. Flags are removed only after a release that deprecates them. JSON output carries its own `version` field. |
-| `forge-semantic` | experimental | `domain-ir/1` (the IR document) is a versioned contract and stable. The Rust API that produces it is not: consume the IR, not the crate, unless you are ready to track it. |
-| `forge-syntax`, `forge-planner`, `forge-codegen` | experimental | Published so `forgegraph-cli` can be published and so the compiler can be embedded. Treat them as internals with a version number. |
+| `forgegraph-semantic` | experimental | `domain-ir/1` (the IR document) is a versioned contract and stable. The Rust API that produces it is not: consume the IR, not the crate, unless you are ready to track it. |
+| `forgegraph-syntax`, `forgegraph-planner`, `forgegraph-codegen` | experimental | Published so `forgegraph-cli` can be published and so the compiler can be embedded. Treat them as internals with a version number. |
 
 ## Versioned contracts
 

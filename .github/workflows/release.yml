@@ -54,6 +54,9 @@ jobs:
       - run: pnpm -r run build
       - run: pnpm -r test
       - run: node scripts/check-packaging.mjs
+      # crates.io names are permanent and publishing is ordered: a taken name discovered
+      # mid-publish leaves the crates before it up, forever. Ask before starting.
+      - run: node scripts/check-crate-names.mjs
 
   binaries:
     name: forgec ${{ matrix.target }}

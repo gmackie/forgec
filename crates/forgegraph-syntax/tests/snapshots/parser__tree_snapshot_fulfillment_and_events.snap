@@ -1,0 +1,321 @@
+---
+source: crates/forgegraph-syntax/tests/parser.rs
+assertion_line: 52
+expression: "format!(\"{}\\n{}\", parse(&a).debug_tree(), parse(&b).debug_tree())"
+---
+ROOT@0..672
+  SHAPE_DECL@0..75
+    IDENT@0..5 "shape"
+    IDENT@6..22 "SubmitOrderInput"
+    L_BRACE@23..24 "{"
+    NEWLINE@24..25 "\\n"
+    FIELD_DECL@27..40
+      IDENT@27..32 "order"
+      COLON@33..34 ":"
+      TYPE_EXPR@35..40
+        TYPE_REF@35..40
+          QUALIFIED_NAME@35..40
+            IDENT@35..40 "Order"
+    NEWLINE@40..41 "\\n"
+    FIELD_DECL@43..73
+      IDENT@43..58 "expectedVersion"
+      COLON@59..60 ":"
+      TYPE_EXPR@61..73
+        TYPE_REF@61..68
+          QUALIFIED_NAME@61..68
+            IDENT@61..68 "integer"
+        REFINEMENT@69..73
+          GT_EQ@69..71 ">="
+          LITERAL_EXPR@72..73
+            INT@72..73 "1"
+    NEWLINE@73..74 "\\n"
+    R_BRACE@74..75 "}"
+  NEWLINE@75..76 "\\n"
+  NEWLINE@76..77 "\\n"
+  FUNCTION_DECL@77..496
+    IDENT@77..83 "export"
+    IDENT@84..92 "function"
+    IDENT@93..104 "SubmitOrder"
+    NEWLINE@104..105 "\\n"
+    DECORATOR@107..147
+      AT@107..108 "@"
+      IDENT@108..112 "http"
+      DECORATOR_ARGS@112..147
+        L_PAREN@112..113 "("
+        DECORATOR_ARG@113..117
+          QUALIFIED_NAME@113..117
+            IDENT@113..117 "POST"
+        COMMA@117..118 ","
+        DECORATOR_ARG@119..146
+          LITERAL_EXPR@119..146
+            STRING@119..146 "\"/v1/orders/{order}/submit\""
+        R_PAREN@146..147 ")"
+    NEWLINE@147..148 "\\n"
+    L_BRACE@148..149 "{"
+    NEWLINE@149..150 "\\n"
+    FUNCTION_INPUT@152..174
+      IDENT@152..157 "input"
+      TYPE_REF@158..174
+        QUALIFIED_NAME@158..174
+          IDENT@158..174 "SubmitOrderInput"
+    NEWLINE@174..175 "\\n"
+    FUNCTION_OUTPUT@177..196
+      IDENT@177..183 "output"
+      TYPE_REF@184..196
+        QUALIFIED_NAME@184..196
+          IDENT@184..189 "Order"
+          DOT@189..190 "."
+          IDENT@190..196 "Record"
+    NEWLINE@196..197 "\\n"
+    NEWLINE@197..198 "\\n"
+    USES_BLOCK@200..293
+      IDENT@200..204 "uses"
+      L_BRACE@205..206 "{"
+      NEWLINE@206..207 "\\n"
+      USE_DECL@211..221
+        QUALIFIED_NAME@211..216
+          IDENT@211..216 "Order"
+        IDENT@217..221 "read"
+      NEWLINE@221..222 "\\n"
+      USE_DECL@226..245
+        QUALIFIED_NAME@226..245
+          IDENT@226..231 "Order"
+          DOT@231..232 "."
+          IDENT@232..238 "status"
+          DOT@238..239 "."
+          IDENT@239..245 "submit"
+      NEWLINE@245..246 "\\n"
+      USE_DECL@250..259
+        QUALIFIED_NAME@250..254
+          IDENT@250..254 "Site"
+        IDENT@255..259 "read"
+      NEWLINE@259..260 "\\n"
+      USE_DECL@264..289
+        QUALIFIED_NAME@264..289
+          IDENT@264..272 "payments"
+          DOT@272..273 "."
+          IDENT@273..289 "AuthorizePayment"
+      NEWLINE@289..290 "\\n"
+      R_BRACE@292..293 "}"
+    NEWLINE@293..294 "\\n"
+    NEWLINE@294..295 "\\n"
+    SENDS_BLOCK@297..342
+      IDENT@297..302 "sends"
+      L_BRACE@303..304 "{"
+      NEWLINE@304..305 "\\n"
+      SEND_DECL@309..338
+        IDENT@309..323 "OrderSubmitted"
+        IDENT@324..326 "to"
+        QUALIFIED_NAME@327..338
+          IDENT@327..338 "OrderEvents"
+      NEWLINE@338..339 "\\n"
+      R_BRACE@341..342 "}"
+    NEWLINE@342..343 "\\n"
+    NEWLINE@343..344 "\\n"
+    ERRORS_BLOCK@346..418
+      IDENT@346..352 "errors"
+      L_BRACE@353..354 "{"
+      NEWLINE@354..355 "\\n"
+      ERROR_DECL@359..371
+        IDENT@359..371 "SiteDisabled"
+      NEWLINE@371..372 "\\n"
+      ERROR_DECL@376..391
+        IDENT@376..391 "PaymentDeclined"
+      NEWLINE@391..392 "\\n"
+      ERROR_DECL@396..414
+        IDENT@396..414 "PaymentUnavailable"
+      NEWLINE@414..415 "\\n"
+      R_BRACE@417..418 "}"
+    NEWLINE@418..419 "\\n"
+    NEWLINE@419..420 "\\n"
+    SLO_BLOCK@422..494
+      IDENT@422..425 "slo"
+      L_BRACE@426..427 "{"
+      NEWLINE@427..428 "\\n"
+      SLO_ITEM@432..459
+        IDENT@432..444 "availability"
+        PERCENT@445..450 "99.9%"
+        IDENT@451..455 "over"
+        DURATION@456..459 "28d"
+      NEWLINE@459..460 "\\n"
+      SLO_ITEM@464..490
+        IDENT@464..471 "latency"
+        PERCENT@472..475 "99%"
+        LT_EQ@476..478 "<="
+        DURATION@479..481 "1s"
+        IDENT@482..486 "over"
+        DURATION@487..490 "28d"
+      NEWLINE@490..491 "\\n"
+      R_BRACE@493..494 "}"
+    NEWLINE@494..495 "\\n"
+    R_BRACE@495..496 "}"
+  NEWLINE@496..497 "\\n"
+  NEWLINE@497..498 "\\n"
+  FUNCTION_DECL@498..609
+    IDENT@498..506 "function"
+    IDENT@507..519 "FulfillOrder"
+    L_BRACE@520..521 "{"
+    NEWLINE@521..522 "\\n"
+    FUNCTION_INPUT@524..556
+      IDENT@524..529 "input"
+      TYPE_REF@530..556
+        QUALIFIED_NAME@530..556
+          IDENT@530..541 "OrderEvents"
+          DOT@541..542 "."
+          IDENT@542..556 "OrderSubmitted"
+    NEWLINE@556..557 "\\n"
+    FUNCTION_OUTPUT@559..578
+      IDENT@559..565 "output"
+      TYPE_REF@566..578
+        QUALIFIED_NAME@566..578
+          IDENT@566..571 "Order"
+          DOT@571..572 "."
+          IDENT@572..578 "Record"
+    NEWLINE@578..579 "\\n"
+    NEWLINE@579..580 "\\n"
+    USES_BLOCK@582..607
+      IDENT@582..586 "uses"
+      L_BRACE@587..588 "{"
+      NEWLINE@588..589 "\\n"
+      USE_DECL@593..603
+        QUALIFIED_NAME@593..598
+          IDENT@593..598 "Order"
+        IDENT@599..603 "read"
+      NEWLINE@603..604 "\\n"
+      R_BRACE@606..607 "}"
+    NEWLINE@607..608 "\\n"
+    R_BRACE@608..609 "}"
+  NEWLINE@609..610 "\\n"
+  NEWLINE@610..611 "\\n"
+  FUNCTION_DECL@611..671
+    IDENT@611..619 "function"
+    IDENT@620..639 "RebuildOrderSummary"
+    L_BRACE@640..641 "{"
+    NEWLINE@641..642 "\\n"
+    USES_BLOCK@644..669
+      IDENT@644..648 "uses"
+      L_BRACE@649..650 "{"
+      NEWLINE@650..651 "\\n"
+      USE_DECL@655..665
+        QUALIFIED_NAME@655..660
+          IDENT@655..660 "Order"
+        IDENT@661..665 "read"
+      NEWLINE@665..666 "\\n"
+      R_BRACE@668..669 "}"
+    NEWLINE@669..670 "\\n"
+    R_BRACE@670..671 "}"
+  NEWLINE@671..672 "\\n"
+
+ROOT@0..424
+  CHANNEL_DECL@0..214
+    IDENT@0..6 "export"
+    IDENT@7..14 "channel"
+    IDENT@15..26 "OrderEvents"
+    NEWLINE@26..27 "\\n"
+    DECORATOR@29..58
+      AT@29..30 "@"
+      IDENT@30..39 "websocket"
+      DECORATOR_ARGS@39..58
+        L_PAREN@39..40 "("
+        DECORATOR_ARG@40..57
+          LITERAL_EXPR@40..57
+            STRING@40..57 "\"/v1/live/orders\""
+        R_PAREN@57..58 ")"
+    NEWLINE@58..59 "\\n"
+    L_BRACE@59..60 "{"
+    NEWLINE@60..61 "\\n"
+    DISTRIBUTION_DECL@63..85
+      IDENT@63..75 "distribution"
+      IDENT@76..85 "broadcast"
+    NEWLINE@85..86 "\\n"
+    DELIVERY_DECL@88..110
+      IDENT@88..96 "delivery"
+      IDENT@97..110 "at-least-once"
+    NEWLINE@110..111 "\\n"
+    NEWLINE@111..112 "\\n"
+    MESSAGE_DECL@114..212
+      IDENT@114..121 "message"
+      IDENT@122..136 "OrderSubmitted"
+      L_BRACE@137..138 "{"
+      NEWLINE@138..139 "\\n"
+      FIELD_DECL@143..156
+        IDENT@143..148 "order"
+        COLON@149..150 ":"
+        TYPE_EXPR@151..156
+          TYPE_REF@151..156
+            QUALIFIED_NAME@151..156
+              IDENT@151..156 "Order"
+      NEWLINE@156..157 "\\n"
+      FIELD_DECL@161..180
+        IDENT@161..169 "customer"
+        COLON@170..171 ":"
+        TYPE_EXPR@172..180
+          TYPE_REF@172..180
+            QUALIFIED_NAME@172..180
+              IDENT@172..180 "Customer"
+      NEWLINE@180..181 "\\n"
+      FIELD_DECL@185..208
+        IDENT@185..193 "revision"
+        COLON@194..195 ":"
+        TYPE_EXPR@196..208
+          TYPE_REF@196..203
+            QUALIFIED_NAME@196..203
+              IDENT@196..203 "integer"
+          REFINEMENT@204..208
+            GT_EQ@204..206 ">="
+            LITERAL_EXPR@207..208
+              INT@207..208 "1"
+      NEWLINE@208..209 "\\n"
+      R_BRACE@211..212 "}"
+    NEWLINE@212..213 "\\n"
+    R_BRACE@213..214 "}"
+  NEWLINE@214..215 "\\n"
+  NEWLINE@215..216 "\\n"
+  CHANNEL_DECL@216..281
+    IDENT@216..223 "channel"
+    IDENT@224..237 "PaymentEvents"
+    CHANNEL_FROM@238..265
+      IDENT@238..242 "from"
+      QUALIFIED_NAME@243..265
+        IDENT@243..251 "payments"
+        DOT@251..252 "."
+        IDENT@252..265 "PaymentEvents"
+    L_BRACE@266..267 "{"
+    NEWLINE@267..268 "\\n"
+    DIRECTION_DECL@270..279
+      IDENT@270..279 "recv-only"
+    NEWLINE@279..280 "\\n"
+    R_BRACE@280..281 "}"
+  NEWLINE@281..282 "\\n"
+  NEWLINE@282..283 "\\n"
+  SUBSCRIPTION_DECL@283..328
+    IDENT@283..285 "on"
+    QUALIFIED_NAME@286..312
+      IDENT@286..297 "OrderEvents"
+      DOT@297..298 "."
+      IDENT@298..312 "OrderSubmitted"
+    ARROW@313..315 "->"
+    QUALIFIED_NAME@316..328
+      IDENT@316..328 "FulfillOrder"
+  NEWLINE@328..329 "\\n"
+  NEWLINE@329..330 "\\n"
+  SOURCE_DECL@330..423
+    IDENT@330..336 "source"
+    IDENT@337..358 "NightlyReconciliation"
+    L_BRACE@359..360 "{"
+    NEWLINE@360..361 "\\n"
+    CRON_DECL@363..379
+      IDENT@363..367 "cron"
+      STRING@368..379 "\"0 3 * * *\""
+    NEWLINE@379..380 "\\n"
+    TIMEZONE_DECL@382..396
+      IDENT@382..390 "timezone"
+      STRING@391..396 "\"UTC\""
+    NEWLINE@396..397 "\\n"
+    TARGET_DECL@399..421
+      ARROW@399..401 "->"
+      QUALIFIED_NAME@402..421
+        IDENT@402..421 "RebuildOrderSummary"
+    NEWLINE@421..422 "\\n"
+    R_BRACE@422..423 "}"
+  NEWLINE@423..424 "\\n"

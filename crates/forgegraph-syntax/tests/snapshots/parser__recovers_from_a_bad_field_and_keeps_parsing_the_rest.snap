@@ -1,0 +1,48 @@
+---
+source: crates/forgegraph-syntax/tests/parser.rs
+assertion_line: 63
+expression: "format!(\"{}\\n---\\n{}\", msgs.join(\"\\n\"), parsed.debug_tree())"
+---
+25..30: unexpected `bogus`
+---
+ROOT@0..71
+  RESOURCE_DECL@0..55
+    IDENT@0..8 "resource"
+    IDENT@9..10 "R"
+    L_BRACE@11..12 "{"
+    NEWLINE@12..13 "\\n"
+    FIELD_DECL@15..22
+      IDENT@15..17 "id"
+      COLON@18..19 ":"
+      TYPE_EXPR@20..22
+        TYPE_REF@20..22
+          QUALIFIED_NAME@20..22
+            IDENT@20..22 "id"
+    NEWLINE@22..23 "\\n"
+    ERROR@25..39
+      IDENT@25..30 "bogus"
+      QUESTION@31..32 "?"
+      QUESTION@32..33 "?"
+      QUESTION@33..34 "?"
+      IDENT@35..39 "here"
+    NEWLINE@39..40 "\\n"
+    FIELD_DECL@42..53
+      IDENT@42..46 "name"
+      COLON@47..48 ":"
+      TYPE_EXPR@49..53
+        TYPE_REF@49..53
+          QUALIFIED_NAME@49..53
+            IDENT@49..53 "text"
+    NEWLINE@53..54 "\\n"
+    R_BRACE@54..55 "}"
+  NEWLINE@55..56 "\\n"
+  ENUM_DECL@56..70
+    IDENT@56..60 "enum"
+    IDENT@61..62 "E"
+    L_BRACE@63..64 "{"
+    NEWLINE@64..65 "\\n"
+    ENUM_MEMBER@67..68
+      IDENT@67..68 "A"
+    NEWLINE@68..69 "\\n"
+    R_BRACE@69..70 "}"
+  NEWLINE@70..71 "\\n"

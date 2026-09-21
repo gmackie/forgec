@@ -133,7 +133,9 @@ jobs:
       - run: pnpm -r run build
       # every publishable package must produce a tarball that carries its built output
       - run: node scripts/check-packaging.mjs
-      - run: cargo publish --dry-run -p forge-syntax --locked
+      # and every crate name must still be ours to publish under
+      - run: node scripts/check-crate-names.mjs
+      - run: cargo publish --dry-run -p forgegraph-syntax --locked
       - run: cargo package --workspace --locked --allow-dirty
 
   supply-chain:

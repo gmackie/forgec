@@ -3,7 +3,7 @@
 
 use anyhow::{Context, Result, anyhow, bail};
 use clap::{Parser, Subcommand};
-use forge_semantic::{Compilation, DomainIR, Package, compile, load_package};
+use forgegraph_semantic::{Compilation, DomainIR, Package, compile, load_package};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -217,12 +217,12 @@ fn main() -> Result<()> {
             let package = load_package(&path).map_err(|e| anyhow!("{e}"))?;
             let mut changed = Vec::new();
             for f in &package.files {
-                let parsed = forge_syntax::parse(&f.text);
+                let parsed = forgegraph_syntax::parse(&f.text);
                 if !parsed.errors().is_empty() {
                     eprintln!("{}: skipped (syntax errors)", f.path);
                     continue;
                 }
-                let formatted = forge_syntax::format(&parsed);
+                let formatted = forgegraph_syntax::format(&parsed);
                 if formatted != f.text {
                     changed.push(f.path.clone());
                     if !check {
@@ -244,7 +244,7 @@ fn main() -> Result<()> {
             let Some(ir) = loaded.compilation.ir else {
                 std::process::exit(1)
             };
-            let plans = match forge_planner::plan(&ir) {
+            let plans = match forgegraph_planner::plan(&ir) {
                 Ok(p) => p,
                 Err(e) => {
                     eprintln!("{e}");
@@ -253,7 +253,7 @@ fn main() -> Result<()> {
             };
             let out_dir = out.unwrap_or_else(|| path.join("generated"));
             std::fs::create_dir_all(out_dir.join("d1"))?;
-            let openapi = forge_codegen::openapi(&plans.contracts, &plans.observability);
+            let openapi = forgegraph_codegen::openapi(&plans.contracts, &plans.observability);
             let bundle = serde_json::json!({
                 "version": "app-bundle/1",
                 "buildHash": build_hash(&ir, &loaded.deps),
@@ -268,9 +268,9 @@ fn main() -> Result<()> {
                 "schedules": plans.schedules,
                 "realtime": plans.realtime,
                 "observability": plans.observability,
-                "dataSemantics": forge_semantic::ir::DataSemantics::of(&ir, &forge_semantic::ir::Taxonomy::core()),
-                "lineage": forge_semantic::ir::Lineage::of(&ir),
-                "capabilities": forge_semantic::ir::EffectiveCapabilities::of(&ir),
+                "dataSemantics": forgegraph_semantic::ir::DataSemantics::of(&ir, &forgegraph_semantic::ir::Taxonomy::core()),
+                "lineage": forgegraph_semantic::ir::Lineage::of(&ir),
+                "capabilities": forgegraph_semantic::ir::EffectiveCapabilities::of(&ir),
                 // Served at /forge/openapi.json by every host: the runtime is a consumer of the projection, not its author.
                 "openapi": openapi,
             });
@@ -280,16 +280,16 @@ fn main() -> Result<()> {
             )?;
             std::fs::write(
                 out_dir.join("d1/0001_init.sql"),
-                forge_planner::sql::render_sqlite(&plans.sql),
+                forgegraph_planner::sql::render_sqlite(&plans.sql),
             )?;
             std::fs::create_dir_all(out_dir.join("postgres"))?;
             std::fs::write(
                 out_dir.join("postgres/0001_init.sql"),
-                forge_planner::sql::render_postgres(&plans.sql),
+                forgegraph_planner::sql::render_postgres(&plans.sql),
             )?;
             std::fs::write(
                 out_dir.join("client.ts"),
-                forge_codegen::client_ts(&plans.contracts),
+                forgegraph_codegen::client_ts(&plans.contracts),
             )?;
             std::fs::write(
                 out_dir.join("openapi.json"),
@@ -297,7 +297,7 @@ fn main() -> Result<()> {
             )?;
             std::fs::write(
                 out_dir.join("api.smithy"),
-                forge_codegen::smithy(&plans.contracts),
+                forgegraph_codegen::smithy(&plans.contracts),
             )?;
             std::fs::write(
                 out_dir.join("README.md"),
@@ -324,8 +324,8 @@ fn main() -> Result<()> {
             let Some(ir) = loaded.compilation.ir else {
                 std::process::exit(1)
             };
-            let caps = forge_semantic::ir::EffectiveCapabilities::of(&ir);
-            let surfaces: Vec<&forge_semantic::ir::Surface> = caps
+            let caps = forgegraph_semantic::ir::EffectiveCapabilities::of(&ir);
+            let surfaces: Vec<&forgegraph_semantic::ir::Surface> = caps
                 .surfaces
                 .iter()
                 .filter(|s| {
@@ -372,7 +372,7 @@ fn main() -> Result<()> {
             allow_hosts,
         } => {
             let text = std::fs::read_to_string(&spec)?;
-            let mut opts = forge_codegen::openapi_import::ImportOptions {
+            let mut opts = forgegraph_codegen::openapi_import::ImportOptions {
                 package,
                 allow_hosts,
                 pins: Vec::new(),
@@ -385,13 +385,13 @@ fn main() -> Result<()> {
                     .rsplit_once('@')
                     .map(|(f, s)| (f.to_string(), Some(s.to_string())))
                     .unwrap_or((rest.to_string(), None));
-                opts.pins.push(forge_codegen::openapi_import::Pin {
+                opts.pins.push(forgegraph_codegen::openapi_import::Pin {
                     url: url.to_string(),
                     file: PathBuf::from(file),
                     sha256: sha,
                 });
             }
-            match forge_codegen::openapi_import::import_openapi(&text, &opts) {
+            match forgegraph_codegen::openapi_import::import_openapi(&text, &opts) {
                 Ok(result) => {
                     for (rel, content) in &result.files {
                         let target = out.join(rel);
@@ -433,8 +433,8 @@ fn main() -> Result<()> {
                     bail!("{label} bundle: {e}");
                 }
             }
-            let report = forge_semantic::diff::compare(&o, &n);
-            let plan = forge_planner::migrations::plan_migration(&report, &o, &n);
+            let report = forgegraph_semantic::diff::compare(&o, &n);
+            let plan = forgegraph_planner::migrations::plan_migration(&report, &o, &n);
             println!("{}", serde_json::to_string_pretty(&plan)?);
             if plan.blocked {
                 std::process::exit(2);
@@ -448,8 +448,10 @@ fn main() -> Result<()> {
             let Some(ir) = loaded.compilation.ir else {
                 std::process::exit(1)
             };
-            let sem =
-                forge_semantic::ir::DataSemantics::of(&ir, &forge_semantic::ir::Taxonomy::core());
+            let sem = forgegraph_semantic::ir::DataSemantics::of(
+                &ir,
+                &forgegraph_semantic::ir::Taxonomy::core(),
+            );
             let mut proposals = Vec::new();
             for m in &ir.modules {
                 for r in &m.resources {
@@ -513,9 +515,9 @@ fn main() -> Result<()> {
                     bail!("{label} bundle: {e}");
                 }
             }
-            let report = forge_semantic::diff::compare(&o, &n);
+            let report = forgegraph_semantic::diff::compare(&o, &n);
             match audience {
-                Some(a) => print!("{}", forge_semantic::diff::render(&report, &a)),
+                Some(a) => print!("{}", forgegraph_semantic::diff::render(&report, &a)),
                 None => println!("{}", serde_json::to_string_pretty(&report)?),
             }
             if report.verdict == "breaking" {
@@ -542,7 +544,7 @@ fn main() -> Result<()> {
 
 /// FORGE-030: pinned extension manifests are read as bytes, digest-checked and shape-validated.
 /// They declare capabilities; nothing in them is ever executed by the compiler.
-fn verify_extensions(pkg: &forge_semantic::Package) -> Result<()> {
+fn verify_extensions(pkg: &forgegraph_semantic::Package) -> Result<()> {
     const FORBIDDEN: &[&str] = &[
         "main",
         "exports",
@@ -636,5 +638,5 @@ fn build_hash(ir: &DomainIR, deps: &[(String, DomainIR)]) -> String {
     for (name, d) in deps {
         let _ = write!(material, "dep:{name}={};", d.content_hash());
     }
-    forge_semantic::ir::hash_hex(&material)
+    forgegraph_semantic::ir::hash_hex(&material)
 }

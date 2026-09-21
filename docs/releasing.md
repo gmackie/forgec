@@ -35,7 +35,7 @@ publishing anything, run the workflow manually from the Actions tab with
 | `binaries` | `forgec` for `aarch64`/`x86_64` × macOS/Linux, tarred as `forgec-<version>-<target>.tar.gz` with a sibling `.sha256`. |
 | `github-release` | The GitHub release, with the binaries, their checksums and `RELEASE_MANIFEST.json` attached. |
 | `npm` | `pnpm -r publish` with [provenance](https://docs.npmjs.com/generating-provenance-statements). Already-published versions are skipped, so a re-run after a partial failure completes rather than fails. |
-| `crates` | `scripts/publish-crates.mjs`: `forge-syntax → forge-semantic → forge-planner → forge-codegen → forgegraph-cli`, waiting for the crates.io index between each so the next crate can resolve the last. Also skips versions that are already up. |
+| `crates` | `scripts/publish-crates.mjs`: `forgegraph-syntax → forgegraph-semantic → forgegraph-planner → forgegraph-codegen → forgegraph-cli`, waiting for the crates.io index between each so the next crate can resolve the last. Also skips versions that are already up. |
 | `homebrew` | `scripts/update-homebrew-tap.mjs` renders `Formula/forgec.rb` from the release artifacts and pushes it to `gmackorg/homebrew-tap`. |
 
 Every job is idempotent per version. Re-running a failed release does not

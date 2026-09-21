@@ -1,0 +1,127 @@
+---
+source: crates/forgegraph-syntax/tests/parser.rs
+assertion_line: 36
+expression: parse(&src).debug_tree()
+---
+ROOT@0..363
+  RESOURCE_DECL@0..362
+    DOC_COMMENT@0..51 "/// A business that buys from Acme. Not the tenant."
+    NEWLINE@51..52 "\\n"
+    IDENT@52..58 "export"
+    IDENT@59..67 "resource"
+    IDENT@68..76 "Customer"
+    NEWLINE@76..77 "\\n"
+    DECORATOR@79..86
+      AT@79..80 "@"
+      IDENT@80..86 "tenant"
+    NEWLINE@86..87 "\\n"
+    DECORATOR@89..100
+      AT@89..90 "@"
+      IDENT@90..100 "timestamps"
+    NEWLINE@100..101 "\\n"
+    DECORATOR@103..114
+      AT@103..104 "@"
+      IDENT@104..114 "softDelete"
+    NEWLINE@114..115 "\\n"
+    DECORATOR@117..127
+      AT@117..118 "@"
+      IDENT@118..127 "versioned"
+    NEWLINE@127..128 "\\n"
+    DECORATOR@130..138
+      AT@130..131 "@"
+      IDENT@131..138 "audited"
+    NEWLINE@138..139 "\\n"
+    DECORATOR@141..163
+      AT@141..142 "@"
+      IDENT@142..146 "crud"
+      DECORATOR_ARGS@146..163
+        L_PAREN@146..147 "("
+        DECORATOR_ARG@147..162
+          LITERAL_EXPR@147..162
+            STRING@147..162 "\"/v1/customers\""
+        R_PAREN@162..163 ")"
+    NEWLINE@163..164 "\\n"
+    L_BRACE@164..165 "{"
+    NEWLINE@165..166 "\\n"
+    FIELD_DECL@168..175
+      IDENT@168..170 "id"
+      COLON@171..172 ":"
+      TYPE_EXPR@173..175
+        TYPE_REF@173..175
+          QUALIFIED_NAME@173..175
+            IDENT@173..175 "id"
+    NEWLINE@175..176 "\\n"
+    FIELD_DECL@178..216
+      IDENT@178..182 "code"
+      COLON@183..184 ":"
+      TYPE_EXPR@185..197
+        TYPE_REF@185..197
+          QUALIFIED_NAME@185..197
+            IDENT@185..197 "CustomerCode"
+      DECORATOR@198..205
+        AT@198..199 "@"
+        IDENT@199..205 "unique"
+      DECORATOR@206..216
+        AT@206..207 "@"
+        IDENT@207..216 "immutable"
+    NEWLINE@216..217 "\\n"
+    FIELD_DECL@219..244
+      IDENT@219..223 "name"
+      COLON@224..225 ":"
+      TYPE_EXPR@226..244
+        TYPE_REF@226..230
+          QUALIFIED_NAME@226..230
+            IDENT@226..230 "text"
+        REFINEMENT@231..244
+          IDENT@231..237 "length"
+          RANGE@238..244
+            INT@238..239 "1"
+            DOT_DOT@239..241 ".."
+            INT@241..244 "200"
+    NEWLINE@244..245 "\\n"
+    FIELD_DECL@247..261
+      IDENT@247..252 "email"
+      COLON@253..254 ":"
+      TYPE_EXPR@255..261
+        TYPE_REF@255..260
+          QUALIFIED_NAME@255..260
+            IDENT@255..260 "email"
+        QUESTION@260..261 "?"
+    NEWLINE@261..262 "\\n"
+    FIELD_DECL@264..307
+      IDENT@264..268 "tier"
+      COLON@269..270 ":"
+      TYPE_EXPR@271..283
+        TYPE_REF@271..283
+          QUALIFIED_NAME@271..283
+            IDENT@271..283 "CustomerTier"
+      EQ@284..285 "="
+      DEFAULT_VALUE@286..307
+        NAME_EXPR@286..307
+          QUALIFIED_NAME@286..307
+            IDENT@286..298 "CustomerTier"
+            DOT@298..299 "."
+            IDENT@299..307 "Standard"
+    NEWLINE@307..308 "\\n"
+    NEWLINE@308..309 "\\n"
+    FIND_DECL@311..323
+      IDENT@311..315 "find"
+      IDENT@316..318 "by"
+      FIELD_LIST@319..323
+        IDENT@319..323 "code"
+    NEWLINE@323..324 "\\n"
+    LIST_DECL@326..360
+      IDENT@326..330 "list"
+      IDENT@331..333 "by"
+      FIELD_LIST@334..338
+        IDENT@334..338 "tier"
+      NEWLINE@338..339 "\\n"
+      IDENT@343..348 "order"
+      IDENT@349..351 "by"
+      ORDER_LIST@352..360
+        ORDER_KEY@352..360
+          IDENT@352..356 "name"
+          IDENT@357..360 "asc"
+    NEWLINE@360..361 "\\n"
+    R_BRACE@361..362 "}"
+  NEWLINE@362..363 "\\n"

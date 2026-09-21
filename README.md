@@ -77,10 +77,10 @@ Start with [docs/getting-started.md](docs/getting-started.md), then
 | crate | what it is |
 | --- | --- |
 | [`forgegraph-cli`](crates/forgegraph-cli) | the `forgec` binary and the language server |
-| [`forge-syntax`](crates/forge-syntax) | lexer and lossless parser (logos + rowan) |
-| [`forge-semantic`](crates/forge-semantic) | name resolution, type check, `domain-ir/1`, capability algebra, `diff` |
-| [`forge-planner`](crates/forge-planner) | contracts, SQL and DynamoDB access plans, migration planning |
-| [`forge-codegen`](crates/forge-codegen) | TypeScript client, OpenAPI, Smithy, OpenAPI import |
+| [`forgegraph-syntax`](crates/forgegraph-syntax) | lexer and lossless parser (logos + rowan) |
+| [`forgegraph-semantic`](crates/forgegraph-semantic) | name resolution, type check, `domain-ir/1`, capability algebra, `diff` |
+| [`forgegraph-planner`](crates/forgegraph-planner) | contracts, SQL and DynamoDB access plans, migration planning |
+| [`forgegraph-codegen`](crates/forgegraph-codegen) | TypeScript client, OpenAPI, Smithy, OpenAPI import |
 
 **Runtime and tooling** (TypeScript, published to npm under `@forgegraph/`):
 

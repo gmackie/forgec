@@ -1,0 +1,259 @@
+---
+source: crates/forgegraph-syntax/tests/parser.rs
+assertion_line: 42
+expression: parse(&src).debug_tree()
+---
+ROOT@0..764
+  RESOURCE_DECL@0..763
+    IDENT@0..6 "export"
+    IDENT@7..15 "resource"
+    IDENT@16..21 "Order"
+    NEWLINE@21..22 "\\n"
+    DECORATOR@24..31
+      AT@24..25 "@"
+      IDENT@25..31 "tenant"
+    NEWLINE@31..32 "\\n"
+    DECORATOR@34..45
+      AT@34..35 "@"
+      IDENT@35..45 "timestamps"
+    NEWLINE@45..46 "\\n"
+    DECORATOR@48..58
+      AT@48..49 "@"
+      IDENT@49..58 "versioned"
+    NEWLINE@58..59 "\\n"
+    DECORATOR@61..69
+      AT@61..62 "@"
+      IDENT@62..69 "audited"
+    NEWLINE@69..70 "\\n"
+    DECORATOR@72..129
+      AT@72..73 "@"
+      IDENT@73..77 "crud"
+      DECORATOR_ARGS@77..129
+        L_PAREN@77..78 "("
+        DECORATOR_ARG@78..90
+          LITERAL_EXPR@78..90
+            STRING@78..90 "\"/v1/orders\""
+        COMMA@90..91 ","
+        DECORATOR_ARG@92..128
+          IDENT@92..99 "actions"
+          COLON@99..100 ":"
+          LIST_LITERAL@101..128
+            L_BRACKET@101..102 "["
+            QUALIFIED_NAME@102..109
+              IDENT@102..109 "approve"
+            COMMA@109..110 ","
+            QUALIFIED_NAME@111..119
+              IDENT@111..119 "complete"
+            COMMA@119..120 ","
+            QUALIFIED_NAME@121..127
+              IDENT@121..127 "cancel"
+            R_BRACKET@127..128 "]"
+        R_PAREN@128..129 ")"
+    NEWLINE@129..130 "\\n"
+    L_BRACE@130..131 "{"
+    NEWLINE@131..132 "\\n"
+    FIELD_DECL@134..141
+      IDENT@134..136 "id"
+      COLON@137..138 ":"
+      TYPE_EXPR@139..141
+        TYPE_REF@139..141
+          QUALIFIED_NAME@139..141
+            IDENT@139..141 "id"
+    NEWLINE@141..142 "\\n"
+    FIELD_DECL@144..174
+      IDENT@144..152 "customer"
+      COLON@153..154 ":"
+      TYPE_EXPR@155..163
+        TYPE_REF@155..163
+          QUALIFIED_NAME@155..163
+            IDENT@155..163 "Customer"
+      DECORATOR@164..174
+        AT@164..165 "@"
+        IDENT@165..174 "immutable"
+    NEWLINE@174..175 "\\n"
+    FIELD_DECL@177..188
+      IDENT@177..181 "site"
+      COLON@182..183 ":"
+      TYPE_EXPR@184..188
+        TYPE_REF@184..188
+          QUALIFIED_NAME@184..188
+            IDENT@184..188 "Site"
+    NEWLINE@188..189 "\\n"
+    FIELD_DECL@191..213
+      IDENT@191..199 "subtotal"
+      COLON@200..201 ":"
+      TYPE_EXPR@202..213
+        TYPE_REF@202..213
+          QUALIFIED_NAME@202..213
+            IDENT@202..213 "OrderAmount"
+    NEWLINE@213..214 "\\n"
+    FIELD_DECL@216..233
+      IDENT@216..219 "tax"
+      COLON@220..221 ":"
+      TYPE_EXPR@222..233
+        TYPE_REF@222..233
+          QUALIFIED_NAME@222..233
+            IDENT@222..233 "OrderAmount"
+    NEWLINE@233..234 "\\n"
+    FIELD_DECL@236..259
+      IDENT@236..241 "total"
+      COLON_EQ@242..244 ":="
+      DERIVED_VALUE@245..259
+        BINARY_EXPR@245..259
+          NAME_EXPR@245..253
+            QUALIFIED_NAME@245..253
+              IDENT@245..253 "subtotal"
+          PLUS@254..255 "+"
+          NAME_EXPR@256..259
+            QUALIFIED_NAME@256..259
+              IDENT@256..259 "tax"
+    NEWLINE@259..260 "\\n"
+    FIELD_DECL@262..280
+      IDENT@262..273 "requestedOn"
+      COLON@274..275 ":"
+      TYPE_EXPR@276..280
+        TYPE_REF@276..280
+          QUALIFIED_NAME@276..280
+            IDENT@276..280 "date"
+    NEWLINE@280..281 "\\n"
+    FIELD_DECL@283..311
+      IDENT@283..288 "notes"
+      COLON@289..290 ":"
+      TYPE_EXPR@291..311
+        TYPE_REF@291..295
+          QUALIFIED_NAME@291..295
+            IDENT@291..295 "text"
+        QUESTION@295..296 "?"
+        REFINEMENT@297..311
+          IDENT@297..303 "length"
+          LT_EQ@304..306 "<="
+          INT@307..311 "2000"
+    NEWLINE@311..312 "\\n"
+    NEWLINE@312..313 "\\n"
+    RULES_BLOCK@315..356
+      IDENT@315..320 "rules"
+      L_BRACE@321..322 "{"
+      NEWLINE@322..323 "\\n"
+      RULE@327..352
+        BINARY_EXPR@327..352
+          NAME_EXPR@327..340
+            QUALIFIED_NAME@327..340
+              IDENT@327..331 "site"
+              DOT@331..332 "."
+              IDENT@332..340 "customer"
+          EQ_EQ@341..343 "=="
+          NAME_EXPR@344..352
+            QUALIFIED_NAME@344..352
+              IDENT@344..352 "customer"
+      NEWLINE@352..353 "\\n"
+      R_BRACE@355..356 "}"
+    NEWLINE@356..357 "\\n"
+    NEWLINE@357..358 "\\n"
+    LIFECYCLE_BLOCK@360..662
+      IDENT@360..369 "lifecycle"
+      IDENT@370..376 "status"
+      L_BRACE@377..378 "{"
+      NEWLINE@378..379 "\\n"
+      INITIAL_DECL@383..396
+        IDENT@383..390 "initial"
+        IDENT@391..396 "Draft"
+      NEWLINE@396..397 "\\n"
+      TERMINAL_DECL@401..419
+        IDENT@401..409 "terminal"
+        IDENT@410..419 "Completed"
+      NEWLINE@419..420 "\\n"
+      TERMINAL_DECL@424..442
+        IDENT@424..432 "terminal"
+        IDENT@433..442 "Cancelled"
+      NEWLINE@442..443 "\\n"
+      NEWLINE@443..444 "\\n"
+      TRANSITION_DECL@448..474
+        IDENT@448..454 "submit"
+        COLON@454..455 ":"
+        STATE_SET@456..461
+          IDENT@456..461 "Draft"
+        ARROW@462..464 "->"
+        IDENT@465..474 "Submitted"
+      NEWLINE@474..475 "\\n"
+      TRANSITION_DECL@479..509
+        IDENT@479..486 "approve"
+        COLON@486..487 ":"
+        STATE_SET@488..497
+          IDENT@488..497 "Submitted"
+        ARROW@498..500 "->"
+        IDENT@501..509 "Approved"
+      NEWLINE@509..510 "\\n"
+      TRANSITION_DECL@514..545
+        IDENT@514..522 "complete"
+        COLON@522..523 ":"
+        STATE_SET@524..532
+          IDENT@524..532 "Approved"
+        ARROW@533..535 "->"
+        IDENT@536..545 "Completed"
+      NEWLINE@545..546 "\\n"
+      NEWLINE@546..547 "\\n"
+      TRANSITION_DECL@551..658
+        IDENT@551..557 "cancel"
+        COLON@557..558 ":"
+        STATE_SET@559..587
+          IDENT@559..564 "Draft"
+          PIPE@565..566 "|"
+          IDENT@567..576 "Submitted"
+          PIPE@577..578 "|"
+          IDENT@579..587 "Approved"
+        ARROW@588..590 "->"
+        IDENT@591..600 "Cancelled"
+        NEWLINE@600..601 "\\n"
+        INPUT_BLOCK@607..658
+          IDENT@607..612 "input"
+          L_BRACE@613..614 "{"
+          NEWLINE@614..615 "\\n"
+          FIELD_DECL@623..650
+            IDENT@623..629 "reason"
+            COLON@630..631 ":"
+            TYPE_EXPR@632..650
+              TYPE_REF@632..636
+                QUALIFIED_NAME@632..636
+                  IDENT@632..636 "text"
+              REFINEMENT@637..650
+                IDENT@637..643 "length"
+                RANGE@644..650
+                  INT@644..645 "1"
+                  DOT_DOT@645..647 ".."
+                  INT@647..650 "500"
+          NEWLINE@650..651 "\\n"
+          R_BRACE@657..658 "}"
+      NEWLINE@658..659 "\\n"
+      R_BRACE@661..662 "}"
+    NEWLINE@662..663 "\\n"
+    NEWLINE@663..664 "\\n"
+    LIST_DECL@666..710
+      IDENT@666..670 "list"
+      IDENT@671..673 "by"
+      FIELD_LIST@674..682
+        IDENT@674..682 "customer"
+      NEWLINE@682..683 "\\n"
+      IDENT@687..692 "order"
+      IDENT@693..695 "by"
+      ORDER_LIST@696..710
+        ORDER_KEY@696..710
+          IDENT@696..705 "createdAt"
+          IDENT@706..710 "desc"
+    NEWLINE@710..711 "\\n"
+    LIST_DECL@713..761
+      IDENT@713..717 "list"
+      IDENT@718..720 "by"
+      FIELD_LIST@721..733
+        IDENT@721..725 "site"
+        COMMA@725..726 ","
+        IDENT@727..733 "status"
+      NEWLINE@733..734 "\\n"
+      IDENT@738..743 "order"
+      IDENT@744..746 "by"
+      ORDER_LIST@747..761
+        ORDER_KEY@747..761
+          IDENT@747..756 "createdAt"
+          IDENT@757..761 "desc"
+    NEWLINE@761..762 "\\n"
+    R_BRACE@762..763 "}"
+  NEWLINE@763..764 "\\n"

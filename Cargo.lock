@@ -221,11 +221,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
-name = "forge-codegen"
+name = "forgegraph-cli"
 version = "0.3.0"
 dependencies = [
- "forge-planner",
- "forge-semantic",
+ "anyhow",
+ "clap",
+ "forgegraph-codegen",
+ "forgegraph-planner",
+ "forgegraph-semantic",
+ "forgegraph-syntax",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
+name = "forgegraph-codegen"
+version = "0.3.0"
+dependencies = [
+ "forgegraph-planner",
+ "forgegraph-semantic",
  "insta",
  "serde",
  "serde_json",
@@ -234,10 +250,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "forge-planner"
+name = "forgegraph-planner"
 version = "0.3.0"
 dependencies = [
- "forge-semantic",
+ "forgegraph-semantic",
  "indexmap",
  "insta",
  "serde",
@@ -245,10 +261,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "forge-semantic"
+name = "forgegraph-semantic"
 version = "0.3.0"
 dependencies = [
- "forge-syntax",
+ "forgegraph-syntax",
  "hex",
  "indexmap",
  "insta",
@@ -259,28 +275,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "forge-syntax"
+name = "forgegraph-syntax"
 version = "0.3.0"
 dependencies = [
  "insta",
  "logos",
  "rowan",
-]
-
-[[package]]
-name = "forgegraph-cli"
-version = "0.3.0"
-dependencies = [
- "anyhow",
- "clap",
- "forge-codegen",
- "forge-planner",
- "forge-semantic",
- "forge-syntax",
- "hex",
- "serde",
- "serde_json",
- "sha2",
 ]
 
 [[package]]

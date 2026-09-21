@@ -16,6 +16,15 @@ and developed in the open at https://github.com/gmackie/forgec.
   by Foundry, and the old name could not be published.
 - npm packages moved from `@forge/*` to `@forgegraph/*`. Update imports; no
   API changed with the move.
+- The library crates are `forgegraph-syntax`, `forgegraph-semantic`,
+  `forgegraph-planner` and `forgegraph-codegen` (Rust paths
+  `forgegraph_syntax` and so on). `forge-codegen` was already taken on
+  crates.io by an unrelated project, and it is the fourth of five in publish
+  order — a release would have discovered that only after permanently
+  publishing the three before it. The other three names were free, but `forge-`
+  is contested enough (Atlassian, Foundry, Aptos) that consistency is worth
+  more than the names. Compiler output is unaffected: the generated bundle and
+  its build hash are byte-identical across the rename.
 - `createNodeHost` now **refuses to start without an `AuthHost`**. It
   previously fell back to development header auth, which meant a Node
   deployment that forgot to configure authentication trusted
@@ -37,6 +46,15 @@ and developed in the open at https://github.com/gmackie/forgec.
   Node 22 and 24 against PostgreSQL 17, a stale-fixture check, the
   cross-profile differential, a packaging dry-run, and supply-chain audits.
 - Release automation (`.github/workflows/release.yml`) and a Forgejo mirror.
+- `scripts/check-crate-names.mjs`, run by CI and again before a release starts:
+  every workspace crate name must be free or already ours. crates.io names are
+  permanent and publishing is ordered, so a name discovered to be taken partway
+  through leaves everything before it published forever.
+- `scripts/check-workflows.mjs`, run by CI: workflow files must parse, and an
+  unquoted `${{ }}` inside a `with: { }` flow mapping is rejected by name. YAML
+  reads the expression's `{` as opening a map, which invalidates the entire
+  file — GitHub reports that as a run named after the file path, failing before
+  any job starts, with no log to read.
 
 ### Changed
 
@@ -128,7 +146,7 @@ every withheld one with its reason.
   suite, resolved deployment plans, Terraform and self-hosted packs);
   `forge_outbox.trace` in the shared baseline; idempotent D1 migrations.
 
-- M17 rollout: `forge compat` is now `forge_semantic::diff` with direction,
+- M17 rollout: `forge compat` is now `forgegraph_semantic::diff` with direction,
   needs, interfaces/governance/dependencies/policy streams and `--report`;
   `forge migrate` emits a phased migration plan; deployment ledger
   (`@forgegraph/runtime` DeploymentLedger); export `excluded` section;
