@@ -47,7 +47,12 @@ enum Cmd {
         #[arg(default_value = ".")]
         path: PathBuf,
     },
+    /// Compatibility report between two built bundles (API, event, storage, lifecycle, workflow streams).
+    /// Exit 1 on breaking findings.
+    Compat { old: PathBuf, new: PathBuf },
 }
+
+mod compat;
 
 /// `forge.lock` content. Dependencies are pinned by name, version and the
 /// content hash of their compiled contract, so a changed upstream contract is
@@ -195,6 +200,15 @@ fn main() -> Result<()> {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             std::fs::write(path.join("forge.lock"), render_lock(&loaded.deps))?;
             println!("{}: wrote forge.lock ({} dependency(ies))", loaded.package.name, loaded.deps.len());
+        }
+        Cmd::Compat { old, new } => {
+            let o: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&old)?)?;
+            let n: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&new)?)?;
+            let report = compat::compare(&o, &n);
+            println!("{}", serde_json::to_string_pretty(&report)?);
+            if report.verdict == "breaking" {
+                std::process::exit(1);
+            }
         }
         Cmd::Inspect { path } => {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;

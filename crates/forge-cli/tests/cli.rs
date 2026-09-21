@@ -110,3 +110,46 @@ fn build_writes_the_generated_bundle_migration_and_client() {
     let bundle2 = std::fs::read_to_string(out_dir.join("app.json")).unwrap();
     assert_eq!(serde_json::to_string(&bundle).unwrap(), serde_json::to_string(&serde_json::from_str::<serde_json::Value>(&bundle2).unwrap()).unwrap());
 }
+
+#[test]
+fn compat_classifies_changes_per_compatibility_stream() {
+    let dir = std::env::temp_dir().join(format!("forge-compat-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    for v in ["old", "new"] {
+        std::fs::create_dir_all(dir.join(v).join("src")).unwrap();
+        std::fs::write(dir.join(v).join("forge.toml"), "[package]\nname = \"@t/app\"\nversion = \"0.1.0\"\n").unwrap();
+    }
+    let old = "enum Tier {\n  Standard\n  Gold\n}\n\nexport resource Customer\n  @tenant\n  @timestamps\n  @versioned\n  @crud(\"/v1/customers\")\n{\n  id : id\n  code : text length 1..8 @unique\n  tier : Tier = Tier.Standard\n  note : text? length 0..100\n}\n\nexport resource Order\n  @tenant\n  @timestamps\n  @versioned\n  @crud(\"/v1/orders\", actions: [ship])\n{\n  id : id\n  customer : Customer\n\n  lifecycle status {\n    initial Draft\n    terminal Shipped\n\n    ship: Draft -> Shipped\n  }\n}\n\nchannel Ev {\n  message A {\n    id : text\n  }\n}\n\nshape WIn {\n  order : Order\n}\n\nworkflow W {\n  input WIn\n  version 1\n\n  step a = sleep 1s\n\n  return a\n}\n";
+    // new: enum member added (exhaustive-consumer risk), field made optional -> required (breaking for writers),
+    // `note` removed (breaking for readers + storage column drop), `region` added optional (additive; storage adds a column),
+    // lifecycle gains a state and transition (event/lifecycle stream), workflow graph changed with the same version (pin violation).
+    let new = "enum Tier {\n  Standard\n  Gold\n  Enterprise\n}\n\nexport resource Customer\n  @tenant\n  @timestamps\n  @versioned\n  @crud(\"/v1/customers\")\n{\n  id : id\n  code : text length 1..8 @unique\n  tier : Tier\n  region : text? length 0..8\n}\n\nexport resource Order\n  @tenant\n  @timestamps\n  @versioned\n  @crud(\"/v1/orders\", actions: [ship, cancel])\n{\n  id : id\n  customer : Customer\n\n  lifecycle status {\n    initial Draft\n    terminal Shipped\n    terminal Cancelled\n\n    ship: Draft -> Shipped\n    cancel: Draft -> Cancelled\n  }\n}\n\nchannel Ev {\n  message A {\n    id : text\n  }\n\n  message B {\n    id : text\n  }\n}\n\nshape WIn {\n  order : Order\n}\n\nworkflow W {\n  input WIn\n  version 1\n\n  step a = sleep 2s\n\n  return a\n}\n";
+    std::fs::write(dir.join("old/src/a.forge"), old).unwrap();
+    std::fs::write(dir.join("new/src/a.forge"), new).unwrap();
+    for v in ["old", "new"] {
+        let out = forge().args(["build", dir.join(v).to_str().unwrap(), "--out", dir.join(v).join("generated").to_str().unwrap()]).output().unwrap();
+        assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    }
+    let out = forge().args(["compat", dir.join("old/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap()]).output().unwrap();
+    assert_eq!(out.status.code(), Some(1), "breaking changes exit 1: {}", String::from_utf8_lossy(&out.stderr));
+    let report: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&out.stdout)).unwrap();
+    assert_eq!(report["version"], "compat/1");
+    assert_eq!(report["verdict"], "breaking");
+    let findings: Vec<(String, String, String)> = report["findings"].as_array().unwrap().iter().map(|f| (f["stream"].as_str().unwrap().into(), f["severity"].as_str().unwrap().into(), f["code"].as_str().unwrap().into())).collect();
+    let has = |stream: &str, sev: &str, code: &str| findings.iter().any(|(s, v, c)| s == stream && v == sev && c == code);
+    assert!(has("api", "breaking", "field-removed"), "{findings:?}");
+    assert!(has("api", "breaking", "field-required"), "{findings:?}");
+    assert!(has("api", "additive", "field-added"), "{findings:?}");
+    assert!(has("api", "risk", "enum-member-added"), "{findings:?}");
+    assert!(has("api", "additive", "operation-added"), "{findings:?}");
+    assert!(has("lifecycle", "additive", "state-added"), "{findings:?}");
+    assert!(has("event", "risk", "message-added"), "{findings:?}");
+    assert!(has("storage", "breaking", "column-removed"), "{findings:?}");
+    assert!(has("storage", "migration", "column-added"), "{findings:?}");
+    assert!(has("workflow", "breaking", "graph-changed-without-version"), "{findings:?}");
+    // Same bundle twice: compatible, exit 0.
+    let same = forge().args(["compat", dir.join("new/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap()]).output().unwrap();
+    assert!(same.status.success());
+    let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&same.stdout)).unwrap();
+    assert_eq!(r["verdict"], "compatible");
+}
