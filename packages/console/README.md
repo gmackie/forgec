@@ -313,3 +313,60 @@ versions; run it only against a test instance. OCI integration is explicitly ski
 `OCI_TEST_URL` is provided. API/unit tests include bad auth, validation, revision conflicts,
 persistence, publication reservations, tamper detection, redirect credential isolation,
 sign-out races and draft revision preservation.
+
+## Deployment operations and function playground
+
+The Deployments screen manages configured immutable releases through a private deployment
+controller: deploy with a configuration snapshot, inspect progress and logs, restart, stop,
+and roll back to a previous release and its configuration. The bundled controller uses Docker.
+Native Cloudflare deployment provisioning is not included; the console itself still runs on
+Workers or Node. The HTTP controller boundary allows other providers to be installed locally.
+
+Build the console, then build the runner from the repository root:
+
+```sh
+docker build -f packages/console/Runner.Dockerfile -t forge-runner .
+cd packages/console
+node scripts/build-playground.mjs
+cd ../..
+docker build -f packages/console/Playground.Dockerfile -t forge-playground .
+docker image inspect forge-playground --format '{{.Id}}'
+```
+
+Run the controller on a private Docker network with a persistent volume at /data, a read-only
+/config/targets.json, RUNNER_TOKEN (32+ random characters), and the Docker socket mounted at
+/var/run/docker.sock. Only the runner requires Docker access. It has host-level container
+control; do not expose its port publicly or give its credential to application users.
+Use a dedicated controller per target set; multiple controllers must not manage the same target.
+
+Example target file (replace the image with the immutable ID from the build, and artifact
+with the signed OCI package digest returned by publication):
+
+```json
+[{"id":"playground","name":"Support playground","network":"forge-console_default",
+"environment":{"RUNTIME_TOKEN":"REPLACE_WITH_RANDOM_RUNTIME_TOKEN"},
+"releases":[{"id":"v1","name":"1.0.0","createdAt":"2026-09-21T00:00:00Z",
+"artifact":"sha256:SIGNED_OCI_PACKAGE_DIGEST","image":"sha256:IMMUTABLE_IMAGE_ID"}]}]
+```
+
+Configure the console server with these JSON environment variables. Tokens never reach the browser:
+
+```text
+DEPLOYMENT_TARGETS_JSON=[{"id":"playground","name":"Support playground","kind":"docker","endpoint":"http://runner:8790/targets/playground","token":"RUNNER_TOKEN","runtimeId":"playground"}]
+RUNTIME_TARGETS_JSON=[{"id":"playground","name":"Support playground","endpoint":"http://runner:8790/runtime/playground","token":"RUNTIME_TOKEN"}]
+```
+
+Releases are installed by the operator's build pipeline, never arbitrary browser-supplied images.
+Protected environment bindings are configured in the target file. UI configuration cannot replace
+them. Data must live in an external retained service: managed containers have read-only roots and
+ephemeral /tmp. The sample runtime exposes pure quote/contact-validation functions and uses no
+persistent application data. Rollback does not reverse database migrations. Back up the controller
+SQLite volume alongside console and OCI data. Interrupted actions are marked failed on recovery;
+owned nonactive containers are removed before accepting new actions.
+
+The playground discovers functions from the live OpenAPI contract, generates sample JSON, and
+displays status, duration, returned data and declared errors. Invocations execute real effects.
+Results remain in browser session memory. Build/revision preconditions reject stale requests.
+External runtimes must advertise invocation-preconditions; GET function input binding is currently
+unsupported in the playground. Deployment status records the last action's health check, not
+continuous monitoring.

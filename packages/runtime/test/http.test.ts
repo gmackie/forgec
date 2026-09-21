@@ -184,3 +184,13 @@ describe("host authentication is fail-closed", () => {
     await explicit.stop().catch(() => undefined);
   });
 });
+
+it("rejects a stale build before executing a mutation", async () => {
+ const stale = await handler(req("POST", "/v1/customers", {code:"guarded",name:"Guarded"}, {"x-forge-if-build":"stale"}));
+ expect(stale.status).toBe(409);
+ const accepted = await handler(req("POST", "/v1/customers", {code:"guarded",name:"Guarded"}, {"x-forge-if-build":bundle.buildHash}));
+ expect(accepted.status).toBe(201);
+ const discovery = await handler(req("GET", "/forge/discovery"));
+ expect(discovery.headers.get("x-forge-build")).toBe(bundle.buildHash);
+ expect((await discovery.json()).features).toContain("invocation-preconditions");
+});

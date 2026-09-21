@@ -7,6 +7,8 @@ import {
   type StateStore,
   type ViewState,
 } from "./model.js";
+import { deploymentAction, type DeploymentConnection } from "./deployment-control.js";
+import type { RuntimeConnection } from "./runtime-control.js";
 import { gitCommitSchema, type GitRepository } from "./git.js";
 import type { OciRegistry } from "./oci.js";
 const name = z.string().trim().min(1).max(120);
@@ -65,6 +67,8 @@ export interface ApiOptions {
   runtime: string;
   registry: OciRegistry | null;
   git?: GitRepository[];
+  runtimes?: RuntimeConnection[];
+  deployments?: DeploymentConnection[];
 }
 class Management extends Context.Service<Management, ApiOptions>()(
   "forge-console/Management",
@@ -206,6 +210,28 @@ function route(request: Request) {
           decode(gitCommitSchema, await body(request)),
         );
         return json(yield* attempt(() => repository.commit(input)), 201);
+      }
+    }
+    if(path==='/runtime/targets'&&method==='GET')return json({targets:(o.runtimes||[]).map(t=>t.public)});
+    const runtimeRoute=path.match(/^\/runtime\/targets\/([a-z0-9-]+)\/(catalog|invoke)$/);
+    if(runtimeRoute){
+      const target=o.runtimes?.find(t=>t.public.id===runtimeRoute[1]);
+      if(!target)return yield* Effect.fail(new Problem(404,'Runtime is not configured on this instance.'));
+      if(method==='GET'&&runtimeRoute[2]==='catalog')return json(yield* attempt(()=>target.catalog()));
+      if(method==='POST'&&runtimeRoute[2]==='invoke'){
+        const input=yield* attempt(async()=>decode(z.object({operationId:z.string().min(1).max(300),input:z.record(z.string(),z.unknown()),buildHash:z.string().min(1).max(200),deploymentRevision:z.string().max(200).optional(),purpose:z.string().max(200).optional(),idempotencyKey:z.string().max(200).optional()}).strict(),await body(request)));
+        return json(yield* attempt(()=>target.invoke(input)));
+      }
+    }
+    if(path==='/deployments/targets'&&method==='GET')return json({targets:(o.deployments||[]).map(t=>t.public)});
+    const deploymentRoute=path.match(/^\/deployments\/targets\/([a-z0-9-]+)(\/actions)?$/);
+    if(deploymentRoute){
+      const target=o.deployments?.find(t=>t.public.id===deploymentRoute[1]);
+      if(!target)return yield* Effect.fail(new Problem(404,'Deployment target is not configured on this instance.'));
+      if(method==='GET'&&!deploymentRoute[2])return json(yield* attempt(()=>target.inspect()));
+      if(method==='POST'&&deploymentRoute[2]){
+        const input=yield* attempt(async()=>decode(deploymentAction,await body(request)));
+        return json(yield* attempt(()=>target.action(input)),202);
       }
     }
     if (path === "/state" && method === "GET")

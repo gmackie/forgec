@@ -2,6 +2,7 @@ import React, {
   lazy,
   Suspense,
   useEffect,
+  useCallback,
   useState,
   useRef,
   type ReactNode,
@@ -40,10 +41,14 @@ type Api = <T>(
 ) => Promise<T>;
 const ForgeEditor = lazy(() => import("./editor/editor.js").then(m => ({ default: m.ForgeEditor })));
 
-type Page = "Editor" | "Apps" | "Registry" | "Activity" | "Settings";
+const DeploymentWorkspace=lazy(()=>import('./operations.js').then(m=>({default:m.DeploymentWorkspace})));
+const FunctionPlayground=lazy(()=>import('./operations.js').then(m=>({default:m.FunctionPlayground})));
+type Page = "Editor" | "Apps" | "Deployments" | "Playground" | "Registry" | "Activity" | "Settings";
 const pages = [
   { name: "Editor", icon: SquaresFourIcon },
   { name: "Apps", icon: SquaresFourIcon },
+  { name: "Deployments", icon: CubeIcon },
+  { name: "Playground", icon: ShieldCheckIcon },
   { name: "Registry", icon: PackageIcon },
   { name: "Activity", icon: ClockCounterClockwiseIcon },
   { name: "Settings", icon: GearSixIcon },
@@ -457,10 +462,11 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
     revision: number;
   };
   const [dialog, setDialogState] = useState<DialogState | null>(null);
+  const [runtimeTarget,setRuntimeTarget]=useState<string|undefined>();
   const session = useRef(0);
   const setDialog = (next: Omit<DialogState, "revision"> | null) =>
     setDialogState(next ? { ...next, revision: state?.revision ?? 0 } : null);
-  const api: Api = async (path, method = "GET", body, revision) => {
+  const api: Api = useCallback(async (path, method = "GET", body, revision) => {
     const epoch = session.current;
     const response = await fetcher(`/api${path}`, {
       method,
@@ -476,7 +482,7 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
     if (!response.ok)
       throw new Error(data.error || `Request failed (${response.status})`);
     return data as never;
-  };
+  },[token,fetcher]);
   async function refresh() {
     const epoch = session.current;
     setBusy(true);
@@ -664,6 +670,8 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
           </div>
         </header>
         <main className="content">
+          {page==='Deployments'&&<Suspense fallback={<p>Loading deployments…</p>}><DeploymentWorkspace api={api} onTest={id=>{setRuntimeTarget(id);setPage('Playground');}}/></Suspense>}
+          {page==='Playground'&&<Suspense fallback={<p>Loading playground…</p>}><FunctionPlayground api={api} initialTarget={runtimeTarget}/></Suspense>}
           {page === "Editor" ? <Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} /></Suspense> : null}
           <ErrorMessage error={error} />
           {notice ? (

@@ -1,3 +1,5 @@
+import {runtimeConnections} from "./runtime-control.js";
+import {deploymentConnections} from "./deployment-control.js";
 import type { D1Database } from "@cloudflare/workers-types";
 import { gitRepositories } from "./git.js";
 import { createApi } from "./api.js";
@@ -55,6 +57,8 @@ export default {
         runtime: "Cloudflare Workers",
         registry: await registryFrom(env),
         git: gitRepositories(env),
+  runtimes: runtimeConnections(env),
+  deployments: deploymentConnections(env),
       });
       return secure(await api(request));
     } catch (error) {

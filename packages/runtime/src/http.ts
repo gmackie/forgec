@@ -43,7 +43,7 @@ interface Route {
 /** FORGE-056 discovery document: identity, digests, features and links. Counts, not a catalogue; the OpenAPI projection carries operations. */
 export function discovery(model: Model, auth: AuthHost): Record<string, unknown> {
   const b = model.bundle;
-  const features = ["changesets", "imports", "admin.portability", "governance"];
+  const features = ["changesets", "imports", "admin.portability", "governance", "invocation-preconditions"];
   if (model.workflows.length) features.push("workflows");
   if (b.realtime && (b.realtime as { streams?: unknown[] }).streams?.length) features.push("realtime");
   if (model.views.length || model.projections.length || model.caches.length) features.push("readmodels");
@@ -224,13 +224,15 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const principal = await options.auth.authenticate(req);
     if (principal instanceof ForgeError) return problem(principal, requestId);
 
+    if (req.headers.has("x-forge-if-build") && req.headers.get("x-forge-if-build") !== model.bundle.buildHash)
+      return new Response(JSON.stringify({code:"BuildChanged",detail:"Reload the runtime contract before invoking."}), {status:409,headers:{"content-type":"application/problem+json","x-request-id":requestId}});
     const mount = options.mounts?.[url.pathname];
     if (mount) return mount(req, principal, requestId);
 
     // FORGE-056: bounded discovery metadata. Compatibility evaluation input, never deployment trust:
     // a client that finds a different digest runs `forgec compat`, it does not assume equivalence.
     if (req.method === "GET" && path[0] === "forge" && path.length === 2) {
-      const meta = { "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=60", "x-request-id": requestId };
+      const meta = { "x-forge-build": model.bundle.buildHash, "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=60", "x-request-id": requestId };
       if (path[1] === "discovery") return new Response(JSON.stringify(discovery(model, options.auth)), { status: 200, headers: meta });
       if (path[1] === "openapi.json") {
         if (!model.bundle.openapi) return problem(err("NotFound", "this build carries no OpenAPI projection"), requestId);

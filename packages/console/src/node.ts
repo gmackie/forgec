@@ -1,3 +1,5 @@
+import {runtimeConnections} from "./runtime-control.js";
+import {deploymentConnections} from "./deployment-control.js";
 import { createServer } from "node:http";
 import { readFile, mkdir } from "node:fs/promises";
 import { resolve, extname, dirname } from "node:path";
@@ -29,6 +31,8 @@ const api = createApi({
   runtime: "Docker / Node",
   registry: await registryFrom(config),
   git: gitRepositories(config),
+  runtimes: runtimeConnections(config),
+  deployments: deploymentConnections(config),
 });
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "web");
 const types: Record<string, string> = {

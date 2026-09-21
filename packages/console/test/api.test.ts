@@ -190,3 +190,12 @@ it("returns 400 for malformed Git commit input without calling the provider", as
   );
   expect(response.status).toBe(400);
 });
+
+it('requires console authentication before exposing runtime and deployment connections',async()=>{
+ const {call}=setup();
+ for(const path of ['/runtime/targets','/deployments/targets']){
+  expect((await call(path,'GET',undefined,undefined,false)).status).toBe(401);
+  expect(await (await call(path)).json()).toEqual({targets:[]});
+ }
+ expect((await call('/runtime/targets/missing/invoke','POST',{operationId:'x',input:{},buildHash:'b'})).status).toBe(404);
+});
