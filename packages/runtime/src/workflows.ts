@@ -172,6 +172,26 @@ export interface WorkflowDriver {
   wake(tenant: string, wf: WorkflowDecl, inst: Instance): Promise<void>;
 }
 
+/**
+ * The idempotency key for one execution of one workflow step.
+ *
+ * It identifies *which execution of which step of which instance* this is, and nothing else. In
+ * particular it must not depend on the instance version: the version moves whenever anything
+ * else touches the instance — a delivered signal, a competing driver — and those are precisely
+ * the events that make a step's save conflict and force it to be retried. A version-derived key
+ * changes on exactly the retry that needs to be recognised as a replay, so the activity commits
+ * twice: the second attempt then fails with VersionConflict against the record the first attempt
+ * already moved, and the workflow reports that instead of its real outcome.
+ *
+ * Counting how often the step already appears in history gives a key that is stable across
+ * retries (an unsaved attempt adds nothing to history) and distinct per pass when a loop brings
+ * the program back to the same step.
+ */
+export function stepIdempotencyKey(inst: { id: string; history: readonly { step: string }[] }, stepId: string): string {
+  const pass = inst.history.filter((h) => h.step === stepId).length;
+  return `wf:${inst.id}:${stepId}:${pass}`;
+}
+
 export class Workflows {
   private readonly programs = new Map<string, Node[]>();
   /** Provider driver; absent for the reference executor (the sweep is the timer). */
@@ -387,7 +407,7 @@ export class Workflows {
     });
   }
 
-  /** One node transition; returns the updated instance (unsaved) or null when blocked. */
+    /** One node transition; returns the updated instance (unsaved) or null when blocked. */
   private step(tenant: string, wf: WorkflowDecl, inst: Instance, node: Node, now: string): Effect.Effect<Instance | null, ForgeError, RuntimeServices> {
     const self = this;
     const s = node.step;
@@ -396,7 +416,7 @@ export class Workflows {
       switch (s.kind) {
         case "call": {
           const { opId, input } = self.lower(s, env);
-          const callCtx: CallContext = { tenant, actor: "workflow", requestId: `${inst.id}:${s.id}`, idempotencyKey: `wf:${inst.id}:${inst.version}:${s.id}` };
+          const callCtx: CallContext = { tenant, actor: "workflow", requestId: `${inst.id}:${s.id}`, idempotencyKey: stepIdempotencyKey(inst, s.id) };
           const exit = yield* Effect.exit(self.engine.callInternal(opId, input, callCtx));
           if (exit._tag === "Failure") {
             const fe = Cause.squash(exit.cause);

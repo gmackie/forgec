@@ -43,7 +43,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - id: v
         name: the tag, the crates and every package must agree on one version
-        run: node scripts/check-release-version.mjs "${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+        # On a tag, everything must match the tag. On a manual rehearsal GITHUB_REF_NAME is a
+        # branch, so pass nothing and let the script check the workspace agrees with itself.
+        run: node scripts/check-release-version.mjs "${TAG}" >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ github.event_name == 'push' && github.ref_name || '' }}
       - run: PGPASSWORD=forge psql -h localhost -U forge -d postgres -c "CREATE DATABASE forge_node" -c "CREATE DATABASE forge_temporal"
       - run: pnpm install --frozen-lockfile
       - run: cargo test --workspace --locked
@@ -151,7 +155,7 @@ jobs:
           DRY_RUN: ${{ env.DRY_RUN }}
 
   homebrew:
-    name: homebrew tap (gmacko)
+    name: homebrew tap (gmackorg)
     needs: [verify, github-release, binaries]
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest

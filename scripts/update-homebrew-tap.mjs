@@ -58,9 +58,11 @@ if (assets.length === 0) throw new Error(`no ${FORMULA}-${VERSION}-<target>.tar.
 
 const url = (a) => `https://github.com/${REPO}/releases/download/v${VERSION}/${a.file}`;
 const className = FORMULA.split(/[-_]/).map((p) => p[0].toUpperCase() + p.slice(1)).join("");
+// Two-space Ruby indentation throughout: `brew style` rejects anything else,
+// and a formula that fails style review is a formula nobody upstreams.
 const block = (os, cpu) => {
   const a = assets.find((x) => x.os === os && x.cpu === cpu);
-  return a ? `        url "${url(a)}"\n        sha256 "${a.sha256}"` : null;
+  return a ? `      url "${url(a)}"\n      sha256 "${a.sha256}"` : null;
 };
 
 const platform = (os) => {
@@ -68,9 +70,9 @@ const platform = (os) => {
   const intel = block(os, "intel");
   if (!arm && !intel) return "";
   const parts = [];
-  if (arm) parts.push(`      if Hardware::CPU.arm?\n${arm}`);
-  if (intel) parts.push(`      ${arm ? "els" : ""}if Hardware::CPU.intel?\n${intel}`);
-  return `    on_${os} do\n${parts.join("\n")}\n      end\n    end\n`;
+  if (arm) parts.push(`    if Hardware::CPU.arm?\n${arm}`);
+  if (intel) parts.push(`    ${arm ? "els" : ""}if Hardware::CPU.intel?\n${intel}`);
+  return `  on_${os} do\n${parts.join("\n")}\n    end\n  end\n\n`;
 };
 
 const desc = {
@@ -84,8 +86,7 @@ class ${className} < Formula
   version "${VERSION}"
   license "Apache-2.0"
 
-${platform("macos")}${platform("linux")}
-  def install
+${platform("macos")}${platform("linux")}  def install
     bin.install "${FORMULA}"
   end
 

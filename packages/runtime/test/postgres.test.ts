@@ -77,6 +77,34 @@ describe.skipIf(!url)("PostgreSQL adapter", () => {
   });
   afterAll(async () => { await pool?.end(); });
 
+  // Under SERIALIZABLE every commit touches `_forge_assert` and `forge_outbox`, so concurrent
+  // commits are pivot candidates even when they share no business state. 40001 is the documented,
+  // expected outcome there and the documented remedy is to retry — so writes that do not conflict
+  // logically must still all succeed. D1 sees this rarely (one writer); PostgreSQL sees it under
+  // any real concurrency, which is exactly the portability gap this asserts against.
+  it("concurrent commits that share no business state all succeed despite serialization conflicts", async () => {
+    const A = "@acme/commerce/_";
+    // Its own pool: the shared one caps at 4 connections, which serializes the calls and hides
+    // the conflict this is about.
+    const hot = new pg.Pool({ connectionString: url, max: 16 });
+    const executor = rawPgExecutor(hot);
+    const target = new PgTarget(executor, `pg-contention-${Date.now().toString(36)}`);
+    const tenant = `pg-contention-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const N = 64;
+    const results = await Promise.all(
+      Array.from({ length: N }, (_, i) =>
+        target.call(`${A}/Customer.create`, { code: `C${String(i).padStart(3, "0")}`, name: `Customer ${i}` }, { tenant, actor: "operator" }),
+      ),
+    );
+    const failed = results.filter((r) => !r.ok);
+    expect(failed, `${failed.length}/${N} concurrent creates failed: ${JSON.stringify(failed.slice(0, 3))}`).toEqual([]);
+    // and every one of them is actually durable, not merely reported as written
+    const ids = results.map((r) => (r.ok ? (r.value as { id: string }).id : ""));
+    const fetched = await Promise.all(ids.map((id) => target.call(`${A}/Customer.get`, { id }, { tenant, actor: "operator" })));
+    expect(fetched.filter((r) => !r.ok)).toEqual([]);
+    await hot.end();
+  }, 120_000);
+
   it("pooled connections never retain transaction-local tenant context (PAR-087)", async () => {
     const one = new pg.Pool({ connectionString: url, max: 1 });
     const ex = rawPgExecutor(one);

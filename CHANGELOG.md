@@ -60,10 +60,46 @@ and developed in the open at https://github.com/gmackie/forgec.
   gitignored copy from `FORGE_D1_DATABASE_ID`. A public repository should not
   name someone else's database, and an editable placeholder is a placeholder
   waiting to be committed by accident.
+### Fixed
+
+Two concurrency defects, both found by CI on a clean machine after they had
+hidden behind warm local state. Both were real: the first diagnosis of the
+workflow one — "a flaky test, not a flaky runtime" — was wrong, and the poll
+budget it widened was treating a symptom.
+
+- **A workflow activity could run twice and report the wrong outcome.** The
+  idempotency key for a workflow step embedded the *instance version*. That
+  version moves whenever anything else touches the instance — a delivered
+  signal, a competing driver — which is exactly what makes a step's save
+  conflict and forces a retry. So the retry presented a key the idempotency
+  store had never seen, the already-committed activity ran a second time, and
+  it failed with `VersionConflict` against the record the first attempt had
+  itself just moved. The workflow then reported `VersionConflict` instead of
+  its real result: in the reference application, an order that should have
+  failed with `ShortPayment` and been cancelled. Reproduced at roughly 1 run in
+  6 under load. The key is now `wf:<instance>:<step>:<pass>`, stable across
+  retries and distinct per loop iteration (`stepIdempotencyKey`, exported and
+  unit-tested).
+
+- **Independent concurrent writes failed on PostgreSQL.** Every commit writes
+  `_forge_assert` and may write `forge_outbox`, so under `SERIALIZABLE` writers
+  that share no business state still collide on predicate locks. A
+  serialization failure there is the expected outcome and the documented remedy
+  is to retry, but `PostgresStorage` inherited D1's retry budget — 3 attempts
+  inside 75ms, tuned for a single-writer store where conflicts are rare. 64
+  concurrent creates of distinct customers produced 10 `TransientConflict`
+  503s. The retry budget and backoff are now overridable per adapter, and
+  PostgreSQL uses 10 attempts with exponential backoff and jitter (~2s). Calls
+  that succeed on D1 and DynamoDB now succeed on PostgreSQL, which is the whole
+  point.
+
+- `pnpm differential` no longer dies with `ENOENT` on the report file when the
+  suite fails before writing one. It reported a missing file instead of the
+  failure that was printed directly above it.
+
 - The workflow-failure assertion in `conformance/scenarios/workflows.json` now
-  gets the same 30s poll budget as the workflow-completion assertion beside it.
-  At 5s it failed under parallel load while passing in isolation — a flaky
-  test, not a flaky runtime.
+  gets the same 30s poll budget as the workflow-completion assertion beside it
+  — consistency between two assertions of the same kind, not a fix.
 - Re-pinned the adapter capability manifest digests in `examples/acme`, whose
   IDs moved to the `@forgegraph` scope.
 - `cargo clippy -D warnings` and `cargo fmt --check` now pass workspace-wide

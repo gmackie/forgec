@@ -24,6 +24,7 @@ export interface D1Stmt {
 
 const st = (sql: string, ...params: unknown[]): SqlStatement => ({ sql, params });
 
+/** D1 serializes writes behind one writer, so a transient conflict is rare and clears quickly. */
 const RETRY_ATTEMPTS = 3;
 /** D1: 100 bound parameters per statement; a batch may hold many statements. Budget counts statements conservatively. */
 const D1_BATCH_STATEMENT_LIMIT = 100;
@@ -273,14 +274,25 @@ export class D1Storage implements StorageAdapter {
     return this.commitAll([plan]);
   }
 
+  /**
+   * How many times a transient conflict is re-attempted, and how long to wait between attempts.
+   * Both are overridable because the right budget is a property of the engine's concurrency
+   * control, not of this protocol: a single-writer store conflicts rarely, a store using
+   * serializable snapshot isolation conflicts whenever independent writers overlap.
+   */
+  protected readonly retryAttempts: number = RETRY_ATTEMPTS;
+  protected retryDelayMs(attempt: number): number {
+    return Math.floor(Math.random() * 25 * attempt);
+  }
+
   commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
       for (let attempt = 1; ; attempt++) {
         const outcome = yield* self.commitOnce(plans);
         if (outcome === "ok") return;
-        if (outcome.code !== "TransientConflict" || attempt >= RETRY_ATTEMPTS) return yield* Effect.fail(outcome);
-        yield* Effect.sleep(Math.floor(Math.random() * 25 * attempt));
+        if (outcome.code !== "TransientConflict" || attempt >= self.retryAttempts) return yield* Effect.fail(outcome);
+        yield* Effect.sleep(self.retryDelayMs(attempt));
       }
     });
   }

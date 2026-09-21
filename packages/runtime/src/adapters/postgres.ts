@@ -146,6 +146,24 @@ export class PostgresStorage extends D1Storage {
     super(executor, model);
     (this as { name: string }).name = `postgres/${executor.facade}`;
   }
+
+  /**
+   * A serialization failure under SERIALIZABLE is the expected outcome of concurrency, not a
+   * fault: PostgreSQL's own guidance is to retry the whole transaction. Every commit in this
+   * protocol writes `_forge_assert` and may write `forge_outbox`, so writers that share no
+   * business state still overlap on predicate locks and conflict. Inheriting D1's budget (3
+   * attempts inside 75ms) meant independent concurrent writes failed with a 503 at a
+   * double-digit rate — the same calls that succeed on D1 and DynamoDB, which is precisely the
+   * kind of divergence the differential suite exists to catch.
+   *
+   * Exponential with jitter, ~2s of total budget before giving up. A caller that still sees
+   * TransientConflict is seeing real, sustained contention rather than an artefact of the
+   * isolation level.
+   */
+  protected override readonly retryAttempts = 10;
+  protected override retryDelayMs(attempt: number): number {
+    return Math.floor(2 ** attempt * 2 + Math.random() * 10 * attempt);
+  }
 }
 
 export function createPostgresStorage(pool: Pool, model: Model): PostgresStorage {

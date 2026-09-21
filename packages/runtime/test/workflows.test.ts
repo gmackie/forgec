@@ -13,6 +13,7 @@ import { Engine, type CallContext } from "../src/engine.js";
 import { ForgeError } from "../src/errors.js";
 import { MemoryStorage } from "../src/adapters/memory.js";
 import { testLayer } from "../src/testing.js";
+import { stepIdempotencyKey } from "../src/workflows.js";
 import { externals, functions } from "../../../examples/acme/impl/index.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;
@@ -105,6 +106,26 @@ describe("workflow execution", () => {
     expect(terminal).toHaveLength(1);
     expect(["failed", "sleeping", "completed"]).toContain(st.status);
     if (st.status === "failed") expect(st.error.code).toBe(`${W}.PaymentTimeout`);
+  });
+
+  // An activity's idempotency key identifies *which execution of which step* it is. It must
+  // therefore survive anything that changes the instance for other reasons — a delivered signal,
+  // another driver's write — because those are exactly the events that force the step to be
+  // retried. Keying on the instance version instead meant the retry presented a key the
+  // idempotency store had never seen, so the already-committed activity ran a second time and
+  // failed with VersionConflict against the record it had itself just moved.
+  it("a step's idempotency key survives the instance version changing underneath it", () => {
+    const at = "2026-09-21T00:00:00.000Z";
+    const before = { id: "wfp_1", version: 7, history: [] as { step: string; kind: string; at: string }[] };
+    const bumpedByASignal = { ...before, version: 9 };
+    expect(stepIdempotencyKey(bumpedByASignal, "cancel")).toBe(stepIdempotencyKey(before, "cancel"));
+
+    // but a second pass over the same step is a different execution and must not replay the first
+    const secondPass = { ...before, version: 9, history: [{ step: "cancel", kind: "call", at }] };
+    expect(stepIdempotencyKey(secondPass, "cancel")).not.toBe(stepIdempotencyKey(before, "cancel"));
+
+    // and two steps of the same instance never share a key
+    expect(stepIdempotencyKey(before, "cancel")).not.toBe(stepIdempotencyKey(before, "submit"));
   });
 
   it("a retry after a crash between an activity and its receipt does not re-run the activity", async () => {
