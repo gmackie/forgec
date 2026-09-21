@@ -20,6 +20,7 @@ import { Workflows } from "./workflows.js";
 import { Schedules } from "./schedules.js";
 import { Realtime } from "./realtime.js";
 import { Telemetry, type TraceContext } from "./telemetry.js";
+import { Portability } from "./portability.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -90,6 +91,9 @@ export class Engine {
     }
     if (/\/imports\.(inspect|stage)$/.test(opId)) {
       return self.imports.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
+    }
+    if (/\/admin\.(export|import|verify|fence)$/.test(opId)) {
+      return self.portability.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
     }
     const ref = self.model.operation(opId);
     if (!ref) {
@@ -190,6 +194,7 @@ export class Engine {
   private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
+      if (yield* self.portability.isFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
       const plan = yield* self.planFor(opId, body, ctx);
       yield* (yield* Storage).commit(plan);
       return self.resultOf(plan);
@@ -205,6 +210,7 @@ export class Engine {
   readonly schedules = new Schedules(this);
   readonly realtime = new Realtime(this);
   readonly telemetry = new Telemetry(this);
+  readonly portability = new Portability(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {
@@ -244,6 +250,14 @@ export class Engine {
     const values = fields.map((f) => rec[f]);
     if (values.some((v) => v === null || v === undefined)) return null; // optional nulls reserve no claim
     return encodeIdentity([r.id, u.name, ...values.map(String)]);
+  }
+
+  /** Claims and guards for an imported record (plan §22): the same rules a create would apply. */
+  claimChangesFor(r: Resource, rec: Wire): ClaimChange[] {
+    return this.claimChanges(r, null, rec);
+  }
+  referenceGuardsFor(r: Resource, rec: Wire): ReferenceGuard[] {
+    return this.referenceGuards(r, rec, null);
   }
 
   private claimChanges(r: Resource, before: Wire | null, after: Wire): ClaimChange[] {
@@ -574,6 +588,7 @@ export class Engine {
           commitAll: (...a) => storage.commitAll(...a),
           budget: (...a) => storage.budget(...a),
           getDocument: (...a) => storage.getDocument(...a),
+          exportPage: (...a) => storage.exportPage(...a),
           putDocument: (...a) => storage.putDocument(...a),
           outboxSweep: (...a) => storage.outboxSweep(...a),
           outboxTenants: () => storage.outboxTenants(),

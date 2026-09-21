@@ -5,7 +5,7 @@
  * ClientRequestToken derived from the operation id.
  */
 import { CreateTableCommand, DescribeTableCommand, DynamoDBClient, ResourceNotFoundException, UpdateTableCommand, waitUntilTableExists, type AttributeValue } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, TransactWriteCommand, UpdateCommand, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, ScanCommand, TransactWriteCommand, UpdateCommand, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { Effect } from "effect";
 import { encodeIdentity, sortKey } from "../codecs.js";
@@ -326,6 +326,16 @@ export class DynamoStorage implements StorageAdapter {
   // ------------------------------------------------------------ documents
   private documentKey(tenant: string, kind: string, id: string) {
     return { PK: encodeIdentity(["T", tenant, "D", kind, id]), SK: "DOC" };
+  }
+
+  /** Entities have per-item partitions, so an export is a filtered Scan: admin-only, run behind the write fence. */
+  exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
+    return this.wrap(async () => {
+      const prefix = encodeIdentity(["T", tenant, "R", this.wire(r), "I", ""]);
+      const out = await this.doc.send(new ScanCommand({ TableName: this.table, ConsistentRead: true, FilterExpression: "begins_with(PK, :p) AND SK = :e", ExpressionAttributeValues: { ":p": prefix, ":e": "ENTITY" }, Limit: Math.max(limit * 4, 100), ...(cursor ? { ExclusiveStartKey: JSON.parse(cursor) as Record<string, unknown> } : {}) }));
+      const records = (out.Items ?? []).map((i) => this.toStored(r, i as Item));
+      return { records, next: out.LastEvaluatedKey ? JSON.stringify(out.LastEvaluatedKey) : null };
+    });
   }
 
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {

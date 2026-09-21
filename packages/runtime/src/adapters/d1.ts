@@ -239,6 +239,17 @@ export class D1Storage implements StorageAdapter {
     return { actions: plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
   }
 
+  exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
+    const t = this.map.table(r);
+    return this.wrap(async () => {
+      const where = r.decorators.tenant ? "tenant = ? AND id > ?" : "id > ?";
+      const bind = r.decorators.tenant ? [tenant, cursor ?? ""] : [cursor ?? ""];
+      const rows = await this.db.all<Record<string, unknown>>(st(`SELECT * FROM ${t.name} WHERE ${where} ORDER BY id LIMIT ?`, ...bind, limit + 1));
+      const page = rows.slice(0, limit).map((row) => this.map.fromRow(r, row));
+      return { records: page, next: rows.length > limit ? String(page[page.length - 1]!["id"]) : null };
+    });
+  }
+
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {
     return this.wrap(async () => {
       const row = await this.db.first<{ version: number; body: string }>(st("SELECT version, body FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", tenant, kind, id));

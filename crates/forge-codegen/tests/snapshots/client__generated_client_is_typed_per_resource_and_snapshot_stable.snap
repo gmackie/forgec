@@ -26,6 +26,15 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
 export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
+export interface Snapshot { version: "export/1"; package: string; tenant: string; exportedAt: string; manifest: { contractsVersion: string; buildHash: string; resources: string[] }; resources: Record<string, { count: number; hash: string; records: Record<string, unknown>[] }> }
+export interface VerifyReport { ok: boolean; verifiedAt: string; resources: Record<string, { expectedCount: number; actualCount: number; hashMatch: boolean; revisionMismatches: { id: string; expected: unknown; actual: unknown }[]; references: { checked: number; missing: number } }> }
+/** Provider switching (plan §22): operator-only. */
+export interface AdminApi {
+  export(): Promise<Snapshot>;
+  import(snapshot: Snapshot): Promise<{ imported: Record<string, number>; skipped: Record<string, number>; importedAt: string }>;
+  verify(snapshot: Snapshot): Promise<VerifyReport>;
+  fence(on: boolean): Promise<{ fenced: boolean }>;
+}
 export interface ScheduleStatus { source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }
 export interface ScheduleTick { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }
 export interface WorkflowInstance { id: string; workflow: string; version: number; status: "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled"; input: Record<string, unknown>; bindings: Record<string, unknown>; history: { step: string; kind: string; at: string }[]; waiting?: { step: string; message: string; correlationKey: string; dueAt?: string }; sleeping?: { step: string; dueAt: string }; output?: unknown; error?: { code: string; detail?: string } }
@@ -80,7 +89,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       if (input["limit"]) q.set("limit", String(input["limit"]));
       const qs = q.toString();
       if (qs) url += "?" + qs;
-    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "workflow.start" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
+    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "workflow.start" || spec.kind.startsWith("admin.") || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
       const { id: _id, ...rest } = input;
       void _id;
       body = JSON.stringify(spec.kind === "changeset.approve" ? rest : input);
@@ -187,6 +196,10 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/changesets.preview": { method: "GET", path: "/v1/changesets/{id}/preview", kind: "changeset.preview", resource: "changesets" },
   "@acme/commerce/_/changesets.approve": { method: "POST", path: "/v1/changesets/{id}/approve", kind: "changeset.approve", resource: "changesets" },
   "@acme/commerce/_/changesets.commit": { method: "POST", path: "/v1/changesets/{id}/commit", kind: "changeset.commit", resource: "changesets" },
+  "@acme/commerce/_/admin.export": { method: "POST", path: "/v1/admin/export", kind: "admin.export", resource: "admin" },
+  "@acme/commerce/_/admin.import": { method: "POST", path: "/v1/admin/import", kind: "admin.import", resource: "admin" },
+  "@acme/commerce/_/admin.verify": { method: "POST", path: "/v1/admin/verify", kind: "admin.verify", resource: "admin" },
+  "@acme/commerce/_/admin.fence": { method: "POST", path: "/v1/admin/fence", kind: "admin.fence", resource: "admin" },
   "@acme/commerce/_/imports.inspect": { method: "POST", path: "/v1/imports/inspect", kind: "import.inspect", resource: "imports" },
   "@acme/commerce/_/imports.stage": { method: "POST", path: "/v1/imports/stage", kind: "import.stage", resource: "imports" },
   "@acme/commerce/_/PendingOrders.query": { method: "GET", path: "/v1/views/pending-orders", kind: "view.query", resource: "PendingOrders" },
@@ -456,6 +469,7 @@ export interface ForgeClient {
   call(op: string, input: unknown, opts?: CallOptions): Promise<CallResult>;
   changesets: ChangesetsApi;
   imports: ImportsApi;
+  admin: AdminApi;
   customers: CustomerApi;
   departments: DepartmentApi;
   orders: OrderApi;
@@ -496,6 +510,12 @@ export function createClient(options: ClientOptions): ForgeClient {
     imports: {
       inspect: (input) => t.unwrap(t.call("@acme/commerce/_/imports.inspect", input)),
       stage: (input) => t.unwrap(t.call("@acme/commerce/_/imports.stage", input)),
+    },
+    admin: {
+      export: () => t.unwrap(t.call("@acme/commerce/_/admin.export", {})),
+      import: (snapshot) => t.unwrap(t.call("@acme/commerce/_/admin.import", { snapshot })),
+      verify: (snapshot) => t.unwrap(t.call("@acme/commerce/_/admin.verify", { snapshot })),
+      fence: (on) => t.unwrap(t.call("@acme/commerce/_/admin.fence", { on })),
     },
     views: {
       pendingOrders: { query: (params, page) => t.unwrap(t.call("@acme/commerce/_/PendingOrders.query", { params, ...(page ?? {}) })) },

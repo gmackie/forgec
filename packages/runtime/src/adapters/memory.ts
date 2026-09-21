@@ -153,6 +153,12 @@ export class MemoryStorage implements StorageAdapter {
     return { actions: plans.reduce((n, p) => n + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
   }
 
+  exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
+    const rows = [...this.table(tenant, r).values()].sort((a, b) => String(a["id"]).localeCompare(String(b["id"]))).filter((x) => !cursor || String(x["id"]) > cursor);
+    const page = rows.slice(0, limit).map((x) => structuredClone(x));
+    return Effect.succeed({ records: page, next: rows.length > limit ? String(page[page.length - 1]!["id"]) : null });
+  }
+
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {
     const d = this.documents.get(`${tenant}|${kind}|${id}`);
     return Effect.succeed(d ? structuredClone({ ...d.doc, _version: d.version }) : null);

@@ -82,6 +82,9 @@ pub fn client_ts(c: &Contracts) -> String {
     for (action, method, path) in [("propose", "POST", "/v1/changesets"), ("get", "GET", "/v1/changesets/{id}"), ("preview", "GET", "/v1/changesets/{id}/preview"), ("approve", "POST", "/v1/changesets/{id}/approve"), ("commit", "POST", "/v1/changesets/{id}/commit")] {
         let _ = writeln!(out, "  {:?}: {{ method: {:?}, path: {:?}, kind: {:?}, resource: \"changesets\" }},", format!("{pkg}/_/changesets.{action}"), method, path, format!("changeset.{action}"));
     }
+    for action in ["export", "import", "verify", "fence"] {
+        let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: {:?}, resource: \"admin\" }},", format!("{pkg}/_/admin.{action}"), format!("/v1/admin/{action}"), format!("admin.{action}"));
+    }
     for (action, path) in [("inspect", "/v1/imports/inspect"), ("stage", "/v1/imports/stage")] {
         let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: {:?}, resource: \"imports\" }},", format!("{pkg}/_/imports.{action}"), path, format!("import.{action}"));
     }
@@ -180,6 +183,7 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "  call(op: string, input: unknown, opts?: CallOptions): Promise<CallResult>;");
     let _ = writeln!(out, "  changesets: ChangesetsApi;");
     let _ = writeln!(out, "  imports: ImportsApi;");
+    let _ = writeln!(out, "  admin: AdminApi;");
     for r in &c.resources {
         let _ = writeln!(out, "  {}: {}Api;", camel_from_wire(&plural(&r.wire_name)), r.name);
     }
@@ -233,6 +237,12 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "    imports: {{");
     let _ = writeln!(out, "      inspect: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/imports.inspect"));
     let _ = writeln!(out, "      stage: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/imports.stage"));
+    let _ = writeln!(out, "    }},");
+    let _ = writeln!(out, "    admin: {{");
+    let _ = writeln!(out, "      export: () => t.unwrap(t.call({:?}, {{}})),", format!("{pkg}/_/admin.export"));
+    let _ = writeln!(out, "      import: (snapshot) => t.unwrap(t.call({:?}, {{ snapshot }})),", format!("{pkg}/_/admin.import"));
+    let _ = writeln!(out, "      verify: (snapshot) => t.unwrap(t.call({:?}, {{ snapshot }})),", format!("{pkg}/_/admin.verify"));
+    let _ = writeln!(out, "      fence: (on) => t.unwrap(t.call({:?}, {{ on }})),", format!("{pkg}/_/admin.fence"));
     let _ = writeln!(out, "    }},");
     let _ = writeln!(out, "    views: {{");
     for v in &c.views {
@@ -320,6 +330,15 @@ export interface ChangesetsApi {
 export interface Page<T> { items: T[]; next: string | null; limit: number }
 export interface ProjectionStatus { generation: number; status: string; lastProcessed: unknown }
 export interface CacheRead<T> { value: T; source: "cache" | "loader"; freshUntil: string }
+export interface Snapshot { version: "export/1"; package: string; tenant: string; exportedAt: string; manifest: { contractsVersion: string; buildHash: string; resources: string[] }; resources: Record<string, { count: number; hash: string; records: Record<string, unknown>[] }> }
+export interface VerifyReport { ok: boolean; verifiedAt: string; resources: Record<string, { expectedCount: number; actualCount: number; hashMatch: boolean; revisionMismatches: { id: string; expected: unknown; actual: unknown }[]; references: { checked: number; missing: number } }> }
+/** Provider switching (plan §22): operator-only. */
+export interface AdminApi {
+  export(): Promise<Snapshot>;
+  import(snapshot: Snapshot): Promise<{ imported: Record<string, number>; skipped: Record<string, number>; importedAt: string }>;
+  verify(snapshot: Snapshot): Promise<VerifyReport>;
+  fence(on: boolean): Promise<{ fenced: boolean }>;
+}
 export interface ScheduleStatus { source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }
 export interface ScheduleTick { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }
 export interface WorkflowInstance { id: string; workflow: string; version: number; status: "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled"; input: Record<string, unknown>; bindings: Record<string, unknown>; history: { step: string; kind: string; at: string }[]; waiting?: { step: string; message: string; correlationKey: string; dueAt?: string }; sleeping?: { step: string; dueAt: string }; output?: unknown; error?: { code: string; detail?: string } }
@@ -374,7 +393,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
       if (input["limit"]) q.set("limit", String(input["limit"]));
       const qs = q.toString();
       if (qs) url += "?" + qs;
-    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "workflow.start" || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
+    } else if (spec.kind === "create" || spec.kind === "function" || spec.kind === "workflow.start" || spec.kind.startsWith("admin.") || spec.kind === "changeset.propose" || spec.kind === "changeset.approve" || spec.kind === "import.inspect" || spec.kind === "import.stage") {
       const { id: _id, ...rest } = input;
       void _id;
       body = JSON.stringify(spec.kind === "changeset.approve" ? rest : input);

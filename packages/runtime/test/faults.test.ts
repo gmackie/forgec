@@ -26,7 +26,7 @@ function faultAfterCommit(inner: MemoryStorage, onCommitNumber: number): Storage
   return {
     ...inner,
     get: inner.get.bind(inner), findUnique: inner.findUnique.bind(inner), list: inner.list.bind(inner), countDependents: inner.countDependents.bind(inner),
-    getReceipt: inner.getReceipt.bind(inner), commitAll: inner.commitAll.bind(inner), budget: inner.budget.bind(inner), getDocument: inner.getDocument.bind(inner), putDocument: inner.putDocument.bind(inner),
+    getReceipt: inner.getReceipt.bind(inner), commitAll: inner.commitAll.bind(inner), budget: inner.budget.bind(inner), getDocument: inner.getDocument.bind(inner), putDocument: inner.putDocument.bind(inner), exportPage: inner.exportPage.bind(inner),
     outboxSweep: inner.outboxSweep.bind(inner), outboxTenants: inner.outboxTenants.bind(inner), overlapping: inner.overlapping.bind(inner), effectiveAt: inner.effectiveAt.bind(inner), children: inner.children.bind(inner), outboxClaim: inner.outboxClaim.bind(inner), outboxProgress: inner.outboxProgress.bind(inner), outboxDead: inner.outboxDead.bind(inner), outboxRedrive: inner.outboxRedrive.bind(inner), markProcessed: inner.markProcessed.bind(inner),
     commit: (plan: CommitPlan) => inner.commit(plan).pipe(Effect.flatMap(() => (++n === onCommitNumber ? Effect.fail(err("StorageUnavailable", "simulated crash after commit")) : Effect.void))),
   };

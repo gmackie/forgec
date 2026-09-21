@@ -142,6 +142,8 @@ export interface StorageAdapter {
   /** Consumer-side processed-message ledger (per subscription). Returns false when already recorded. */
   markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError>;
   /** Opaque JSON documents keyed by (tenant, kind, id): changesets, jobs, import staging. */
+  /** Admin export scan (plan §22): every stored row including soft-deleted ones, paged by an opaque cursor. */
+  exportPage(tenant: string, resource: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError>;
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError>;
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError>;
 }

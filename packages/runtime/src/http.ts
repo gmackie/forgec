@@ -46,7 +46,17 @@ function builtinRoutes(model: Model): Route[] {
     segments: path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
     ref: { op: { id: `${pkg}/_/imports.${action}`, kind: `import.${action}`, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] },
   });
+  const adm = (method: string, path: string, action: string): Route => ({
+    method,
+    segments: path.split("/").filter(Boolean).map((s) => ({ literal: s })),
+    ref: { op: { id: `${pkg}/_/admin.${action}`, kind: `admin.${action}`, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] },
+  });
   return [
+    // Provider switching (plan §22): operator-only canonical export/import/verify and the write fence.
+    adm("POST", "/v1/admin/export", "export"),
+    adm("POST", "/v1/admin/import", "import"),
+    adm("POST", "/v1/admin/verify", "verify"),
+    adm("POST", "/v1/admin/fence", "fence"),
     imp("POST", "/v1/imports/inspect", "inspect"),
     imp("POST", "/v1/imports/stage", "stage"),
     mk("POST", "/v1/changesets", "propose"),
@@ -129,7 +139,9 @@ function match(route: Route, path: string[]): Record<string, string> | null {
 export interface HttpOptions {
   auth: AuthHost;
   requestId?: (req: Request) => string;
+  /** Default 1 MiB; admin import bodies are allowed `adminMaxBodyBytes` (default 64 MiB). */
   maxBodyBytes?: number;
+  adminMaxBodyBytes?: number;
   /** Allowed browser origins (exact, or "*"). Absent = no CORS headers. */
   cors?: { origins: string[] };
 }
@@ -195,7 +207,8 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     let body: unknown = undefined;
     if (req.method === "POST" || req.method === "PATCH" || req.method === "PUT") {
       const text = await req.text();
-      if (text.length > maxBody) return problem(err("PayloadTooLarge", `body exceeds ${maxBody} bytes`), requestId);
+      const limit = matched.route.ref.op.kind.startsWith("admin.") ? (options.adminMaxBodyBytes ?? 64 * 1_048_576) : maxBody;
+      if (text.length > limit) return problem(err("PayloadTooLarge", `body exceeds ${limit} bytes`), requestId);
       if (text.length) {
         try {
           body = JSON.parse(text);
@@ -265,6 +278,10 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       case "changeset.propose":
       case "import.inspect":
       case "import.stage":
+      case "admin.export":
+      case "admin.import":
+      case "admin.verify":
+      case "admin.fence":
         input = (body ?? {}) as Record<string, unknown>;
         break;
       case "function":
