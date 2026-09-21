@@ -118,7 +118,39 @@ it("compiles every service desk demo file with the browser compiler", async () =
     const result = inspect({ ...example, currentFile: file.path });
     expect(result.error).toBeUndefined();
     expect(result.diagnostics).toEqual([]);
-    expect(result.tree.children.some(n => n.kind.endsWith("_DECL"))).toBe(true);
-    expect(result.symbols.some(s => s.name === "CustomerSupport")).toBe(true);
+    expect(result.tree.children.some((n) => n.kind.endsWith("_DECL"))).toBe(
+      true,
+    );
+    expect(result.symbols.some((s) => s.name === "CustomerSupport")).toBe(true);
   }
+});
+
+it("exposes authoritative field classifications for the data catalog", async () => {
+  const { example } = await import("../web/editor/example.js");
+  const result = inspect(example);
+  expect(
+    result.dataClasses?.find((c) => c.name === "ContactEmail"),
+  ).toMatchObject({
+    parent: "data.contact.email",
+    handling: "confidential",
+    personal: "yes",
+  });
+  expect(
+    result.dataSemantics?.fields.find(
+      (f) => f.resource.endsWith("/Contact") && f.field === "email",
+    ),
+  ).toMatchObject({
+    handling: "confidential",
+    personal: "yes",
+    evidence: "declared",
+  });
+  expect(
+    result.dataSemantics?.fields.find(
+      (f) => f.resource.endsWith("/Organization") && f.field === "name",
+    ),
+  ).toMatchObject({
+    class: "data.unknown",
+    handling: "restricted",
+    completeness: "unclassified",
+  });
 });

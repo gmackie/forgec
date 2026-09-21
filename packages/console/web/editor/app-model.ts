@@ -6,7 +6,7 @@ export const categories = [
   "Sources",
   "Shapes",
   "Purposes",
-  "Capabilities",
+  "Data catalog",
   "Types",
   "Data classes",
   "Events",
@@ -20,7 +20,6 @@ const kinds: Record<string, Category> = {
   SOURCE_DECL: "Sources",
   SHAPE_DECL: "Shapes",
   PURPOSE_DECL: "Purposes",
-  CAPABILITY_DECL: "Capabilities",
   TYPE_DECL: "Types",
   ENUM_DECL: "Types",
   DATA_CLASS_DECL: "Data classes",
@@ -57,16 +56,7 @@ export function appDeclarations(
         owner: node,
         source,
       };
-      return [
-        entry,
-        ...children(node, "CAPABILITY_DECL").map((cap, i) => ({
-          ...entry,
-          id: `${entry.id}:cap:${i}`,
-          name: `${entry.name}.${nameOf(source, cap)}`,
-          node: cap,
-          category: "Capabilities" as const,
-        })),
-      ];
+      return [entry];
     });
   });
 }

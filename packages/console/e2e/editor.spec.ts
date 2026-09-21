@@ -13,11 +13,25 @@ test("edits a resource explicitly, preserves source, undoes and downloads", asyn
   await login(page);
   await page.getByRole("button", { name: "Contact", exact: true }).click();
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
-  await expect(page.getByLabel("Field email name")).toBeEnabled();
-  await page.getByLabel("Field email name").fill("contactEmail");
-  await page.getByLabel("Field email name").press("Enter");
+  await page
+    .getByRole("button", { name: "Edit field email", exact: true })
+    .click();
+  await page.getByLabel("Field name", { exact: true }).fill("contactEmail");
+  await page.getByRole("button", { name: "Save field", exact: true }).click();
   await page.getByRole("button", { name: "Undo edit" }).click();
-  await expect(page.getByLabel("Field email name")).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Edit field email", exact: true }),
+  ).toBeEnabled();
+  await page
+    .getByRole("button", { name: "Access & purpose", exact: true })
+    .click();
+  await page
+    .locator(".capability-card")
+    .filter({
+      has: page.getByRole("heading", { name: "Support", exact: true }),
+    })
+    .getByRole("button", { name: "Configure", exact: true })
+    .click();
   await page.getByLabel("Allow update email in Support").uncheck();
   await page.getByRole("button", { name: "Source", exact: true }).click();
   await expect(page.getByLabel("Forge source")).toHaveValue(/update \{  \}/);
@@ -52,7 +66,13 @@ test("opens multi-file models without showing files and binds a shared purpose",
   ]);
   await page.getByRole("button", { name: "Person", exact: true }).click();
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
-  await expect(page.getByLabel("Field type name")).toBeEnabled();
+  await page
+    .getByRole("button", { name: "Access & purpose", exact: true })
+    .click();
+  await page.getByRole("combobox", { name: "Purpose to bind" }).click();
+  await page.getByRole("option", { name: "Service", exact: true }).click();
+  await page.getByRole("combobox", { name: "Capability to bind" }).click();
+  await page.getByRole("option", { name: "Basic", exact: true }).click();
   await page.getByRole("button", { name: "Bind purpose", exact: true }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
   await expect(page.getByLabel("Forge source")).toHaveValue(
@@ -73,19 +93,19 @@ test("loads demo safely and keeps a default edit through undo, redo and reload",
   await page.getByRole("button", { name: "Replace draft with demo" }).click();
   await page.getByRole("button", { name: "ServicePlan", exact: true }).click();
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
-  await expect(
-    page.getByLabel("Default value for includedHours"),
-  ).toBeEnabled();
-  await page.getByLabel("Default value for includedHours").fill("20");
-  await page.getByLabel("Default value for includedHours").press("Enter");
+  await page
+    .getByRole("button", { name: "Edit field includedHours", exact: true })
+    .click();
+  await page.getByLabel("Default value", { exact: true }).fill("20");
+  await page.getByRole("button", { name: "Save field", exact: true }).click();
   await page.getByRole("button", { name: "Undo edit" }).click();
-  await expect(page.getByLabel("Default value for includedHours")).toHaveValue(
-    "10",
-  );
+  await expect(
+    page.getByRole("row", { name: /^includedHours / }),
+  ).toContainText("10");
   await page.getByRole("button", { name: "Redo edit" }).click();
-  await expect(page.getByLabel("Default value for includedHours")).toHaveValue(
-    "20",
-  );
+  await expect(
+    page.getByRole("row", { name: /^includedHours / }),
+  ).toContainText("20");
   await page.reload();
   await page
     .getByLabel("Administrator token")

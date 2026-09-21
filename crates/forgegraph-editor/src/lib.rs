@@ -110,6 +110,28 @@ pub fn inspect(input: &str) -> Value {
         }
     }
     let compilation = compile(&package, &[]);
+    let data_semantics = compilation.ir.as_ref().map(|ir| {
+        forgegraph_semantic::taxonomy::DataSemantics::of(
+            ir,
+            &forgegraph_semantic::taxonomy::Taxonomy::core(),
+        )
+    });
+    let taxonomy = forgegraph_semantic::taxonomy::Taxonomy::core();
+    let data_classes: Vec<Value> = compilation
+        .ir
+        .as_ref()
+        .map(|ir| {
+            ir.modules
+                .iter()
+                .flat_map(|m| &m.data_classes)
+                .map(|c| {
+                    json!({"id":c.id,"name":c.name,"parent":c.extends,
+            "handling":taxonomy.handling_of(&c.extends),
+            "personal":taxonomy.node(&c.extends).map(|n| n.personal.as_str()).unwrap_or("unknown")})
+                })
+                .collect()
+        })
+        .unwrap_or_default();
     let diagnostics: Vec<Value> = compilation
         .diagnostics
         .iter()
@@ -127,7 +149,7 @@ pub fn inspect(input: &str) -> Value {
             diagnostic
         })
         .collect();
-    json!({"tree":syntax,"documents":documents,"symbols":symbols,"diagnostics":diagnostics,
+    json!({"tree":syntax,"documents":documents,"dataSemantics":data_semantics,"dataClasses":data_classes,"symbols":symbols,"diagnostics":diagnostics,
         "taxonomy":serde_json::from_str::<Value>(forgegraph_semantic::taxonomy::TAXONOMY_JSON).expect("built-in taxonomy"),
         "scalars":forgegraph_semantic::compiler::SCALARS})
 }

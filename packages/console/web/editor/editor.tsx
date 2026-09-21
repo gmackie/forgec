@@ -14,6 +14,13 @@ import {
   declarationSummary,
   type Category,
 } from "./app-model.js";
+import {
+  ResourceWorkspace,
+  FunctionWorkspace,
+  SourceWorkspace,
+  DataCatalog,
+} from "./workspace.js";
+import { named } from "./model.js";
 import { ReadDocument } from "./read-document.js";
 import { patch } from "./model.js";
 import type { GitProject, GitSnapshot } from "../../src/git.js";
@@ -652,81 +659,204 @@ export function ForgeEditor({ token = "" }: { token?: string }) {
         role="tablist"
         aria-label="Application declarations"
       >
-        {categories.map((c) => (
-          <Button
-            key={c}
-            role="tab"
-            aria-selected={category === c}
-            variant={category === c ? "secondary" : "ghost"}
-            onClick={() => {
-              setCategory(c);
+        {categories
+          .filter((c) =>
+            [
+              "Resources",
+              "Functions",
+              "Sources",
+              "Data catalog",
+              "Purposes",
+            ].includes(c),
+          )
+          .map((c) => (
+            <Button
+              key={c}
+              role="tab"
+              aria-selected={category === c}
+              variant={category === c ? "secondary" : "ghost"}
+              onClick={() => {
+                setCategory(c);
+                setSelected("");
+                setSearch("");
+                setView("visual");
+              }}
+            >
+              {c}{" "}
+              <span className="kind-count">
+                {c === "Data catalog"
+                  ? (analysis?.result.dataSemantics?.fields.length ?? 0)
+                  : entries.filter((e) => e.category === c).length}
+              </span>
+            </Button>
+          ))}
+        <Select
+          aria-label="More definitions"
+          value={
+            [
+              "Resources",
+              "Functions",
+              "Sources",
+              "Data catalog",
+              "Purposes",
+            ].includes(category)
+              ? "__more"
+              : category
+          }
+          items={{
+            __more: "More definitions",
+            ...Object.fromEntries(
+              categories
+                .filter(
+                  (c) =>
+                    ![
+                      "Resources",
+                      "Functions",
+                      "Sources",
+                      "Data catalog",
+                      "Purposes",
+                    ].includes(c),
+                )
+                .map((c) => [c, c]),
+            ),
+          }}
+          onValueChange={(value) => {
+            if (value !== "__more") {
+              setCategory(String(value) as Category);
               setSelected("");
               setSearch("");
               setView("visual");
-            }}
-          >
-            {c}{" "}
-            <span className="kind-count">
-              {entries.filter((e) => e.category === c).length}
-            </span>
-          </Button>
-        ))}
+            }
+          }}
+        />
       </div>
-      <div className="app-browser">
-        <aside className="app-declarations">
-          <Input
-            aria-label="Find declaration"
-            placeholder={`Find ${category.toLowerCase()}…`}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <nav aria-label={category}>
-            {visible.map((e) => (
-              <Button
-                key={e.id}
-                variant={entry?.id === e.id ? "secondary" : "ghost"}
-                onClick={() => choose(e.id)}
-              >
-                {e.name}
-                {e.module !== "_" && <small>{e.module}</small>}
-              </Button>
-            ))}
-          </nav>
-          {!visible.length && (
-            <p className="muted">No matching {category.toLowerCase()}.</p>
-          )}
-        </aside>
-        <section className="app-detail" aria-busy={!ready}>
-          {entry ? (
-            <>
-              <header className="app-detail-heading">
-                <div>
-                  <p className="eyebrow">{entry.category}</p>
-                  <h2>{entry.name}</h2>
-                  <p className="muted">{declarationSummary(entry)}</p>
-                </div>
-                <div className="editor-row">
-                  <Button size="sm" onClick={() => setView("visual")}>
-                    Document
-                  </Button>
-                  <Button size="sm" onClick={() => setView("source")}>
-                    Source
-                  </Button>
-                  <Button size="sm" onClick={() => setView("graph")}>
-                    Relationships
-                  </Button>
-                </div>
-              </header>
-              {view === "visual" &&
-                (!editing ? (
-                  <ReadDocument entry={entry} />
-                ) : (
-                  <fieldset
-                    className="visual-fieldset"
-                    disabled={!ready || gitBusy}
-                    aria-label="Visual Forge document"
-                  >
-                    {analysis && (
+      {category === "Data catalog" && analysis ? (
+        <DataCatalog
+          analysis={analysis.result}
+          entries={entries}
+          onSelect={choose}
+        />
+      ) : (
+        <div className="app-browser">
+          <aside className="app-declarations">
+            <Input
+              aria-label="Find declaration"
+              placeholder={`Find ${category.toLowerCase()}…`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <nav aria-label={category}>
+              {visible.map((e) => (
+                <Button
+                  key={e.id}
+                  aria-label={e.name}
+                  variant={entry?.id === e.id ? "secondary" : "ghost"}
+                  onClick={() => choose(e.id)}
+                >
+                  <span>{e.name}</span>
+                  <small className="declaration-preview">
+                    {declarationSummary(e)}
+                  </small>
+                  {e.module !== "_" && <small>{e.module}</small>}
+                </Button>
+              ))}
+            </nav>
+            {!visible.length && (
+              <p className="muted">No matching {category.toLowerCase()}.</p>
+            )}
+          </aside>
+          <section className="app-detail" aria-busy={!ready}>
+            {entry ? (
+              <>
+                <header className="app-detail-heading">
+                  <div>
+                    <p className="eyebrow">{entry.category}</p>
+                    {editing && named(entry.source, entry.node) ? (
+                      <Edit
+                        label="Declaration name"
+                        value={entry.name}
+                        onCommit={(value) => {
+                          if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(value))
+                            replaceEntry(
+                              patch(
+                                entry.source,
+                                named(entry.source, entry.node)!,
+                                value,
+                              ),
+                            );
+                          else setError("Use a valid declaration name.");
+                        }}
+                      />
+                    ) : (
+                      <h2>{entry.name}</h2>
+                    )}
+                    <p className="muted">{declarationSummary(entry)}</p>
+                  </div>
+                  <div className="editor-row">
+                    <Button size="sm" onClick={() => setView("visual")}>
+                      Document
+                    </Button>
+                    <Button size="sm" onClick={() => setView("source")}>
+                      Source
+                    </Button>
+                    <Button size="sm" onClick={() => setView("graph")}>
+                      Relationships
+                    </Button>
+                  </div>
+                </header>
+                {view === "visual" &&
+                  analysis &&
+                  (["RESOURCE_DECL", "FUNCTION_DECL", "SOURCE_DECL"].includes(
+                    entry.node.kind,
+                  ) ? (
+                    <fieldset
+                      className="visual-fieldset composer-fieldset"
+                      disabled={!ready || gitBusy}
+                      aria-label="Application document"
+                    >
+                      {entry.node.kind === "RESOURCE_DECL" ? (
+                        <ResourceWorkspace
+                          key={entry.id}
+                          entry={entry}
+                          entries={entries}
+                          analysis={analysis.result}
+                          editing={editing}
+                          onChange={replaceEntry}
+                          onError={setError}
+                          onSelect={choose}
+                        />
+                      ) : entry.node.kind === "FUNCTION_DECL" ? (
+                        <FunctionWorkspace
+                          key={entry.id}
+                          entry={entry}
+                          entries={entries}
+                          analysis={analysis.result}
+                          editing={editing}
+                          onChange={replaceEntry}
+                          onError={setError}
+                          onSelect={choose}
+                        />
+                      ) : (
+                        <SourceWorkspace
+                          key={entry.id}
+                          entry={entry}
+                          entries={entries}
+                          analysis={analysis.result}
+                          editing={editing}
+                          onChange={replaceEntry}
+                          onError={setError}
+                          onSelect={choose}
+                        />
+                      )}
+                    </fieldset>
+                  ) : !editing ? (
+                    <ReadDocument entry={entry} />
+                  ) : (
+                    <fieldset
+                      className="visual-fieldset"
+                      disabled={!ready || gitBusy}
+                      aria-label="Visual Forge document"
+                    >
                       <VisualDocument
                         key={`${analysis.id}:${entry.id}`}
                         source={entry.source}
@@ -735,116 +865,124 @@ export function ForgeEditor({ token = "" }: { token?: string }) {
                         onChange={replaceEntry}
                         onError={setError}
                       />
+                    </fieldset>
+                  ))}
+                {view === "source" && (
+                  <div className="source-pane">
+                    <label htmlFor="forge-source">
+                      {entry.name} · {entry.path}
+                    </label>
+                    {editing ? (
+                      <fieldset
+                        className="visual-fieldset"
+                        disabled={!ready || gitBusy}
+                      >
+                        <Edit
+                          key={entry.id}
+                          multiline
+                          label="Forge source"
+                          value={entry.source.slice(
+                            entry.node.start,
+                            entry.node.end,
+                          )}
+                          onCommit={(value) =>
+                            replaceEntry(patch(entry.source, entry.node, value))
+                          }
+                        />
+                      </fieldset>
+                    ) : (
+                      <Textarea
+                        id="forge-source"
+                        aria-label="Forge source"
+                        readOnly
+                        value={entry.source.slice(
+                          entry.node.start,
+                          entry.node.end,
+                        )}
+                      />
                     )}
-                  </fieldset>
-                ))}
-              {view === "source" && (
-                <div className="source-pane">
-                  <label htmlFor="forge-source">
-                    {entry.name} · {entry.path}
-                  </label>
-                  {editing ? (
-                    <Edit
-                      key={entry.id}
-                      multiline
-                      label="Forge source"
-                      value={entry.source.slice(
-                        entry.node.start,
-                        entry.node.end,
-                      )}
-                      onCommit={(value) =>
-                        replaceEntry(patch(entry.source, entry.node, value))
-                      }
-                    />
-                  ) : (
-                    <Textarea
-                      id="forge-source"
-                      aria-label="Forge source"
-                      readOnly
-                      value={entry.source.slice(
-                        entry.node.start,
-                        entry.node.end,
-                      )}
-                    />
-                  )}
-                  <Button onClick={() => download(entry.path, entry.source)}>
-                    Download file
-                  </Button>
-                </div>
-              )}
-              {view === "graph" && ready && analysis && (
-                <Relationships
-                  analysis={analysis.result}
-                  source={file.text}
-                  currentFile={file.path}
-                  onOpenFile={(path) => {
-                    const target = entries.find((e) => e.path === path);
-                    if (target) choose(target.id);
+                    <Button onClick={() => download(entry.path, entry.source)}>
+                      Download file
+                    </Button>
+                  </div>
+                )}
+                {view === "graph" && ready && analysis && (
+                  <Relationships
+                    analysis={analysis.result}
+                    source={file.text}
+                    currentFile={file.path}
+                    onOpenFile={(path) => {
+                      const target = entries.find((e) => e.path === path);
+                      if (target) choose(target.id);
+                    }}
+                    onSelect={(node) => {
+                      const target = entries.find(
+                        (e) =>
+                          e.path === file.path && e.node.start === node.start,
+                      );
+                      if (target) choose(target.id);
+                    }}
+                  />
+                )}
+              </>
+            ) : (
+              <div className="editor-empty">
+                {analysis
+                  ? `No ${category.toLowerCase()} yet.`
+                  : "Loading the Forge application…"}
+              </div>
+            )}
+            {editing && (
+              <details className="create-definition">
+                <summary>Create a definition</summary>
+                <form
+                  className="declaration-builder"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(newName)) return;
+                    const templates: Record<string, string> = {
+                      resource: `export resource ${newName} @tenant @timestamps @versioned {\n  id : id\n}`,
+                      shape: `export shape ${newName} {\n  value : text\n}`,
+                      purpose: `export purpose ${newName}`,
+                      dataClass: `export dataClass ${newName} extends data.unknown`,
+                      enum: `export enum ${newName} {\n  First = "first"\n}`,
+                      type: `export type ${newName} = text`,
+                      function: `export function ${newName} {\n}`,
+                      source: `source ${newName} {\n  cron "0 8 * * *"\n  timezone "UTC"\n}`,
+                    };
+                    update(file.text + "\n" + templates[newKind] + "\n");
+                    setNewName("");
                   }}
-                  onSelect={(node) => {
-                    const target = entries.find(
-                      (e) =>
-                        e.path === file.path && e.node.start === node.start,
-                    );
-                    if (target) choose(target.id);
-                  }}
-                />
-              )}
-            </>
-          ) : (
-            <div className="editor-empty">
-              {analysis
-                ? `No ${category.toLowerCase()} yet.`
-                : "Loading the Forge application…"}
-            </div>
-          )}
-          {editing && (
-            <form
-              className="declaration-builder"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(newName)) return;
-                const templates: Record<string, string> = {
-                  resource: `export resource ${newName} @tenant @timestamps @versioned {\n  id : id\n}`,
-                  shape: `export shape ${newName} {\n  value : text\n}`,
-                  purpose: `export purpose ${newName}`,
-                  dataClass: `export dataClass ${newName} extends data.unknown`,
-                  enum: `export enum ${newName} {\n  First = "first"\n}`,
-                  type: `export type ${newName} = text`,
-                  function: `export function ${newName} {\n}`,
-                  source: `source ${newName} {\n  cron "0 8 * * *"\n  timezone "UTC"\n}`,
-                };
-                update(file.text + "\n" + templates[newKind] + "\n");
-                setNewName("");
-              }}
-            >
-              <Select
-                aria-label="Declaration kind"
-                value={newKind}
-                onValueChange={(v) => setNewKind(String(v))}
-                items={{
-                  resource: "Resource",
-                  shape: "Shape",
-                  purpose: "Purpose",
-                  dataClass: "Data class",
-                  enum: "Enum",
-                  type: "Type alias",
-                  function: "Function",
-                  source: "Source",
-                }}
-              />
-              <Input
-                aria-label="New declaration name"
-                placeholder="Declaration name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                required
-              />
-              <Button type="submit">Add declaration</Button>
-            </form>
-          )}
-        </section>
-      </div>
+                >
+                  <Select
+                    aria-label="Declaration kind"
+                    value={newKind}
+                    onValueChange={(v) => setNewKind(String(v))}
+                    items={{
+                      resource: "Resource",
+                      shape: "Shape",
+                      purpose: "Purpose",
+                      dataClass: "Data class",
+                      enum: "Enum",
+                      type: "Type alias",
+                      function: "Function",
+                      source: "Source",
+                    }}
+                  />
+                  <Input
+                    aria-label="New declaration name"
+                    placeholder="Declaration name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    required
+                  />
+                  <Button type="submit">Add declaration</Button>
+                </form>
+              </details>
+            )}
+          </section>
+        </div>
+      )}
       <footer className="editor-status">
         <span>{saved}</span>
         <span role="status">

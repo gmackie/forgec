@@ -23,7 +23,29 @@ export interface Diagnostic {
   end: number;
   suggestion?: string;
 }
+export interface FieldSemantics {
+  resource: string;
+  field: string;
+  class: string;
+  ancestors: string[];
+  handling: string;
+  personal: string;
+  identifiability: string;
+  evidence: string;
+  completeness: string;
+}
 export interface Analysis {
+  dataClasses?: {
+    id: string;
+    name: string;
+    parent: string;
+    handling: string;
+    personal: string;
+  }[];
+  dataSemantics?: {
+    fields: FieldSemantics[];
+    summary: Record<string, number>;
+  } | null;
   tree: SyntaxNode;
   documents: { path: string; module: string; tree: SyntaxNode }[];
   symbols: { name: string; kind: string; file: string }[];

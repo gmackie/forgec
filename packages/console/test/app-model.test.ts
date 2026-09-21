@@ -11,9 +11,7 @@ it("indexes app declarations across files with resource-scoped capabilities", ()
   expect(
     entries.filter((e) => e.category === "Resources").map((e) => e.name),
   ).toEqual(["Organization", "Contact", "Ticket", "Reply", "ServicePlan"]);
-  expect(entries.find((e) => e.name === "Contact.Support")?.category).toBe(
-    "Capabilities",
-  );
+  expect(entries.some(e => e.name === 'Contact.Support')).toBe(false);
   expect(entries.find((e) => e.name === "EscalateTicket")?.category).toBe(
     "Functions",
   );
