@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 (2026-09-21)
+
+Post-M8 program M9–M21 complete. Live certification of both clouds on
+build 693d221a70f7; differential across memory / sqlite-node / PostgreSQL;
+RELEASE_MANIFEST.json lists every certified combination with evidence and
+every withheld one with its reason.
+
+- M21 release: differential certification, capability fuzz, adversarial
+  suites, governance benchmarks, `forge upgrade-edition`, release manifest.
 
 - M20 observability: telemetry governance context and attempt/completion
   phases; `@forge/governance` redaction and sink policies; `@forge/interfaces`

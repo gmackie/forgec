@@ -1,14 +1,7 @@
 {
   "version": "release-manifest/1",
-  "generatedAt": "2026-09-21T05:00:11.064Z",
-  "allRequiredProfilesCertified": false,
-  "incomplete": {
-    "requiredNotCertified": [
-      "cloudflare-d1",
-      "aws-dynamodb"
-    ],
-    "note": "this release does not claim full profile support; see each entry's reason"
-  },
+  "generatedAt": "2026-09-21T05:12:24.082Z",
+  "allRequiredProfilesCertified": true,
   "pins": {
     "compiler": {
       "crate": "forge-cli",
@@ -74,7 +67,7 @@
         "runtime": "cloudflare-workers",
         "deployment": "wrangler"
       },
-      "status": "unverified",
+      "status": "certified",
       "features": [
         "crud",
         "changesets",
@@ -94,12 +87,11 @@
           "scenarios": 15,
           "steps": 221,
           "realtime": true,
-          "at": "2026-09-21T01:44:12.008Z",
-          "build": "f3eddedaa59e775d66baf06a58af750c9d3f6aaa31c7f2318f159449e13f5a9b",
+          "at": "2026-09-21T05:10:04.356Z",
+          "build": "693d221a70f7768df402a99030fa793c635f2eb61332e62a4e866d0a1f697d35",
           "ref": "conformance/certification/latest.json"
         }
-      ],
-      "reason": "live certification is for build f3eddedaa59e; the current build is 693d221a70f7: re-run pnpm certify"
+      ]
     },
     {
       "profile": "aws-dynamodb",
@@ -109,7 +101,7 @@
         "runtime": "lambda-nodejs22",
         "deployment": "cdk"
       },
-      "status": "unverified",
+      "status": "certified",
       "features": [
         "crud",
         "changesets",
@@ -129,12 +121,11 @@
           "scenarios": 15,
           "steps": 221,
           "realtime": true,
-          "at": "2026-09-21T01:44:12.008Z",
-          "build": "f3eddedaa59e775d66baf06a58af750c9d3f6aaa31c7f2318f159449e13f5a9b",
+          "at": "2026-09-21T05:10:04.356Z",
+          "build": "693d221a70f7768df402a99030fa793c635f2eb61332e62a4e866d0a1f697d35",
           "ref": "conformance/certification/latest.json"
         }
-      ],
-      "reason": "live certification is for build f3eddedaa59e; the current build is 693d221a70f7: re-run pnpm certify"
+      ]
     },
     {
       "profile": "node-postgres",
@@ -269,7 +260,8 @@
       "M17",
       "M18",
       "M19",
-      "M20"
+      "M20",
+      "M21"
     ],
     "other": []
   },

@@ -600,6 +600,69 @@
     "OTel export: events carry W3C trace context and the OpenTelemetry-compatible dimension set; an OTLP exporter adapter is a sink implementation (workersLogLine/emfLine exist; OTLP wire not implemented)",
     "Purpose handling for opaque handles comes from Telemetry.purposeHandling (host config) or a `handling` attribute on the purpose declaration when present"
    ]
+  },
+  "M21": {
+   "status": "done",
+   "certifiedProfiles": [
+    "cloudflare-d1 (live, build 693d221a70f7, 2026-09-21)",
+    "aws-dynamodb (live, build 693d221a70f7, 2026-09-21)",
+    "node-postgres (differential + node-host + PAR-153)",
+    "sqlite-node (differential + qualification)",
+    "runtime-memory (reference)"
+   ],
+   "withheld": [
+    "isolated-callable assurance (no attested boundary; docs/security-review.md SR-5)",
+    "self-hosted-full/temporal (unverified)",
+    "neon, planetscale-postgres, turso (descriptors only; unverified)"
+   ],
+   "tickets": {
+    "FORGE-087": {
+     "status": "done",
+     "evidence": [
+      "conformance/reports/differential.json: memory vs sqlite-node vs postgres, 221 steps per pair, 0 unexplained differences (explained keys named: cursors, timestamps, requestId, physical budget, race-dependent steps); conformance/certification/latest.json re-run on the current build for both clouds (PAR-172); skipped profiles are listed with reasons (PAR-176)"
+     ]
+    },
+    "FORGE-088": {
+     "status": "done",
+     "evidence": [
+      "docs/security-review.md: TCB, adversarial suite mapping (PAR-174 capability fuzz, PAR-175 supply-chain suite, PAR-173 mixed-version), findings SR-1..7 with status; isolated-callable withheld"
+     ]
+    },
+    "FORGE-089": {
+     "status": "done",
+     "evidence": [
+      "conformance/benchmarks/governance-overhead.json (same-app unguarded vs governed on memory and sqlite-node, decision cache figures, write amplification, limits) and jobs.json (catalog rebuild, erasure cost) with workload definitions (PAR-177)"
+     ]
+    },
+    "FORGE-090": {
+     "status": "done",
+     "evidence": [
+      "docs/acme-next-walkthrough.md (CRUD under purposes, HTTP/MCP/CLI/SDKs, grants PR, registry outage/revocation, classified imports, erasure/recovery, rollout; unsynthesizable steps listed); docs/upgrade-edition.md + forge upgrade-edition (PAR-178)"
+     ]
+    },
+    "FORGE-091": {
+     "status": "done",
+     "evidence": [
+      "RELEASE_MANIFEST.json via scripts/release-manifest.ts: exact pins, per-profile combinations with evidence bound to build hash and 90-day window, non-certified combinations with reasons, retest/expiry rules (PAR-179); unsigned drafts are marked as such"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-172": "conformance/test/differential.test.ts + certification/latest.json",
+    "PAR-173": "packages/registry/test/adversarial.test.ts",
+    "PAR-174": "crates/forge-semantic/tests/capability_fuzz.rs",
+    "PAR-175": "packages/registry/test/adversarial.test.ts",
+    "PAR-176": "conformance/test/release-manifest.test.ts",
+    "PAR-177": "conformance/test/benchmarks.test.ts",
+    "PAR-178": "crates/forge-cli/tests/cli.rs::edition_upgrade_is_explicit_and_non_destructive",
+    "PAR-179": "conformance/test/release-manifest.test.ts + RELEASE_MANIFEST.json"
+   }
   }
+ },
+ "program": {
+  "status": "complete",
+  "milestones": "M9-M21 done",
+  "generatedAt": "2026-09-21",
+  "note": "FORGE-051 and FORGE-076 remain partial by design (assurance profile withheld; Temporal driver not implemented); see RELEASE_MANIFEST.json notCertified"
  }
 }
