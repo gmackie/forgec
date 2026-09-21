@@ -175,7 +175,7 @@ pub fn system_tables() -> Vec<Table> {
         Table {
             name: "forge_outbox".into(),
             resource: None,
-            columns: vec![col("tenant", "TEXT", false), col("op_id", "TEXT", false), col("ordinal", "INTEGER", false), col("channel", "TEXT", false), col("message", "TEXT", false), col("payload", "TEXT", false), col("status", "TEXT", false), col("lease_owner", "TEXT", true), col("lease_until", "INTEGER", true), col("attempts", "INTEGER", false), col("created_at", "TEXT", false), col("delivered", "TEXT", true)],
+            columns: vec![col("tenant", "TEXT", false), col("op_id", "TEXT", false), col("ordinal", "INTEGER", false), col("channel", "TEXT", false), col("message", "TEXT", false), col("payload", "TEXT", false), col("status", "TEXT", false), col("lease_owner", "TEXT", true), col("lease_until", "INTEGER", true), col("attempts", "INTEGER", false), col("created_at", "TEXT", false), col("delivered", "TEXT", true), col("trace", "TEXT", true)],
             primary_key: vec!["tenant".into(), "op_id".into(), "ordinal".into()],
             foreign_keys: vec![],
             checks: vec![],

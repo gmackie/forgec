@@ -34,6 +34,7 @@ CREATE TABLE forge_outbox (
   "attempts" INTEGER NOT NULL,
   "created_at" TEXT NOT NULL,
   "delivered" TEXT,
+  "trace" TEXT,
   PRIMARY KEY (tenant, op_id, ordinal)
 );
 

@@ -1,0 +1,20 @@
+{
+  "name": "@forge/adapters",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Managed providers and deployment portability packs (M18): certification matrix, managed Postgres profiles, SQLite/Turso qualification, resolved deployment plans, Terraform and self-hosted (Docker/Nix) emitters.",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "source": "./src/index.ts", "import": "./dist/index.js", "default": "./dist/index.js" },
+    "./matrix": { "types": "./dist/matrix.d.ts", "source": "./src/matrix.ts", "import": "./dist/matrix.js", "default": "./dist/matrix.js" },
+    "./managed-postgres": { "types": "./dist/managed-postgres.d.ts", "source": "./src/managed-postgres.ts", "import": "./dist/managed-postgres.js", "default": "./dist/managed-postgres.js" },
+    "./sqlite": { "types": "./dist/sqlite.d.ts", "source": "./src/sqlite.ts", "import": "./dist/sqlite.js", "default": "./dist/sqlite.js" },
+    "./deployment-plan": { "types": "./dist/deployment-plan.d.ts", "source": "./src/deployment-plan.ts", "import": "./dist/deployment-plan.js", "default": "./dist/deployment-plan.js" },
+    "./terraform": { "types": "./dist/terraform.d.ts", "source": "./src/terraform.ts", "import": "./dist/terraform.js", "default": "./dist/terraform.js" },
+    "./self-hosted": { "types": "./dist/self-hosted.d.ts", "source": "./src/self-hosted.ts", "import": "./dist/self-hosted.js", "default": "./dist/self-hosted.js" }
+  },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run", "build": "tsc -p tsconfig.build.json" },
+  "dependencies": { "@forge/runtime": "workspace:*", "effect": "4.0.0-rc.116" },
+  "devDependencies": { "@types/node": "^24.0.0", "@types/pg": "^8.23.1", "pg": "^8.23.0", "typescript": "^5.9.0", "vitest": "^5.0.0" }
+}

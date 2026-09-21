@@ -1,5 +1,5 @@
 -- Added in M4: OrderDocument blob metadata.
-CREATE TABLE order_document (
+CREATE TABLE IF NOT EXISTS order_document (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
   "order_" TEXT NOT NULL,
@@ -20,4 +20,4 @@ CREATE TABLE order_document (
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, order_) REFERENCES order_ (tenant, id)
 );
-CREATE INDEX order_document_ix_by_order ON order_document (tenant, order_, created_at, id);
+CREATE INDEX IF NOT EXISTS order_document_ix_by_order ON order_document (tenant, order_, created_at, id);

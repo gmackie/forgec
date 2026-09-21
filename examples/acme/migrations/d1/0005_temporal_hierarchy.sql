@@ -1,5 +1,5 @@
 -- Added in M6: effective-dated SitePolicy and hierarchical Department.
-CREATE TABLE site_policy (
+CREATE TABLE IF NOT EXISTS site_policy (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
   "site" TEXT NOT NULL,
@@ -13,8 +13,8 @@ CREATE TABLE site_policy (
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, site) REFERENCES site (tenant, id)
 );
-CREATE INDEX site_policy_ix_by_site ON site_policy (tenant, site, effective_from, id);
-CREATE TABLE department (
+CREATE INDEX IF NOT EXISTS site_policy_ix_by_site ON site_policy (tenant, site, effective_from, id);
+CREATE TABLE IF NOT EXISTS department (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
   "customer" TEXT NOT NULL,
@@ -27,4 +27,4 @@ CREATE TABLE department (
   FOREIGN KEY (tenant, customer) REFERENCES customer (tenant, id),
   FOREIGN KEY (tenant, parent) REFERENCES department (tenant, id)
 );
-CREATE INDEX department_ix_by_customer ON department (tenant, customer, name, id);
+CREATE INDEX IF NOT EXISTS department_ix_by_customer ON department (tenant, customer, name, id);
