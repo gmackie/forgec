@@ -3,6 +3,7 @@
 //! plan and refuse anything that would need a scan or an uncovered query.
 
 pub mod contracts;
+pub mod migrations;
 pub mod dynamo;
 pub mod messaging;
 pub mod naming;

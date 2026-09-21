@@ -102,3 +102,25 @@ describe("nominal scoped readers (PAR-103)", () => {
     expect(Object.keys(right as object).sort()).toEqual(["customer", "email", "id", "name"]);
   });
 });
+
+/** PAR-143: a cached value loaded under a broad surface is disclosed only through the caller's current surface. */
+describe("cached values under purpose surfaces", () => {
+  it("the same cache entry is projected per purpose; a narrower purpose never sees fields the broader load stored", async () => {
+    const seed: CallContext = { ...base, actor: "maintenance", maintenance: true };
+    await run(engine.call(`${N}/ContactPreference.create`, { contact: contact.id, channel: "email", marketingOptIn: true, internalScore: 42, effectiveFrom: "2020-01-01T00:00:00Z" }, seed));
+    // CustomerSupport (Scoring) loads the cache: the stored value is the full loader result
+    const broad = await run(engine.call(`${N}/CurrentPreference.read`, { key: { contact: contact.id } }, support));
+    expect(broad.value).toMatchObject({ channel: "email", internalScore: 42 });
+    expect(Object.keys(broad.value as object).sort()).toEqual(["channel", "contact", "effectiveFrom", "effectiveUntil", "id", "internalScore", "marketingOptIn"]);
+    // ParentCommunication (Preference) hits the same entry: internalScore is not on its surface
+    const narrow = await run(engine.call(`${N}/CurrentPreference.read`, { key: { contact: contact.id } }, parent));
+    expect(narrow.source).toBe("cache");
+    expect(Object.keys(narrow.value as object).sort()).toEqual(["channel", "contact", "effectiveFrom", "effectiveUntil", "id", "marketingOptIn"]);
+    expect(JSON.stringify(narrow)).not.toContain("internalScore");
+    // a purpose with no surface on the value's resource cannot read the cache at all, even though the entry exists
+    const none = await fails(engine.call(`${N}/CurrentPreference.read`, { key: { contact: contact.id } }, { ...base, purpose: `${G}/Marketing` }));
+    expect(none.code).toBe("NotPermitted");
+    // and in the strict edition a scoped resource's cache needs a purpose
+    expect((await fails(engine.call(`${N}/CurrentPreference.read`, { key: { contact: contact.id } }, base))).code).toBe("NotPermitted");
+  });
+});

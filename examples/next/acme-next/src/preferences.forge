@@ -1,0 +1,41 @@
+/// Effective-dated contact preferences; purpose-scoped so a cached "current
+/// preference" is only ever disclosed through the caller's surface (PAR-143).
+export resource ContactPreference
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @purposeScoped
+  @effectiveDated(uniqueBy: [contact])
+  @crud("/v1/contact-preferences")
+{
+  id : id
+  contact : Contact @immutable
+  channel : text length 1..20
+  marketingOptIn : boolean = false
+  internalScore : integer >= 0 <= 100
+
+  capability Preference {
+    read { id contact channel marketingOptIn effectiveFrom effectiveUntil }
+    filter { contact }
+    create { contact channel marketingOptIn internalScore effectiveFrom }
+  }
+
+  capability Scoring {
+    includes Preference
+    read { internalScore }
+  }
+
+  for governance.ParentCommunication { use Preference }
+  for governance.CustomerSupport { use Scoring }
+
+  list by contact
+    order by effectiveFrom desc
+}
+
+/// The preference in force for a contact right now.
+export cache CurrentPreference {
+  key contact : Contact
+  loader ContactPreference.effective(contact, now)
+  freshUntil min(5m, nextEffectiveBoundary)
+}

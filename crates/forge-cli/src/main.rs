@@ -72,6 +72,8 @@ enum Cmd {
         #[arg(long = "allow-host")]
         allow_hosts: Vec<String>,
     },
+    /// Governance-aware migration plan between two built bundles (phased DAG; blocked steps named).
+    Migrate { old: PathBuf, new: PathBuf },
     /// Language server over stdio (diagnostics, formatting).
     Lsp,
     /// Explain the effective purpose surface of a resource: every granted and denied atom with its origin.
@@ -294,6 +296,21 @@ fn main() -> Result<()> {
                     eprintln!("import refused: {e}");
                     std::process::exit(1);
                 }
+            }
+        }
+        Cmd::Migrate { old, new } => {
+            let o: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&old)?)?;
+            let n: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&new)?)?;
+            for (label, v) in [("old", &o), ("new", &n)] {
+                if let Err(e) = DomainIR::load(&v["ir"]) {
+                    bail!("{label} bundle: {e}");
+                }
+            }
+            let report = forge_semantic::diff::compare(&o, &n);
+            let plan = forge_planner::migrations::plan_migration(&report, &o, &n);
+            println!("{}", serde_json::to_string_pretty(&plan)?);
+            if plan.blocked {
+                std::process::exit(2);
             }
         }
         Cmd::Lsp => lsp::run()?,

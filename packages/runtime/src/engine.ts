@@ -199,7 +199,15 @@ export class Engine {
     if (proj && action === "status") return this.readModels.status(proj, ctx);
     if (proj && action === "rebuild") return this.readModels.rebuild(proj, ctx);
     const cache = this.model.caches.find((c) => c.id === base);
-    if (cache && action === "read") return this.readModels.read(cache, body, ctx);
+    if (cache && action === "read") {
+      // PAR-143: a cached value is stored as loaded, but disclosed only through the caller's *current* surface
+      // on the value's resource: a purpose narrowed since the load never sees what the broader load stored.
+      const loader = cache.loader as { kind: string; callee?: string[] };
+      const valueResource = loader.kind === "call" && loader.callee ? this.model.resources.find((r) => r.name === loader.callee![0]) : undefined;
+      if (!valueResource) return this.readModels.read(cache, body, ctx);
+      const self = this;
+      return self.scope.resolve(valueResource, ctx).pipe(Effect.flatMap((surface) => self.readModels.read(cache, body, ctx).pipe(Effect.map((out) => (surface && out && typeof out["value"] === "object" && out["value"] !== null ? { ...out, value: self.scope.project(surface, out["value"] as Wire) } : out)))));
+    }
     const src = this.model.sources.find((s) => s.id === base);
     if (src && action === "tick") return Effect.promise(() => Effect.runPromise(this.schedules.tick(ctx.tenant, String(body["now"] ?? new Date().toISOString())))).pipe(Effect.map((results) => ({ results })));
     if (src && action === "status") return Effect.promise(() => Effect.runPromise(this.schedules.status(ctx.tenant))).pipe(Effect.map((all) => all.find((x) => x.source === src.id) ?? { source: src.id, lastOccurrence: null, next: null, skipped: [] }));

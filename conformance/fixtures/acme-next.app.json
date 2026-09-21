@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "6e6546ce29f5e8ca8e4dd69082eb25b2ca5f94992dc5d82e1af7b0be8b7a8453",
+  "buildHash": "f60c00c261d3ad8a14dbdcaca82ed8607492edd6f593c844a0a208830dee713c",
   "digests": {
-    "source": "aa2a1933f9ac07f06a7947a7c0e3f29525c57f51ff60db60940f538f9c099e63",
-    "wire": "52a61a6271047680b79de394056ff643e1053fedbc5c5a345cfb682fb1831775",
-    "docs": "1cb9c39e22c289cd9ee0cc848a51e8f5065150a791ea91f72a6023a07827821b",
-    "security": "61d8a0efb4cfa0acf45b4d9256206663ba0f9e9a6c57f78a42b102daf8b350b7"
+    "source": "d7bef59f4a37c2f48e1bf7610f9fdec24dbcfbbc3f72881a44c2d502ad63ab5c",
+    "wire": "82034aa9effc6a3120c4e24156ddf26a89e88adb8df2dcd9350e9bb766450cfa",
+    "docs": "b97d598ae1c5a35e636d44100566ed481cacc1dfbe4e08e45a90bc310184f713",
+    "security": "8da131b5ac10d9c8b7b7682ed59aa484c319e1c8dbe0dea6e3c57a23709d25ac"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -522,6 +522,374 @@
               {
                 "purpose": "@acme/governance/_/CustomerSupport",
                 "capability": "SupportRecord"
+              }
+            ]
+          },
+          {
+            "id": "@acme/commerce-next/_/ContactPreference",
+            "name": "ContactPreference",
+            "kind": "resource",
+            "exported": true,
+            "doc": "Effective-dated contact preferences; purpose-scoped so a cached \"current\npreference\" is only ever disclosed through the caller's surface (PAR-143).",
+            "decorators": {
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": true,
+              "audited": true,
+              "crud": {
+                "path": "/v1/contact-preferences",
+                "actions": []
+              },
+              "effectiveDated": {
+                "uniqueBy": [
+                  "contact"
+                ]
+              },
+              "hierarchical": false,
+              "purposeScoped": true
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "contact",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce-next/_/Contact"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "channel",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 20
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "marketingOptIn",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "boolean",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "default": {
+                  "type": "bool",
+                  "value": false
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "internalScore",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "0"
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "op": "<=",
+                      "value": {
+                        "type": "int",
+                        "value": "100"
+                      }
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "effectiveFrom",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": true
+              },
+              {
+                "name": "effectiveUntil",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byContact",
+                "fields": [
+                  "contact"
+                ],
+                "order": [
+                  {
+                    "field": "effectiveFrom",
+                    "direction": "desc"
+                  },
+                  {
+                    "field": "id",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@acme/commerce-next/_/ContactPreference.create",
+                "kind": "create",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/contact-preferences"
+                }
+              },
+              {
+                "id": "@acme/commerce-next/_/ContactPreference.get",
+                "kind": "get",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/contact-preferences/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce-next/_/ContactPreference.update",
+                "kind": "update",
+                "http": {
+                  "method": "PATCH",
+                  "path": "/v1/contact-preferences/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce-next/_/ContactPreference.delete",
+                "kind": "delete",
+                "http": {
+                  "method": "DELETE",
+                  "path": "/v1/contact-preferences/{id}"
+                }
+              },
+              {
+                "id": "@acme/commerce-next/_/ContactPreference.list.all",
+                "kind": "list",
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/contact-preferences"
+                }
+              },
+              {
+                "id": "@acme/commerce-next/_/ContactPreference.list.byContact",
+                "kind": "list",
+                "query": "byContact",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/contact-preferences/queries/by-contact"
+                }
+              },
+              {
+                "id": "@acme/commerce-next/_/ContactPreference.effective.byContact",
+                "kind": "effective",
+                "query": "byContact",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/contact-preferences/effective/by-contact"
+                }
+              }
+            ],
+            "capabilities": [
+              {
+                "name": "Preference",
+                "includes": [],
+                "atoms": [
+                  {
+                    "deny": false,
+                    "verb": "read",
+                    "names": [
+                      "id",
+                      "contact",
+                      "channel",
+                      "marketingOptIn",
+                      "effectiveFrom",
+                      "effectiveUntil"
+                    ]
+                  },
+                  {
+                    "deny": false,
+                    "verb": "filter",
+                    "names": [
+                      "contact"
+                    ]
+                  },
+                  {
+                    "deny": false,
+                    "verb": "create",
+                    "names": [
+                      "contact",
+                      "channel",
+                      "marketingOptIn",
+                      "internalScore",
+                      "effectiveFrom"
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Scoring",
+                "includes": [
+                  "Preference"
+                ],
+                "atoms": [
+                  {
+                    "deny": false,
+                    "verb": "read",
+                    "names": [
+                      "internalScore"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "purposeBindings": [
+              {
+                "purpose": "@acme/governance/_/ParentCommunication",
+                "capability": "Preference"
+              },
+              {
+                "purpose": "@acme/governance/_/CustomerSupport",
+                "capability": "Scoring"
               }
             ]
           },
@@ -1525,7 +1893,73 @@
         "subscriptions": [],
         "views": [],
         "projections": [],
-        "caches": [],
+        "caches": [
+          {
+            "id": "@acme/commerce-next/_/CurrentPreference",
+            "name": "CurrentPreference",
+            "exported": true,
+            "doc": "The preference in force for a contact right now.",
+            "keys": [
+              {
+                "name": "contact",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce-next/_/Contact"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "loader": {
+              "kind": "call",
+              "callee": [
+                "ContactPreference",
+                "effective"
+              ],
+              "args": [
+                {
+                  "kind": "name",
+                  "path": [
+                    "contact"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "now"
+                  ]
+                }
+              ]
+            },
+            "freshUntil": {
+              "kind": "call",
+              "callee": [
+                "min"
+              ],
+              "args": [
+                {
+                  "kind": "literal",
+                  "literal": {
+                    "type": "duration",
+                    "value": "5m"
+                  }
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "nextEffectiveBoundary"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
         "workflows": [],
         "purposes": [],
         "dataClasses": []
@@ -1753,6 +2187,240 @@
             "http": {
               "method": "GET",
               "path": "/v1/contacts/queries/by-customer"
+            }
+          }
+        ]
+      },
+      {
+        "id": "@acme/commerce-next/_/ContactPreference",
+        "name": "ContactPreference",
+        "wireName": "contact_preference",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "effectiveFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "effectiveUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "createdAt",
+            "updatedAt",
+            "effectiveFrom",
+            "effectiveUntil",
+            "contact",
+            "channel",
+            "marketingOptIn",
+            "internalScore"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "contact",
+            "channel",
+            "internalScore"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byContact",
+            "kind": "list",
+            "params": [
+              "contact"
+            ],
+            "order": [
+              {
+                "field": "effectiveFrom",
+                "direction": "desc"
+              },
+              {
+                "field": "id",
+                "direction": "desc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@acme/commerce-next/_/ContactPreference.create",
+            "kind": "create",
+            "http": {
+              "method": "POST",
+              "path": "/v1/contact-preferences"
+            }
+          },
+          {
+            "id": "@acme/commerce-next/_/ContactPreference.get",
+            "kind": "get",
+            "http": {
+              "method": "GET",
+              "path": "/v1/contact-preferences/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce-next/_/ContactPreference.update",
+            "kind": "update",
+            "http": {
+              "method": "PATCH",
+              "path": "/v1/contact-preferences/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce-next/_/ContactPreference.delete",
+            "kind": "delete",
+            "http": {
+              "method": "DELETE",
+              "path": "/v1/contact-preferences/{id}"
+            }
+          },
+          {
+            "id": "@acme/commerce-next/_/ContactPreference.list.all",
+            "kind": "list",
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/contact-preferences"
+            }
+          },
+          {
+            "id": "@acme/commerce-next/_/ContactPreference.list.byContact",
+            "kind": "list",
+            "query": "byContact",
+            "http": {
+              "method": "GET",
+              "path": "/v1/contact-preferences/queries/by-contact"
+            }
+          },
+          {
+            "id": "@acme/commerce-next/_/ContactPreference.effective.byContact",
+            "kind": "effective",
+            "query": "byContact",
+            "http": {
+              "method": "GET",
+              "path": "/v1/contact-preferences/effective/by-contact"
             }
           }
         ]
@@ -2511,7 +3179,20 @@
     ],
     "views": [],
     "projections": [],
-    "caches": [],
+    "caches": [
+      {
+        "id": "@acme/commerce-next/_/CurrentPreference",
+        "name": "CurrentPreference",
+        "keys": [
+          "contact"
+        ],
+        "valueResource": "ContactPreference",
+        "http": {
+          "method": "GET",
+          "path": "/v1/caches/current-preference"
+        }
+      }
+    ],
     "workflows": [],
     "schedules": [],
     "surfaces": [
@@ -2621,6 +3302,139 @@
         "orders": [
           "name"
         ],
+        "updates": [],
+        "actions": []
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "resourceName": "ContactPreference",
+        "purpose": "@acme/governance/_/CustomerSupport",
+        "purposeName": "CustomerSupport",
+        "digest": "70f596aabfe2473050f2caa1d5667e5fba4092e73de3a909989ed206153e9a31",
+        "record": {
+          "type": "object",
+          "properties": {
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "effectiveFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "effectiveUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "channel",
+            "contact",
+            "effectiveFrom",
+            "effectiveUntil",
+            "id",
+            "internalScore",
+            "marketingOptIn"
+          ],
+          "additionalProperties": false
+        },
+        "filters": [
+          "contact"
+        ],
+        "orders": [],
+        "updates": [],
+        "actions": []
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "resourceName": "ContactPreference",
+        "purpose": "@acme/governance/_/ParentCommunication",
+        "purposeName": "ParentCommunication",
+        "digest": "acef4fdf1e8d1f769e711fe573d8cc5b37a077a6b4defcbcd98d9055a488bbea",
+        "record": {
+          "type": "object",
+          "properties": {
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "effectiveFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "effectiveUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "channel",
+            "contact",
+            "effectiveFrom",
+            "effectiveUntil",
+            "id",
+            "marketingOptIn"
+          ],
+          "additionalProperties": false
+        },
+        "filters": [
+          "contact"
+        ],
+        "orders": [],
         "updates": [],
         "actions": []
       },
@@ -2961,6 +3775,106 @@
         "checks": []
       },
       {
+        "name": "contact_preference",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "contact",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "contact",
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "channel",
+            "storage": "text"
+          },
+          {
+            "name": "marketing_opt_in",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "marketingOptIn",
+            "storage": "bool"
+          },
+          {
+            "name": "internal_score",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "internalScore",
+            "storage": "integer"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          },
+          {
+            "name": "effective_from",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "effectiveFrom",
+            "storage": "text"
+          },
+          {
+            "name": "effective_until",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "effectiveUntil",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "contact"
+            ],
+            "references": "contact",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
         "name": "customer",
         "resource": "@acme/commerce-next/_/Customer",
         "columns": [
@@ -3228,6 +4142,18 @@
         ],
         "unique": false,
         "query": "byCustomer"
+      },
+      {
+        "name": "contact_preference_ix_by_contact",
+        "table": "contact_preference",
+        "columns": [
+          "tenant",
+          "contact",
+          "effective_from",
+          "id"
+        ],
+        "unique": false,
+        "query": "byContact"
       },
       {
         "name": "customer_uq_code",
@@ -3658,6 +4584,58 @@
         "createActions": 6
       },
       {
+        "id": "@acme/commerce-next/_/ContactPreference",
+        "name": "ContactPreference",
+        "wireName": "contact_preference",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
+            "name": "byContact",
+            "kind": "list",
+            "partitionFields": [
+              "contact"
+            ],
+            "sortFields": [
+              "effectiveFrom",
+              "id"
+            ],
+            "sortDirections": [
+              "desc",
+              "desc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "contact",
+              "effectiveFrom"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "contact",
+            "target": "@acme/commerce-next/_/Contact"
+          }
+        ],
+        "createActions": 6
+      },
+      {
         "id": "@acme/commerce-next/_/Customer",
         "name": "Customer",
         "wireName": "customer",
@@ -3945,6 +4923,145 @@
               "customer"
             ],
             "label": "By Customer"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@acme/commerce-next/_/ContactPreference",
+        "name": "ContactPreference",
+        "kind": "resource",
+        "label": "Contact Preference",
+        "plural": "Contact Preferences",
+        "route": "contact-preferences",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "contact",
+            "label": "Contact",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@acme/commerce-next/_/Contact",
+              "route": "contact",
+              "titleField": "name",
+              "lookup": "@acme/commerce-next/_/Contact.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "channel",
+            "label": "Channel",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 20
+          },
+          {
+            "name": "marketingOptIn",
+            "label": "Marketing Opt In",
+            "widget": "checkbox",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "internalScore",
+            "label": "Internal Score",
+            "widget": "integer",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "effectiveFrom",
+            "label": "Effective From",
+            "widget": "datetime",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "effectiveUntil",
+            "label": "Effective Until",
+            "widget": "datetime",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@acme/commerce-next/_/ContactPreference.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byContact",
+            "op": "@acme/commerce-next/_/ContactPreference.list.byContact",
+            "params": [
+              "contact"
+            ],
+            "label": "By Contact"
           }
         ],
         "finds": [],
@@ -4463,6 +5580,159 @@
                   "base": {
                     "kind": "reference",
                     "resource": "@acme/commerce-next/_/Contact"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "@acme/commerce-next/_/ContactPreference.changes",
+        "name": "ContactPreference.changes",
+        "distribution": "broadcast",
+        "delivery": "at-least-once",
+        "implicit": true,
+        "messages": [
+          {
+            "name": "Created",
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce-next/_/ContactPreference"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ]
+          },
+          {
+            "name": "Updated",
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce-next/_/ContactPreference"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ]
+          },
+          {
+            "name": "Deleted",
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce-next/_/ContactPreference"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ]
+          },
+          {
+            "name": "Restored",
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@acme/commerce-next/_/ContactPreference"
                   },
                   "optional": false,
                   "normalizers": [],
@@ -5230,6 +6500,188 @@
         "businessErrors": []
       },
       {
+        "operation": "@acme/commerce-next/_/ContactPreference.create",
+        "kind": "create",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.get",
+        "kind": "get",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.update",
+        "kind": "update",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.list.byContact",
+        "kind": "list",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.effective.byContact",
+        "kind": "effective",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
         "operation": "@acme/commerce-next/_/Customer.create",
         "kind": "create",
         "resource": "@acme/commerce-next/_/Customer",
@@ -5881,6 +7333,31 @@
           "@acme/commerce-next/_/SubmitOrder.PaymentDeclined",
           "@acme/commerce-next/_/SubmitOrder.PaymentUnavailable"
         ]
+      },
+      {
+        "operation": "@acme/commerce-next/_/CurrentPreference.read",
+        "kind": "cache.read",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
       }
     ]
   },
@@ -6012,6 +7489,176 @@
       {
         "resource": "@acme/commerce-next/_/Contact",
         "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "contact",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "channel",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "marketingOptIn",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "internalScore",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "effectiveFrom",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "field": "effectiveUntil",
         "class": "data.structural",
         "ancestors": [
           "data.structural",
@@ -6427,8 +8074,8 @@
     ],
     "summary": {
       "inferred": 2,
-      "structural": 23,
-      "unclassified": 6
+      "structural": 32,
+      "unclassified": 7
     }
   },
   "lineage": {
@@ -6603,6 +8250,217 @@
         "externalSinks": [],
         "publishes": [
           "@acme/commerce-next/_/Contact.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.create",
+        "kind": "create",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "outputs": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce-next/_/ContactPreference.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.get",
+        "kind": "get",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "outputs": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce-next/_/ContactPreference.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.update",
+        "kind": "update",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "outputs": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [
+          "channel",
+          "marketingOptIn",
+          "internalScore"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce-next/_/ContactPreference.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "outputs": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce-next/_/ContactPreference.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "outputs": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce-next/_/ContactPreference.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.list.byContact",
+        "kind": "list",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "outputs": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "contact"
+        ],
+        "orders": [
+          "effectiveFrom",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce-next/_/ContactPreference.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce-next/_/ContactPreference.effective.byContact",
+        "kind": "effective",
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "outputs": [
+          "id",
+          "contact",
+          "channel",
+          "marketingOptIn",
+          "internalScore",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce-next/_/ContactPreference.changes"
         ],
         "coverage": "modeled"
       },
@@ -7446,6 +9304,215 @@
         "digest": "bd8344c53a2b17338e59467bd7516f1712a929a1c6b46adab5f5915df0726d39"
       },
       {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "purpose": "@acme/governance/_/CustomerSupport",
+        "capabilities": [
+          "Scoring"
+        ],
+        "allowAtoms": [
+          {
+            "verb": "create",
+            "name": "channel",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "contact",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "effectiveFrom",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "internalScore",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "marketingOptIn",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "filter",
+            "name": "contact",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "channel",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "contact",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "effectiveFrom",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "effectiveUntil",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "id",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "internalScore",
+            "origin": [
+              "Scoring"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "marketingOptIn",
+            "origin": [
+              "Scoring",
+              "Preference"
+            ]
+          }
+        ],
+        "deny": [],
+        "digest": "70f596aabfe2473050f2caa1d5667e5fba4092e73de3a909989ed206153e9a31"
+      },
+      {
+        "resource": "@acme/commerce-next/_/ContactPreference",
+        "purpose": "@acme/governance/_/ParentCommunication",
+        "capabilities": [
+          "Preference"
+        ],
+        "allowAtoms": [
+          {
+            "verb": "create",
+            "name": "channel",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "contact",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "effectiveFrom",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "internalScore",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "create",
+            "name": "marketingOptIn",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "filter",
+            "name": "contact",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "channel",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "contact",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "effectiveFrom",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "effectiveUntil",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "id",
+            "origin": [
+              "Preference"
+            ]
+          },
+          {
+            "verb": "read",
+            "name": "marketingOptIn",
+            "origin": [
+              "Preference"
+            ]
+          }
+        ],
+        "deny": [],
+        "digest": "acef4fdf1e8d1f769e711fe573d8cc5b37a077a6b4defcbcd98d9055a488bbea"
+      },
+      {
         "resource": "@acme/commerce-next/_/Customer",
         "purpose": "@acme/governance/_/CustomerSupport",
         "capabilities": [
@@ -7886,6 +9953,140 @@
                 "null"
               ],
               "x-forge-type": "text"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ContactPreferenceRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "effectiveFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "effectiveUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "createdAt",
+            "updatedAt",
+            "effectiveFrom",
+            "effectiveUntil",
+            "contact",
+            "channel",
+            "marketingOptIn",
+            "internalScore"
+          ]
+        },
+        "ContactPreferenceCreate": {
+          "type": "object",
+          "properties": {
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "contact",
+            "channel",
+            "internalScore"
+          ]
+        },
+        "ContactPreferencePatch": {
+          "type": "object",
+          "properties": {
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
             }
           },
           "additionalProperties": false
@@ -8354,6 +10555,113 @@
             "email",
             "id",
             "name"
+          ]
+        },
+        "ContactPreferenceCustomerSupportRecord": {
+          "type": "object",
+          "properties": {
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "effectiveFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "effectiveUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "internalScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "x-forge-type": "integer"
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "channel",
+            "contact",
+            "effectiveFrom",
+            "effectiveUntil",
+            "id",
+            "internalScore",
+            "marketingOptIn"
+          ]
+        },
+        "ContactPreferenceParentCommunicationRecord": {
+          "type": "object",
+          "properties": {
+            "channel": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "contact": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce-next/_/Contact"
+            },
+            "effectiveFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "effectiveUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "marketingOptIn": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "channel",
+            "contact",
+            "effectiveFrom",
+            "effectiveUntil",
+            "id",
+            "marketingOptIn"
           ]
         },
         "CustomerCustomerSupportRecord": {
@@ -9261,6 +11569,787 @@
             },
             "400": {
               "description": "InvalidCursor",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        }
+      },
+      "/v1/contact-preferences": {
+        "post": {
+          "operationId": "@acme/commerce-next/_/ContactPreference.create",
+          "tags": [
+            "ContactPreference"
+          ],
+          "x-forge-kind": "create",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "201": {
+              "description": "Created",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ContactPreferenceRecord"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "UniqueConflict / ReferenceMissing",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactPreferenceCreate"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "get": {
+          "operationId": "@acme/commerce-next/_/ContactPreference.list.all",
+          "tags": [
+            "ContactPreference"
+          ],
+          "x-forge-kind": "list",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Page",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "items",
+                      "next",
+                      "limit"
+                    ],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/ContactPreferenceRecord"
+                        }
+                      },
+                      "next": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "InvalidCursor",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        }
+      },
+      "/v1/contact-preferences/{id}": {
+        "get": {
+          "operationId": "@acme/commerce-next/_/ContactPreference.get",
+          "tags": [
+            "ContactPreference"
+          ],
+          "x-forge-kind": "get",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ContactPreferenceRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        },
+        "patch": {
+          "operationId": "@acme/commerce-next/_/ContactPreference.update",
+          "tags": [
+            "ContactPreference"
+          ],
+          "x-forge-kind": "update",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ContactPreferenceRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict (stale If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactPreferencePatch"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "delete": {
+          "operationId": "@acme/commerce-next/_/ContactPreference.delete",
+          "tags": [
+            "ContactPreference"
+          ],
+          "x-forge-kind": "delete",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ContactPreferenceRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "HasDependents / InvalidTransition",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        }
+      },
+      "/v1/contact-preferences/queries/by-contact": {
+        "get": {
+          "operationId": "@acme/commerce-next/_/ContactPreference.list.byContact",
+          "tags": [
+            "ContactPreference"
+          ],
+          "x-forge-kind": "list",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "contact",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "x-forge-reference": "@acme/commerce-next/_/Contact"
+              }
+            },
+            {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Page",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "items",
+                      "next",
+                      "limit"
+                    ],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/ContactPreferenceRecord"
+                        }
+                      },
+                      "next": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "InvalidCursor",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        }
+      },
+      "/v1/contact-preferences/effective/by-contact": {
+        "get": {
+          "operationId": "@acme/commerce-next/_/ContactPreference.effective.byContact",
+          "tags": [
+            "ContactPreference"
+          ],
+          "x-forge-kind": "effective",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "contact",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "x-forge-reference": "@acme/commerce-next/_/Contact"
+              }
+            },
+            {
+              "name": "at",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ContactPreferenceRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
               "content": {
                 "application/problem+json": {
                   "schema": {

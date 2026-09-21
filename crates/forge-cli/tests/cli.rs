@@ -194,6 +194,26 @@ fn compat_classifies_changes_per_compatibility_stream() {
     let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&out.stdout)).unwrap();
     assert_eq!(r["findings"][0]["code"], "policy-narrowed");
     assert_eq!(r["findings"][0]["needs"], serde_json::json!(["decision-epoch-bump"]));
+    // FORGE-068: the migration plan is phased, names review needs, blocks unsafe exposure, and sizes nothing
+    let mig = forge().args(["migrate", dir.join("old/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap()]).output().unwrap();
+    let plan: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&mig.stdout)).unwrap();
+    assert_eq!(plan["version"], "migration-plan/1");
+    assert_eq!(mig.status.code(), Some(2), "a graph change without a version bump blocks the plan");
+    let kinds: Vec<(String, String, bool, bool)> = plan["steps"].as_array().unwrap().iter().map(|st| (st["phase"].as_str().unwrap().into(), st["kind"].as_str().unwrap().into(), st["requiresReview"].as_bool().unwrap(), st["blocked"].as_bool().unwrap())).collect();
+    assert!(kinds.iter().any(|(p, k, _, _)| p == "expand" && k == "storage.expand"), "{kinds:?}");
+    assert!(kinds.iter().any(|(p, k, r, _)| p == "backfill" && k == "data.backfill" && *r), "{kinds:?}");
+    assert!(kinds.iter().any(|(p, k, r, _)| p == "contract" && k == "storage.contract" && *r), "{kinds:?}");
+    assert!(kinds.iter().any(|(p, k, _, b)| p == "preflight" && k == "workflow.version" && *b), "{kinds:?}");
+    let expand = plan["steps"].as_array().unwrap().iter().find(|st| st["kind"] == "storage.expand" && st["subject"] == "customer.region").unwrap();
+    assert!(expand["ddl"]["sqlite"].as_str().unwrap().starts_with("ALTER TABLE customer ADD COLUMN region TEXT"), "{expand}");
+    assert!(expand["ddl"]["postgres"].as_str().unwrap().contains("ADD COLUMN region TEXT"), "{expand}");
+    // phases are ordered and chained
+    let phases: Vec<&str> = plan["steps"].as_array().unwrap().iter().map(|st| st["phase"].as_str().unwrap()).collect();
+    let order = ["preflight", "expand", "compat-release", "backfill", "verify", "traffic", "drain", "contract"];
+    let mut last = 0;
+    for p in &phases { let i = order.iter().position(|x| x == p).unwrap(); assert!(i >= last); last = i; }
+    assert!(plan["unknown"].as_array().unwrap().iter().any(|u| u.as_str().unwrap().contains("row counts")));
+    assert!(!serde_json::to_string(&plan).unwrap().to_lowercase().contains("rowcount"));
     // audience reports
     let pr = forge().args(["compat", dir.join("old/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap(), "--report", "pr"]).output().unwrap();
     let md = String::from_utf8_lossy(&pr.stdout);
