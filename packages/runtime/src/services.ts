@@ -24,6 +24,8 @@ export interface OutboxEntry {
   message: string;
   payload: unknown;
   createdAt: string;
+  /** Trace context of the producing operation: consumers link their spans to it (plan §20). */
+  trace?: { traceId: string; spanId: string; parentSpanId?: string };
 }
 /** Durable dispatch state of one outbox row. */
 export interface OutboxRow extends OutboxEntry {

@@ -19,6 +19,7 @@ import { ReadModels } from "./readmodels.js";
 import { Workflows } from "./workflows.js";
 import { Schedules } from "./schedules.js";
 import { Realtime } from "./realtime.js";
+import { Telemetry, type TraceContext } from "./telemetry.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -28,6 +29,8 @@ export interface CallContext {
   actor: string;
   requestId: string;
   idempotencyKey?: string;
+  /** W3C trace context for this logical operation (its own span; the request's span is the parent). */
+  trace?: TraceContext;
 }
 
 export const PAGE_DEFAULT = 50;
@@ -58,7 +61,17 @@ export class Engine {
 
   call(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError> {
     const self = this;
-    return self.program(opId, input, ctx).pipe(Effect.provide(self.layer));
+    // Every public logical operation — generated or handwritten — emits exactly one telemetry event.
+    const started = performance.now();
+    return self.program(opId, input, ctx).pipe(
+      Effect.provide(self.layer),
+      Effect.tap(() => Effect.sync(() => self.telemetry.emit(opId, ctx, started, self.successStatus(opId)))),
+      Effect.tapError((e) => Effect.sync(() => self.telemetry.emit(opId, ctx, started, e.status, e.code))),
+    );
+  }
+  private successStatus(opId: string): number {
+    const k = this.telemetry.entry(opId).kind;
+    return k === "create" || k === "changeset.propose" ? 201 : 200;
   }
 
   /** Same as call() but without providing the layer (for use inside function bodies that share it). */
@@ -191,6 +204,7 @@ export class Engine {
   readonly workflows = new Workflows(this);
   readonly schedules = new Schedules(this);
   readonly realtime = new Realtime(this);
+  readonly telemetry = new Telemetry(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {
@@ -312,7 +326,7 @@ export class Engine {
     if (!r.decorators.audited) return [];
     const message = ({ create: "Created", update: "Updated", delete: "Deleted", restore: "Restored" } as Record<string, string>)[kind] ?? "Transitioned";
     const extra = kind.startsWith("status.") && r.lifecycle ? { action: kind.slice(7), status: after[r.lifecycle.field] } : {};
-    return [{ tenant: ctx.tenant, opId, ordinal: 0, channel: `${r.id}.changes`, message, payload: { id, version: after["version"] ?? null, ...extra }, createdAt: at }];
+    return [{ tenant: ctx.tenant, opId, ordinal: 0, channel: `${r.id}.changes`, message, payload: { id, version: after["version"] ?? null, ...extra }, createdAt: at, ...(ctx.trace ? { trace: ctx.trace } : {}) }];
   }
 
   // ------------------------------------------------------------ create

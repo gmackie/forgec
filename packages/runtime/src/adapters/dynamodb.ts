@@ -254,6 +254,7 @@ export class DynamoStorage implements StorageAdapter {
     return {
       tenant: String(i["tenant"]), opId: String(i["opId"]), ordinal: Number(i["ordinal"]), channel: String(i["channel"]), message: String(i["message"]),
       payload: i["payload"], createdAt: String(i["createdAt"]), status: i["status"] as OutboxRow["status"], attempts: Number(i["attempts"] ?? 0),
+      ...(i["trace"] ? { trace: i["trace"] as NonNullable<OutboxRow["trace"]> } : {}),
       leaseOwner: (i["leaseOwner"] as string | null) ?? null, leaseUntil: i["leaseUntil"] === undefined ? null : Number(i["leaseUntil"]), delivered: (i["delivered"] as string[] | undefined) ?? [],
     };
   }
@@ -404,7 +405,7 @@ export class DynamoStorage implements StorageAdapter {
       const a = plan.audit;
       push("audit", { Put: { TableName: this.table, Item: { ...this.auditKey(tenant, a.opId), resource: a.resource, recordId: a.recordId, kind: a.kind, newVersion: a.newVersion, actor: a.actor, at: a.at } } });
       for (const o of plan.outbox) {
-        push("outbox", { Put: { TableName: this.table, Item: { ...this.outboxKey(tenant, o.opId, o.ordinal), tenant, opId: o.opId, ordinal: o.ordinal, channel: o.channel, message: o.message, payload: o.payload, status: "pending", attempts: 0, delivered: [], pendingShard: encodeIdentity(["T", tenant]), pendingAt: Date.parse(o.createdAt), createdAt: o.createdAt } } });
+        push("outbox", { Put: { TableName: this.table, Item: { ...this.outboxKey(tenant, o.opId, o.ordinal), tenant, opId: o.opId, ordinal: o.ordinal, channel: o.channel, message: o.message, payload: o.payload, status: "pending", attempts: 0, delivered: [], pendingShard: encodeIdentity(["T", tenant]), pendingAt: Date.parse(o.createdAt), createdAt: o.createdAt, ...(o.trace ? { trace: o.trace } : {}) } } });
       }
       if (plan.receipt) {
         const rc = plan.receipt;
@@ -569,7 +570,7 @@ export class DynamoStorage implements StorageAdapter {
     const a = plan.audit;
     push("audit", { Put: { TableName: this.table, Item: { ...this.auditKey(tenant, a.opId), resource: a.resource, recordId: a.recordId, kind: a.kind, newVersion: a.newVersion, actor: a.actor, at: a.at, ...(a.payload !== undefined ? { payload: a.payload } : {}) } } });
     for (const o of plan.outbox) {
-      push("outbox", { Put: { TableName: this.table, Item: { ...this.outboxKey(tenant, o.opId, o.ordinal), tenant, opId: o.opId, ordinal: o.ordinal, channel: o.channel, message: o.message, payload: o.payload, status: "pending", attempts: 0, delivered: [], pendingShard: encodeIdentity(["T", tenant]), pendingAt: Date.parse(o.createdAt), createdAt: o.createdAt } } });
+      push("outbox", { Put: { TableName: this.table, Item: { ...this.outboxKey(tenant, o.opId, o.ordinal), tenant, opId: o.opId, ordinal: o.ordinal, channel: o.channel, message: o.message, payload: o.payload, status: "pending", attempts: 0, delivered: [], pendingShard: encodeIdentity(["T", tenant]), pendingAt: Date.parse(o.createdAt), createdAt: o.createdAt, ...(o.trace ? { trace: o.trace } : {}) } } });
     }
     if (plan.receipt) {
       const rc = plan.receipt;

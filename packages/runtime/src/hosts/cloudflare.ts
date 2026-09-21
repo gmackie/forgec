@@ -9,6 +9,7 @@ import { Dispatcher } from "../dispatch.js";
 import { internalSubscriptions, withProjections } from "../readmodels.js";
 import type { Instance, WorkflowDriver } from "../workflows.js";
 import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
+import { workersLogLine } from "../telemetry.js";
 import type { WorkflowDecl } from "../model.js";
 import { cloudflareQueuesTransport, decodeEnvelope, type QueueLike } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
@@ -204,6 +205,9 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
     const engine = new Engine(model, layer, options);
     engine.workflows.driver = cloudflareWorkflowDriver(model, env);
     engine.realtime.hub = cloudflareRealtimeHub(env);
+    // Workers Logs: structured JSON per operation event (plan §20; metrics are derived downstream).
+    engine.telemetry.target = "cloudflare-d1";
+    engine.telemetry.sink = { write: (e) => console.log(workersLogLine(e)) };
     const dispatcher = new Dispatcher(model, storage, withProjections(engine, cloudflareQueuesTransport(queueBindings(model, env))), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
     return { engine, storage, objects, dispatcher };
   };

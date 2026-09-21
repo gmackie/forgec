@@ -23,6 +23,8 @@ pub struct Package {
     pub dependencies: Vec<(String, String)>,
     /// (alias, path) for dependencies resolved from disk, used by loaders.
     pub dependency_paths: Vec<(String, PathBuf)>,
+    /// `[observability]` from forge.toml: SLO window and per-class targets.
+    pub observability: crate::ir::ObservabilityConfig,
 }
 
 impl Package {
@@ -36,6 +38,7 @@ impl Package {
             files: files.into_iter().map(|(path, text)| SourceFile { path, text }).collect(),
             dependencies: Vec::new(),
             dependency_paths: Vec::new(),
+            observability: crate::ir::ObservabilityConfig::default(),
         }
     }
 }
@@ -49,6 +52,25 @@ struct Manifest {
     dependencies: indexmap::IndexMap<String, Dependency>,
     #[serde(default)]
     compatibility: Compatibility,
+    #[serde(default)]
+    observability: ManifestObservability,
+}
+#[derive(Debug, Deserialize, Default)]
+struct ManifestObservability {
+    #[serde(default)]
+    window: Option<String>,
+    #[serde(default)]
+    slo: indexmap::IndexMap<String, ManifestSlo>,
+}
+#[derive(Debug, Deserialize)]
+struct ManifestSlo {
+    availability: String,
+    latency: ManifestLatency,
+}
+#[derive(Debug, Deserialize)]
+struct ManifestLatency {
+    good: String,
+    within: String,
 }
 #[derive(Debug, Deserialize)]
 struct ManifestPackage {
@@ -141,6 +163,10 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
         files,
         dependencies,
         dependency_paths,
+        observability: crate::ir::ObservabilityConfig {
+            window: m.observability.window.unwrap_or_else(|| "28d".into()),
+            slo: m.observability.slo.into_iter().map(|(class, s)| (class, crate::ir::SloTarget { availability: s.availability, latency_good: s.latency.good, latency_within: s.latency.within })).collect(),
+        },
     })
 }
 

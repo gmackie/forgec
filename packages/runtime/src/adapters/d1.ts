@@ -189,6 +189,7 @@ export class D1Storage implements StorageAdapter {
     return {
       tenant: String(r["tenant"]), opId: String(r["op_id"]), ordinal: Number(r["ordinal"]), channel: String(r["channel"]), message: String(r["message"]),
       payload: JSON.parse(String(r["payload"])), createdAt: String(r["created_at"]), status: r["status"] as OutboxRow["status"], attempts: Number(r["attempts"]),
+      ...(r["trace"] ? { trace: JSON.parse(String(r["trace"])) as NonNullable<OutboxRow["trace"]> } : {}),
       leaseOwner: (r["lease_owner"] as string | null) ?? null, leaseUntil: r["lease_until"] === null || r["lease_until"] === undefined ? null : Number(r["lease_until"]),
       delivered: r["delivered"] ? (JSON.parse(String(r["delivered"])) as string[]) : [],
     };
@@ -297,7 +298,7 @@ export class D1Storage implements StorageAdapter {
     if (plan.kind === "publish") {
       const a = plan.audit;
       stmts.push(st("INSERT INTO forge_audit (tenant, op_id, resource, record_id, kind, new_version, actor, at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", a.tenant, a.opId, a.resource, a.recordId, a.kind, a.newVersion, a.actor, a.at, null));
-      for (const o of plan.outbox) stmts.push(st("INSERT INTO forge_outbox (tenant, op_id, ordinal, channel, message, payload, status, attempts, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?)", o.tenant, o.opId, o.ordinal, o.channel, o.message, JSON.stringify(o.payload), o.createdAt));
+      for (const o of plan.outbox) stmts.push(st("INSERT INTO forge_outbox (tenant, op_id, ordinal, channel, message, payload, status, attempts, created_at, trace) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)", o.tenant, o.opId, o.ordinal, o.channel, o.message, JSON.stringify(o.payload), o.createdAt, o.trace ? JSON.stringify(o.trace) : null));
       if (plan.receipt) {
         const rc = plan.receipt;
         stmts.push(st("INSERT INTO forge_receipt (tenant, operation, key, request_hash, status, response, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", rc.tenant, rc.operation, rc.key, rc.requestHash, rc.status, JSON.stringify(rc.response), rc.createdAt));
@@ -375,7 +376,7 @@ export class D1Storage implements StorageAdapter {
     const a = plan.audit;
     stmts.push(st("INSERT INTO forge_audit (tenant, op_id, resource, record_id, kind, new_version, actor, at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", a.tenant, a.opId, a.resource, a.recordId, a.kind, a.newVersion, a.actor, a.at, a.payload === undefined ? null : JSON.stringify(a.payload)));
     for (const o of plan.outbox) {
-      stmts.push(st("INSERT INTO forge_outbox (tenant, op_id, ordinal, channel, message, payload, status, attempts, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?)", o.tenant, o.opId, o.ordinal, o.channel, o.message, JSON.stringify(o.payload), o.createdAt));
+      stmts.push(st("INSERT INTO forge_outbox (tenant, op_id, ordinal, channel, message, payload, status, attempts, created_at, trace) VALUES (?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)", o.tenant, o.opId, o.ordinal, o.channel, o.message, JSON.stringify(o.payload), o.createdAt, o.trace ? JSON.stringify(o.trace) : null));
     }
     if (plan.receipt) {
       const rc = plan.receipt;

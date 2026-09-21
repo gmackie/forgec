@@ -12,6 +12,7 @@ import { SendTaskSuccessCommand, SFNClient, StartExecutionCommand } from "@aws-s
 import type { WorkflowDriver } from "../workflows.js";
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
 import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
+import { emfLine } from "../telemetry.js";
 import { decodeEnvelope, sqsTransport } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
@@ -110,6 +111,9 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
     },
   };
   engine.workflows.driver = driver;
+  // CloudWatch EMF: count + duration per operation/outcome with bounded dimensions (plan §20).
+  engine.telemetry.target = "aws-dynamodb";
+  engine.telemetry.sink = { write: (e) => console.log(emfLine(e, `forge/${model.bundle.ir.package.name}`)) };
   // Realtime (plan §19): API Gateway WebSocket connections, registry in documents, fan-out via PostToConnection.
   const REG = "_realtime"; // system tenant for the connection registry (connection ids are not tenant-scoped)
   const mgmt = env.FORGE_WS_ENDPOINT ? new ApiGatewayManagementApiClient({ region: env.AWS_REGION ?? "us-east-1", endpoint: env.FORGE_WS_ENDPOINT }) : null;

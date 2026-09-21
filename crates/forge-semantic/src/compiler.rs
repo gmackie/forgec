@@ -1684,7 +1684,7 @@ impl<'a> Ctx<'a> {
         imports.sort_by(|a, b| a.alias.cmp(&b.alias));
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
-            package: PackageInfo { name: self.pkg.name.clone(), version: self.pkg.version.clone(), edition: self.pkg.edition.clone(), profile: self.pkg.profile.clone(), targets: self.pkg.targets.clone() },
+            package: PackageInfo { name: self.pkg.name.clone(), version: self.pkg.version.clone(), edition: self.pkg.edition.clone(), profile: self.pkg.profile.clone(), targets: self.pkg.targets.clone(), observability: self.pkg.observability.clone() },
             imports,
             modules,
         }

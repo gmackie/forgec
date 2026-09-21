@@ -5,6 +5,7 @@
 import { Cause, Effect } from "effect";
 import type { Engine, CallContext } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
+import { spanFromTraceparent, traceparent } from "./telemetry.js";
 import type { Model, OperationRef } from "./model.js";
 
 export interface Principal {
@@ -317,7 +318,8 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         return problem(err("MethodNotAllowed", `unsupported operation kind ${kind}`), requestId);
     }
 
-    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
+    const trace = spanFromTraceparent(req.headers.get("traceparent"));
+    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace, ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
     const exit = await Effect.runPromiseExit(engine.call(route.ref.op.id, input, ctx));
     if (exit._tag === "Failure") {
       const e = Cause.squash(exit.cause);
@@ -326,7 +328,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       return problem(err("Internal", "unexpected failure"), requestId);
     }
     const value = exit.value as Record<string, unknown>;
-    const headers: Record<string, string> = { ...JSON_HEADERS, "x-request-id": requestId };
+    const headers: Record<string, string> = { ...JSON_HEADERS, "x-request-id": requestId, traceparent: traceparent(trace) };
     if (value && typeof value["version"] === "number") headers["etag"] = `"${value["version"]}"`;
     return new Response(JSON.stringify(value), { status: kind === "create" || kind === "changeset.propose" ? 201 : 200, headers });
   }

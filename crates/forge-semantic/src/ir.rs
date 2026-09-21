@@ -22,6 +22,30 @@ pub struct PackageInfo {
     pub edition: String,
     pub profile: String,
     pub targets: Vec<String>,
+    #[serde(default)]
+    pub observability: ObservabilityConfig,
+}
+
+/// `[observability]` in forge.toml (plan §20): editable SLO targets per operation class, not
+/// predicted performance.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObservabilityConfig {
+    pub window: String,
+    /// class (`crud-read`, `crud-write`, `function`, ...) -> target
+    pub slo: Vec<(String, SloTarget)>,
+}
+impl Default for ObservabilityConfig {
+    fn default() -> Self {
+        Self { window: "28d".into(), slo: vec![] }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SloTarget {
+    pub availability: String,
+    pub latency_good: String,
+    pub latency_within: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

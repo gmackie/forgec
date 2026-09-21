@@ -13,7 +13,28 @@ expression: out.ir.unwrap()
     "targets": [
       "cloudflare-d1",
       "aws-dynamodb"
-    ]
+    ],
+    "observability": {
+      "window": "28d",
+      "slo": [
+        [
+          "crud-read",
+          {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithin": "500ms"
+          }
+        ],
+        [
+          "crud-write",
+          {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithin": "1s"
+          }
+        ]
+      ]
+    }
   },
   "imports": [
     {

@@ -79,7 +79,7 @@ export class Functions {
         const now = (yield* Clock).now();
         const opId = plans[0]?.opId ?? (yield* IdGen).opId();
         const host = plans[0];
-        const outbox = pending.map((p, i) => ({ ...p, opId, ordinal: (host?.outbox.length ?? 0) + i, createdAt: now }));
+        const outbox = pending.map((p, i) => ({ ...p, opId, ordinal: (host?.outbox.length ?? 0) + i, createdAt: now, ...(ctx.trace ? { trace: ctx.trace } : {}) }));
         if (host) {
           // An idempotency key stores the function's result with its first plan: a replay returns it
           // instead of re-running the body (plan §15 activity retries rely on this).
