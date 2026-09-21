@@ -87,22 +87,25 @@ describe.skipIf(!url)("PostgreSQL adapter", () => {
     // Its own pool: the shared one caps at 4 connections, which serializes the calls and hides
     // the conflict this is about.
     const hot = new pg.Pool({ connectionString: url, max: 16 });
-    const executor = rawPgExecutor(hot);
-    const target = new PgTarget(executor, `pg-contention-${Date.now().toString(36)}`);
-    const tenant = `pg-contention-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    const N = 64;
-    const results = await Promise.all(
-      Array.from({ length: N }, (_, i) =>
-        target.call(`${A}/Customer.create`, { code: `C${String(i).padStart(3, "0")}`, name: `Customer ${i}` }, { tenant, actor: "operator" }),
-      ),
-    );
-    const failed = results.filter((r) => !r.ok);
-    expect(failed, `${failed.length}/${N} concurrent creates failed: ${JSON.stringify(failed.slice(0, 3))}`).toEqual([]);
-    // and every one of them is actually durable, not merely reported as written
-    const ids = results.map((r) => (r.ok ? (r.value as { id: string }).id : ""));
-    const fetched = await Promise.all(ids.map((id) => target.call(`${A}/Customer.get`, { id }, { tenant, actor: "operator" })));
-    expect(fetched.filter((r) => !r.ok)).toEqual([]);
-    await hot.end();
+    try {
+      const target = new PgTarget(rawPgExecutor(hot), `pg-contention-${Date.now().toString(36)}`);
+      const tenant = `pg-contention-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const N = 64;
+      const results = await Promise.all(
+        Array.from({ length: N }, (_, i) =>
+          target.call(`${A}/Customer.create`, { code: `C${String(i).padStart(3, "0")}`, name: `Customer ${i}` }, { tenant, actor: "operator" }),
+        ),
+      );
+      const failed = results.filter((r) => !r.ok);
+      expect(failed, `${failed.length}/${N} concurrent creates failed: ${JSON.stringify(failed.slice(0, 3))}`).toEqual([]);
+      // and every one of them is actually durable, not merely reported as written
+      const ids = results.map((r) => (r.ok ? (r.value as { id: string }).id : ""));
+      const fetched = await Promise.all(ids.map((id) => target.call(`${A}/Customer.get`, { id }, { tenant, actor: "operator" })));
+      expect(fetched.filter((r) => !r.ok)).toEqual([]);
+    } finally {
+      // a failed assertion must not leave 16 connections open: vitest would hang on teardown
+      await hot.end();
+    }
   }, 120_000);
 
   it("pooled connections never retain transaction-local tenant context (PAR-087)", async () => {
