@@ -170,6 +170,54 @@ apply `wrangler d1 migrations apply forge-console --local`, and run `pnpm cf:dev
 migrations must be applied before serving traffic. The actual Worker uses `nodejs_compat`;
 the Node-only filesystem store and server are not invoked in Workers.
 
+## Cloudflare-native: R2 artifacts and Access sign-in
+
+Two optional backends let an instance run entirely on Cloudflare. Both default to off, so a
+Docker or Node deployment is unaffected by their existence.
+
+`OCI_BACKEND=r2` stores artifacts in an R2 bucket bound as `BLOBS` instead of talking to an
+external registry, and serves the OCI Distribution endpoints from this worker at `/v2`. One
+layout backs both: the console reads and writes R2 directly, while `oras`, `crane` and
+`docker pull` reach the same objects over `/v2`. Scope is deliberate — these are Forge
+artifacts, which this client caps at 8 MB and uploads monolithically, so there is no chunked
+upload and a `PATCH` is answered with 405 rather than a confusing failure.
+
+`AUTH_MODE=cloudflare-access` trusts the identity Cloudflare Access asserts at the edge
+instead of a shared administrator token. `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` are both
+required, and a half-configured instance refuses to start rather than quietly accepting
+tokens. `ACCESS_AUD` must be the *application's* AUD tag: Access signs every application in a
+team with one key set, so without pinning it a token minted for any other application in the
+team would authenticate here.
+
+**Access cannot authenticate container clients.** It identifies machines with
+`CF-Access-Client-*` headers, and the Docker CLI reserves `Authorization` for the registry's
+own scheme and sends no custom headers. So `/v2` uses the Distribution Bearer flow with
+credentials this instance issues and stores in D1, and it must sit behind an Access **Bypass**
+application scoped to the `/v2` path. Create that bypass *before* the application covering the
+hostname, so there is never a window in which `/v2` sits behind a login page.
+
+```sh
+wrangler r2 bucket create forge-console-artifacts
+wrangler d1 create forge-console          # put the id into wrangler.gmac.jsonc
+wrangler d1 migrations apply forge-console --remote
+wrangler secret put SIGNING_KEY_JWK       # node scripts/keygen.mjs
+wrangler secret put REGISTRY_TOKEN_SECRET # openssl rand -hex 32
+wrangler deploy -c wrangler.gmac.jsonc
+node scripts/edge-smoke.mjs https://forge.gmac.io
+```
+
+`edge-smoke.mjs` checks the thing that is easiest to get wrong and hardest to diagnose: that
+`/v2/` answers with a `WWW-Authenticate` challenge and **not** an Access HTML page. If it
+returns HTML, the bypass is missing or mis-scoped and every container client will fail with a
+parse error far from the cause.
+
+One failure mode deserves naming because it survives manual testing. Under Access, an expired
+session is answered with a redirect to the team login domain, and a browser enforces CSP
+against every hop of a redirect chain — so the console widens `connect-src` and `form-action`
+to the team domain in this mode only, and treats an opaque redirect as "reload and
+re-authenticate". Neither half is sufficient alone, and the failure only appears once a
+session expires.
+
 ## Optional Workers domain for a Docker origin
 
 `src/edge.ts` is a small HTTPS proxy for operators who want a Workers custom domain in front
@@ -191,9 +239,14 @@ Workers/D1 deployments.
 
 | Variable | Purpose |
 |---|---|
-| `ADMIN_TOKEN` | Required shared operator credential, at least 32 characters. Browser keeps it in tab memory only. |
+| `ADMIN_TOKEN` | Shared operator credential, at least 32 characters, required unless `AUTH_MODE=cloudflare-access`. Browser keeps it in tab memory only. |
+| `AUTH_MODE` | `token` (default) or `cloudflare-access`. |
+| `ACCESS_TEAM_DOMAIN` | Access team, e.g. `example.cloudflareaccess.com`. Required with `cloudflare-access`. |
+| `ACCESS_AUD` | The **application's** AUD tag. Required with `cloudflare-access`: a team signs every application with one key set, so without it a token for another application in the team would be accepted. |
 | `INSTANCE_AUTHORITY` | Required stable identity under which manifests are signed. |
 | `INSTANCE_NAME` | Display label; defaults to Forge. |
+| `OCI_BACKEND` | `http` (default) or `r2`. With `r2`, artifacts live in the `BLOBS` bucket and this instance serves `/v2` itself; `OCI_URL`, `OCI_AUTHORIZATION` and `OCI_BLOB_HOSTS` are then unused. |
+| `REGISTRY_TOKEN_SECRET` | Signing secret for the short-lived bearer tokens `/v2/token` issues. Required to serve `/v2`. |
 | `OCI_URL` | OCI registry origin, e.g. `https://registry.example.com`; omit to run app management alone. |
 | `OCI_REPOSITORY` | Repository path inside that registry, e.g. `team/forge`. Required with OCI. |
 | `OCI_AUTHORIZATION` | Optional server-only full Authorization value, `Bearer …` or `Basic …`. |
@@ -207,7 +260,8 @@ Workers/D1 deployments.
 
 Do not change authority or signing key casually: this first version trusts only the configured
 key for the configured authority. Changing either makes older packages fail verification.
-Multi-key rotation and OIDC/team roles are follow-up capabilities. A plain configuration field
+Multi-key rotation is a follow-up capability; `AUTH_MODE=cloudflare-access` now covers team
+sign-in for operators, while container clients use credentials this instance issues. A plain configuration field
 can contain any string; the system cannot identify secret values automatically. Store only
 references under `secretRefs`, never actual credentials.
 

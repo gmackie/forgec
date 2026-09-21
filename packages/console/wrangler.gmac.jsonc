@@ -1,0 +1,58 @@
+{
+  // Deployment configuration for forge.gmac.io.
+  //
+  // Kept separate from wrangler.jsonc on purpose: that file is the template self-hosters copy,
+  // and a template carrying someone else's hostname and Access team is a trap. This instance
+  // has no special status in the application — it is one deployment among the ones the README
+  // describes, and it only looks different because of the values below.
+  //
+  //   wrangler deploy -c wrangler.gmac.jsonc
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "forge-console",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-21",
+  // Load-bearing, not incidental: digestOf() uses node:crypto, and the registry package pulls
+  // node:fs and node:path as top-level imports even though the Worker never reaches them.
+  "compatibility_flags": ["nodejs_compat"],
+  "build": {
+    "command": "pnpm --filter @forgegraph/registry... build && pnpm build"
+  },
+  "assets": {
+    "directory": "./dist/web",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    // Lets the Worker answer /healthz and /v2 before the static handler, and wrap asset
+    // responses in this instance's security headers.
+    "run_worker_first": true
+  },
+  "routes": [{ "pattern": "forge.gmac.io", "custom_domain": true }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "forge-console",
+      "database_id": "REPLACE_WITH_YOUR_D1_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "BLOBS", "bucket_name": "forge-console-artifacts" }
+  ],
+  "vars": {
+    "INSTANCE_NAME": "Forge",
+    "INSTANCE_AUTHORITY": "forge.gmac.io",
+    // Artifacts live in R2 and are served from this worker's own /v2 endpoints, so there is no
+    // OCI_URL and no OCI_BLOB_HOSTS: blobs are streamed rather than redirected off-origin.
+    "OCI_BACKEND": "r2",
+    "OCI_REPOSITORY": "forge",
+    "AUTH_MODE": "cloudflare-access",
+    "ACCESS_TEAM_DOMAIN": "gmacko.cloudflareaccess.com",
+    // The *application's* AUD tag, from the Access application for this hostname. Not optional:
+    // Access signs every application in a team with one key set, so without pinning this a
+    // token minted for any other application in the team would authenticate here.
+    "ACCESS_AUD": "REPLACE_WITH_YOUR_ACCESS_AUD",
+    "SIGNING_KEY_ID": "instance-v1"
+  }
+  // Secrets (wrangler secret put): SIGNING_KEY_JWK, REGISTRY_TOKEN_SECRET.
+  // Deliberately no ADMIN_TOKEN — humans authenticate through Access, and machines use
+  // registry credentials issued from the console and stored in D1.
+}
