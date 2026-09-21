@@ -20,6 +20,8 @@ export interface Audit {
   at: string;
   action: string;
   subject: string;
+  /** Who made the change. Optional so audit logs written before this existed still parse. */
+  actor?: string;
 }
 export interface State {
   revision: number;

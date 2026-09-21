@@ -8,6 +8,7 @@ import {
   type ViewState,
 } from "./model.js";
 import type { OciRegistry } from "./oci.js";
+import { tokenAuth, type AuthAdapter } from "./auth.js";
 const name = z.string().trim().min(1).max(120);
 const appInput = z
   .object({ name, description: z.string().max(2000).default("") })
@@ -58,7 +59,9 @@ const publishInput = z
   .strict();
 export interface ApiOptions {
   store: StateStore;
-  token: string;
+  /** Supply an adapter, or `token` below to use the shared-administrator scheme. */
+  auth?: AuthAdapter;
+  token?: string;
   authority: string;
   name: string;
   runtime: string;
@@ -126,16 +129,6 @@ function decode<T>(schema: z.ZodType<T>, data: unknown): T {
     );
   return parsed.data;
 }
-async function equalToken(actual: string, expected: string): Promise<boolean> {
-  const hash = async (s: string) =>
-    new Uint8Array(
-      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)),
-    );
-  const [a, b] = await Promise.all([hash(actual), hash(expected)]);
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a[i]! ^ b[i]!;
-  return diff === 0;
-}
 const json = (value: unknown, status = 200) =>
   Response.json(value, {
     status,
@@ -160,30 +153,17 @@ function view(state: State, o: ApiOptions): ViewState {
 function route(request: Request) {
   return Effect.gen(function* () {
     const o = yield* Management;
-    if (o.token.length < 32)
-      return yield* Effect.fail(
-        new Problem(
-          503,
-          "Configure an administrator token of at least 32 characters.",
-        ),
-      );
-    if (
-      !(yield* attempt(() =>
-        equalToken(
-          request.headers.get("authorization") ?? "",
-          `Bearer ${o.token}`,
-        ),
-      ))
-    )
-      return yield* Effect.fail(
-        new Problem(401, "Enter this instance’s administrator token."),
-      );
+    // Before routing, so an unauthenticated caller cannot learn which paths exist.
+    const auth = o.auth ?? tokenAuth(o.token ?? "");
+    const identity = yield* attempt(() => auth.authenticate(request));
     const url = new URL(request.url);
     const method = request.method;
     const path = url.pathname.slice(4);
     if (method !== "GET") {
       const origin = request.headers.get("origin");
-      if (origin && origin !== url.origin)
+      // A header-borne token is only ever sent deliberately, so a missing Origin is tolerated
+      // for CLI callers. A cookie rides along on cross-site requests, so there it is required.
+      if (origin ? origin !== url.origin : auth.cookieBorne)
         return yield* Effect.fail(
           new Problem(403, "Cross-origin writes are not allowed."),
         );
@@ -349,7 +329,13 @@ function route(request: Request) {
       app.updatedAt = now;
     });
     state.revision++;
-    state.audit.unshift({ id: crypto.randomUUID(), at: now, action, subject });
+    state.audit.unshift({
+      id: crypto.randomUUID(),
+      at: now,
+      action,
+      subject,
+      actor: identity.actor,
+    });
     state.audit = state.audit.slice(0, 200);
     if (!(yield* attempt(() => o.store.save(expected, state))))
       return yield* Effect.fail(
