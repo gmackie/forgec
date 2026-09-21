@@ -65,8 +65,8 @@ describe("PAR-172: cross-profile differential", () => {
       observed.push({ profile, support: support.ok ? Object.keys(support.value as object).sort() : support, parent: parent.ok ? Object.keys(parent.value as object).sort() : parent, denied: denied.ok ? "ok" : denied.code, none: none.ok ? "ok" : none.code });
     }
     expect(observed).toEqual([
-      { profile: "runtime-memory", support: ["customer", "email", "id", "name", "supportNotes"], parent: ["customer", "email", "id", "name"], denied: "NotPermitted", none: "NotPermitted" },
-      { profile: "sqlite-node", support: ["customer", "email", "id", "name", "supportNotes"], parent: ["customer", "email", "id", "name"], denied: "NotPermitted", none: "NotPermitted" },
+      { profile: "runtime-memory", support: ["customer", "email", "id", "name", "supportNotes", "version"], parent: ["customer", "email", "id", "name"], denied: "NotPermitted", none: "NotPermitted" },
+      { profile: "sqlite-node", support: ["customer", "email", "id", "name", "supportNotes", "version"], parent: ["customer", "email", "id", "name"], denied: "NotPermitted", none: "NotPermitted" },
     ]);
     // PostgreSQL parity for purpose surfaces is exercised in packages/runtime/test/scope.test.ts semantics through the same
     // engine code path; the storage adapter sees only projected results, so no per-adapter divergence is possible there.

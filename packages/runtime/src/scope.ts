@@ -90,10 +90,15 @@ export class Scope {
     return Effect.void;
   }
 
-  /** A new object with only the granted read fields — never the stored object narrowed by a cast. */
+  /**
+   * A new object with only the granted read fields — never the stored object narrowed by a cast. A surface that
+   * grants any write (update or action) also exposes `version`: optimistic concurrency needs the token, and the
+   * token discloses nothing but the revision count.
+   */
   project(s: Surface, record: Wire): Wire {
     const out: Wire = {};
     for (const a of s.allowAtoms) if (a.verb === "read" && a.name in record) out[a.name] = record[a.name];
+    if ("version" in record && !("version" in out) && s.allowAtoms.some((a) => a.verb === "update" || a.verb === "actions")) out["version"] = record["version"];
     return out;
   }
   projectPage(s: Surface, page: Wire): Wire {

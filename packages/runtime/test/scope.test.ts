@@ -40,7 +40,7 @@ describe("purpose-scoped reads", () => {
     const viaParent = await run(engine.call(`${N}/Contact.get`, { id: contact.id }, parent));
     expect(Object.keys(viaParent).sort()).toEqual(["customer", "email", "id", "name"]);
     const viaSupport = await run(engine.call(`${N}/Contact.get`, { id: contact.id }, support));
-    expect(Object.keys(viaSupport).sort()).toEqual(["customer", "email", "id", "name", "supportNotes"]);
+    expect(Object.keys(viaSupport).sort()).toEqual(["customer", "email", "id", "name", "supportNotes", "version"]);
     // serializing the projection reveals nothing extra
     expect(JSON.parse(JSON.stringify(viaParent))).not.toHaveProperty("supportNotes");
   });
@@ -70,7 +70,7 @@ describe("query authority (PAR-105)", () => {
 describe("mutations under a surface (PAR-107)", () => {
   it("update is limited to the surface's update set; actions are granted separately from field writes", async () => {
     const ok = await run(engine.call(`${N}/Contact.update`, { id: contact.id, expectedVersion: 1, patch: { email: "new@example.com" } }, support));
-    expect(Object.keys(ok).sort()).toEqual(["customer", "email", "id", "name", "supportNotes"]);
+    expect(Object.keys(ok).sort()).toEqual(["customer", "email", "id", "name", "supportNotes", "version"]);
     expect((await fails(engine.call(`${N}/Contact.update`, { id: contact.id, expectedVersion: 2, patch: { name: "X" } }, support))).code).toBe("NotPermitted");
     expect((await fails(engine.call(`${N}/Contact.update`, { id: contact.id, expectedVersion: 2, patch: { email: "x@example.com" } }, parent))).code).toBe("NotPermitted");
   });
@@ -100,6 +100,17 @@ describe("nominal scoped readers (PAR-103)", () => {
     expect(wrong._tag).toBe("Failure");
     const right = await Effect.runPromise(program.pipe(Effect.provideService(b.service, b.reader)) as never);
     expect(Object.keys(right as object).sort()).toEqual(["customer", "email", "id", "name"]);
+  });
+});
+
+describe("write surfaces expose the concurrency token", () => {
+  it("a surface with update authority sees `version` (it needs If-Match); a read-only surface does not", async () => {
+    const viaSupport = await run(engine.call(`${N}/Contact.get`, { id: contact.id }, support)); // SupportRecord: update { email supportNotes }
+    expect(viaSupport.version).toBe(1);
+    const updated = await run(engine.call(`${N}/Contact.update`, { id: contact.id, expectedVersion: viaSupport.version, patch: { email: "new@example.com" } }, support));
+    expect(updated.version).toBe(2);
+    const viaParent = await run(engine.call(`${N}/Contact.get`, { id: contact.id }, parent)); // ContactRead: no writes
+    expect("version" in viaParent).toBe(false);
   });
 });
 

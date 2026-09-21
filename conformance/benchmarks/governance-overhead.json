@@ -1,0 +1,209 @@
+{
+  "version": "benchmarks/1",
+  "at": "2026-09-21T04:58:17.348Z",
+  "node": "v24.14.0",
+  "workload": {
+    "warmup": 50,
+    "iterations": 300,
+    "ops": [
+      "Contact.get (point read)",
+      "Contact.update (write)"
+    ],
+    "note": "single process, in-memory object store, one tenant; latencies are wall-clock per engine.call in ms; not comparable across machines"
+  },
+  "profiles": {
+    "runtime-memory": {
+      "context": {
+        "app": "@acme/commerce (edition 2026)",
+        "baseline": {
+          "read": {
+            "n": 300,
+            "p50": 0.046,
+            "p95": 0.06,
+            "p99": 0.07,
+            "max": 6.371
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.069,
+            "p95": 0.09,
+            "p99": 0.14,
+            "max": 0.144
+          }
+        },
+        "note": "different downstream work (change events, projections): context only, not a governance ratio"
+      },
+      "sameApp": {
+        "app": "@acme/commerce-next (edition 2027)",
+        "order": [
+          "unguardedFirst",
+          "governed",
+          "unguarded"
+        ],
+        "unguardedFirst": {
+          "read": {
+            "n": 300,
+            "p50": 0.027,
+            "p95": 0.034,
+            "p99": 0.041,
+            "max": 0.07
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.052,
+            "p95": 0.069,
+            "p99": 0.1,
+            "max": 2.251
+          }
+        },
+        "governed": {
+          "read": {
+            "n": 300,
+            "p50": 0.032,
+            "p95": 0.04,
+            "p99": 0.058,
+            "max": 0.059
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.066,
+            "p95": 0.079,
+            "p99": 0.1,
+            "max": 0.104
+          }
+        },
+        "unguarded": {
+          "read": {
+            "n": 300,
+            "p50": 0.028,
+            "p95": 0.034,
+            "p99": 0.041,
+            "max": 0.049
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.065,
+            "p95": 0.077,
+            "p99": 0.085,
+            "max": 0.123
+          }
+        },
+        "governanceOverheadRatio": {
+          "readP50": 1.14,
+          "writeP50": 1.02
+        }
+      },
+      "decisionCache": {
+        "hits": 0,
+        "misses": 700,
+        "size": 700
+      },
+      "writeAmplification": {
+        "record": 1,
+        "audit": 1,
+        "claims": 0,
+        "outbox": 1,
+        "total": 3
+      }
+    },
+    "sqlite-node": {
+      "context": {
+        "app": "@acme/commerce (edition 2026)",
+        "baseline": {
+          "read": {
+            "n": 300,
+            "p50": 0.074,
+            "p95": 0.09,
+            "p99": 0.113,
+            "max": 2.591
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.168,
+            "p95": 0.202,
+            "p99": 0.242,
+            "max": 0.275
+          }
+        },
+        "note": "different downstream work (change events, projections): context only, not a governance ratio"
+      },
+      "sameApp": {
+        "app": "@acme/commerce-next (edition 2027)",
+        "order": [
+          "unguardedFirst",
+          "governed",
+          "unguarded"
+        ],
+        "unguardedFirst": {
+          "read": {
+            "n": 300,
+            "p50": 0.057,
+            "p95": 0.065,
+            "p99": 0.098,
+            "max": 0.111
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.165,
+            "p95": 0.183,
+            "p99": 0.218,
+            "max": 0.282
+          }
+        },
+        "governed": {
+          "read": {
+            "n": 300,
+            "p50": 0.063,
+            "p95": 0.077,
+            "p99": 0.09,
+            "max": 0.333
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.174,
+            "p95": 0.208,
+            "p99": 0.268,
+            "max": 0.411
+          }
+        },
+        "unguarded": {
+          "read": {
+            "n": 300,
+            "p50": 0.054,
+            "p95": 0.063,
+            "p99": 0.095,
+            "max": 0.111
+          },
+          "write": {
+            "n": 300,
+            "p50": 0.156,
+            "p95": 0.171,
+            "p99": 0.18,
+            "max": 0.201
+          }
+        },
+        "governanceOverheadRatio": {
+          "readP50": 1.17,
+          "writeP50": 1.12
+        }
+      },
+      "decisionCache": {
+        "hits": 0,
+        "misses": 700,
+        "size": 700
+      },
+      "writeAmplification": {
+        "record": 1,
+        "audit": 1,
+        "claims": 0,
+        "outbox": 1,
+        "total": 3
+      }
+    }
+  },
+  "limits": [
+    "decision cache is bounded by TTL (60s) and epoch only; its size grows with distinct (record, revision) keys decided within the TTL — a write-heavy workload on many records needs the host to size memory accordingly",
+    "PIP attributes are gathered per decision from static providers here; a remote PIP adds its own latency per miss",
+    "single-process, in-memory object store; no network, no TLS, no cold start: absolute numbers are not deployment latencies"
+  ]
+}

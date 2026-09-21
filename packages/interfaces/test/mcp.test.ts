@@ -115,7 +115,7 @@ describe("MCP over the same contracts", () => {
   it("tool results carry the scoped value the HTTP binding would return, and business errors as isError problems", async () => {
     const got = result(await rpc(agent7, "tools/call", { name: "contact_get", arguments: { id: contact.id } }));
     // the surface projects the record: only granted read fields come back
-    expect(Object.keys(got["structuredContent"] as object).sort()).toEqual(["customer", "email", "id", "name", "supportNotes"]);
+    expect(Object.keys(got["structuredContent"] as object).sort()).toEqual(["customer", "email", "id", "name", "supportNotes", "version"]);
     const stale = result(await rpc(agent7, "tools/call", { name: "contact_update", arguments: { id: contact.id, expectedVersion: 5, patch: { email: "x@example.com" } } }));
     expect(stale["isError"]).toBe(true);
     expect(JSON.parse((stale["content"] as { text: string }[])[0]!.text)).toMatchObject({ code: "VersionConflict", status: 412 });
