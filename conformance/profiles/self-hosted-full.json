@@ -2,16 +2,15 @@
   "version": "conformance-profile/1",
   "id": "self-hosted-full",
   "description": "Node + PostgreSQL + Temporal-backed workflows + durable messaging + S3-compatible objects, packaged by @forge/adapters/self-hosted.",
-  "status": "unverified",
-  "reason": "A Temporal workflow driver is not implemented; the pack can start Temporal (compose --temporal) but nothing is certified against it. Claiming this profile from the Compose topology alone would be name-based certification.",
-  "certifiedInstead": {
-    "id": "node-postgres",
-    "description": "Node host + PostgreSQL + in-process durable workflow driver + Postgres-backed outbox/inbox + FsBucket or S3 objects.",
-    "evidence": [
-      "packages/runtime/test/node-host.test.ts: 15 conformance scenarios over HTTP, realtime, restart resumes acknowledged outbox work, PAR-153 crash/restart around start, outbox delivery and an external signal",
-      "packages/runtime/test/postgres.test.ts: contract suite (raw-pg and drizzle-pg facades), PAR-146 cutover",
-      "conformance/certification/latest.json (pnpm certify with FORGE_PG_URL)"
-    ]
-  },
-  "requiredToCertify": ["Temporal workflow driver implementing WorkflowDriver (start/advance/wait/signal with task tokens)", "PAR-153 executed with the worker as a Temporal worker", "restart, early signal and outbox retry evidence retained"]
+  "status": "certified",
+  "reason": "Temporal owns durable timers and signal buffering; the Forge store owns instance state. Certified for the single-node dev-server topology; a multi-node Temporal cluster and Temporal Cloud are separate tuples (unverified).",
+  "scope": "Node 24 host + PostgreSQL 17 + Temporal dev server 1.32 (single node, SQLite persistence) driving Forge instances through @forge/temporal; in-process durable messaging over the Postgres outbox; FsBucket/S3-compatible objects",
+  "evidence": [
+    "packages/temporal/test/temporal.test.ts: PAR-153 \u2014 sleeping step survives worker + API crash and Temporal fires the timer after restart; early signal held and consumed; late signal through Temporal's buffered wake after the worker restarts; duplicate signals not re-applied",
+    "packages/runtime/test/node-host.test.ts: the same profile without Temporal (in-process driver)"
+  ],
+  "notCertified": [
+    "Temporal multi-node cluster / Temporal Cloud (different tuple)",
+    "Compose topology `--temporal` boots temporalio/auto-setup; the image build itself is not exercised in CI"
+  ]
 }

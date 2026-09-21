@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- `@forge/temporal`: Temporal WorkflowDriver + worker; profile
+  `self-hosted-full` certified on a single-node Temporal dev server.
+- `@forge/adapters/sqlite`: embedded libsql executor certified through the
+  D1 adapter.
+- `OtlpSink` and `telemetryFormat: "otlp"` on the Node host.
+
 ## 0.2.0 (2026-09-21)
 
 Post-M8 program M9–M21 complete. Live certification of both clouds on

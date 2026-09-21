@@ -39,7 +39,8 @@ describe("release manifest", () => {
     for (const c of combos.filter((x) => x.status === "certified")) expect(c.evidence.length).toBeGreaterThan(0);
     expect(combos.map((c) => c.profile)).toEqual(["cloudflare-d1", "aws-dynamodb", "node-postgres", "sqlite-node", "runtime-memory"]);
     const notCertified = m["notCertified"] as { profile: string; status: string; reason: string | null }[];
-    expect(notCertified.map((n) => n.profile)).toEqual(expect.arrayContaining(["neon/direct", "turso/libsql/node/any", "self-hosted-full (temporal)", "planetscale-mysql/*"]));
+    expect(notCertified.map((n) => n.profile)).toEqual(expect.arrayContaining(["neon/direct", "turso/libsql/node/any", "planetscale-mysql/*"]));
+    expect(notCertified.map((n) => n.profile)).not.toContain("self-hosted-full (temporal)"); // certified post-release on the single-node topology
     for (const n of notCertified) expect(n.reason).toBeTruthy();
     expect(m["retest"]).toMatchObject({ expiryDays: 90 });
     expect(String(m["disclaimer"])).toMatch(/not a statement of regulatory compliance/);

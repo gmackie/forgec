@@ -1,6 +1,6 @@
 {
   "version": "release-manifest/1",
-  "generatedAt": "2026-09-21T05:12:24.082Z",
+  "generatedAt": "2026-09-21T06:17:30.748Z",
   "allRequiredProfilesCertified": true,
   "pins": {
     "compiler": {
@@ -239,12 +239,7 @@
     {
       "profile": "turso/libsql/node/any",
       "status": "unverified",
-      "reason": "profile pinned in packages/adapters/sqlite PROFILES; run qualifySqlite + the conformance scenarios against FORGE_TURSO_URL before any claim (PAR-150)"
-    },
-    {
-      "profile": "self-hosted-full (temporal)",
-      "status": "unverified",
-      "reason": "see conformance/profiles/self-hosted-full.json"
+      "reason": "embedded libsql is certified; the Turso cloud service (hrana/WebSocket transport, remote replicas) has not been exercised: set FORGE_TURSO_URL/FORGE_TURSO_TOKEN and run packages/adapters/test/sqlite.test.ts"
     }
   ],
   "milestones": {
@@ -267,7 +262,7 @@
   },
   "benchmarks": {
     "ref": "conformance/benchmarks/governance-overhead.json",
-    "at": "2026-09-21T04:58:17.348Z",
+    "at": "2026-09-21T05:13:21.190Z",
     "note": "per-profile measurements with workload definitions and limits; no cross-machine or parity claim"
   },
   "migration": {

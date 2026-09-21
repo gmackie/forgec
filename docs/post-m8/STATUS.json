@@ -450,14 +450,16 @@
     "postgres/pg-pooled-transaction (no-session-state contract)",
     "sqlite-node (node:sqlite) through D1Storage",
     "terraform packs for cloudflare + aws (validate passes; cloudflare Workflows named unsupported by provider 5.4.0)",
-    "docker/nix packs (secret-free; flake evaluates)"
+    "docker/nix packs (secret-free; flake evaluates)",
+    "self-hosted-full: node-24 + postgres-17 + Temporal dev server via @forge/temporal",
+    "libsql-embedded (@libsql/client 0.18.0) through D1Storage"
    ],
    "unverified": [
     "neon/direct",
     "neon/pooled-transaction",
     "planetscale-postgres/direct",
-    "turso/libsql",
-    "self-hosted-full (temporal)"
+    "turso cloud (hrana transport)",
+    "temporal multi-node / cloud"
    ],
    "tickets": {
     "FORGE-072": {
@@ -486,9 +488,9 @@
      ]
     },
     "FORGE-076": {
-     "status": "partial",
+     "status": "done",
      "evidence": [
-      "conformance/profiles/self-hosted-full.json: unverified (no Temporal driver); node-postgres profile certified instead with PAR-153 crash/restart around start, outbox delivery and an external signal (packages/runtime/test/node-host.test.ts)"
+      "@forge/temporal: WorkflowDriver (start one execution per Forge instance, wake by signal) + worker with the `advance` activity; workflow code runs in Temporal's sandbox and knows no business graph; packages/temporal/test/temporal.test.ts certifies PAR-153 against `temporal server start-dev` (worker + API crash around a sleeping step, early/late signals, exactly-once); conformance/profiles/self-hosted-full.json certified for the single-node topology"
      ]
     }
    },
@@ -597,7 +599,7 @@
     "PAR-171": "evidence.test.ts"
    },
    "notes": [
-    "OTel export: events carry W3C trace context and the OpenTelemetry-compatible dimension set; an OTLP exporter adapter is a sink implementation (workersLogLine/emfLine exist; OTLP wire not implemented)",
+    "OTLP export: OtlpSink (packages/runtime/src/otlp.ts) ships logs + metrics over OTLP/HTTP JSON with the plan's buckets; Node host telemetryFormat \"otlp\"",
     "Purpose handling for opaque handles comes from Telemetry.purposeHandling (host config) or a `handling` attribute on the purpose declaration when present"
    ]
   },
@@ -663,6 +665,6 @@
   "status": "complete",
   "milestones": "M9-M21 done",
   "generatedAt": "2026-09-21",
-  "note": "FORGE-051 and FORGE-076 remain partial by design (assurance profile withheld; Temporal driver not implemented); see RELEASE_MANIFEST.json notCertified"
+  "note": "FORGE-051 assurance profile remains withheld (isolated-callable needs an attested boundary); Temporal profile certified post-release on the single-node dev-server topology"
  }
 }

@@ -41,7 +41,8 @@ redaction, generated dashboards, signed deployment evidence, drift reports;
 `docs/operational-verification.md`), and the certified release
 (`RELEASE_MANIFEST.json`, `conformance/reports/differential.json`,
 `conformance/benchmarks/`, `docs/security-review.md`,
-`docs/acme-next-walkthrough.md`).
+`docs/acme-next-walkthrough.md`). Post-release: `packages/temporal`
+(Temporal-driven workflows, certified single-node), embedded libsql, OTLP sink.
 
 ## Compiler (M1)
 

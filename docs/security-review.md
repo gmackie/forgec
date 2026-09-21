@@ -49,7 +49,8 @@ boundary, and `assuranceProfile()` reports `workload-bound` for a shared process
 | SR-3 | incremental D1 migrations repeated baseline DDL, so a fresh deployment applying all migrations would fail | fixed (M18) |
 | SR-4 | snapshot-bounded authorizer decided from a fixed policy set instead of the activated snapshot's | fixed (M21): `withSnapshotAuthority` takes a factory |
 | SR-5 | `isolated-callable` assurance has no attested boundary | open: profile withheld |
-| SR-6 | OTLP wire export not implemented; sinks are Workers Logs / EMF / custom | open: not a security gap; documented |
+| SR-8 | Temporal-backed profile was unverified | closed (post-release): `@forge/temporal` certified against a Temporal dev server (single node); cluster/cloud tuples remain unverified |
+| SR-6 | OTLP wire export not implemented; sinks were Workers Logs / EMF / custom | closed (post-release): `OtlpSink` (OTLP/HTTP JSON logs + metrics, bounded attributes, loss counted), `telemetryFormat: "otlp"` on the Node host |
 | SR-7 | The `Suppressed` guard keys on the subject's declared binding; records reaching a subject only through an undeclared path are not covered | open by design: undeclared paths are reported as unknown lineage by the planner |
 
 ## Blocking-finding rule

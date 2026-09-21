@@ -73,7 +73,6 @@ Provider moves: `docs/provider-cutover.md`.
 
 ## What is not synthesized
 
-- Temporal-backed self-hosted workflows (profile `self-hosted-full` is unverified)
-- OTLP wire export (sinks are Workers Logs / EMF / custom)
+- Temporal multi-node/cloud topologies (the single-node dev-server profile is certified: `packages/temporal`)
 - Attested `isolated-callable` identity
 - Vendor erasure adapters and legal determinations

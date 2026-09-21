@@ -167,11 +167,17 @@
       "tuple": {
         "engine": "postgres-17",
         "driver": "pg direct",
-        "runtime": "node-24 + temporal worker",
-        "deployment": "docker/nix"
+        "runtime": "node-24 + @forge/temporal worker (Temporal server 1.32 dev, SDK 1.24.0)",
+        "deployment": "self-hosted (docker/nix packs)"
       },
-      "status": "unverified",
-      "reason": "see conformance/profiles/self-hosted-full.json"
+      "status": "certified",
+      "reason": "single-node Temporal dev server; multi-node cluster and Temporal Cloud are separate, unverified tuples",
+      "evidence": [
+        {
+          "suite": "packages/temporal/test/temporal.test.ts (PAR-153 with a real Temporal dev server)",
+          "at": "2026-09-21"
+        }
+      ]
     },
     {
       "id": "terraform packs",

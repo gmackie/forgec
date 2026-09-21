@@ -16,6 +16,7 @@ import { FsBucket } from "../adapters/fs-objects.js";
 import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
 import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
 import { emfLine, workersLogLine, type OperationEvent } from "../telemetry.js";
+import { OtlpSink, type OtlpOptions } from "../otlp.js";
 import { composeRuntime, type ComposedRuntime, type RuntimeComposition } from "./compose.js";
 
 export interface NodeHostOptions extends Omit<RuntimeComposition, "realtimeHub" | "telemetry" | "objects"> {
@@ -28,8 +29,9 @@ export interface NodeHostOptions extends Omit<RuntimeComposition, "realtimeHub" 
   /** Sweep period; 0 disables the loop (tests drive `sweepAll` themselves). */
   sweepIntervalMs?: number;
   maxInFlight?: number;
-  /** "json" (Workers-Logs shaped lines) or "emf" (CloudWatch EMF) on stdout; default json. */
-  telemetryFormat?: "json" | "emf" | "silent";
+  /** "json" (Workers-Logs shaped lines) or "emf" (CloudWatch EMF) on stdout, "otlp" (OTLP/HTTP to `otlp.endpoint`); default json. */
+  telemetryFormat?: "json" | "emf" | "silent" | "otlp";
+  otlp?: Omit<OtlpOptions, "serviceName" | "boundaries"> & { serviceName?: string };
   telemetrySink?: (e: OperationEvent) => void;
 }
 
@@ -73,9 +75,10 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
     },
   };
   const format = options.telemetryFormat ?? "json";
+  const otlp = format === "otlp" && options.otlp ? new OtlpSink({ ...options.otlp, serviceName: options.otlp.serviceName ?? `forge/${options.bundle.ir.package.name}`, boundaries: Object.fromEntries((options.bundle.observability?.operations ?? []).map((o) => [o.operation, o.histogramBoundariesMs])) }) : null;
   const sink = options.telemetrySink
     ? { write: options.telemetrySink }
-    : format === "silent" ? { write: () => undefined } : { write: (e: OperationEvent) => console.log(format === "emf" ? emfLine(e, `forge/${options.bundle.ir.package.name}`) : workersLogLine(e)) };
+    : otlp ? otlp : format === "silent" ? { write: () => undefined } : { write: (e: OperationEvent) => console.log(format === "emf" ? emfLine(e, `forge/${options.bundle.ir.package.name}`) : workersLogLine(e)) };
   // Signed object URLs must name the address clients reach; with `objects: { directory }` the host serves them itself.
   let publicUrl = options.publicUrl ?? "http://localhost";
   const fsStore = options.objects && "directory" in options.objects ? new R2ObjectStore(new FsBucket(options.objects.directory), { get baseUrl() { return publicUrl; }, secret: options.cursorSecret }) : null;
@@ -178,6 +181,7 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
     await new Promise<void>((resolve) => server.close(() => resolve()));
     if (inFlight > 0) await new Promise<void>((resolve) => drained.add(resolve));
     if (sweeping) await sweeping;
+    if (otlp) await otlp.flush(); // drain telemetry with the requests
   }
 
   return host;
