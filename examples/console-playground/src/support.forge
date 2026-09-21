@@ -1,0 +1,32 @@
+purpose CustomerSupport
+shape EstimateInput {
+  hours : integer >= 1
+  urgent : boolean
+}
+shape EstimateResult {
+  hours : integer
+  hourlyRate : integer
+  total : integer
+  currency : text
+}
+/// Estimate the cost of a support request. This demo does not create a charge.
+export function EstimateSupport @http(POST, "/v1/estimate") {
+  input EstimateInput
+  output EstimateResult
+  purpose CustomerSupport
+}
+shape ContactInput {
+  email : email
+  message : text
+}
+shape ContactResult {
+  accepted : boolean
+  messageLength : integer
+}
+/// Validate a support message and exercise a declared business error.
+export function ValidateContact @http(POST, "/v1/validate-contact") {
+  input ContactInput
+  output ContactResult
+  purpose CustomerSupport
+  errors { MessageTooShort }
+}
