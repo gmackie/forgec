@@ -1,8 +1,13 @@
-//! `forge compat OLD NEW`: compatibility report between two app bundles (plan §22).
-//! Streams are tracked separately — API, event, storage, lifecycle, workflow —
-//! because "additive" is not universally safe: an enum output member can break
-//! exhaustive consumers, an added lifecycle state changes the event vocabulary,
-//! a workflow graph change with the same version violates in-flight pins.
+//! Semantic diff between two built models (plan §22; FORGE-067). Streams are
+//! tracked separately — API, interfaces, event, storage, lifecycle, workflow,
+//! classification, governance, dependencies, policy — because "additive" is not
+//! universally safe: an enum output member can break exhaustive consumers, an
+//! added lifecycle state changes the event vocabulary, a workflow graph change
+//! with the same version violates in-flight pins, a widened purpose surface
+//! needs reapproval. Findings carry a *direction* (which side of a contract
+//! breaks) and *needs* (review/migration work), never invented live facts: this
+//! is a pure function of two artifacts and makes no claim about stored rows.
+//! Whitespace and file moves do not change the IR, so they produce nothing.
 use serde::Serialize;
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -13,11 +18,17 @@ pub const COMPAT_VERSION: &str = "compat/1";
 #[serde(rename_all = "camelCase")]
 pub struct Finding {
     pub stream: &'static str,
-    /// breaking | risk | migration | additive
+    /// breaking | risk | unknown | migration | additive
     pub severity: &'static str,
     pub code: &'static str,
     pub subject: String,
     pub detail: String,
+    /// Which party a change breaks: `consumer` (readers of outputs/events), `producer` (writers/callers), `both`, `none`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub direction: Option<&'static str>,
+    /// Work the change requires before or during rollout (never quantified against live data here).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub needs: Vec<&'static str>,
 }
 
 #[derive(Debug, Serialize)]
@@ -26,9 +37,52 @@ pub struct Report {
     pub version: &'static str,
     pub old_build: String,
     pub new_build: String,
-    /// compatible | migration | risk | breaking (the most severe finding)
+    /// compatible | migration | unknown | risk | breaking (the most severe finding)
     pub verdict: &'static str,
+    /// Per-stream worst severity.
+    pub streams: BTreeMap<&'static str, &'static str>,
+    /// What this report deliberately does not know.
+    pub facts: Facts,
     pub findings: Vec<Finding>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Facts {
+    /// Always "none": the diff runs offline and never counts or samples stored data.
+    pub live_data: &'static str,
+    pub policy_proof: &'static str,
+}
+
+fn direction_of(code: &str) -> Option<&'static str> {
+    Some(match code {
+        "field-removed" | "enum-member-added" | "enum-member-removed" | "state-added" | "state-removed" | "message-added" | "message-removed" | "error-added" | "resource-removed" | "channel-removed" | "surface-narrowed" => "consumer",
+        "field-required" | "operation-removed" | "function-removed" | "http-binding-changed" | "transition-removed" | "endpoint-removed" | "parameter-required" | "workflow-removed" | "dependency-removed" => "producer",
+        "graph-changed-without-version" | "table-removed" | "column-removed" | "column-type-changed" | "surface-removed" | "purpose-removed" | "handling-loosened" | "class-changed" | "subject-binding-removed" => "both",
+        _ => "none",
+    })
+}
+fn needs_of(code: &str) -> Vec<&'static str> {
+    match code {
+        "field-required" => vec!["backfill-review"],
+        "column-type-changed" => vec!["data-rewrite"],
+        "column-added" | "table-added" => vec!["expand-ddl"],
+        "column-removed" | "table-removed" => vec!["retention-decision", "contract-ddl"],
+        "personal-field-added" => vec!["classification-review", "surface-mapping"],
+        "class-changed" | "handling-loosened" => vec!["classification-review"],
+        "subject-binding-added" => vec!["subject-index"],
+        "subject-binding-removed" | "subject-binding-changed" => vec!["subject-rights-review"],
+        "surface-narrowed" => vec!["cache-invalidation", "receipt-reprojection"],
+        "surface-widened" | "deny-removed" => vec!["grant-reapproval"],
+        "surface-removed" | "purpose-removed" => vec!["grant-retirement", "cache-invalidation"],
+        "dependency-added" => vec!["dependency-request"],
+        "dependency-removed" => vec!["grant-retirement"],
+        "workflow-version-bumped" => vec!["drain-old-version"],
+        "policy-changed-unknown" => vec!["policy-review"],
+        "policy-widened" => vec!["grant-reapproval"],
+        "policy-narrowed" => vec!["decision-epoch-bump"],
+        _ => vec![],
+    }
 }
 
 fn arr<'a>(v: &'a Value, path: &[&str]) -> Vec<&'a Value> {
@@ -47,7 +101,7 @@ fn by_id<'a>(items: Vec<&'a Value>, key: &str) -> BTreeMap<String, &'a Value> {
 
 pub fn compare(old: &Value, new: &Value) -> Report {
     let mut f: Vec<Finding> = Vec::new();
-    let push = |f: &mut Vec<Finding>, stream: &'static str, severity: &'static str, code: &'static str, subject: String, detail: String| f.push(Finding { stream, severity, code, subject, detail });
+    let push = |f: &mut Vec<Finding>, stream: &'static str, severity: &'static str, code: &'static str, subject: String, detail: String| f.push(Finding { stream, severity, code, subject, detail, direction: direction_of(code), needs: needs_of(code) });
 
     // ---- API: contracts (record/create/patch schemas per resource, operations, functions, enums)
     let old_res = by_id(arr(old, &["contracts", "resources"]), "id");
@@ -272,8 +326,173 @@ pub fn compare(old: &Value, new: &Value) -> Report {
         }
     }
 
-    let rank = |sev: &str| match sev { "breaking" => 3, "risk" => 2, "migration" => 1, _ => 0 };
+    // ---- interfaces: the OpenAPI projection (endpoints and their required parameters)
+    let endpoints = |v: &Value| -> BTreeMap<String, Vec<String>> {
+        let mut out = BTreeMap::new();
+        if let Some(paths) = v["openapi"]["paths"].as_object() {
+            for (path, ops) in paths {
+                if let Some(ops) = ops.as_object() {
+                    for (method, op) in ops {
+                        let required: Vec<String> = arr(op, &["parameters"]).into_iter().filter(|p| p["required"] == Value::Bool(true) && p["in"] != "path").map(|p| s(&p["name"])).collect();
+                        out.insert(format!("{} {}", method.to_uppercase(), path), required);
+                    }
+                }
+            }
+        }
+        out
+    };
+    let (oep, nep) = (endpoints(old), endpoints(new));
+    for (k, oreq) in &oep {
+        match nep.get(k) {
+            None => push(&mut f, "interfaces", "breaking", "endpoint-removed", k.clone(), "generated clients, CLI users and MCP tools calling it break".into()),
+            Some(nreq) => {
+                for p in nreq {
+                    if !oreq.contains(p) {
+                        push(&mut f, "interfaces", "breaking", "parameter-required", format!("{k} ?{p}"), "existing callers do not send it".into());
+                    }
+                }
+            }
+        }
+    }
+    for k in nep.keys() {
+        if !oep.contains_key(k) {
+            push(&mut f, "interfaces", "additive", "endpoint-added", k.clone(), "new endpoint".into());
+        }
+    }
+
+    // ---- governance: purpose surfaces (edition 2027). Narrowing invalidates broad cached values and receipts;
+    // widening is new authority and needs reapproval by the callee owners.
+    let surfaces = |v: &Value| -> BTreeMap<String, (Vec<String>, Vec<String>)> {
+        arr(v, &["capabilities", "surfaces"]).into_iter().map(|sf| (format!("{}#{}", s(&sf["resource"]), s(&sf["purpose"])), (arr(sf, &["allowAtoms"]).into_iter().map(|a| format!("{}:{}", s(&a["verb"]), s(&a["name"]))).collect(), arr(sf, &["deny"]).into_iter().map(|a| format!("{}:{}", s(&a["verb"]), s(&a["name"]))).collect()))).collect()
+    };
+    let (osf, nsf) = (surfaces(old), surfaces(new));
+    for (k, (oa, od)) in &osf {
+        match nsf.get(k) {
+            None => push(&mut f, "governance", "breaking", "surface-removed", k.clone(), "callers under this purpose lose every atom; cached values and receipts for it must go".into()),
+            Some((na, nd)) => {
+                let removed: Vec<&String> = oa.iter().filter(|a| !na.contains(a)).collect();
+                let added: Vec<&String> = na.iter().filter(|a| !oa.contains(a)).collect();
+                if !removed.is_empty() {
+                    push(&mut f, "governance", "migration", "surface-narrowed", k.clone(), format!("atoms removed: {}; values cached under the old surface must be re-projected under the current one before disclosure", removed.iter().map(|x| x.as_str()).collect::<Vec<_>>().join(", ")));
+                }
+                if !added.is_empty() {
+                    push(&mut f, "governance", "risk", "surface-widened", k.clone(), format!("atoms added: {}; new authority requires reapproval", added.iter().map(|x| x.as_str()).collect::<Vec<_>>().join(", ")));
+                }
+                for d in nd {
+                    if !od.contains(d) {
+                        push(&mut f, "governance", "migration", "deny-added", format!("{k} {d}"), "sticky denial; anything that relied on the atom must be re-checked".into());
+                    }
+                }
+                for d in od {
+                    if !nd.contains(d) {
+                        push(&mut f, "governance", "risk", "deny-removed", format!("{k} {d}"), "a sticky denial was lifted: new authority".into());
+                    }
+                }
+            }
+        }
+    }
+    for k in nsf.keys() {
+        if !osf.contains_key(k) {
+            push(&mut f, "governance", "risk", "surface-added", k.clone(), "a new purpose surface: authority that did not exist before".into());
+        }
+    }
+    let purposes = |v: &Value| -> Vec<String> { arr(v, &["ir", "modules"]).into_iter().flat_map(|m| arr(m, &["purposes"])).map(|p| s(&p["id"])).collect() };
+    let (opu, npu) = (purposes(old), purposes(new));
+    for p in &opu {
+        if !npu.contains(p) {
+            push(&mut f, "governance", "breaking", "purpose-removed", p.clone(), "credentials and grants naming this purpose become invalid".into());
+        }
+    }
+
+    // ---- dependencies: imports are cross-service edges that need grants (M16)
+    let imports = |v: &Value| -> Vec<String> { arr(v, &["ir", "imports"]).into_iter().map(|i| s(&i["package"])).collect() };
+    let (oi, ni) = (imports(old), imports(new));
+    for p in &ni {
+        if !oi.contains(p) {
+            push(&mut f, "dependencies", "migration", "dependency-added", p.clone(), "a new callee: a dependency request must be approved and activated before the edge works".into());
+        }
+    }
+    for p in &oi {
+        if !ni.contains(p) {
+            push(&mut f, "dependencies", "migration", "dependency-removed", p.clone(), "releases still using the grant need the declared drain".into());
+        }
+    }
+
+    // ---- policy: an opaque external policy bundle can only be compared by digest unless a supported proof is attached
+    let (op, np) = (&old["policy"], &new["policy"]);
+    if !op.is_null() || !np.is_null() {
+        if op["digest"] != np["digest"] {
+            let proof = &np["proof"];
+            let supported = proof["basis"] == "forge-policy-diff" && proof["for"] == op["digest"];
+            match (supported, proof["relation"].as_str()) {
+                (true, Some("narrowing")) => push(&mut f, "policy", "migration", "policy-narrowed", s(&np["kind"]), "proven narrowing: cached allows must be re-decided".into()),
+                (true, Some("widening")) => push(&mut f, "policy", "risk", "policy-widened", s(&np["kind"]), "proven widening: new authority requires reapproval".into()),
+                (true, Some("equivalent")) => {}
+                _ => push(&mut f, "policy", "unknown", "policy-changed-unknown", s(&np["kind"]), format!("policy digest {} -> {}: no supported proof establishes widening or narrowing; treat as changed", s(&op["digest"]), s(&np["digest"]))),
+            }
+        }
+    }
+
+    let rank = |sev: &str| match sev { "breaking" => 4, "risk" => 3, "unknown" => 2, "migration" => 1, _ => 0 };
+    let name = |r: i32| match r { 4 => "breaking", 3 => "risk", 2 => "unknown", 1 => "migration", _ => "compatible" };
     let worst = f.iter().map(|x| rank(x.severity)).max().unwrap_or(0);
-    let verdict = match worst { 3 => "breaking", 2 => "risk", 1 => "migration", _ => "compatible" };
-    Report { version: COMPAT_VERSION, old_build: s(&old["buildHash"]), new_build: s(&new["buildHash"]), verdict, findings: f }
+    let mut streams: BTreeMap<&'static str, &'static str> = BTreeMap::new();
+    for x in &f {
+        let r = rank(x.severity);
+        let e = streams.entry(x.stream).or_insert("compatible");
+        if rank(e) < r {
+            *e = name(r);
+        }
+    }
+    Report {
+        version: COMPAT_VERSION,
+        old_build: s(&old["buildHash"]),
+        new_build: s(&new["buildHash"]),
+        verdict: name(worst),
+        streams,
+        facts: Facts { live_data: "none: offline diff; affected-row counts and backfill sizes are measured during rollout, never guessed here", policy_proof: if np.is_null() { "no policy bundle in the model" } else if np["proof"].is_null() { "none attached" } else { "attached" } },
+        findings: f,
+    }
+}
+
+/// Audience-specific Markdown. `pr` lists everything with needs; `changelog` is the user-facing subset;
+/// `security` is governance/classification/dependencies/policy only.
+pub fn render(report: &Report, audience: &str) -> String {
+    let mut out = String::new();
+    let title = match audience { "changelog" => "Changes", "security" => "Security review", _ => "Compatibility report" };
+    out.push_str(&format!("## {title}
+
+Verdict: **{}** ({} -> {})
+
+", report.verdict, &report.old_build[..report.old_build.len().min(12)], &report.new_build[..report.new_build.len().min(12)]));
+    let include = |x: &Finding| match audience {
+        "changelog" => matches!(x.stream, "api" | "interfaces" | "lifecycle" | "event") && x.severity != "unknown",
+        "security" => matches!(x.stream, "governance" | "classification" | "dependencies" | "policy"),
+        _ => true,
+    };
+    let mut by_stream: BTreeMap<&str, Vec<&Finding>> = BTreeMap::new();
+    for x in report.findings.iter().filter(|x| include(x)) {
+        by_stream.entry(x.stream).or_default().push(x);
+    }
+    if by_stream.is_empty() {
+        out.push_str("No changes in scope.
+");
+    }
+    for (stream, xs) in by_stream {
+        out.push_str(&format!("### {stream}
+
+"));
+        for x in xs {
+            let dir = x.direction.filter(|d| *d != "none").map(|d| format!(" (breaks: {d})")).unwrap_or_default();
+            let needs = if x.needs.is_empty() || audience == "changelog" { String::new() } else { format!(" — needs: {}", x.needs.join(", ")) };
+            out.push_str(&format!("- **{}** `{}` {}{}: {}{}
+", x.severity, x.code, x.subject, dir, x.detail, needs));
+        }
+        out.push('\n');
+    }
+    if audience != "changelog" {
+        out.push_str(&format!("_Live data: {}_
+", report.facts.live_data));
+    }
+    out
 }

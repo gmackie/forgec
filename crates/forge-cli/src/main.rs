@@ -47,9 +47,15 @@ enum Cmd {
         #[arg(default_value = ".")]
         path: PathBuf,
     },
-    /// Compatibility report between two built bundles (API, event, storage, lifecycle, workflow streams).
-    /// Exit 1 on breaking findings.
-    Compat { old: PathBuf, new: PathBuf },
+    /// Semantic diff between two built bundles (API, interfaces, event, storage, lifecycle, workflow,
+    /// classification, governance, dependencies, policy streams). Exit 1 on breaking findings.
+    Compat {
+        old: PathBuf,
+        new: PathBuf,
+        /// Render Markdown for an audience instead of JSON: pr | changelog | security.
+        #[arg(long)]
+        report: Option<String>,
+    },
     /// Import a vendor OpenAPI 3.x document (JSON) as a Forge package: pinned refs only, no fetching.
     ImportOpenapi {
         spec: PathBuf,
@@ -80,7 +86,6 @@ enum Cmd {
     },
 }
 
-mod compat;
 mod lsp;
 
 /// `forge.lock` content. Dependencies are pinned by name, version and the
@@ -292,7 +297,7 @@ fn main() -> Result<()> {
             }
         }
         Cmd::Lsp => lsp::run()?,
-        Cmd::Compat { old, new } => {
+        Cmd::Compat { old, new, report: audience } => {
             let o: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&old)?)?;
             let n: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&new)?)?;
             // Fail closed on artifacts this build cannot interpret (plan §4.2).
@@ -301,8 +306,11 @@ fn main() -> Result<()> {
                     bail!("{label} bundle: {e}");
                 }
             }
-            let report = compat::compare(&o, &n);
-            println!("{}", serde_json::to_string_pretty(&report)?);
+            let report = forge_semantic::diff::compare(&o, &n);
+            match audience {
+                Some(a) => print!("{}", forge_semantic::diff::render(&report, &a)),
+                None => println!("{}", serde_json::to_string_pretty(&report)?),
+            }
             if report.verdict == "breaking" {
                 std::process::exit(1);
             }

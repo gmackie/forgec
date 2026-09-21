@@ -5,6 +5,7 @@ pub mod cron;
 pub mod taxonomy;
 pub mod capability;
 pub mod diagnostics;
+pub mod diff;
 pub mod ir;
 pub mod package;
 

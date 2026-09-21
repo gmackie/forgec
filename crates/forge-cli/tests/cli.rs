@@ -152,6 +152,58 @@ fn compat_classifies_changes_per_compatibility_stream() {
     assert!(same.status.success());
     let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&same.stdout)).unwrap();
     assert_eq!(r["verdict"], "compatible");
+
+    // FORGE-067 / PAR-140: needs are named, live facts are never invented.
+    let field_required = report["findings"].as_array().unwrap().iter().find(|f| f["code"] == "field-required").unwrap();
+    assert_eq!(field_required["needs"], serde_json::json!(["backfill-review"]));
+    assert!(report["facts"]["liveData"].as_str().unwrap().starts_with("none"));
+    let text = serde_json::to_string(&report).unwrap().to_lowercase();
+    assert!(!text.contains("affectedrows") && !text.contains("rowcount") && !text.contains("\"rows\""), "no invented row counts");
+    // PAR-141: direction distinguishes exhaustive output consumers from old producers; additions are not all "compatible"
+    let enum_added = report["findings"].as_array().unwrap().iter().find(|f| f["code"] == "enum-member-added").unwrap();
+    assert_eq!(enum_added["direction"], "consumer");
+    assert_eq!(enum_added["severity"], "risk");
+    assert_eq!(field_required["direction"], "producer");
+    assert_eq!(report["streams"]["api"], "breaking");
+    assert_eq!(report["streams"]["storage"], "breaking");
+    // whitespace and file moves: same IR, no findings
+    std::fs::create_dir_all(dir.join("moved/src/deep")).unwrap();
+    std::fs::write(dir.join("moved/forge.toml"), "[package]\nname = \"@t/app\"\nversion = \"0.1.0\"\n").unwrap();
+    std::fs::write(dir.join("moved/src/deep/renamed.forge"), format!("// moved and reformatted\n\n{}\n\n\n", new.replace("\n\n", "\n\n\n"))).unwrap();
+    let out = forge().args(["build", dir.join("moved").to_str().unwrap(), "--out", dir.join("moved/generated").to_str().unwrap()]).output().unwrap();
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    let moved = forge().args(["compat", dir.join("new/generated/app.json").to_str().unwrap(), dir.join("moved/generated/app.json").to_str().unwrap()]).output().unwrap();
+    let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&moved.stdout)).unwrap();
+    assert_eq!(r["verdict"], "compatible", "{r}");
+    assert_eq!(r["findings"].as_array().unwrap().len(), 0);
+    // PAR-142: an opaque policy bundle change is `unknown` unless a supported proof establishes the relation
+    let mut o: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("new/generated/app.json")).unwrap()).unwrap();
+    let mut n = o.clone();
+    o["policy"] = serde_json::json!({ "kind": "rego-bundle", "digest": "sha256:aaaa" });
+    n["policy"] = serde_json::json!({ "kind": "rego-bundle", "digest": "sha256:bbbb" });
+    std::fs::write(dir.join("pol-old.json"), o.to_string()).unwrap();
+    std::fs::write(dir.join("pol-new.json"), n.to_string()).unwrap();
+    let out = forge().args(["compat", dir.join("pol-old.json").to_str().unwrap(), dir.join("pol-new.json").to_str().unwrap()]).output().unwrap();
+    let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&out.stdout)).unwrap();
+    assert_eq!(r["verdict"], "unknown");
+    assert_eq!(r["findings"][0]["code"], "policy-changed-unknown");
+    assert_eq!(r["facts"]["policyProof"], "none attached");
+    n["policy"]["proof"] = serde_json::json!({ "basis": "forge-policy-diff", "for": "sha256:aaaa", "relation": "narrowing" });
+    std::fs::write(dir.join("pol-new.json"), n.to_string()).unwrap();
+    let out = forge().args(["compat", dir.join("pol-old.json").to_str().unwrap(), dir.join("pol-new.json").to_str().unwrap()]).output().unwrap();
+    let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&out.stdout)).unwrap();
+    assert_eq!(r["findings"][0]["code"], "policy-narrowed");
+    assert_eq!(r["findings"][0]["needs"], serde_json::json!(["decision-epoch-bump"]));
+    // audience reports
+    let pr = forge().args(["compat", dir.join("old/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap(), "--report", "pr"]).output().unwrap();
+    let md = String::from_utf8_lossy(&pr.stdout);
+    assert!(md.contains("needs: backfill-review") && md.contains("### storage"), "{md}");
+    let sec = forge().args(["compat", dir.join("old/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap(), "--report", "security"]).output().unwrap();
+    let md = String::from_utf8_lossy(&sec.stdout);
+    assert!(!md.contains("### api") && md.contains("## Security review"), "{md}");
+    let cl = forge().args(["compat", dir.join("old/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap(), "--report", "changelog"]).output().unwrap();
+    let md = String::from_utf8_lossy(&cl.stdout);
+    assert!(md.contains("### api") && !md.contains("needs:") && !md.contains("### storage"), "{md}");
 }
 
 /// Minimal LSP client over stdio: initialize, open a file with an error, expect diagnostics, format, shutdown.
