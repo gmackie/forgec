@@ -38,6 +38,8 @@ export interface CallContext {
   trace?: TraceContext;
   /** Edition 2027: the purpose surface this invocation runs under (one purpose; never a union). */
   purpose?: string;
+  /** Retry number of this logical request as seen by the caller (telemetry denominators, PAR-166). */
+  attempt?: number;
   /** Privileged maintenance context (seeding, migration): bypasses purpose scoping; audited by actor. */
   maintenance?: boolean;
 }

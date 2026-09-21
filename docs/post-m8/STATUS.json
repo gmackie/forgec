@@ -551,6 +551,55 @@
     "Erasure runs on the durable job document rather than a declared Forge workflow; the same chunk/re-authorization/resume semantics apply, and the suppression epoch is written by the executor",
     "Restriction currently records the ledger entry (reads outside maintenance of a restricted subject are refused at write time; read-side restriction filtering is enforced through the suppression guard on update/restore and the retention filter)"
    ]
+  },
+  "M20": {
+   "status": "done",
+   "tickets": {
+    "FORGE-082": {
+     "status": "done",
+     "evidence": [
+      "@forge/runtime telemetry: OperationEvent gains purpose (opaque handle for confidential purposes), surface digest, decision, policyEpoch, grantEpoch, phase attempt|completion, attempt number; bounded dimensions add forge.purpose/forge.decision; Telemetry.attempt + sli() keep completions as the denominator and count export loss as coverage (PAR-164/165/166; packages/runtime/test/telemetry.test.ts)"
+     ]
+    },
+    "FORGE-083": {
+     "status": "done",
+     "evidence": [
+      "@forge/governance/telemetry: logEvent allowlist, Redactor (identifiers and direct identifiers tokenized with a keyed HMAC, personal/restricted/unclassified redacted), per-sink policies (logs no values, audit tokens, metrics labels, errors paths+codes), safeProblem, rawLoggingEscapes marks console/stdout writes unmodeled (PAR-164)"
+     ]
+    },
+    "FORGE-084": {
+     "status": "done",
+     "evidence": [
+      "@forge/interfaces/dashboards: forge-dashboard/1 with function/resource/channel/workflow/grant/privacy/coverage panels, exact histogram buckets and SLO targets from the plan, burn rules on completions only, missing metrics rendered missing (Grafana text panel), sampled trace panels, errorBudget with a loss band (PAR-167/168)"
+     ]
+    },
+    "FORGE-085": {
+     "status": "done",
+     "evidence": [
+      "@forge/registry/evidence: signEvidence/verifyEvidence (Ed25519, authority-bound), evidenceClaims with scope/freshness/unknown, confidential artifacts by audience (PAR-169)"
+     ]
+    },
+    "FORGE-086": {
+     "status": "done",
+     "evidence": [
+      "driftReport joins declared/approved/activated/observed with assurance-qualified attribution, unused-grant suggestions with coverage (never automatic), snapshot state and links from semantic changes to panels (PAR-170/171); docs/operational-verification.md"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-164": "packages/runtime/test/telemetry.test.ts + packages/governance/test/telemetry.test.ts",
+    "PAR-165": "packages/runtime/test/telemetry.test.ts",
+    "PAR-166": "packages/runtime/test/telemetry.test.ts",
+    "PAR-167": "packages/interfaces/test/dashboards.test.ts",
+    "PAR-168": "dashboards.test.ts",
+    "PAR-169": "packages/registry/test/evidence.test.ts",
+    "PAR-170": "evidence.test.ts",
+    "PAR-171": "evidence.test.ts"
+   },
+   "notes": [
+    "OTel export: events carry W3C trace context and the OpenTelemetry-compatible dimension set; an OTLP exporter adapter is a sink implementation (workersLogLine/emfLine exist; OTLP wire not implemented)",
+    "Purpose handling for opaque handles comes from Telemetry.purposeHandling (host config) or a `handling` attribute on the purpose declaration when present"
+   ]
   }
  }
 }

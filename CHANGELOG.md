@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- M20 observability: telemetry governance context and attempt/completion
+  phases; `@forge/governance` redaction and sink policies; `@forge/interfaces`
+  dashboards; `@forge/registry` signed evidence and drift reports.
+
 - M19 governance: `@forge/governance` (disposition planner, rights executor,
   recovery evidence, control packs + OSCAL); runtime suppression ledger
   (`Suppressed` 410 on recreation, import replays current suppression).

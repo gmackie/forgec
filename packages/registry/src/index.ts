@@ -6,3 +6,4 @@ export * from "./snapshots.js";
 export * from "./grants.js";
 export * from "./approval-bot.js";
 export * from "./grant-publication.js";
+export * from "./evidence.js";
