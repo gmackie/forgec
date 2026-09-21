@@ -1,0 +1,12 @@
+{
+  "name": "@forge/temporal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Temporal-backed WorkflowDriver for the self-hosted-full profile (FORGE-076): Temporal keeps the durable timer/signal state; the Forge engine keeps the instance semantics.",
+  "exports": { ".": { "types": "./dist/index.d.ts", "source": "./src/index.ts", "import": "./dist/index.js", "default": "./dist/index.js" }, "./workflows": { "types": "./dist/workflows.d.ts", "source": "./src/workflows.ts", "import": "./dist/workflows.js", "default": "./dist/workflows.js" } },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run", "build": "tsc -p tsconfig.build.json" },
+  "dependencies": { "@forge/runtime": "workspace:*", "@temporalio/client": "1.24.0", "@temporalio/worker": "1.24.0", "@temporalio/workflow": "1.24.0", "effect": "4.0.0-rc.116" },
+  "devDependencies": { "@types/node": "^24.0.0", "pg": "^8.23.0", "@types/pg": "^8.23.1", "typescript": "^5.9.0", "vitest": "^5.0.0" }
+}

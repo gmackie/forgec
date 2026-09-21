@@ -7,6 +7,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Cause, Effect } from "effect";
 import { describe, expect, it } from "vitest";
 import { Engine, ForgeError, Model, type AppBundle, type CallContext as EngineCtx } from "@forge/runtime";
@@ -19,7 +21,8 @@ import { runScenario } from "../../../conformance/src/runner.js";
 import { loadScenarios } from "../../../conformance/src/scenarios.js";
 import type { CallContext, CallResult, Target } from "../../../conformance/src/target.js";
 import { externals, functions } from "../../../examples/acme/impl/index.js";
-import { PROFILES, nodeSqliteExecutor, qualifySqlite } from "../src/sqlite.js";
+import { createClient } from "@libsql/client";
+import { PROFILES, libsqlExecutor, nodeSqliteExecutor, qualifySqlite } from "../src/sqlite.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;
 const model = new Model(bundle);
@@ -28,6 +31,19 @@ const migrations = resolve(import.meta.dirname, "..", "..", "..", "examples", "a
 const ddl = readdirSync(migrations).filter((f) => f.endsWith(".sql")).sort().map((f) => readFileSync(resolve(migrations, f), "utf8")).join("\n");
 
 describe("PAR-150: SQLite-dialect qualification", () => {
+  it("embedded libsql (@libsql/client 0.18.0) demonstrates every D1 guarantee; the Turso cloud endpoint is qualified only when FORGE_TURSO_URL is set", async () => {
+    const client = createClient({ url: ":memory:" });
+    await client.execute("PRAGMA foreign_keys = ON");
+    const q = await qualifySqlite(PROFILES["libsql-embedded"]!, libsqlExecutor(client));
+    expect(q.checks.filter((c) => !c.ok)).toEqual([]);
+    expect(q).toMatchObject({ certified: true, engineVersion: expect.stringMatching(/^3\.\d+/) });
+    if (process.env["FORGE_TURSO_URL"]) {
+      const remote = createClient({ url: process.env["FORGE_TURSO_URL"], ...(process.env["FORGE_TURSO_TOKEN"] ? { authToken: process.env["FORGE_TURSO_TOKEN"] } : {}) });
+      const qr = await qualifySqlite(PROFILES["turso"]!, libsqlExecutor(remote, { facade: "libsql-hrana" }));
+      expect(qr.certified).toBe(true);
+    }
+  });
+
   it("node:sqlite demonstrates every D1 guarantee and is certified; the engine version is recorded", async () => {
     const q = await qualifySqlite(PROFILES["sqlite-node"]!, nodeSqliteExecutor(new DatabaseSync(":memory:")));
     expect(q.checks.filter((c) => !c.ok)).toEqual([]);
@@ -49,20 +65,33 @@ describe("PAR-150: SQLite-dialect qualification", () => {
 });
 
 class SqliteTarget implements Target {
-  readonly name = "sqlite-node";
+  readonly name: string;
   private engine!: Engine;
   private objects!: MemoryObjectStore;
   private dispatcher!: Dispatcher;
-  constructor() { this.build(); }
+  private libsql: import("@libsql/client").Client | null = null;
+  constructor(private readonly flavour: "sqlite-node" | "libsql-embedded" = "sqlite-node") { this.name = flavour; }
   private build() {
-    const db = new DatabaseSync(":memory:");
-    db.exec(ddl);
     this.objects = new MemoryObjectStore();
-    const storage = new D1Storage(nodeSqliteExecutor(db), model);
+    let executor;
+    if (this.flavour === "libsql-embedded") {
+      // one embedded database file per target under the OS temp dir (":memory:" is shared per process in libsql)
+      const file = join(tmpdir(), `forge-libsql-${process.pid}-${Math.random().toString(36).slice(2)}.db`);
+      this.libsql = createClient({ url: `file:${file}` });
+      const c = this.libsql;
+      this.pending = (async () => { await c.execute("PRAGMA foreign_keys = ON"); for (const stmt of ddl.split(";\n").map((x) => x.trim()).filter(Boolean)) await c.execute(stmt); })();
+      executor = libsqlExecutor(this.libsql);
+    } else {
+      const db = new DatabaseSync(":memory:");
+      db.exec(ddl);
+      executor = nodeSqliteExecutor(db);
+    }
+    const storage = new D1Storage(executor, model);
     this.engine = new Engine(model, testLayer(storage, { objects: this.objects, runId: "sq" }), { functions, externals });
     this.dispatcher = new Dispatcher(model, storage, withProjections(this.engine, { name: "none", send: () => Effect.void }), { subscriptions: internalSubscriptions(this.engine), leaseMs: 1000, maxAttempts: 3 });
   }
-  async reset() { this.build(); }
+  private pending: Promise<void> = Promise.resolve();
+  async reset() { await this.pending; this.build(); await this.pending; }
   async transfer(signed: { url: string; method: string; headers?: Record<string, string> }, body?: Uint8Array) {
     if (signed.method === "PUT") {
       const declared = Number(signed.headers?.["content-length"] ?? NaN);
@@ -85,11 +114,13 @@ class SqliteTarget implements Target {
   }
 }
 
-describe("sqlite-node profile: the full conformance suite through the D1 adapter", () => {
-  for (const scenario of loadScenarios()) {
-    it(`scenario ${scenario.id}`, async () => {
-      const report = await runScenario(scenario, new SqliteTarget(), { tenant: `sq-${scenario.id}` });
-      expect(report.failures).toEqual([]);
-    });
-  }
-});
+for (const flavour of ["sqlite-node", "libsql-embedded"] as const) {
+  describe(`${flavour} profile: the full conformance suite through the D1 adapter`, () => {
+    for (const scenario of loadScenarios()) {
+      it(`scenario ${scenario.id}`, async () => {
+        const report = await runScenario(scenario, new SqliteTarget(flavour), { tenant: `${flavour}-${scenario.id}` });
+        expect(report.failures).toEqual([]);
+      }, 60_000);
+    }
+  });
+}

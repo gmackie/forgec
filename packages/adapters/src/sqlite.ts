@@ -27,8 +27,29 @@ export interface SqliteProfile {
 export const PROFILES: Record<string, SqliteProfile> = {
   "cloudflare-d1": { id: "cloudflare-d1", engine: "cloudflare-d1", client: "workers binding", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
   "sqlite-node": { id: "sqlite-node", engine: "sqlite (node:sqlite)", client: "node:sqlite (Node >= 22.5)", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
-  turso: { id: "turso", engine: "libsql", client: "@libsql/client (pin exact version at certification)", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
+  "libsql-embedded": { id: "libsql-embedded", engine: "libsql (embedded, file: or :memory:)", client: "@libsql/client 0.18.0", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
+  turso: { id: "turso", engine: "libsql (Turso cloud, libsql:// / https://)", client: "@libsql/client 0.18.0 (hrana)", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
 };
+
+/** Minimal surface of `@libsql/client`'s Client used here (kept structural so the package is optional). */
+export interface LibsqlLike {
+  execute(stmt: { sql: string; args: never[] }): Promise<{ rows: Record<string, unknown>[]; rowsAffected: number }>;
+  batch(stmts: { sql: string; args: never[] }[], mode?: "write" | "read" | "deferred"): Promise<{ rowsAffected: number }[]>;
+}
+
+/** SqlExecutor over `@libsql/client` (embedded file/memory or a Turso endpoint). `batch(..., "write")` is one transaction. */
+export function libsqlExecutor(client: LibsqlLike, o: { facade?: string } = {}): SqlExecutor {
+  const norm = (v: unknown) => (typeof v === "bigint" ? Number(v) : v);
+  const row = (r: Record<string, unknown>) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, norm(v)]));
+  const plain = (r: Record<string, unknown>) => { const out: Record<string, unknown> = {}; for (const k of Object.keys(r)) if (!/^\d+$/.test(k)) out[k] = r[k]; return row(out); };
+  return {
+    facade: o.facade ?? "libsql",
+    first: async (s: SqlStatement) => { const r = await client.execute({ sql: s.sql, args: s.params as never[] }); return (r.rows[0] ? plain(r.rows[0]) : null) as never; },
+    all: async (s: SqlStatement) => (await client.execute({ sql: s.sql, args: s.params as never[] })).rows.map(plain) as never,
+    run: async (s: SqlStatement) => ({ changes: (await client.execute({ sql: s.sql, args: s.params as never[] })).rowsAffected }),
+    batch: async (statements: SqlStatement[]) => (await client.batch(statements.map((s) => ({ sql: s.sql, args: s.params as never[] })), "write")).map((r) => ({ changes: r.rowsAffected })),
+  };
+}
 
 interface NodeSqliteLike {
   prepare(sql: string): { get(...p: unknown[]): unknown; all(...p: unknown[]): unknown[]; run(...p: unknown[]): { changes: number | bigint } };

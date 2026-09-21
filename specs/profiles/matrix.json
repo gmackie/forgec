@@ -134,6 +134,24 @@
       ]
     },
     {
+      "id": "libsql-embedded/@libsql+client@0.18.0/node-24/self-hosted",
+      "tuple": {
+        "engine": "libsql 3.45.1 (embedded file/:memory:)",
+        "driver": "@libsql/client 0.18.0 (sqlite3 transport)",
+        "runtime": "node-24",
+        "deployment": "self-hosted"
+      },
+      "status": "certified",
+      "evidence": [
+        {
+          "suite": "qualifySqlite (6/6 guarantees) + 15 conformance scenarios through D1Storage",
+          "at": "2026-09-21",
+          "ref": "packages/adapters/test/sqlite.test.ts"
+        }
+      ],
+      "note": "the Turso cloud endpoint (hrana transport) is a different tuple; see turso/libsql"
+    },
+    {
       "id": "turso/libsql/node/any",
       "tuple": {
         "engine": "libsql (Turso)",
@@ -142,7 +160,7 @@
         "deployment": "any"
       },
       "status": "unverified",
-      "reason": "profile pinned in packages/adapters/sqlite PROFILES; run qualifySqlite + the conformance scenarios against FORGE_TURSO_URL before any claim (PAR-150)"
+      "reason": "embedded libsql is certified; the Turso cloud service (hrana/WebSocket transport, remote replicas) has not been exercised: set FORGE_TURSO_URL/FORGE_TURSO_TOKEN and run packages/adapters/test/sqlite.test.ts"
     },
     {
       "id": "self-hosted-full (temporal)",
