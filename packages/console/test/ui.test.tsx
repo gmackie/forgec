@@ -38,7 +38,7 @@ it("uses the live API to sign in, register an app, inspect settings, and sign ou
   });
   const fetcher: typeof fetch = (url, init) =>
     api(new Request(new URL(String(url), "http://localhost"), init));
-  render(<Console fetcher={fetcher} />);
+  render(<Console fetcher={fetcher} autoAuth={false} />);
   fireEvent.change(screen.getByLabelText("Administrator token"), {
     target: { value: token },
   });
@@ -61,6 +61,7 @@ it("uses the live API to sign in, register an app, inspect settings, and sign ou
 it("keeps the login form visible on authentication failure", async () => {
   render(
     <Console
+      autoAuth={false}
       fetcher={async () =>
         Response.json({ error: "Invalid administrator token" }, { status: 401 })
       }
@@ -93,7 +94,7 @@ it("does not restore a session when a pending refresh finishes after sign-out", 
       complete = resolve;
     });
   };
-  render(<Console fetcher={fetcher} />);
+  render(<Console fetcher={fetcher} autoAuth={false} />);
   fireEvent.change(screen.getByLabelText("Administrator token"), {
     target: { value: "test" },
   });
@@ -130,7 +131,7 @@ it("keeps the revision that was loaded with a dialog draft", async () => {
       refreshComplete = resolve;
     });
   };
-  render(<Console fetcher={fetcher} />);
+  render(<Console fetcher={fetcher} autoAuth={false} />);
   fireEvent.change(screen.getByLabelText("Administrator token"), {
     target: { value: "test" },
   });
@@ -163,7 +164,7 @@ it("shows Forge taxonomy and purpose surfaces from the verified package", async 
       surfaces: bundle.capabilities.surfaces,
     },
   };
-  render(<Console fetcher={async (url) => Response.json(String(url).includes("/api/packages") ? { packages: [pkg], configured: true } : {
+  render(<Console autoAuth={false} fetcher={async (url) => Response.json(String(url).includes("/api/packages") ? { packages: [pkg], configured: true } : {
     ...emptyState(), instance: { name: "Taxonomy Forge", authority: "local.test", runtime: "node", registry: { url: "https://oci.test", repository: "forge" } },
   })} />);
   fireEvent.change(screen.getByLabelText("Administrator token"), { target: { value: "test" } });

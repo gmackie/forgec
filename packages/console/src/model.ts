@@ -39,6 +39,10 @@ export interface Instance {
   authority: string;
   runtime: string;
   registry: { url: string; repository: string } | null;
+  /** How operators sign in. The UI describes the instance honestly from this. */
+  authMode?: "token" | "cloudflare-access";
+  /** Whose sign-in, when it is delegated. */
+  identityAuthority?: string | null;
 }
 export interface ViewState extends State {
   instance: Instance;

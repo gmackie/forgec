@@ -1,6 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { createApi } from "./api.js";
-import { registryFrom, secure, type Config } from "./config.js";
+import { authFrom, registryFrom, secure, type Config } from "./config.js";
 import { stateText, type State, type StateStore } from "./model.js";
 import { credentialStore, type SqlLike } from "./credentials.js";
 import { R2Oci, type R2Like } from "./r2-oci.js";
@@ -54,7 +54,7 @@ export class D1State implements StateStore {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path = new URL(request.url).pathname;
-    if (path === "/healthz") return secure(Response.json({ status: "ok" }));
+    if (path === "/healthz") return secure(Response.json({ status: "ok" }), env);
     // The OCI endpoints answer before the asset handler, and deliberately without the console's
     // CSP: these are protocol responses for container clients, not pages for a browser.
     if (path === "/v2" || path.startsWith("/v2/")) {
@@ -104,7 +104,7 @@ export default {
       })(request);
     }
     if (!path.startsWith("/api/"))
-      return secure((await env.ASSETS.fetch(request)) as unknown as Response);
+      return secure((await env.ASSETS.fetch(request)) as unknown as Response, env);
     try {
       if (!env.INSTANCE_AUTHORITY)
         return secure(
@@ -112,16 +112,19 @@ export default {
             { error: "Configure INSTANCE_AUTHORITY." },
             { status: 503 },
           ),
+          env,
         );
       const api = createApi({
         store: new D1State(env.DB),
-        token: env.ADMIN_TOKEN || "",
+        auth: authFrom(env),
+        authMode: env.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token",
+        identityAuthority: env.ACCESS_TEAM_DOMAIN ?? null,
         authority: env.INSTANCE_AUTHORITY,
         name: env.INSTANCE_NAME || "Forge",
         runtime: "Cloudflare Workers",
         registry: await registryFrom(env, env),
       });
-      return secure(await api(request));
+      return secure(await api(request), env);
     } catch (error) {
       console.error(
         "Console initialization failed:",
@@ -132,6 +135,7 @@ export default {
           { error: "Instance configuration is incomplete." },
           { status: 503 },
         ),
+        env,
       );
     }
   },

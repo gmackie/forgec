@@ -62,6 +62,8 @@ export interface ApiOptions {
   /** Supply an adapter, or `token` below to use the shared-administrator scheme. */
   auth?: AuthAdapter;
   token?: string;
+  authMode?: "token" | "cloudflare-access";
+  identityAuthority?: string | null;
   authority: string;
   name: string;
   runtime: string;
@@ -147,6 +149,8 @@ function view(state: State, o: ApiOptions): ViewState {
       registry: o.registry
         ? { url: o.registry.url, repository: o.registry.repository }
         : null,
+      authMode: o.authMode ?? "token",
+      identityAuthority: o.identityAuthority ?? null,
     },
   };
 }

@@ -1,5 +1,7 @@
 import { OciRegistry } from "./oci.js";
 import { R2Oci, type R2Like } from "./r2-oci.js";
+import { accessAuth, tokenAuth, type AuthAdapter } from "./auth.js";
+import { accessKeys } from "./access-jwks.js";
 export interface Config {
   ADMIN_TOKEN?: string;
   /** "token" (default) or "cloudflare-access". */
@@ -87,16 +89,42 @@ export async function registryFrom(
       .filter(Boolean),
   });
 }
-export const securityHeaders = {
-  "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "no-referrer",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-};
-export function secure(response: Response): Response {
+const BASE_CSP =
+  "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+
+/**
+ * Security headers for this instance.
+ *
+ * `connect-src 'self'` is right for a self-contained instance, and stays the default. Under
+ * Cloudflare Access it is not sufficient: when the session cookie expires mid-use, a `fetch`
+ * to this origin is answered with a redirect to the team's login domain, and CSP is enforced
+ * against every hop of a redirect chain. Without widening this, that fetch fails with an
+ * opaque network error rather than re-authenticating — and only after a session expires, so it
+ * survives any amount of manual testing.
+ */
+export function securityHeadersFor(config: Config = {}): Record<string, string> {
+  const team =
+    config.AUTH_MODE === "cloudflare-access" && config.ACCESS_TEAM_DOMAIN
+      ? `https://${config.ACCESS_TEAM_DOMAIN}`
+      : null;
+  return {
+    "Content-Security-Policy": team
+      ? BASE_CSP.replace("connect-src 'self'", `connect-src 'self' ${team}`).replace(
+          "form-action 'self'",
+          `form-action 'self' ${team}`,
+        )
+      : BASE_CSP,
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  };
+}
+export const securityHeaders = securityHeadersFor();
+export function secure(response: Response, config?: Config): Response {
   const copy = new Response(response.body, response);
-  for (const [key, value] of Object.entries(securityHeaders))
+  for (const [key, value] of Object.entries(
+    config ? securityHeadersFor(config) : securityHeaders,
+  ))
     copy.headers.set(key, value);
   return copy;
 }
@@ -107,4 +135,27 @@ export function portableSigningJwk(input: JsonWebKey): JsonWebKey {
   if (alg !== undefined && alg !== "Ed25519" && alg !== "EdDSA")
     throw new Error("Unsupported signing key algorithm.");
   return jwk;
+}
+
+/**
+ * The authenticator this instance is configured for.
+ *
+ * Defaults to the shared administrator token, so an existing deployment keeps working with no
+ * configuration change. Access mode fails fast and loudly when half-configured: silently
+ * falling back to token auth would leave an instance the operator believes is behind SSO
+ * accepting a bearer token instead.
+ */
+export function authFrom(config: Config): AuthAdapter {
+  if ((config.AUTH_MODE || "token") !== "cloudflare-access")
+    return tokenAuth(config.ADMIN_TOKEN || "");
+  if (!config.ACCESS_TEAM_DOMAIN || !config.ACCESS_AUD)
+    throw new Error(
+      "AUTH_MODE=cloudflare-access requires ACCESS_TEAM_DOMAIN and ACCESS_AUD (the application's AUD tag; without it a token for any other application in the team would be accepted).",
+    );
+  const teamDomain = config.ACCESS_TEAM_DOMAIN;
+  return accessAuth({
+    teamDomain,
+    audience: config.ACCESS_AUD,
+    keys: (kid) => accessKeys(teamDomain, { kid }),
+  });
 }
