@@ -110,3 +110,15 @@ it("uses syntax roles for field names that also happen to be keywords", async ()
   ]);
   expect(named(text, fields[1]!)).toBeDefined();
 });
+
+it("compiles every service desk demo file with the browser compiler", async () => {
+  const { example } = await import("../web/editor/example.js");
+  expect(example.files).toHaveLength(7);
+  for (const file of example.files) {
+    const result = inspect({ ...example, currentFile: file.path });
+    expect(result.error).toBeUndefined();
+    expect(result.diagnostics).toEqual([]);
+    expect(result.tree.children.some(n => n.kind.endsWith("_DECL"))).toBe(true);
+    expect(result.symbols.some(s => s.name === "CustomerSupport")).toBe(true);
+  }
+});

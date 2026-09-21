@@ -1,0 +1,13 @@
+/// Support activity can notify subscribers without sharing the ticket description.
+export channel SupportEvents {
+  distribution broadcast
+  delivery at-least-once
+
+  message TicketEscalated {
+    ticket : Ticket
+    priority : TicketPriority
+    revision : integer >= 1
+  }
+}
+
+on SupportEvents.TicketEscalated -> NotifyOnCall

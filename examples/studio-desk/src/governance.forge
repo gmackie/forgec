@@ -1,0 +1,10 @@
+/// Deliver the service an organization has subscribed to.
+export purpose ServiceProvision
+export purpose CustomerSupport extends ServiceProvision
+export purpose Billing extends ServiceProvision
+export purpose IncidentResponse extends CustomerSupport
+export purpose Marketing
+
+export dataClass ContactEmail extends data.contact.email
+export dataClass SupportContent extends data.communication.content
+export dataClass PersonName extends data.identity.name

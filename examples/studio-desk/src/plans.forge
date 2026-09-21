@@ -1,0 +1,22 @@
+/// Organizations buy a plan with a bounded monthly support allowance.
+export resource ServicePlan
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+{
+  id : id
+  organization : Organization @immutable
+  includedHours : HourCount = 10
+  usedHours : HourCount = 0
+  availableHours := includedHours - usedHours
+  renewsOn : date
+  autoRenew : boolean = true
+
+  rules {
+    usedHours <= includedHours
+  }
+
+  list by organization
+    order by renewsOn asc
+}

@@ -1,0 +1,64 @@
+// A small Forge model, expanded into a service desk. Every visual edit updates this source.
+/// The business account receiving support. It is not a person or the tenant.
+export resource Organization
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @crud("/v1/organizations")
+{
+  id : id
+  code : OrganizationCode @unique @immutable
+  name : text length 1..160
+  tier : CustomerTier = CustomerTier.Starter
+  active : boolean = true
+
+  find by code
+  list by tier
+    order by name asc
+}
+
+/// People who can request help. Marketing never inherits access from support.
+export resource Contact
+  @tenant
+  @timestamps
+  @versioned
+  @purposeScoped
+  @subject(person)
+  @crud("/v1/contacts")
+{
+  id : id
+  organization : Organization
+  name : text length 1..120 @data(PersonName)
+  email : email @data(ContactEmail)
+  marketingOptIn : boolean = false
+
+  capability Directory {
+    read { id organization name }
+    filter { organization }
+    order { name }
+  }
+
+  capability Support {
+    includes Directory
+    read { email }
+    update { email }
+  }
+
+  capability Outreach {
+    read { id email marketingOptIn }
+    filter { marketingOptIn }
+  }
+
+  capability IncidentDirectory {
+    includes Support
+    deny update { email }
+  }
+
+  for CustomerSupport { use Support }
+  for IncidentResponse { use IncidentDirectory }
+  for Marketing { use Outreach }
+
+  list by organization
+    order by name asc
+}

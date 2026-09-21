@@ -1,0 +1,27 @@
+export enum CustomerTier {
+  Starter = "starter"
+  Growth = "growth"
+  Enterprise = "enterprise"
+}
+
+export enum TicketPriority {
+  Low = "low"
+  Normal = "normal"
+  Urgent = "urgent"
+}
+
+export enum ReplyVisibility {
+  Customer = "customer"
+  Internal = "internal"
+}
+
+export type OrganizationCode = text trim uppercase length 3..24
+export type TicketTitle = text trim length 1..160
+export type HourCount = integer >= 0
+
+export shape TicketRequest {
+  requester : Contact
+  title : TicketTitle
+  description : text length 1..4000
+  priority : TicketPriority
+}
