@@ -5,7 +5,9 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "run": "node --experimental-strip-types src/cli.ts"
+    "run": "node --experimental-strip-types src/cli.ts",
+    "bench": "node --experimental-strip-types src/bench.ts",
+    "certify": "node --experimental-strip-types src/certify.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

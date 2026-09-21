@@ -1,0 +1,341 @@
+{
+  "id": "m8.limits",
+  "title": "Declared limits: 10 logical mutations per atomic changeset (preview reports the bound, commit refuses beyond it), page limit clamped to 100, malformed cursors rejected, field length constraints, id syntax",
+  "steps": [
+    {
+      "name": "c",
+      "op": "@acme/commerce/_/Customer.create",
+      "input": {
+        "code": "LIM",
+        "name": "L"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:1"
+        }
+      }
+    },
+    {
+      "name": "eleven",
+      "op": "@acme/commerce/_/changesets.propose",
+      "input": {
+        "mode": "atomic",
+        "operations": [
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L00",
+              "name": "Limit 0"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L01",
+              "name": "Limit 1"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L02",
+              "name": "Limit 2"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L03",
+              "name": "Limit 3"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L04",
+              "name": "Limit 4"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L05",
+              "name": "Limit 5"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L06",
+              "name": "Limit 6"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L07",
+              "name": "Limit 7"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L08",
+              "name": "Limit 8"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L09",
+              "name": "Limit 9"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L10",
+              "name": "Limit 10"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "ok": {
+          "status": "proposed",
+          "operations": 11
+        }
+      }
+    },
+    {
+      "name": "elevenPreview",
+      "op": "@acme/commerce/_/changesets.preview",
+      "input": {
+        "id": "$eleven.id"
+      },
+      "expect": {
+        "ok": {
+          "budget": {
+            "logicalOperations": 11,
+            "logicalLimit": 10,
+            "atomicAllowed": false
+          }
+        }
+      }
+    },
+    {
+      "name": "elevenApprove",
+      "op": "@acme/commerce/_/changesets.approve",
+      "input": {
+        "id": "$eleven.id",
+        "contentHash": "$elevenPreview.contentHash"
+      },
+      "expect": {
+        "ok": {
+          "status": "approved"
+        }
+      }
+    },
+    {
+      "name": "elevenCommit",
+      "op": "@acme/commerce/_/changesets.commit",
+      "input": {
+        "id": "$eleven.id"
+      },
+      "expect": {
+        "error": "BudgetExceeded"
+      }
+    },
+    {
+      "name": "none",
+      "op": "@acme/commerce/_/Customer.find.byCode",
+      "input": {
+        "params": {
+          "code": "L00"
+        }
+      },
+      "expect": {
+        "error": "NotFound"
+      }
+    },
+    {
+      "name": "three",
+      "op": "@acme/commerce/_/changesets.propose",
+      "input": {
+        "mode": "atomic",
+        "operations": [
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L00",
+              "name": "Limit 0"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L01",
+              "name": "Limit 1"
+            }
+          },
+          {
+            "op": "@acme/commerce/_/Customer.create",
+            "input": {
+              "code": "L02",
+              "name": "Limit 2"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "ok": {
+          "operations": 3
+        }
+      }
+    },
+    {
+      "name": "threePreview",
+      "op": "@acme/commerce/_/changesets.preview",
+      "input": {
+        "id": "$three.id"
+      },
+      "expect": {
+        "ok": {
+          "budget": {
+            "logicalOperations": 3,
+            "logicalLimit": 10,
+            "atomicAllowed": true
+          }
+        }
+      }
+    },
+    {
+      "name": "threeApprove",
+      "op": "@acme/commerce/_/changesets.approve",
+      "input": {
+        "id": "$three.id",
+        "contentHash": "$threePreview.contentHash"
+      },
+      "expect": {
+        "ok": {
+          "status": "approved"
+        }
+      }
+    },
+    {
+      "name": "threeCommit",
+      "op": "@acme/commerce/_/changesets.commit",
+      "input": {
+        "id": "$three.id"
+      },
+      "expect": {
+        "ok": {
+          "status": "committed"
+        }
+      }
+    },
+    {
+      "name": "pageClamp",
+      "op": "@acme/commerce/_/Customer.list.all",
+      "input": {
+        "params": {},
+        "limit": 1000
+      },
+      "expect": {
+        "ok": {
+          "limit": 100
+        }
+      }
+    },
+    {
+      "name": "pageMin",
+      "op": "@acme/commerce/_/Customer.list.all",
+      "input": {
+        "params": {},
+        "limit": 0
+      },
+      "expect": {
+        "ok": {
+          "limit": 50
+        }
+      }
+    },
+    {
+      "name": "badCursor",
+      "op": "@acme/commerce/_/Customer.list.all",
+      "input": {
+        "params": {},
+        "cursor": "not-a-cursor"
+      },
+      "expect": {
+        "error": "InvalidCursor"
+      }
+    },
+    {
+      "name": "longName",
+      "op": "@acme/commerce/_/Customer.create",
+      "input": {
+        "code": "LONG",
+        "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "expect": {
+        "error": "ValidationFailed"
+      }
+    },
+    {
+      "name": "longNotes",
+      "op": "@acme/commerce/_/Order.create",
+      "input": {
+        "customer": "$c.id",
+        "site": "nope",
+        "subtotal": "1.00",
+        "tax": "0.00",
+        "requestedOn": "2026-09-20",
+        "notes": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+      },
+      "expect": {
+        "error": "ValidationFailed"
+      }
+    },
+    {
+      "name": "badId",
+      "op": "@acme/commerce/_/Customer.get",
+      "input": {
+        "id": "has space"
+      },
+      "expect": {
+        "error": "NotFound"
+      }
+    },
+    {
+      "name": "idempotentReplayLimit",
+      "op": "@acme/commerce/_/Customer.create",
+      "input": {
+        "code": "IDEM",
+        "name": "I"
+      },
+      "ctx": {
+        "idempotencyKey": "limit-key"
+      },
+      "expect": {
+        "ok": {
+          "id": "$id:4"
+        }
+      }
+    },
+    {
+      "name": "idempotentReuse",
+      "op": "@acme/commerce/_/Customer.create",
+      "input": {
+        "code": "IDEM2",
+        "name": "I"
+      },
+      "ctx": {
+        "idempotencyKey": "limit-key"
+      },
+      "expect": {
+        "error": "IdempotencyMismatch"
+      }
+    }
+  ]
+}

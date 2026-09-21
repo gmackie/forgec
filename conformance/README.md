@@ -16,9 +16,15 @@ the same code that application clients use — and write
 
 | target | deployment | scenarios | steps | failures |
 | --- | --- | --- | --- | --- |
-| runtime-memory | in-process | 14 | 203 | 0 |
-| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows + Cron Triggers + Durable Objects) | 14 | 203 | 0 |
-| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge + API Gateway WebSocket) | 14 | 203 | 0 |
+| runtime-memory | in-process | 15 | 221 | 0 |
+| cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows + Cron Triggers + Durable Objects) | 15 | 221 | 0 |
+| aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge + API Gateway WebSocket) | 15 | 221 | 0 |
+
+M8 adds `limits` (10 logical mutations per atomic changeset with the preview
+reporting the bound, page clamp, malformed cursors, length constraints, id
+syntax, idempotency-key reuse), the live provider-switch test
+(`test/switch.test.ts`), the benchmark (`pnpm bench`) and the certification
+run (`pnpm certify` → `certification/latest.json`).
 
 M7 adds the realtime profile (`test/realtime.test.ts`, run with
 `FORGE_TARGET_URL` + `FORGE_TARGET_WS`): `OrderEvents` is bound with

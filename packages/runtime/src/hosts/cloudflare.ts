@@ -103,7 +103,7 @@ function cloudflareRealtimeHub(env: WorkerEnv): RealtimeHub | null {
 export function createRealtimeObject<B extends abstract new (...args: any[]) => any>(Base: B, bundle: AppBundle, options: WorkerOptions = {}) {
   const model = new Model(bundle);
   abstract class ForgeRealtimeObject extends Base {
-    private engineFor(env: WorkerEnv): Engine {
+    engineFor(env: WorkerEnv): Engine {
       const storage = new D1Storage(env.DB, model);
       const layer = Layer.mergeAll(
         Layer.succeed(Clock)({ now: () => new Date().toISOString() }),

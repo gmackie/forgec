@@ -153,3 +153,63 @@ fn compat_classifies_changes_per_compatibility_stream() {
     let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&same.stdout)).unwrap();
     assert_eq!(r["verdict"], "compatible");
 }
+
+/// Minimal LSP client over stdio: initialize, open a file with an error, expect diagnostics, format, shutdown.
+#[test]
+fn lsp_publishes_diagnostics_and_formats() {
+    use std::io::{BufRead, BufReader, Read, Write};
+    let dir = std::env::temp_dir().join(format!("forge-lsp-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("src")).unwrap();
+    std::fs::write(dir.join("forge.toml"), "[package]\nname = \"@t/app\"\nversion = \"0.1.0\"\n").unwrap();
+    let path = dir.join("src/a.forge");
+    std::fs::write(&path, "resource R {\n  id : id\n  x : txt\n}\n").unwrap();
+    let uri = format!("file://{}", path.display());
+
+    let mut child = forge().arg("lsp").stdin(std::process::Stdio::piped()).stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::null()).spawn().unwrap();
+    let mut stdin = child.stdin.take().unwrap();
+    let mut stdout = BufReader::new(child.stdout.take().unwrap());
+    let send = |stdin: &mut std::process::ChildStdin, v: serde_json::Value| {
+        let body = v.to_string();
+        write!(stdin, "Content-Length: {}\r\n\r\n{}", body.len(), body).unwrap();
+        stdin.flush().unwrap();
+    };
+    let recv = |stdout: &mut BufReader<std::process::ChildStdout>| -> serde_json::Value {
+        let mut len = 0usize;
+        loop {
+            let mut line = String::new();
+            stdout.read_line(&mut line).unwrap();
+            if line == "\r\n" || line.is_empty() { break; }
+            if let Some(v) = line.strip_prefix("Content-Length:") { len = v.trim().parse().unwrap(); }
+        }
+        let mut buf = vec![0u8; len];
+        stdout.read_exact(&mut buf).unwrap();
+        serde_json::from_slice(&buf).unwrap()
+    };
+    send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": { "rootUri": format!("file://{}", dir.display()), "capabilities": {} } }));
+    let init = recv(&mut stdout);
+    assert_eq!(init["id"], 1);
+    assert_eq!(init["result"]["capabilities"]["textDocumentSync"], 1);
+    assert_eq!(init["result"]["capabilities"]["documentFormattingProvider"], true);
+    send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "method": "initialized", "params": {} }));
+    send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "method": "textDocument/didOpen", "params": { "textDocument": { "uri": uri, "languageId": "forge", "version": 1, "text": std::fs::read_to_string(&path).unwrap() } } }));
+    let diag = recv(&mut stdout);
+    assert_eq!(diag["method"], "textDocument/publishDiagnostics");
+    assert_eq!(diag["params"]["uri"], uri);
+    let d = &diag["params"]["diagnostics"][0];
+    assert_eq!(d["code"], "E-SYM-001");
+    assert_eq!(d["range"]["start"]["line"], 2);
+    assert!(d["message"].as_str().unwrap().contains("text"), "suggestion carried: {}", d["message"]);
+    // fix through didChange: diagnostics clear
+    send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "method": "textDocument/didChange", "params": { "textDocument": { "uri": uri, "version": 2 }, "contentChanges": [{ "text": "resource R   {\n  id : id\n  x : text\n}\n" }] } }));
+    let diag2 = recv(&mut stdout);
+    assert_eq!(diag2["params"]["diagnostics"].as_array().unwrap().len(), 0);
+    send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "id": 2, "method": "textDocument/formatting", "params": { "textDocument": { "uri": uri }, "options": { "tabSize": 2, "insertSpaces": true } } }));
+    let fmt = recv(&mut stdout);
+    assert_eq!(fmt["id"], 2);
+    assert_eq!(fmt["result"][0]["newText"], "resource R {\n  id : id\n  x : text\n}\n");
+    send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "id": 3, "method": "shutdown", "params": null }));
+    assert_eq!(recv(&mut stdout)["id"], 3);
+    send(&mut stdin, serde_json::json!({ "jsonrpc": "2.0", "method": "exit", "params": null }));
+    assert!(child.wait().unwrap().success());
+}

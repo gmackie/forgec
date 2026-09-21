@@ -1,0 +1,225 @@
+{
+  "version": "certification/1",
+  "at": "2026-09-21T01:44:12.008Z",
+  "commit": "unknown",
+  "package": {
+    "name": "@acme/commerce",
+    "version": "0.1.0",
+    "edition": "2026",
+    "profile": "portable-v1",
+    "targets": [
+      "cloudflare-d1",
+      "aws-dynamodb"
+    ],
+    "observability": {
+      "window": "28d",
+      "slo": [
+        [
+          "crud-read",
+          {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithin": "500ms"
+          }
+        ],
+        [
+          "crud-write",
+          {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithin": "1s"
+          }
+        ]
+      ]
+    }
+  },
+  "buildHash": "f3eddedaa59e775d66baf06a58af750c9d3f6aaa31c7f2318f159449e13f5a9b",
+  "contractsVersion": "contracts/1",
+  "profile": "portable-v1",
+  "suites": {
+    "reference": true,
+    "switch": {
+      "cloudflare-d1->aws-dynamodb": true,
+      "aws-dynamodb->cloudflare-d1": true
+    }
+  },
+  "targets": {
+    "cloudflare-d1": {
+      "url": "https://forge-acme.gmac.workers.dev",
+      "stack": "Workers + D1 + R2 + Queues + Workflows + Cron Triggers + Durable Objects",
+      "scenarios": {
+        "ok": true,
+        "count": 15,
+        "steps": 221,
+        "failures": 0,
+        "ids": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ]
+      },
+      "realtime": true,
+      "bench": {
+        "latencyMs": {
+          "crud-write:create": {
+            "n": 20,
+            "p50": 247,
+            "p95": 649,
+            "max": 649
+          },
+          "crud-read:get": {
+            "n": 20,
+            "p50": 84,
+            "p95": 181,
+            "max": 181
+          },
+          "crud-read:list": {
+            "n": 20,
+            "p50": 85,
+            "p95": 268,
+            "max": 268
+          },
+          "crud-write:update": {
+            "n": 20,
+            "p50": 264,
+            "p95": 563,
+            "max": 563
+          },
+          "function:SubmitOrder": {
+            "n": 20,
+            "p50": 262,
+            "p95": 410,
+            "max": 410
+          }
+        },
+        "atomicBudget": [
+          {
+            "operations": 1,
+            "physicalActions": 5,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          },
+          {
+            "operations": 2,
+            "physicalActions": 10,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          },
+          {
+            "operations": 5,
+            "physicalActions": 25,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          },
+          {
+            "operations": 10,
+            "physicalActions": 50,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          }
+        ]
+      }
+    },
+    "aws-dynamodb": {
+      "url": "https://65geshs364.execute-api.us-east-1.amazonaws.com",
+      "stack": "HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge + API Gateway WebSocket",
+      "scenarios": {
+        "ok": true,
+        "count": 15,
+        "steps": 221,
+        "failures": 0,
+        "ids": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ]
+      },
+      "realtime": true,
+      "bench": {
+        "latencyMs": {
+          "crud-write:create": {
+            "n": 20,
+            "p50": 139,
+            "p95": 242,
+            "max": 242
+          },
+          "crud-read:get": {
+            "n": 20,
+            "p50": 62,
+            "p95": 329,
+            "max": 329
+          },
+          "crud-read:list": {
+            "n": 20,
+            "p50": 62,
+            "p95": 70,
+            "max": 70
+          },
+          "crud-write:update": {
+            "n": 20,
+            "p50": 133,
+            "p95": 240,
+            "max": 240
+          },
+          "function:SubmitOrder": {
+            "n": 20,
+            "p50": 227,
+            "p95": 370,
+            "max": 370
+          }
+        },
+        "atomicBudget": [
+          {
+            "operations": 1,
+            "physicalActions": 6,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          },
+          {
+            "operations": 2,
+            "physicalActions": 12,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          },
+          {
+            "operations": 5,
+            "physicalActions": 30,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          },
+          {
+            "operations": 10,
+            "physicalActions": 60,
+            "physicalLimit": 100,
+            "atomicAllowed": true
+          }
+        ]
+      }
+    }
+  },
+  "certified": true
+}

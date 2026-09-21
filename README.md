@@ -8,20 +8,18 @@ and AWS (CDK / DynamoDB).
 - Decisions: `docs/decisions/`
 - M0 executable spikes: `spikes/` (`pnpm spike:d1`, `pnpm spike:dynamo`)
 
-Status: M0–M7 gates met (2026-09-20). CRUD, lifecycle actions, restrict
-delete, changesets, idempotent recovery, blobs (R2/S3) and CSV import run on
-both targets with one client and one React workspace; see
-`conformance/README.md`. Implemented functions, channels and subscriptions deliver through Cloudflare
-Queues / SQS with per-subscription outbox status. Effective-dated and
-hierarchical resources are guarded in one commit; bounded views, rebuildable
-projections (contribution ledger, stale-event safe) and cache readers with
-effective-boundary freshness ride the same outbox and document primitives.
-Workflows run on one portable executor driven natively by Cloudflare
-Workflows and Step Functions; schedules compile to a recurrence IR with an
-occurrence ledger behind Cron Triggers / EventBridge; the realtime profile
-streams channel messages over Durable Objects / API Gateway WebSocket with
-sequence numbers and bounded replay. Next: M8 (observability, migration,
-limits, docs, LSP, packaging).
+Status: M0–M8 complete and certified (2026-09-20): the Acme reference
+application runs the same `.forge` package, generated client, React workspace
+and `impl/` sources on Cloudflare (Workers + D1 + R2 + Queues + Workflows +
+Durable Objects + Cron Triggers) and AWS (HTTP API + Lambda + DynamoDB + S3 +
+SQS + Step Functions + EventBridge + API Gateway WebSocket). 15 conformance
+scenarios / 221 steps, the realtime profile and provider switching in both
+directions pass live on both; see `conformance/certification/latest.json` and
+`docs/`.
+
+- Documentation: `docs/` (getting started, language, portable profile,
+  deployment, operations, conformance)
+- CLI: `forge check | fmt | inspect | lock | build | compat | lsp`
 
 ## Compiler (M1)
 

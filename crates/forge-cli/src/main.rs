@@ -50,9 +50,12 @@ enum Cmd {
     /// Compatibility report between two built bundles (API, event, storage, lifecycle, workflow streams).
     /// Exit 1 on breaking findings.
     Compat { old: PathBuf, new: PathBuf },
+    /// Language server over stdio (diagnostics, formatting).
+    Lsp,
 }
 
 mod compat;
+mod lsp;
 
 /// `forge.lock` content. Dependencies are pinned by name, version and the
 /// content hash of their compiled contract, so a changed upstream contract is
@@ -201,6 +204,7 @@ fn main() -> Result<()> {
             std::fs::write(path.join("forge.lock"), render_lock(&loaded.deps))?;
             println!("{}: wrote forge.lock ({} dependency(ies))", loaded.package.name, loaded.deps.len());
         }
+        Cmd::Lsp => lsp::run()?,
         Cmd::Compat { old, new } => {
             let o: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&old)?)?;
             let n: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&new)?)?;

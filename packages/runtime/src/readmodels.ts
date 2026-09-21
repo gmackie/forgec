@@ -3,13 +3,13 @@
  * primitives every adapter already provides: bounded list queries and opaque
  * documents with optimistic versions, so no adapter grows a new storage shape.
  */
-import { Effect } from "effect";
+import { Cause, Effect } from "effect";
 import { formatMinor, toMinor } from "./codecs.js";
 import type { Wire } from "./decode.js";
 import { canonicalize, evalExpr } from "./decode.js";
 import type { Envelope, Transport } from "./dispatch.js";
 import type { CallContext, Engine } from "./engine.js";
-import { err, type ForgeError } from "./errors.js";
+import { err, ForgeError } from "./errors.js";
 import type { CacheDecl, Expr, ProjectionDecl, ViewDecl } from "./model.js";
 import { Clock, Storage, type RuntimeServices } from "./services.js";
 
@@ -137,6 +137,21 @@ export class ReadModels {
    * ignored and a moved or filtered-out record is subtracted before being re-added.
    */
   applyEvent(p: ProjectionDecl, env: Envelope): Effect.Effect<"applied" | "stale" | "ignored", ForgeError, RuntimeServices> {
+    const self = this;
+    // Concurrent sweeps may apply different events to one group: the loser of a CAS reloads and retries
+    // (the ledger makes the retry idempotent) instead of leaving the row to a lease timeout.
+    return Effect.gen(function* () {
+      for (let attempt = 0; ; attempt++) {
+        const exit = yield* Effect.exit(self.applyEventOnce(p, env));
+        if (exit._tag === "Success") return exit.value;
+        const e = Cause.squash(exit.cause);
+        if (e instanceof ForgeError && (e.code === "VersionConflict" || e.code === "TransientConflict") && attempt < 8) continue;
+        return yield* Effect.fail(e instanceof ForgeError ? e : err("Internal", String(e)));
+      }
+    });
+  }
+
+  private applyEventOnce(p: ProjectionDecl, env: Envelope): Effect.Effect<"applied" | "stale" | "ignored", ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       const tenant = env.tenant;
