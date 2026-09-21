@@ -490,3 +490,31 @@ fn inline_edition(name: &str, files: &[(&str, &str)], edition: &str) -> Package 
     p.edition = edition.into();
     p
 }
+
+/// PAR-118: a foreign identifier (imported as `text`) is never satisfied by a Forge reference through
+/// structural coincidence; the workflow must map it explicitly.
+#[test]
+fn workflow_arguments_are_type_checked_against_the_callee_contract() {
+    let vendor = compile(&inline("@vendor/billing", &[("src/index.forge", "export shape InvoiceCreate {\n  customer_id : text\n  amount : text\n}\nexport shape Invoice {\n  id : text\n}\nexport function CreateInvoice\n  @http(POST, \"/invoices\")\n{\n  input InvoiceCreate\n  output Invoice\n}\n")]), &[]).ir.unwrap();
+    let base = "import billing\nresource Customer\n  @crud(\"/v1/customers\")\n{\n  id : id\n  externalRef : text\n}\nshape I {\n  customer : Customer\n  amount : text\n}\n";
+    // a reference where the vendor wants its own identifier: refused
+    let coincidence = format!("{base}workflow W {{\n  input I\n  version 1\n  step inv = billing.CreateInvoice(customer_id: input.customer, amount: input.amount)\n  return inv\n}}\n");
+    let mut pkg = inline("@t/x", &[("src/index.forge", &coincidence)]);
+    pkg.dependencies.push(("billing".into(), "@vendor/billing".into()));
+    let out = compile(&pkg, &[&vendor]);
+    let c: Vec<&str> = out.diagnostics.iter().map(|d| d.code.as_str()).collect();
+    assert!(c.contains(&"E-WF-008"), "{:?}", out.diagnostics);
+    let msg = &out.diagnostics.iter().find(|d| d.code == "E-WF-008").unwrap().message;
+    assert!(msg.contains("customer_id") && msg.contains("text") && msg.contains("Customer"), "{msg}");
+    // an explicit text field (a reviewed mapping) is accepted; so is a literal
+    let explicit = format!("{base}workflow W {{\n  input I\n  version 1\n  step inv = billing.CreateInvoice(customer_id: input.customer.externalRef, amount: \"1.00\")\n  return inv\n}}\n");
+    let mut pkg = inline("@t/x", &[("src/index.forge", &explicit)]);
+    pkg.dependencies.push(("billing".into(), "@vendor/billing".into()));
+    let out = compile(&pkg, &[&vendor]);
+    assert!(out.diagnostics.iter().all(|d| d.code != "E-WF-008"), "{:?}", out.diagnostics);
+    // a wrong scalar is refused too
+    let wrong = format!("{base}workflow W {{\n  input I\n  version 1\n  step inv = billing.CreateInvoice(customer_id: 42, amount: input.amount)\n  return inv\n}}\n");
+    let mut pkg = inline("@t/x", &[("src/index.forge", &wrong)]);
+    pkg.dependencies.push(("billing".into(), "@vendor/billing".into()));
+    assert!(compile(&pkg, &[&vendor]).diagnostics.iter().any(|d| d.code == "E-WF-008"));
+}

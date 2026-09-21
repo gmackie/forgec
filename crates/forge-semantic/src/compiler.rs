@@ -94,6 +94,8 @@ struct WfScope {
     ids: Vec<String>,
     bound: Vec<String>,
     errors: Vec<String>,
+    /// Types of `input` and completed steps, for argument checking (E-WF-008).
+    types: Vec<(String, TypeSpec)>,
 }
 
 enum Resolved {
@@ -1498,7 +1500,7 @@ impl<'a> Ctx<'a> {
                 other => self.err("E-DEC-001", file, tok_range(&n), format!("unknown workflow decorator `@{other}`"), None),
             }
         }
-        let mut scope = WfScope { ids: Vec::new(), bound: vec!["input".into()], errors: errors.clone() };
+        let mut scope = WfScope { ids: Vec::new(), bound: vec!["input".into()], errors: errors.clone(), types: input.iter().map(|t| ("input".to_string(), t.clone())).collect() };
         let steps = self.workflow_items(&w.items(), module, file, &mut scope);
         let graph_hash = hash_hex(&serde_json::to_string(&(version, &steps)).unwrap_or_default());
         Some(Workflow { id, name, exported, doc: ast::doc_of(w.syntax()), version, input, output, errors, http, steps, graph_hash })
@@ -1523,6 +1525,15 @@ impl<'a> Ctx<'a> {
                         ast::StepBody::Call(c) => self.workflow_call(&sid, &c, module, file, scope),
                     };
                     // The step's result is bound for everything after it.
+                    if let Some(Step::Call { target, .. }) = &step {
+                        let ty = match target {
+                            CallTarget::Function { function } => self.function_output(function, module),
+                            CallTarget::Transition { resource, .. } => Some(TypeSpec { base: TypeBase::Record { resource: resource.clone() }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None }),
+                        };
+                        if let Some(t) = ty {
+                            scope.types.push((sid.clone(), t));
+                        }
+                    }
                     scope.bound.push(sid);
                     if let Some(st) = step {
                         out.push(st);
@@ -1655,6 +1666,10 @@ impl<'a> Ctx<'a> {
                 return None;
             }
         };
+        let param_types: Vec<(String, TypeSpec)> = match &target {
+            CallTarget::Function { function } => self.function_input_types(function, module),
+            CallTarget::Transition { .. } => vec![], // id/expectedVersion/action inputs are checked at runtime by the transition contract
+        };
         let mut args = Vec::new();
         for a in c.args() {
             let (Some(n), Some(v)) = (a.name(), a.value()) else { continue };
@@ -1663,6 +1678,13 @@ impl<'a> Ctx<'a> {
                 self.err("E-WF-006", file, tok_range(&n), format!("`{}` does not accept an argument `{}`", t.text(), n.text()), sugg);
                 continue;
             }
+            // PAR-118: the callee's declared type decides; a Forge reference never satisfies a foreign
+            // identifier (`text`) by structural coincidence, and scalar families must agree.
+            if let Some((_, expected)) = param_types.iter().find(|(name, _)| name == n.text())
+                && let Some(actual) = self.workflow_expr_type(&v, module, scope)
+                && let Some(why) = type_mismatch(expected, &actual, module, &self.pkg.name) {
+                    self.err("E-WF-008", file, expr_range(&v), format!("argument `{}` of `{}` is `{}`; {why}", n.text(), t.text(), describe_type(expected)), Some("map it explicitly: pass a field of the right type (a mapping/external-id field) or the result of a reviewed resolver step".into()));
+                }
             if let Some(value) = self.workflow_expr(&v, module, file, scope) {
                 args.push(NamedArg { name: n.text().to_string(), value });
             }
@@ -1680,6 +1702,79 @@ impl<'a> Ctx<'a> {
             }
         }
         Some(Step::Call { id: sid.to_string(), target, args, catches })
+    }
+
+    /// Typed input fields of a function, local or imported.
+    fn function_input_types(&mut self, id: &str, module: &str) -> Vec<(String, TypeSpec)> {
+        let local_prefix = format!("{}/{}/", self.pkg.name, module);
+        if let Some(name) = id.strip_prefix(&local_prefix)
+            && let Some(Symbol { decl: Declaration::Function(f), file, .. }) = self.sym(module, name) {
+                let (f, file) = (f.clone(), *file);
+                return f.input().and_then(|n| self.type_ref_spec(&n, module, file)).map(|t| self.typed_fields_of(&t.base, module)).unwrap_or_default();
+            }
+        for d in self.deps.values() {
+            if let Some(f) = d.modules.iter().flat_map(|m| &m.functions).find(|f| f.id == id) {
+                let base = f.input.as_ref().map(|t| t.base.clone());
+                return base.map(|b| self.typed_fields_of(&b, module)).unwrap_or_default();
+            }
+        }
+        vec![]
+    }
+
+    fn function_output(&mut self, id: &str, module: &str) -> Option<TypeSpec> {
+        let local_prefix = format!("{}/{}/", self.pkg.name, module);
+        if let Some(name) = id.strip_prefix(&local_prefix)
+            && let Some(Symbol { decl: Declaration::Function(f), file, .. }) = self.sym(module, name) {
+                let (f, file) = (f.clone(), *file);
+                return f.output().and_then(|n| self.type_ref_spec(&n, module, file));
+            }
+        self.deps.values().find_map(|d| d.modules.iter().flat_map(|m| &m.functions).find(|f| f.id == id).and_then(|f| f.output.clone()))
+    }
+
+    /// Fields with their types for a shape, record/reference or message.
+    fn typed_fields_of(&mut self, base: &TypeBase, module: &str) -> Vec<(String, TypeSpec)> {
+        match base {
+            TypeBase::Shape { id } => {
+                let local_prefix = format!("{}/{}/", self.pkg.name, module);
+                if let Some(name) = id.strip_prefix(&local_prefix)
+                    && let Some(Symbol { decl: Declaration::Shape(sh), file, .. }) = self.sym(module, name) {
+                        let (sh, file) = (sh.clone(), *file);
+                        let saved = self.diags.len();
+                        let out: Vec<(String, TypeSpec)> = sh.fields().filter_map(|fd| self.field(&fd, module, file, None, &["immutable"])).map(|f| (f.name, f.ty)).collect();
+                        self.diags.truncate(saved); // reported once where the shape is lowered
+                        return out;
+                    }
+                self.deps.values().find_map(|d| d.find_shape(id)).map(|sh| sh.fields.iter().map(|f| (f.name.clone(), f.ty.clone())).collect()).unwrap_or_default()
+            }
+            TypeBase::Record { resource } | TypeBase::Reference { resource } => self.resource_fields(resource, module).into_iter().map(|f| (f.name, f.ty)).collect(),
+            _ => vec![],
+        }
+    }
+
+    /// Static type of a workflow expression when it is knowable (names through bindings, literals).
+    fn workflow_expr_type(&mut self, e: &ast::Expr, module: &str, scope: &WfScope) -> Option<TypeSpec> {
+        let scalar = |name: &str| TypeSpec { base: TypeBase::Scalar { name: name.into(), args: vec![] }, optional: false, normalizers: vec![], constraints: vec![], purpose: None, data_class: None };
+        match e {
+            ast::Expr::Literal(l) => Some(match literal_of(&l.text()) {
+                Literal::Int(_) => scalar("integer"),
+                Literal::Decimal(_) => scalar("decimal"),
+                Literal::String(_) => scalar("text"),
+                Literal::Bool(_) => scalar("boolean"),
+                _ => return None,
+            }),
+            ast::Expr::Paren(p) => self.workflow_expr_type(&p.inner()?, module, scope),
+            ast::Expr::Name(n) => {
+                let path = n.segments();
+                let head = path.first()?;
+                let mut ty = scope.types.iter().rev().find(|(b, _)| b == head)?.1.clone();
+                for seg in &path[1..] {
+                    let fields = self.typed_fields_of(&ty.base, module);
+                    ty = fields.into_iter().find(|(f, _)| f == seg)?.1;
+                }
+                Some(ty)
+            }
+            _ => None,
+        }
     }
 
     /// (input field names, declared error names) of a function, local or imported.
@@ -2132,6 +2227,68 @@ fn short(id: &str) -> &str {
 fn unq(s: &str) -> String {
     if s.starts_with('"') { ast::unquote(s) } else { s.to_string() }
 }
+/// Scalar families for argument compatibility; `json` accepts anything.
+fn scalar_family(name: &str) -> &'static str {
+    match name {
+        "text" | "email" | "url" | "countryCode" | "timezone" | "localTime" => "text",
+        "integer" | "decimal" | "money" => "number",
+        "boolean" => "boolean",
+        "date" => "date",
+        "datetime" => "datetime",
+        "duration" => "duration",
+        "id" => "id",
+        _ => "json",
+    }
+}
+
+fn short_id(id: &str) -> String {
+    id.rsplit('/').next().unwrap_or(id).to_string()
+}
+
+fn describe_type(t: &TypeSpec) -> String {
+    match &t.base {
+        TypeBase::Scalar { name, .. } => name.clone(),
+        TypeBase::Enum { id } => format!("enum {}", short_id(id)),
+        TypeBase::Shape { id } => format!("shape {}", short_id(id)),
+        TypeBase::Reference { resource } => format!("reference to {}", short_id(resource)),
+        TypeBase::Record { resource } => format!("{}.Record", short_id(resource)),
+        TypeBase::Identity { resource } => format!("{}.Identity", short_id(resource)),
+        TypeBase::Status { resource } => format!("{}.Status", short_id(resource)),
+        TypeBase::Message { channel, message } => format!("{}.{message}", short_id(channel)),
+    }
+}
+
+/// `Some(reason)` when `actual` cannot satisfy `expected`. Conservative: unknown combinations pass.
+fn type_mismatch(expected: &TypeSpec, actual: &TypeSpec, _module: &str, _pkg: &str) -> Option<String> {
+    use TypeBase::*;
+    match (&expected.base, &actual.base) {
+        (Scalar { name: e, .. }, Scalar { name: a, .. }) => {
+            let (fe, fa) = (scalar_family(e), scalar_family(a));
+            if fe == "json" || fe == fa || (fe == "number" && fa == "number") {
+                None
+            } else if fe == "text" && fa == "id" {
+                Some(format!("`{}` is a Forge id; the callee wants its own identifier, and a Forge id that happens to be a string is not that identifier", describe_type(actual)))
+            } else {
+                Some(format!("the argument is `{}`", describe_type(actual)))
+            }
+        }
+        (Scalar { name: e, .. }, Reference { resource } | Record { resource } | Identity { resource }) => {
+            if scalar_family(e) == "json" {
+                None
+            } else {
+                Some(format!("the argument is a Forge reference to `{}`; a reference is not a foreign identifier", short_id(resource)))
+            }
+        }
+        (Reference { resource: e }, Reference { resource: a } | Record { resource: a } | Identity { resource: a }) => {
+            if e == a { None } else { Some(format!("the argument refers to `{}`, not `{}`", short_id(a), short_id(e))) }
+        }
+        (Reference { resource }, Scalar { name, .. }) => Some(format!("a `{}` reference is required, the argument is `{name}`", short_id(resource))),
+        (Enum { id: e }, Enum { id: a }) => if e == a { None } else { Some(format!("the argument is `enum {}`", short_id(a))) },
+        (Enum { .. }, Scalar { name, .. }) if scalar_family(name) != "text" => Some(format!("the argument is `{name}`")),
+        _ => None,
+    }
+}
+
 fn literal_of(text: &str) -> Literal {
     match text {
         "true" => Literal::Bool(true),

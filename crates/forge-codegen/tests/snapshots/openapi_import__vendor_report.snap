@@ -1,0 +1,92 @@
+---
+source: crates/forge-codegen/tests/openapi_import.rs
+expression: a.report
+---
+{
+  "version": "openapi-import/1",
+  "package": "@vendor/billing",
+  "source": {
+    "title": "Vendor Billing",
+    "version": "2.3.0",
+    "openapi": "3.1.0"
+  },
+  "hosts": [
+    "billing.vendor.example"
+  ],
+  "pins": [
+    {
+      "url": "https://schemas.vendor.example/common/v1.json",
+      "sha256": "382c8e07d36962a074e6f703fe3812c930f088bb3d8884714ea0b1acc556dc8f"
+    }
+  ],
+  "operations": [
+    {
+      "operation_id": "createInvoice",
+      "function": "CreateInvoice",
+      "method": "POST",
+      "path": "/invoices"
+    },
+    {
+      "operation_id": "getInvoice",
+      "function": "GetInvoice",
+      "method": "GET",
+      "path": "/invoices/{invoiceId}"
+    }
+  ],
+  "skipped_operations": [
+    "legacyReport"
+  ],
+  "unsupported": [
+    {
+      "feature": "oneOf",
+      "at": "components.schemas.Invoice.attachment",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.InvoiceCreate.lines",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "query-array-form",
+      "at": "paths./invoices/{invoiceId}.get.parameters.expand",
+      "note": "array query parameters (style/explode serialization) are not importable; parameter dropped"
+    },
+    {
+      "feature": "binary-media",
+      "at": "paths./legacy.get.responses.200",
+      "note": "non-JSON media [\"application/pdf\"]; operation skipped"
+    }
+  ],
+  "foreign_identifiers": [
+    {
+      "shape": "Invoice",
+      "field": "customer_id"
+    },
+    {
+      "shape": "InvoiceCreate",
+      "field": "customer_id"
+    }
+  ],
+  "callbacks": [
+    {
+      "name": "createInvoice.onPaid",
+      "kind": "callback",
+      "url": "{$request.body#/callbackUrl}",
+      "payload": "InvoicePaid"
+    },
+    {
+      "name": "webhook:invoice.voided",
+      "kind": "webhook",
+      "payload": "InvoicePaid"
+    }
+  ],
+  "security": [
+    {
+      "scheme": "apiKey",
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-Api-Key"
+    }
+  ]
+}

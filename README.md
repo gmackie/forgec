@@ -19,7 +19,14 @@ directions pass live on both; see `conformance/certification/latest.json` and
 
 - Documentation: `docs/` (getting started, language, portable profile,
   deployment, operations, conformance)
-- CLI: `forge check | fmt | inspect | lock | build | compat | lsp`
+- CLI: `forge check | fmt | inspect | lock | build | compat | lsp | explain | import-openapi`
+
+Post-M8 program (`docs/post-m8/STATUS.json`): M9–M14 done — Postgres/Node
+profile, data taxonomy and governance, purpose capability algebra, trusted
+invocation context and Gatekeeper, and the interface layer (OpenAPI/Smithy
+exports, `/forge/discovery`, RPC bindings, MCP server, `forge-api` CLI,
+Python/Go SDKs, pinned OpenAPI importer; `packages/interfaces`,
+`specs/interfaces/conformance.json`).
 
 ## Compiler (M1)
 

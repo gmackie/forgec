@@ -1,0 +1,74 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Vendor Billing", "version": "2.3.0" },
+  "servers": [{ "url": "https://billing.vendor.example/v2" }],
+  "paths": {
+    "/invoices": {
+      "post": {
+        "operationId": "createInvoice",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoiceCreate" } } } },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } } } },
+          "402": { "description": "Payment required", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+          "422": { "description": "Invalid", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }
+        },
+        "callbacks": {
+          "onPaid": { "{$request.body#/callbackUrl}": { "post": { "operationId": "invoicePaid", "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicePaid" } } } }, "responses": { "200": { "description": "ok" } } } } }
+        }
+      }
+    },
+    "/invoices/{invoiceId}": {
+      "get": {
+        "operationId": "getInvoice",
+        "parameters": [
+          { "name": "invoiceId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "expand", "in": "query", "required": false, "style": "form", "explode": false, "schema": { "type": "array", "items": { "type": "string" } } }
+        ],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } } } } }
+      }
+    },
+    "/legacy": {
+      "get": { "operationId": "legacyReport", "responses": { "200": { "description": "PDF", "content": { "application/pdf": { "schema": { "type": "string", "format": "binary" } } } } } }
+    }
+  },
+  "components": {
+    "schemas": {
+      "InvoiceCreate": {
+        "type": "object",
+        "required": ["customer_id", "amount", "currency"],
+        "properties": {
+          "customer_id": { "type": "string", "description": "Vendor customer identifier" },
+          "amount": { "type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$" },
+          "currency": { "type": "string", "enum": ["USD", "EUR"] },
+          "memo": { "type": ["string", "null"], "maxLength": 200 },
+          "due": { "type": "string", "format": "date" },
+          "callbackUrl": { "type": "string", "format": "uri" },
+          "lines": { "type": "array", "items": { "$ref": "#/components/schemas/Line" } },
+          "meta": { "$ref": "https://schemas.vendor.example/common/v1.json#/Meta" }
+        }
+      },
+      "Line": { "type": "object", "required": ["sku", "qty"], "properties": { "sku": { "type": "string" }, "qty": { "type": "integer", "minimum": 1 }, "note": { "type": "string", "nullable": true } } },
+      "Invoice": {
+        "type": "object",
+        "required": ["id", "status", "amount", "currency", "created_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "customer_id": { "type": "string" },
+          "status": { "type": "string", "enum": ["open", "paid", "void"] },
+          "amount": { "type": "string" },
+          "currency": { "type": "string", "enum": ["USD", "EUR"] },
+          "created_at": { "type": "string", "format": "date-time" },
+          "paid_at": { "type": ["string", "null"], "format": "date-time" },
+          "attachment": { "oneOf": [{ "type": "string" }, { "type": "object" }] }
+        }
+      },
+      "InvoicePaid": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "paid_at": { "type": "string", "format": "date-time" } } },
+      "Problem": { "type": "object", "properties": { "type": { "type": "string" }, "title": { "type": "string" }, "status": { "type": "integer" }, "code": { "type": "string" } } }
+    },
+    "securitySchemes": { "apiKey": { "type": "apiKey", "in": "header", "name": "X-Api-Key" } }
+  },
+  "security": [{ "apiKey": [] }],
+  "webhooks": {
+    "invoice.voided": { "post": { "operationId": "invoiceVoided", "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicePaid" } } } }, "responses": { "200": { "description": "ok" } } } }
+  }
+}

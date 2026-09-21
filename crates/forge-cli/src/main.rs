@@ -50,6 +50,22 @@ enum Cmd {
     /// Compatibility report between two built bundles (API, event, storage, lifecycle, workflow streams).
     /// Exit 1 on breaking findings.
     Compat { old: PathBuf, new: PathBuf },
+    /// Import a vendor OpenAPI 3.x document (JSON) as a Forge package: pinned refs only, no fetching.
+    ImportOpenapi {
+        spec: PathBuf,
+        /// Forge package name, e.g. `@vendor/billing`.
+        #[arg(long)]
+        package: String,
+        /// Output directory for the generated package.
+        #[arg(long)]
+        out: PathBuf,
+        /// Pin a remote `$ref` URL to a local file: `URL=FILE` or `URL=FILE@SHA256`.
+        #[arg(long = "pin")]
+        pins: Vec<String>,
+        /// Hosts that servers/callbacks may name (repeatable). Empty allows any public host.
+        #[arg(long = "allow-host")]
+        allow_hosts: Vec<String>,
+    },
     /// Language server over stdio (diagnostics, formatting).
     Lsp,
     /// Explain the effective purpose surface of a resource: every granted and denied atom with its origin.
@@ -243,6 +259,35 @@ fn main() -> Result<()> {
                     for d in &s.deny {
                         println!("  deny  {:<8} {:<24} from {}", d.verb, d.name, d.origin.join(" > "));
                     }
+                }
+            }
+        }
+        Cmd::ImportOpenapi { spec, package, out, pins, allow_hosts } => {
+            let text = std::fs::read_to_string(&spec)?;
+            let mut opts = forge_codegen::openapi_import::ImportOptions { package, allow_hosts, pins: Vec::new() };
+            for p in pins {
+                let (url, rest) = p.split_once('=').ok_or_else(|| anyhow::anyhow!("--pin expects URL=FILE[@SHA256], got {p}"))?;
+                let (file, sha) = rest.rsplit_once('@').map(|(f, s)| (f.to_string(), Some(s.to_string()))).unwrap_or((rest.to_string(), None));
+                opts.pins.push(forge_codegen::openapi_import::Pin { url: url.to_string(), file: PathBuf::from(file), sha256: sha });
+            }
+            match forge_codegen::openapi_import::import_openapi(&text, &opts) {
+                Ok(result) => {
+                    for (rel, content) in &result.files {
+                        let target = out.join(rel);
+                        if let Some(parent) = target.parent() {
+                            std::fs::create_dir_all(parent)?;
+                        }
+                        std::fs::write(target, content)?;
+                    }
+                    let r = &result.report;
+                    eprintln!("{}: imported {} operations ({} skipped), {} unsupported features, {} foreign identifiers, {} callbacks/webhooks -> {}", r.package, r.operations.len(), r.skipped_operations.len(), r.unsupported.len(), r.foreign_identifiers.len(), r.callbacks.len(), out.display());
+                    if !r.unsupported.is_empty() || !r.foreign_identifiers.is_empty() {
+                        eprintln!("review {} and {}", out.join("import-report.json").display(), out.join("FOREIGN_IDS.md").display());
+                    }
+                }
+                Err(e) => {
+                    eprintln!("import refused: {e}");
+                    std::process::exit(1);
                 }
             }
         }

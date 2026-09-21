@@ -1,249 +1,298 @@
 {
-  "version": "post-m8-status/1",
-  "milestones": {
-    "M9": {
-      "status": "done",
-      "tickets": {
-        "FORGE-027": {
-          "status": "done",
-          "evidence": [
-            "specs/m8-baseline.json (64 passed / 11 pending with reasons)",
-            "scripts/post-m8/m8-baseline.ts"
-          ]
-        },
-        "FORGE-028": {
-          "status": "done",
-          "evidence": [
-            "specs/language/next-edition.md",
-            "examples/next/* (edition 2027 fixtures: parse lossless, fmt fixed point, compile clean)",
-            "crates/forge-semantic/tests/compile.rs: edition_2027_governance_declarations_lower_and_are_gated, digests_survive_folder_moves_and_discovery_order"
-          ]
-        },
-        "FORGE-029": {
-          "status": "done",
-          "evidence": [
-            "DomainIR::digests() (source/wire/docs/security) + app.json `digests`",
-            "tests: separate_semantic_digests, security_only_change_moves_only_the_security_digest, ir_loading_fails_closed_on_unknown_critical_features",
-            "runtime Model fails closed (packages/runtime/test/model-loading.test.ts)"
-          ]
-        },
-        "FORGE-030": {
-          "status": "done",
-          "evidence": [
-            "packages/contracts/capability-manifest (schema/validator/resolver, 4 tests)",
-            "[extensions] pins verified by forge check (E-EXT-001/002)",
-            "dependency_resolution_never_executes_package_code"
-          ]
-        },
-        "FORGE-031": {
-          "status": "done",
-          "evidence": [
-            "specs/security/threat-model.md (T1\u2013T15 with pending items named)"
-          ]
-        }
-      },
-      "scenarios": {
-        "PAR-076": "specs/m8-baseline.json",
-        "PAR-077": "digests_survive_folder_moves_and_discovery_order",
-        "PAR-078": "digests_survive_folder_moves_and_discovery_order + ir_is_identical_regardless_of_file_order_and_path_separators",
-        "PAR-079": "separate_semantic_digests",
-        "PAR-080": "security_only_change_moves_only_the_security_digest",
-        "PAR-081": "ir_loading_fails_closed_on_unknown_critical_features + model-loading.test.ts",
-        "PAR-082": "dependency_resolution_never_executes_package_code + check_validates_pinned_extension_manifests_without_executing_them",
-        "PAR-083": "ir_loading_fails_closed_on_unknown_critical_features (M8 artifact loads by rule; future artifact diagnosed)"
-      }
+ "version": "post-m8-status/1",
+ "milestones": {
+  "M9": {
+   "status": "done",
+   "tickets": {
+    "FORGE-027": {
+     "status": "done",
+     "evidence": [
+      "specs/m8-baseline.json (64 passed / 11 pending with reasons)",
+      "scripts/post-m8/m8-baseline.ts"
+     ]
     },
-    "M10": {
-      "status": "done",
-      "tickets": {
-        "FORGE-032": {
-          "status": "done",
-          "evidence": [
-            "packages/runtime/src/hosts/compose.ts (named capability axes: StructuredStore, ObjectStore, ChannelTransport, WorkflowDriver, RealtimeHub; composeRuntime)",
-            "Cloudflare/AWS entrypoints unchanged; goldens unchanged (conformance/test/migrations.test.ts, client snapshot)"
-          ]
-        },
-        "FORGE-033": {
-          "status": "done",
-          "evidence": [
-            "forge_planner::sql::render_postgres (BIGINT exact minor units, COLLATE \"C\", boolean guarded assertion, FK-ordered DDL) + snapshot",
-            "packages/runtime/src/adapters/postgres.ts (SERIALIZABLE guarded batches, error class mapping)",
-            "packages/runtime/test/postgres.test.ts: 15 scenarios x 2 facades + classification (PAR-085/086)"
-          ]
-        },
-        "FORGE-034": {
-          "status": "done",
-          "evidence": [
-            "raw-pg and drizzle-pg facades over one SQL plan",
-            "PAR-087: pooled connection retains no transaction-local tenant context",
-            "interactive JS transactions are not offered: the batch is the only transactional primitive"
-          ]
-        },
-        "FORGE-035": {
-          "status": "done",
-          "evidence": [
-            "packages/runtime/src/hosts/node.ts (Fetch ingress, WebSocket hub, sweep loop, /healthz /readyz, bounded concurrency, graceful drain, filesystem object store served through signed URLs)",
-            "packages/runtime/test/node-host.test.ts: 15 scenarios over HTTP, realtime, restart resumes acknowledged outbox work (PAR-091), drain",
-            "examples/acme/deploy/node (bundled entrypoint)"
-          ]
-        },
-        "FORGE-036": {
-          "status": "partial",
-          "evidence": [
-            "node-postgres profile certified: conformance/reports/node-postgres.json (15/15), realtime, bench, live switch cloudflare-d1 -> node-postgres",
-            "PostgreSQL through Workers (Hyperdrive) and Lambda: not certified (pending FORGE-036 remainder / M18)"
-          ]
-        }
-      },
-      "scenarios": {
-        "PAR-084": "goldens unchanged after the adapter refactor (migrations.test.ts, client snapshot, 15 scenarios on all targets)",
-        "PAR-085": "postgres.test.ts classification",
-        "PAR-086": "postgres.test.ts m2.concurrency / m3.integrity / m2.idempotency on PostgreSQL",
-        "PAR-087": "postgres.test.ts pooled context isolation",
-        "PAR-088": "unsupported interactive transactions: not exposed by design (SqlExecutor has batch only)",
-        "PAR-089": "partial: node-postgres profile only",
-        "PAR-090": "drizzle-pg + raw-pg run identical scenarios",
-        "PAR-091": "node-host.test.ts restart + drain"
-      }
+    "FORGE-028": {
+     "status": "done",
+     "evidence": [
+      "specs/language/next-edition.md",
+      "examples/next/* (edition 2027 fixtures: parse lossless, fmt fixed point, compile clean)",
+      "crates/forge-semantic/tests/compile.rs: edition_2027_governance_declarations_lower_and_are_gated, digests_survive_folder_moves_and_discovery_order"
+     ]
     },
-    "M11": {
-      "status": "done",
-      "tickets": {
-        "FORGE-037": {
-          "status": "done",
-          "evidence": [
-            "packages/contracts/data-core/taxonomy.json (multi-label DAG, identifiability/handling/personal facets, inferred-from-type map, record contexts) embedded in forge-semantic::taxonomy",
-            "DataSemanticsIR (`dataSemantics` in app.json): class, ancestors, kinds, handling (monotone: a child never loosens an ancestor), evidence declared|inferred-from-type|structural, completeness; unclassified free text is restricted, never public",
-            "E-GOV-006 unknown taxonomy node / data class extends"
-          ]
-        },
-        "FORGE-038": {
-          "status": "done",
-          "evidence": [
-            "`@subject(person|organization|device)` and `@subject(from: field)` (E-GOV-005/007: a `from` binding needs `list by field`)",
-            "runtime admin.subjects.locate: records via declared bindings, linked subjects with share counts, cascade always empty (packages/runtime/test/subjects.test.ts)"
-          ]
-        },
-        "FORGE-039": {
-          "status": "done",
-          "evidence": [
-            "LineageIR (`lineage` in app.json): outputs/writes/filters/orders/groups per generated operation, views (hidden filter fields kept), projections (group keys), functions declared-not-proven with external sinks and publishes; coverage modeled|declared"
-          ]
-        },
-        "FORGE-040": {
-          "status": "done",
-          "evidence": [
-            "inspection ledger bound to sealed digest+generation: pending|allowed|quarantined|review-required; downloads honor verdicts (strict in edition 2027, pending served in 2026); a failed detector is review-required; quarantine is terminal per generation; a detector cannot touch declared classification (no such path exists)"
-          ]
-        },
-        "FORGE-041": {
-          "status": "done",
-          "evidence": [
-            "inventory summary in dataSemantics; `forge compat` classification stream (class-changed, handling-loosened, personal-field-added, subject-binding-*); fixtures examples/next/education and examples/next/industrial compile under edition 2027 and are exercised by tests"
-          ]
-        }
-      },
-      "scenarios": {
-        "PAR-092": "classification_subjects_and_lineage_lower_conservatively (ancestors kept, unknown restricted)",
-        "PAR-093": "subjects.test.ts (organization is not a person subject)",
-        "PAR-094": "subjects.test.ts (shared guardian linked, no cascade) + E-GOV-007",
-        "PAR-095": "lineage: PresentDays view filters on healthNote without emitting it",
-        "PAR-096": "lineage: SubmitOrder coverage=declared with external sink",
-        "PAR-097": "subjects.test.ts (failed detector -> review-required, never allowed)",
-        "PAR-098": "taxonomy node data.identifier.pseudonym: pseudonymous, confidential, personal (no test of a hashing transformation yet)",
-        "PAR-099": "industrial fixture: restricted, personal=no, no subjects"
-      }
+    "FORGE-029": {
+     "status": "done",
+     "evidence": [
+      "DomainIR::digests() (source/wire/docs/security) + app.json `digests`",
+      "tests: separate_semantic_digests, security_only_change_moves_only_the_security_digest, ir_loading_fails_closed_on_unknown_critical_features",
+      "runtime Model fails closed (packages/runtime/test/model-loading.test.ts)"
+     ]
     },
-    "M12": {
-      "status": "done",
-      "tickets": {
-        "FORGE-042": {
-          "status": "done",
-          "evidence": [
-            "purposes with stable ids, `extends` grants nothing (capability_surfaces_flatten_with_sticky_denials: Child has no surface)",
-            "`uses .. for Purpose` explicit dependency purpose; runtime refuses purpose unions (scope.test.ts PAR-102)"
-          ]
-        },
-        "FORGE-043": {
-          "status": "done",
-          "evidence": [
-            "forge_semantic::capability (allow/deny closures, deny kept after flattening, sorted atoms, order-independent digests, origins per atom); E-GOV-009 cycles, E-GOV-001/002 unknown include/field/action"
-          ]
-        },
-        "FORGE-044": {
-          "status": "done",
-          "evidence": [
-            "contracts `surfaces` + generated `<Resource><Purpose>Record` interfaces; runtime nominal ScopedReader service keys per (resource, purpose, digest) (scope.test.ts PAR-103); E-GOV-010 unscoped Record output; runtime projection builds a new object (PAR-104)"
-          ]
-        },
-        "FORGE-045": {
-          "status": "done",
-          "evidence": [
-            "read/filter/order/update/create/actions distinct; scope.checkQuery refuses ungranted filter/order before execution (PAR-105); update/action authority separate (PAR-107); relationship expansion is not offered (references are ids only) \u2014 PAR-106 satisfied by construction, no expand operation exists"
-          ]
-        },
-        "FORGE-046": {
-          "status": "partial",
-          "evidence": [
-            "`forge explain --resource X [--json]` prints every atom with its inclusion origin; codemod proposals for old broad readers not implemented"
-          ]
-        }
-      },
-      "scenarios": {
-        "PAR-100": "Rust test: unbound child purpose has no surface; runtime NotPermitted",
-        "PAR-101": "Rust test: re-inclusion cannot lift a deny; digests equal under swapped include order",
-        "PAR-102": "scope.test.ts",
-        "PAR-103": "scope.test.ts",
-        "PAR-104": "scope.test.ts",
-        "PAR-105": "scope.test.ts",
-        "PAR-106": "by construction (no expansion operation); documented",
-        "PAR-107": "scope.test.ts"
-      }
+    "FORGE-030": {
+     "status": "done",
+     "evidence": [
+      "packages/contracts/capability-manifest (schema/validator/resolver, 4 tests)",
+      "[extensions] pins verified by forge check (E-EXT-001/002)",
+      "dependency_resolution_never_executes_package_code"
+     ]
     },
-    "M13": {
-      "status": "done",
-      "tickets": {
-        "FORGE-047": {
-          "status": "done",
-          "evidence": [
-            "packages/runtime/src/auth.ts jwtAuth (issuer/audience/alg pinned by config, HS256 + JWK RS256/ES256, exp/nbf with bounded skew, explicit claim map \u2192 tenant/actor/purposes/workload); Principal.purposes bounds x-forge-purpose; PAR-108 test: forged headers ignored, wrong audience/expired refused"
-          ]
-        },
-        "FORGE-048": {
-          "status": "done",
-          "evidence": [
-            "gatekeeper.ts: canonical AuthzRequest (principal, action, purpose, current+candidate state, PIP values with observedAt/expiresAt, requestId) \u2192 typed Decision (allow/deny, decisionId, rowFilter, obligations, epoch, expiresAt); Authorizer interface usable by a remote Gatekeeper/OPA adapter; localAuthorizer typed evaluator; PAR-115 unknown obligation / missing / stale attribute deny"
-          ]
-        },
-        "FORGE-049": {
-          "status": "done",
-          "evidence": [
-            "per-record gates in get/find/list (PAR-109; denied reads read as NotFound), mutations authorize current AND candidate state (PAR-110), idempotency replay re-authorized before disclosing the stored response (PAR-112), maintenance contexts carry explicit service authority"
-          ]
-        },
-        "FORGE-050": {
-          "status": "done",
-          "evidence": [
-            "typed filter subset (eq/in/ne on record fields from constants or PIP-mapped values); list plans exact (predicate on query parameters) | candidate (bounded per-row residual within the page) | unsupported (refused, never a hidden scan) (PAR-113); decision cache keyed by policy epoch with bounded TTL (PAR-111)"
-          ]
-        },
-        "FORGE-051": {
-          "status": "partial",
-          "evidence": [
-            "assuranceProfile(): shared process \u2192 workload-bound only, isolated-callable requires an attested boundary (PAR-114); epoch bump revokes cached allows; signed snapshot refresh / high-water marks / OPA bundle verification not implemented"
-          ]
-        }
-      },
-      "scenarios": {
-        "PAR-108": "gatekeeper.test.ts",
-        "PAR-109": "gatekeeper.test.ts",
-        "PAR-110": "gatekeeper.test.ts",
-        "PAR-111": "gatekeeper.test.ts",
-        "PAR-112": "gatekeeper.test.ts",
-        "PAR-113": "gatekeeper.test.ts (exact/candidate/unsupported)",
-        "PAR-114": "gatekeeper.test.ts assuranceProfile",
-        "PAR-115": "gatekeeper.test.ts"
-      }
+    "FORGE-031": {
+     "status": "done",
+     "evidence": [
+      "specs/security/threat-model.md (T1\u2013T15 with pending items named)"
+     ]
     }
+   },
+   "scenarios": {
+    "PAR-076": "specs/m8-baseline.json",
+    "PAR-077": "digests_survive_folder_moves_and_discovery_order",
+    "PAR-078": "digests_survive_folder_moves_and_discovery_order + ir_is_identical_regardless_of_file_order_and_path_separators",
+    "PAR-079": "separate_semantic_digests",
+    "PAR-080": "security_only_change_moves_only_the_security_digest",
+    "PAR-081": "ir_loading_fails_closed_on_unknown_critical_features + model-loading.test.ts",
+    "PAR-082": "dependency_resolution_never_executes_package_code + check_validates_pinned_extension_manifests_without_executing_them",
+    "PAR-083": "ir_loading_fails_closed_on_unknown_critical_features (M8 artifact loads by rule; future artifact diagnosed)"
+   }
+  },
+  "M10": {
+   "status": "done",
+   "tickets": {
+    "FORGE-032": {
+     "status": "done",
+     "evidence": [
+      "packages/runtime/src/hosts/compose.ts (named capability axes: StructuredStore, ObjectStore, ChannelTransport, WorkflowDriver, RealtimeHub; composeRuntime)",
+      "Cloudflare/AWS entrypoints unchanged; goldens unchanged (conformance/test/migrations.test.ts, client snapshot)"
+     ]
+    },
+    "FORGE-033": {
+     "status": "done",
+     "evidence": [
+      "forge_planner::sql::render_postgres (BIGINT exact minor units, COLLATE \"C\", boolean guarded assertion, FK-ordered DDL) + snapshot",
+      "packages/runtime/src/adapters/postgres.ts (SERIALIZABLE guarded batches, error class mapping)",
+      "packages/runtime/test/postgres.test.ts: 15 scenarios x 2 facades + classification (PAR-085/086)"
+     ]
+    },
+    "FORGE-034": {
+     "status": "done",
+     "evidence": [
+      "raw-pg and drizzle-pg facades over one SQL plan",
+      "PAR-087: pooled connection retains no transaction-local tenant context",
+      "interactive JS transactions are not offered: the batch is the only transactional primitive"
+     ]
+    },
+    "FORGE-035": {
+     "status": "done",
+     "evidence": [
+      "packages/runtime/src/hosts/node.ts (Fetch ingress, WebSocket hub, sweep loop, /healthz /readyz, bounded concurrency, graceful drain, filesystem object store served through signed URLs)",
+      "packages/runtime/test/node-host.test.ts: 15 scenarios over HTTP, realtime, restart resumes acknowledged outbox work (PAR-091), drain",
+      "examples/acme/deploy/node (bundled entrypoint)"
+     ]
+    },
+    "FORGE-036": {
+     "status": "partial",
+     "evidence": [
+      "node-postgres profile certified: conformance/reports/node-postgres.json (15/15), realtime, bench, live switch cloudflare-d1 -> node-postgres",
+      "PostgreSQL through Workers (Hyperdrive) and Lambda: not certified (pending FORGE-036 remainder / M18)"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-084": "goldens unchanged after the adapter refactor (migrations.test.ts, client snapshot, 15 scenarios on all targets)",
+    "PAR-085": "postgres.test.ts classification",
+    "PAR-086": "postgres.test.ts m2.concurrency / m3.integrity / m2.idempotency on PostgreSQL",
+    "PAR-087": "postgres.test.ts pooled context isolation",
+    "PAR-088": "unsupported interactive transactions: not exposed by design (SqlExecutor has batch only)",
+    "PAR-089": "partial: node-postgres profile only",
+    "PAR-090": "drizzle-pg + raw-pg run identical scenarios",
+    "PAR-091": "node-host.test.ts restart + drain"
+   }
+  },
+  "M11": {
+   "status": "done",
+   "tickets": {
+    "FORGE-037": {
+     "status": "done",
+     "evidence": [
+      "packages/contracts/data-core/taxonomy.json (multi-label DAG, identifiability/handling/personal facets, inferred-from-type map, record contexts) embedded in forge-semantic::taxonomy",
+      "DataSemanticsIR (`dataSemantics` in app.json): class, ancestors, kinds, handling (monotone: a child never loosens an ancestor), evidence declared|inferred-from-type|structural, completeness; unclassified free text is restricted, never public",
+      "E-GOV-006 unknown taxonomy node / data class extends"
+     ]
+    },
+    "FORGE-038": {
+     "status": "done",
+     "evidence": [
+      "`@subject(person|organization|device)` and `@subject(from: field)` (E-GOV-005/007: a `from` binding needs `list by field`)",
+      "runtime admin.subjects.locate: records via declared bindings, linked subjects with share counts, cascade always empty (packages/runtime/test/subjects.test.ts)"
+     ]
+    },
+    "FORGE-039": {
+     "status": "done",
+     "evidence": [
+      "LineageIR (`lineage` in app.json): outputs/writes/filters/orders/groups per generated operation, views (hidden filter fields kept), projections (group keys), functions declared-not-proven with external sinks and publishes; coverage modeled|declared"
+     ]
+    },
+    "FORGE-040": {
+     "status": "done",
+     "evidence": [
+      "inspection ledger bound to sealed digest+generation: pending|allowed|quarantined|review-required; downloads honor verdicts (strict in edition 2027, pending served in 2026); a failed detector is review-required; quarantine is terminal per generation; a detector cannot touch declared classification (no such path exists)"
+     ]
+    },
+    "FORGE-041": {
+     "status": "done",
+     "evidence": [
+      "inventory summary in dataSemantics; `forge compat` classification stream (class-changed, handling-loosened, personal-field-added, subject-binding-*); fixtures examples/next/education and examples/next/industrial compile under edition 2027 and are exercised by tests"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-092": "classification_subjects_and_lineage_lower_conservatively (ancestors kept, unknown restricted)",
+    "PAR-093": "subjects.test.ts (organization is not a person subject)",
+    "PAR-094": "subjects.test.ts (shared guardian linked, no cascade) + E-GOV-007",
+    "PAR-095": "lineage: PresentDays view filters on healthNote without emitting it",
+    "PAR-096": "lineage: SubmitOrder coverage=declared with external sink",
+    "PAR-097": "subjects.test.ts (failed detector -> review-required, never allowed)",
+    "PAR-098": "taxonomy node data.identifier.pseudonym: pseudonymous, confidential, personal (no test of a hashing transformation yet)",
+    "PAR-099": "industrial fixture: restricted, personal=no, no subjects"
+   }
+  },
+  "M12": {
+   "status": "done",
+   "tickets": {
+    "FORGE-042": {
+     "status": "done",
+     "evidence": [
+      "purposes with stable ids, `extends` grants nothing (capability_surfaces_flatten_with_sticky_denials: Child has no surface)",
+      "`uses .. for Purpose` explicit dependency purpose; runtime refuses purpose unions (scope.test.ts PAR-102)"
+     ]
+    },
+    "FORGE-043": {
+     "status": "done",
+     "evidence": [
+      "forge_semantic::capability (allow/deny closures, deny kept after flattening, sorted atoms, order-independent digests, origins per atom); E-GOV-009 cycles, E-GOV-001/002 unknown include/field/action"
+     ]
+    },
+    "FORGE-044": {
+     "status": "done",
+     "evidence": [
+      "contracts `surfaces` + generated `<Resource><Purpose>Record` interfaces; runtime nominal ScopedReader service keys per (resource, purpose, digest) (scope.test.ts PAR-103); E-GOV-010 unscoped Record output; runtime projection builds a new object (PAR-104)"
+     ]
+    },
+    "FORGE-045": {
+     "status": "done",
+     "evidence": [
+      "read/filter/order/update/create/actions distinct; scope.checkQuery refuses ungranted filter/order before execution (PAR-105); update/action authority separate (PAR-107); relationship expansion is not offered (references are ids only) \u2014 PAR-106 satisfied by construction, no expand operation exists"
+     ]
+    },
+    "FORGE-046": {
+     "status": "partial",
+     "evidence": [
+      "`forge explain --resource X [--json]` prints every atom with its inclusion origin; codemod proposals for old broad readers not implemented"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-100": "Rust test: unbound child purpose has no surface; runtime NotPermitted",
+    "PAR-101": "Rust test: re-inclusion cannot lift a deny; digests equal under swapped include order",
+    "PAR-102": "scope.test.ts",
+    "PAR-103": "scope.test.ts",
+    "PAR-104": "scope.test.ts",
+    "PAR-105": "scope.test.ts",
+    "PAR-106": "by construction (no expansion operation); documented",
+    "PAR-107": "scope.test.ts"
+   }
+  },
+  "M13": {
+   "status": "done",
+   "tickets": {
+    "FORGE-047": {
+     "status": "done",
+     "evidence": [
+      "packages/runtime/src/auth.ts jwtAuth (issuer/audience/alg pinned by config, HS256 + JWK RS256/ES256, exp/nbf with bounded skew, explicit claim map \u2192 tenant/actor/purposes/workload); Principal.purposes bounds x-forge-purpose; PAR-108 test: forged headers ignored, wrong audience/expired refused"
+     ]
+    },
+    "FORGE-048": {
+     "status": "done",
+     "evidence": [
+      "gatekeeper.ts: canonical AuthzRequest (principal, action, purpose, current+candidate state, PIP values with observedAt/expiresAt, requestId) \u2192 typed Decision (allow/deny, decisionId, rowFilter, obligations, epoch, expiresAt); Authorizer interface usable by a remote Gatekeeper/OPA adapter; localAuthorizer typed evaluator; PAR-115 unknown obligation / missing / stale attribute deny"
+     ]
+    },
+    "FORGE-049": {
+     "status": "done",
+     "evidence": [
+      "per-record gates in get/find/list (PAR-109; denied reads read as NotFound), mutations authorize current AND candidate state (PAR-110), idempotency replay re-authorized before disclosing the stored response (PAR-112), maintenance contexts carry explicit service authority"
+     ]
+    },
+    "FORGE-050": {
+     "status": "done",
+     "evidence": [
+      "typed filter subset (eq/in/ne on record fields from constants or PIP-mapped values); list plans exact (predicate on query parameters) | candidate (bounded per-row residual within the page) | unsupported (refused, never a hidden scan) (PAR-113); decision cache keyed by policy epoch with bounded TTL (PAR-111)"
+     ]
+    },
+    "FORGE-051": {
+     "status": "partial",
+     "evidence": [
+      "assuranceProfile(): shared process \u2192 workload-bound only, isolated-callable requires an attested boundary (PAR-114); epoch bump revokes cached allows; signed snapshot refresh / high-water marks / OPA bundle verification not implemented"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-108": "gatekeeper.test.ts",
+    "PAR-109": "gatekeeper.test.ts",
+    "PAR-110": "gatekeeper.test.ts",
+    "PAR-111": "gatekeeper.test.ts",
+    "PAR-112": "gatekeeper.test.ts",
+    "PAR-113": "gatekeeper.test.ts (exact/candidate/unsupported)",
+    "PAR-114": "gatekeeper.test.ts assuranceProfile",
+    "PAR-115": "gatekeeper.test.ts"
+   }
+  },
+  "M14": {
+   "status": "done",
+   "tickets": {
+    "FORGE-052": {
+     "status": "done",
+     "evidence": [
+      "forge import-openapi + forge_codegen::openapi_import: pinned offline refs (URL=FILE[@SHA256]), private/metadata host refusal (IPv4 short forms, IPv6, .internal/.local/localhost), allow-listed public hosts, callbacks/webhooks recorded as inbound contracts, nullable/optional/enum mapping, unsupported features reported at exact locations (array, oneOf/anyOf, binary media, header/cookie/array-query params), deterministic output that compiles (PAR-116/117); identifier-like fields stay text + FOREIGN_IDS.md, and E-WF-008 refuses a Forge reference/id where a callee wants a foreign text identifier (PAR-118)"
+     ]
+    },
+    "FORGE-053": {
+     "status": "done",
+     "evidence": [
+      "@forge/interfaces/rpc: one unary envelope for localCallable (engine) and httpCallable (fetch; routes from the deployment's OpenAPI projection); Outcome = ok | error(Problem) | invocationFailed(transport|malformed|contract-mismatch|unauthenticated); discovery digest expectation checked before the first call (PAR-119)"
+     ]
+    },
+    "FORGE-054": {
+     "status": "done",
+     "evidence": [
+      "@forge/interfaces/mcp: JSON-RPC 2.0, pinned protocol matrix (2025-06-18, 2025-03-26), tools generated from the OpenAPI projection with contract-derived annotations, tools/list per (identity, purpose, policy epoch) with an identity-keyed cache, tools/call re-runs the engine (scope + gatekeeper), client annotations/_meta ignored, resources forge://discovery, forge://openapi and forge://<resource>/{id} templates under the same gate; mcpHttp mount at /forge/mcp behind host authentication (PAR-120/121)"
+     ]
+    },
+    "FORGE-055": {
+     "status": "done",
+     "evidence": [
+      "forge-api CLI: flags/file/stdin canonicalization, stdout data only, stderr diagnostics + Problem JSON line, stable exit codes, --dry-run, guarded mutations (--yes / FORGE_API_YES), credentials from env or 0600 file only (PAR-122); Python (stdlib, Decimal) and Go (json.Number) SDKs + TS httpCallable certified against a live Node host on the same scenario (PAR-123)"
+     ]
+    },
+    "FORGE-056": {
+     "status": "done",
+     "evidence": [
+      "GET /forge/discovery (bounded, authenticated, digests/features/auth/links) and /forge/openapi.json served by every host; forge build emits openapi.json + api.smithy and embeds the projection in app.json; specs/interfaces/conformance.json lists certified interfaces and rules"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-116": "crates/forge-codegen/tests/openapi_import.rs (pinned refs, private hosts, sha256 pins)",
+    "PAR-117": "crates/forge-codegen/tests/openapi_import.rs (nullability/optionality/enums; unsupported report)",
+    "PAR-118": "openapi_import.rs foreign identifiers + compile.rs E-WF-008",
+    "PAR-119": "packages/interfaces/test/rpc.test.ts",
+    "PAR-120": "packages/interfaces/test/mcp.test.ts",
+    "PAR-121": "packages/interfaces/test/mcp.test.ts",
+    "PAR-122": "packages/interfaces/test/cli.test.ts",
+    "PAR-123": "packages/interfaces/test/sdk-conformance.test.ts (TS + python3 + go)"
+   },
+   "notes": [
+    "MCP transport is single-message Streamable HTTP (POST); no SSE stream, no batching",
+    "Go/Python conformance runs only when the toolchain is present; the vitest test reports the skip"
+   ]
   }
+ }
 }
