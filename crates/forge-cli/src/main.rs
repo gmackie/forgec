@@ -74,6 +74,11 @@ enum Cmd {
     },
     /// Governance-aware migration plan between two built bundles (phased DAG; blocked steps named).
     Migrate { old: PathBuf, new: PathBuf },
+    /// Edition upgrade proposals (2026 -> 2027): explicit, minimal, never applied automatically.
+    UpgradeEdition {
+        #[arg(default_value = ".")]
+        path: PathBuf,
+    },
     /// Language server over stdio (diagnostics, formatting).
     Lsp,
     /// Explain the effective purpose surface of a resource: every granted and denied atom with its origin.
@@ -312,6 +317,47 @@ fn main() -> Result<()> {
             if plan.blocked {
                 std::process::exit(2);
             }
+        }
+        Cmd::UpgradeEdition { path } => {
+            // PAR-178: a proposal per resource that governance would touch; the package's edition stays what it
+            // is until the author applies the proposals, and nothing here writes source, grants or schema.
+            let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
+            eprint!("{}", loaded.compilation.render());
+            let Some(ir) = loaded.compilation.ir else { std::process::exit(1) };
+            let sem = forge_semantic::ir::DataSemantics::of(&ir, &forge_semantic::ir::Taxonomy::core());
+            let mut proposals = Vec::new();
+            for m in &ir.modules {
+                for r in &m.resources {
+                    if r.decorators.purpose_scoped {
+                        continue;
+                    }
+                    let personal: Vec<String> = sem.fields.iter().filter(|f| f.resource == r.id && f.personal != "no").map(|f| format!("{} ({}, {})", f.field, f.class, f.handling)).collect();
+                    let structural: Vec<String> = sem.fields.iter().filter(|f| f.resource == r.id && f.personal == "no" && f.class == "data.structural").map(|f| f.field.clone()).collect();
+                    proposals.push(serde_json::json!({
+                        "resource": r.id,
+                        "kind": if personal.is_empty() { "optional" } else { "recommended" },
+                        "personalFields": personal,
+                        "proposal": {
+                            "decorators": ["@purposeScoped"],
+                            "capability": { "name": "Minimal", "read": structural.iter().filter(|f| *f == "id").cloned().collect::<Vec<_>>(), "note": "structural identity only; every personal field needs an explicit capability atom and a reviewed purpose binding" },
+                            "purposeBinding": "for <Purpose> { use Minimal }  -- declare the purpose in the package; taxonomy relationships grant nothing",
+                            "subject": if personal.is_empty() { serde_json::Value::Null } else { serde_json::json!("@subject(person) or @subject(from: <field>) if this resource belongs to a person") }
+                        },
+                        "grants": "none: no dependency grant is proposed or created; edges stay requests until reviewed",
+                        "storage": "none: no schema change; purpose scoping is enforced at read/write time",
+                        "reviewRequired": true
+                    }));
+                }
+            }
+            println!("{}", serde_json::to_string_pretty(&serde_json::json!({
+                "version": "edition-upgrade/1",
+                "package": ir.package.name,
+                "currentEdition": ir.package.edition,
+                "targetEdition": "2027",
+                "status": if ir.package.edition == "2027" { "already on edition 2027" } else { "proposals only: the package stays on its current edition until forge.toml is changed and the proposals are applied by hand" },
+                "proposals": proposals,
+                "appliesAutomatically": false
+            }))?);
         }
         Cmd::Lsp => lsp::run()?,
         Cmd::Compat { old, new, report: audience } => {

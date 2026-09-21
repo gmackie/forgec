@@ -96,28 +96,42 @@ export class SnapshotHolder {
   }
 }
 
-/** Wrap an authorizer so its authority is bounded by the held snapshot and the expiry rule. */
-export function withSnapshotAuthority(inner: Authorizer, holder: SnapshotHolder, clock: () => number = () => Date.now()): Authorizer {
+/**
+ * Wrap an authorizer so its authority is bounded by the held snapshot and the expiry rule. Pass a factory to
+ * decide from the snapshot's *own* policy set (rebuilt whenever a new epoch is activated, so a narrowed policy
+ * takes effect immediately for every caller); a fixed authorizer is bounded by expiry only.
+ */
+export function withSnapshotAuthority(source: Authorizer | ((held: HeldState) => Authorizer), holder: SnapshotHolder, clock: () => number = () => Date.now()): Authorizer {
+  let built: { epoch: number; authorizer: Authorizer } | null = null;
+  const inner = (): Authorizer => {
+    if (typeof source !== "function") return source;
+    const held = holder.current();
+    if (!held) return source({ epoch: 0, expiresAt: "", policies: [], catalog: { packages: [] } });
+    if (!built || built.epoch !== held.epoch) built = { epoch: held.epoch, authorizer: source(held) };
+    return built.authorizer;
+  };
   const deny = (req: AuthzRequest, reason: string): Decision => ({ effect: "deny", decisionId: crypto.randomUUID(), obligations: [], epoch: holder.epochAt(clock()), expiresAt: new Date(clock() + 1000).toISOString(), reason });
   return {
     get epoch() {
       return holder.epochAt(clock());
     },
     get knownObligations() {
-      return inner.knownObligations;
+      return inner().knownObligations;
     },
-    ...(inner.pips ? { pips: inner.pips } : {}),
-    requirements: (a, p) => inner.requirements(a, p),
-    rowFilterFor: (a, p, attrs) => inner.rowFilterFor(a, p, attrs),
+    get pips() {
+      return inner().pips ?? [];
+    },
+    requirements: (a, p) => inner().requirements(a, p),
+    rowFilterFor: (a, p, attrs) => inner().rowFilterFor(a, p, attrs),
     decide(req) {
       const now = clock();
       const s = holder.state(now);
-      const annotate = (suffix: string) => inner.decide(req).pipe(Effect.map((d) => ({ ...d, epoch: holder.epochAt(now), reason: `${d.reason ? d.reason + "; " : ""}${suffix}` })));
+      const annotate = (suffix: string) => inner().decide(req).pipe(Effect.map((d) => ({ ...d, epoch: holder.epochAt(now), reason: `${d.reason ? d.reason + "; " : ""}${suffix}` })));
       switch (s.status) {
         case "none":
           return Effect.succeed(deny(req, "no activated snapshot: required authority is absent"));
         case "valid":
-          return inner.decide(req).pipe(Effect.map((d) => ({ ...d, epoch: holder.epochAt(now) })));
+          return inner().decide(req).pipe(Effect.map((d) => ({ ...d, epoch: holder.epochAt(now) })));
         case "grace":
           return annotate(`grace: snapshot epoch ${s.epoch} expired at ${s.expiresAt}, within the grace window`);
         case "degraded":

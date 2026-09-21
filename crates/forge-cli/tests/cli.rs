@@ -320,3 +320,55 @@ fn check_validates_pinned_extension_manifests_without_executing_them() {
     assert_eq!(code_out.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&code_out.stderr).contains("E-EXT-002"));
 }
+
+/// PAR-178: upgrading an M8 (edition 2026) application to edition 2027 is explicit: proposals are printed, nothing is
+/// written, no grants appear, the schema does not change, and the old edition stays on record until the author moves it.
+#[test]
+fn edition_upgrade_is_explicit_and_non_destructive() {
+    let dir = std::env::temp_dir().join(format!("forge-upgrade-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("old/src")).unwrap();
+    std::fs::write(dir.join("old/forge.toml"), "[package]\nname = \"@t/app\"\nversion = \"0.1.0\"\nedition = \"2026\"\n").unwrap();
+    let old = "export resource Customer\n  @tenant\n  @timestamps\n  @versioned\n  @crud(\"/v1/customers\")\n{\n  id : id\n  code : text length 1..8 @unique\n  email : email\n  note : text? length 0..100\n}\n";
+    std::fs::write(dir.join("old/src/a.forge"), old).unwrap();
+    let before = std::fs::read_to_string(dir.join("old/src/a.forge")).unwrap();
+    let out = forge().args(["upgrade-edition", dir.join("old").to_str().unwrap()]).output().unwrap();
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    let report: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&out.stdout)).unwrap();
+    assert_eq!(report["currentEdition"], "2026");
+    assert_eq!(report["appliesAutomatically"], false);
+    let p = &report["proposals"][0];
+    assert_eq!(p["resource"], "@t/app/_/Customer");
+    assert_eq!(p["kind"], "recommended");
+    assert_eq!(p["proposal"]["capability"]["read"], serde_json::json!(["id"])); // minimal: identity only
+    assert!(p["grants"].as_str().unwrap().starts_with("none"));
+    assert!(p["storage"].as_str().unwrap().starts_with("none"));
+    // nothing was written
+    assert_eq!(std::fs::read_to_string(dir.join("old/src/a.forge")).unwrap(), before);
+    assert!(std::fs::read_to_string(dir.join("old/forge.toml")).unwrap().contains("edition = \"2026\""));
+    // applying the proposal by hand (edition 2027, @purposeScoped, minimal capability, one purpose binding): the
+    // compatibility report shows new governance authority to review and no storage change at all
+    std::fs::create_dir_all(dir.join("new/src")).unwrap();
+    std::fs::write(dir.join("new/forge.toml"), "[package]\nname = \"@t/app\"\nversion = \"0.1.0\"\nedition = \"2027\"\n").unwrap();
+    let new = "purpose Support\nexport resource Customer\n  @tenant\n  @timestamps\n  @versioned\n  @purposeScoped\n  @crud(\"/v1/customers\")\n{\n  id : id\n  code : text length 1..8 @unique\n  email : email\n  note : text? length 0..100\n\n  capability Minimal {\n    read { id }\n  }\n\n  for Support { use Minimal }\n}\n";
+    std::fs::write(dir.join("new/src/a.forge"), new).unwrap();
+    for v in ["old", "new"] {
+        let b = forge().args(["build", dir.join(v).to_str().unwrap(), "--out", dir.join(v).join("generated").to_str().unwrap()]).output().unwrap();
+        assert!(b.status.success(), "{}", String::from_utf8_lossy(&b.stderr));
+    }
+    let compat = forge().args(["compat", dir.join("old/generated/app.json").to_str().unwrap(), dir.join("new/generated/app.json").to_str().unwrap()]).output().unwrap();
+    let r: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&compat.stdout)).unwrap();
+    let findings = r["findings"].as_array().unwrap();
+    assert!(findings.iter().all(|f| f["stream"] != "storage"), "no schema change: {findings:?}");
+    assert!(findings.iter().any(|f| f["stream"] == "governance" && f["code"] == "surface-added" && f["needs"] == serde_json::json!(["grant-reapproval"])), "{findings:?}");
+    assert!(findings.iter().all(|f| f["stream"] != "dependencies"), "no grants or dependency edges are implied: {findings:?}");
+    // the upgraded package reports itself as 2027; the old one keeps saying 2026
+    let oldb: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("old/generated/app.json")).unwrap()).unwrap();
+    let newb: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(dir.join("new/generated/app.json")).unwrap()).unwrap();
+    assert_eq!(oldb["ir"]["package"]["edition"], "2026");
+    assert_eq!(newb["ir"]["package"]["edition"], "2027");
+    let done = forge().args(["upgrade-edition", dir.join("new").to_str().unwrap()]).output().unwrap();
+    let r2: serde_json::Value = serde_json::from_str(&String::from_utf8_lossy(&done.stdout)).unwrap();
+    assert_eq!(r2["status"], "already on edition 2027");
+    assert_eq!(r2["proposals"].as_array().unwrap().len(), 0);
+}

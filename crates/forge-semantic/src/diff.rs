@@ -73,7 +73,7 @@ fn needs_of(code: &str) -> Vec<&'static str> {
         "subject-binding-added" => vec!["subject-index"],
         "subject-binding-removed" | "subject-binding-changed" => vec!["subject-rights-review"],
         "surface-narrowed" => vec!["cache-invalidation", "receipt-reprojection"],
-        "surface-widened" | "deny-removed" => vec!["grant-reapproval"],
+        "surface-widened" | "surface-added" | "deny-removed" => vec!["grant-reapproval"],
         "surface-removed" | "purpose-removed" => vec!["grant-retirement", "cache-invalidation"],
         "dependency-added" => vec!["dependency-request"],
         "dependency-removed" => vec!["grant-retirement"],
