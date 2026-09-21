@@ -127,7 +127,7 @@ impl Server {
                     "range": { "start": position(&text, d.start), "end": position(&text, d.end.max(d.start + 1)) },
                     "severity": if matches!(d.severity, forgegraph_semantic::diagnostics::Severity::Error) { 1 } else { 2 },
                     "code": d.code,
-                    "source": "forge",
+                    "source": "forgec",
                     "message": message,
                 })
             })
@@ -149,7 +149,7 @@ pub fn run() -> anyhow::Result<()> {
         match method {
             "initialize" => write_message(
                 &mut out,
-                &json!({ "jsonrpc": "2.0", "id": id, "result": { "capabilities": { "textDocumentSync": 1, "documentFormattingProvider": true }, "serverInfo": { "name": "forge", "version": env!("CARGO_PKG_VERSION") } } }),
+                &json!({ "jsonrpc": "2.0", "id": id, "result": { "capabilities": { "textDocumentSync": 1, "documentFormattingProvider": true }, "serverInfo": { "name": "forgec", "version": env!("CARGO_PKG_VERSION") } } }),
             ),
             "initialized" => {}
             "textDocument/didOpen" | "textDocument/didChange" => {

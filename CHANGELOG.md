@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Fixed
+
+- `forgec --version` printed `forge 0.3.0` and the language server announced
+  itself as `forge`, both left over from the rename. The binary now identifies
+  as `forgec` everywhere, including the `source` field on the diagnostics your
+  editor shows. Cosmetic, but `forge` is a different tool on the machines this
+  is most likely to be installed on.
+
 ## 0.3.0 (2026-09-21)
 
 First public release. The project is now **ForgeGraph**: the compiler ships as

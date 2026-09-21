@@ -8,7 +8,11 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
-#[command(name = "forge", version, about = "Forge compiler")]
+#[command(
+    name = "forgec",
+    version,
+    about = "ForgeGraph compiler: one .forge package, equivalent behaviour on Cloudflare, AWS and Node"
+)]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
