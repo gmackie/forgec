@@ -35,7 +35,7 @@ publishing anything, run the workflow manually from the Actions tab with
 | `binaries` | `forgec` for `aarch64`/`x86_64` × macOS/Linux, tarred as `forgec-<version>-<target>.tar.gz` with a sibling `.sha256`. |
 | `github-release` | The GitHub release, with the binaries, their checksums and `RELEASE_MANIFEST.json` attached. |
 | `npm` | `pnpm -r publish` with [provenance](https://docs.npmjs.com/generating-provenance-statements). Already-published versions are skipped, so a re-run after a partial failure completes rather than fails. |
-| `crates` | `scripts/publish-crates.mjs`: `forgegraph-syntax → forgegraph-semantic → forgegraph-planner → forgegraph-codegen → forgegraph-cli`, waiting for the crates.io index between each so the next crate can resolve the last. Also skips versions that are already up. |
+| `crates` | Runs only after `npm` succeeds — a crates.io publish is permanent, an npm one is not, so the reversible half proves itself first. `scripts/publish-crates.mjs`: `forgegraph-syntax → forgegraph-semantic → forgegraph-planner → forgegraph-codegen → forgegraph-cli`, waiting for the crates.io index between each so the next crate can resolve the last. Also skips versions that are already up. |
 
 The Homebrew formula is **not** produced here. `gmackorg/homebrew-tap` pulls it
 from the release — see "The Homebrew tap" below.

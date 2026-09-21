@@ -144,7 +144,12 @@ jobs:
 
   crates:
     name: crates.io
-    needs: [verify, github-release]
+    # Deliberately after npm, not beside it. A crates.io publish is permanent — a name cannot be
+    # freed or reassigned, only yanked — while an npm publish can be re-run and, in the worst
+    # case, unpublished. So the reversible half of the release proves itself first; anything that
+    # goes wrong (registry outage, a provenance rejection, a bad scope) then costs nothing
+    # instead of burning five crate names forever.
+    needs: [verify, github-release, npm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
