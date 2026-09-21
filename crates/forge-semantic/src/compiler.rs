@@ -610,6 +610,15 @@ impl<'a> Ctx<'a> {
         })
     }
 
+    fn is_purpose_scoped(&self, resource_id: &str, module: &str) -> bool {
+        let local_prefix = format!("{}/{}/", self.pkg.name, module);
+        if let Some(name) = resource_id.strip_prefix(&local_prefix)
+            && let Some(Symbol { decl: Declaration::Resource(r), .. }) = self.sym(module, name) {
+                return r.decorators().any(|d| d.name().is_some_and(|n| n.text() == "purposeScoped"));
+            }
+        self.deps.values().any(|d| d.find_resource(resource_id).is_some_and(|r| r.decorators.purpose_scoped))
+    }
+
     fn require_edition_2027(&mut self, file: usize, range: (usize, usize), what: &str) {
         if self.pkg.edition != "2027" {
             self.err("E-ED-001", file, range, format!("{what} requires `edition = \"2027\"` in forge.toml (this package is edition {})", self.pkg.edition), Some("see specs/language/next-edition.md".into()));
@@ -1157,6 +1166,9 @@ impl<'a> Ctx<'a> {
             }
             capabilities.push(Capability { name: cn.text().to_string(), includes, atoms });
         }
+        for cyc in crate::capability::inclusion_cycles(&Resource { id: id.clone(), name: name.clone(), kind: "resource".into(), exported, doc: None, decorators: decorators.clone(), fields: vec![], uniques: vec![], finds: vec![], lists: vec![], rules: vec![], lifecycle: None, content: None, operations: vec![], capabilities: capabilities.clone(), purpose_bindings: vec![] }) {
+            self.err("E-GOV-009", file, range_of(r), format!("capability `{cyc}` includes itself (directly or through another fragment); inclusion must be acyclic"), None);
+        }
         let mut purpose_bindings = Vec::new();
         for b in r.purpose_bindings() {
             let Some(p) = b.purpose() else { continue };
@@ -1373,6 +1385,12 @@ impl<'a> Ctx<'a> {
             None => None,
         };
         let mut output = output;
+        // A purpose-scoped resource's record can only leave a purposed function through a scoped surface (plan §8.4).
+        if purpose.is_some() && f.output_purpose().is_none()
+            && let Some(TypeSpec { base: TypeBase::Record { resource }, .. }) = &output
+            && self.is_purpose_scoped(resource, module) {
+                self.err("E-GOV-010", file, range_of(f), format!("`{}` runs under a purpose but returns an unscoped `{}.Record`; declare `{}.Record<Purpose>` or a privileged maintenance surface", name, short(resource), short(resource)), None);
+            }
         if let Some(q) = f.output_purpose() {
             self.require_edition_2027(file, range_of(&q), "`Record<Purpose>`");
             if let Some(p) = self.resolve_purpose(&q.segments(), module, file, range_of(&q))

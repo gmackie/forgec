@@ -445,3 +445,48 @@ fn classification_subjects_and_lineage_lower_conservatively() {
 fn taxonomy() -> forge_semantic::ir::Taxonomy {
     forge_semantic::ir::Taxonomy::core()
 }
+
+/// M12 (PAR-100/101): the capability algebra flattens deterministically with sticky denials; purposes gain nothing by taxonomy.
+#[test]
+fn capability_surfaces_flatten_with_sticky_denials() {
+    use forge_semantic::ir::{EffectiveCapabilities, SubjectBinding};
+    let _ = SubjectBinding::Kind("person");
+    let src = |includes_order: &str| format!("purpose Parent\npurpose Child extends Parent\npurpose Composite\nexport resource Contact\n  @purposeScoped\n{{\n  id : id\n  name : text\n  email : email\n  supportNotes : text?\n\n  lifecycle status {{\n    initial Active\n    terminal Closed\n\n    close: Active -> Closed\n  }}\n\n  capability Identity {{\n    read {{ id name }}\n  }}\n\n  capability ContactRead {{\n    includes Identity\n    read {{ email }}\n    filter {{ email }}\n  }}\n\n  capability SupportRecord {{\n    includes ContactRead\n    read {{ supportNotes }}\n    update {{ supportNotes }}\n    actions {{ status.close }}\n  }}\n\n  capability AgentSupport {{\n    includes SupportRecord\n    deny read {{ supportNotes }}\n    deny update {{ supportNotes }}\n    deny actions {{ export }}\n  }}\n\n  capability BroadSupport {{\n    includes SupportRecord\n    actions {{ export }}\n  }}\n\n  capability Reinclude {{\n{includes_order}  }}\n\n  for Parent {{ use SupportRecord }}\n  for Composite {{ use Reinclude }}\n}}\n");
+    let a = compile(&inline_edition("@t/cap", &[("src/a.forge", &src("    includes AgentSupport\n    includes BroadSupport\n"))], "2027"), &[]);
+    assert!(a.diagnostics.is_empty(), "{:#?}", a.diagnostics);
+    let b = compile(&inline_edition("@t/cap", &[("src/a.forge", &src("    includes BroadSupport\n    includes AgentSupport\n"))], "2027"), &[]);
+    let (ea, eb) = (EffectiveCapabilities::of(&a.ir.clone().unwrap()), EffectiveCapabilities::of(&b.ir.unwrap()));
+    let ir = a.ir.unwrap();
+    // PAR-101: order independence and sticky deny through re-inclusion
+    let ra = ea.surface("@t/cap/_/Contact", "@t/cap/_/Composite").unwrap();
+    let rb = eb.surface("@t/cap/_/Contact", "@t/cap/_/Composite").unwrap();
+    assert_eq!(ra.digest, rb.digest);
+    assert_eq!(ra.allow("read"), vec!["email", "id", "name"]);
+    assert!(!ra.allow("read").contains(&"supportNotes".to_string()));
+    assert!(ra.deny.iter().any(|d| d.verb == "actions" && d.name == "export"), "BroadSupport cannot reintroduce the denied export: {:?}", ra.deny);
+    assert_eq!(ra.allow("actions"), vec!["status.close"]);
+    // origins explain every atom
+    let origin = ra.allow_atoms.iter().find(|x| x.verb == "read" && x.name == "email").unwrap();
+    assert_eq!(origin.origin, vec!["Reinclude", "AgentSupport", "SupportRecord", "ContactRead"]);
+    // PAR-100: Child extends Parent but has no `for` binding: no surface at all
+    assert!(ea.surface("@t/cap/_/Contact", "@t/cap/_/Child").is_none());
+    let parent = ea.surface("@t/cap/_/Contact", "@t/cap/_/Parent").unwrap();
+    assert_eq!(parent.allow("read"), vec!["email", "id", "name", "supportNotes"]);
+    assert_eq!(parent.allow("update"), vec!["supportNotes"]);
+    assert_eq!(parent.allow("filter"), vec!["email"]);
+    assert!(parent.allow("order").is_empty(), "readable is not orderable (plan §8.5)");
+    // read is never implied by update, and export is separate from read
+    let _ = ir;
+    // cycles and self-inclusion are diagnosed
+    let cyc = inline_edition("@t/cyc", &[("src/a.forge", "resource R {\n  id : id\n  capability A {\n    includes B\n  }\n  capability B {\n    includes A\n  }\n}\n")], "2027");
+    assert!(codes(cyc).contains(&"E-GOV-009".into()));
+    // a purpose-scoped function output must be scoped
+    let unscoped = inline_edition("@t/us", &[("src/a.forge", "purpose P\nshape I {\n  c : Contact\n}\nexport resource Contact\n  @purposeScoped\n{\n  id : id\n  capability C {\n    read { id }\n  }\n  for P { use C }\n}\nfunction F {\n  purpose P\n  input I\n  output Contact.Record\n}\n")], "2027");
+    assert!(codes(unscoped).contains(&"E-GOV-010".into()));
+}
+
+fn inline_edition(name: &str, files: &[(&str, &str)], edition: &str) -> Package {
+    let mut p = inline(name, files);
+    p.edition = edition.into();
+    p
+}

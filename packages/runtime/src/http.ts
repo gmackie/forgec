@@ -166,7 +166,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     return {
       "access-control-allow-origin": allowed,
       "access-control-allow-methods": "GET,POST,PATCH,PUT,DELETE,OPTIONS",
-      "access-control-allow-headers": "content-type,if-match,idempotency-key,x-forge-tenant,x-forge-actor,authorization",
+      "access-control-allow-headers": "content-type,if-match,idempotency-key,x-forge-tenant,x-forge-actor,x-forge-purpose,authorization",
       "access-control-expose-headers": "etag,x-request-id",
       "access-control-max-age": "600",
       vary: "origin",
@@ -341,7 +341,8 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     }
 
     const trace = spanFromTraceparent(req.headers.get("traceparent"));
-    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace, ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
+    const purposeHeader = req.headers.get("x-forge-purpose");
+    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace, ...(purposeHeader ? { purpose: purposeHeader } : {}), ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
     const exit = await Effect.runPromiseExit(engine.call(route.ref.op.id, input, ctx));
     if (exit._tag === "Failure") {
       const e = Cause.squash(exit.cause);

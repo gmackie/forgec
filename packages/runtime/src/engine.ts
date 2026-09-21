@@ -8,7 +8,7 @@ import { encodeIdentity, sortKey } from "./codecs.js";
 import { decodeCursor, encodeCursor } from "./cursor.js";
 import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
 import { err, ForgeError } from "./errors.js";
-import { fieldOf, scaleOf, type List, type Model, type Resource, type Transition, type Unique } from "./model.js";
+import { fieldOf, scaleOf, type List, type Model, type Operation, type Resource, type Transition, type Unique } from "./model.js";
 import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
 import { Changesets } from "./changeset.js";
 import { Blobs } from "./blobs.js";
@@ -22,6 +22,7 @@ import { Realtime } from "./realtime.js";
 import { Telemetry, type TraceContext } from "./telemetry.js";
 import { Portability } from "./portability.js";
 import { Governance } from "./governance.js";
+import { Scope } from "./scope.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -33,6 +34,10 @@ export interface CallContext {
   idempotencyKey?: string;
   /** W3C trace context for this logical operation (its own span; the request's span is the parent). */
   trace?: TraceContext;
+  /** Edition 2027: the purpose surface this invocation runs under (one purpose; never a union). */
+  purpose?: string;
+  /** Privileged maintenance context (seeding, migration): bypasses purpose scoping; audited by actor. */
+  maintenance?: boolean;
 }
 
 export const PAGE_DEFAULT = 50;
@@ -109,6 +114,43 @@ export class Engine {
     }
     const { op, resource } = ref;
     const body = (input ?? {}) as Wire;
+    return self.scope.resolve(resource, ctx).pipe(Effect.flatMap((surface) => (surface ? self.scopedOperation(surface, op, resource, body, ctx) : self.operation(opId, op, resource, body, ctx))));
+  }
+
+  /** A resource operation under a purpose surface: authority checked first, result projected last (plan §8.4–8.5). */
+  private scopedOperation(surface: import("./scope.js").Surface, op: Operation, resource: Resource, body: Wire, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
+    const self = this;
+    const project = (e: Effect.Effect<Wire, ForgeError, RuntimeServices>) => e.pipe(Effect.map((v) => self.scope.project(surface, v)));
+    const projectPage = (e: Effect.Effect<Wire, ForgeError, RuntimeServices>) => e.pipe(Effect.map((v) => self.scope.projectPage(surface, v)));
+    const run = (check: Effect.Effect<void, ForgeError>, then: Effect.Effect<Wire, ForgeError, RuntimeServices>) => check.pipe(Effect.flatMap(() => then));
+    switch (op.kind) {
+      case "get":
+        return project(self.get(resource, String(body["id"]), ctx));
+      case "find": {
+        const f = resource.finds.find((x) => x.name === op.query)!;
+        return run(self.scope.checkQuery(surface, resource, Object.fromEntries(f.fields.map((k) => [k, true])), []), project(self.find(resource, op.query!, body, ctx)));
+      }
+      case "list": {
+        const l = resource.lists.find((x) => x.name === op.query)!;
+        return run(self.scope.checkQuery(surface, resource, Object.fromEntries(l.fields.map((k) => [k, true])), l.order.map((o) => o.field)), projectPage(self.list(resource, op.id, op.query!, body, ctx)));
+      }
+      case "create":
+        return run(self.scope.checkCreate(surface, resource, body), project(self.withIdempotency(op.id, body, ctx, self.mutate(op.id, body, ctx))));
+      case "update":
+        return run(self.scope.checkPatch(surface, resource, (body["patch"] ?? {}) as Wire), project(self.withIdempotency(op.id, body, ctx, self.mutate(op.id, body, ctx))));
+      case "transition":
+        return run(self.scope.checkAction(surface, resource, op.action!), project(self.withIdempotency(op.id, body, ctx, self.mutate(op.id, body, ctx))));
+      case "delete":
+      case "restore":
+        return run(self.scope.checkAction(surface, resource, op.kind), project(self.withIdempotency(op.id, body, ctx, self.mutate(op.id, body, ctx))));
+      default:
+        // Temporal, hierarchy and blob operations expose record shapes too: project what they return.
+        return project(self.operation(op.id, op, resource, body, ctx));
+    }
+  }
+
+  private operation(opId: string, op: Operation, resource: Resource, body: Wire, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
+    const self = this;
     switch (op.kind) {
       case "get":
         return self.get(resource, String(body["id"]), ctx);
@@ -216,6 +258,7 @@ export class Engine {
   readonly telemetry = new Telemetry(this);
   readonly portability = new Portability(this);
   readonly governance = new Governance(this);
+  readonly scope = new Scope(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {

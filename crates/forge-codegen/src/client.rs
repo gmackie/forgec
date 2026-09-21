@@ -115,6 +115,11 @@ pub fn client_ts(c: &Contracts) -> String {
     for v in &c.views {
         interface(&mut out, &format!("{}Row", v.name), &v.record);
     }
+    // Edition 2027: `Resource.Record<Purpose>` as a concrete nominal type; the runtime emits exactly these keys.
+    for s in &c.surfaces {
+        let _ = writeln!(out, "/** {}.Record<{}> — surface digest {} */", s.resource_name, s.purpose_name, &s.digest[..12]);
+        interface(&mut out, &format!("{}{}Record", s.resource_name, s.purpose_name), &s.record);
+    }
     for p in &c.projections {
         interface(&mut out, &format!("{}Record", p.name), &p.record);
     }
@@ -350,7 +355,7 @@ export interface ScheduleStatus { source: string; lastOccurrence: string | null;
 export interface ScheduleTick { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }
 export interface WorkflowInstance { id: string; workflow: string; version: number; status: "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled"; input: Record<string, unknown>; bindings: Record<string, unknown>; history: { step: string; kind: string; at: string }[]; waiting?: { step: string; message: string; correlationKey: string; dueAt?: string }; sleeping?: { step: string; dueAt: string }; output?: unknown; error?: { code: string; detail?: string } }
 export interface PageOptions { cursor?: string | null; limit?: number }
-export interface CallOptions { idempotencyKey?: string }
+export interface CallOptions { idempotencyKey?: string; /** Edition 2027: the purpose surface to run under (one; never a union). */ purpose?: string }
 export interface SignedUrl { url: string; method: "PUT" | "GET"; headers?: Record<string, string>; expiresAt: string }
 export interface ProblemField { path: string; code: string; message: string }
 export interface Problem {
@@ -390,6 +395,7 @@ export function createTransport(options: ClientOptions, ops: Record<string, Oper
     if (options.tenant) headers["x-forge-tenant"] = options.tenant;
     if (options.actor) headers["x-forge-actor"] = options.actor;
     if (opts?.idempotencyKey) headers["idempotency-key"] = opts.idempotencyKey;
+    if (opts?.purpose) headers["x-forge-purpose"] = opts.purpose;
     if (typeof input["expectedVersion"] === "number") headers["if-match"] = `"${input["expectedVersion"]}"`;
     let url = base + fillPath(spec.path, input);
     let body: string | null = null;

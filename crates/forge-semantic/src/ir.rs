@@ -104,6 +104,7 @@ pub struct Module {
     pub data_classes: Vec<DataClass>,
 }
 
+pub use crate::capability::{Atom, EffectiveCapabilities, Surface};
 pub use crate::taxonomy::{DataSemantics, Lineage, Taxonomy};
 
 /// `@subject(person)` — this record is about a subject of that kind; `@subject(from: field)` — it is about

@@ -3,6 +3,7 @@
 pub mod compiler;
 pub mod cron;
 pub mod taxonomy;
+pub mod capability;
 pub mod diagnostics;
 pub mod ir;
 pub mod package;

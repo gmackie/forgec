@@ -20,6 +20,23 @@ pub struct Contracts {
     pub caches: Vec<CacheContract>,
     pub workflows: Vec<WorkflowContract>,
     pub schedules: Vec<ScheduleContract>,
+    /// Edition 2027: one concrete record schema per (resource, purpose) surface.
+    pub surfaces: Vec<SurfaceContract>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SurfaceContract {
+    pub resource: String,
+    pub resource_name: String,
+    pub purpose: String,
+    pub purpose_name: String,
+    pub digest: String,
+    pub record: JsonSchema,
+    pub filters: Vec<String>,
+    pub orders: Vec<String>,
+    pub updates: Vec<String>,
+    pub actions: Vec<String>,
 }
 
 /// A scheduled source (plan §19): `GET {path}` (ledger status), `POST {path}/tick` (`{ now }`, operator use).
@@ -162,6 +179,8 @@ pub fn plan(ir: &DomainIR) -> Contracts {
     let mut caches = Vec::new();
     let mut workflows = Vec::new();
     let mut schedules = Vec::new();
+    let caps = forge_semantic::ir::EffectiveCapabilities::of(ir);
+    let mut surfaces = Vec::new();
     let find_resource = |id: &str| ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.id == id);
     for m in &ir.modules {
         for r in &m.resources {
@@ -249,7 +268,29 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             });
         }
     }
-    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches, workflows, schedules }
+    for s in &caps.surfaces {
+        let Some(r) = resources.iter().find(|r| r.id == s.resource) else { continue };
+        let mut record = JsonSchema { ty: "object".into(), ..Default::default() };
+        for name in s.allow("read") {
+            if let Some(schema) = r.record.properties.get(&name) {
+                record.properties.insert(name.clone(), schema.clone());
+                record.required.push(name.clone());
+            }
+        }
+        surfaces.push(SurfaceContract {
+            resource: s.resource.clone(),
+            resource_name: r.name.clone(),
+            purpose: s.purpose.clone(),
+            purpose_name: s.purpose.rsplit('/').next().unwrap_or(&s.purpose).to_string(),
+            digest: s.digest.clone(),
+            record,
+            filters: s.allow("filter"),
+            orders: s.allow("order"),
+            updates: s.allow("update"),
+            actions: s.allow("actions"),
+        });
+    }
+    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches, workflows, schedules, surfaces }
 }
 
 fn collect_signals(steps: &[Step], out: &mut Vec<(String, String)>) {

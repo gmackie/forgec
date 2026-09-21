@@ -26,3 +26,4 @@ export * from "./realtime.js";
 export * from "./telemetry.js";
 export * from "./portability.js";
 export * from "./governance.js";
+export * from "./scope.js";

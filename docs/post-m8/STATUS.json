@@ -153,6 +153,52 @@
         "PAR-098": "taxonomy node data.identifier.pseudonym: pseudonymous, confidential, personal (no test of a hashing transformation yet)",
         "PAR-099": "industrial fixture: restricted, personal=no, no subjects"
       }
+    },
+    "M12": {
+      "status": "done",
+      "tickets": {
+        "FORGE-042": {
+          "status": "done",
+          "evidence": [
+            "purposes with stable ids, `extends` grants nothing (capability_surfaces_flatten_with_sticky_denials: Child has no surface)",
+            "`uses .. for Purpose` explicit dependency purpose; runtime refuses purpose unions (scope.test.ts PAR-102)"
+          ]
+        },
+        "FORGE-043": {
+          "status": "done",
+          "evidence": [
+            "forge_semantic::capability (allow/deny closures, deny kept after flattening, sorted atoms, order-independent digests, origins per atom); E-GOV-009 cycles, E-GOV-001/002 unknown include/field/action"
+          ]
+        },
+        "FORGE-044": {
+          "status": "done",
+          "evidence": [
+            "contracts `surfaces` + generated `<Resource><Purpose>Record` interfaces; runtime nominal ScopedReader service keys per (resource, purpose, digest) (scope.test.ts PAR-103); E-GOV-010 unscoped Record output; runtime projection builds a new object (PAR-104)"
+          ]
+        },
+        "FORGE-045": {
+          "status": "done",
+          "evidence": [
+            "read/filter/order/update/create/actions distinct; scope.checkQuery refuses ungranted filter/order before execution (PAR-105); update/action authority separate (PAR-107); relationship expansion is not offered (references are ids only) \u2014 PAR-106 satisfied by construction, no expand operation exists"
+          ]
+        },
+        "FORGE-046": {
+          "status": "partial",
+          "evidence": [
+            "`forge explain --resource X [--json]` prints every atom with its inclusion origin; codemod proposals for old broad readers not implemented"
+          ]
+        }
+      },
+      "scenarios": {
+        "PAR-100": "Rust test: unbound child purpose has no surface; runtime NotPermitted",
+        "PAR-101": "Rust test: re-inclusion cannot lift a deny; digests equal under swapped include order",
+        "PAR-102": "scope.test.ts",
+        "PAR-103": "scope.test.ts",
+        "PAR-104": "scope.test.ts",
+        "PAR-105": "scope.test.ts",
+        "PAR-106": "by construction (no expansion operation); documented",
+        "PAR-107": "scope.test.ts"
+      }
     }
   }
 }

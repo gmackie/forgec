@@ -52,6 +52,16 @@ enum Cmd {
     Compat { old: PathBuf, new: PathBuf },
     /// Language server over stdio (diagnostics, formatting).
     Lsp,
+    /// Explain the effective purpose surface of a resource: every granted and denied atom with its origin.
+    Explain {
+        #[arg(default_value = ".")]
+        path: PathBuf,
+        /// Resource name (e.g. `Contact`); omit to list every surface.
+        #[arg(long)]
+        resource: Option<String>,
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 mod compat;
@@ -196,6 +206,7 @@ fn main() -> Result<()> {
                 "observability": plans.observability,
                 "dataSemantics": forge_semantic::ir::DataSemantics::of(&ir, &forge_semantic::ir::Taxonomy::core()),
                 "lineage": forge_semantic::ir::Lineage::of(&ir),
+                "capabilities": forge_semantic::ir::EffectiveCapabilities::of(&ir),
             });
             std::fs::write(out_dir.join("app.json"), serde_json::to_string_pretty(&bundle)?)?;
             std::fs::write(out_dir.join("d1/0001_init.sql"), forge_planner::sql::render_sqlite(&plans.sql))?;
@@ -209,6 +220,26 @@ fn main() -> Result<()> {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             std::fs::write(path.join("forge.lock"), render_lock(&loaded.deps))?;
             println!("{}: wrote forge.lock ({} dependency(ies))", loaded.package.name, loaded.deps.len());
+        }
+        Cmd::Explain { path, resource, json } => {
+            let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
+            eprint!("{}", loaded.compilation.render());
+            let Some(ir) = loaded.compilation.ir else { std::process::exit(1) };
+            let caps = forge_semantic::ir::EffectiveCapabilities::of(&ir);
+            let surfaces: Vec<&forge_semantic::ir::Surface> = caps.surfaces.iter().filter(|s| resource.as_ref().is_none_or(|r| s.resource.ends_with(&format!("/{r}")))).collect();
+            if json {
+                println!("{}", serde_json::to_string_pretty(&surfaces)?);
+            } else {
+                for s in surfaces {
+                    println!("{} for {} (digest {}) via {}", s.resource, s.purpose, &s.digest[..12], s.capabilities.join(" + "));
+                    for a in &s.allow_atoms {
+                        println!("  allow {:<8} {:<24} from {}", a.verb, a.name, a.origin.join(" > "));
+                    }
+                    for d in &s.deny {
+                        println!("  deny  {:<8} {:<24} from {}", d.verb, d.name, d.origin.join(" > "));
+                    }
+                }
+            }
         }
         Cmd::Lsp => lsp::run()?,
         Cmd::Compat { old, new } => {

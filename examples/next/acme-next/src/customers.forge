@@ -55,6 +55,7 @@ export resource Contact
     includes Identity
     read { customer email }
     filter { customer }
+    order { name }
   }
 
   capability ContactMaintenance {
