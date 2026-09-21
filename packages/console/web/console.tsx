@@ -31,6 +31,7 @@ import {
 import type { App, Environment, ViewState } from "../src/model.js";
 import type { PackageSummary } from "../src/oci.js";
 import { PackageGovernance } from "./governance.js";
+import { RegistryCredentials } from "./credentials.js";
 
 type Api = <T>(
   path: string,
@@ -479,15 +480,27 @@ export function Console({
   // Distinct from refresh(): a failed probe is the normal unauthenticated case, not an error to
   // show. Painting "Enter this instance's administrator token" on a virgin card would be wrong.
   const [probing, setProbing] = useState(autoAuth);
+  const [signIn, setSignIn] = useState<"token" | "cloudflare-access">("token");
   useEffect(() => {
     if (!autoAuth) return;
     let live = true;
     void (async () => {
       try {
+        // /healthz is public, so this answers even when the API cannot start.
+        const health = await fetcher("/healthz");
+        const mode = ((await health.json()) as { authMode?: string }).authMode;
+        if (live && mode === "cloudflare-access") setSignIn("cloudflare-access");
+      } catch {
+        // Unreachable health endpoint tells us nothing; assume the local scheme.
+      }
+      try {
         const next = await api<ViewState>("/state");
         if (live) setState(next);
-      } catch {
-        // Not signed in yet; fall through to whatever this instance's sign-in is.
+      } catch (e) {
+        // Not signed in is the ordinary case and says nothing. A server that is reachable but
+        // failing is worth showing, because the alternative is a login form that cannot work.
+        if (live && e instanceof ApiError && e.status >= 500)
+          setError((e as Error).message);
       } finally {
         if (live) setProbing(false);
       }
@@ -603,32 +616,54 @@ export function Console({
             Manage applications, configure environments, and explore your
             registry.
           </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void refresh();
-            }}
-          >
-            <Input
-              label="Administrator token"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              description="Use the token configured by this instance’s operator."
-            />
-            <ErrorMessage error={error} />
-            <Button variant="primary" type="submit" loading={busy}>
-              Connect to instance
-            </Button>
-          </form>
-          <div className="login-note">
-            <ShieldCheckIcon size={18} />
-            <span>
-              Your token stays in this browser tab. No central account required.
-            </span>
-          </div>
+          {signIn === "cloudflare-access" ? (
+            // This instance has no token to type. Offering the box anyway — which is what
+            // happened when the API failed behind a working Access session — invites someone
+            // to enter a credential that cannot be accepted, and hides the real fault.
+            <>
+              <ErrorMessage error={error} />
+              <Button variant="primary" onClick={() => location.reload()}>
+                Retry sign-in
+              </Button>
+              <div className="login-note">
+                <ShieldCheckIcon size={18} />
+                <span>
+                  Sign-in is delegated to Cloudflare Access. If this keeps
+                  failing, the instance is reachable but not serving its API.
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void refresh();
+                }}
+              >
+                <Input
+                  label="Administrator token"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  description="Use the token configured by this instance’s operator."
+                />
+                <ErrorMessage error={error} />
+                <Button variant="primary" type="submit" loading={busy}>
+                  Connect to instance
+                </Button>
+              </form>
+              <div className="login-note">
+                <ShieldCheckIcon size={18} />
+                <span>
+                  Your token stays in this browser tab. No central account
+                  required.
+                </span>
+              </div>
+            </>
+          )}
         </section>
         <p className="login-footer">
           Forge management console · Independently hosted
@@ -1268,6 +1303,10 @@ export function Console({
                   server’s environment configuration.
                 </p>
               </section>
+              <RegistryCredentials
+                api={api}
+                authority={state.instance.authority}
+              />
               <div className="two-columns">
                 <section className="panel detail-panel">
                   <ShieldCheckIcon size={24} />

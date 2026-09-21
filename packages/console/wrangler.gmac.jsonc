@@ -6,7 +6,9 @@
   // has no special status in the application — it is one deployment among the ones the README
   // describes, and it only looks different because of the values below.
   //
-  //   wrangler deploy -c wrangler.gmac.jsonc
+  // In this workspace, deploy through ForgeGraph rather than invoking wrangler directly —
+  // `forge deploy create --stage production` — matching the other Workers apps here. This file
+  // is the shape of the deployment; forge owns when it is applied and what the bindings are.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "forge-console",
   "main": "src/worker.ts",
@@ -29,8 +31,9 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "forge-console",
-      "database_id": "REPLACE_WITH_YOUR_D1_ID",
+      "database_name": "fg-forge-console-production",
+      // Provisioned by `forge db create --type d1`; the workspace is the source of truth.
+      "database_id": "f311316f-0ee6-4608-bcd0-5d058106dd34",
       "migrations_dir": "migrations"
     }
   ],
@@ -49,7 +52,7 @@
     // The *application's* AUD tag, from the Access application for this hostname. Not optional:
     // Access signs every application in a team with one key set, so without pinning this a
     // token minted for any other application in the team would authenticate here.
-    "ACCESS_AUD": "REPLACE_WITH_YOUR_ACCESS_AUD",
+    "ACCESS_AUD": "f20e13c7f1702fb3a5af9ece5c5ea60cb0c83fc19830f942fd153ae060682074",
     "SIGNING_KEY_ID": "instance-v1"
   }
   // Secrets (wrangler secret put): SIGNING_KEY_JWK, REGISTRY_TOKEN_SECRET.

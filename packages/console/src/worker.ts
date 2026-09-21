@@ -54,7 +54,15 @@ export class D1State implements StateStore {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path = new URL(request.url).pathname;
-    if (path === "/healthz") return secure(Response.json({ status: "ok" }), env);
+    if (path === "/healthz")
+      return secure(
+        Response.json({
+          status: "ok",
+          authMode:
+            env.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token",
+        }),
+        env,
+      );
     // The OCI endpoints answer before the asset handler, and deliberately without the console's
     // CSP: these are protocol responses for container clients, not pages for a browser.
     if (path === "/v2" || path.startsWith("/v2/")) {
@@ -117,6 +125,7 @@ export default {
       const api = createApi({
         store: new D1State(env.DB),
         auth: authFrom(env),
+        credentials: env.OCI_BACKEND === "r2" ? credentialStore(d1Sql(env.DB)) : null,
         authMode: env.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token",
         identityAuthority: env.ACCESS_TEAM_DOMAIN ?? null,
         authority: env.INSTANCE_AUTHORITY,
