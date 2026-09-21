@@ -30,14 +30,20 @@ test("browses the whole app by declaration kind and only edits explicitly", asyn
   await expect(
     page.getByRole("heading", { name: "EscalateTicket", exact: true }),
   ).toBeVisible();
-  await page.getByRole("tab", { name: "Capabilities", exact: false }).click();
+  await expect(page.getByRole("tab", { name: /^Capabilities/ })).toHaveCount(0);
+  await page.getByRole("tab", { name: /^Resources/ }).click();
+  await page.getByRole("button", { name: "Contact", exact: true }).click();
   await page
-    .getByRole("button", { name: "Contact.Support", exact: true })
+    .getByRole("button", { name: "Access & purpose", exact: true })
     .click();
-  await expect(
-    page.getByRole("heading", { name: "Contact.Support", exact: true }),
-  ).toBeVisible();
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
+  await page
+    .locator(".capability-card")
+    .filter({
+      has: page.getByRole("heading", { name: "Support", exact: true }),
+    })
+    .getByRole("button", { name: "Configure", exact: true })
+    .click();
   await expect(page.getByLabel("Allow update email in Support")).toBeEnabled();
   await page.getByRole("button", { name: "Read view", exact: true }).click();
   await expect(page.getByLabel("Allow update email in Support")).toHaveCount(0);
@@ -104,9 +110,11 @@ test("reviews a Git draft, retains it on conflict, then records a successful com
     page.getByRole("heading", { name: "Plan", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
-  await expect(page.getByLabel("Default value for hours")).toBeEnabled();
-  await page.getByLabel("Default value for hours").fill("20");
-  await page.getByLabel("Default value for hours").press("Enter");
+  await page
+    .getByRole("button", { name: "Edit field hours", exact: true })
+    .click();
+  await page.getByLabel("Default value", { exact: true }).fill("20");
+  await page.getByRole("button", { name: "Save field", exact: true }).click();
   await page.getByRole("button", { name: "Review changes (1)" }).click();
   await expect(page.getByRole("dialog")).toContainText("hours : integer = 10");
   await expect(page.getByRole("dialog")).toContainText("hours : integer = 20");
@@ -142,7 +150,7 @@ test("types a complete source change without losing focus and shows immutable fi
   await page.getByRole("button", { name: "Organization", exact: true }).click();
   await expect(
     page.getByRole("row").filter({ hasText: "OrganizationCode" }),
-  ).toContainText("immutable");
+  ).toContainText("Immutable");
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
   const source = page.getByLabel("Forge source");

@@ -18,9 +18,9 @@ unverified. This first version is a single-administrator console, not a multi-te
 
 ## Visual .forge editor
 
-The **Editor** opens in a read view of the whole application. Tabs group resources, functions,
-sources, shapes, purposes, capabilities, types, data classes, events and workflows across all
-source files. Capabilities are listed by resource (for example `Contact.Support`). Search and
+The **Editor** opens in a read view of the whole application. Resources use a compact schema with focused field dialogs, native classifications, purpose bindings and embedded capabilities. Functions compose input/output contracts, dependencies, events and connected sources. The data catalog uses compiler-derived classification evidence, handling requirements and personal-data status, including custom classes. Shapes, types, data classes, events and workflows are available under **More definitions**. Tabs group resources, functions,
+sources, purposes and the data catalog across all
+source files. Capabilities are configured inside each resource’s **Access & purpose** view. Search and
 select declarations without navigating files. The document presents fields, classifications,
 defaults, calculations and behavior as readable content; **Edit draft** enables Kumo controls.
 Source is a secondary view, read-only until editing is enabled.
