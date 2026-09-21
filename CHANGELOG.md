@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- M15 registry: `@forge/registry` (content-addressed signed artifacts with
+  digest-locked resolution, rebuildable catalog with namespace/audience
+  confidentiality and authority-qualified identities, deployment inventory
+  separating signed reports from observations, signed expiring policy
+  snapshots bounding any Authorizer offline).
+
 - M14 interfaces: `forge build` emits `openapi.json` and `api.smithy`; every
   host serves `GET /forge/discovery` and `/forge/openapi.json`; new
   `@forge/interfaces` package (RPC callable bindings, MCP server mounted at

@@ -1,0 +1,19 @@
+{
+  "name": "@forge/registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Immutable artifact publication, derived catalog, confidential access and federation, deployment inventory, signed snapshots (M15).",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "source": "./src/index.ts", "import": "./dist/index.js", "default": "./dist/index.js" },
+    "./artifacts": { "types": "./dist/artifacts.d.ts", "source": "./src/artifacts.ts", "import": "./dist/artifacts.js", "default": "./dist/artifacts.js" },
+    "./catalog": { "types": "./dist/catalog.d.ts", "source": "./src/catalog.ts", "import": "./dist/catalog.js", "default": "./dist/catalog.js" },
+    "./security": { "types": "./dist/security.d.ts", "source": "./src/security.ts", "import": "./dist/security.js", "default": "./dist/security.js" },
+    "./deployments": { "types": "./dist/deployments.d.ts", "source": "./src/deployments.ts", "import": "./dist/deployments.js", "default": "./dist/deployments.js" },
+    "./snapshots": { "types": "./dist/snapshots.d.ts", "source": "./src/snapshots.ts", "import": "./dist/snapshots.js", "default": "./dist/snapshots.js" }
+  },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run", "build": "tsc -p tsconfig.build.json" },
+  "dependencies": { "@forge/runtime": "workspace:*", "@forge/interfaces": "workspace:*" },
+  "devDependencies": { "@types/node": "^24.0.0", "effect": "4.0.0-rc.116", "typescript": "^5.9.0", "vitest": "^5.0.0" }
+}

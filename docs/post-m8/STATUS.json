@@ -293,6 +293,55 @@
     "MCP transport is single-message Streamable HTTP (POST); no SSE stream, no batching",
     "Go/Python conformance runs only when the toolchain is present; the vitest test reports the skip"
    ]
+  },
+  "M15": {
+   "status": "done",
+   "tickets": {
+    "FORGE-057": {
+     "status": "done",
+     "evidence": [
+      "packages/registry/src/artifacts.ts: content-addressed blobs + manifest/1 + Ed25519 signatures bound to the authority, mutable tags as pointers, pullLocked by digest (missing digest fails, tag never substitutes), path/workspace deps unsigned, FileArtifactStore offline cache; PAR-124/125 tests (tampered layer, untrusted signer, foreign authority, unknown critical feature all refused before activation)"
+     ]
+    },
+    "FORGE-058": {
+     "status": "done",
+     "evidence": [
+      "catalog.ts: idempotent index keyed by qualified id + digest, rebuild from artifacts (verification failures abort), catalog/1 schema, exports/fields/classes/subjects/purposes/surfaces/capabilities/actions/effects/owners/dependencies; PAR-126"
+     ]
+    },
+    "FORGE-059": {
+     "status": "done",
+     "evidence": [
+      "security.ts AccessPolicy (namespace globs, audiences) applied to every catalog read; authority-qualified identities and grants; federated rebuild requires an accepted trust policy; PAR-127/129"
+     ]
+    },
+    "FORGE-060": {
+     "status": "done",
+     "evidence": [
+      "deployments.ts Inventory: signed reports vs observations, staleness, signed retirement, checkEndpoint host rules, bindingFor requires a fresh signed report with matching digests (PAR-128/131)"
+     ]
+    },
+    "FORGE-061": {
+     "status": "done",
+     "evidence": [
+      "snapshots.ts: signed full/incremental snapshots chained by epoch with acks; SnapshotHolder state valid/grace/degraded/expired; withSnapshotAuthority bounds any Authorizer (deny or degrade-readonly with maxDegradedMs); epoch rises past expiry (PAR-130)"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-124": "packages/registry/test/artifacts.test.ts",
+    "PAR-125": "artifacts.test.ts",
+    "PAR-126": "catalog.test.ts",
+    "PAR-127": "catalog.test.ts",
+    "PAR-128": "deployments.test.ts",
+    "PAR-129": "catalog.test.ts",
+    "PAR-130": "snapshots.test.ts",
+    "PAR-131": "deployments.test.ts"
+   },
+   "notes": [
+    "Registry is an in-process library with file/memory stores; an OCI distribution transport (registry HTTP API) is not implemented \u2014 the layout is OCI-compatible so a distribution server can serve the same blobs",
+    "Certified profiles: node (memory store, file store); the deployment inventory binding was exercised against a live Node host"
+   ]
   }
  }
 }
