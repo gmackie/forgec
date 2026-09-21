@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 import { dashboard, errorBudget, toGrafana } from "../src/dashboards.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;

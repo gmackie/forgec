@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "cargo run -q -p forge-cli -- build .",
+    "build": "cargo run -q -p forgegraph-cli -- build .",
     "cf:dev": "wrangler dev --config deploy/cloudflare/wrangler.jsonc --port 8797",
     "cf:migrate:local": "wrangler d1 migrations apply forge-acme --local --config deploy/cloudflare/wrangler.jsonc",
     "cf:migrate:remote": "wrangler d1 migrations apply forge-acme --remote --config deploy/cloudflare/wrangler.jsonc",
@@ -20,12 +20,12 @@
     "node:bundle": "node deploy/node/bundle.mjs"
   },
   "dependencies": {
-    "@forge/runtime": "workspace:*",
+    "@forgegraph/runtime": "workspace:*",
     "effect": "4.0.0-rc.116",
     "@aws-sdk/client-dynamodb": "^3.1136.0",
     "@aws-sdk/lib-dynamodb": "^3.1136.0",
     "@aws-sdk/util-dynamodb": "3.996.9",
-    "@forge/react": "workspace:*",
+    "@forgegraph/react": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "pg": "^8",

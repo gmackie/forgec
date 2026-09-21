@@ -53,7 +53,7 @@ retried by the engine as transient conflicts.
 ## Phased rollout (plan §21)
 
 1. provision additive infrastructure;
-2. apply compatible schema changes (`forge compat old.app.json new.app.json`
+2. apply compatible schema changes (`forgec compat old.app.json new.app.json`
    must not report `breaking`);
 3. deploy readers/writers that understand both shapes;
 4. run backfills (never inside a stack custom resource);

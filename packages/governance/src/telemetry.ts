@@ -11,7 +11,7 @@
  * reported, never labelled proven safe.
  */
 import { createHmac } from "node:crypto";
-import type { AppBundle, OperationEvent } from "@forge/runtime";
+import type { AppBundle, OperationEvent } from "@forgegraph/runtime";
 
 export type Sink = "logs" | "audit" | "metrics" | "errors" | "urls";
 export interface SinkPolicy { sink: Sink; values: "none" | "tokens" | "structural"; labels: readonly string[] }

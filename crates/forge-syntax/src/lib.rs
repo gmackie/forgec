@@ -34,7 +34,13 @@ impl Parse {
     pub fn debug_tree(&self) -> String {
         fn go(node: &SyntaxNode, depth: usize, out: &mut String) {
             use std::fmt::Write;
-            let _ = writeln!(out, "{}{:?}@{:?}", "  ".repeat(depth), node.kind(), node.text_range());
+            let _ = writeln!(
+                out,
+                "{}{:?}@{:?}",
+                "  ".repeat(depth),
+                node.kind(),
+                node.text_range()
+            );
             for child in node.children_with_tokens() {
                 match child {
                     rowan::NodeOrToken::Node(n) => go(&n, depth + 1, out),
@@ -42,8 +48,19 @@ impl Parse {
                         if t.kind() == SyntaxKind::WHITESPACE {
                             continue;
                         }
-                        let text = if t.kind() == SyntaxKind::NEWLINE { "\\n".to_string() } else { t.text().to_string() };
-                        let _ = writeln!(out, "{}{:?}@{:?} {:?}", "  ".repeat(depth + 1), t.kind(), t.text_range(), text);
+                        let text = if t.kind() == SyntaxKind::NEWLINE {
+                            "\\n".to_string()
+                        } else {
+                            t.text().to_string()
+                        };
+                        let _ = writeln!(
+                            out,
+                            "{}{:?}@{:?} {:?}",
+                            "  ".repeat(depth + 1),
+                            t.kind(),
+                            t.text_range(),
+                            text
+                        );
                     }
                 }
             }

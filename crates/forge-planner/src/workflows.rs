@@ -6,7 +6,7 @@
 use crate::messaging::pkg_slug;
 use forge_semantic::ir::*;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 pub const WORKFLOWS_VERSION: &str = "workflows/1";
 
@@ -59,12 +59,22 @@ pub fn plan(ir: &DomainIR) -> WorkflowsPlan {
                 name: w.name.clone(),
                 version: w.version,
                 graph_hash: w.graph_hash.clone(),
-                cloudflare: CloudflareWorkflow { name: format!("forge-{slug}-{kebab}"), binding: format!("WF_{upper}"), class_name: format!("{}Workflow", w.name) },
-                aws: AwsWorkflow { state_machine: format!("forge-{slug}-{kebab}"), definition: driver_asl(&w.id) },
+                cloudflare: CloudflareWorkflow {
+                    name: format!("forge-{slug}-{kebab}"),
+                    binding: format!("WF_{upper}"),
+                    class_name: format!("{}Workflow", w.name),
+                },
+                aws: AwsWorkflow {
+                    state_machine: format!("forge-{slug}-{kebab}"),
+                    definition: driver_asl(&w.id),
+                },
             });
         }
     }
-    WorkflowsPlan { version: WORKFLOWS_VERSION.into(), workflows }
+    WorkflowsPlan {
+        version: WORKFLOWS_VERSION.into(),
+        workflows,
+    }
 }
 
 /// The generic driver: Advance -> route on status -> Wait (sleep) | WaitForSignal (callback token,

@@ -152,7 +152,7 @@ func (c *Client) load() (map[string]route, error) {
 		}
 	}
 	if len(mismatch) > 0 {
-		// A compatibility question for `forge compat`, never assumed equivalence.
+		// A compatibility question for `forgec compat`, never assumed equivalence.
 		return nil, &InvocationFailed{Reason: "contract-mismatch", Detail: strings.Join(mismatch, ", ") + " differ from the expectation"}
 	}
 	status, _, data, err = c.do("GET", "/forge/openapi.json", nil, nil)

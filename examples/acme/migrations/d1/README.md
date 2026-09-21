@@ -1,6 +1,6 @@
 # D1 migrations
 
-`0001_init.sql` is the generated baseline for the *current* model (kept equal to `forge build`'s output by
+`0001_init.sql` is the generated baseline for the *current* model (kept equal to `forgec build`'s output by
 `conformance/test/migrations.test.ts`). Later files are the incremental steps existing deployments took and
 are written idempotently (`IF NOT EXISTS`), so a fresh database applying every file in order ends in the same
 schema as a deployment that applied them one release at a time. A column added to the baseline needs no

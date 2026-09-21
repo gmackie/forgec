@@ -6,7 +6,7 @@
  * index can be dropped and rebuilt from the artifact store without touching
  * package authority. Every read goes through `AccessPolicy` (PAR-127).
  */
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 import { Registry, type Pulled, type TrustPolicy } from "./artifacts.js";
 import { AccessPolicy, qualifiedId, type CatalogPrincipal } from "./security.js";
 

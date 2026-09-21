@@ -1,0 +1,29 @@
+[package]
+name = "forgegraph-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+description = "ForgeGraph compiler CLI (forgec): check, build, migrate, compat and language server for .forge packages"
+
+[[bin]]
+name = "forgec"
+path = "src/main.rs"
+
+[dependencies]
+forge-syntax = { path = "../forge-syntax", version = "0.3.0" }
+forge-semantic = { path = "../forge-semantic", version = "0.3.0" }
+forge-planner = { path = "../forge-planner", version = "0.3.0" }
+forge-codegen = { path = "../forge-codegen", version = "0.3.0" }
+clap.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json.workspace = true
+anyhow.workspace = true
+sha2.workspace = true
+hex.workspace = true

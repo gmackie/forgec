@@ -1,15 +1,15 @@
 //! Forge semantic layer: package loading, symbol resolution, checks, DomainIR.
 
+pub mod capability;
 pub mod compiler;
 pub mod cron;
-pub mod taxonomy;
-pub mod capability;
 pub mod diagnostics;
 pub mod diff;
 pub mod ir;
 pub mod package;
+pub mod taxonomy;
 
-pub use compiler::{compile, Compilation};
+pub use compiler::{Compilation, compile};
 pub use diagnostics::{Diagnostic, Severity};
 pub use ir::DomainIR;
-pub use package::{load_package, LoadError, Package, SourceFile};
+pub use package::{LoadError, Package, SourceFile, load_package};

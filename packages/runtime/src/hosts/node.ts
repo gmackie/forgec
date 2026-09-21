@@ -20,6 +20,11 @@ import { OtlpSink, type OtlpOptions } from "../otlp.js";
 import { composeRuntime, type ComposedRuntime, type RuntimeComposition } from "./compose.js";
 
 export interface NodeHostOptions extends Omit<RuntimeComposition, "realtimeHub" | "telemetry" | "objects"> {
+  /**
+   * Authentication host. Required: the server refuses to start without one, so a deployment can never
+   * silently trust caller-supplied identity headers. For local development set `FORGE_AUTH=dev-headers`
+   * (or pass `devHeaderAuth()`) to trust `x-forge-tenant`/`x-forge-actor`.
+   */
   auth?: AuthHost;
   /** Object storage: a directory (served by this host through signed URLs) or any object store adapter (S3, R2). */
   objects?: RuntimeComposition["objects"] | { directory: string };
@@ -87,7 +92,14 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
   void _o;
   void _p;
   const runtime = composeRuntime({ ...composition, ...(objects ? { objects } : {}), realtimeHub: hub, telemetry: { sink, target: "node-postgres" } });
-  const auth = options.auth ?? devHeaderAuth();
+  const auth = options.auth ?? (process.env["FORGE_AUTH"] === "dev-headers" ? devHeaderAuth() : null);
+  if (!auth) {
+    throw new Error(
+      "createNodeHost: no authentication host configured. Pass `auth` (for example jwtAuth({ issuer, audience, secret, claims })), " +
+        "or set FORGE_AUTH=dev-headers to trust x-forge-tenant/x-forge-actor headers — development only, never in a deployment.",
+    );
+  }
+  if (auth.scheme === "dev-header") console.warn("forge: DEVELOPMENT AUTH ACTIVE — x-forge-tenant/x-forge-actor headers are trusted verbatim. Never run this configuration where untrusted callers can reach it.");
   const handler = createHttpHandler(runtime.model, runtime.engine, { auth, requestId: () => crypto.randomUUID(), ...(options.cors ? { cors: { origins: options.cors } } : {}) });
   const maxInFlight = options.maxInFlight ?? 256;
   let inFlight = 0;

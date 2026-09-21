@@ -9,7 +9,7 @@ pending until a test exists; absence of telemetry is never evidence (D20).
 | component | trusted for | not trusted for |
 | --- | --- | --- |
 | Rust compiler (`forge`) | deterministic, offline compilation; identity and digests; refusing unknown critical IR | anything at runtime |
-| `@forge/runtime` engine + adapters | validation, integrity guards, audit/outbox co-commit, receipts, fences | authenticating principals (delegated to `AuthHost`) |
+| `@forgegraph/runtime` engine + adapters | validation, integrity guards, audit/outbox co-commit, receipts, fences | authenticating principals (delegated to `AuthHost`) |
 | Provider primitives (D1 batch, DynamoDB transactions, Queues/SQS, Workflows/Step Functions, DO/API Gateway) | atomicity and durability as documented by the provider | tenant isolation beyond what the key/claim model encodes |
 | `deploy/` (wrangler/CDK) | binding the right resources | the correctness of application semantics |
 | Extension manifests | declaring capabilities | running code (they never do) |

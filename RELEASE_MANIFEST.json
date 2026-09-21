@@ -1,11 +1,18 @@
 {
   "version": "release-manifest/1",
-  "generatedAt": "2026-09-21T06:17:30.748Z",
-  "allRequiredProfilesCertified": true,
+  "generatedAt": "2026-09-21T09:22:01.388Z",
+  "allRequiredProfilesCertified": false,
+  "incomplete": {
+    "requiredNotCertified": [
+      "cloudflare-d1",
+      "aws-dynamodb"
+    ],
+    "note": "this release does not claim full profile support; see each entry's reason"
+  },
   "pins": {
     "compiler": {
-      "crate": "forge-cli",
-      "version": "0.1.0",
+      "crate": "forgegraph-cli",
+      "version": "0.3.0",
       "rustVersion": "1.97",
       "ir": "domain-ir/1",
       "contracts": "contracts/1",
@@ -15,8 +22,8 @@
       ]
     },
     "runtime": {
-      "package": "@forge/runtime",
-      "version": "0.1.0",
+      "package": "@forgegraph/runtime",
+      "version": "0.3.0",
       "effect": "4.0.0-rc.116",
       "typescript": "^5.9.0",
       "node": "v24.14.0",
@@ -25,8 +32,8 @@
       "awsSdk": "^3.1136.0"
     },
     "interfaces": {
-      "package": "@forge/interfaces",
-      "version": "0.1.0",
+      "package": "@forgegraph/interfaces",
+      "version": "0.3.0",
       "openapi": "3.1.0",
       "smithy": "2.0",
       "mcp": [
@@ -67,7 +74,7 @@
         "runtime": "cloudflare-workers",
         "deployment": "wrangler"
       },
-      "status": "certified",
+      "status": "unverified",
       "features": [
         "crud",
         "changesets",
@@ -91,7 +98,8 @@
           "build": "693d221a70f7768df402a99030fa793c635f2eb61332e62a4e866d0a1f697d35",
           "ref": "conformance/certification/latest.json"
         }
-      ]
+      ],
+      "reason": "live certification is for build 693d221a70f7; the current build is cfc8286aa3a7: re-run pnpm certify"
     },
     {
       "profile": "aws-dynamodb",
@@ -101,7 +109,7 @@
         "runtime": "lambda-nodejs22",
         "deployment": "cdk"
       },
-      "status": "certified",
+      "status": "unverified",
       "features": [
         "crud",
         "changesets",
@@ -125,7 +133,8 @@
           "build": "693d221a70f7768df402a99030fa793c635f2eb61332e62a4e866d0a1f697d35",
           "ref": "conformance/certification/latest.json"
         }
-      ]
+      ],
+      "reason": "live certification is for build 693d221a70f7; the current build is cfc8286aa3a7: re-run pnpm certify"
     },
     {
       "profile": "node-postgres",
@@ -242,27 +251,9 @@
       "reason": "embedded libsql is certified; the Turso cloud service (hrana/WebSocket transport, remote replicas) has not been exercised: set FORGE_TURSO_URL/FORGE_TURSO_TOKEN and run packages/adapters/test/sqlite.test.ts"
     }
   ],
-  "milestones": {
-    "done": [
-      "M9",
-      "M10",
-      "M11",
-      "M12",
-      "M13",
-      "M14",
-      "M15",
-      "M16",
-      "M17",
-      "M18",
-      "M19",
-      "M20",
-      "M21"
-    ],
-    "other": []
-  },
   "benchmarks": {
     "ref": "conformance/benchmarks/governance-overhead.json",
-    "at": "2026-09-21T05:13:21.190Z",
+    "at": "2026-09-21T09:21:36.016Z",
     "note": "per-profile measurements with workload definitions and limits; no cross-machine or parity claim"
   },
   "migration": {

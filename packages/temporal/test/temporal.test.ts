@@ -12,10 +12,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { AppBundle } from "@forge/runtime";
-import { createNodeHost, type NodeHost } from "@forge/runtime/node";
-import { createPostgresStorage } from "@forge/runtime/postgres";
-import { Model } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
+import { createNodeHost, type NodeHost } from "@forgegraph/runtime/node";
+import { devHeaderAuth } from "@forgegraph/runtime";
+import { createPostgresStorage } from "@forgegraph/runtime/postgres";
+import { Model } from "@forgegraph/runtime";
 import * as client from "../../../conformance/fixtures/acme.client.js";
 import { externals, functions } from "../../../examples/acme/impl/index.js";
 import { temporalDriver, temporalWorker } from "../src/index.js";
@@ -39,7 +40,7 @@ describe.skipIf(!url || !hasTemporal)("self-hosted-full: Node + PostgreSQL + Tem
 
   const startHost = async () => {
     driver = await temporalDriver({ address: ADDRESS, taskQueue: TASK_QUEUE });
-    host = createNodeHost({ bundle, store: createPostgresStorage(pool, new Model(bundle)), functions, externals, cursorSecret: "temporal-test", sweepIntervalMs: 0, telemetryFormat: "silent", workflowDriver: driver });
+    host = createNodeHost({ auth: devHeaderAuth(), bundle, store: createPostgresStorage(pool, new Model(bundle)), functions, externals, cursorSecret: "temporal-test", sweepIntervalMs: 0, telemetryFormat: "silent", workflowDriver: driver });
     base = (await host.listen(0)).url;
   };
   const startWorker = async () => {

@@ -9,7 +9,7 @@
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 import { runScenario, type Report } from "./runner.js";
 import { loadScenarios } from "./scenarios.js";
 import type { Target } from "./target.js";

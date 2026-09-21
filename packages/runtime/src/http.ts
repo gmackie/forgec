@@ -228,7 +228,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     if (mount) return mount(req, principal, requestId);
 
     // FORGE-056: bounded discovery metadata. Compatibility evaluation input, never deployment trust:
-    // a client that finds a different digest runs `forge compat`, it does not assume equivalence.
+    // a client that finds a different digest runs `forgec compat`, it does not assume equivalence.
     if (req.method === "GET" && path[0] === "forge" && path.length === 2) {
       const meta = { "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=60", "x-request-id": requestId };
       if (path[1] === "discovery") return new Response(JSON.stringify(discovery(model, options.auth)), { status: 200, headers: meta });

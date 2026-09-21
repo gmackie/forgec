@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 import { destroyPlan, resolvePlan } from "../src/deployment-plan.js";
 import { emitSelfHosted } from "../src/self-hosted.js";
 import { emitTerraform, nativeProjection, terraformProjection } from "../src/terraform.js";
@@ -24,7 +24,7 @@ function has(cmd: string): boolean {
 describe("PAR-151: Terraform and native projections satisfy the same resolved plan", () => {
   for (const target of ["cloudflare", "aws"] as const) {
     it(`${target}: same resources, bindings and ownership; exactly one state owner; adopted resources are imported, not created`, () => {
-      const plan = resolvePlan(bundle, { target, stage: "dev", stateOwner: "terraform", adopt: target === "cloudflare" ? { database: "72aa3a28-2aac-42e9-9976-c527a2830cdb" } : { table: "arn:aws:dynamodb:us-east-1:123:table/existing" } });
+      const plan = resolvePlan(bundle, { target, stage: "dev", stateOwner: "terraform", adopt: target === "cloudflare" ? { database: "00000000-0000-0000-0000-000000000000" } : { table: "arn:aws:dynamodb:us-east-1:123:table/existing" } });
       const pack = emitTerraform(plan);
       const native = nativeProjection(plan);
       const tf = terraformProjection(plan, pack);

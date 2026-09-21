@@ -1,10 +1,53 @@
 {
-  "name": "@forge/capability-manifest",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "name": "@forgegraph/capability-manifest",
+  "version": "0.3.0",
+  "description": "Pinned adapter capability manifests and their validator.",
   "license": "Apache-2.0",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
-  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.0", "vitest": "^4.0.0" }
+  "author": "ForgeGraph contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmackie/forgegraph.git",
+    "directory": "packages/contracts/capability-manifest"
+  },
+  "homepage": "https://github.com/gmackie/forgegraph#readme",
+  "bugs": {
+    "url": "https://github.com/gmackie/forgegraph/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src",
+    "manifests",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "forgegraph": {
+    "stability": "stable-candidate"
+  }
 }

@@ -6,7 +6,7 @@
 //! no composition order or traversal path may widen the effective authority,
 //! and denies remain sticky through every re-inclusion path.
 use forge_semantic::ir::EffectiveCapabilities;
-use forge_semantic::{compile, Package};
+use forge_semantic::{Package, compile};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Small deterministic PRNG (xorshift) so failures reproduce from the seed.
@@ -53,20 +53,36 @@ fn random_dag(rng: &mut Rng, n: usize) -> Vec<Cap> {
         let mut allow = BTreeSet::new();
         let mut deny = BTreeSet::new();
         for _ in 0..rng.below(5) {
-            allow.insert((VERBS[rng.below(VERBS.len())].to_string(), FIELDS[rng.below(FIELDS.len())].to_string()));
+            allow.insert((
+                VERBS[rng.below(VERBS.len())].to_string(),
+                FIELDS[rng.below(FIELDS.len())].to_string(),
+            ));
         }
         for _ in 0..rng.below(3) {
             if rng.chance(50) {
-                deny.insert((VERBS[rng.below(VERBS.len())].to_string(), FIELDS[rng.below(FIELDS.len())].to_string()));
+                deny.insert((
+                    VERBS[rng.below(VERBS.len())].to_string(),
+                    FIELDS[rng.below(FIELDS.len())].to_string(),
+                ));
             }
         }
-        caps.push(Cap { name, includes, allow, deny });
+        caps.push(Cap {
+            name,
+            includes,
+            allow,
+            deny,
+        });
     }
     caps
 }
 
+/// The (allow, deny) edges a surface grants: `(resource, action)` pairs, ordered so
+/// two surfaces compare structurally regardless of how they were derived.
+type Edges = BTreeSet<(String, String)>;
+type Surface = (Edges, Edges);
+
 /// Reference algebra: allowClosure − denyClosure over the transitive inclusion graph, order-free by construction.
-fn reference(caps: &[Cap], root: &str) -> (BTreeSet<(String, String)>, BTreeSet<(String, String)>) {
+fn reference(caps: &[Cap], root: &str) -> Surface {
     let by: BTreeMap<&str, &Cap> = caps.iter().map(|c| (c.name.as_str(), c)).collect();
     let mut seen = BTreeSet::new();
     let mut stack = vec![root.to_string()];
@@ -85,7 +101,9 @@ fn reference(caps: &[Cap], root: &str) -> (BTreeSet<(String, String)>, BTreeSet<
 }
 
 fn render(caps: &[Cap], order: &[usize], include_perm: bool, rng: &mut Rng) -> String {
-    let mut s = String::from("purpose P\nexport resource Contact\n  @purposeScoped\n{\n  id : id\n  name : text\n  email : text\n  notes : text?\n  tier : text\n\n");
+    let mut s = String::from(
+        "purpose P\nexport resource Contact\n  @purposeScoped\n{\n  id : id\n  name : text\n  email : text\n  notes : text?\n  tier : text\n\n",
+    );
     for &i in order {
         let c = &caps[i];
         s.push_str(&format!("  capability {} {{\n", c.name));
@@ -120,17 +138,34 @@ fn render(caps: &[Cap], order: &[usize], include_perm: bool, rng: &mut Rng) -> S
     s
 }
 
-fn surface_of(src: &str) -> Option<(BTreeSet<(String, String)>, BTreeSet<(String, String)>, String)> {
-    let mut pkg = Package::inline("@fuzz/cap", vec![("src/a.forge".to_string(), src.to_string())]);
+fn surface_of(src: &str) -> Option<(Edges, Edges, String)> {
+    let mut pkg = Package::inline(
+        "@fuzz/cap",
+        vec![("src/a.forge".to_string(), src.to_string())],
+    );
     pkg.edition = "2027".into();
     let out = compile(&pkg, &[]);
-    if out.diagnostics.iter().any(|d| d.severity == forge_semantic::Severity::Error) {
+    if out
+        .diagnostics
+        .iter()
+        .any(|d| d.severity == forge_semantic::Severity::Error)
+    {
         return None;
     }
     let ir = out.ir?;
     let eff = EffectiveCapabilities::of(&ir);
     let s = eff.surface("@fuzz/cap/_/Contact", "@fuzz/cap/_/P")?;
-    Some((s.allow_atoms.iter().map(|a| (a.verb.clone(), a.name.clone())).collect(), s.deny.iter().map(|a| (a.verb.clone(), a.name.clone())).collect(), s.digest.clone()))
+    Some((
+        s.allow_atoms
+            .iter()
+            .map(|a| (a.verb.clone(), a.name.clone()))
+            .collect(),
+        s.deny
+            .iter()
+            .map(|a| (a.verb.clone(), a.name.clone()))
+            .collect(),
+        s.digest.clone(),
+    ))
 }
 
 #[test]
@@ -146,8 +181,14 @@ fn random_capability_dags_match_the_reference_algebra_under_every_permutation() 
         let Some((allow, deny, digest)) = surface_of(&src) else {
             panic!("case {case}: generated source did not compile:\n{src}");
         };
-        assert_eq!(allow, ref_allow, "case {case}: effective allow set differs from the reference algebra\n{src}");
-        assert!(ref_deny.is_subset(&deny), "case {case}: a deny was lost during flattening\n{src}");
+        assert_eq!(
+            allow, ref_allow,
+            "case {case}: effective allow set differs from the reference algebra\n{src}"
+        );
+        assert!(
+            ref_deny.is_subset(&deny),
+            "case {case}: a deny was lost during flattening\n{src}"
+        );
         // permutations of declaration order and inclusion lists: identical surface, identical digest
         for _ in 0..3 {
             let mut perm = order.clone();
@@ -156,25 +197,41 @@ fn random_capability_dags_match_the_reference_algebra_under_every_permutation() 
                 perm.swap(k, j);
             }
             let src2 = render(&caps, &perm, true, &mut rng);
-            let (allow2, _, digest2) = surface_of(&src2).unwrap_or_else(|| panic!("case {case}: permuted source did not compile:\n{src2}"));
-            assert_eq!(allow2, allow, "case {case}: declaration/inclusion order changed the surface\n{src2}");
+            let (allow2, _, digest2) = surface_of(&src2)
+                .unwrap_or_else(|| panic!("case {case}: permuted source did not compile:\n{src2}"));
+            assert_eq!(
+                allow2, allow,
+                "case {case}: declaration/inclusion order changed the surface\n{src2}"
+            );
             assert_eq!(digest2, digest, "case {case}: digest not order-independent");
             checked += 1;
         }
         // adversarial widening attempt: a wrapper that re-includes everything and re-allows every denied atom
         let mut wrapper = caps.clone();
-        let mut w = Cap { name: format!("W{n}"), includes: caps.iter().map(|c| c.name.clone()).collect(), allow: BTreeSet::new(), deny: BTreeSet::new() };
+        let mut w = Cap {
+            name: format!("W{n}"),
+            includes: caps.iter().map(|c| c.name.clone()).collect(),
+            allow: BTreeSet::new(),
+            deny: BTreeSet::new(),
+        };
         for d in &ref_deny {
             w.allow.insert(d.clone());
         }
         wrapper.push(w);
         let src3 = render(&wrapper, &(0..=n).collect::<Vec<_>>(), false, &mut rng);
-        let (allow3, _, _) = surface_of(&src3).unwrap_or_else(|| panic!("case {case}: wrapper source did not compile:\n{src3}"));
+        let (allow3, _, _) = surface_of(&src3)
+            .unwrap_or_else(|| panic!("case {case}: wrapper source did not compile:\n{src3}"));
         for d in &ref_deny {
-            assert!(!allow3.contains(d), "case {case}: re-allowing a denied atom through a wrapper widened authority: {d:?}\n{src3}");
+            assert!(
+                !allow3.contains(d),
+                "case {case}: re-allowing a denied atom through a wrapper widened authority: {d:?}\n{src3}"
+            );
         }
         let (ref3, _) = reference(&wrapper, &wrapper[n].name);
-        assert_eq!(allow3, ref3, "case {case}: wrapper surface differs from the reference");
+        assert_eq!(
+            allow3, ref3,
+            "case {case}: wrapper surface differs from the reference"
+        );
     }
     assert!(checked >= 400);
 }

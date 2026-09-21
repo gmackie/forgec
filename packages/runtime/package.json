@@ -1,7 +1,29 @@
 {
-  "name": "@forge/runtime",
-  "private": true,
+  "name": "@forgegraph/runtime",
+  "version": "0.3.0",
+  "description": "Effect runtime for ForgeGraph applications: engine, storage adapters (D1, DynamoDB, PostgreSQL, memory), hosts (Cloudflare, AWS, Node), workflows, schedules, realtime, governance and telemetry.",
+  "license": "Apache-2.0",
+  "author": "ForgeGraph contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmackie/forgegraph.git",
+    "directory": "packages/runtime"
+  },
+  "homepage": "https://github.com/gmackie/forgegraph#readme",
+  "bugs": {
+    "url": "https://github.com/gmackie/forgegraph/issues"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -135,10 +157,11 @@
     "vitest": "^5.0.0",
     "wrangler": "^4.83.0"
   },
-  "version": "0.1.0",
-  "license": "Apache-2.0",
-  "files": [
-    "dist",
-    "src"
-  ]
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "forgegraph": {
+    "stability": "stable-candidate"
+  }
 }

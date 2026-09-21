@@ -1,12 +1,56 @@
 {
-  "name": "@forge/governance",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "name": "@forgegraph/governance",
+  "version": "0.3.0",
+  "description": "Subject rights, retention and recovery evidence (M19): disposition planner, durable rights executor, recovery checks, control packs and OSCAL export. The suppression ledger lives in @forgegraph/runtime.",
   "license": "Apache-2.0",
-  "description": "Subject rights, retention and recovery evidence (M19): disposition planner, durable rights executor, recovery checks, control packs and OSCAL export. The suppression ledger lives in @forge/runtime.",
-  "exports": { ".": { "types": "./dist/index.d.ts", "source": "./src/index.ts", "import": "./dist/index.js", "default": "./dist/index.js" } },
-  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run", "build": "tsc -p tsconfig.build.json" },
-  "dependencies": { "@forge/runtime": "workspace:*", "effect": "4.0.0-rc.116" },
-  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.0", "vitest": "^5.0.0" }
+  "author": "ForgeGraph contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmackie/forgegraph.git",
+    "directory": "packages/governance"
+  },
+  "homepage": "https://github.com/gmackie/forgegraph#readme",
+  "bugs": {
+    "url": "https://github.com/gmackie/forgegraph/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@forgegraph/runtime": "workspace:*",
+    "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "forgegraph": {
+    "stability": "experimental"
+  }
 }

@@ -27,7 +27,11 @@ const FILES: &[&str] = &[
 fn reference_files_are_already_canonical() {
     for rel in FILES {
         let src = fixture(rel);
-        assert_eq!(format(&parse(&src)), src, "{rel} is not a fixed point of fmt");
+        assert_eq!(
+            format(&parse(&src)),
+            src,
+            "{rel} is not a fixed point of fmt"
+        );
     }
 }
 
@@ -50,12 +54,18 @@ fn normalizes_spacing_indentation_decorators_and_blank_lines() {
 fn preserves_comments_and_unparseable_regions_verbatim() {
     let src = "// header comment\nresource R {\n  id : id // trailing\n  bogus ??? here\n  // between\n  name : text\n}\n";
     let out = format(&parse(src));
-    assert_eq!(out, "// header comment\nresource R {\n  id : id // trailing\n  bogus ??? here\n  // between\n  name : text\n}\n");
+    assert_eq!(
+        out,
+        "// header comment\nresource R {\n  id : id // trailing\n  bogus ??? here\n  // between\n  name : text\n}\n"
+    );
 }
 
 #[test]
 fn expressions_and_type_args_are_spaced_canonically() {
     let src = "type A = money<USD>>=0\nresource R {\n  total:=subtotal+tax*2\n  rules {\n    site.customer==customer&&!x\n  }\n}\n";
     let out = format(&parse(src));
-    assert_eq!(out, "type A = money<USD> >= 0\nresource R {\n  total := subtotal + tax * 2\n  rules {\n    site.customer == customer && !x\n  }\n}\n");
+    assert_eq!(
+        out,
+        "type A = money<USD> >= 0\nresource R {\n  total := subtotal + tax * 2\n  rules {\n    site.customer == customer && !x\n  }\n}\n"
+    );
 }

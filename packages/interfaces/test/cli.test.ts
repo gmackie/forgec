@@ -10,8 +10,9 @@ import { join } from "node:path";
 import { readFileSync, chmodSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { MemoryStorage, type AppBundle } from "@forge/runtime";
-import { createNodeHost, type NodeHost } from "@forge/runtime/node";
+import { MemoryStorage, type AppBundle } from "@forgegraph/runtime";
+import { createNodeHost, type NodeHost } from "@forgegraph/runtime/node";
+import { devHeaderAuth } from "@forgegraph/runtime";
 import { externals, functions } from "../../../examples/acme/impl/index.js";
 import { EXIT, runCli, type CliIo } from "../src/cli.js";
 
@@ -20,9 +21,9 @@ const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", 
 describe("PAR-122: CLI stable machine contract", () => {
   let host: NodeHost;
   let base: string;
-  const dir = mkdtempSync(join(tmpdir(), "forge-cli-"));
+  const dir = mkdtempSync(join(tmpdir(), "forgegraph-cli-"));
   beforeAll(async () => {
-    host = createNodeHost({ bundle, store: new MemoryStorage(), functions, externals, cursorSecret: "cli-test", sweepIntervalMs: 0, telemetryFormat: "silent" });
+    host = createNodeHost({ auth: devHeaderAuth(), bundle, store: new MemoryStorage(), functions, externals, cursorSecret: "cli-test", sweepIntervalMs: 0, telemetryFormat: "silent" });
     base = (await host.listen(0)).url;
   });
   afterAll(async () => { await host?.stop(); });
@@ -107,7 +108,7 @@ describe("PAR-122: CLI stable machine contract", () => {
     const r = await run(["Customer.create", "--set", "code=never", "--set", "name=Never", "--yes", "--expect-wire", "deadbeef"]);
     expect(r.code).toBe(EXIT.CONTRACT);
     expect(r.out).toBe("");
-    expect(r.err).toMatch(/forge compat/);
+    expect(r.err).toMatch(/forgec compat/);
     const ok = await run(["Customer.find.byCode", "--set", "params.code=never", "--expect-wire", bundle.digests!["wire"]!]);
     expect(ok.code).toBe(EXIT.PROBLEM); // NotFound: nothing was created by the refused call
   });

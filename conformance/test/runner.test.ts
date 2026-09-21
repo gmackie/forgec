@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 import { runScenario, type Scenario } from "../src/runner.js";
 import { RuntimeTarget } from "../src/runtime-target.js";
 import { loadScenarios } from "../src/scenarios.js";

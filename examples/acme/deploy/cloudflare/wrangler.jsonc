@@ -4,7 +4,7 @@
   "main": "worker.ts",
   "compatibility_date": "2026-09-01",
   "workers_dev": true,
-  "vars": { "FORGE_AUTH": "dev-headers", "FORGE_CORS": "http://localhost:5173,https://forge-acme-workspace.gmac.workers.dev" },
+  "vars": { "FORGE_AUTH": "dev-headers", "FORGE_CORS": "http://localhost:5173,https://forge-acme-workspace.example.workers.dev" },
   "r2_buckets": [{ "binding": "BLOBS", "bucket_name": "forge-acme-blobs" }],
   // Crons: the 5-minute outbox/workflow sweep plus every schedule's exact UTC cron (bundle.schedules.cloudflareCrons).
   "triggers": { "crons": ["*/5 * * * *", "0 3 * * *"] },
@@ -19,7 +19,7 @@
     {
       "binding": "DB",
       "database_name": "forge-acme",
-      "database_id": "72aa3a28-2aac-42e9-9976-c527a2830cdb",
+      "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "../../migrations/d1"
     }
   ]

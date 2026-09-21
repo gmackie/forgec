@@ -1,4 +1,4 @@
-# @forge/registry
+# @forgegraph/registry
 
 Immutable contract distribution without a request-time hot path (M15).
 

@@ -7,8 +7,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { MemoryStorage, type AppBundle } from "@forge/runtime";
-import { createNodeHost, type NodeHost } from "@forge/runtime/node";
+import { MemoryStorage, type AppBundle } from "@forgegraph/runtime";
+import { createNodeHost, type NodeHost } from "@forgegraph/runtime/node";
+import { devHeaderAuth } from "@forgegraph/runtime";
 import { externals, functions } from "../../../examples/acme/impl/index.js";
 import { httpCallable, localCallable, type Callable, type Outcome } from "../src/rpc.js";
 
@@ -19,7 +20,7 @@ describe("PAR-119: local and remote RPC authorization parity", () => {
   let host: NodeHost;
   let base: string;
   beforeAll(async () => {
-    host = createNodeHost({ bundle, store: new MemoryStorage(), functions, externals, cursorSecret: "rpc-test", sweepIntervalMs: 0, telemetryFormat: "silent" });
+    host = createNodeHost({ auth: devHeaderAuth(), bundle, store: new MemoryStorage(), functions, externals, cursorSecret: "rpc-test", sweepIntervalMs: 0, telemetryFormat: "silent" });
     base = (await host.listen(0)).url;
   });
   afterAll(async () => { await host?.stop(); });

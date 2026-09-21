@@ -56,9 +56,35 @@ pub struct Facts {
 
 fn direction_of(code: &str) -> Option<&'static str> {
     Some(match code {
-        "field-removed" | "enum-member-added" | "enum-member-removed" | "state-added" | "state-removed" | "message-added" | "message-removed" | "error-added" | "resource-removed" | "channel-removed" | "surface-narrowed" => "consumer",
-        "field-required" | "operation-removed" | "function-removed" | "http-binding-changed" | "transition-removed" | "endpoint-removed" | "parameter-required" | "workflow-removed" | "dependency-removed" => "producer",
-        "graph-changed-without-version" | "table-removed" | "column-removed" | "column-type-changed" | "surface-removed" | "purpose-removed" | "handling-loosened" | "class-changed" | "subject-binding-removed" => "both",
+        "field-removed"
+        | "enum-member-added"
+        | "enum-member-removed"
+        | "state-added"
+        | "state-removed"
+        | "message-added"
+        | "message-removed"
+        | "error-added"
+        | "resource-removed"
+        | "channel-removed"
+        | "surface-narrowed" => "consumer",
+        "field-required"
+        | "operation-removed"
+        | "function-removed"
+        | "http-binding-changed"
+        | "transition-removed"
+        | "endpoint-removed"
+        | "parameter-required"
+        | "workflow-removed"
+        | "dependency-removed" => "producer",
+        "graph-changed-without-version"
+        | "table-removed"
+        | "column-removed"
+        | "column-type-changed"
+        | "surface-removed"
+        | "purpose-removed"
+        | "handling-loosened"
+        | "class-changed"
+        | "subject-binding-removed" => "both",
         _ => "none",
     })
 }
@@ -90,7 +116,9 @@ fn arr<'a>(v: &'a Value, path: &[&str]) -> Vec<&'a Value> {
     for p in path {
         cur = &cur[*p];
     }
-    cur.as_array().map(|a| a.iter().collect()).unwrap_or_default()
+    cur.as_array()
+        .map(|a| a.iter().collect())
+        .unwrap_or_default()
 }
 fn s(v: &Value) -> String {
     v.as_str().unwrap_or_default().to_string()
@@ -101,71 +129,178 @@ fn by_id<'a>(items: Vec<&'a Value>, key: &str) -> BTreeMap<String, &'a Value> {
 
 pub fn compare(old: &Value, new: &Value) -> Report {
     let mut f: Vec<Finding> = Vec::new();
-    let push = |f: &mut Vec<Finding>, stream: &'static str, severity: &'static str, code: &'static str, subject: String, detail: String| f.push(Finding { stream, severity, code, subject, detail, direction: direction_of(code), needs: needs_of(code) });
+    let push = |f: &mut Vec<Finding>,
+                stream: &'static str,
+                severity: &'static str,
+                code: &'static str,
+                subject: String,
+                detail: String| {
+        f.push(Finding {
+            stream,
+            severity,
+            code,
+            subject,
+            detail,
+            direction: direction_of(code),
+            needs: needs_of(code),
+        })
+    };
 
     // ---- API: contracts (record/create/patch schemas per resource, operations, functions, enums)
     let old_res = by_id(arr(old, &["contracts", "resources"]), "id");
     let new_res = by_id(arr(new, &["contracts", "resources"]), "id");
     for (id, o) in &old_res {
         let Some(n) = new_res.get(id) else {
-            push(&mut f, "api", "breaking", "resource-removed", id.clone(), "clients and readers of this resource break".into());
+            push(
+                &mut f,
+                "api",
+                "breaking",
+                "resource-removed",
+                id.clone(),
+                "clients and readers of this resource break".into(),
+            );
             continue;
         };
-        let props = |v: &Value, schema: &str| v[schema]["properties"].as_object().map(|m| m.keys().cloned().map(|k| (k, ())).collect::<BTreeMap<_, _>>()).unwrap_or_default();
-        let required = |v: &Value, schema: &str| v[schema]["required"].as_array().map(|a| a.iter().map(s).collect::<Vec<_>>()).unwrap_or_default();
+        let props = |v: &Value, schema: &str| {
+            v[schema]["properties"]
+                .as_object()
+                .map(|m| {
+                    m.keys()
+                        .cloned()
+                        .map(|k| (k, ()))
+                        .collect::<BTreeMap<_, _>>()
+                })
+                .unwrap_or_default()
+        };
+        let required = |v: &Value, schema: &str| {
+            v[schema]["required"]
+                .as_array()
+                .map(|a| a.iter().map(s).collect::<Vec<_>>())
+                .unwrap_or_default()
+        };
         let (op, np) = (props(o, "record"), props(n, "record"));
         for k in op.keys() {
             if !np.contains_key(k) {
-                push(&mut f, "api", "breaking", "field-removed", format!("{id}.{k}"), "existing readers expect this field".into());
+                push(
+                    &mut f,
+                    "api",
+                    "breaking",
+                    "field-removed",
+                    format!("{id}.{k}"),
+                    "existing readers expect this field".into(),
+                );
             }
         }
         for k in np.keys() {
             if !op.contains_key(k) {
-                push(&mut f, "api", "additive", "field-added", format!("{id}.{k}"), "new output field; readers ignoring unknown fields are unaffected".into());
+                push(
+                    &mut f,
+                    "api",
+                    "additive",
+                    "field-added",
+                    format!("{id}.{k}"),
+                    "new output field; readers ignoring unknown fields are unaffected".into(),
+                );
             }
         }
         let (oc, nc) = (required(o, "create"), required(n, "create"));
         for k in &nc {
             if !oc.contains(k) {
-                push(&mut f, "api", "breaking", "field-required", format!("{id}.{k}"), "existing writers do not send this now-required field".into());
+                push(
+                    &mut f,
+                    "api",
+                    "breaking",
+                    "field-required",
+                    format!("{id}.{k}"),
+                    "existing writers do not send this now-required field".into(),
+                );
             }
         }
         for k in &oc {
             if !nc.contains(k) && props(n, "create").contains_key(k) {
-                push(&mut f, "api", "additive", "field-optional", format!("{id}.{k}"), "writers may omit it; readers must accept null".into());
+                push(
+                    &mut f,
+                    "api",
+                    "additive",
+                    "field-optional",
+                    format!("{id}.{k}"),
+                    "writers may omit it; readers must accept null".into(),
+                );
             }
         }
         let oops = by_id(arr(o, &["operations"]), "id");
         let nops = by_id(arr(n, &["operations"]), "id");
         for k in oops.keys() {
             if !nops.contains_key(k) {
-                push(&mut f, "api", "breaking", "operation-removed", k.clone(), "callers of this operation break".into());
+                push(
+                    &mut f,
+                    "api",
+                    "breaking",
+                    "operation-removed",
+                    k.clone(),
+                    "callers of this operation break".into(),
+                );
             }
         }
         for k in nops.keys() {
             if !oops.contains_key(k) {
-                push(&mut f, "api", "additive", "operation-added", k.clone(), "new operation".into());
+                push(
+                    &mut f,
+                    "api",
+                    "additive",
+                    "operation-added",
+                    k.clone(),
+                    "new operation".into(),
+                );
             }
         }
     }
     for id in new_res.keys() {
         if !old_res.contains_key(id) {
-            push(&mut f, "api", "additive", "resource-added", id.clone(), "new resource".into());
+            push(
+                &mut f,
+                "api",
+                "additive",
+                "resource-added",
+                id.clone(),
+                "new resource".into(),
+            );
         }
     }
     let old_fns = by_id(arr(old, &["contracts", "functions"]), "id");
     let new_fns = by_id(arr(new, &["contracts", "functions"]), "id");
     for (id, o) in &old_fns {
         match new_fns.get(id) {
-            None => push(&mut f, "api", "breaking", "function-removed", id.clone(), "callers break".into()),
+            None => push(
+                &mut f,
+                "api",
+                "breaking",
+                "function-removed",
+                id.clone(),
+                "callers break".into(),
+            ),
             Some(n) => {
                 if o["http"] != n["http"] {
-                    push(&mut f, "api", "breaking", "http-binding-changed", id.clone(), "path or method changed".into());
+                    push(
+                        &mut f,
+                        "api",
+                        "breaking",
+                        "http-binding-changed",
+                        id.clone(),
+                        "path or method changed".into(),
+                    );
                 }
                 let oe: Vec<String> = arr(o, &["errors"]).into_iter().map(s).collect();
                 for e in arr(n, &["errors"]).into_iter().map(s) {
                     if !oe.contains(&e) {
-                        push(&mut f, "api", "risk", "error-added", format!("{id}.{e}"), "callers with exhaustive error handling must learn it".into());
+                        push(
+                            &mut f,
+                            "api",
+                            "risk",
+                            "error-added",
+                            format!("{id}.{e}"),
+                            "callers with exhaustive error handling must learn it".into(),
+                        );
                     }
                 }
             }
@@ -173,24 +308,57 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     }
     for id in new_fns.keys() {
         if !old_fns.contains_key(id) {
-            push(&mut f, "api", "additive", "function-added", id.clone(), "new function".into());
+            push(
+                &mut f,
+                "api",
+                "additive",
+                "function-added",
+                id.clone(),
+                "new function".into(),
+            );
         }
     }
     // enums: members are output values; adding one breaks exhaustive consumers
     let enums = |v: &Value| -> BTreeMap<String, Vec<String>> {
-        arr(v, &["ir", "modules"]).into_iter().flat_map(|m| arr(m, &["enums"])).map(|e| (s(&e["id"]), arr(e, &["members"]).into_iter().map(|x| s(&x["name"])).collect())).collect()
+        arr(v, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["enums"]))
+            .map(|e| {
+                (
+                    s(&e["id"]),
+                    arr(e, &["members"])
+                        .into_iter()
+                        .map(|x| s(&x["name"]))
+                        .collect(),
+                )
+            })
+            .collect()
     };
     let (oe, ne) = (enums(old), enums(new));
     for (id, om) in &oe {
         if let Some(nm) = ne.get(id) {
             for m in nm {
                 if !om.contains(m) {
-                    push(&mut f, "api", "risk", "enum-member-added", format!("{id}.{m}"), "exhaustive consumers of this enum must handle the new member".into());
+                    push(
+                        &mut f,
+                        "api",
+                        "risk",
+                        "enum-member-added",
+                        format!("{id}.{m}"),
+                        "exhaustive consumers of this enum must handle the new member".into(),
+                    );
                 }
             }
             for m in om {
                 if !nm.contains(m) {
-                    push(&mut f, "api", "breaking", "enum-member-removed", format!("{id}.{m}"), "stored or sent values may no longer decode".into());
+                    push(
+                        &mut f,
+                        "api",
+                        "breaking",
+                        "enum-member-removed",
+                        format!("{id}.{m}"),
+                        "stored or sent values may no longer decode".into(),
+                    );
                 }
             }
         }
@@ -198,49 +366,128 @@ pub fn compare(old: &Value, new: &Value) -> Report {
 
     // ---- lifecycle + events
     let lifecycles = |v: &Value| -> BTreeMap<String, (Vec<String>, Vec<String>)> {
-        arr(v, &["ir", "modules"]).into_iter().flat_map(|m| arr(m, &["resources"])).filter(|r| !r["lifecycle"].is_null()).map(|r| (s(&r["id"]), (arr(&r["lifecycle"], &["states"]).into_iter().map(s).collect(), arr(&r["lifecycle"], &["transitions"]).into_iter().map(|t| s(&t["action"])).collect()))).collect()
+        arr(v, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .filter(|r| !r["lifecycle"].is_null())
+            .map(|r| {
+                (
+                    s(&r["id"]),
+                    (
+                        arr(&r["lifecycle"], &["states"])
+                            .into_iter()
+                            .map(s)
+                            .collect(),
+                        arr(&r["lifecycle"], &["transitions"])
+                            .into_iter()
+                            .map(|t| s(&t["action"]))
+                            .collect(),
+                    ),
+                )
+            })
+            .collect()
     };
     let (ol, nl) = (lifecycles(old), lifecycles(new));
     for (id, (os, oa)) in &ol {
         if let Some((ns, na)) = nl.get(id) {
             for st in ns {
                 if !os.contains(st) {
-                    push(&mut f, "lifecycle", "additive", "state-added", format!("{id}.{st}"), "new state; consumers switching on status must handle it".into());
+                    push(
+                        &mut f,
+                        "lifecycle",
+                        "additive",
+                        "state-added",
+                        format!("{id}.{st}"),
+                        "new state; consumers switching on status must handle it".into(),
+                    );
                 }
             }
             for st in os {
                 if !ns.contains(st) {
-                    push(&mut f, "lifecycle", "breaking", "state-removed", format!("{id}.{st}"), "stored records may be in this state".into());
+                    push(
+                        &mut f,
+                        "lifecycle",
+                        "breaking",
+                        "state-removed",
+                        format!("{id}.{st}"),
+                        "stored records may be in this state".into(),
+                    );
                 }
             }
             for a in na {
                 if !oa.contains(a) {
-                    push(&mut f, "lifecycle", "additive", "transition-added", format!("{id}.{a}"), "new action".into());
+                    push(
+                        &mut f,
+                        "lifecycle",
+                        "additive",
+                        "transition-added",
+                        format!("{id}.{a}"),
+                        "new action".into(),
+                    );
                 }
             }
             for a in oa {
                 if !na.contains(a) {
-                    push(&mut f, "lifecycle", "breaking", "transition-removed", format!("{id}.{a}"), "callers of this action break".into());
+                    push(
+                        &mut f,
+                        "lifecycle",
+                        "breaking",
+                        "transition-removed",
+                        format!("{id}.{a}"),
+                        "callers of this action break".into(),
+                    );
                 }
             }
         }
     }
     let channels = |v: &Value| -> BTreeMap<String, Vec<String>> {
-        arr(v, &["messaging", "channels"]).into_iter().map(|c| (s(&c["id"]), arr(c, &["messages"]).into_iter().map(|m| s(&m["name"])).collect())).collect()
+        arr(v, &["messaging", "channels"])
+            .into_iter()
+            .map(|c| {
+                (
+                    s(&c["id"]),
+                    arr(c, &["messages"])
+                        .into_iter()
+                        .map(|m| s(&m["name"]))
+                        .collect(),
+                )
+            })
+            .collect()
     };
     let (oc, nc) = (channels(old), channels(new));
     for (id, om) in &oc {
         match nc.get(id) {
-            None => push(&mut f, "event", "breaking", "channel-removed", id.clone(), "subscribers lose their source".into()),
+            None => push(
+                &mut f,
+                "event",
+                "breaking",
+                "channel-removed",
+                id.clone(),
+                "subscribers lose their source".into(),
+            ),
             Some(nm) => {
                 for m in nm {
                     if !om.contains(m) {
-                        push(&mut f, "event", "risk", "message-added", format!("{id}.{m}"), "consumers must ignore or handle the new message".into());
+                        push(
+                            &mut f,
+                            "event",
+                            "risk",
+                            "message-added",
+                            format!("{id}.{m}"),
+                            "consumers must ignore or handle the new message".into(),
+                        );
                     }
                 }
                 for m in om {
                     if !nm.contains(m) {
-                        push(&mut f, "event", "breaking", "message-removed", format!("{id}.{m}"), "in-flight and replayed messages may carry it".into());
+                        push(
+                            &mut f,
+                            "event",
+                            "breaking",
+                            "message-removed",
+                            format!("{id}.{m}"),
+                            "in-flight and replayed messages may carry it".into(),
+                        );
                     }
                 }
             }
@@ -249,23 +496,64 @@ pub fn compare(old: &Value, new: &Value) -> Report {
 
     // ---- storage (D1 physical schema; DynamoDB attributes follow the same field set)
     let tables = |v: &Value| -> BTreeMap<String, BTreeMap<String, String>> {
-        arr(v, &["sql", "tables"]).into_iter().map(|t| (s(&t["name"]), arr(t, &["columns"]).into_iter().map(|c| (s(&c["name"]), s(&c["sqlType"]))).collect())).collect()
+        arr(v, &["sql", "tables"])
+            .into_iter()
+            .map(|t| {
+                (
+                    s(&t["name"]),
+                    arr(t, &["columns"])
+                        .into_iter()
+                        .map(|c| (s(&c["name"]), s(&c["sqlType"])))
+                        .collect(),
+                )
+            })
+            .collect()
     };
     let (ot, nt) = (tables(old), tables(new));
     for (name, ocols) in &ot {
         match nt.get(name) {
-            None => push(&mut f, "storage", "breaking", "table-removed", name.clone(), "data would be dropped; requires an explicit migration and retention decision".into()),
+            None => push(
+                &mut f,
+                "storage",
+                "breaking",
+                "table-removed",
+                name.clone(),
+                "data would be dropped; requires an explicit migration and retention decision"
+                    .into(),
+            ),
             Some(ncols) => {
                 for (c, ty) in ocols {
                     match ncols.get(c) {
-                        None => push(&mut f, "storage", "breaking", "column-removed", format!("{name}.{c}"), "stored values would be dropped".into()),
-                        Some(nty) if nty != ty => push(&mut f, "storage", "migration", "column-type-changed", format!("{name}.{c}"), format!("{ty} -> {nty}: values must be rewritten")),
+                        None => push(
+                            &mut f,
+                            "storage",
+                            "breaking",
+                            "column-removed",
+                            format!("{name}.{c}"),
+                            "stored values would be dropped".into(),
+                        ),
+                        Some(nty) if nty != ty => push(
+                            &mut f,
+                            "storage",
+                            "migration",
+                            "column-type-changed",
+                            format!("{name}.{c}"),
+                            format!("{ty} -> {nty}: values must be rewritten"),
+                        ),
                         _ => {}
                     }
                 }
                 for c in ncols.keys() {
                     if !ocols.contains_key(c) {
-                        push(&mut f, "storage", "migration", "column-added", format!("{name}.{c}"), "additive DDL (ALTER TABLE ADD COLUMN) before the new readers deploy".into());
+                        push(
+                            &mut f,
+                            "storage",
+                            "migration",
+                            "column-added",
+                            format!("{name}.{c}"),
+                            "additive DDL (ALTER TABLE ADD COLUMN) before the new readers deploy"
+                                .into(),
+                        );
                     }
                 }
             }
@@ -273,55 +561,176 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     }
     for name in nt.keys() {
         if !ot.contains_key(name) {
-            push(&mut f, "storage", "migration", "table-added", name.clone(), "additive DDL before the new readers deploy".into());
+            push(
+                &mut f,
+                "storage",
+                "migration",
+                "table-added",
+                name.clone(),
+                "additive DDL before the new readers deploy".into(),
+            );
         }
     }
 
     // ---- classification: data semantics and subject bindings (M11); loosening is breaking for governance
     let sem = |v: &Value| -> BTreeMap<String, (String, String, String)> {
-        arr(v, &["dataSemantics", "fields"]).into_iter().map(|f| (format!("{}.{}", s(&f["resource"]), s(&f["field"])), (s(&f["class"]), s(&f["handling"]), s(&f["personal"])))).collect()
+        arr(v, &["dataSemantics", "fields"])
+            .into_iter()
+            .map(|f| {
+                (
+                    format!("{}.{}", s(&f["resource"]), s(&f["field"])),
+                    (s(&f["class"]), s(&f["handling"]), s(&f["personal"])),
+                )
+            })
+            .collect()
     };
     let (os, ns) = (sem(old), sem(new));
-    let rank = |h: &str| match h { "public" => 0, "internal" => 1, "confidential" => 2, "restricted" => 3, _ => 4 };
+    let rank = |h: &str| match h {
+        "public" => 0,
+        "internal" => 1,
+        "confidential" => 2,
+        "restricted" => 3,
+        _ => 4,
+    };
     for (k, (oc, oh, _)) in &os {
         if let Some((nc, nh, _)) = ns.get(k) {
             if oc != nc {
-                push(&mut f, "classification", if rank(nh) < rank(oh) { "breaking" } else { "risk" }, "class-changed", k.clone(), format!("{oc} -> {nc}: consumers, grants and retention rules keyed on the class need review"));
+                push(
+                    &mut f,
+                    "classification",
+                    if rank(nh) < rank(oh) {
+                        "breaking"
+                    } else {
+                        "risk"
+                    },
+                    "class-changed",
+                    k.clone(),
+                    format!(
+                        "{oc} -> {nc}: consumers, grants and retention rules keyed on the class need review"
+                    ),
+                );
             } else if rank(nh) < rank(oh) {
-                push(&mut f, "classification", "breaking", "handling-loosened", k.clone(), format!("{oh} -> {nh}"));
+                push(
+                    &mut f,
+                    "classification",
+                    "breaking",
+                    "handling-loosened",
+                    k.clone(),
+                    format!("{oh} -> {nh}"),
+                );
             }
         }
     }
     for (k, (nc, _, personal)) in &ns {
         if !os.contains_key(k) && personal == "yes" {
-            push(&mut f, "classification", "risk", "personal-field-added", k.clone(), format!("new personal-data field classified {nc}: purpose surfaces and subject rights must cover it"));
+            push(
+                &mut f,
+                "classification",
+                "risk",
+                "personal-field-added",
+                k.clone(),
+                format!(
+                    "new personal-data field classified {nc}: purpose surfaces and subject rights must cover it"
+                ),
+            );
         }
     }
-    let subs = |v: &Value| -> BTreeMap<String, String> { arr(v, &["dataSemantics", "subjects"]).into_iter().map(|x| (s(&x["resource"]), format!("{}{}", s(&x["kind"]), x["via"].as_str().map(|v| format!(" via {v}")).unwrap_or_default()))).collect() };
+    let subs = |v: &Value| -> BTreeMap<String, String> {
+        arr(v, &["dataSemantics", "subjects"])
+            .into_iter()
+            .map(|x| {
+                (
+                    s(&x["resource"]),
+                    format!(
+                        "{}{}",
+                        s(&x["kind"]),
+                        x["via"]
+                            .as_str()
+                            .map(|v| format!(" via {v}"))
+                            .unwrap_or_default()
+                    ),
+                )
+            })
+            .collect()
+    };
     let (osb, nsb) = (subs(old), subs(new));
     for (r, b) in &osb {
         match nsb.get(r) {
-            None => push(&mut f, "classification", "breaking", "subject-binding-removed", r.clone(), "records lose their subject linkage (erasure/access rights)".into()),
-            Some(nb) if nb != b => push(&mut f, "classification", "risk", "subject-binding-changed", r.clone(), format!("{b} -> {nb}")),
+            None => push(
+                &mut f,
+                "classification",
+                "breaking",
+                "subject-binding-removed",
+                r.clone(),
+                "records lose their subject linkage (erasure/access rights)".into(),
+            ),
+            Some(nb) if nb != b => push(
+                &mut f,
+                "classification",
+                "risk",
+                "subject-binding-changed",
+                r.clone(),
+                format!("{b} -> {nb}"),
+            ),
             _ => {}
         }
     }
     for r in nsb.keys() {
         if !osb.contains_key(r) {
-            push(&mut f, "classification", "additive", "subject-binding-added", r.clone(), "records gain a subject linkage".into());
+            push(
+                &mut f,
+                "classification",
+                "additive",
+                "subject-binding-added",
+                r.clone(),
+                "records gain a subject linkage".into(),
+            );
         }
     }
 
     // ---- workflows: in-flight instances are pinned to (version, graphHash)
     let wfs = |v: &Value| -> BTreeMap<String, (u64, String)> {
-        arr(v, &["ir", "modules"]).into_iter().flat_map(|m| arr(m, &["workflows"])).map(|w| (s(&w["id"]), (w["version"].as_u64().unwrap_or(0), s(&w["graphHash"])))).collect()
+        arr(v, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["workflows"]))
+            .map(|w| {
+                (
+                    s(&w["id"]),
+                    (w["version"].as_u64().unwrap_or(0), s(&w["graphHash"])),
+                )
+            })
+            .collect()
     };
     let (ow, nw) = (wfs(old), wfs(new));
     for (id, (ov, oh)) in &ow {
         match nw.get(id) {
-            None => push(&mut f, "workflow", "breaking", "workflow-removed", id.clone(), "in-flight instances cannot be advanced".into()),
-            Some((nv, nh)) if nh != oh && nv == ov => push(&mut f, "workflow", "breaking", "graph-changed-without-version", id.clone(), "in-flight instances pinned to this version would be reinterpreted; bump `version`".into()),
-            Some((nv, nh)) if nh != oh && nv != ov => push(&mut f, "workflow", "migration", "workflow-version-bumped", id.clone(), format!("v{ov} instances keep running on the old graph until drained; v{nv} starts fresh")),
+            None => push(
+                &mut f,
+                "workflow",
+                "breaking",
+                "workflow-removed",
+                id.clone(),
+                "in-flight instances cannot be advanced".into(),
+            ),
+            Some((nv, nh)) if nh != oh && nv == ov => push(
+                &mut f,
+                "workflow",
+                "breaking",
+                "graph-changed-without-version",
+                id.clone(),
+                "in-flight instances pinned to this version would be reinterpreted; bump `version`"
+                    .into(),
+            ),
+            Some((nv, nh)) if nh != oh && nv != ov => push(
+                &mut f,
+                "workflow",
+                "migration",
+                "workflow-version-bumped",
+                id.clone(),
+                format!(
+                    "v{ov} instances keep running on the old graph until drained; v{nv} starts fresh"
+                ),
+            ),
             _ => {}
         }
     }
@@ -333,7 +742,11 @@ pub fn compare(old: &Value, new: &Value) -> Report {
             for (path, ops) in paths {
                 if let Some(ops) = ops.as_object() {
                     for (method, op) in ops {
-                        let required: Vec<String> = arr(op, &["parameters"]).into_iter().filter(|p| p["required"] == Value::Bool(true) && p["in"] != "path").map(|p| s(&p["name"])).collect();
+                        let required: Vec<String> = arr(op, &["parameters"])
+                            .into_iter()
+                            .filter(|p| p["required"] == Value::Bool(true) && p["in"] != "path")
+                            .map(|p| s(&p["name"]))
+                            .collect();
                         out.insert(format!("{} {}", method.to_uppercase(), path), required);
                     }
                 }
@@ -344,11 +757,25 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     let (oep, nep) = (endpoints(old), endpoints(new));
     for (k, oreq) in &oep {
         match nep.get(k) {
-            None => push(&mut f, "interfaces", "breaking", "endpoint-removed", k.clone(), "generated clients, CLI users and MCP tools calling it break".into()),
+            None => push(
+                &mut f,
+                "interfaces",
+                "breaking",
+                "endpoint-removed",
+                k.clone(),
+                "generated clients, CLI users and MCP tools calling it break".into(),
+            ),
             Some(nreq) => {
                 for p in nreq {
                     if !oreq.contains(p) {
-                        push(&mut f, "interfaces", "breaking", "parameter-required", format!("{k} ?{p}"), "existing callers do not send it".into());
+                        push(
+                            &mut f,
+                            "interfaces",
+                            "breaking",
+                            "parameter-required",
+                            format!("{k} ?{p}"),
+                            "existing callers do not send it".into(),
+                        );
                     }
                 }
             }
@@ -356,14 +783,38 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     }
     for k in nep.keys() {
         if !oep.contains_key(k) {
-            push(&mut f, "interfaces", "additive", "endpoint-added", k.clone(), "new endpoint".into());
+            push(
+                &mut f,
+                "interfaces",
+                "additive",
+                "endpoint-added",
+                k.clone(),
+                "new endpoint".into(),
+            );
         }
     }
 
     // ---- governance: purpose surfaces (edition 2027). Narrowing invalidates broad cached values and receipts;
     // widening is new authority and needs reapproval by the callee owners.
     let surfaces = |v: &Value| -> BTreeMap<String, (Vec<String>, Vec<String>)> {
-        arr(v, &["capabilities", "surfaces"]).into_iter().map(|sf| (format!("{}#{}", s(&sf["resource"]), s(&sf["purpose"])), (arr(sf, &["allowAtoms"]).into_iter().map(|a| format!("{}:{}", s(&a["verb"]), s(&a["name"]))).collect(), arr(sf, &["deny"]).into_iter().map(|a| format!("{}:{}", s(&a["verb"]), s(&a["name"]))).collect()))).collect()
+        arr(v, &["capabilities", "surfaces"])
+            .into_iter()
+            .map(|sf| {
+                (
+                    format!("{}#{}", s(&sf["resource"]), s(&sf["purpose"])),
+                    (
+                        arr(sf, &["allowAtoms"])
+                            .into_iter()
+                            .map(|a| format!("{}:{}", s(&a["verb"]), s(&a["name"])))
+                            .collect(),
+                        arr(sf, &["deny"])
+                            .into_iter()
+                            .map(|a| format!("{}:{}", s(&a["verb"]), s(&a["name"])))
+                            .collect(),
+                    ),
+                )
+            })
+            .collect()
     };
     let (osf, nsf) = (surfaces(old), surfaces(new));
     for (k, (oa, od)) in &osf {
@@ -393,19 +844,44 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     }
     for k in nsf.keys() {
         if !osf.contains_key(k) {
-            push(&mut f, "governance", "risk", "surface-added", k.clone(), "a new purpose surface: authority that did not exist before".into());
+            push(
+                &mut f,
+                "governance",
+                "risk",
+                "surface-added",
+                k.clone(),
+                "a new purpose surface: authority that did not exist before".into(),
+            );
         }
     }
-    let purposes = |v: &Value| -> Vec<String> { arr(v, &["ir", "modules"]).into_iter().flat_map(|m| arr(m, &["purposes"])).map(|p| s(&p["id"])).collect() };
+    let purposes = |v: &Value| -> Vec<String> {
+        arr(v, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["purposes"]))
+            .map(|p| s(&p["id"]))
+            .collect()
+    };
     let (opu, npu) = (purposes(old), purposes(new));
     for p in &opu {
         if !npu.contains(p) {
-            push(&mut f, "governance", "breaking", "purpose-removed", p.clone(), "credentials and grants naming this purpose become invalid".into());
+            push(
+                &mut f,
+                "governance",
+                "breaking",
+                "purpose-removed",
+                p.clone(),
+                "credentials and grants naming this purpose become invalid".into(),
+            );
         }
     }
 
     // ---- dependencies: imports are cross-service edges that need grants (M16)
-    let imports = |v: &Value| -> Vec<String> { arr(v, &["ir", "imports"]).into_iter().map(|i| s(&i["package"])).collect() };
+    let imports = |v: &Value| -> Vec<String> {
+        arr(v, &["ir", "imports"])
+            .into_iter()
+            .map(|i| s(&i["package"]))
+            .collect()
+    };
     let (oi, ni) = (imports(old), imports(new));
     for p in &ni {
         if !oi.contains(p) {
@@ -414,27 +890,69 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     }
     for p in &oi {
         if !ni.contains(p) {
-            push(&mut f, "dependencies", "migration", "dependency-removed", p.clone(), "releases still using the grant need the declared drain".into());
+            push(
+                &mut f,
+                "dependencies",
+                "migration",
+                "dependency-removed",
+                p.clone(),
+                "releases still using the grant need the declared drain".into(),
+            );
         }
     }
 
     // ---- policy: an opaque external policy bundle can only be compared by digest unless a supported proof is attached
     let (op, np) = (&old["policy"], &new["policy"]);
-    if !op.is_null() || !np.is_null() {
-        if op["digest"] != np["digest"] {
-            let proof = &np["proof"];
-            let supported = proof["basis"] == "forge-policy-diff" && proof["for"] == op["digest"];
-            match (supported, proof["relation"].as_str()) {
-                (true, Some("narrowing")) => push(&mut f, "policy", "migration", "policy-narrowed", s(&np["kind"]), "proven narrowing: cached allows must be re-decided".into()),
-                (true, Some("widening")) => push(&mut f, "policy", "risk", "policy-widened", s(&np["kind"]), "proven widening: new authority requires reapproval".into()),
-                (true, Some("equivalent")) => {}
-                _ => push(&mut f, "policy", "unknown", "policy-changed-unknown", s(&np["kind"]), format!("policy digest {} -> {}: no supported proof establishes widening or narrowing; treat as changed", s(&op["digest"]), s(&np["digest"]))),
-            }
+    if (!op.is_null() || !np.is_null()) && op["digest"] != np["digest"] {
+        let proof = &np["proof"];
+        let supported = proof["basis"] == "forge-policy-diff" && proof["for"] == op["digest"];
+        match (supported, proof["relation"].as_str()) {
+            (true, Some("narrowing")) => push(
+                &mut f,
+                "policy",
+                "migration",
+                "policy-narrowed",
+                s(&np["kind"]),
+                "proven narrowing: cached allows must be re-decided".into(),
+            ),
+            (true, Some("widening")) => push(
+                &mut f,
+                "policy",
+                "risk",
+                "policy-widened",
+                s(&np["kind"]),
+                "proven widening: new authority requires reapproval".into(),
+            ),
+            (true, Some("equivalent")) => {}
+            _ => push(
+                &mut f,
+                "policy",
+                "unknown",
+                "policy-changed-unknown",
+                s(&np["kind"]),
+                format!(
+                    "policy digest {} -> {}: no supported proof establishes widening or narrowing; treat as changed",
+                    s(&op["digest"]),
+                    s(&np["digest"])
+                ),
+            ),
         }
     }
 
-    let rank = |sev: &str| match sev { "breaking" => 4, "risk" => 3, "unknown" => 2, "migration" => 1, _ => 0 };
-    let name = |r: i32| match r { 4 => "breaking", 3 => "risk", 2 => "unknown", 1 => "migration", _ => "compatible" };
+    let rank = |sev: &str| match sev {
+        "breaking" => 4,
+        "risk" => 3,
+        "unknown" => 2,
+        "migration" => 1,
+        _ => 0,
+    };
+    let name = |r: i32| match r {
+        4 => "breaking",
+        3 => "risk",
+        2 => "unknown",
+        1 => "migration",
+        _ => "compatible",
+    };
     let worst = f.iter().map(|x| rank(x.severity)).max().unwrap_or(0);
     let mut streams: BTreeMap<&'static str, &'static str> = BTreeMap::new();
     for x in &f {
@@ -450,7 +968,16 @@ pub fn compare(old: &Value, new: &Value) -> Report {
         new_build: s(&new["buildHash"]),
         verdict: name(worst),
         streams,
-        facts: Facts { live_data: "none: offline diff; affected-row counts and backfill sizes are measured during rollout, never guessed here", policy_proof: if np.is_null() { "no policy bundle in the model" } else if np["proof"].is_null() { "none attached" } else { "attached" } },
+        facts: Facts {
+            live_data: "none: offline diff; affected-row counts and backfill sizes are measured during rollout, never guessed here",
+            policy_proof: if np.is_null() {
+                "no policy bundle in the model"
+            } else if np["proof"].is_null() {
+                "none attached"
+            } else {
+                "attached"
+            },
+        },
         findings: f,
     }
 }
@@ -459,15 +986,30 @@ pub fn compare(old: &Value, new: &Value) -> Report {
 /// `security` is governance/classification/dependencies/policy only.
 pub fn render(report: &Report, audience: &str) -> String {
     let mut out = String::new();
-    let title = match audience { "changelog" => "Changes", "security" => "Security review", _ => "Compatibility report" };
-    out.push_str(&format!("## {title}
+    let title = match audience {
+        "changelog" => "Changes",
+        "security" => "Security review",
+        _ => "Compatibility report",
+    };
+    out.push_str(&format!(
+        "## {title}
 
 Verdict: **{}** ({} -> {})
 
-", report.verdict, &report.old_build[..report.old_build.len().min(12)], &report.new_build[..report.new_build.len().min(12)]));
+",
+        report.verdict,
+        &report.old_build[..report.old_build.len().min(12)],
+        &report.new_build[..report.new_build.len().min(12)]
+    ));
     let include = |x: &Finding| match audience {
-        "changelog" => matches!(x.stream, "api" | "interfaces" | "lifecycle" | "event") && x.severity != "unknown",
-        "security" => matches!(x.stream, "governance" | "classification" | "dependencies" | "policy"),
+        "changelog" => {
+            matches!(x.stream, "api" | "interfaces" | "lifecycle" | "event")
+                && x.severity != "unknown"
+        }
+        "security" => matches!(
+            x.stream,
+            "governance" | "classification" | "dependencies" | "policy"
+        ),
         _ => true,
     };
     let mut by_stream: BTreeMap<&str, Vec<&Finding>> = BTreeMap::new();
@@ -475,24 +1017,42 @@ Verdict: **{}** ({} -> {})
         by_stream.entry(x.stream).or_default().push(x);
     }
     if by_stream.is_empty() {
-        out.push_str("No changes in scope.
-");
+        out.push_str(
+            "No changes in scope.
+",
+        );
     }
     for (stream, xs) in by_stream {
-        out.push_str(&format!("### {stream}
+        out.push_str(&format!(
+            "### {stream}
 
-"));
+"
+        ));
         for x in xs {
-            let dir = x.direction.filter(|d| *d != "none").map(|d| format!(" (breaks: {d})")).unwrap_or_default();
-            let needs = if x.needs.is_empty() || audience == "changelog" { String::new() } else { format!(" — needs: {}", x.needs.join(", ")) };
-            out.push_str(&format!("- **{}** `{}` {}{}: {}{}
-", x.severity, x.code, x.subject, dir, x.detail, needs));
+            let dir = x
+                .direction
+                .filter(|d| *d != "none")
+                .map(|d| format!(" (breaks: {d})"))
+                .unwrap_or_default();
+            let needs = if x.needs.is_empty() || audience == "changelog" {
+                String::new()
+            } else {
+                format!(" — needs: {}", x.needs.join(", "))
+            };
+            out.push_str(&format!(
+                "- **{}** `{}` {}{}: {}{}
+",
+                x.severity, x.code, x.subject, dir, x.detail, needs
+            ));
         }
         out.push('\n');
     }
     if audience != "changelog" {
-        out.push_str(&format!("_Live data: {}_
-", report.facts.live_data));
+        out.push_str(&format!(
+            "_Live data: {}_
+",
+            report.facts.live_data
+        ));
     }
     out
 }

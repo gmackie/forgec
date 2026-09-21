@@ -40,7 +40,9 @@ fn idents(node: &SyntaxNode) -> impl Iterator<Item = SyntaxToken> + '_ {
     tokens(node).filter(|t| t.kind() == K::IDENT)
 }
 fn string_token(node: &SyntaxNode) -> Option<String> {
-    tokens(node).find(|t| t.kind() == K::STRING).map(|t| unquote(t.text()))
+    tokens(node)
+        .find(|t| t.kind() == K::STRING)
+        .map(|t| unquote(t.text()))
 }
 pub fn unquote(s: &str) -> String {
     let inner = &s[1..s.len() - 1];
@@ -142,7 +144,9 @@ impl Declaration {
         }
     }
     pub fn is_exported(&self) -> bool {
-        idents(self.syntax()).next().is_some_and(|t| t.text() == "export")
+        idents(self.syntax())
+            .next()
+            .is_some_and(|t| t.text() == "export")
     }
     /// The declared name (None for import/module/subscription).
     pub fn name(&self) -> Option<SyntaxToken> {
@@ -150,7 +154,23 @@ impl Declaration {
             Self::Purpose(p) => p.name(),
             Self::DataClass(d) => d.name(),
             Self::Module(_) | Self::Import(_) | Self::Subscription(_) => None,
-            _ => idents(self.syntax()).find(|t| !matches!(t.text(), "export" | "enum" | "type" | "shape" | "resource" | "blob" | "cache" | "view" | "projection" | "function" | "channel" | "source")),
+            _ => idents(self.syntax()).find(|t| {
+                !matches!(
+                    t.text(),
+                    "export"
+                        | "enum"
+                        | "type"
+                        | "shape"
+                        | "resource"
+                        | "blob"
+                        | "cache"
+                        | "view"
+                        | "projection"
+                        | "function"
+                        | "channel"
+                        | "source"
+                )
+            }),
         }
     }
     pub fn doc(&self) -> Option<String> {
@@ -249,13 +269,21 @@ impl TypeRef {
         child(&self.0)
     }
     pub fn args(&self) -> Vec<String> {
-        child::<TypeArgs>(&self.0).map(|a| a.values()).unwrap_or_default()
+        child::<TypeArgs>(&self.0)
+            .map(|a| a.values())
+            .unwrap_or_default()
     }
 }
 node!(TypeArgs, TYPE_ARGS);
 impl TypeArgs {
     pub fn values(&self) -> Vec<String> {
-        children::<TypeArg>(&self.0).filter_map(|a| tokens(&a.0).find(|t| !t.kind().is_trivia()).map(|t| t.text().to_string())).collect()
+        children::<TypeArg>(&self.0)
+            .filter_map(|a| {
+                tokens(&a.0)
+                    .find(|t| !t.kind().is_trivia())
+                    .map(|t| t.text().to_string())
+            })
+            .collect()
     }
 }
 node!(TypeArg, TYPE_ARG);
@@ -273,19 +301,27 @@ impl Refinement {
         let toks: Vec<SyntaxToken> = tokens(&self.0).filter(|t| !t.kind().is_trivia()).collect();
         let first = toks.first()?;
         Some(match (first.kind(), first.text()) {
-            (K::IDENT, "trim" | "uppercase" | "lowercase") => RefinementKind::Normalizer(first.text().to_string()),
+            (K::IDENT, "trim" | "uppercase" | "lowercase") => {
+                RefinementKind::Normalizer(first.text().to_string())
+            }
             (K::IDENT, "length") => {
                 if let Some(range) = child::<RangeNode>(&self.0) {
                     let (min, max) = range.bounds()?;
                     RefinementKind::LengthRange { min, max }
                 } else {
-                    RefinementKind::LengthCompare { op: toks.get(1)?.text().to_string(), bound: toks.get(2)?.text().parse().ok()? }
+                    RefinementKind::LengthCompare {
+                        op: toks.get(1)?.text().to_string(),
+                        bound: toks.get(2)?.text().parse().ok()?,
+                    }
                 }
             }
             (K::IDENT, "pattern") => RefinementKind::Pattern(string_token(&self.0)?),
             (K::LT | K::LT_EQ | K::GT | K::GT_EQ | K::EQ_EQ | K::BANG_EQ, op) => {
                 let lit = child::<LiteralExpr>(&self.0)?;
-                RefinementKind::Compare { op: op.to_string(), literal: lit.text() }
+                RefinementKind::Compare {
+                    op: op.to_string(),
+                    literal: lit.text(),
+                }
             }
             _ => return None,
         })
@@ -295,7 +331,10 @@ node!(RangeNode, RANGE);
 impl RangeNode {
     pub fn bounds(&self) -> Option<(u64, u64)> {
         let mut ints = tokens(&self.0).filter(|t| t.kind() == K::INT);
-        Some((ints.next()?.text().parse().ok()?, ints.next()?.text().parse().ok()?))
+        Some((
+            ints.next()?.text().parse().ok()?,
+            ints.next()?.text().parse().ok()?,
+        ))
     }
 }
 
@@ -339,7 +378,9 @@ impl Decorator {
         idents(&self.0).next()
     }
     pub fn args(&self) -> Vec<DecoratorArg> {
-        child::<DecoratorArgs>(&self.0).map(|a| children(&a.0).collect()).unwrap_or_default()
+        child::<DecoratorArgs>(&self.0)
+            .map(|a| children(&a.0).collect())
+            .unwrap_or_default()
     }
 }
 node!(DecoratorArgs, DECORATOR_ARGS);
@@ -353,7 +394,8 @@ pub enum ArgValue {
 impl DecoratorArg {
     pub fn label(&self) -> Option<String> {
         let toks: Vec<SyntaxToken> = tokens(&self.0).filter(|t| !t.kind().is_trivia()).collect();
-        (toks.len() >= 2 && toks[0].kind() == K::IDENT && toks[1].kind() == K::COLON).then(|| toks[0].text().to_string())
+        (toks.len() >= 2 && toks[0].kind() == K::IDENT && toks[1].kind() == K::COLON)
+            .then(|| toks[0].text().to_string())
     }
     pub fn value(&self) -> Option<ArgValue> {
         Self::value_of(&self.0)
@@ -436,9 +478,16 @@ impl ContentBlock {
             .filter_map(|i| {
                 let key = idents(&i.0).next()?.text().to_string();
                 let values: Vec<String> = if let Some(list) = child::<ListLiteralNode>(&i.0) {
-                    list.0.children().filter_map(LiteralExpr::cast).map(|l| unq_lit(&l.text())).collect()
+                    list.0
+                        .children()
+                        .filter_map(LiteralExpr::cast)
+                        .map(|l| unq_lit(&l.text()))
+                        .collect()
                 } else {
-                    tokens(&i.0).filter(|t| matches!(t.kind(), K::INT | K::STRING | K::DURATION)).map(|t| unq_lit(t.text())).collect()
+                    tokens(&i.0)
+                        .filter(|t| matches!(t.kind(), K::INT | K::STRING | K::DURATION))
+                        .map(|t| unq_lit(t.text()))
+                        .collect()
                 };
                 Some((key, values))
             })
@@ -448,7 +497,11 @@ impl ContentBlock {
 node!(ContentItem, CONTENT_ITEM);
 node!(ListLiteralNode, LIST_LITERAL);
 fn unq_lit(s: &str) -> String {
-    if s.starts_with('"') { unquote(s) } else { s.to_string() }
+    if s.starts_with('"') {
+        unquote(s)
+    } else {
+        s.to_string()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -466,14 +519,23 @@ impl CacheDecl {
         idents(&self.0).find(|t| !matches!(t.text(), "export" | "cache"))
     }
     pub fn keys(&self) -> Vec<FieldDecl> {
-        children::<KeyDecl>(&self.0).filter_map(|k| child(&k.0)).collect()
+        children::<KeyDecl>(&self.0)
+            .filter_map(|k| child(&k.0))
+            .collect()
     }
     pub fn loader(&self) -> Option<Expr> {
         child::<LoaderDecl>(&self.0).and_then(|l| l.0.children().find_map(Expr::cast))
     }
     /// (kind, expr) for freshUntil / staleUntil
     pub fn freshness(&self) -> Vec<(String, Expr)> {
-        children::<FreshDecl>(&self.0).filter_map(|f| Some((idents(&f.0).next()?.text().to_string(), f.0.children().find_map(Expr::cast)?))).collect()
+        children::<FreshDecl>(&self.0)
+            .filter_map(|f| {
+                Some((
+                    idents(&f.0).next()?.text().to_string(),
+                    f.0.children().find_map(Expr::cast)?,
+                ))
+            })
+            .collect()
     }
     pub fn decorators(&self) -> impl Iterator<Item = Decorator> + '_ {
         children(&self.0)
@@ -505,15 +567,33 @@ impl QueryDecl {
         child::<WhereDecl>(&self.0).and_then(|w| w.0.children().find_map(Expr::cast))
     }
     pub fn by(&self) -> Vec<String> {
-        child::<ByDecl>(&self.0).and_then(|b| child::<FieldList>(&b.0)).map(|f| f.names()).unwrap_or_default()
+        child::<ByDecl>(&self.0)
+            .and_then(|b| child::<FieldList>(&b.0))
+            .map(|f| f.names())
+            .unwrap_or_default()
     }
     pub fn order(&self) -> Vec<(String, String)> {
         child::<OrderList>(&self.0)
-            .map(|o| children::<OrderKey>(&o.0).filter_map(|k| { let mut it = idents(&k.0); let f = it.next()?.text().to_string(); let d = it.next().map(|d| d.text().to_string()).unwrap_or_else(|| "asc".into()); Some((f, d)) }).collect())
+            .map(|o| {
+                children::<OrderKey>(&o.0)
+                    .filter_map(|k| {
+                        let mut it = idents(&k.0);
+                        let f = it.next()?.text().to_string();
+                        let d = it
+                            .next()
+                            .map(|d| d.text().to_string())
+                            .unwrap_or_else(|| "asc".into());
+                        Some((f, d))
+                    })
+                    .collect()
+            })
             .unwrap_or_default()
     }
     pub fn fields(&self) -> Vec<String> {
-        child::<FieldsDecl>(&self.0).and_then(|b| child::<FieldList>(&b.0)).map(|f| f.names()).unwrap_or_default()
+        child::<FieldsDecl>(&self.0)
+            .and_then(|b| child::<FieldList>(&b.0))
+            .map(|f| f.names())
+            .unwrap_or_default()
     }
     /// (function, field, alias)
     pub fn aggregates(&self) -> Vec<(String, String, String)> {
@@ -522,7 +602,11 @@ impl QueryDecl {
                 let toks: Vec<String> = idents(&a.0).map(|t| t.text().to_string()).collect();
                 let f = toks.first()?.clone();
                 let field = toks.get(1)?.clone();
-                let alias = if toks.get(2).map(|s| s.as_str()) == Some("as") { toks.get(3)?.clone() } else { field.clone() };
+                let alias = if toks.get(2).map(|s| s.as_str()) == Some("as") {
+                    toks.get(3)?.clone()
+                } else {
+                    field.clone()
+                };
                 Some((f, field, alias))
             })
             .collect()
@@ -540,10 +624,16 @@ node!(AggregateDecl, AGGREGATE_DECL);
 node!(UniqueDecl, UNIQUE_DECL);
 impl UniqueDecl {
     pub fn fields(&self) -> Vec<String> {
-        children::<FieldList>(&self.0).next().map(|f| f.names()).unwrap_or_default()
+        children::<FieldList>(&self.0)
+            .next()
+            .map(|f| f.names())
+            .unwrap_or_default()
     }
     pub fn within(&self) -> Vec<String> {
-        children::<FieldList>(&self.0).nth(1).map(|f| f.names()).unwrap_or_default()
+        children::<FieldList>(&self.0)
+            .nth(1)
+            .map(|f| f.names())
+            .unwrap_or_default()
     }
 }
 node!(FieldList, FIELD_LIST);
@@ -573,7 +663,10 @@ impl ListDecl {
                     .filter_map(|k| {
                         let mut it = idents(&k.0);
                         let f = it.next()?.text().to_string();
-                        let dir = it.next().map(|d| d.text().to_string()).unwrap_or_else(|| "asc".into());
+                        let dir = it
+                            .next()
+                            .map(|d| d.text().to_string())
+                            .unwrap_or_else(|| "asc".into());
                         Some((f, dir))
                     })
                     .collect()
@@ -629,7 +722,9 @@ impl TransitionDecl {
         idents(&self.0).next()
     }
     pub fn sources(&self) -> Vec<SyntaxToken> {
-        child::<StateSet>(&self.0).map(|s| idents(&s.0).collect()).unwrap_or_default()
+        child::<StateSet>(&self.0)
+            .map(|s| idents(&s.0).collect())
+            .unwrap_or_default()
     }
     pub fn target(&self) -> Option<SyntaxToken> {
         let mut after_arrow = false;
@@ -666,29 +761,49 @@ impl FunctionDecl {
         children(&self.0)
     }
     pub fn input(&self) -> Option<QualifiedName> {
-        child::<FunctionInput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| t.name())
+        child::<FunctionInput>(&self.0)
+            .and_then(|i| child::<TypeRef>(&i.0))
+            .and_then(|t| t.name())
     }
     pub fn output(&self) -> Option<QualifiedName> {
-        child::<FunctionOutput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| t.name())
+        child::<FunctionOutput>(&self.0)
+            .and_then(|i| child::<TypeRef>(&i.0))
+            .and_then(|t| t.name())
     }
     /// `Record<Purpose>`: the purpose type argument on the output (edition 2027).
     pub fn output_purpose(&self) -> Option<QualifiedName> {
-        child::<FunctionOutput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| child::<TypeArgs>(&t.0)).and_then(|a| children::<TypeArg>(&a.0).next()).and_then(|a| child(&a.0))
+        child::<FunctionOutput>(&self.0)
+            .and_then(|i| child::<TypeRef>(&i.0))
+            .and_then(|t| child::<TypeArgs>(&t.0))
+            .and_then(|a| children::<TypeArg>(&a.0).next())
+            .and_then(|a| child(&a.0))
     }
     pub fn purpose(&self) -> Option<QualifiedName> {
         child::<FunctionPurpose>(&self.0).and_then(|p| child(&p.0))
     }
     pub fn uses(&self) -> Vec<UseDecl> {
-        child::<UsesBlock>(&self.0).map(|b| children(&b.0).collect()).unwrap_or_default()
+        child::<UsesBlock>(&self.0)
+            .map(|b| children(&b.0).collect())
+            .unwrap_or_default()
     }
     pub fn sends(&self) -> Vec<SendDecl> {
-        child::<SendsBlock>(&self.0).map(|b| children(&b.0).collect()).unwrap_or_default()
+        child::<SendsBlock>(&self.0)
+            .map(|b| children(&b.0).collect())
+            .unwrap_or_default()
     }
     pub fn errors(&self) -> Vec<SyntaxToken> {
-        child::<ErrorsBlock>(&self.0).map(|b| children::<ErrorDecl>(&b.0).filter_map(|e| idents(&e.0).next()).collect()).unwrap_or_default()
+        child::<ErrorsBlock>(&self.0)
+            .map(|b| {
+                children::<ErrorDecl>(&b.0)
+                    .filter_map(|e| idents(&e.0).next())
+                    .collect()
+            })
+            .unwrap_or_default()
     }
     pub fn slo(&self) -> Vec<SloItem> {
-        child::<SloBlock>(&self.0).map(|b| children(&b.0).collect()).unwrap_or_default()
+        child::<SloBlock>(&self.0)
+            .map(|b| children(&b.0).collect())
+            .unwrap_or_default()
     }
 }
 node!(FunctionInput, FUNCTION_INPUT);
@@ -700,7 +815,11 @@ impl UseDecl {
         child(&self.0)
     }
     pub fn capability(&self) -> Option<String> {
-        tokens(&self.0).filter(|t| t.kind() == K::IDENT).last().filter(|t| matches!(t.text(), "read" | "write" | "create" | "delete")).map(|t| t.text().to_string())
+        tokens(&self.0)
+            .filter(|t| t.kind() == K::IDENT)
+            .last()
+            .filter(|t| matches!(t.text(), "read" | "write" | "create" | "delete"))
+            .map(|t| t.text().to_string())
     }
     /// `for Purpose` on a dependency (edition 2027).
     pub fn purpose(&self) -> Option<QualifiedName> {
@@ -726,9 +845,21 @@ impl SloItem {
     pub fn parts(&self) -> Option<(String, String, Option<String>, String)> {
         let toks: Vec<SyntaxToken> = tokens(&self.0).filter(|t| !t.kind().is_trivia()).collect();
         let kind = toks.first()?.text().to_string();
-        let pct = toks.iter().find(|t| t.kind() == K::PERCENT)?.text().to_string();
-        let durs: Vec<String> = toks.iter().filter(|t| t.kind() == K::DURATION).map(|t| t.text().to_string()).collect();
-        Some(if kind == "latency" { (kind, pct, durs.first().cloned(), durs.get(1)?.clone()) } else { (kind, pct, None, durs.first()?.clone()) })
+        let pct = toks
+            .iter()
+            .find(|t| t.kind() == K::PERCENT)?
+            .text()
+            .to_string();
+        let durs: Vec<String> = toks
+            .iter()
+            .filter(|t| t.kind() == K::DURATION)
+            .map(|t| t.text().to_string())
+            .collect();
+        Some(if kind == "latency" {
+            (kind, pct, durs.first().cloned(), durs.get(1)?.clone())
+        } else {
+            (kind, pct, None, durs.first()?.clone())
+        })
     }
 }
 
@@ -744,13 +875,19 @@ impl ChannelDecl {
         child::<ChannelFrom>(&self.0).and_then(|f| child(&f.0))
     }
     pub fn distribution(&self) -> Option<String> {
-        child::<DistributionDecl>(&self.0).and_then(|d| idents(&d.0).nth(1)).map(|t| t.text().to_string())
+        child::<DistributionDecl>(&self.0)
+            .and_then(|d| idents(&d.0).nth(1))
+            .map(|t| t.text().to_string())
     }
     pub fn delivery(&self) -> Option<String> {
-        child::<DeliveryDecl>(&self.0).and_then(|d| idents(&d.0).nth(1)).map(|t| t.text().to_string())
+        child::<DeliveryDecl>(&self.0)
+            .and_then(|d| idents(&d.0).nth(1))
+            .map(|t| t.text().to_string())
     }
     pub fn direction(&self) -> Option<String> {
-        child::<DirectionDecl>(&self.0).and_then(|d| idents(&d.0).next()).map(|t| t.text().to_string())
+        child::<DirectionDecl>(&self.0)
+            .and_then(|d| idents(&d.0).next())
+            .map(|t| t.text().to_string())
     }
     pub fn messages(&self) -> impl Iterator<Item = MessageDecl> + '_ {
         children(&self.0)
@@ -802,16 +939,26 @@ impl WorkflowDecl {
         children(&self.0)
     }
     pub fn input(&self) -> Option<QualifiedName> {
-        child::<FunctionInput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| t.name())
+        child::<FunctionInput>(&self.0)
+            .and_then(|i| child::<TypeRef>(&i.0))
+            .and_then(|t| t.name())
     }
     pub fn output(&self) -> Option<QualifiedName> {
-        child::<FunctionOutput>(&self.0).and_then(|i| child::<TypeRef>(&i.0)).and_then(|t| t.name())
+        child::<FunctionOutput>(&self.0)
+            .and_then(|i| child::<TypeRef>(&i.0))
+            .and_then(|t| t.name())
     }
     pub fn version(&self) -> Option<SyntaxToken> {
         child::<WorkflowVersion>(&self.0).and_then(|v| tokens(&v.0).find(|t| t.kind() == K::INT))
     }
     pub fn errors(&self) -> Vec<SyntaxToken> {
-        child::<ErrorsBlock>(&self.0).map(|b| children::<ErrorDecl>(&b.0).filter_map(|e| idents(&e.0).next()).collect()).unwrap_or_default()
+        child::<ErrorsBlock>(&self.0)
+            .map(|b| {
+                children::<ErrorDecl>(&b.0)
+                    .filter_map(|e| idents(&e.0).next())
+                    .collect()
+            })
+            .unwrap_or_default()
     }
     /// Top-level step graph items in source order.
     pub fn items(&self) -> Vec<StepItem> {
@@ -880,7 +1027,9 @@ impl StepCall {
         child(&self.0)
     }
     pub fn args(&self) -> Vec<NamedArg> {
-        child::<ArgList>(&self.0).map(|a| children(&a.0).collect()).unwrap_or_default()
+        child::<ArgList>(&self.0)
+            .map(|a| children(&a.0).collect())
+            .unwrap_or_default()
     }
     pub fn catches(&self) -> impl Iterator<Item = CatchClause> + '_ {
         children(&self.0)
@@ -946,10 +1095,14 @@ impl ChoiceDecl {
         self.0.children().find_map(Expr::cast)
     }
     pub fn then_items(&self) -> Vec<StepItem> {
-        child::<ThenBlock>(&self.0).map(|b| b.0.children().filter_map(StepItem::cast).collect()).unwrap_or_default()
+        child::<ThenBlock>(&self.0)
+            .map(|b| b.0.children().filter_map(StepItem::cast).collect())
+            .unwrap_or_default()
     }
     pub fn else_items(&self) -> Vec<StepItem> {
-        child::<ElseBlock>(&self.0).map(|b| b.0.children().filter_map(StepItem::cast).collect()).unwrap_or_default()
+        child::<ElseBlock>(&self.0)
+            .map(|b| b.0.children().filter_map(StepItem::cast).collect())
+            .unwrap_or_default()
     }
 }
 node!(ThenBlock, THEN_BLOCK);
@@ -1030,13 +1183,26 @@ impl CapabilityItem {
         idents(&self.0).next().is_some_and(|t| t.text() == "deny")
     }
     pub fn verb(&self) -> Option<SyntaxToken> {
-        idents(&self.0).find(|t| matches!(t.text(), "read" | "update" | "create" | "filter" | "order" | "actions"))
+        idents(&self.0).find(|t| {
+            matches!(
+                t.text(),
+                "read" | "update" | "create" | "filter" | "order" | "actions"
+            )
+        })
     }
     pub fn names(&self) -> Vec<QualifiedName> {
-        child::<NameSet>(&self.0).map(|n| children(&n.0).collect()).unwrap_or_default()
+        child::<NameSet>(&self.0)
+            .map(|n| children(&n.0).collect())
+            .unwrap_or_default()
     }
     pub fn name_tokens(&self) -> Vec<SyntaxToken> {
-        child::<NameSet>(&self.0).map(|n| children::<QualifiedName>(&n.0).filter_map(|q| idents(&q.0).next()).collect()).unwrap_or_default()
+        child::<NameSet>(&self.0)
+            .map(|n| {
+                children::<QualifiedName>(&n.0)
+                    .filter_map(|q| idents(&q.0).next())
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 }
 node!(NameSet, NAME_SET);
@@ -1046,7 +1212,9 @@ impl PurposeBinding {
         child(&self.0)
     }
     pub fn uses(&self) -> Vec<SyntaxToken> {
-        children::<UsePurpose>(&self.0).filter_map(|u| idents(&u.0).nth(1)).collect()
+        children::<UsePurpose>(&self.0)
+            .filter_map(|u| idents(&u.0).nth(1))
+            .collect()
     }
 }
 node!(UsePurpose, USE_PURPOSE);
@@ -1098,7 +1266,9 @@ impl Expr {
 node!(BinaryExpr, BINARY_EXPR);
 impl BinaryExpr {
     pub fn op(&self) -> Option<String> {
-        tokens(&self.0).find(|t| !t.kind().is_trivia() && t.kind() != K::NEWLINE).map(|t| t.text().to_string())
+        tokens(&self.0)
+            .find(|t| !t.kind().is_trivia() && t.kind() != K::NEWLINE)
+            .map(|t| t.text().to_string())
     }
     pub fn lhs(&self) -> Option<Expr> {
         self.0.children().filter_map(Expr::cast).next()
@@ -1110,7 +1280,9 @@ impl BinaryExpr {
 node!(UnaryExpr, UNARY_EXPR);
 impl UnaryExpr {
     pub fn op(&self) -> Option<String> {
-        tokens(&self.0).find(|t| !t.kind().is_trivia()).map(|t| t.text().to_string())
+        tokens(&self.0)
+            .find(|t| !t.kind().is_trivia())
+            .map(|t| t.text().to_string())
     }
     pub fn operand(&self) -> Option<Expr> {
         self.0.children().find_map(Expr::cast)
@@ -1122,7 +1294,9 @@ impl CallExpr {
         child(&self.0)
     }
     pub fn args(&self) -> Vec<Expr> {
-        child::<ArgList>(&self.0).map(|a| a.0.children().filter_map(Expr::cast).collect()).unwrap_or_default()
+        child::<ArgList>(&self.0)
+            .map(|a| a.0.children().filter_map(Expr::cast).collect())
+            .unwrap_or_default()
     }
 }
 node!(ArgList, ARG_LIST);
@@ -1138,7 +1312,10 @@ impl NameExpr {
 node!(LiteralExpr, LITERAL_EXPR);
 impl LiteralExpr {
     pub fn text(&self) -> String {
-        tokens(&self.0).find(|t| !t.kind().is_trivia()).map(|t| t.text().to_string()).unwrap_or_default()
+        tokens(&self.0)
+            .find(|t| !t.kind().is_trivia())
+            .map(|t| t.text().to_string())
+            .unwrap_or_default()
     }
     pub fn token(&self) -> Option<SyntaxToken> {
         tokens(&self.0).find(|t| !t.kind().is_trivia())

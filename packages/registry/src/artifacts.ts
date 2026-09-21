@@ -14,7 +14,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { KNOWN_FEATURES, DOMAIN_IR_VERSION, type AppBundle } from "@forge/runtime";
+import { KNOWN_FEATURES, DOMAIN_IR_VERSION, type AppBundle } from "@forgegraph/runtime";
 
 export interface Signer { keyId: string; privateKey: CryptoKey; publicKey: JsonWebKey }
 export interface TrustPolicy { authority: string; signers: Record<string, JsonWebKey> }

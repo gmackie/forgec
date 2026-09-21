@@ -9,10 +9,10 @@ import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Cause, Effect } from "effect";
 import type pg from "pg";
-import { Dispatcher, Engine, ForgeError, internalSubscriptions, MemoryObjectStore, MemoryStorage, Model, testLayer, withProjections, type AppBundle, type CallContext as EngineCtx, type StorageAdapter } from "@forge/runtime";
-import { D1Storage } from "@forge/runtime/d1";
-import { createPostgresStorage } from "@forge/runtime/postgres";
-import { nodeSqliteExecutor } from "@forge/adapters/sqlite";
+import { Dispatcher, Engine, ForgeError, internalSubscriptions, MemoryObjectStore, MemoryStorage, Model, testLayer, withProjections, type AppBundle, type CallContext as EngineCtx, type StorageAdapter } from "@forgegraph/runtime";
+import { D1Storage } from "@forgegraph/runtime/d1";
+import { createPostgresStorage } from "@forgegraph/runtime/postgres";
+import { nodeSqliteExecutor } from "@forgegraph/adapters/sqlite";
 import { externals, functions } from "../../examples/acme/impl/index.js";
 import type { CallContext, CallResult, Target } from "./target.js";
 

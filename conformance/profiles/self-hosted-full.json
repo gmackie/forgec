@@ -1,10 +1,10 @@
 {
   "version": "conformance-profile/1",
   "id": "self-hosted-full",
-  "description": "Node + PostgreSQL + Temporal-backed workflows + durable messaging + S3-compatible objects, packaged by @forge/adapters/self-hosted.",
+  "description": "Node + PostgreSQL + Temporal-backed workflows + durable messaging + S3-compatible objects, packaged by @forgegraph/adapters/self-hosted.",
   "status": "certified",
   "reason": "Temporal owns durable timers and signal buffering; the Forge store owns instance state. Certified for the single-node dev-server topology; a multi-node Temporal cluster and Temporal Cloud are separate tuples (unverified).",
-  "scope": "Node 24 host + PostgreSQL 17 + Temporal dev server 1.32 (single node, SQLite persistence) driving Forge instances through @forge/temporal; in-process durable messaging over the Postgres outbox; FsBucket/S3-compatible objects",
+  "scope": "Node 24 host + PostgreSQL 17 + Temporal dev server 1.32 (single node, SQLite persistence) driving Forge instances through @forgegraph/temporal; in-process durable messaging over the Postgres outbox; FsBucket/S3-compatible objects",
   "evidence": [
     "packages/temporal/test/temporal.test.ts: PAR-153 \u2014 sleeping step survives worker + API crash and Temporal fires the timer after restart; early signal held and consumed; late signal through Temporal's buffered wake after the worker restarts; duplicate signals not re-applied",
     "packages/runtime/test/node-host.test.ts: the same profile without Temporal (in-process driver)"

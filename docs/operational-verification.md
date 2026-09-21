@@ -13,7 +13,7 @@ signal can and cannot prove.
 | observed | telemetry edge events (`forge_edges_observed_total`, `OperationEvent.purpose/decision`) | what was seen, at the caller's **assurance tier** |
 | snapshot | `SnapshotHolder.state()` | whether the authority the runtime decided under is still valid |
 
-`driftReport()` (`@forge/registry/evidence`) joins them:
+`driftReport()` (`@forgegraph/registry/evidence`) joins them:
 
 - **unexpected edges**: observed but not activated. Attribution is qualified: under `workload-bound`
   credentials a span that claims `FunctionA` attributes to the *workload*; only an `isolated-callable`
@@ -23,7 +23,7 @@ signal can and cannot prove.
   (PAR-171). Use `GrantRegistry.reviewUnused` to act.
 - **declared-not-approved / approved-not-activated**: pending requests and pending activations.
 - **snapshot**: expired or degraded snapshots bound every allow decision by the expiry rule.
-- **linked changes**: semantic diff findings (`forge compat`) link to the dashboard panels they affect
+- **linked changes**: semantic diff findings (`forgec compat`) link to the dashboard panels they affect
   (`surface-narrowed` → `privacy:denials`, `dependency-added` → `grants:edges`).
 
 ## Telemetry semantics
@@ -47,8 +47,8 @@ listed by audience and not disclosed outside it.
 
 ## Release verification checklist
 
-1. `forge compat` and `forge migrate` against the deployed artifact (pulled by the inventory's digest).
+1. `forgec compat` and `forgec migrate` against the deployed artifact (pulled by the inventory's digest).
 2. Deployment ledger rollout: preflight → expand → compat-release → backfill → verify → traffic → drain → contract, under a lease.
-3. SLO gate with minimum evidence (`@forge/release-gates`); acknowledgments signed and artifact-bound.
+3. SLO gate with minimum evidence (`@forgegraph/release-gates`); acknowledgments signed and artifact-bound.
 4. `driftReport` on the new window; unexpected edges block promotion; unused-grant suggestions go to review.
-5. Publish `deployment-evidence/1`; the dashboard (`@forge/interfaces/dashboards`) links to panels.
+5. Publish `deployment-evidence/1`; the dashboard (`@forgegraph/interfaces/dashboards`) links to panels.

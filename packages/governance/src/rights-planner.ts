@@ -10,7 +10,7 @@
  * unknown and nothing external is outstanding.
  */
 import { Effect } from "effect";
-import type { CallContext, Engine } from "@forge/runtime";
+import type { CallContext, Engine } from "@forgegraph/runtime";
 
 export type Disposition = "erasure" | "restriction" | "export";
 export interface Hold { id: string; resource?: string; reason: string; until?: string }

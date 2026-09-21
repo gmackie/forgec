@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 import { MemoryArtifactStore, Registry, generateSigner } from "../src/artifacts.js";
 import { Catalog } from "../src/catalog.js";
 import { AccessPolicy, qualifiedId } from "../src/security.js";

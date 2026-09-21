@@ -1,6 +1,6 @@
 /** Conformance target backed by the runtime engine and the in-memory adapter: the semantic reference. */
 import { Cause, Effect } from "effect";
-import { Dispatcher, Engine, ForgeError, internalSubscriptions, MemoryObjectStore, MemoryStorage, Model, testLayer, withProjections, type AppBundle } from "@forge/runtime";
+import { Dispatcher, Engine, ForgeError, internalSubscriptions, MemoryObjectStore, MemoryStorage, Model, testLayer, withProjections, type AppBundle } from "@forgegraph/runtime";
 import { externals, functions } from "../../examples/acme/impl/index.js";
 import type { CallContext, CallResult, Target } from "./target.js";
 

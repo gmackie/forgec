@@ -4,10 +4,16 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
 description = "Symbol resolution, semantic checks, and DomainIR for Forge packages"
 
 [dependencies]
-forge-syntax = { path = "../forge-syntax" }
+forge-syntax = { path = "../forge-syntax", version = "0.3.0" }
 serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true

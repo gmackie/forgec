@@ -2,8 +2,8 @@
 // the deploy configuration are provider-specific; the .forge package and the
 // generated bundle are shared with the AWS deployment.
 import { DurableObject, WorkflowEntrypoint } from "cloudflare:workers";
-import { createRealtimeObject, createWorker, createWorkflowEntrypoint } from "@forge/runtime/cloudflare";
-import type { AppBundle } from "@forge/runtime";
+import { createRealtimeObject, createWorker, createWorkflowEntrypoint } from "@forgegraph/runtime/cloudflare";
+import type { AppBundle } from "@forgegraph/runtime";
 import bundle from "../../generated/app.json";
 import { externals, functions } from "../../impl/index.js";
 

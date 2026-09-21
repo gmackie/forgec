@@ -12,7 +12,7 @@
  * default; deletion needs a recorded decision.
  */
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 
 export type Treatment = "keep" | "pseudonymize" | "redact";
 export interface FieldTreatment { resource: string; field: string; class: string; treatment: Treatment; why: string }

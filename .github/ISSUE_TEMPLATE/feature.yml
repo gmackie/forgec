@@ -1,0 +1,23 @@
+name: Feature or capability request
+description: Something ForgeGraph cannot express or cannot do portably.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you are trying to build
+      description: The application problem, before any proposed solution.
+    validations: { required: true }
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do today instead
+      description: The workaround, and what it costs you.
+  - type: textarea
+    id: portability
+    attributes:
+      label: Portability
+      description: >
+        Could every target support this with the same observable behaviour? If one
+        provider cannot, that is worth saying — a capability that is honest about
+        being target-specific is much easier to accept than one that pretends.

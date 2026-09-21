@@ -6,7 +6,7 @@
  */
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
-import { localAuthorizer, type Policy } from "@forge/runtime";
+import { localAuthorizer, type Policy } from "@forgegraph/runtime";
 import { generateSigner } from "../src/artifacts.js";
 import { SnapshotHolder, SnapshotPublisher, withSnapshotAuthority } from "../src/snapshots.js";
 

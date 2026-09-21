@@ -44,7 +44,10 @@ impl Package {
             edition: "2026".into(),
             profile: "portable-v1".into(),
             targets: vec!["cloudflare-d1".into(), "aws-dynamodb".into()],
-            files: files.into_iter().map(|(path, text)| SourceFile { path, text }).collect(),
+            files: files
+                .into_iter()
+                .map(|(path, text)| SourceFile { path, text })
+                .collect(),
             dependencies: Vec::new(),
             dependency_paths: Vec::new(),
             observability: crate::ir::ObservabilityConfig::default(),
@@ -106,7 +109,9 @@ struct ManifestSource {
 }
 impl Default for ManifestSource {
     fn default() -> Self {
-        Self { root: default_root() }
+        Self {
+            root: default_root(),
+        }
     }
 }
 fn default_root() -> String {
@@ -146,8 +151,10 @@ impl std::error::Error for LoadError {}
 /// deterministic order independent of directory iteration order.
 pub fn load_package(root: &Path) -> Result<Package, LoadError> {
     let manifest_path = root.join("forge.toml");
-    let text = std::fs::read_to_string(&manifest_path).map_err(|e| LoadError::Io(manifest_path.clone(), e))?;
-    let m: Manifest = toml::from_str(&text).map_err(|e| LoadError::Manifest(manifest_path.clone(), e.to_string()))?;
+    let text = std::fs::read_to_string(&manifest_path)
+        .map_err(|e| LoadError::Io(manifest_path.clone(), e))?;
+    let m: Manifest = toml::from_str(&text)
+        .map_err(|e| LoadError::Manifest(manifest_path.clone(), e.to_string()))?;
 
     let src_root = root.join(&m.source.root);
     let mut paths = Vec::new();
@@ -155,7 +162,11 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
     paths.sort();
     let mut files = Vec::new();
     for p in paths {
-        let rel = p.strip_prefix(root).unwrap_or(&p).to_string_lossy().replace('\\', "/");
+        let rel = p
+            .strip_prefix(root)
+            .unwrap_or(&p)
+            .to_string_lossy()
+            .replace('\\', "/");
         let text = std::fs::read_to_string(&p).map_err(|e| LoadError::Io(p.clone(), e))?;
         files.push(SourceFile { path: rel, text });
     }
@@ -165,8 +176,10 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
     for (alias, dep) in &m.dependencies {
         let dep_root = root.join(&dep.path);
         let dep_manifest = dep_root.join("forge.toml");
-        let dep_text = std::fs::read_to_string(&dep_manifest).map_err(|e| LoadError::Io(dep_manifest.clone(), e))?;
-        let dm: Manifest = toml::from_str(&dep_text).map_err(|e| LoadError::Manifest(dep_manifest.clone(), e.to_string()))?;
+        let dep_text = std::fs::read_to_string(&dep_manifest)
+            .map_err(|e| LoadError::Io(dep_manifest.clone(), e))?;
+        let dm: Manifest = toml::from_str(&dep_text)
+            .map_err(|e| LoadError::Manifest(dep_manifest.clone(), e.to_string()))?;
         dependencies.push((alias.clone(), dm.package.name));
         dependency_paths.push((alias.clone(), dep_root));
     }
@@ -180,10 +193,32 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
         files,
         dependencies,
         dependency_paths,
-        extensions: m.extensions.iter().map(|(name, e)| Extension { name: name.clone(), manifest: root.join(&e.manifest), sha256: e.sha256.clone() }).collect(),
+        extensions: m
+            .extensions
+            .iter()
+            .map(|(name, e)| Extension {
+                name: name.clone(),
+                manifest: root.join(&e.manifest),
+                sha256: e.sha256.clone(),
+            })
+            .collect(),
         observability: crate::ir::ObservabilityConfig {
             window: m.observability.window.unwrap_or_else(|| "28d".into()),
-            slo: m.observability.slo.into_iter().map(|(class, s)| (class, crate::ir::SloTarget { availability: s.availability, latency_good: s.latency.good, latency_within: s.latency.within })).collect(),
+            slo: m
+                .observability
+                .slo
+                .into_iter()
+                .map(|(class, s)| {
+                    (
+                        class,
+                        crate::ir::SloTarget {
+                            availability: s.availability,
+                            latency_good: s.latency.good,
+                            latency_within: s.latency.within,
+                        },
+                    )
+                })
+                .collect(),
         },
     })
 }

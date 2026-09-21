@@ -14,8 +14,8 @@
  * acknowledgments; `accepted` is never `verified`.
  */
 import { Effect } from "effect";
-import type { CallContext, CommitPlan, Engine, Resource, StoredRecord } from "@forge/runtime";
-import { Objects, Storage } from "@forge/runtime";
+import type { CallContext, CommitPlan, Engine, Resource, StoredRecord } from "@forgegraph/runtime";
+import { Objects, Storage } from "@forgegraph/runtime";
 import type { DispositionPlan, PlanItem } from "./rights-planner.js";
 
 export const JOB_KIND = "_forge/rights-job";

@@ -130,7 +130,7 @@ class Client:
         if "wire" in self.expect and (self.discovery.get("digests") or {}).get("wire") != self.expect["wire"]:
             mismatches.append("wire digest")
         if mismatches:
-            # A compatibility question for `forge compat`, never assumed equivalence.
+            # A compatibility question for `forgec compat`, never assumed equivalence.
             raise InvocationFailed("contract-mismatch", ", ".join(mismatches) + " differ from the expectation")
         status, _, text = self._http("GET", "/forge/openapi.json")
         if status != 200:

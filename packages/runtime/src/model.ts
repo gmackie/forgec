@@ -1,5 +1,5 @@
 /**
- * Typed view over the compiled app bundle (`forge build` output). The runtime
+ * Typed view over the compiled app bundle (`forgec build` output). The runtime
  * interprets this model; it never re-derives semantics from source.
  */
 

@@ -160,3 +160,27 @@ describe("discovery", () => {
     expect(doc.paths["/v1/customers/{id}"].patch.operationId).toBe("@acme/commerce/_/Customer.update");
   });
 });
+
+/** The Node host must never trust caller-supplied identity headers unless that was asked for explicitly. */
+describe("host authentication is fail-closed", () => {
+  it("createNodeHost refuses to start without an auth host, and only dev-headers opt-in changes that", async () => {
+    const { createNodeHost } = await import("../src/hosts/node.js");
+    const { MemoryStorage } = await import("../src/adapters/memory.js");
+    const base = { bundle, store: new MemoryStorage(), cursorSecret: "t", sweepIntervalMs: 0, telemetryFormat: "silent" as const };
+    const saved = process.env["FORGE_AUTH"];
+    delete process.env["FORGE_AUTH"];
+    expect(() => createNodeHost(base)).toThrow(/no authentication host configured/);
+    // the opt-in is explicit and named; nothing about the request path can enable it
+    process.env["FORGE_AUTH"] = "dev-headers";
+    const dev = createNodeHost(base);
+    expect(dev).toBeTruthy();
+    await dev.stop().catch(() => undefined);
+    process.env["FORGE_AUTH"] = "something-else";
+    expect(() => createNodeHost(base)).toThrow(/no authentication host configured/);
+    if (saved === undefined) delete process.env["FORGE_AUTH"]; else process.env["FORGE_AUTH"] = saved;
+    // passing an auth host directly never consults the environment
+    const explicit = createNodeHost({ ...base, auth: devHeaderAuth() });
+    expect(explicit).toBeTruthy();
+    await explicit.stop().catch(() => undefined);
+  });
+});

@@ -20,7 +20,6 @@ export interface ManifestInput {
   differential?: { drift: string; profiles: { name: string; ran: boolean; reason?: string; failures: number }[] } | null;
   matrix?: { profiles: { id: string; tuple: Record<string, string>; status: string; evidence?: unknown[]; reason?: string; contract?: string }[] } | null;
   benchmarks?: Record<string, unknown> | null;
-  status?: { milestones: Record<string, { status: string }> } | null;
 }
 
 const read = <T>(p: string): T | null => (existsSync(p) ? (JSON.parse(readFileSync(p, "utf8")) as T) : null);
@@ -32,16 +31,15 @@ export function buildManifest(i: ManifestInput): Record<string, unknown> {
   const differential = i.differential === undefined ? read<NonNullable<ManifestInput["differential"]>>(resolve(root, "conformance", "reports", "differential.json")) : i.differential;
   const matrix = i.matrix === undefined ? read<NonNullable<ManifestInput["matrix"]>>(resolve(root, "specs", "profiles", "matrix.json")) : i.matrix;
   const benchmarks = i.benchmarks === undefined ? read<Record<string, unknown>>(resolve(root, "conformance", "benchmarks", "governance-overhead.json")) : i.benchmarks;
-  const status = i.status === undefined ? read<NonNullable<ManifestInput["status"]>>(resolve(root, "docs", "post-m8", "STATUS.json")) : i.status;
   const pkg = (p: string) => read<{ version?: string; dependencies?: Record<string, string>; devDependencies?: Record<string, string> }>(resolve(root, p));
   const runtimePkg = pkg("packages/runtime/package.json");
   const interfacesPkg = pkg("packages/interfaces/package.json");
   const now = i.now ?? new Date().toISOString();
 
   const pins = {
-    compiler: { crate: "forge-cli", version: toml(resolve(root, "Cargo.toml"), "version"), rustVersion: toml(resolve(root, "Cargo.toml"), "rust-version"), ir: "domain-ir/1", contracts: "contracts/1", bundle: "app-bundle/1", knownFeatures: ["governance/1"] },
-    runtime: { package: "@forge/runtime", version: runtimePkg?.version ?? null, effect: runtimePkg?.dependencies?.["effect"] ?? null, typescript: runtimePkg?.devDependencies?.["typescript"] ?? null, node: process.version, pg: runtimePkg?.dependencies?.["pg"] ?? null, drizzle: runtimePkg?.dependencies?.["drizzle-orm"] ?? null, awsSdk: runtimePkg?.dependencies?.["@aws-sdk/client-dynamodb"] ?? null },
-    interfaces: { package: "@forge/interfaces", version: interfacesPkg?.version ?? null, openapi: "3.1.0", smithy: "2.0", mcp: ["2025-06-18", "2025-03-26"], discovery: "forge-discovery/1", sdks: { python: "stdlib (>= 3.10)", go: "module forge.dev/interfaces/sdk-go (go 1.22)" } },
+    compiler: { crate: "forgegraph-cli", version: toml(resolve(root, "Cargo.toml"), "version"), rustVersion: toml(resolve(root, "Cargo.toml"), "rust-version"), ir: "domain-ir/1", contracts: "contracts/1", bundle: "app-bundle/1", knownFeatures: ["governance/1"] },
+    runtime: { package: "@forgegraph/runtime", version: runtimePkg?.version ?? null, effect: runtimePkg?.dependencies?.["effect"] ?? null, typescript: runtimePkg?.devDependencies?.["typescript"] ?? null, node: process.version, pg: runtimePkg?.dependencies?.["pg"] ?? null, drizzle: runtimePkg?.dependencies?.["drizzle-orm"] ?? null, awsSdk: runtimePkg?.dependencies?.["@aws-sdk/client-dynamodb"] ?? null },
+    interfaces: { package: "@forgegraph/interfaces", version: interfacesPkg?.version ?? null, openapi: "3.1.0", smithy: "2.0", mcp: ["2025-06-18", "2025-03-26"], discovery: "forge-discovery/1", sdks: { python: "stdlib (>= 3.10)", go: "module forge.dev/interfaces/sdk-go (go 1.22)" } },
     governance: { taxonomy: read<{ version: string }>(resolve(root, "packages", "contracts", "data-core", "taxonomy.json"))?.version ?? null, capabilityManifests: ["d1", "dynamodb"], policy: "forge-policies (local authorizer) / opaque bundles compared by digest", grants: "dependency-grant/1", snapshots: "snapshot/1" },
     iac: { terraform: { cloudflare: "5.4.0", aws: "5.100.0" }, cdk: read<{ dependencies?: Record<string, string> }>(resolve(root, "examples", "acme", "package.json"))?.dependencies?.["aws-cdk-lib"] ?? null, wrangler: runtimePkg?.devDependencies?.["wrangler"] ?? null },
   };
@@ -72,8 +70,6 @@ export function buildManifest(i: ManifestInput): Record<string, unknown> {
   // everything else in the matrix that is not certified is listed as such, with its reason
   const notCertified = (matrix?.profiles ?? []).filter((p) => p.status !== "certified").map((p) => ({ profile: p.id, status: p.status, reason: p.reason ?? null }));
   const requiredMissing = required.filter((r) => combos.find((c) => c["profile"] === r)?.["status"] !== "certified");
-  const milestones = status?.milestones ?? {};
-  const partialTickets = Object.entries(milestones).filter(([, m]) => m.status !== "done").map(([k, m]) => `${k}: ${m.status}`);
 
   return {
     version: "release-manifest/1",
@@ -83,7 +79,6 @@ export function buildManifest(i: ManifestInput): Record<string, unknown> {
     pins,
     combinations: combos,
     notCertified,
-    milestones: { done: Object.entries(milestones).filter(([, m]) => m.status === "done").map(([k]) => k), other: partialTickets },
     benchmarks: benchmarks ? { ref: "conformance/benchmarks/governance-overhead.json", at: benchmarks["at"], note: "per-profile measurements with workload definitions and limits; no cross-machine or parity claim" } : null,
     migration: { fromM8: "docs/upgrade-edition.md (forge upgrade-edition proposals; old edition stays explicit)", provider: "docs/provider-cutover.md", grants: "docs/grant-lifecycle.md" },
     retest: { expiryDays: 90, rule: "evidence older than 90 days is stale: the combination drops to unverified until the suites run again on the pinned versions; any pin change (compiler, runtime, driver, provider version, taxonomy, protocol) requires a retest before the combination is advertised", signing: "sign this manifest with the release key in CI (signEvidence); an unsigned manifest is a draft" },

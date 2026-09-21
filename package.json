@@ -1,14 +1,15 @@
 {
-  "name": "forge-workspace",
+  "name": "forgegraph-workspace",
   "private": true,
   "packageManager": "pnpm@10.32.1",
   "scripts": {
-    "spike:d1": "pnpm --filter @forge-spike/d1-guarded-batch test",
-    "spike:dynamo": "pnpm --filter @forge-spike/dynamodb-conditional-tx test",
-    "build": "cargo build -p forge-cli && pnpm -r --filter @forge/runtime --filter @forge/react run build",
+    "build": "cargo build --release -p forgegraph-cli && pnpm -r run build",
     "test": "cargo test --workspace && pnpm -r test",
     "typecheck": "pnpm -r exec tsc --noEmit -p tsconfig.json",
-    "certify": "pnpm --filter @forge/conformance certify"
+    "certify": "pnpm --filter @forgegraph/conformance certify",
+    "differential": "pnpm --filter @forgegraph/conformance differential",
+    "release:manifest": "node --experimental-strip-types scripts/release-manifest.ts",
+    "release:check": "node scripts/check-packaging.mjs"
   },
   "license": "Apache-2.0",
   "type": "module"

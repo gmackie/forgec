@@ -2,7 +2,7 @@
 // app it records fulfillment by approving the order; the consumer dedups by
 // messageId so redelivery cannot approve twice.
 import { Effect } from "effect";
-import { defineFunction } from "@forge/runtime";
+import { defineFunction } from "@forgegraph/runtime";
 
 export const fulfillOrder = defineFunction("@acme/commerce/_/FulfillOrder", (deps) =>
   Effect.gen(function* () {

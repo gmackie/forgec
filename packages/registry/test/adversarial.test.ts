@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
-import { localAuthorizer, type AppBundle, type Policy } from "@forge/runtime";
+import { localAuthorizer, type AppBundle, type Policy } from "@forgegraph/runtime";
 import { MemoryArtifactStore, Registry, generateSigner } from "../src/artifacts.js";
 import { ApprovalBot, MemoryRepoHost } from "../src/approval-bot.js";
 import { publishGrant } from "../src/grant-publication.js";

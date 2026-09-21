@@ -1,10 +1,35 @@
 {
-  "name": "@forge/interfaces",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "name": "@forgegraph/interfaces",
+  "version": "0.3.0",
+  "description": "Non-Effect interfaces over one operation model: RPC bindings, MCP server, generic API CLI, dashboards.",
   "license": "Apache-2.0",
-  "description": "Non-Effect interfaces over one operation model: RPC bindings, MCP server, generic API CLI and SDK conformance (M14).",
+  "author": "ForgeGraph contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmackie/forgegraph.git",
+    "directory": "packages/interfaces"
+  },
+  "homepage": "https://github.com/gmackie/forgegraph#readme",
+  "bugs": {
+    "url": "https://github.com/gmackie/forgegraph/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "bin",
+    "sdk-python",
+    "sdk-go"
+  ],
+  "bin": {
+    "forge-api": "./bin/forge-api.mjs"
+  },
   "exports": {
     "./rpc": {
       "types": "./dist/rpc.d.ts",
@@ -31,21 +56,25 @@
       "default": "./dist/dashboards.js"
     }
   },
-  "bin": {
-    "forge-api": "./bin/forge-api.mjs"
-  },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@forge/runtime": "workspace:*"
+    "@forgegraph/runtime": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "effect": "4.0.0-rc.116",
     "typescript": "^5.9.0",
     "vitest": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "forgegraph": {
+    "stability": "stable-candidate"
   }
 }

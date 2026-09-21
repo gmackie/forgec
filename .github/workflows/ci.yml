@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  compiler:
+    name: compiler (rust ${{ matrix.rust }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [stable, "1.97"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace --locked
+
+  runtime:
+    name: runtime + packages (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22.x", "24.x"]
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: forge
+          POSTGRES_PASSWORD: forge
+          POSTGRES_DB: forge_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U forge"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      FORGE_PG_URL: postgres://forge:forge@localhost:5432/forge_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # the Node-host and cutover suites need a second database on the same server
+      - run: PGPASSWORD=forge psql -h localhost -U forge -d postgres -c "CREATE DATABASE forge_node" -c "CREATE DATABASE forge_temporal"
+      - run: pnpm install --frozen-lockfile
+      # generated fixtures must match what the compiler emits from the sources in this commit
+      - run: ./scripts/refresh-fixtures.sh
+      - run: git diff --exit-code -- conformance/fixtures examples/acme/generated || (echo "::error::generated fixtures are stale; run ./scripts/refresh-fixtures.sh" && exit 1)
+      - run: pnpm -r run build
+      - run: pnpm -r typecheck
+      - run: pnpm -r test
+
+  differential:
+    name: cross-profile differential
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: forge
+          POSTGRES_PASSWORD: forge
+          POSTGRES_DB: forge_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U forge"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      FORGE_PG_URL: postgres://forge:forge@localhost:5432/forge_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: "24.x", cache: pnpm }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r run build
+      - run: pnpm --filter @forgegraph/conformance differential
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: differential-report
+          path: conformance/reports/differential.json
+
+  packaging:
+    name: packaging dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: "24.x", cache: pnpm }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r run build
+      # every publishable package must produce a tarball that carries its built output
+      - run: node scripts/check-packaging.mjs
+      - run: cargo publish --dry-run -p forge-syntax --locked
+      - run: cargo package --workspace --locked --allow-dirty
+
+  supply-chain:
+    name: supply chain
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: "24.x", cache: pnpm }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level high || echo "::warning::pnpm audit reported advisories"
+      - uses: rustsec/audit-check@v2
+        with: { token: ${{ secrets.GITHUB_TOKEN }} }

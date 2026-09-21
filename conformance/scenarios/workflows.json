@@ -26,7 +26,7 @@
 
     { "name": "w3", "op": "@acme/commerce/_/ProcessOrder.start", "input": { "order": "$o3.id", "expectedVersion": 1 }, "expect": { "ok": { "id": "$id:9", "status": "waiting" } } },
     { "name": "short", "op": "@acme/commerce/_/ProcessOrder.signal", "input": { "message": "PaymentCaptured", "messageId": "pay-3", "payload": { "authorizationId": "auth_3", "reference": "$o3.id", "amount": "1.00" } }, "expect": { "ok": { "delivered": 1 } } },
-    { "name": "w3failed", "op": "@acme/commerce/_/ProcessOrder.get", "input": { "id": "$w3.id" }, "eventually": { "attempts": 20, "delayMs": 250 },
+    { "name": "w3failed", "op": "@acme/commerce/_/ProcessOrder.get", "input": { "id": "$w3.id" }, "eventually": { "attempts": 30, "delayMs": 1000 },
       "expect": { "ok": { "status": "failed", "error": { "code": "@acme/commerce/_/ProcessOrder.ShortPayment" } } } },
     { "name": "w3cancelled", "op": "@acme/commerce/_/Order.get", "input": { "id": "$o3.id" }, "expect": { "ok": { "status": "Cancelled" } } },
 

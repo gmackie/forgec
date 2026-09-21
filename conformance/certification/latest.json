@@ -45,7 +45,7 @@
   },
   "targets": {
     "cloudflare-d1": {
-      "url": "https://forge-acme.gmac.workers.dev",
+      "url": "https://<worker>.<subdomain>.workers.dev",
       "stack": "Workers + D1 + R2 + Queues + Workflows + Cron Triggers + Durable Objects",
       "scenarios": {
         "ok": true,
@@ -130,10 +130,11 @@
             "atomicAllowed": true
           }
         ]
-      }
+      },
+      "urlRedacted": "the deployment this run certified was a private account endpoint; the host is withheld, the run is not"
     },
     "aws-dynamodb": {
-      "url": "https://65geshs364.execute-api.us-east-1.amazonaws.com",
+      "url": "https://<api-id>.execute-api.<region>.amazonaws.com",
       "stack": "HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge + API Gateway WebSocket",
       "scenarios": {
         "ok": true,
@@ -218,7 +219,8 @@
             "atomicAllowed": true
           }
         ]
-      }
+      },
+      "urlRedacted": "the deployment this run certified was a private account endpoint; the host is withheld, the run is not"
     }
   },
   "certified": true

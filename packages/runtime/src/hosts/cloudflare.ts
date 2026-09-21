@@ -252,6 +252,7 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
     },
     async fetch(request: Request, env: WorkerEnv, ctx?: { waitUntil(p: Promise<unknown>): void }): Promise<Response> {
       const auth = options.auth ?? (env.FORGE_AUTH === "dev-headers" ? devHeaderAuth() : null);
+      if (auth?.scheme === "dev-header") console.warn("forge: DEVELOPMENT AUTH ACTIVE — x-forge-tenant/x-forge-actor headers are trusted verbatim. Never expose this deployment to untrusted callers.");
       if (!auth) return new Response(JSON.stringify({ code: "Unauthenticated", detail: "no authentication host configured (set FORGE_AUTH=dev-headers for development)" }), { status: 401, headers: { "content-type": "application/problem+json" } });
       const url = new URL(request.url);
       const { engine, objects, dispatcher } = build(env, `${url.protocol}//${url.host}`);

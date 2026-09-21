@@ -53,8 +53,8 @@ describe("requirement resolution", () => {
   });
   it("records native, bounded-emulation, unsupported and unknown with assumptions, never silently relaxing a bound", () => {
     const r = resolveRequirements(reqs, [load("d1.json"), load("dynamodb.json")]);
-    const d1 = r.find((x) => x.adapter === "@forge/runtime/d1")!;
-    const dyn = r.find((x) => x.adapter === "@forge/runtime/dynamodb")!;
+    const d1 = r.find((x) => x.adapter === "@forgegraph/runtime/d1")!;
+    const dyn = r.find((x) => x.adapter === "@forgegraph/runtime/dynamodb")!;
     expect(d1.resolutions["mutation.atomic-batch"]).toMatchObject({ support: "native", bound: { actions: 100 } });
     expect(dyn.resolutions["query.unbounded-join"]).toMatchObject({ support: "unsupported" });
     expect(d1.resolutions["query.unbounded-join"]).toMatchObject({ support: "unsupported" });

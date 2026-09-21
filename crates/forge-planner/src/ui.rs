@@ -124,7 +124,11 @@ fn label_of(name: &str) -> String {
 }
 
 fn plural_of(label: &str) -> String {
-    if label.ends_with('s') { format!("{label}es") } else { format!("{label}s") }
+    if label.ends_with('s') {
+        format!("{label}es")
+    } else {
+        format!("{label}s")
+    }
 }
 
 fn widget_of(ir: &DomainIR, f: &Field) -> (String, Option<Vec<UiOption>>) {
@@ -135,27 +139,46 @@ fn widget_of(ir: &DomainIR, f: &Field) -> (String, Option<Vec<UiOption>>) {
         return ("readonly".into(), None);
     }
     match &f.ty.base {
-        TypeBase::Scalar { name, .. } => (
-            match name.as_str() {
-                "boolean" => "checkbox",
-                "integer" => "integer",
-                "decimal" | "money" => "decimal",
-                "date" => "date",
-                "datetime" => "datetime",
-                "localTime" => "time",
-                "email" => "email",
-                "url" => "url",
-                "timezone" => "timezone",
-                "json" => "json",
-                "id" => "readonly",
-                _ => {
-                    if f.ty.constraints.iter().any(|c| matches!(c, Constraint::Length { max: Some(m), .. } if *m > 200)) { "textarea" } else { "text" }
+        TypeBase::Scalar { name, .. } => {
+            (
+                match name.as_str() {
+                    "boolean" => "checkbox",
+                    "integer" => "integer",
+                    "decimal" | "money" => "decimal",
+                    "date" => "date",
+                    "datetime" => "datetime",
+                    "localTime" => "time",
+                    "email" => "email",
+                    "url" => "url",
+                    "timezone" => "timezone",
+                    "json" => "json",
+                    "id" => "readonly",
+                    _ => {
+                        if f.ty.constraints.iter().any(
+                            |c| matches!(c, Constraint::Length { max: Some(m), .. } if *m > 200),
+                        ) {
+                            "textarea"
+                        } else {
+                            "text"
+                        }
+                    }
                 }
-            }
-            .into(),
-            None,
+                .into(),
+                None,
+            )
+        }
+        TypeBase::Enum { id } => (
+            "select".into(),
+            ir.find_enum(id).map(|e| {
+                e.members
+                    .iter()
+                    .map(|m| UiOption {
+                        value: m.value.clone(),
+                        label: label_of(&m.name),
+                    })
+                    .collect()
+            }),
         ),
-        TypeBase::Enum { id } => ("select".into(), ir.find_enum(id).map(|e| e.members.iter().map(|m| UiOption { value: m.value.clone(), label: label_of(&m.name) }).collect())),
         TypeBase::Reference { .. } => ("reference".into(), None),
         TypeBase::Status { .. } => ("status".into(), None),
         _ => ("json".into(), None),
@@ -176,14 +199,23 @@ fn field(ir: &DomainIR, r: &Resource, f: &Field) -> UiField {
     let writable = !f.server_owned && !f.synthesized && f.derived.is_none();
     let reference = if let TypeBase::Reference { resource } = &f.ty.base {
         ir.find_resource(resource).map(|target| {
-            let lookup = target.lists.iter().find(|l| l.fields.is_empty()).or(target.lists.first()).map(|l| (format!("{}.list.{}", target.id, l.name), l.fields.clone())).unwrap_or_else(|| (format!("{}.list", target.id), vec![]));
+            let lookup = target
+                .lists
+                .iter()
+                .find(|l| l.fields.is_empty())
+                .or(target.lists.first())
+                .map(|l| (format!("{}.list.{}", target.id, l.name), l.fields.clone()))
+                .unwrap_or_else(|| (format!("{}.list", target.id), vec![]));
             UiReference {
                 resource: target.id.clone(),
                 route: naming::wire(&target.name).replace('_', "-"),
                 title_field: title_field_of(target),
                 lookup: lookup.0,
                 lookup_params: lookup.1,
-                find: target.finds.first().map(|x| format!("{}.find.{}", target.id, x.name)),
+                find: target
+                    .finds
+                    .first()
+                    .map(|x| format!("{}.find.{}", target.id, x.name)),
             }
         })
     } else {
@@ -196,7 +228,15 @@ fn field(ir: &DomainIR, r: &Resource, f: &Field) -> UiField {
             max_length = *max;
         }
     }
-    let currency = if let TypeBase::Scalar { name, args } = &f.ty.base { if name == "money" { Some(args.first().cloned().unwrap_or_else(|| "USD".into())) } else { None } } else { None };
+    let currency = if let TypeBase::Scalar { name, args } = &f.ty.base {
+        if name == "money" {
+            Some(args.first().cloned().unwrap_or_else(|| "USD".into()))
+        } else {
+            None
+        }
+    } else {
+        None
+    };
     let _ = r;
     UiField {
         name: f.name.clone(),
@@ -219,7 +259,12 @@ pub fn plan(ir: &DomainIR) -> UiDescriptor {
     let mut resources = Vec::new();
     for m in &ir.modules {
         for r in &m.resources {
-            let fields: Vec<UiField> = r.fields.iter().filter(|f| !f.hidden).map(|f| field(ir, r, f)).collect();
+            let fields: Vec<UiField> = r
+                .fields
+                .iter()
+                .filter(|f| !f.hidden)
+                .map(|f| field(ir, r, f))
+                .collect();
             let title_field = title_field_of(r);
             let _ = &title_field;
             // Status first when there is a lifecycle, then the title field, then declared fields.
@@ -228,7 +273,12 @@ pub fn plan(ir: &DomainIR) -> UiDescriptor {
                 table_columns.push(lc.field.clone());
             }
             table_columns.push(title_field.clone());
-            for f in fields.iter().filter(|f| !f.name.starts_with("upload") && f.widget != "json" && !["id", "version", "createdAt", "updatedAt", "deletedAt"].contains(&f.name.as_str())) {
+            for f in fields.iter().filter(|f| {
+                !f.name.starts_with("upload")
+                    && f.widget != "json"
+                    && !["id", "version", "createdAt", "updatedAt", "deletedAt"]
+                        .contains(&f.name.as_str())
+            }) {
                 if !table_columns.contains(&f.name) && table_columns.len() < 7 {
                     table_columns.push(f.name.clone());
                 }
@@ -242,8 +292,19 @@ pub fn plan(ir: &DomainIR) -> UiDescriptor {
                 .map(|lc| {
                     lc.transitions
                         .iter()
-                        .filter(|t| r.operations.iter().any(|o| o.action.as_ref() == Some(&t.action) && o.http.is_some()))
-                        .map(|t| UiAction { name: t.action.clone(), label: label_of(&t.action), op: format!("{}.status.{}", r.id, t.action), from: t.from.clone(), to: t.to.clone(), input_fields: t.input.iter().map(|f| field(ir, r, f)).collect() })
+                        .filter(|t| {
+                            r.operations
+                                .iter()
+                                .any(|o| o.action.as_ref() == Some(&t.action) && o.http.is_some())
+                        })
+                        .map(|t| UiAction {
+                            name: t.action.clone(),
+                            label: label_of(&t.action),
+                            op: format!("{}.status.{}", r.id, t.action),
+                            from: t.from.clone(),
+                            to: t.to.clone(),
+                            input_fields: t.input.iter().map(|f| field(ir, r, f)).collect(),
+                        })
                         .collect()
                 })
                 .unwrap_or_default();
@@ -253,12 +314,41 @@ pub fn plan(ir: &DomainIR) -> UiDescriptor {
                 kind: r.kind.clone(),
                 label: label_of(&r.name),
                 plural: plural_of(&label_of(&r.name)),
-                route: naming::wire(&r.name).replace('_', "-").to_string() + if r.name.ends_with('s') { "es" } else { "s" },
+                route: naming::wire(&r.name).replace('_', "-").to_string()
+                    + if r.name.ends_with('s') { "es" } else { "s" },
                 title_field,
                 fields,
                 table_columns,
-                lists: r.lists.iter().map(|l| UiList { name: l.name.clone(), op: format!("{}.list.{}", r.id, l.name), params: l.fields.clone(), label: if l.fields.is_empty() { "All".into() } else { format!("By {}", l.fields.iter().map(|f| label_of(f)).collect::<Vec<_>>().join(" & ")) } }).collect(),
-                finds: r.finds.iter().map(|f| UiFind { name: f.name.clone(), op: format!("{}.find.{}", r.id, f.name), params: f.fields.clone() }).collect(),
+                lists: r
+                    .lists
+                    .iter()
+                    .map(|l| UiList {
+                        name: l.name.clone(),
+                        op: format!("{}.list.{}", r.id, l.name),
+                        params: l.fields.clone(),
+                        label: if l.fields.is_empty() {
+                            "All".into()
+                        } else {
+                            format!(
+                                "By {}",
+                                l.fields
+                                    .iter()
+                                    .map(|f| label_of(f))
+                                    .collect::<Vec<_>>()
+                                    .join(" & ")
+                            )
+                        },
+                    })
+                    .collect(),
+                finds: r
+                    .finds
+                    .iter()
+                    .map(|f| UiFind {
+                        name: f.name.clone(),
+                        op: format!("{}.find.{}", r.id, f.name),
+                        params: f.fields.clone(),
+                    })
+                    .collect(),
                 actions,
                 soft_delete: r.decorators.soft_delete,
                 versioned: r.decorators.versioned,
@@ -266,5 +356,9 @@ pub fn plan(ir: &DomainIR) -> UiDescriptor {
             });
         }
     }
-    UiDescriptor { version: "ui/1".into(), package: ir.package.name.clone(), resources }
+    UiDescriptor {
+        version: "ui/1".into(),
+        package: ir.package.name.clone(),
+        resources,
+    }
 }

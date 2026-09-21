@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { Effect } from "effect";
 import { Client, Connection, WorkflowNotFoundError } from "@temporalio/client";
 import { NativeConnection, Worker } from "@temporalio/worker";
-import type { Engine, WorkflowDriver } from "@forge/runtime";
+import type { Engine, WorkflowDriver } from "@forgegraph/runtime";
 import { forgeInstance, wakeSignal, type AdvanceResult, type DriveInput } from "./workflows.js";
 
 export interface TemporalOptions { address: string; namespace?: string; taskQueue: string }

@@ -95,7 +95,13 @@ pub struct ImportOutput {
 // ------------------------------------------------------------------ hosts
 fn ipv4_private(octets: [u8; 4]) -> bool {
     let [a, b, _, _] = octets;
-    a == 10 || a == 127 || a == 0 || (a == 169 && b == 254) || (a == 172 && (16..=31).contains(&b)) || (a == 192 && b == 168) || (a == 100 && (64..=127).contains(&b))
+    a == 10
+        || a == 127
+        || a == 0
+        || (a == 169 && b == 254)
+        || (a == 172 && (16..=31).contains(&b))
+        || (a == 192 && b == 168)
+        || (a == 100 && (64..=127).contains(&b))
 }
 
 /// Parse dotted IPv4 including short forms (`127.1` == 127.0.0.1), as libc's inet_aton does.
@@ -103,7 +109,10 @@ fn parse_ipv4(host: &str) -> Option<[u8; 4]> {
     if host.is_empty() || !host.chars().all(|c| c.is_ascii_digit() || c == '.') {
         return None;
     }
-    let parts: Vec<u64> = host.split('.').map(|p| p.parse::<u64>().ok()).collect::<Option<_>>()?;
+    let parts: Vec<u64> = host
+        .split('.')
+        .map(|p| p.parse::<u64>().ok())
+        .collect::<Option<_>>()?;
     let value: u64 = match parts.as_slice() {
         [a] => *a,
         [a, b] => (a << 24) | b,
@@ -119,7 +128,10 @@ fn parse_ipv4(host: &str) -> Option<[u8; 4]> {
 
 /// Host classification: `Err` names why the host is refused.
 pub fn check_host(url: &str, allow: &[String]) -> Result<String, String> {
-    let rest = url.split("://").nth(1).ok_or_else(|| format!("{url}: not an absolute URL"))?;
+    let rest = url
+        .split("://")
+        .nth(1)
+        .ok_or_else(|| format!("{url}: not an absolute URL"))?;
     let authority = rest.split('/').next().unwrap_or("");
     let authority = authority.rsplit('@').next().unwrap_or(authority);
     let host = if let Some(h) = authority.strip_prefix('[') {
@@ -131,24 +143,48 @@ pub fn check_host(url: &str, allow: &[String]) -> Result<String, String> {
     if lower.is_empty() {
         return Err(format!("{url}: no host"));
     }
-    if lower == "localhost" || lower.ends_with(".localhost") || lower.ends_with(".internal") || lower.ends_with(".local") || lower == "metadata" {
-        return Err(format!("{url}: private/metadata host `{host}` is forbidden"));
+    if lower == "localhost"
+        || lower.ends_with(".localhost")
+        || lower.ends_with(".internal")
+        || lower.ends_with(".local")
+        || lower == "metadata"
+    {
+        return Err(format!(
+            "{url}: private/metadata host `{host}` is forbidden"
+        ));
     }
     if let Some(o) = parse_ipv4(&lower) {
         if ipv4_private(o) {
             return Err(format!("{url}: private address `{host}` is forbidden"));
         }
-        return Err(format!("{url}: literal IP addresses are forbidden; pin a hostname"));
+        return Err(format!(
+            "{url}: literal IP addresses are forbidden; pin a hostname"
+        ));
     }
     if lower.contains(':') {
         // IPv6 literal
-        if lower == "::1" || lower == "::" || lower.starts_with("fe80:") || lower.starts_with("fc") || lower.starts_with("fd") || lower.starts_with("::ffff:") {
+        if lower == "::1"
+            || lower == "::"
+            || lower.starts_with("fe80:")
+            || lower.starts_with("fc")
+            || lower.starts_with("fd")
+            || lower.starts_with("::ffff:")
+        {
             return Err(format!("{url}: private address `{host}` is forbidden"));
         }
-        return Err(format!("{url}: literal IP addresses are forbidden; pin a hostname"));
+        return Err(format!(
+            "{url}: literal IP addresses are forbidden; pin a hostname"
+        ));
     }
-    if !allow.is_empty() && !allow.iter().any(|a| a.eq_ignore_ascii_case(&lower) || (a.starts_with('.') && lower.ends_with(&a.to_ascii_lowercase()))) {
-        return Err(format!("{url}: host `{host}` is not in the allowed host list (forbidden by default)"));
+    if !allow.is_empty()
+        && !allow.iter().any(|a| {
+            a.eq_ignore_ascii_case(&lower)
+                || (a.starts_with('.') && lower.ends_with(&a.to_ascii_lowercase()))
+        })
+    {
+        return Err(format!(
+            "{url}: host `{host}` is not in the allowed host list (forbidden by default)"
+        ));
     }
     Ok(lower)
 }
@@ -175,7 +211,16 @@ fn pascal(s: &str) -> String {
     out
 }
 fn ident(s: &str) -> String {
-    let mut out: String = s.chars().map(|c| if c.is_ascii_alphanumeric() || c == '_' { c } else { '_' }).collect();
+    let mut out: String = s
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
     if out.chars().next().is_some_and(|c| c.is_ascii_digit()) {
         out.insert(0, '_');
     }
@@ -202,16 +247,25 @@ struct Importer {
 }
 
 impl Importer {
-    fn resolve<'b>(&'b self, r: &str, at: &str) -> Result<Value, String> {
+    fn resolve(&self, r: &str, at: &str) -> Result<Value, String> {
         if let Some(ptr) = r.strip_prefix('#') {
-            return self.doc.pointer(ptr).cloned().ok_or_else(|| format!("{at}: unresolved local reference {r}"));
+            return self
+                .doc
+                .pointer(ptr)
+                .cloned()
+                .ok_or_else(|| format!("{at}: unresolved local reference {r}"));
         }
-        let (url, ptr) = r.split_once('#').map(|(u, p)| (u.to_string(), p.to_string())).unwrap_or((r.to_string(), String::new()));
+        let (url, ptr) = r
+            .split_once('#')
+            .map(|(u, p)| (u.to_string(), p.to_string()))
+            .unwrap_or((r.to_string(), String::new()));
         let file = self.pinned.get(&url).ok_or_else(|| format!("{at}: remote reference {url} is not pinned; the importer never fetches (add --pin {url}=<file>)"))?;
         if ptr.is_empty() {
             return Ok(file.clone());
         }
-        file.pointer(&ptr).cloned().ok_or_else(|| format!("{at}: pinned file for {url} has no {ptr}"))
+        file.pointer(&ptr)
+            .cloned()
+            .ok_or_else(|| format!("{at}: pinned file for {url} has no {ptr}"))
     }
 
     /// Follow `$ref`s (bounded) and merge `allOf` object members.
@@ -248,15 +302,26 @@ impl Importer {
     }
 
     fn unsupported(&mut self, feature: &str, at: &str, note: &str) {
-        self.report.unsupported.push(Unsupported { feature: feature.into(), at: at.into(), note: note.into() });
+        self.report.unsupported.push(Unsupported {
+            feature: feature.into(),
+            at: at.into(),
+            note: note.into(),
+        });
     }
 
     fn enum_name(&mut self, values: &[String], parent: &str, field: &str) -> String {
         if let Some(n) = self.enums.get(values) {
             return n.clone();
         }
-        let shared = self.enum_field_counts.get(values).is_some_and(|s| s.len() >= 2);
-        let base = if shared { pascal(field) } else { format!("{}{}", pascal(parent), pascal(field)) };
+        let shared = self
+            .enum_field_counts
+            .get(values)
+            .is_some_and(|s| s.len() >= 2);
+        let base = if shared {
+            pascal(field)
+        } else {
+            format!("{}{}", pascal(parent), pascal(field))
+        };
         let mut name = base.clone();
         let mut i = 2;
         while self.enum_names.contains(&name) {
@@ -269,28 +334,57 @@ impl Importer {
     }
 
     /// Forge type text for a property schema, or `None` when the field must be skipped.
-    fn type_of(&mut self, schema: &Value, parent: &str, field: &str, required: bool, at: &str) -> Result<Option<String>, String> {
+    fn type_of(
+        &mut self,
+        schema: &Value,
+        parent: &str,
+        field: &str,
+        required: bool,
+        at: &str,
+    ) -> Result<Option<String>, String> {
         let s = self.deref(schema, at)?;
         let mut nullable = s.get("nullable").and_then(|v| v.as_bool()).unwrap_or(false);
         let ty: Option<String> = match s.get("type") {
             Some(Value::Array(ts)) => {
-                let non_null: Vec<&str> = ts.iter().filter_map(|t| t.as_str()).filter(|t| *t != "null").collect();
+                let non_null: Vec<&str> = ts
+                    .iter()
+                    .filter_map(|t| t.as_str())
+                    .filter(|t| *t != "null")
+                    .collect();
                 nullable = nullable || ts.iter().any(|t| t == "null");
-                if non_null.len() == 1 { Some(non_null[0].to_string()) } else { None }
+                if non_null.len() == 1 {
+                    Some(non_null[0].to_string())
+                } else {
+                    None
+                }
             }
             Some(Value::String(t)) => Some(t.clone()),
             _ => None,
         };
         if s.get("oneOf").is_some() || s.get("anyOf").is_some() {
-            let f = if s.get("oneOf").is_some() { "oneOf" } else { "anyOf" };
-            self.unsupported(f, at, "union schemas have no Forge shape; typed as json (opaque)");
-            return Ok(Some(format!("json{}", if nullable || !required { "?" } else { "" })));
+            let f = if s.get("oneOf").is_some() {
+                "oneOf"
+            } else {
+                "anyOf"
+            };
+            self.unsupported(
+                f,
+                at,
+                "union schemas have no Forge shape; typed as json (opaque)",
+            );
+            return Ok(Some(format!(
+                "json{}",
+                if nullable || !required { "?" } else { "" }
+            )));
         }
         let opt = if nullable || !required { "?" } else { "" };
         let base = match ty.as_deref() {
             Some("string") => {
                 if let Some(Value::Array(vals)) = s.get("enum") {
-                    let values: Vec<String> = vals.iter().filter_map(|v| v.as_str().map(String::from)).collect();
+                    let values: Vec<String> = vals
+                        .iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect();
                     let name = self.enum_name(&values, parent, field);
                     return Ok(Some(format!("{name}{opt}")));
                 }
@@ -300,7 +394,11 @@ impl Importer {
                     Some("email") => format!("email{opt}"),
                     Some("uri") | Some("url") => format!("url{opt}"),
                     Some("binary") | Some("byte") => {
-                        self.unsupported("binary", at, "binary strings are not importable as shape fields; skipped");
+                        self.unsupported(
+                            "binary",
+                            at,
+                            "binary strings are not importable as shape fields; skipped",
+                        );
                         return Ok(None);
                     }
                     _ => {
@@ -322,19 +420,31 @@ impl Importer {
             }
             Some("integer") => {
                 let mut t = format!("integer{opt}");
-                if let Some(v) = s.get("minimum") { t.push_str(&format!(" >= {v}")); }
-                if let Some(v) = s.get("maximum") { t.push_str(&format!(" <= {v}")); }
+                if let Some(v) = s.get("minimum") {
+                    t.push_str(&format!(" >= {v}"));
+                }
+                if let Some(v) = s.get("maximum") {
+                    t.push_str(&format!(" <= {v}"));
+                }
                 t
             }
             Some("number") => {
                 let mut t = format!("decimal{opt}");
-                if let Some(v) = s.get("minimum") { t.push_str(&format!(" >= {v}")); }
-                if let Some(v) = s.get("maximum") { t.push_str(&format!(" <= {v}")); }
+                if let Some(v) = s.get("minimum") {
+                    t.push_str(&format!(" >= {v}"));
+                }
+                if let Some(v) = s.get("maximum") {
+                    t.push_str(&format!(" <= {v}"));
+                }
                 t
             }
             Some("boolean") => format!("boolean{opt}"),
             Some("array") => {
-                self.unsupported("array", at, "Forge shapes have no list type; typed as json (opaque)");
+                self.unsupported(
+                    "array",
+                    at,
+                    "Forge shapes have no list type; typed as json (opaque)",
+                );
                 format!("json{opt}")
             }
             Some("object") | None if s.get("properties").is_some() => {
@@ -358,15 +468,30 @@ impl Importer {
         self.shapes.insert(name.to_string(), Vec::new()); // reserve (recursion guard)
         self.shape_order.push(name.to_string());
         let s = self.deref(schema, at)?;
-        let required: BTreeSet<String> = s.get("required").and_then(|r| r.as_array()).map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect()).unwrap_or_default();
+        let required: BTreeSet<String> = s
+            .get("required")
+            .and_then(|r| r.as_array())
+            .map(|a| {
+                a.iter()
+                    .filter_map(|v| v.as_str().map(String::from))
+                    .collect()
+            })
+            .unwrap_or_default();
         let mut lines = Vec::new();
         if let Some(Value::Object(props)) = s.get("properties") {
             for (k, v) in props {
                 let fat = format!("{at}.{k}");
-                let Some(t) = self.type_of(v, name, k, required.contains(k), &fat)? else { continue };
+                let Some(t) = self.type_of(v, name, k, required.contains(k), &fat)? else {
+                    continue;
+                };
                 let field = ident(k);
-                if t.starts_with("text") && (k.ends_with("_id") || (k.ends_with("Id") && k.len() > 2)) {
-                    self.report.foreign_identifiers.push(ForeignId { shape: name.to_string(), field: field.clone() });
+                if t.starts_with("text")
+                    && (k.ends_with("_id") || (k.ends_with("Id") && k.len() > 2))
+                {
+                    self.report.foreign_identifiers.push(ForeignId {
+                        shape: name.to_string(),
+                        field: field.clone(),
+                    });
                 }
                 lines.push(format!("  {field} : {t}"));
             }
@@ -376,13 +501,21 @@ impl Importer {
     }
 
     fn collect_enum_fields(&mut self, shape: &str, schema: &Value, at: &str) {
-        let Ok(s) = self.deref(schema, at) else { return };
+        let Ok(s) = self.deref(schema, at) else {
+            return;
+        };
         if let Some(Value::Object(props)) = s.get("properties") {
             for (k, v) in props {
                 let Ok(d) = self.deref(v, at) else { continue };
                 if let Some(Value::Array(vals)) = d.get("enum") {
-                    let values: Vec<String> = vals.iter().filter_map(|x| x.as_str().map(String::from)).collect();
-                    self.enum_field_counts.entry(values).or_default().insert((shape.to_string(), k.clone()));
+                    let values: Vec<String> = vals
+                        .iter()
+                        .filter_map(|x| x.as_str().map(String::from))
+                        .collect();
+                    self.enum_field_counts
+                        .entry(values)
+                        .or_default()
+                        .insert((shape.to_string(), k.clone()));
                 }
                 if d.get("properties").is_some() {
                     self.collect_enum_fields(&format!("{shape}{}", pascal(k)), &d, at);
@@ -397,14 +530,26 @@ fn json_str(s: &str) -> Value {
 }
 
 fn json_media(content: &Value) -> Option<&Value> {
-    content.get("application/json").or_else(|| content.as_object().and_then(|m| m.iter().find(|(k, _)| k.ends_with("+json")).map(|(_, v)| v)))
+    content.get("application/json").or_else(|| {
+        content
+            .as_object()
+            .and_then(|m| m.iter().find(|(k, _)| k.ends_with("+json")).map(|(_, v)| v))
+    })
 }
 
 pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, String> {
-    let doc: Value = serde_json::from_str(text).map_err(|e| format!("the document is not JSON ({e}); YAML is not supported, convert it first"))?;
-    let openapi = doc.get("openapi").and_then(|v| v.as_str()).ok_or("not an OpenAPI 3.x document (no `openapi` field)")?.to_string();
+    let doc: Value = serde_json::from_str(text).map_err(|e| {
+        format!("the document is not JSON ({e}); YAML is not supported, convert it first")
+    })?;
+    let openapi = doc
+        .get("openapi")
+        .and_then(|v| v.as_str())
+        .ok_or("not an OpenAPI 3.x document (no `openapi` field)")?
+        .to_string();
     if !openapi.starts_with("3.") {
-        return Err(format!("OpenAPI {openapi} is not supported (3.0 and 3.1 only)"));
+        return Err(format!(
+            "OpenAPI {openapi} is not supported (3.0 and 3.1 only)"
+        ));
     }
     if opts.package.is_empty() {
         return Err("a package name is required (--package @vendor/name)".into());
@@ -413,16 +558,27 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
     let mut pinned = BTreeMap::new();
     let mut pin_reports = Vec::new();
     for p in &opts.pins {
-        let bytes = std::fs::read(&p.file).map_err(|e| format!("pin {}: cannot read {}: {e}", p.url, p.file.display()))?;
-        let digest = Sha256::digest(&bytes).iter().map(|b| format!("{b:02x}")).collect::<String>();
-        if let Some(expected) = &p.sha256 {
-            if !expected.eq_ignore_ascii_case(&digest) {
-                return Err(format!("pin {}: sha256 mismatch (expected {expected}, file is {digest})", p.url));
-            }
+        let bytes = std::fs::read(&p.file)
+            .map_err(|e| format!("pin {}: cannot read {}: {e}", p.url, p.file.display()))?;
+        let digest = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        if let Some(expected) = &p.sha256
+            && !expected.eq_ignore_ascii_case(&digest)
+        {
+            return Err(format!(
+                "pin {}: sha256 mismatch (expected {expected}, file is {digest})",
+                p.url
+            ));
         }
-        let v: Value = serde_json::from_slice(&bytes).map_err(|e| format!("pin {}: {} is not JSON ({e})", p.url, p.file.display()))?;
+        let v: Value = serde_json::from_slice(&bytes)
+            .map_err(|e| format!("pin {}: {} is not JSON ({e})", p.url, p.file.display()))?;
         pinned.insert(p.url.clone(), v);
-        pin_reports.push(PinReport { url: p.url.clone(), sha256: digest });
+        pin_reports.push(PinReport {
+            url: p.url.clone(),
+            sha256: digest,
+        });
     }
     let info = doc.get("info").cloned().unwrap_or(Value::Null);
     let mut imp = Importer {
@@ -435,7 +591,19 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
         report: Report {
             version: "openapi-import/1".into(),
             package: opts.package.clone(),
-            source: SourceInfo { title: info.get("title").and_then(|v| v.as_str()).unwrap_or("").into(), version: info.get("version").and_then(|v| v.as_str()).unwrap_or("0.0.0").into(), openapi: openapi.clone() },
+            source: SourceInfo {
+                title: info
+                    .get("title")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .into(),
+                version: info
+                    .get("version")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("0.0.0")
+                    .into(),
+                openapi: openapi.clone(),
+            },
             hosts: Vec::new(),
             pins: pin_reports,
             operations: Vec::new(),
@@ -470,7 +638,12 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
     }
 
     // Enum sharing needs a first pass over every component schema.
-    let components: Vec<(String, Value)> = imp.doc.pointer("/components/schemas").and_then(|v| v.as_object()).map(|m| m.iter().map(|(k, v)| (k.clone(), v.clone())).collect()).unwrap_or_default();
+    let components: Vec<(String, Value)> = imp
+        .doc
+        .pointer("/components/schemas")
+        .and_then(|v| v.as_object())
+        .map(|m| m.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
+        .unwrap_or_default();
     for (name, schema) in &components {
         imp.collect_enum_fields(&pascal(name), schema, &format!("components.schemas.{name}"));
     }
@@ -484,14 +657,25 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
 
     // Operations.
     let mut functions: Vec<String> = Vec::new();
-    let paths: Vec<(String, Value)> = imp.doc.get("paths").and_then(|v| v.as_object()).map(|m| m.iter().map(|(k, v)| (k.clone(), v.clone())).collect()).unwrap_or_default();
+    let paths: Vec<(String, Value)> = imp
+        .doc
+        .get("paths")
+        .and_then(|v| v.as_object())
+        .map(|m| m.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
+        .unwrap_or_default();
     for (path, item) in &paths {
-        let Some(methods) = item.as_object() else { continue };
+        let Some(methods) = item.as_object() else {
+            continue;
+        };
         for (method, op) in methods {
             if !["get", "post", "put", "patch", "delete"].contains(&method.as_str()) {
                 continue;
             }
-            let op_id = op.get("operationId").and_then(|v| v.as_str()).map(String::from).unwrap_or_else(|| format!("{method}{}", pascal(path)));
+            let op_id = op
+                .get("operationId")
+                .and_then(|v| v.as_str())
+                .map(String::from)
+                .unwrap_or_else(|| format!("{method}{}", pascal(path)));
             let at = format!("paths.{path}.{method}");
             let fname = pascal(&op_id);
             // Success response: the first 2xx with JSON content (or no content).
@@ -516,22 +700,40 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
                                         let d = imp.deref(schema, &at)?;
                                         if d.get("properties").is_some() {
                                             let n = format!("{fname}Output");
-                                            imp.shape(&n, schema, &format!("{at}.responses.{code}"))?;
+                                            imp.shape(
+                                                &n,
+                                                schema,
+                                                &format!("{at}.responses.{code}"),
+                                            )?;
                                             output = Some(n);
                                         } else {
-                                            imp.unsupported("response-schema", &format!("{at}.responses.{code}"), "non-object success body; output omitted");
+                                            imp.unsupported(
+                                                "response-schema",
+                                                &format!("{at}.responses.{code}"),
+                                                "non-object success body; output omitted",
+                                            );
                                         }
                                     }
                                 }
                                 None => {
-                                    let media: Vec<&String> = c.as_object().map(|m| m.keys().collect()).unwrap_or_default();
-                                    imp.unsupported("binary-media", &format!("{at}.responses.{code}"), &format!("non-JSON media {:?}; operation skipped", media));
+                                    let media: Vec<&String> = c
+                                        .as_object()
+                                        .map(|m| m.keys().collect())
+                                        .unwrap_or_default();
+                                    imp.unsupported(
+                                        "binary-media",
+                                        &format!("{at}.responses.{code}"),
+                                        &format!("non-JSON media {:?}; operation skipped", media),
+                                    );
                                     skip = true;
                                 }
                             },
                         }
                     } else if code.starts_with('4') && code != "401" && code != "403" {
-                        let desc = res.get("description").and_then(|v| v.as_str()).unwrap_or(code);
+                        let desc = res
+                            .get("description")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or(code);
                         let e = pascal(desc);
                         if !e.is_empty() && !errors.contains(&e) {
                             errors.push(e);
@@ -560,16 +762,32 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
                         imp.unsupported("query-array-form", &pat, "array query parameters (style/explode serialization) are not importable; parameter dropped");
                         continue;
                     }
-                    let required = loc == "path" || p.get("required").and_then(|v| v.as_bool()).unwrap_or(false);
+                    let required = loc == "path"
+                        || p.get("required").and_then(|v| v.as_bool()).unwrap_or(false);
                     if let Some(t) = imp.type_of(&schema, &fname, name, required, &pat)? {
                         param_lines.push(format!("  {} : {t}", ident(name)));
                     }
                 }
             }
-            let body_schema = op.get("requestBody").and_then(|b| imp.deref(b, &at).ok()).and_then(|b| b.get("content").and_then(json_media).and_then(|m| m.get("schema")).cloned());
-            let has_non_json_body = op.get("requestBody").and_then(|b| b.get("content")).is_some_and(|c| json_media(c).is_none());
+            let body_schema = op
+                .get("requestBody")
+                .and_then(|b| imp.deref(b, &at).ok())
+                .and_then(|b| {
+                    b.get("content")
+                        .and_then(json_media)
+                        .and_then(|m| m.get("schema"))
+                        .cloned()
+                });
+            let has_non_json_body = op
+                .get("requestBody")
+                .and_then(|b| b.get("content"))
+                .is_some_and(|c| json_media(c).is_none());
             if has_non_json_body {
-                imp.unsupported("binary-media", &format!("{at}.requestBody"), "non-JSON request body; operation skipped");
+                imp.unsupported(
+                    "binary-media",
+                    &format!("{at}.requestBody"),
+                    "non-JSON request body; operation skipped",
+                );
                 imp.report.skipped_operations.push(op_id.clone());
                 continue;
             }
@@ -605,15 +823,37 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
                 for (cb_name, cb) in cbs {
                     if let Some(exprs) = cb.as_object() {
                         for (expr, item) in exprs {
-                            let url = if expr.contains('{') { None } else { Some(check_host(expr, &opts.allow_hosts)?) };
-                            let payload = item.as_object().and_then(|m| m.values().next()).and_then(|o| o.get("requestBody")).and_then(|b| b.get("content")).and_then(json_media).and_then(|m| m.get("schema")).and_then(|s| s.get("$ref")).and_then(|r| r.as_str()).map(|r| pascal(r.rsplit('/').next().unwrap_or(r)));
-                            imp.report.callbacks.push(Callback { name: format!("{op_id}.{cb_name}"), kind: "callback".into(), url: url.or_else(|| Some(expr.clone())), payload });
+                            let url = if expr.contains('{') {
+                                None
+                            } else {
+                                Some(check_host(expr, &opts.allow_hosts)?)
+                            };
+                            let payload = item
+                                .as_object()
+                                .and_then(|m| m.values().next())
+                                .and_then(|o| o.get("requestBody"))
+                                .and_then(|b| b.get("content"))
+                                .and_then(json_media)
+                                .and_then(|m| m.get("schema"))
+                                .and_then(|s| s.get("$ref"))
+                                .and_then(|r| r.as_str())
+                                .map(|r| pascal(r.rsplit('/').next().unwrap_or(r)));
+                            imp.report.callbacks.push(Callback {
+                                name: format!("{op_id}.{cb_name}"),
+                                kind: "callback".into(),
+                                url: url.or_else(|| Some(expr.clone())),
+                                payload,
+                            });
                         }
                     }
                 }
             }
             let mut f = String::new();
-            f.push_str(&format!("export function {fname}\n  @http({}, {})\n{{\n", method.to_uppercase(), quote(path)));
+            f.push_str(&format!(
+                "export function {fname}\n  @http({}, {})\n{{\n",
+                method.to_uppercase(),
+                quote(path)
+            ));
             if let Some(i) = &input {
                 f.push_str(&format!("  input {i}\n"));
             }
@@ -629,20 +869,39 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
             }
             f.push_str("}\n");
             functions.push(f);
-            imp.report.operations.push(ImportedOperation { operation_id: op_id, function: fname, method: method.to_uppercase(), path: path.clone() });
+            imp.report.operations.push(ImportedOperation {
+                operation_id: op_id,
+                function: fname,
+                method: method.to_uppercase(),
+                path: path.clone(),
+            });
         }
     }
     // Webhooks (3.1): inbound contracts without a URL.
     if let Some(Value::Object(hooks)) = imp.doc.get("webhooks") {
         for (name, item) in hooks {
-            let payload = item.as_object().and_then(|m| m.values().next()).and_then(|o| o.get("requestBody")).and_then(|b| b.get("content")).and_then(json_media).and_then(|m| m.get("schema")).and_then(|s| s.get("$ref")).and_then(|r| r.as_str()).map(|r| pascal(r.rsplit('/').next().unwrap_or(r)));
-            imp.report.callbacks.push(Callback { name: format!("webhook:{name}"), kind: "webhook".into(), url: None, payload });
+            let payload = item
+                .as_object()
+                .and_then(|m| m.values().next())
+                .and_then(|o| o.get("requestBody"))
+                .and_then(|b| b.get("content"))
+                .and_then(json_media)
+                .and_then(|m| m.get("schema"))
+                .and_then(|s| s.get("$ref"))
+                .and_then(|r| r.as_str())
+                .map(|r| pascal(r.rsplit('/').next().unwrap_or(r)));
+            imp.report.callbacks.push(Callback {
+                name: format!("webhook:{name}"),
+                kind: "webhook".into(),
+                url: None,
+                payload,
+            });
         }
     }
 
     // ---- render
     let mut src = String::new();
-    src.push_str(&format!("// Imported from OpenAPI {} \"{}\" v{} by `forge import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\n", openapi, imp.report.source.title, imp.report.source.version));
+    src.push_str(&format!("// Imported from OpenAPI {} \"{}\" v{} by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\n", openapi, imp.report.source.title, imp.report.source.version));
     let mut enums: Vec<(&String, &Vec<String>)> = imp.enums.iter().map(|(v, n)| (n, v)).collect();
     enums.sort();
     for (name, values) in enums {
@@ -678,23 +937,34 @@ pub fn import_openapi(text: &str, opts: &ImportOptions) -> Result<ImportOutput, 
     }
     let toml = format!(
         "[package]\nname = \"{}\"\nversion = \"{}\"\nedition = \"2026\"\n\n[source]\nroot = \"src\"\nentry = \"src/index.forge\"\n\n[compatibility]\nprofile = \"portable-v1\"\ntargets = [\"cloudflare-d1\", \"aws-dynamodb\"]\n",
-        opts.package,
-        imp.report.source.version
+        opts.package, imp.report.source.version
     );
-    let mut foreign = String::from("# Foreign identifiers\n\nThese fields look like identifiers but belong to the vendor. They are imported as `text` and are\nnever Forge references: a string that happens to match a Forge `Customer` id is not that customer.\nTo relate one to a Forge resource, write a reviewed resolver function that looks the record up by an\nexplicit mapping (an external-id field or a mapping table) and returns the Forge reference.\n\n| shape | field |\n|---|---|\n");
+    let mut foreign = String::from(
+        "# Foreign identifiers\n\nThese fields look like identifiers but belong to the vendor. They are imported as `text` and are\nnever Forge references: a string that happens to match a Forge `Customer` id is not that customer.\nTo relate one to a Forge resource, write a reviewed resolver function that looks the record up by an\nexplicit mapping (an external-id field or a mapping table) and returns the Forge reference.\n\n| shape | field |\n|---|---|\n",
+    );
     for f in &imp.report.foreign_identifiers {
         foreign.push_str(&format!("| {} | {} |\n", f.shape, f.field));
     }
     if imp.report.foreign_identifiers.is_empty() {
         foreign.push_str("| (none) | |\n");
     }
-    imp.report.unsupported.sort_by(|a, b| (&a.at, &a.feature).cmp(&(&b.at, &b.feature)));
-    imp.report.foreign_identifiers.sort_by(|a, b| (&a.shape, &a.field).cmp(&(&b.shape, &b.field)));
+    imp.report
+        .unsupported
+        .sort_by(|a, b| (&a.at, &a.feature).cmp(&(&b.at, &b.feature)));
+    imp.report
+        .foreign_identifiers
+        .sort_by(|a, b| (&a.shape, &a.field).cmp(&(&b.shape, &b.field)));
     imp.report.skipped_operations.sort();
     let mut files = BTreeMap::new();
     files.insert("forge.toml".to_string(), toml);
     files.insert("src/index.forge".to_string(), src);
     files.insert("FOREIGN_IDS.md".to_string(), foreign);
-    files.insert("import-report.json".to_string(), serde_json::to_string_pretty(&imp.report).map_err(|e| e.to_string())? + "\n");
-    Ok(ImportOutput { files, report: imp.report })
+    files.insert(
+        "import-report.json".to_string(),
+        serde_json::to_string_pretty(&imp.report).map_err(|e| e.to_string())? + "\n",
+    );
+    Ok(ImportOutput {
+        files,
+        report: imp.report,
+    })
 }

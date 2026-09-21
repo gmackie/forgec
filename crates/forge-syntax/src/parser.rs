@@ -2,7 +2,7 @@
 //! expression parser. Produces a lossless rowan tree: every source byte is
 //! in the tree, including comments, whitespace and unparseable regions.
 
-use crate::lexer::{tokenize, Token, TokenKind};
+use crate::lexer::{Token, TokenKind, tokenize};
 use crate::syntax_kind::SyntaxKind as K;
 use rowan::{Checkpoint, GreenNode, GreenNodeBuilder};
 use std::ops::Range;
@@ -22,12 +22,36 @@ pub struct Parser<'a> {
 }
 
 pub fn parse_to_green(src: &str) -> (GreenNode, Vec<SyntaxError>) {
-    let mut p = Parser { src, tokens: tokenize(src), pos: 0, builder: GreenNodeBuilder::new(), errors: Vec::new() };
+    let mut p = Parser {
+        src,
+        tokens: tokenize(src),
+        pos: 0,
+        builder: GreenNodeBuilder::new(),
+        errors: Vec::new(),
+    };
     p.file();
     (p.builder.finish(), p.errors)
 }
 
-const DECL_KEYWORDS: &[&str] = &["enum", "type", "shape", "resource", "blob", "cache", "view", "projection", "function", "channel", "source", "on", "import", "module", "export", "workflow", "dataClass"]; // `purpose` is also a function item, so it does not signal an unclosed block
+const DECL_KEYWORDS: &[&str] = &[
+    "enum",
+    "type",
+    "shape",
+    "resource",
+    "blob",
+    "cache",
+    "view",
+    "projection",
+    "function",
+    "channel",
+    "source",
+    "on",
+    "import",
+    "module",
+    "export",
+    "workflow",
+    "dataClass",
+]; // `purpose` is also a function item, so it does not signal an unclosed block
 
 impl<'a> Parser<'a> {
     // ---------------------------------------------------------------- cursor
@@ -35,7 +59,10 @@ impl<'a> Parser<'a> {
         self.tokens.get(i).map(|t| t.kind).unwrap_or(TokenKind::Eof)
     }
     fn raw_text(&self, i: usize) -> &'a str {
-        self.tokens.get(i).map(|t| &self.src[t.range.clone()]).unwrap_or("")
+        self.tokens
+            .get(i)
+            .map(|t| &self.src[t.range.clone()])
+            .unwrap_or("")
     }
     /// Index of the next significant token. Whitespace and plain comments are
     /// skipped; a doc-comment run is skipped together with the line breaks
@@ -96,17 +123,24 @@ impl<'a> Parser<'a> {
         self.current() == TokenKind::Eof
     }
     fn at_line_end(&self) -> bool {
-        matches!(self.current(), TokenKind::Newline | TokenKind::Semicolon | TokenKind::Eof | TokenKind::RBrace)
+        matches!(
+            self.current(),
+            TokenKind::Newline | TokenKind::Semicolon | TokenKind::Eof | TokenKind::RBrace
+        )
     }
     fn current_range(&self) -> Range<usize> {
         let i = self.sig(self.pos);
-        self.tokens.get(i).map(|t| t.range.clone()).unwrap_or(self.src.len()..self.src.len())
+        self.tokens
+            .get(i)
+            .map(|t| t.range.clone())
+            .unwrap_or(self.src.len()..self.src.len())
     }
 
     // --------------------------------------------------------------- building
     fn push_raw(&mut self) {
         let t = &self.tokens[self.pos];
-        self.builder.token(K::from(t.kind).into(), &self.src[t.range.clone()]);
+        self.builder
+            .token(K::from(t.kind).into(), &self.src[t.range.clone()]);
         self.pos += 1;
     }
     /// Push everything before the next significant token into the current node.
@@ -167,7 +201,10 @@ impl<'a> Parser<'a> {
     }
     fn error(&mut self, message: impl Into<String>) {
         let range = self.current_range();
-        self.errors.push(SyntaxError { range, message: message.into() });
+        self.errors.push(SyntaxError {
+            range,
+            message: message.into(),
+        });
     }
     fn expect(&mut self, k: TokenKind, what: &str) -> bool {
         if self.at(k) {
@@ -208,7 +245,10 @@ impl<'a> Parser<'a> {
     fn eat_lines(&mut self) {
         while self.pos < self.tokens.len() {
             match self.tokens[self.pos].kind {
-                TokenKind::Whitespace | TokenKind::Comment | TokenKind::Newline | TokenKind::Semicolon => self.push_raw(),
+                TokenKind::Whitespace
+                | TokenKind::Comment
+                | TokenKind::Newline
+                | TokenKind::Semicolon => self.push_raw(),
                 _ => return,
             }
         }
@@ -281,7 +321,11 @@ impl<'a> Parser<'a> {
     }
 
     fn declaration(&mut self) {
-        let kw = if self.at_kw("export") { self.nth_text(1) } else { self.current_text() };
+        let kw = if self.at_kw("export") {
+            self.nth_text(1)
+        } else {
+            self.current_text()
+        };
         let kind = match kw {
             "enum" => K::ENUM_DECL,
             "type" => K::TYPE_DECL,
@@ -372,7 +416,12 @@ impl<'a> Parser<'a> {
                 return;
             }
             // A declaration keyword inside a block means the block was never closed.
-            if self.at(TokenKind::Ident) && DECL_KEYWORDS.contains(&self.current_text()) && self.nth(1) == TokenKind::Ident && !matches!(self.nth(1), TokenKind::Colon) && self.looks_like_decl() {
+            if self.at(TokenKind::Ident)
+                && DECL_KEYWORDS.contains(&self.current_text())
+                && self.nth(1) == TokenKind::Ident
+                && !matches!(self.nth(1), TokenKind::Colon)
+                && self.looks_like_decl()
+            {
                 self.error("expected `}` before next declaration");
                 return;
             }
@@ -426,7 +475,8 @@ impl<'a> Parser<'a> {
     }
 
     fn field_item(&mut self) {
-        if self.at(TokenKind::Ident) && matches!(self.nth(1), TokenKind::Colon | TokenKind::ColonEq) {
+        if self.at(TokenKind::Ident) && matches!(self.nth(1), TokenKind::Colon | TokenKind::ColonEq)
+        {
             self.field_decl();
             self.end_item();
         }
@@ -486,7 +536,9 @@ impl<'a> Parser<'a> {
         }
         loop {
             match self.current() {
-                TokenKind::Ident if matches!(self.current_text(), "trim" | "uppercase" | "lowercase") => {
+                TokenKind::Ident
+                    if matches!(self.current_text(), "trim" | "uppercase" | "lowercase") =>
+                {
                     self.start(K::REFINEMENT);
                     self.bump();
                     self.finish();
@@ -541,7 +593,15 @@ impl<'a> Parser<'a> {
         }
     }
     fn is_compare_kind(k: TokenKind) -> bool {
-        matches!(k, TokenKind::Lt | TokenKind::LtEq | TokenKind::Gt | TokenKind::GtEq | TokenKind::EqEq | TokenKind::BangEq)
+        matches!(
+            k,
+            TokenKind::Lt
+                | TokenKind::LtEq
+                | TokenKind::Gt
+                | TokenKind::GtEq
+                | TokenKind::EqEq
+                | TokenKind::BangEq
+        )
     }
     fn is_compare_op(&self) -> bool {
         Self::is_compare_kind(self.current())
@@ -603,7 +663,11 @@ impl<'a> Parser<'a> {
             self.bump();
         }
         match self.current() {
-            TokenKind::Int | TokenKind::Decimal | TokenKind::String | TokenKind::Duration | TokenKind::Percent => {
+            TokenKind::Int
+            | TokenKind::Decimal
+            | TokenKind::String
+            | TokenKind::Duration
+            | TokenKind::Percent => {
                 self.start(K::LITERAL_EXPR);
                 self.bump();
                 self.finish();
@@ -626,7 +690,10 @@ impl<'a> Parser<'a> {
                 self.expect(TokenKind::RBracket, "`]`");
                 self.finish();
             }
-            _ => self.error(format!("expected decorator argument, found {}", self.describe())),
+            _ => self.error(format!(
+                "expected decorator argument, found {}",
+                self.describe()
+            )),
         }
         self.finish();
     }
@@ -683,7 +750,10 @@ impl<'a> Parser<'a> {
             self.bump();
             self.field_list();
             let i = self.sig_after_lines(self.pos);
-            if self.raw_kind(i) == TokenKind::Ident && self.raw_text(i) == "order" && self.raw_text(self.sig(i + 1)) == "by" {
+            if self.raw_kind(i) == TokenKind::Ident
+                && self.raw_text(i) == "order"
+                && self.raw_text(self.sig(i + 1)) == "by"
+            {
                 self.eat_lines();
                 self.bump();
                 self.bump();
@@ -754,7 +824,11 @@ impl<'a> Parser<'a> {
             return;
         }
         let verb_at = if self.at_kw("deny") { 1 } else { 0 };
-        if matches!(self.nth_text(verb_at), "read" | "update" | "create" | "filter" | "order" | "actions") && self.nth(verb_at + 1) == TokenKind::LBrace {
+        if matches!(
+            self.nth_text(verb_at),
+            "read" | "update" | "create" | "filter" | "order" | "actions"
+        ) && self.nth(verb_at + 1) == TokenKind::LBrace
+        {
             self.start(K::CAPABILITY_ITEM);
             if verb_at == 1 {
                 self.bump();
@@ -817,7 +891,10 @@ impl<'a> Parser<'a> {
                 p.expect(TokenKind::Arrow, "`->`");
                 p.expect_ident("target state");
                 let i = p.sig_after_lines(p.pos);
-                if p.raw_kind(i) == TokenKind::Ident && p.raw_text(i) == "input" && p.raw_kind(p.sig(i + 1)) == TokenKind::LBrace {
+                if p.raw_kind(i) == TokenKind::Ident
+                    && p.raw_text(i) == "input"
+                    && p.raw_kind(p.sig(i + 1)) == TokenKind::LBrace
+                {
                     p.eat_lines();
                     p.start(K::INPUT_BLOCK);
                     p.bump();
@@ -1012,7 +1089,12 @@ impl<'a> Parser<'a> {
                         if q.at(TokenKind::Ident) {
                             q.start(K::USE_DECL);
                             q.qualified_name("dependency");
-                            if q.at(TokenKind::Ident) && matches!(q.current_text(), "read" | "write" | "create" | "delete") {
+                            if q.at(TokenKind::Ident)
+                                && matches!(
+                                    q.current_text(),
+                                    "read" | "write" | "create" | "delete"
+                                )
+                            {
                                 q.bump();
                             }
                             if q.at_kw("for") {
@@ -1306,10 +1388,20 @@ impl<'a> Parser<'a> {
     /// True when the next significant token after newlines is the keyword (continuation lines).
     fn kw_after_lines(&self, kw: &str) -> bool {
         let mut i = self.pos;
-        while i < self.tokens.len() && matches!(self.tokens[i].kind, TokenKind::Whitespace | TokenKind::Comment | TokenKind::Newline | TokenKind::Semicolon) {
+        while i < self.tokens.len()
+            && matches!(
+                self.tokens[i].kind,
+                TokenKind::Whitespace
+                    | TokenKind::Comment
+                    | TokenKind::Newline
+                    | TokenKind::Semicolon
+            )
+        {
             i += 1;
         }
-        i < self.tokens.len() && self.tokens[i].kind == TokenKind::Ident && &self.src[self.tokens[i].range.clone()] == kw
+        i < self.tokens.len()
+            && self.tokens[i].kind == TokenKind::Ident
+            && &self.src[self.tokens[i].range.clone()] == kw
     }
 
     /// `return expr` | `fail Error`
@@ -1325,7 +1417,10 @@ impl<'a> Parser<'a> {
             self.expect_ident("error name");
             self.finish();
         } else {
-            self.error(format!("expected `return` or `fail`, found {}", self.describe()));
+            self.error(format!(
+                "expected `return` or `fail`, found {}",
+                self.describe()
+            ));
         }
     }
 
@@ -1402,7 +1497,12 @@ impl<'a> Parser<'a> {
         Some(match k {
             TokenKind::PipePipe => (1, 2),
             TokenKind::AmpAmp => (3, 4),
-            TokenKind::EqEq | TokenKind::BangEq | TokenKind::Lt | TokenKind::LtEq | TokenKind::Gt | TokenKind::GtEq => (5, 6),
+            TokenKind::EqEq
+            | TokenKind::BangEq
+            | TokenKind::Lt
+            | TokenKind::LtEq
+            | TokenKind::Gt
+            | TokenKind::GtEq => (5, 6),
             TokenKind::Plus | TokenKind::Minus => (7, 8),
             TokenKind::Star | TokenKind::Slash => (9, 10),
             _ => return None,
@@ -1436,7 +1536,11 @@ impl<'a> Parser<'a> {
                 self.expect(TokenKind::RParen, "`)`");
                 self.finish();
             }
-            TokenKind::Int | TokenKind::Decimal | TokenKind::String | TokenKind::Duration | TokenKind::Percent => {
+            TokenKind::Int
+            | TokenKind::Decimal
+            | TokenKind::String
+            | TokenKind::Duration
+            | TokenKind::Percent => {
                 self.start(K::LITERAL_EXPR);
                 self.bump();
                 self.finish();

@@ -10,8 +10,9 @@ import { promisify } from "node:util";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { MemoryStorage, type AppBundle } from "@forge/runtime";
-import { createNodeHost, type NodeHost } from "@forge/runtime/node";
+import { MemoryStorage, type AppBundle } from "@forgegraph/runtime";
+import { createNodeHost, type NodeHost } from "@forgegraph/runtime/node";
+import { devHeaderAuth } from "@forgegraph/runtime";
 import { externals, functions } from "../../../examples/acme/impl/index.js";
 import { httpCallable, type Outcome } from "../src/rpc.js";
 
@@ -59,7 +60,7 @@ describe("PAR-123: cross-language wire conformance", () => {
   let base: string;
   let reference: unknown[];
   beforeAll(async () => {
-    host = createNodeHost({ bundle, store: new MemoryStorage(), functions, externals, cursorSecret: "sdk-test", sweepIntervalMs: 0, telemetryFormat: "silent" });
+    host = createNodeHost({ auth: devHeaderAuth(), bundle, store: new MemoryStorage(), functions, externals, cursorSecret: "sdk-test", sweepIntervalMs: 0, telemetryFormat: "silent" });
     base = (await host.listen(0)).url;
     const client = httpCallable({ baseUrl: base, credential: { kind: "dev-header", tenant: "sdk-ts", actor: "sdk-ts" } });
     reference = [];

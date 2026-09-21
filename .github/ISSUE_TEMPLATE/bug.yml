@@ -1,0 +1,40 @@
+name: Bug report
+description: Something behaves differently from what the documentation or a conformance scenario says.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If the bug is that two targets behave differently, say so explicitly — that
+        is the most serious class of bug in this project and it is triaged first.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected instead
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: A `.forge` package (or a cut-down one) and the commands you ran. The smaller the better.
+      render: shell
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "`forgec --version`, and the `@forgegraph/*` versions if the runtime is involved."
+    validations: { required: true }
+  - type: dropdown
+    id: target
+    attributes:
+      label: Where it happens
+      multiple: true
+      options: [Cloudflare, AWS, Node / self-hosted, reference model (in-memory), compiler only, not sure]
+    validations: { required: true }
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Compiler diagnostics, test failures, or the Problem document the runtime returned.
+      render: shell

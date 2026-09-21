@@ -4,7 +4,7 @@
  * revocation stays authoritative through the deployment ledger's rollback step.
  */
 import { describe, expect, it } from "vitest";
-import { DeploymentLedger, MemoryStorage } from "@forge/runtime";
+import { DeploymentLedger, MemoryStorage } from "@forgegraph/runtime";
 import { generateSigner } from "../src/artifacts.js";
 import { GrantRegistry } from "../src/grants.js";
 

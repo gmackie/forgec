@@ -8,7 +8,7 @@
  * are marked sampled; error-budget panels carry the export-gap series so
  * uncertainty is visible rather than averaged away.
  */
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 
 export interface MetricAvailability { provider: string; metrics: Record<string, "available" | "missing" | "sampled"> }
 export interface Panel {

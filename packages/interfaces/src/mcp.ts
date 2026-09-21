@@ -16,8 +16,8 @@
  * same authentication as every other route.
  */
 import { Cause, Effect } from "effect";
-import type { CallContext, Engine, Principal, Resource } from "@forge/runtime";
-import { ForgeError, discovery } from "@forge/runtime";
+import type { CallContext, Engine, Principal, Resource } from "@forgegraph/runtime";
+import { ForgeError, discovery } from "@forgegraph/runtime";
 
 /** Protocol revisions this server implements, newest first (pinned matrix). */
 export const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26"] as const;

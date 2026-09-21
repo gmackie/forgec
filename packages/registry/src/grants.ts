@@ -12,7 +12,7 @@
  * approved, activated and observed graphs are kept distinct. Retirement
  * drains; emergency revocation is a tombstone that activation cannot undo.
  */
-import type { AppBundle, CallContext, ExternalBinding } from "@forge/runtime";
+import type { AppBundle, CallContext, ExternalBinding } from "@forgegraph/runtime";
 import { canonical, digestOf, signBytes, verifyBytes, type Signer, type TrustPolicy } from "./artifacts.js";
 
 export interface DependencyEdge { kind: "function" | "resource" | "transition"; callee: string; caller: string; purpose: string; capability?: string }

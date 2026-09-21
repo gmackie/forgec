@@ -7,8 +7,8 @@
  * Postgres contract suite through that mode: pooled transaction mode fails
  * the session-state check, so it is certified for a narrower contract only.
  */
-import type { SqlExecutor } from "@forge/runtime/sql-executor";
-import { rawPgExecutor } from "@forge/runtime/postgres";
+import type { SqlExecutor } from "@forgegraph/runtime/sql-executor";
+import { rawPgExecutor } from "@forgegraph/runtime/postgres";
 
 export interface ManagedPostgresProfile {
   id: string;

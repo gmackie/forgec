@@ -6,7 +6,7 @@
 //! promises).
 use forge_planner::contracts::{Contracts, JsonSchema};
 use forge_planner::observability::ObservabilityPlan;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 fn schema_value(s: &JsonSchema) -> Value {
     let mut v = json!({ "type": s.ty, "properties": s.properties, "additionalProperties": false });
@@ -20,14 +20,17 @@ fn schema_value(s: &JsonSchema) -> Value {
 fn rewrite_refs(v: &mut Value, names: &Map<String, Value>) {
     match v {
         Value::Object(m) => {
-            if let Some(Value::String(r)) = m.get("$ref").cloned() {
-                if let Some(id) = r.strip_prefix("#/$defs/") {
-                    let short = id.rsplit('/').next().unwrap_or(id).replace('.', "");
-                    if let Some(Value::String(n)) = names.get(id) {
-                        m.insert("$ref".into(), json!(format!("#/components/schemas/{n}")));
-                    } else {
-                        m.insert("$ref".into(), json!(format!("#/components/schemas/{short}")));
-                    }
+            if let Some(Value::String(r)) = m.get("$ref").cloned()
+                && let Some(id) = r.strip_prefix("#/$defs/")
+            {
+                let short = id.rsplit('/').next().unwrap_or(id).replace('.', "");
+                if let Some(Value::String(n)) = names.get(id) {
+                    m.insert("$ref".into(), json!(format!("#/components/schemas/{n}")));
+                } else {
+                    m.insert(
+                        "$ref".into(),
+                        json!(format!("#/components/schemas/{short}")),
+                    );
                 }
             }
             for x in m.values_mut() {
@@ -79,15 +82,24 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
         schemas.insert(format!("{}Record", r.name), schema_value(&r.record));
         schemas.insert(format!("{}Create", r.name), schema_value(&r.create));
         schemas.insert(format!("{}Patch", r.name), schema_value(&r.patch));
-        names.insert(format!("{}.Record", r.id), json!(format!("{}Record", r.name)));
+        names.insert(
+            format!("{}.Record", r.id),
+            json!(format!("{}Record", r.name)),
+        );
         if let Some(lc) = &r.lifecycle {
             for a in &lc.actions {
-                schemas.insert(format!("{}{}Input", r.name, upper(&a.name)), schema_value(&a.input));
+                schemas.insert(
+                    format!("{}{}Input", r.name, upper(&a.name)),
+                    schema_value(&a.input),
+                );
             }
         }
     }
     for s in &c.surfaces {
-        schemas.insert(format!("{}{}Record", s.resource_name, s.purpose_name), schema_value(&s.record));
+        schemas.insert(
+            format!("{}{}Record", s.resource_name, s.purpose_name),
+            schema_value(&s.record),
+        );
     }
     for v in &c.views {
         schemas.insert(format!("{}Row", v.name), schema_value(&v.record));
@@ -95,7 +107,9 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
     for p in &c.projections {
         schemas.insert(format!("{}Record", p.name), schema_value(&p.record));
     }
-    let slo = |op: &str| obs.operations.iter().find(|o| o.operation == op).map(|o| json!({ "availability": o.slo.availability, "latencyGood": o.slo.latency_good, "latencyWithinMs": o.slo.latency_within_ms, "window": o.slo.window, "class": o.class })).unwrap_or(Value::Null);
+    let slo = |op: &str| {
+        obs.operations.iter().find(|o| o.operation == op).map(|o| json!({ "availability": o.slo.availability, "latencyGood": o.slo.latency_good, "latencyWithinMs": o.slo.latency_within_ms, "window": o.slo.window, "class": o.class })).unwrap_or(Value::Null)
+    };
 
     let mut paths: Map<String, Value> = Map::new();
     let mut put = |path: &str, method: &str, op: Value| {
@@ -105,7 +119,10 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
     let etag = json!({ "ETag": { "schema": { "type": "string" }, "description": "Record version as a strong ETag" } });
     let if_match = json!({ "name": "If-Match", "in": "header", "required": true, "schema": { "type": "string" }, "description": "Expected record version; 412 on mismatch, 428 when missing" });
     let idem = json!({ "name": "Idempotency-Key", "in": "header", "required": false, "schema": { "type": "string" }, "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch" });
-    let page = vec![json!({ "name": "cursor", "in": "query", "schema": { "type": "string" } }), json!({ "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 } })];
+    let page = [
+        json!({ "name": "cursor", "in": "query", "schema": { "type": "string" } }),
+        json!({ "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 } }),
+    ];
 
     for r in &c.resources {
         let rec = format!("#/components/schemas/{}Record", r.name);
@@ -122,7 +139,10 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
                     parameters.push(idem.clone());
                     body = json!({ "required": true, "content": { "application/json": { "schema": { "$ref": format!("#/components/schemas/{}Create", r.name) } } } });
                     responses.insert("201".into(), json!({ "description": "Created", "headers": etag, "content": { "application/json": { "schema": { "$ref": rec } } } }));
-                    responses.insert("409".into(), problem_response("UniqueConflict / ReferenceMissing"));
+                    responses.insert(
+                        "409".into(),
+                        problem_response("UniqueConflict / ReferenceMissing"),
+                    );
                     responses.insert("422".into(), problem_response("ValidationFailed"));
                 }
                 "get" => {
@@ -135,7 +155,10 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
                     body = json!({ "required": true, "content": { "application/json": { "schema": { "$ref": format!("#/components/schemas/{}Patch", r.name) } } } });
                     responses.insert("200".into(), ok.clone());
                     responses.insert("404".into(), problem_response("NotFound"));
-                    responses.insert("412".into(), problem_response("VersionConflict (stale If-Match)"));
+                    responses.insert(
+                        "412".into(),
+                        problem_response("VersionConflict (stale If-Match)"),
+                    );
                     responses.insert("422".into(), problem_response("ValidationFailed"));
                     responses.insert("428".into(), json!({ "description": "Precondition required (If-Match)", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }));
                 }
@@ -144,7 +167,10 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
                     parameters.push(idem.clone());
                     responses.insert("200".into(), ok.clone());
                     responses.insert("404".into(), problem_response("NotFound"));
-                    responses.insert("409".into(), problem_response("HasDependents / InvalidTransition"));
+                    responses.insert(
+                        "409".into(),
+                        problem_response("HasDependents / InvalidTransition"),
+                    );
                     responses.insert("412".into(), problem_response("VersionConflict"));
                     responses.insert("428".into(), json!({ "description": "Precondition required (If-Match)", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }));
                 }
@@ -161,7 +187,11 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
                     responses.insert("428".into(), json!({ "description": "Precondition required (If-Match)", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }));
                 }
                 "find" | "list" | "effective" => {
-                    if let Some(q) = r.queries.iter().find(|q| Some(&q.name) == op.query.as_ref()) {
+                    if let Some(q) = r
+                        .queries
+                        .iter()
+                        .find(|q| Some(&q.name) == op.query.as_ref())
+                    {
                         for p in &q.params {
                             parameters.push(json!({ "name": p, "in": "query", "required": true, "schema": r.record.properties.get(p).cloned().unwrap_or(json!({ "type": "string" })) }));
                         }
@@ -184,7 +214,10 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
                 "download" => {
                     responses.insert("200".into(), json!({ "description": "Signed download", "content": { "application/json": { "schema": { "type": "object", "properties": { "url": { "type": "string" }, "method": { "type": "string" }, "expiresAt": { "type": "string" }, "mediaType": { "type": "string" }, "byteCount": { "type": "integer" }, "digest": { "type": "string" } } } } } }));
                     responses.insert("403".into(), problem_response("InspectionBlocked"));
-                    responses.insert("409".into(), problem_response("InvalidTransition / InspectionPending"));
+                    responses.insert(
+                        "409".into(),
+                        problem_response("InvalidTransition / InspectionPending"),
+                    );
                 }
                 _ => {
                     responses.insert("200".into(), ok.clone());
@@ -203,10 +236,15 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
     }
     for f in &c.functions {
         let Some(h) = &f.http else { continue };
-        let mut parameters = params_for(&h.path, &[idem.clone()]);
+        let mut parameters = params_for(&h.path, std::slice::from_ref(&idem));
         let mut input = schema_value(&f.input);
         // Path parameters bind input fields by name: they are not repeated in the body.
-        let path_params: Vec<String> = h.path.split('/').filter(|s| s.starts_with('{')).map(|s| s.trim_matches(|c| c == '{' || c == '}').to_string()).collect();
+        let path_params: Vec<String> = h
+            .path
+            .split('/')
+            .filter(|s| s.starts_with('{'))
+            .map(|s| s.trim_matches(|c| c == '{' || c == '}').to_string())
+            .collect();
         if let Some(props) = input["properties"].as_object_mut() {
             for p in &path_params {
                 props.remove(p);
@@ -215,7 +253,10 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
         if let Some(req) = input["required"].as_array_mut() {
             req.retain(|x| !path_params.iter().any(|p| Value::String(p.clone()) == *x));
         }
-        if input["properties"].as_object().is_some_and(|m| m.contains_key("expectedVersion")) {
+        if input["properties"]
+            .as_object()
+            .is_some_and(|m| m.contains_key("expectedVersion"))
+        {
             parameters.push(json!({ "name": "If-Match", "in": "header", "required": false, "schema": { "type": "string" }, "description": "Supplies expectedVersion" }));
         }
         let mut responses = Map::new();
@@ -225,7 +266,17 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
         responses.insert("412".into(), problem_response("VersionConflict"));
         responses.insert("422".into(), problem_response("ValidationFailed"));
         if !f.errors.is_empty() {
-            responses.insert("409".into(), problem_response(&format!("Domain errors: {}", f.errors.iter().map(|e| format!("{}.{e}", f.id)).collect::<Vec<_>>().join(", "))));
+            responses.insert(
+                "409".into(),
+                problem_response(&format!(
+                    "Domain errors: {}",
+                    f.errors
+                        .iter()
+                        .map(|e| format!("{}.{e}", f.id))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )),
+            );
         }
         let mut o = json!({ "operationId": f.id, "tags": ["functions"], "x-forge-kind": "function", "parameters": parameters, "requestBody": { "required": true, "content": { "application/json": { "schema": input } } }, "responses": responses });
         let s = slo(&f.id);
@@ -239,7 +290,13 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
         responses.insert("200".into(), json!({ "description": "Workflow instance", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WorkflowInstance" } } } }));
         responses.insert("401".into(), problem_response("Unauthenticated"));
         let mut start_input = schema_value(&w.input);
-        let path_params: Vec<String> = w.start.path.split('/').filter(|s| s.starts_with('{')).map(|s| s.trim_matches(|c| c == '{' || c == '}').to_string()).collect();
+        let path_params: Vec<String> = w
+            .start
+            .path
+            .split('/')
+            .filter(|s| s.starts_with('{'))
+            .map(|s| s.trim_matches(|c| c == '{' || c == '}').to_string())
+            .collect();
         if let Some(props) = start_input["properties"].as_object_mut() {
             for p in &path_params {
                 props.remove(p);
@@ -248,16 +305,32 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
         if let Some(req) = start_input["required"].as_array_mut() {
             req.retain(|x| !path_params.iter().any(|p| Value::String(p.clone()) == *x));
         }
-        put(&w.start.path, &w.start.method.to_lowercase(), json!({ "operationId": format!("{}.start", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.start", "parameters": params_for(&w.start.path, &[idem.clone()]), "requestBody": { "required": true, "content": { "application/json": { "schema": start_input } } }, "responses": responses.clone() }));
-        put(&format!("{}/{{id}}", w.path), "get", json!({ "operationId": format!("{}.get", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.get", "parameters": params_for(&format!("{}/{{id}}", w.path), &[]), "responses": responses.clone() }));
-        put(&format!("{}/{{id}}/cancel", w.path), "post", json!({ "operationId": format!("{}.cancel", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.cancel", "parameters": params_for(&format!("{}/{{id}}/cancel", w.path), &[]), "responses": responses.clone() }));
-        put(&format!("{}/signals/{{message}}", w.path), "post", json!({ "operationId": format!("{}.signal", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.signal", "parameters": params_for(&format!("{}/signals/{{message}}", w.path), &[]), "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["payload"], "properties": { "messageId": { "type": "string" }, "payload": { "type": "object" } } } } } }, "responses": { "200": { "description": "Delivery report", "content": { "application/json": { "schema": { "type": "object", "properties": { "delivered": { "type": "integer" }, "held": { "type": "integer" } } } } } } } }));
+        put(
+            &w.start.path,
+            &w.start.method.to_lowercase(),
+            json!({ "operationId": format!("{}.start", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.start", "parameters": params_for(&w.start.path, std::slice::from_ref(&idem)), "requestBody": { "required": true, "content": { "application/json": { "schema": start_input } } }, "responses": responses.clone() }),
+        );
+        put(
+            &format!("{}/{{id}}", w.path),
+            "get",
+            json!({ "operationId": format!("{}.get", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.get", "parameters": params_for(&format!("{}/{{id}}", w.path), &[]), "responses": responses.clone() }),
+        );
+        put(
+            &format!("{}/{{id}}/cancel", w.path),
+            "post",
+            json!({ "operationId": format!("{}.cancel", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.cancel", "parameters": params_for(&format!("{}/{{id}}/cancel", w.path), &[]), "responses": responses.clone() }),
+        );
+        put(
+            &format!("{}/signals/{{message}}", w.path),
+            "post",
+            json!({ "operationId": format!("{}.signal", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.signal", "parameters": params_for(&format!("{}/signals/{{message}}", w.path), &[]), "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["payload"], "properties": { "messageId": { "type": "string" }, "payload": { "type": "object" } } } } } }, "responses": { "200": { "description": "Delivery report", "content": { "application/json": { "schema": { "type": "object", "properties": { "delivered": { "type": "integer" }, "held": { "type": "integer" } } } } } } } }),
+        );
     }
     schemas.insert("WorkflowInstance".into(), json!({ "type": "object", "required": ["id", "workflow", "version", "status"], "properties": { "id": { "type": "string" }, "workflow": { "type": "string" }, "version": { "type": "integer" }, "status": { "type": "string", "enum": ["running", "waiting", "sleeping", "completed", "failed", "cancelled"] }, "bindings": { "type": "object" }, "history": { "type": "array" }, "output": {}, "error": { "type": "object" } } }));
 
     let mut doc = json!({
         "openapi": "3.1.0",
-        "info": { "title": c.package, "version": c.version, "description": "Generated by forge build; a projection of the same contracts the runtime enforces on every target.", "x-forge-contracts": c.version },
+        "info": { "title": c.package, "version": c.version, "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.", "x-forge-contracts": c.version },
         "servers": [],
         "components": { "schemas": schemas, "securitySchemes": { "bearer": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" } } },
         "security": [{ "bearer": [] }],
@@ -290,8 +363,15 @@ pub fn smithy(c: &Contracts) -> String {
     let structure = |out: &mut String, name: &str, s: &JsonSchema| {
         out.push_str(&format!("structure {name} {{\n"));
         for (k, v) in &s.properties {
-            let nullable = v.get("type").and_then(|t| t.as_array()).is_some_and(|a| a.iter().any(|x| x == "null"));
-            let req = if s.required.contains(k) && !nullable { "    @required\n" } else { "" };
+            let nullable = v
+                .get("type")
+                .and_then(|t| t.as_array())
+                .is_some_and(|a| a.iter().any(|x| x == "null"));
+            let req = if s.required.contains(k) && !nullable {
+                "    @required\n"
+            } else {
+                ""
+            };
             out.push_str(&format!("{req}    {k}: {}\n", ty(v)));
         }
         out.push_str("}\n\n");
@@ -303,7 +383,11 @@ pub fn smithy(c: &Contracts) -> String {
         structure(&mut out, &format!("{}PatchInput", r.name), &r.patch);
         for op in &r.operations {
             let Some(h) = &op.http else { continue };
-            let name = format!("{}{}", r.name, upper(&op.kind.replace('.', "")).replace(['.', '-'], ""));
+            let name = format!(
+                "{}{}",
+                r.name,
+                upper(&op.kind.replace('.', "")).replace(['.', '-'], "")
+            );
             let input = match op.kind.as_str() {
                 "create" => format!("{}CreateInput", r.name),
                 "update" => format!("{}PatchInput", r.name),

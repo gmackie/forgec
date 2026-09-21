@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Effect } from "effect";
 import { beforeEach, describe, expect, it } from "vitest";
-import { Engine, MemoryStorage, Model, createHttpHandler, devHeaderAuth, localAuthorizer, testLayer, type AppBundle, type CallContext, type Policy, type Principal } from "@forge/runtime";
+import { Engine, MemoryStorage, Model, createHttpHandler, devHeaderAuth, localAuthorizer, testLayer, type AppBundle, type CallContext, type Policy, type Principal } from "@forgegraph/runtime";
 import { createMcpServer, mcpHttp, type JsonRpcResponse, type McpServer } from "../src/mcp.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme-next.app.json"), "utf8")) as AppBundle;

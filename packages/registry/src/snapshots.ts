@@ -10,7 +10,7 @@
  * snapshot's so cached allows die with it.
  */
 import { Effect } from "effect";
-import type { Authorizer, AuthzRequest, Decision, Policy } from "@forge/runtime";
+import type { Authorizer, AuthzRequest, Decision, Policy } from "@forgegraph/runtime";
 import { canonical, signBytes, verifyBytes, type Signer, type TrustPolicy } from "./artifacts.js";
 
 export interface SnapshotPayload {

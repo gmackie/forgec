@@ -55,7 +55,9 @@ pub struct Slo {
 const BASE_BOUNDARIES: &[u32] = &[5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
 
 fn duration_ms(d: &str) -> Option<u32> {
-    let (n, unit) = d.trim().split_at(d.trim().find(|c: char| !c.is_ascii_digit())?);
+    let (n, unit) = d
+        .trim()
+        .split_at(d.trim().find(|c: char| !c.is_ascii_digit())?);
     let n: u32 = n.parse().ok()?;
     Some(match unit {
         "ms" => n,
@@ -68,9 +70,13 @@ fn duration_ms(d: &str) -> Option<u32> {
 
 fn class_of(kind: &str) -> &'static str {
     match kind {
-        "get" | "find" | "list" | "effective" | "children" | "ancestors" | "download" => "crud-read",
-        "create" | "update" | "delete" | "restore" | "transition" | "move" | "beginUpload" | "finalizeUpload" => "crud-write",
-        "view.query" | "projection.get" | "projection.status" | "cache.read" | "schedule.status" | "workflow.get" => "crud-read",
+        "get" | "find" | "list" | "effective" | "children" | "ancestors" | "download" => {
+            "crud-read"
+        }
+        "create" | "update" | "delete" | "restore" | "transition" | "move" | "beginUpload"
+        | "finalizeUpload" => "crud-write",
+        "view.query" | "projection.get" | "projection.status" | "cache.read"
+        | "schedule.status" | "workflow.get" => "crud-read",
         "function" => "function",
         "workflow.start" | "workflow.signal" | "workflow.cancel" => "workflow",
         "projection.rebuild" | "schedule.tick" => "job",
@@ -91,8 +97,23 @@ pub fn plan(ir: &DomainIR) -> ObservabilityPlan {
     let cfg = &ir.package.observability;
     let window = cfg.window.clone();
     let target = |class: &str, declared: Option<(String, String, String)>| -> Slo {
-        let (a, g, w) = declared.or_else(|| cfg.slo.iter().find(|(c, _)| c == class).map(|(_, t)| (t.availability.clone(), t.latency_good.clone(), t.latency_within.clone()))).unwrap_or_else(|| default_target(class));
-        Slo { availability: a, latency_good: g, latency_within_ms: duration_ms(&w).unwrap_or(1000), window: window.clone() }
+        let (a, g, w) = declared
+            .or_else(|| {
+                cfg.slo.iter().find(|(c, _)| c == class).map(|(_, t)| {
+                    (
+                        t.availability.clone(),
+                        t.latency_good.clone(),
+                        t.latency_within.clone(),
+                    )
+                })
+            })
+            .unwrap_or_else(|| default_target(class));
+        Slo {
+            availability: a,
+            latency_good: g,
+            latency_within_ms: duration_ms(&w).unwrap_or(1000),
+            window: window.clone(),
+        }
     };
     let boundaries = |within: u32| {
         let mut b: Vec<u32> = BASE_BOUNDARIES.to_vec();
@@ -103,10 +124,22 @@ pub fn plan(ir: &DomainIR) -> ObservabilityPlan {
         b
     };
     let mut operations = Vec::new();
-    let mut push = |operation: String, kind: &str, resource: Option<String>, declared: Option<(String, String, String)>, business_errors: Vec<String>| {
+    let mut push = |operation: String,
+                    kind: &str,
+                    resource: Option<String>,
+                    declared: Option<(String, String, String)>,
+                    business_errors: Vec<String>| {
         let class = class_of(kind);
         let slo = target(class, declared);
-        operations.push(OperationTelemetry { operation, kind: kind.into(), resource, class: class.into(), histogram_boundaries_ms: boundaries(slo.latency_within_ms), slo, business_errors });
+        operations.push(OperationTelemetry {
+            operation,
+            kind: kind.into(),
+            resource,
+            class: class.into(),
+            histogram_boundaries_ms: boundaries(slo.latency_within_ms),
+            slo,
+            business_errors,
+        });
     };
     for m in &ir.modules {
         for r in &m.resources {
@@ -116,38 +149,108 @@ pub fn plan(ir: &DomainIR) -> ObservabilityPlan {
         }
         for f in &m.functions {
             let declared = f.slo.iter().fold((None, None), |acc, s| match s {
-                forge_semantic::ir::Slo::Availability { target, .. } => (Some(target.clone()), acc.1),
-                forge_semantic::ir::Slo::Latency { target, within, .. } => (acc.0, Some((target.clone(), within.clone()))),
+                forge_semantic::ir::Slo::Availability { target, .. } => {
+                    (Some(target.clone()), acc.1)
+                }
+                forge_semantic::ir::Slo::Latency { target, within, .. } => {
+                    (acc.0, Some((target.clone(), within.clone())))
+                }
             });
             let declared = match declared {
                 (Some(a), Some((g, w))) => Some((a, g, w)),
-                (Some(a), None) => { let d = default_target("function"); Some((a, d.1, d.2)) }
-                (None, Some((g, w))) => { let d = default_target("function"); Some((d.0, g, w)) }
+                (Some(a), None) => {
+                    let d = default_target("function");
+                    Some((a, d.1, d.2))
+                }
+                (None, Some((g, w))) => {
+                    let d = default_target("function");
+                    Some((d.0, g, w))
+                }
                 (None, None) => None,
             };
-            push(f.id.clone(), "function", None, declared, f.errors.iter().map(|e| format!("{}.{e}", f.id)).collect());
+            push(
+                f.id.clone(),
+                "function",
+                None,
+                declared,
+                f.errors.iter().map(|e| format!("{}.{e}", f.id)).collect(),
+            );
         }
         for v in &m.views {
-            push(format!("{}.query", v.id), "view.query", Some(v.source.clone()), None, vec![]);
+            push(
+                format!("{}.query", v.id),
+                "view.query",
+                Some(v.source.clone()),
+                None,
+                vec![],
+            );
         }
         for p in &m.projections {
-            push(format!("{}.get", p.id), "projection.get", Some(p.source.clone()), None, vec![]);
-            push(format!("{}.status", p.id), "projection.status", Some(p.source.clone()), None, vec![]);
-            push(format!("{}.rebuild", p.id), "projection.rebuild", Some(p.source.clone()), None, vec![]);
+            push(
+                format!("{}.get", p.id),
+                "projection.get",
+                Some(p.source.clone()),
+                None,
+                vec![],
+            );
+            push(
+                format!("{}.status", p.id),
+                "projection.status",
+                Some(p.source.clone()),
+                None,
+                vec![],
+            );
+            push(
+                format!("{}.rebuild", p.id),
+                "projection.rebuild",
+                Some(p.source.clone()),
+                None,
+                vec![],
+            );
         }
         for c in &m.caches {
             push(format!("{}.read", c.id), "cache.read", None, None, vec![]);
         }
         for w in &m.workflows {
             let errs: Vec<String> = w.errors.iter().map(|e| format!("{}.{e}", w.id)).collect();
-            push(format!("{}.start", w.id), "workflow.start", None, None, errs);
+            push(
+                format!("{}.start", w.id),
+                "workflow.start",
+                None,
+                None,
+                errs,
+            );
             push(format!("{}.get", w.id), "workflow.get", None, None, vec![]);
-            push(format!("{}.signal", w.id), "workflow.signal", None, None, vec![]);
-            push(format!("{}.cancel", w.id), "workflow.cancel", None, None, vec![]);
+            push(
+                format!("{}.signal", w.id),
+                "workflow.signal",
+                None,
+                None,
+                vec![],
+            );
+            push(
+                format!("{}.cancel", w.id),
+                "workflow.cancel",
+                None,
+                None,
+                vec![],
+            );
         }
         for s in &m.sources {
-            push(format!("{}.status", s.id), "schedule.status", None, None, vec![]);
-            push(format!("{}.tick", s.id), "schedule.tick", None, None, vec![]);
+            push(
+                format!("{}.status", s.id),
+                "schedule.status",
+                None,
+                None,
+                vec![],
+            );
+            push(
+                format!("{}.tick", s.id),
+                "schedule.tick",
+                None,
+                None,
+                vec![],
+            );
         }
     }
     ObservabilityPlan {

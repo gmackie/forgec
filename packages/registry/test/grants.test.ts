@@ -9,7 +9,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { AppBundle, CallContext, ExternalBinding } from "@forge/runtime";
+import type { AppBundle, CallContext, ExternalBinding } from "@forgegraph/runtime";
 import { generateSigner, type TrustPolicy } from "../src/artifacts.js";
 import { ApprovalBot, MemoryRepoHost } from "../src/approval-bot.js";
 import { publishGrant } from "../src/grant-publication.js";

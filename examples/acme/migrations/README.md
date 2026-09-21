@@ -1,7 +1,7 @@
 # Migrations
 
 Reviewed, source-controlled migration streams for the Acme deployment (plan §22).
-`forge build` writes the current baseline schema to `generated/d1/0001_init.sql`;
+`forgec build` writes the current baseline schema to `generated/d1/0001_init.sql`;
 `0001_init.sql` here is the reviewed copy of the baseline the deployment was created
 from, and every later file is an additive change reviewed with the language change
 that required it. `conformance/test/migrations.test.ts` fails when the generated

@@ -1,7 +1,7 @@
 // External binding for payments.AuthorizePayment (plan §14: external slots are
 // explicit). The reference deployment approves every amount below 1000.00 and
 // declines above, so the SubmitOrder error paths are reachable end to end.
-import type { ExternalBinding } from "@forge/runtime";
+import type { ExternalBinding } from "@forgegraph/runtime";
 
 export const authorizePayment: ExternalBinding = async (input) => {
   const amount = Number((input as { amount: string }).amount);

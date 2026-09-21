@@ -7,7 +7,7 @@
  * or bucket the customer supplies) are recorded as `adopted` with a
  * `retain` policy; nothing here ever emits a destroy for them.
  */
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 
 export type TargetKind = "cloudflare" | "aws" | "self-hosted";
 export type Ownership = "managed" | "adopted";

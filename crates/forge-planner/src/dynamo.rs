@@ -60,7 +60,14 @@ pub fn plan(ir: &DomainIR) -> DynamoPlan {
     let mut resources = Vec::new();
     for m in &ir.modules {
         for r in &m.resources {
-            let claims: Vec<Claim> = r.uniques.iter().map(|u| Claim { name: u.name.clone(), key_fields: u.within.iter().chain(u.fields.iter()).cloned().collect() }).collect();
+            let claims: Vec<Claim> = r
+                .uniques
+                .iter()
+                .map(|u| Claim {
+                    name: u.name.clone(),
+                    key_fields: u.within.iter().chain(u.fields.iter()).cloned().collect(),
+                })
+                .collect();
             let access: Vec<Access> = r
                 .lists
                 .iter()
@@ -74,13 +81,49 @@ pub fn plan(ir: &DomainIR) -> DynamoPlan {
                             projection.push(f.clone());
                         }
                     }
-                    Access { name: l.name.clone(), kind: "list".into(), partition_fields: l.fields.clone(), sort_fields: l.order.iter().map(|o| o.field.clone()).collect(), sort_directions: l.order.iter().map(|o| o.direction.clone()).collect(), projection }
+                    Access {
+                        name: l.name.clone(),
+                        kind: "list".into(),
+                        partition_fields: l.fields.clone(),
+                        sort_fields: l.order.iter().map(|o| o.field.clone()).collect(),
+                        sort_directions: l.order.iter().map(|o| o.direction.clone()).collect(),
+                        projection,
+                    }
                 })
                 .collect();
-            let references: Vec<Reference> = r.fields.iter().filter_map(|f| if let TypeBase::Reference { resource } = &f.ty.base { Some(Reference { field: f.name.clone(), target: resource.clone() }) } else { None }).collect();
+            let references: Vec<Reference> = r
+                .fields
+                .iter()
+                .filter_map(|f| {
+                    if let TypeBase::Reference { resource } = &f.ty.base {
+                        Some(Reference {
+                            field: f.name.clone(),
+                            target: resource.clone(),
+                        })
+                    } else {
+                        None
+                    }
+                })
+                .collect();
             let create_actions = 1 + claims.len() + access.len() + references.len() + 2; // entity, claims, access items, parent guards, audit, outbox
-            resources.push(DynamoResource { id: r.id.clone(), name: r.name.clone(), wire_name: naming::wire(&r.name), tenant_scoped: r.decorators.tenant, claims, access, references, create_actions });
+            resources.push(DynamoResource {
+                id: r.id.clone(),
+                name: r.name.clone(),
+                wire_name: naming::wire(&r.name),
+                tenant_scoped: r.decorators.tenant,
+                claims,
+                access,
+                references,
+                create_actions,
+            });
         }
     }
-    DynamoPlan { version: "dynamo-plan/1".into(), identity_codec: "identity.v1".into(), sort_codec: "sort.v1".into(), table: "data".into(), pending_index: "pending-index".into(), resources }
+    DynamoPlan {
+        version: "dynamo-plan/1".into(),
+        identity_codec: "identity.v1".into(),
+        sort_codec: "sort.v1".into(),
+        table: "data".into(),
+        pending_index: "pending-index".into(),
+        resources,
+    }
 }

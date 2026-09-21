@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { AppBundle, OperationEvent } from "@forge/runtime";
+import type { AppBundle, OperationEvent } from "@forgegraph/runtime";
 import { Redactor, SINK_POLICIES, leaks, logEvent, rawLoggingEscapes } from "../src/telemetry.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme-next.app.json"), "utf8")) as AppBundle;
@@ -34,7 +34,7 @@ describe("PAR-164: sensitive values never reach generated sinks", () => {
   });
 
   it("raw logging in handwritten code is an unmodeled escape, listed and never marked safe", () => {
-    const src = `import { defineFunction } from "@forge/runtime";\nexport const f = defineFunction("x", (deps) => {\n  console.log("input", deps.input);\n  return Effect.void;\n});\n`;
+    const src = `import { defineFunction } from "@forgegraph/runtime";\nexport const f = defineFunction("x", (deps) => {\n  console.log("input", deps.input);\n  return Effect.void;\n});\n`;
     const escapes = rawLoggingEscapes(src, "impl/f.ts");
     expect(escapes).toEqual([{ file: "impl/f.ts", line: 3, call: "console.log", verdict: "unmodeled" }]);
     expect(rawLoggingEscapes("const x = 1;\n")).toEqual([]);

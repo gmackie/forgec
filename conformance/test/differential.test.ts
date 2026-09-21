@@ -9,7 +9,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { AppBundle } from "@forge/runtime";
+import type { AppBundle } from "@forgegraph/runtime";
 import { runDifferential } from "../src/differential.js";
 import { ProfileTarget } from "../src/profile-target.js";
 import type { Target } from "../src/target.js";

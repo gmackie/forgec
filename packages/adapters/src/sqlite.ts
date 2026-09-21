@@ -13,7 +13,7 @@
  * interface through `@libsql/client`; its profile stays `unverified` until the
  * suite has run against a real endpoint (FORGE_TURSO_URL).
  */
-import type { SqlExecutor, SqlStatement } from "@forge/runtime/sql-executor";
+import type { SqlExecutor, SqlStatement } from "@forgegraph/runtime/sql-executor";
 
 export interface SqliteProfile {
   id: string;

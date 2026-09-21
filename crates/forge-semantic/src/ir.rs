@@ -26,11 +26,20 @@ impl DomainIR {
     pub fn load(v: &serde_json::Value) -> Result<DomainIR, String> {
         let version = v["version"].as_str().unwrap_or("");
         if version != DOMAIN_IR_VERSION {
-            return Err(format!("unsupported IR version `{version}` (this build reads {DOMAIN_IR_VERSION})"));
+            return Err(format!(
+                "unsupported IR version `{version}` (this build reads {DOMAIN_IR_VERSION})"
+            ));
         }
-        let ir: DomainIR = serde_json::from_value(v.clone()).map_err(|e| format!("malformed IR: {e}"))?;
-        if let Some(f) = ir.requires.iter().find(|f| !KNOWN_FEATURES.contains(&f.as_str())) {
-            return Err(format!("IR requires unknown critical feature `{f}`; refusing to interpret it partially"));
+        let ir: DomainIR =
+            serde_json::from_value(v.clone()).map_err(|e| format!("malformed IR: {e}"))?;
+        if let Some(f) = ir
+            .requires
+            .iter()
+            .find(|f| !KNOWN_FEATURES.contains(&f.as_str()))
+        {
+            return Err(format!(
+                "IR requires unknown critical feature `{f}`; refusing to interpret it partially"
+            ));
         }
         Ok(ir)
     }
@@ -59,7 +68,10 @@ pub struct ObservabilityConfig {
 }
 impl Default for ObservabilityConfig {
     fn default() -> Self {
-        Self { window: "28d".into(), slo: vec![] }
+        Self {
+            window: "28d".into(),
+            slo: vec![],
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -122,7 +134,9 @@ impl SubjectBinding {
     }
     #[allow(non_snake_case)]
     pub fn From(field: impl Into<String>) -> Self {
-        SubjectBinding::From { field: field.into() }
+        SubjectBinding::From {
+            field: field.into(),
+        }
     }
 }
 
@@ -205,13 +219,41 @@ pub struct Workflow {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Step {
-    Call { id: String, target: CallTarget, args: Vec<NamedArg>, catches: Vec<Catch> },
-    Sleep { id: String, duration: String },
-    Wait { id: String, channel: String, message: String, #[serde(skip_serializing_if = "Option::is_none")] correlate: Option<Correlation>, #[serde(skip_serializing_if = "Option::is_none")] timeout: Option<Timeout> },
-    Choice { id: String, condition: Expr, then: Vec<Step>, otherwise: Vec<Step> },
-    Parallel { id: String, branches: Vec<Vec<Step>> },
-    Return { value: Expr },
-    Fail { error: String },
+    Call {
+        id: String,
+        target: CallTarget,
+        args: Vec<NamedArg>,
+        catches: Vec<Catch>,
+    },
+    Sleep {
+        id: String,
+        duration: String,
+    },
+    Wait {
+        id: String,
+        channel: String,
+        message: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        correlate: Option<Correlation>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout: Option<Timeout>,
+    },
+    Choice {
+        id: String,
+        condition: Expr,
+        then: Vec<Step>,
+        otherwise: Vec<Step>,
+    },
+    Parallel {
+        id: String,
+        branches: Vec<Vec<Step>>,
+    },
+    Return {
+        value: Expr,
+    },
+    Fail {
+        error: String,
+    },
 }
 
 impl Step {
@@ -399,9 +441,19 @@ pub enum TypeBase {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Constraint {
-    Length { #[serde(skip_serializing_if = "Option::is_none")] min: Option<u64>, #[serde(skip_serializing_if = "Option::is_none")] max: Option<u64> },
-    Compare { op: String, value: Literal },
-    Pattern { value: String },
+    Length {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        min: Option<u64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        max: Option<u64>,
+    },
+    Compare {
+        op: String,
+        value: Literal,
+    },
+    Pattern {
+        value: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -415,7 +467,10 @@ pub enum Literal {
     Duration(String),
     Percent(String),
     /// `Enum.Member`
-    EnumMember { r#enum: String, member: String },
+    EnumMember {
+        r#enum: String,
+        member: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -452,11 +507,25 @@ pub struct Field {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Expr {
-    Binary { op: String, lhs: Box<Expr>, rhs: Box<Expr> },
-    Unary { op: String, operand: Box<Expr> },
-    Name { path: Vec<String> },
-    Literal { literal: Literal },
-    Call { callee: Vec<String>, args: Vec<Expr> },
+    Binary {
+        op: String,
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
+    },
+    Unary {
+        op: String,
+        operand: Box<Expr>,
+    },
+    Name {
+        path: Vec<String>,
+    },
+    Literal {
+        literal: Literal,
+    },
+    Call {
+        callee: Vec<String>,
+        args: Vec<Expr>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
@@ -636,9 +705,19 @@ pub struct Function {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Use {
-    Resource { resource: String, capability: String },
-    Transition { resource: String, action: String },
-    Function { function: String, #[serde(default, skip_serializing_if = "Option::is_none")] purpose: Option<String> },
+    Resource {
+        resource: String,
+        capability: String,
+    },
+    Transition {
+        resource: String,
+        action: String,
+    },
+    Function {
+        function: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        purpose: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -651,8 +730,15 @@ pub struct Send {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Slo {
-    Availability { target: String, window: String },
-    Latency { target: String, within: String, window: String },
+    Availability {
+        target: String,
+        window: String,
+    },
+    Latency {
+        target: String,
+        within: String,
+        window: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -717,19 +803,34 @@ pub fn hash_hex(text: &str) -> String {
 
 impl DomainIR {
     pub fn find_resource(&self, id: &str) -> Option<&Resource> {
-        self.modules.iter().flat_map(|m| m.resources.iter()).find(|r| r.id == id)
+        self.modules
+            .iter()
+            .flat_map(|m| m.resources.iter())
+            .find(|r| r.id == id)
     }
     pub fn find_channel(&self, id: &str) -> Option<&Channel> {
-        self.modules.iter().flat_map(|m| m.channels.iter()).find(|c| c.id == id)
+        self.modules
+            .iter()
+            .flat_map(|m| m.channels.iter())
+            .find(|c| c.id == id)
     }
     pub fn find_function(&self, id: &str) -> Option<&Function> {
-        self.modules.iter().flat_map(|m| m.functions.iter()).find(|c| c.id == id)
+        self.modules
+            .iter()
+            .flat_map(|m| m.functions.iter())
+            .find(|c| c.id == id)
     }
     pub fn find_shape(&self, id: &str) -> Option<&Shape> {
-        self.modules.iter().flat_map(|m| m.shapes.iter()).find(|c| c.id == id)
+        self.modules
+            .iter()
+            .flat_map(|m| m.shapes.iter())
+            .find(|c| c.id == id)
     }
     pub fn find_enum(&self, id: &str) -> Option<&EnumDecl> {
-        self.modules.iter().flat_map(|m| m.enums.iter()).find(|c| c.id == id)
+        self.modules
+            .iter()
+            .flat_map(|m| m.enums.iter())
+            .find(|c| c.id == id)
     }
     /// Content hash of the canonical serialization.
     pub fn content_hash(&self) -> String {
@@ -745,15 +846,42 @@ impl DomainIR {
         use sha2::Digest;
         // Canonical form: object keys sorted (the IR serializer preserves declaration order, which is
         // not part of the contract), arrays kept ordered.
-        let h = |domain: &str, v: &serde_json::Value| hex::encode(sha2::Sha256::digest(format!("forge:{domain}:{}", serde_json::to_string(&canonical(v)).expect("serialize")).as_bytes()));
+        let h = |domain: &str, v: &serde_json::Value| {
+            hex::encode(sha2::Sha256::digest(
+                format!(
+                    "forge:{domain}:{}",
+                    serde_json::to_string(&canonical(v)).expect("serialize")
+                )
+                .as_bytes(),
+            ))
+        };
         let full = serde_json::to_value(self).expect("serialize");
         let mut wire = full.clone();
-        strip_keys(&mut wire, &["doc", "label", "purposes", "dataClasses", "capabilities", "purposeBindings", "purposeScoped", "subject", "dataClass", "purpose"]);
+        strip_keys(
+            &mut wire,
+            &[
+                "doc",
+                "label",
+                "purposes",
+                "dataClasses",
+                "capabilities",
+                "purposeBindings",
+                "purposeScoped",
+                "subject",
+                "dataClass",
+                "purpose",
+            ],
+        );
         let mut docs = serde_json::Value::Array(vec![]);
         collect_keys(&full, "doc", &mut docs);
         let mut security = full.clone();
         strip_keys(&mut security, &["doc", "label"]);
-        Digests { source: h("source", &full), wire: h("wire", &wire), docs: h("docs", &docs), security: h("security", &security) }
+        Digests {
+            source: h("source", &full),
+            wire: h("wire", &wire),
+            docs: h("docs", &docs),
+            security: h("security", &security),
+        }
     }
 }
 

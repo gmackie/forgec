@@ -61,15 +61,32 @@ pub fn plan(ir: &DomainIR) -> RealtimePlan {
     for m in &ir.modules {
         for c in &m.channels {
             if let Some(ws) = &c.websocket {
-                streams.push(StreamPlan { channel: c.id.clone(), name: c.name.clone(), path: ws.path.clone(), messages: c.messages.iter().map(|x| x.name.clone()).collect() });
+                streams.push(StreamPlan {
+                    channel: c.id.clone(),
+                    name: c.name.clone(),
+                    path: ws.path.clone(),
+                    messages: c.messages.iter().map(|x| x.name.clone()).collect(),
+                });
             }
         }
     }
     RealtimePlan {
         version: REALTIME_VERSION.into(),
-        profile: Profile { frame: "text/json".into(), max_frame_bytes: 65_536, replay_depth: 256, delivery: "at-least-once".into(), heartbeat_seconds: 30 },
+        profile: Profile {
+            frame: "text/json".into(),
+            max_frame_bytes: 65_536,
+            replay_depth: 256,
+            delivery: "at-least-once".into(),
+            heartbeat_seconds: 30,
+        },
         streams,
-        cloudflare: CloudflareRealtime { binding: "REALTIME".into(), class_name: "ForgeRealtime".into() },
-        aws: AwsRealtime { api_name: format!("forge-{slug}-realtime"), routes: vec!["$connect".into(), "$disconnect".into(), "$default".into()] },
+        cloudflare: CloudflareRealtime {
+            binding: "REALTIME".into(),
+            class_name: "ForgeRealtime".into(),
+        },
+        aws: AwsRealtime {
+            api_name: format!("forge-{slug}-realtime"),
+            routes: vec!["$connect".into(), "$disconnect".into(), "$default".into()],
+        },
     }
 }

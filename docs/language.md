@@ -9,7 +9,7 @@ below; `specs/language/` is normative.
 
 `forge.toml` names the package, its source root, path dependencies and the
 compatibility profile; `[observability]` sets SLO targets. `forge.lock` pins
-dependency contracts and the compiler version (`forge lock`; `forge check`
+dependency contracts and the compiler version (`forgec lock`; `forgec check`
 fails with `E-LOCK-001` when it is stale).
 
 ```toml
@@ -170,7 +170,7 @@ export workflow ProcessOrder
 
 Step ids are the step names (stable identifiers). `version` pins in-flight
 instances; changing the graph without bumping it is a compile-time
-compatibility error (`forge compat`). Cloudflare Workflows and Step Functions
+compatibility error (`forgec compat`). Cloudflare Workflows and Step Functions
 drive the same portable executor.
 
 ## Views, projections, caches

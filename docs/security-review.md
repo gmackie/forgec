@@ -9,10 +9,10 @@ assurance profile beyond what is stated below.
 | component | trusted for | not trusted for |
 |---|---|---|
 | compiler (`crates/forge-*`) | IR, contracts, capability algebra, digests | nothing at runtime |
-| `@forge/runtime` engine | validation, guarded commits, purpose projection, gatekeeper decisions, suppression ledger | isolation between callers in one process |
+| `@forgegraph/runtime` engine | validation, guarded commits, purpose projection, gatekeeper decisions, suppression ledger | isolation between callers in one process |
 | auth host (`jwtAuth` / dev headers) | binding the trusted invocation context | credential issuance |
 | storage adapters (memory, D1, DynamoDB, PostgreSQL, node:sqlite) | atomic batches, unique claims, reference guards, physical budgets | authorization (they see projected results only) |
-| registry (`@forge/registry`) | artifact integrity, catalog confidentiality, grants, snapshots, evidence | executing anything |
+| registry (`@forgegraph/registry`) | artifact integrity, catalog confidentiality, grants, snapshots, evidence | executing anything |
 | hosts (Workers, Lambda, Node) | ingress, telemetry sinks, sweeps | tenant isolation beyond the credential |
 
 **TypeScript types are not isolation evidence.** Purpose surfaces, nominal reader keys and grant checks are
@@ -49,7 +49,7 @@ boundary, and `assuranceProfile()` reports `workload-bound` for a shared process
 | SR-3 | incremental D1 migrations repeated baseline DDL, so a fresh deployment applying all migrations would fail | fixed (M18) |
 | SR-4 | snapshot-bounded authorizer decided from a fixed policy set instead of the activated snapshot's | fixed (M21): `withSnapshotAuthority` takes a factory |
 | SR-5 | `isolated-callable` assurance has no attested boundary | open: profile withheld |
-| SR-8 | Temporal-backed profile was unverified | closed (post-release): `@forge/temporal` certified against a Temporal dev server (single node); cluster/cloud tuples remain unverified |
+| SR-8 | Temporal-backed profile was unverified | closed (post-release): `@forgegraph/temporal` certified against a Temporal dev server (single node); cluster/cloud tuples remain unverified |
 | SR-6 | OTLP wire export not implemented; sinks were Workers Logs / EMF / custom | closed (post-release): `OtlpSink` (OTLP/HTTP JSON logs + metrics, bounded attributes, loss counted), `telemetryFormat: "otlp"` on the Node host |
 | SR-7 | The `Suppressed` guard keys on the subject's declared binding; records reaching a subject only through an undeclared path are not covered | open by design: undeclared paths are reported as unknown lineage by the planner |
 

@@ -29,7 +29,12 @@ impl Diagnostic {
 pub fn line_col(text: &str, offset: usize) -> (usize, usize) {
     let before = &text[..offset.min(text.len())];
     let line = before.matches('\n').count() + 1;
-    let col = before.rsplit('\n').next().map(|l| l.chars().count()).unwrap_or(0) + 1;
+    let col = before
+        .rsplit('\n')
+        .next()
+        .map(|l| l.chars().count())
+        .unwrap_or(0)
+        + 1;
     (line, col)
 }
 

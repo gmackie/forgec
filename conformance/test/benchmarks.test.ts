@@ -10,7 +10,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { Effect } from "effect";
-import { localAuthorizer, type AppBundle, type CallContext, type Policy } from "@forge/runtime";
+import { localAuthorizer, type AppBundle, type CallContext, type Policy } from "@forgegraph/runtime";
 import { ProfileTarget } from "../src/profile-target.js";
 
 const acme = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "fixtures", "acme.app.json"), "utf8")) as AppBundle;
@@ -109,8 +109,8 @@ describe("governance overhead benchmarks", () => {
   }, 120_000);
 
   it("records catalog rebuild and erasure job cost with their workload definitions", async () => {
-    const { MemoryArtifactStore, Registry, generateSigner } = await import("@forge/registry/artifacts");
-    const { Catalog } = await import("@forge/registry/catalog");
+    const { MemoryArtifactStore, Registry, generateSigner } = await import("@forgegraph/registry/artifacts");
+    const { Catalog } = await import("@forgegraph/registry/catalog");
     const signer = await generateSigner("bench");
     const registry = new Registry({ authority: "bench", store: new MemoryArtifactStore(), trust: { authority: "bench", signers: { bench: signer.publicKey } } });
     const ARTIFACTS = 25;
@@ -122,8 +122,8 @@ describe("governance overhead benchmarks", () => {
     const t1 = performance.now();
     const hits = catalog.search("Customer", { subject: "b", namespaces: ["*"], audiences: ["*"] }).length;
     const searchMs = performance.now() - t1;
-    const { planDisposition } = await import("@forge/governance");
-    const { RightsExecutor } = await import("@forge/governance");
+    const { planDisposition } = await import("@forgegraph/governance");
+    const { RightsExecutor } = await import("@forgegraph/governance");
     const edu = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "fixtures", "education.app.json"), "utf8")) as AppBundle;
     const t = new ProfileTarget({ bundle: edu, profile: "runtime-memory" });
     const E = "@fixtures/education/_";

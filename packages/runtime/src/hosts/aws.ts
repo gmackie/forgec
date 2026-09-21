@@ -82,6 +82,7 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   const model = new Model(bundle);
   const env = options.env ?? (process.env as unknown as LambdaEnv);
   const auth = options.auth ?? (env.FORGE_AUTH === "dev-headers" ? devHeaderAuth() : null);
+  if (auth?.scheme === "dev-header") console.warn("forge: DEVELOPMENT AUTH ACTIVE — x-forge-tenant/x-forge-actor headers are trusted verbatim. Never expose this deployment to untrusted callers.");
   // Process-level clients are reused across invocations; tenant/request context is per call (plan §8).
   const storage = new DynamoStorage({ table: env.FORGE_TABLE, region: env.AWS_REGION ?? "us-east-1" }, model);
   const layer = Layer.mergeAll(

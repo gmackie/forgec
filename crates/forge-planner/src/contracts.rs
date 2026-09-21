@@ -4,7 +4,7 @@
 use crate::naming;
 use forge_semantic::ir::*;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 pub const CONTRACTS_VERSION: &str = "contracts/1";
 
@@ -187,21 +187,51 @@ pub fn plan(ir: &DomainIR) -> Contracts {
     let mut schedules = Vec::new();
     let caps = forge_semantic::ir::EffectiveCapabilities::of(ir);
     let mut surfaces = Vec::new();
-    let find_resource = |id: &str| ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.id == id);
+    let find_resource = |id: &str| {
+        ir.modules
+            .iter()
+            .flat_map(|m| &m.resources)
+            .find(|r| r.id == id)
+    };
     for m in &ir.modules {
         for r in &m.resources {
             resources.push(resource(ir, r));
         }
         for f in &m.functions {
-            let input = f.input.as_ref().map(|t| shape_or_record_schema(ir, &t.base)).unwrap_or_else(|| JsonSchema { ty: "object".into(), ..Default::default() });
-            let output = f.output.as_ref().map(|t| output_schema(ir, t)).unwrap_or_else(|| json!({}));
-            functions.push(FunctionContract { id: f.id.clone(), name: f.name.clone(), http: f.http.clone(), errors: f.errors.clone(), input, output, generated: f.generated });
+            let input = f
+                .input
+                .as_ref()
+                .map(|t| shape_or_record_schema(ir, &t.base))
+                .unwrap_or_else(|| JsonSchema {
+                    ty: "object".into(),
+                    ..Default::default()
+                });
+            let output = f
+                .output
+                .as_ref()
+                .map(|t| output_schema(ir, t))
+                .unwrap_or_else(|| json!({}));
+            functions.push(FunctionContract {
+                id: f.id.clone(),
+                name: f.name.clone(),
+                http: f.http.clone(),
+                errors: f.errors.clone(),
+                input,
+                output,
+                generated: f.generated,
+            });
         }
         for v in &m.views {
             let src = find_resource(&v.source).map(|r| resource(ir, r));
-            let mut record = JsonSchema { ty: "object".into(), ..Default::default() };
+            let mut record = JsonSchema {
+                ty: "object".into(),
+                ..Default::default()
+            };
             for f in &v.fields {
-                let schema = src.as_ref().and_then(|s| s.record.properties.get(f).cloned()).unwrap_or(json!({ "type": "string" }));
+                let schema = src
+                    .as_ref()
+                    .and_then(|s| s.record.properties.get(f).cloned())
+                    .unwrap_or(json!({ "type": "string" }));
                 record.properties.insert(f.clone(), schema);
                 record.required.push(f.clone());
             }
@@ -212,27 +242,44 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 params: v.by.clone(),
                 record,
                 order: v.order.clone(),
-                http: HttpBinding { method: "GET".into(), path: format!("/v1/views/{}", naming::kebab(&v.name)) },
+                http: HttpBinding {
+                    method: "GET".into(),
+                    path: format!("/v1/views/{}", naming::kebab(&v.name)),
+                },
             });
         }
         for p in &m.projections {
             let src = find_resource(&p.source).map(|r| resource(ir, r));
-            let mut record = JsonSchema { ty: "object".into(), ..Default::default() };
+            let mut record = JsonSchema {
+                ty: "object".into(),
+                ..Default::default()
+            };
             for f in &p.by {
-                let schema = src.as_ref().and_then(|s| s.record.properties.get(f).cloned()).unwrap_or(json!({ "type": "string" }));
+                let schema = src
+                    .as_ref()
+                    .and_then(|s| s.record.properties.get(f).cloned())
+                    .unwrap_or(json!({ "type": "string" }));
                 record.properties.insert(f.clone(), schema);
                 record.required.push(f.clone());
             }
             for a in &p.aggregates {
                 let schema = match (a.function.as_str(), a.scale) {
                     ("count", _) => json!({ "type": "integer", "x-forge-type": "integer" }),
-                    (_, Some(scale)) => json!({ "type": "string", "x-forge-type": "decimal", "x-forge-scale": scale }),
-                    _ => src.as_ref().and_then(|s| s.record.properties.get(&a.field).cloned()).unwrap_or(json!({ "type": "number" })),
+                    (_, Some(scale)) => {
+                        json!({ "type": "string", "x-forge-type": "decimal", "x-forge-scale": scale })
+                    }
+                    _ => src
+                        .as_ref()
+                        .and_then(|s| s.record.properties.get(&a.field).cloned())
+                        .unwrap_or(json!({ "type": "number" })),
                 };
                 record.properties.insert(a.alias.clone(), schema);
                 record.required.push(a.alias.clone());
             }
-            record.properties.insert("generation".into(), json!({ "type": "integer", "x-forge-type": "integer" }));
+            record.properties.insert(
+                "generation".into(),
+                json!({ "type": "integer", "x-forge-type": "integer" }),
+            );
             record.required.push("generation".into());
             projections.push(ProjectionContract {
                 id: p.id.clone(),
@@ -240,12 +287,23 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 source: p.source.clone(),
                 by: p.by.clone(),
                 record,
-                path: p.crud.as_ref().map(|c| c.path.clone()).unwrap_or_else(|| format!("/v1/projections/{}", naming::kebab(&p.name))),
+                path: p
+                    .crud
+                    .as_ref()
+                    .map(|c| c.path.clone())
+                    .unwrap_or_else(|| format!("/v1/projections/{}", naming::kebab(&p.name))),
             });
         }
         for s in &m.sources {
             let Some(cron) = &s.cron else { continue };
-            schedules.push(ScheduleContract { id: s.id.clone(), name: s.name.clone(), target: s.target.clone(), cron: cron.clone(), timezone: s.timezone.clone().unwrap_or_else(|| "UTC".into()), path: format!("/v1/schedules/{}", naming::kebab(&s.name)) });
+            schedules.push(ScheduleContract {
+                id: s.id.clone(),
+                name: s.name.clone(),
+                target: s.target.clone(),
+                cron: cron.clone(),
+                timezone: s.timezone.clone().unwrap_or_else(|| "UTC".into()),
+                path: format!("/v1/schedules/{}", naming::kebab(&s.name)),
+            });
         }
         for w in &m.workflows {
             let path = format!("/v1/workflows/{}", naming::kebab(&w.name));
@@ -257,15 +315,30 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 version: w.version,
                 graph_hash: w.graph_hash.clone(),
                 errors: w.errors.clone(),
-                input: w.input.as_ref().map(|t| shape_or_record_schema(ir, &t.base)).unwrap_or_else(|| JsonSchema { ty: "object".into(), ..Default::default() }),
+                input: w
+                    .input
+                    .as_ref()
+                    .map(|t| shape_or_record_schema(ir, &t.base))
+                    .unwrap_or_else(|| JsonSchema {
+                        ty: "object".into(),
+                        ..Default::default()
+                    }),
                 signals,
-                start: w.http.clone().unwrap_or_else(|| HttpBinding { method: "POST".into(), path: path.clone() }),
+                start: w.http.clone().unwrap_or_else(|| HttpBinding {
+                    method: "POST".into(),
+                    path: path.clone(),
+                }),
                 path,
             });
         }
         for c in &m.caches {
             let value_resource = match &c.loader {
-                Expr::Call { callee, .. } if callee.len() == 2 && callee[1] == "effective" => ir.modules.iter().flat_map(|m| &m.resources).find(|r| r.name == callee[0]).map(|r| r.name.clone()),
+                Expr::Call { callee, .. } if callee.len() == 2 && callee[1] == "effective" => ir
+                    .modules
+                    .iter()
+                    .flat_map(|m| &m.resources)
+                    .find(|r| r.name == callee[0])
+                    .map(|r| r.name.clone()),
                 _ => None,
             };
             caches.push(CacheContract {
@@ -273,13 +346,21 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 name: c.name.clone(),
                 keys: c.keys.iter().map(|k| k.name.clone()).collect(),
                 value_resource,
-                http: HttpBinding { method: "GET".into(), path: format!("/v1/caches/{}", naming::kebab(&c.name)) },
+                http: HttpBinding {
+                    method: "GET".into(),
+                    path: format!("/v1/caches/{}", naming::kebab(&c.name)),
+                },
             });
         }
     }
     for s in &caps.surfaces {
-        let Some(r) = resources.iter().find(|r| r.id == s.resource) else { continue };
-        let mut record = JsonSchema { ty: "object".into(), ..Default::default() };
+        let Some(r) = resources.iter().find(|r| r.id == s.resource) else {
+            continue;
+        };
+        let mut record = JsonSchema {
+            ty: "object".into(),
+            ..Default::default()
+        };
         for name in s.allow("read") {
             if let Some(schema) = r.record.properties.get(&name) {
                 record.properties.insert(name.clone(), schema.clone());
@@ -290,7 +371,12 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             resource: s.resource.clone(),
             resource_name: r.name.clone(),
             purpose: s.purpose.clone(),
-            purpose_name: s.purpose.rsplit('/').next().unwrap_or(&s.purpose).to_string(),
+            purpose_name: s
+                .purpose
+                .rsplit('/')
+                .next()
+                .unwrap_or(&s.purpose)
+                .to_string(),
             digest: s.digest.clone(),
             record,
             filters: s.allow("filter"),
@@ -299,31 +385,57 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             actions: s.allow("actions"),
         });
     }
-    Contracts { version: CONTRACTS_VERSION.into(), package: ir.package.name.clone(), resources, functions, views, projections, caches, workflows, schedules, surfaces }
+    Contracts {
+        version: CONTRACTS_VERSION.into(),
+        package: ir.package.name.clone(),
+        resources,
+        functions,
+        views,
+        projections,
+        caches,
+        workflows,
+        schedules,
+        surfaces,
+    }
 }
 
 fn collect_signals(steps: &[Step], out: &mut Vec<(String, String)>) {
     for s in steps {
         match s {
-            Step::Wait { channel, message, .. } => {
+            Step::Wait {
+                channel, message, ..
+            } => {
                 if !out.iter().any(|(c, m)| c == channel && m == message) {
                     out.push((channel.clone(), message.clone()));
                 }
             }
-            Step::Choice { then, otherwise, .. } => {
+            Step::Choice {
+                then, otherwise, ..
+            } => {
                 collect_signals(then, out);
                 collect_signals(otherwise, out);
             }
-            Step::Parallel { branches, .. } => branches.iter().for_each(|b| collect_signals(b, out)),
+            Step::Parallel { branches, .. } => {
+                branches.iter().for_each(|b| collect_signals(b, out))
+            }
             _ => {}
         }
     }
 }
 
 fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
-    let mut record = JsonSchema { ty: "object".into(), ..Default::default() };
-    let mut create = JsonSchema { ty: "object".into(), ..Default::default() };
-    let mut patch = JsonSchema { ty: "object".into(), ..Default::default() };
+    let mut record = JsonSchema {
+        ty: "object".into(),
+        ..Default::default()
+    };
+    let mut create = JsonSchema {
+        ty: "object".into(),
+        ..Default::default()
+    };
+    let mut patch = JsonSchema {
+        ty: "object".into(),
+        ..Default::default()
+    };
     // Output order: id, synthesized system fields, then declared fields (wire-visible; fixed).
     let mut ordered: Vec<&Field> = Vec::new();
     if let Some(id) = r.fields.iter().find(|f| f.name == "id") {
@@ -349,8 +461,22 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
             patch.properties.insert(f.name.clone(), schema);
         }
     }
-    let mut queries: Vec<QueryContract> = r.finds.iter().map(|f| QueryContract { name: f.name.clone(), kind: "find".into(), params: f.fields.clone(), order: vec![] }).collect();
-    queries.extend(r.lists.iter().map(|l| QueryContract { name: l.name.clone(), kind: "list".into(), params: l.fields.clone(), order: l.order.clone() }));
+    let mut queries: Vec<QueryContract> = r
+        .finds
+        .iter()
+        .map(|f| QueryContract {
+            name: f.name.clone(),
+            kind: "find".into(),
+            params: f.fields.clone(),
+            order: vec![],
+        })
+        .collect();
+    queries.extend(r.lists.iter().map(|l| QueryContract {
+        name: l.name.clone(),
+        kind: "list".into(),
+        params: l.fields.clone(),
+        order: l.order.clone(),
+    }));
     let lifecycle = r.lifecycle.as_ref().map(|lc| LifecycleContract {
         field: lc.field.clone(),
         states: lc.states.clone(),
@@ -359,14 +485,24 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
             .transitions
             .iter()
             .map(|t| {
-                let mut input = JsonSchema { ty: "object".into(), ..Default::default() };
+                let mut input = JsonSchema {
+                    ty: "object".into(),
+                    ..Default::default()
+                };
                 for f in &t.input {
-                    input.properties.insert(f.name.clone(), field_schema(ir, r, f));
+                    input
+                        .properties
+                        .insert(f.name.clone(), field_schema(ir, r, f));
                     if !f.ty.optional && f.default.is_none() {
                         input.required.push(f.name.clone());
                     }
                 }
-                ActionContract { name: t.action.clone(), from: t.from.clone(), to: t.to.clone(), input }
+                ActionContract {
+                    name: t.action.clone(),
+                    from: t.from.clone(),
+                    to: t.to.clone(),
+                    input,
+                }
             })
             .collect(),
     });
@@ -388,17 +524,54 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
 
 /// Flatten a shape (or a record/message) into an inline object schema for function inputs.
 fn shape_or_record_schema(ir: &DomainIR, base: &TypeBase) -> JsonSchema {
-    let mut s = JsonSchema { ty: "object".into(), ..Default::default() };
-    let dummy = Resource { id: String::new(), name: String::new(), kind: "resource".into(), exported: false, doc: None, decorators: Default::default(), fields: vec![], uniques: vec![], finds: vec![], lists: vec![], rules: vec![], lifecycle: None, content: None, operations: vec![], capabilities: vec![], purpose_bindings: vec![] };
+    let mut s = JsonSchema {
+        ty: "object".into(),
+        ..Default::default()
+    };
+    let dummy = Resource {
+        id: String::new(),
+        name: String::new(),
+        kind: "resource".into(),
+        exported: false,
+        doc: None,
+        decorators: Default::default(),
+        fields: vec![],
+        uniques: vec![],
+        finds: vec![],
+        lists: vec![],
+        rules: vec![],
+        lifecycle: None,
+        content: None,
+        operations: vec![],
+        capabilities: vec![],
+        purpose_bindings: vec![],
+    };
     let fields: Vec<Field> = match base {
-        TypeBase::Shape { id } => ir.find_shape(id).map(|sh| sh.fields.clone()).unwrap_or_default(),
-        TypeBase::Record { resource } | TypeBase::Reference { resource } => ir.find_resource(resource).map(|r| r.fields.iter().filter(|f| !f.hidden).cloned().collect()).unwrap_or_default(),
-        TypeBase::Message { channel, message } => ir.find_channel(channel).and_then(|c| c.messages.iter().find(|m| &m.name == message)).map(|m| m.fields.clone()).unwrap_or_default(),
+        TypeBase::Shape { id } => ir
+            .find_shape(id)
+            .map(|sh| sh.fields.clone())
+            .unwrap_or_default(),
+        TypeBase::Record { resource } | TypeBase::Reference { resource } => ir
+            .find_resource(resource)
+            .map(|r| r.fields.iter().filter(|f| !f.hidden).cloned().collect())
+            .unwrap_or_default(),
+        TypeBase::Message { channel, message } => ir
+            .find_channel(channel)
+            .and_then(|c| c.messages.iter().find(|m| &m.name == message))
+            .map(|m| m.fields.clone())
+            .unwrap_or_default(),
         _ => vec![],
     };
     for f in fields {
-        let owner = match base { TypeBase::Record { resource } | TypeBase::Reference { resource } => ir.find_resource(resource).cloned().unwrap_or_else(|| dummy.clone()), _ => dummy.clone() };
-        s.properties.insert(f.name.clone(), field_schema(ir, &owner, &f));
+        let owner = match base {
+            TypeBase::Record { resource } | TypeBase::Reference { resource } => ir
+                .find_resource(resource)
+                .cloned()
+                .unwrap_or_else(|| dummy.clone()),
+            _ => dummy.clone(),
+        };
+        s.properties
+            .insert(f.name.clone(), field_schema(ir, &owner, &f));
         if !f.ty.optional && f.default.is_none() {
             s.required.push(f.name.clone());
         }
@@ -409,9 +582,14 @@ fn shape_or_record_schema(ir: &DomainIR, base: &TypeBase) -> JsonSchema {
 fn output_schema(ir: &DomainIR, t: &TypeSpec) -> Value {
     match &t.base {
         TypeBase::Record { resource } => {
-            let name = ir.find_resource(resource).map(|r| r.name.clone()).unwrap_or_default();
+            let name = ir
+                .find_resource(resource)
+                .map(|r| r.name.clone())
+                .unwrap_or_default();
             match &t.purpose {
-                Some(p) => json!({ "$ref": format!("#/components/schemas/{}{}Record", name, p.rsplit('/').next().unwrap_or(p)) }),
+                Some(p) => {
+                    json!({ "$ref": format!("#/components/schemas/{}{}Record", name, p.rsplit('/').next().unwrap_or(p)) })
+                }
                 None => json!({ "$ref": format!("#/components/schemas/{name}Record") }),
             }
         }
@@ -421,7 +599,24 @@ fn output_schema(ir: &DomainIR, t: &TypeSpec) -> Value {
             serde_json::to_value(s).unwrap_or_else(|_| json!({}))
         }
         _ => {
-            let dummy = Resource { id: String::new(), name: String::new(), kind: "resource".into(), exported: false, doc: None, decorators: Default::default(), fields: vec![], uniques: vec![], finds: vec![], lists: vec![], rules: vec![], lifecycle: None, content: None, operations: vec![], capabilities: vec![], purpose_bindings: vec![] };
+            let dummy = Resource {
+                id: String::new(),
+                name: String::new(),
+                kind: "resource".into(),
+                exported: false,
+                doc: None,
+                decorators: Default::default(),
+                fields: vec![],
+                uniques: vec![],
+                finds: vec![],
+                lists: vec![],
+                rules: vec![],
+                lifecycle: None,
+                content: None,
+                operations: vec![],
+                capabilities: vec![],
+                purpose_bindings: vec![],
+            };
             type_schema(ir, &dummy, t)
         }
     }
@@ -466,36 +661,67 @@ fn literal_json(l: &Literal) -> Value {
 fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
     let mut s = match &ty.base {
         TypeBase::Scalar { name, args } => match name.as_str() {
-            "id" => json!({ "type": "string", "x-forge-type": "id", "maxLength": 64, "pattern": "^[A-Za-z0-9_-]+$" }),
+            "id" => {
+                json!({ "type": "string", "x-forge-type": "id", "maxLength": 64, "pattern": "^[A-Za-z0-9_-]+$" })
+            }
             "text" => json!({ "type": "string", "x-forge-type": "text" }),
             "email" => json!({ "type": "string", "format": "email", "x-forge-type": "email" }),
             "url" => json!({ "type": "string", "format": "uri", "x-forge-type": "url" }),
             "timezone" => json!({ "type": "string", "x-forge-type": "timezone" }),
-            "countryCode" => json!({ "type": "string", "pattern": "^[A-Z]{2}$", "x-forge-type": "countryCode" }),
-            "integer" => json!({ "type": "integer", "minimum": -9007199254740991i64, "maximum": 9007199254740991i64, "x-forge-type": "integer" }),
-            "decimal" => json!({ "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$", "x-forge-type": "decimal", "x-forge-scale": args.first().and_then(|a| a.parse::<u32>().ok()).unwrap_or(2) }),
-            "money" => json!({ "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$", "x-forge-type": "money", "x-forge-currency": args.first().cloned().unwrap_or_else(|| "USD".into()) }),
+            "countryCode" => {
+                json!({ "type": "string", "pattern": "^[A-Z]{2}$", "x-forge-type": "countryCode" })
+            }
+            "integer" => {
+                json!({ "type": "integer", "minimum": -9007199254740991i64, "maximum": 9007199254740991i64, "x-forge-type": "integer" })
+            }
+            "decimal" => {
+                json!({ "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$", "x-forge-type": "decimal", "x-forge-scale": args.first().and_then(|a| a.parse::<u32>().ok()).unwrap_or(2) })
+            }
+            "money" => {
+                json!({ "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$", "x-forge-type": "money", "x-forge-currency": args.first().cloned().unwrap_or_else(|| "USD".into()) })
+            }
             "boolean" => json!({ "type": "boolean" }),
             "date" => json!({ "type": "string", "format": "date", "x-forge-type": "date" }),
-            "datetime" => json!({ "type": "string", "format": "date-time", "x-forge-type": "datetime", "x-forge-precision": "ms" }),
-            "localTime" => json!({ "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$", "x-forge-type": "localTime" }),
-            "duration" => json!({ "type": "string", "format": "duration", "x-forge-type": "duration" }),
+            "datetime" => {
+                json!({ "type": "string", "format": "date-time", "x-forge-type": "datetime", "x-forge-precision": "ms" })
+            }
+            "localTime" => {
+                json!({ "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$", "x-forge-type": "localTime" })
+            }
+            "duration" => {
+                json!({ "type": "string", "format": "duration", "x-forge-type": "duration" })
+            }
             "json" => json!({}),
             other => json!({ "type": "string", "x-forge-type": other }),
         },
         TypeBase::Enum { id } => {
-            let values: Vec<String> = ir.find_enum(id).map(|e| e.members.iter().map(|m| m.value.clone()).collect()).unwrap_or_default();
+            let values: Vec<String> = ir
+                .find_enum(id)
+                .map(|e| e.members.iter().map(|m| m.value.clone()).collect())
+                .unwrap_or_default();
             json!({ "type": "string", "enum": values, "x-forge-enum": id })
         }
         TypeBase::Shape { id } => json!({ "$ref": format!("#/$defs/{}", id) }),
-        TypeBase::Reference { resource } => json!({ "type": "string", "x-forge-reference": resource }),
-        TypeBase::Identity { resource } => json!({ "type": "string", "x-forge-identity": resource }),
+        TypeBase::Reference { resource } => {
+            json!({ "type": "string", "x-forge-reference": resource })
+        }
+        TypeBase::Identity { resource } => {
+            json!({ "type": "string", "x-forge-identity": resource })
+        }
         TypeBase::Record { resource } => json!({ "$ref": format!("#/$defs/{}.Record", resource) }),
         TypeBase::Status { resource } => {
-            let states = if resource == &owner.id { owner.lifecycle.as_ref().map(|l| l.states.clone()) } else { ir.find_resource(resource).and_then(|r| r.lifecycle.as_ref()).map(|l| l.states.clone()) };
+            let states = if resource == &owner.id {
+                owner.lifecycle.as_ref().map(|l| l.states.clone())
+            } else {
+                ir.find_resource(resource)
+                    .and_then(|r| r.lifecycle.as_ref())
+                    .map(|l| l.states.clone())
+            };
             json!({ "type": "string", "enum": states.unwrap_or_default(), "x-forge-status": resource })
         }
-        TypeBase::Message { channel, message } => json!({ "$ref": format!("#/$defs/{}.{}", channel, message) }),
+        TypeBase::Message { channel, message } => {
+            json!({ "$ref": format!("#/$defs/{}.{}", channel, message) })
+        }
     };
     if let Some(obj) = s.as_object_mut() {
         for c in &ty.constraints {

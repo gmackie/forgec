@@ -1,4 +1,4 @@
-# @forge/adapters
+# @forgegraph/adapters
 
 Managed providers and deployment portability packs (M18). Certification is per exact tuple
 (`specs/profiles/matrix.json`); nothing is inherited from a component's name.

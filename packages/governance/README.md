@@ -1,7 +1,7 @@
-# @forge/governance
+# @forgegraph/governance
 
 Subject rights, retention and recovery evidence (M19). The suppression ledger itself lives in
-`@forge/runtime` (`Suppression`, consulted by every commit and by the portability import).
+`@forgegraph/runtime` (`Suppression`, consulted by every commit and by the portability import).
 
 | entry | what |
 |---|---|

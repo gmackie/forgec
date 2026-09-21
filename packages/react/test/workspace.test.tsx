@@ -9,7 +9,7 @@ import { resolve } from "node:path";
 import { Cause, Effect } from "effect";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { Engine, ForgeError, MemoryStorage, Model, testLayer, type AppBundle } from "@forge/runtime";
+import { Engine, ForgeError, MemoryStorage, Model, testLayer, type AppBundle } from "@forgegraph/runtime";
 import { Workspace, type ForgeCall } from "../src/index.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;

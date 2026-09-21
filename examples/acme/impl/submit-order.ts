@@ -3,7 +3,7 @@
 // orders/fulfillment.forge: Order (read + status.submit), Site (read),
 // payments.AuthorizePayment, and permission to send OrderSubmitted to OrderEvents.
 import { Effect } from "effect";
-import { defineFunction } from "@forge/runtime";
+import { defineFunction } from "@forgegraph/runtime";
 
 export const submitOrder = defineFunction("@acme/commerce/_/SubmitOrder", (deps) =>
   Effect.gen(function* () {

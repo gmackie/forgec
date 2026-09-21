@@ -16,6 +16,7 @@ import { loadScenarios } from "../../../conformance/src/scenarios.js";
 import { externals, functions } from "../../../examples/acme/impl/index.js";
 import { createPostgresStorage } from "../src/adapters/postgres.js";
 import { createNodeHost, type NodeHost } from "../src/hosts/node.js";
+import { devHeaderAuth } from "../src/http.js";
 import type { AppBundle } from "../src/model.js";
 
 // A separate database from postgres.test.ts: both recreate their schema (FORGE_PG_NODE_URL, default derives `<db>_node`).
@@ -28,7 +29,7 @@ describe.skipIf(!url)("Node host on PostgreSQL", () => {
   let host: NodeHost;
   let base: string;
   const start = async () => {
-    host = createNodeHost({ bundle, store: createPostgresStorage(pool, host?.runtime.model ?? new (await import("../src/model.js")).Model(bundle)), functions, externals, cursorSecret: "node-test", sweepIntervalMs: 250, telemetryFormat: "silent", objects: { directory: resolve(import.meta.dirname, "..", ".forge-objects-test") } });
+    host = createNodeHost({ auth: devHeaderAuth(), bundle, store: createPostgresStorage(pool, host?.runtime.model ?? new (await import("../src/model.js")).Model(bundle)), functions, externals, cursorSecret: "node-test", sweepIntervalMs: 250, telemetryFormat: "silent", objects: { directory: resolve(import.meta.dirname, "..", ".forge-objects-test") } });
     base = (await host.listen(0)).url;
   };
   beforeAll(async () => {

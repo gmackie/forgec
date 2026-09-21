@@ -1,0 +1,36 @@
+name: Mirror to Forgejo
+
+# GitHub is the source of truth; git.forgegraf.com is a mirror, never a publish
+# target. Pushes to main and release tags are replayed there.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: mirror
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    # A fork has no mirror credentials and should not try.
+    if: github.repository == 'gmackie/forgegraph'
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - name: push to the mirror
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FORGEJO_TOKEN:-}" ]; then
+            echo "::warning::FORGEJO_TOKEN is not set; skipping the mirror"
+            exit 0
+          fi
+          git push --force "https://x-access-token:${FORGEJO_TOKEN}@git.forgegraf.com/gmackie/forge.git" \
+            "HEAD:refs/heads/main" --tags

@@ -34,10 +34,16 @@ pub struct Surface {
 
 impl Surface {
     pub fn allow(&self, verb: &str) -> Vec<String> {
-        self.allow_atoms.iter().filter(|a| a.verb == verb).map(|a| a.name.clone()).collect()
+        self.allow_atoms
+            .iter()
+            .filter(|a| a.verb == verb)
+            .map(|a| a.name.clone())
+            .collect()
     }
     pub fn permits(&self, verb: &str, name: &str) -> bool {
-        self.allow_atoms.iter().any(|a| a.verb == verb && a.name == name)
+        self.allow_atoms
+            .iter()
+            .any(|a| a.verb == verb && a.name == name)
     }
 }
 
@@ -53,18 +59,33 @@ struct Closure {
     deny: BTreeMap<(String, String), Vec<String>>,
 }
 
-fn closure(r: &Resource, name: &str, path: &mut Vec<String>, memo: &mut BTreeMap<String, Closure>) -> Closure {
+fn closure(
+    r: &Resource,
+    name: &str,
+    path: &mut Vec<String>,
+    memo: &mut BTreeMap<String, Closure>,
+) -> Closure {
     if let Some(c) = memo.get(name) {
-        return Closure { allow: c.allow.clone(), deny: c.deny.clone() };
+        return Closure {
+            allow: c.allow.clone(),
+            deny: c.deny.clone(),
+        };
     }
-    let Some(cap) = r.capabilities.iter().find(|c| c.name == name) else { return Closure { allow: BTreeMap::new(), deny: BTreeMap::new() } };
+    let Some(cap) = r.capabilities.iter().find(|c| c.name == name) else {
+        return Closure {
+            allow: BTreeMap::new(),
+            deny: BTreeMap::new(),
+        };
+    };
     path.push(name.to_string());
     let mut allow: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
     let mut deny: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
     for a in &cap.atoms {
         for n in &a.names {
             let target = if a.deny { &mut deny } else { &mut allow };
-            target.entry((a.verb.clone(), n.clone())).or_insert_with(|| path.clone());
+            target
+                .entry((a.verb.clone(), n.clone()))
+                .or_insert_with(|| path.clone());
         }
     }
     let mut includes = cap.includes.clone();
@@ -82,7 +103,13 @@ fn closure(r: &Resource, name: &str, path: &mut Vec<String>, memo: &mut BTreeMap
         }
     }
     path.pop();
-    memo.insert(name.to_string(), Closure { allow: allow.clone(), deny: deny.clone() });
+    memo.insert(
+        name.to_string(),
+        Closure {
+            allow: allow.clone(),
+            deny: deny.clone(),
+        },
+    );
     Closure { allow, deny }
 }
 
@@ -94,7 +121,10 @@ impl EffectiveCapabilities {
                 // One surface per bound purpose; several `use` lines for one purpose union their closures.
                 let mut by_purpose: BTreeMap<String, Vec<String>> = BTreeMap::new();
                 for b in &r.purpose_bindings {
-                    by_purpose.entry(b.purpose.clone()).or_default().push(b.capability.clone());
+                    by_purpose
+                        .entry(b.purpose.clone())
+                        .or_default()
+                        .push(b.capability.clone());
                 }
                 for (purpose, caps) in by_purpose {
                     let mut memo = BTreeMap::new();
@@ -111,18 +141,53 @@ impl EffectiveCapabilities {
                             deny.entry(k).or_insert(o);
                         }
                     }
-                    let allow_atoms: Vec<Atom> = allow.iter().filter(|(k, _)| !deny.contains_key(*k)).map(|((v, n), o)| Atom { verb: v.clone(), name: n.clone(), origin: o.clone() }).collect();
-                    let deny_atoms: Vec<Atom> = deny.iter().map(|((v, n), o)| Atom { verb: v.clone(), name: n.clone(), origin: o.clone() }).collect();
-                    let canonical: BTreeSet<String> = allow_atoms.iter().map(|a| format!("{}:{}", a.verb, a.name)).collect();
-                    let digest = hash_hex(&format!("forge:surface:{}:{}:{}", r.id, purpose, canonical.into_iter().collect::<Vec<_>>().join(",")));
-                    surfaces.push(Surface { resource: r.id.clone(), purpose, capabilities: sorted, allow_atoms, deny: deny_atoms, digest });
+                    let allow_atoms: Vec<Atom> = allow
+                        .iter()
+                        .filter(|(k, _)| !deny.contains_key(*k))
+                        .map(|((v, n), o)| Atom {
+                            verb: v.clone(),
+                            name: n.clone(),
+                            origin: o.clone(),
+                        })
+                        .collect();
+                    let deny_atoms: Vec<Atom> = deny
+                        .iter()
+                        .map(|((v, n), o)| Atom {
+                            verb: v.clone(),
+                            name: n.clone(),
+                            origin: o.clone(),
+                        })
+                        .collect();
+                    let canonical: BTreeSet<String> = allow_atoms
+                        .iter()
+                        .map(|a| format!("{}:{}", a.verb, a.name))
+                        .collect();
+                    let digest = hash_hex(&format!(
+                        "forge:surface:{}:{}:{}",
+                        r.id,
+                        purpose,
+                        canonical.into_iter().collect::<Vec<_>>().join(",")
+                    ));
+                    surfaces.push(Surface {
+                        resource: r.id.clone(),
+                        purpose,
+                        capabilities: sorted,
+                        allow_atoms,
+                        deny: deny_atoms,
+                        digest,
+                    });
                 }
             }
         }
-        EffectiveCapabilities { version: "capabilities/1".into(), surfaces }
+        EffectiveCapabilities {
+            version: "capabilities/1".into(),
+            surfaces,
+        }
     }
     pub fn surface(&self, resource: &str, purpose: &str) -> Option<&Surface> {
-        self.surfaces.iter().find(|s| s.resource == resource && s.purpose == purpose)
+        self.surfaces
+            .iter()
+            .find(|s| s.resource == resource && s.purpose == purpose)
     }
 }
 

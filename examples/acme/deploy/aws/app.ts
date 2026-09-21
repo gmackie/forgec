@@ -68,7 +68,7 @@ const fn = new lambda.Function(stack, "Api", {
     FORGE_TABLE: table.tableName,
     FORGE_BUCKET: bucket.bucketName,
     FORGE_AUTH: "dev-headers", // development only; a production build requires a real auth host
-    FORGE_CORS: "http://localhost:5173,https://forge-acme-workspace.gmac.workers.dev",
+    FORGE_CORS: "http://localhost:5173,https://forge-acme-workspace.example.workers.dev",
     FORGE_QUEUES: JSON.stringify(Object.fromEntries(Object.entries(queues).map(([name, q]) => [name, q.queueUrl]))),
     FORGE_WORKFLOWS: JSON.stringify(machineArns),
     CURSOR_SECRET: process.env["FORGE_CURSOR_SECRET"] ?? "dev-cursor-secret-change-me",

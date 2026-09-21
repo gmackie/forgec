@@ -7,9 +7,9 @@ synthesized from the model are marked **external**.
 ## 1. Model and build
 
 ```
-cargo run -p forge-cli -- check examples/next/acme-next        # edition 2027: purposes, capabilities, subjects
-cargo run -p forge-cli -- build examples/next/acme-next --out /tmp/acme-next
-cargo run -p forge-cli -- explain examples/next/acme-next --resource Contact   # effective surfaces per purpose
+cargo run -p forgegraph-cli -- check examples/next/acme-next        # edition 2027: purposes, capabilities, subjects
+cargo run -p forgegraph-cli -- build examples/next/acme-next --out /tmp/acme-next
+cargo run -p forgegraph-cli -- explain examples/next/acme-next --resource Contact   # effective surfaces per purpose
 ```
 
 `examples/next/acme-next/src/customers.forge`: `Contact` is `@purposeScoped @subject(person)` with
@@ -51,7 +51,7 @@ and survives rollback (`snapshots.test.ts`, `rollback.test.ts`, `adversarial.tes
 
 ## 6. Classified imports
 
-`forge import-openapi vendor.json --package @vendor/billing --pin URL=FILE@SHA256 --allow-host …`
+`forgec import-openapi vendor.json --package @vendor/billing --pin URL=FILE@SHA256 --allow-host …`
 produces shapes/functions with `customer_id : text`; wiring `input.customer` (a `Customer` reference)
 into it is E-WF-008. **External**: the vendor's own erasure adapter (`processors[]` in
 `planDisposition`) must be registered by hand.
@@ -67,7 +67,7 @@ disposition itself; vendor confirmation references.
 
 ## 8. Rollout
 
-`forge compat old new --report pr` → `forge migrate old new` → `DeploymentLedger` (fenced, resumable)
+`forgec compat old new --report pr` → `forgec migrate old new` → `DeploymentLedger` (fenced, resumable)
 → `sloGate` with minimum evidence → `driftReport` → `signEvidence` → `RELEASE_MANIFEST.json`.
 Provider moves: `docs/provider-cutover.md`.
 

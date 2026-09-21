@@ -148,7 +148,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
     const mismatch: string[] = [];
     if (args.expectContracts && contracts.version !== args.expectContracts) mismatch.push(`contracts ${String(contracts.version)} != ${args.expectContracts}`);
     if (args.expectWire && digests["wire"] !== args.expectWire) mismatch.push(`wire digest ${String(digests["wire"])} != ${args.expectWire}`);
-    if (mismatch.length) { io.stderr(`forge-api: contract mismatch: ${mismatch.join("; ")}\nrun \`forge compat\` against this deployment before invoking it\n`); return EXIT.CONTRACT; }
+    if (mismatch.length) { io.stderr(`forge-api: contract mismatch: ${mismatch.join("; ")}\nrun \`forgec compat\` against this deployment before invoking it\n`); return EXIT.CONTRACT; }
     const s = await io.fetch(`${base}/forge/openapi.json`, { headers });
     if (!s.ok) { io.stderr(`forge-api: openapi answered ${s.status}\n`); return EXIT.TRANSPORT; }
     const doc = (await s.json()) as { paths: Record<string, Record<string, { operationId: string; "x-forge-kind"?: string }>> };

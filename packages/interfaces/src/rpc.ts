@@ -13,8 +13,8 @@
  * the HTTP binding is plain fetch.
  */
 import { Cause, Effect } from "effect";
-import type { CallContext, Engine, Principal } from "@forge/runtime";
-import { ForgeError } from "@forge/runtime";
+import type { CallContext, Engine, Principal } from "@forgegraph/runtime";
+import { ForgeError } from "@forgegraph/runtime";
 
 export interface Problem {
   type?: string;
@@ -182,7 +182,7 @@ export function httpCallable(o: HttpCallableOptions): Callable {
       if (o.expect.contracts && d.contracts?.version !== o.expect.contracts) mismatches.push(`contracts ${String(d.contracts?.version)} != ${o.expect.contracts}`);
       if (o.expect.wire && d.digests?.["wire"] !== o.expect.wire) mismatches.push(`wire digest ${String(d.digests?.["wire"])} != ${o.expect.wire}`);
       if (o.expect.buildHash && d.buildHash !== o.expect.buildHash) mismatches.push(`buildHash ${String(d.buildHash)} != ${o.expect.buildHash}`);
-      // A mismatch is a compatibility question (`forge compat`), never assumed equivalence.
+      // A mismatch is a compatibility question (`forgec compat`), never assumed equivalence.
       if (mismatches.length) return { kind: "invocationFailed", reason: "contract-mismatch", detail: mismatches.join("; "), retryable: false };
     }
     const spec = await f(`${base}/forge/openapi.json`, { headers: auth });

@@ -1,18 +1,33 @@
 # Getting started
 
-## Toolchain
+## Install the compiler
 
-- Rust 1.97+ (`cargo`), Node 22+, pnpm 10.
-- `cargo build -p forge-cli` builds the compiler; the binary is `target/debug/forge`
-  (`cargo run -q -p forge-cli -- <cmd>` works without installing).
+```sh
+brew install gmacko/tap/forgec     # macOS and Linux
+cargo install forgegraph-cli       # from source; needs Rust 1.97+
+forgec --version
+```
+
+Prebuilt binaries with SHA-256 checksums are attached to every
+[release](https://github.com/gmackie/forgegraph/releases).
+
+## Toolchain for working on ForgeGraph itself
+
+- Rust 1.97+ (`cargo`), Node 22.5+, pnpm 10.
+- `cargo build -p forgegraph-cli` builds the compiler; the binary is
+  `target/debug/forgec` (`cargo run -q -p forgegraph-cli -- <cmd>` works
+  without installing).
 - `pnpm install` installs the TypeScript workspace (runtime, React workspace, conformance, examples).
+
+Every `forgec` command below also works as
+`cargo run -q -p forgegraph-cli -- <cmd>` from a source checkout.
 
 ## Compile the reference application
 
 ```
-cargo run -q -p forge-cli -- check examples/acme      # parse, resolve, check, verify forge.lock
-cargo run -q -p forge-cli -- fmt --check examples/acme
-cargo run -q -p forge-cli -- build examples/acme      # writes examples/acme/generated/{app.json, d1/0001_init.sql, client.ts}
+forgec check examples/acme      # parse, resolve, check, verify forge.lock
+forgec fmt --check examples/acme
+forgec build examples/acme      # writes examples/acme/generated/{app.json, d1/0001_init.sql, client.ts}
 ```
 
 `app.json` is the app bundle: the DomainIR plus every target-independent plan
@@ -31,8 +46,18 @@ curl -s http://127.0.0.1:8797/v1/customers -H 'x-forge-tenant: demo' -H 'x-forge
 ```
 
 `FORGE_AUTH=dev-headers` (in `wrangler.jsonc` vars / `.dev.vars`) trusts the
-`x-forge-tenant` / `x-forge-actor` headers. A production deployment supplies an
-`AuthHost` instead.
+`x-forge-tenant` / `x-forge-actor` headers, which is why the example is
+configured that way and why it prints a warning on every start. Every host
+refuses to start with no `AuthHost` at all — there is no silent fallback. A
+deployment supplies a real one:
+
+```ts
+createNodeHost({ bundle, auth: jwtAuth({ issuer, audience, secret, claims }) });
+```
+
+Before deploying `examples/acme` anywhere reachable, replace the placeholder
+`database_id` in `deploy/cloudflare/wrangler.jsonc` with your own D1 database
+and drop `FORGE_AUTH` from its vars.
 
 ## Run it on AWS
 
@@ -66,5 +91,5 @@ See [conformance.md](conformance.md) for the full certification run.
 
 ## Editor support
 
-`forge lsp` is a stdio language server (diagnostics with suggestions on open and
+`forgec lsp` is a stdio language server (diagnostics with suggestions on open and
 change, canonical formatting). Point any LSP client at it for `.forge` files.

@@ -10,7 +10,7 @@
  * allow-list. A remote binding is only issued for an endpoint with a fresh,
  * signed report whose digests match the caller's expectation.
  */
-import { httpCallable, type Callable, type Credential } from "@forge/interfaces/rpc";
+import { httpCallable, type Callable, type Credential } from "@forgegraph/interfaces/rpc";
 import { canonical, signBytes, verifyBytes, type Signer, type TrustPolicy } from "./artifacts.js";
 
 export interface Descriptor {
@@ -48,7 +48,7 @@ function ipv4Private(host: string): boolean {
   return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
 }
 
-/** Same rules as `forge import-openapi`: no private/metadata/loopback hosts, no literal IPs, allow-listed names only. */
+/** Same rules as `forgec import-openapi`: no private/metadata/loopback hosts, no literal IPs, allow-listed names only. */
 export function checkEndpoint(url: string, allow: string[], allowLoopbackForTests = false): string {
   let u: URL;
   try {

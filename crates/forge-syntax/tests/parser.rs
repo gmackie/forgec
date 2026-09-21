@@ -23,7 +23,11 @@ fn parses_every_reference_app_file_without_errors() {
         let src = fixture(rel);
         let parsed = parse(&src);
         assert!(parsed.errors().is_empty(), "{rel}: {:?}", parsed.errors());
-        assert_eq!(parsed.syntax().text().to_string(), src, "{rel}: tree is not lossless");
+        assert_eq!(
+            parsed.syntax().text().to_string(),
+            src,
+            "{rel}: tree is not lossless"
+        );
     }
 }
 
@@ -49,7 +53,11 @@ fn tree_snapshot_order() {
 fn tree_snapshot_fulfillment_and_events() {
     let a = fixture("acme/src/orders/fulfillment.forge");
     let b = fixture("acme/src/orders/order-events.forge");
-    insta::assert_snapshot!(format!("{}\n{}", parse(&a).debug_tree(), parse(&b).debug_tree()));
+    insta::assert_snapshot!(format!(
+        "{}\n{}",
+        parse(&a).debug_tree(),
+        parse(&b).debug_tree()
+    ));
 }
 
 #[test]
@@ -76,9 +84,17 @@ fn expression_precedence_is_pratt() {
 fn recovers_from_a_bad_field_and_keeps_parsing_the_rest() {
     let src = "resource R {\n  id : id\n  bogus ??? here\n  name : text\n}\nenum E {\n  A\n}\n";
     let parsed = parse(src);
-    let msgs: Vec<String> = parsed.errors().iter().map(|e| format!("{}..{}: {}", e.range.start, e.range.end, e.message)).collect();
+    let msgs: Vec<String> = parsed
+        .errors()
+        .iter()
+        .map(|e| format!("{}..{}: {}", e.range.start, e.range.end, e.message))
+        .collect();
     insta::assert_snapshot!(format!("{}\n---\n{}", msgs.join("\n"), parsed.debug_tree()));
-    assert_eq!(parsed.syntax().text().to_string(), src, "lossless even with errors");
+    assert_eq!(
+        parsed.syntax().text().to_string(),
+        src,
+        "lossless even with errors"
+    );
 }
 
 #[test]
@@ -105,10 +121,20 @@ fn doc_comments_attach_to_the_following_declaration_field_and_member() {
     let decls: Vec<Declaration> = parsed.root().declarations().collect();
     assert_eq!(decls[0].doc().as_deref(), Some("Customer doc\nsecond line"));
     assert_eq!(decls[1].doc().as_deref(), Some("tiers"));
-    let Declaration::Resource(r) = &decls[0] else { panic!() };
-    assert_eq!(r.fields().next().unwrap().doc().as_deref(), Some("the code"));
-    let Declaration::Enum(e) = &decls[1] else { panic!() };
-    assert_eq!(e.members().next().unwrap().doc().as_deref(), Some("gold doc"));
+    let Declaration::Resource(r) = &decls[0] else {
+        panic!()
+    };
+    assert_eq!(
+        r.fields().next().unwrap().doc().as_deref(),
+        Some("the code")
+    );
+    let Declaration::Enum(e) = &decls[1] else {
+        panic!()
+    };
+    assert_eq!(
+        e.members().next().unwrap().doc().as_deref(),
+        Some("gold doc")
+    );
 }
 
 #[test]
@@ -131,11 +157,21 @@ fn parses_cache_view_and_projection_declarations() {
 
 #[test]
 fn edition_2027_governance_fixtures_parse_losslessly() {
-    for rel in ["next/governance/src/index.forge", "next/payments/src/index.forge", "next/acme-next/src/index.forge", "next/acme-next/src/customers.forge", "next/acme-next/src/orders.forge"] {
+    for rel in [
+        "next/governance/src/index.forge",
+        "next/payments/src/index.forge",
+        "next/acme-next/src/index.forge",
+        "next/acme-next/src/customers.forge",
+        "next/acme-next/src/orders.forge",
+    ] {
         let src = fixture(rel);
         let parsed = parse(&src);
         assert!(parsed.errors().is_empty(), "{rel}: {:?}", parsed.errors());
-        assert_eq!(parsed.syntax().text().to_string(), src, "{rel}: tree is not lossless");
+        assert_eq!(
+            parsed.syntax().text().to_string(),
+            src,
+            "{rel}: tree is not lossless"
+        );
     }
 }
 
@@ -143,5 +179,9 @@ fn edition_2027_governance_fixtures_parse_losslessly() {
 fn tree_snapshot_governance() {
     let a = fixture("next/governance/src/index.forge");
     let b = fixture("next/acme-next/src/customers.forge");
-    insta::assert_snapshot!(format!("{}\n{}", parse(&a).debug_tree(), parse(&b).debug_tree()));
+    insta::assert_snapshot!(format!(
+        "{}\n{}",
+        parse(&a).debug_tree(),
+        parse(&b).debug_tree()
+    ));
 }

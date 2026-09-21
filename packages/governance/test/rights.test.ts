@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Cause, Effect } from "effect";
 import { beforeEach, describe, expect, it } from "vitest";
-import { Engine, ForgeError, MemoryStorage, Model, SUPPRESSION_CLASS, testLayer, type AppBundle, type CallContext } from "@forge/runtime";
+import { Engine, ForgeError, MemoryStorage, Model, SUPPRESSION_CLASS, testLayer, type AppBundle, type CallContext } from "@forgegraph/runtime";
 import { planDisposition } from "../src/rights-planner.js";
 import { RightsExecutor } from "../src/rights-executor.js";
 
@@ -158,7 +158,7 @@ describe("subject rights", () => {
     expect(report.state).toBe("stopped");
     expect(report.held.some((h) => /authority revoked/.test(h.reason))).toBe(true);
     await expect(exec.issueDownload(ctx, "export-ada", revoking)).rejects.toThrow(/no download/);
-    const doc = (await Effect.runPromise(Effect.flatMap((await import("@forge/runtime")).Storage, (s) => s.getDocument(ctx.tenant, "_forge/rights-job", "export-ada")).pipe(Effect.provide(engine.layer)))) as { staged: { disposed?: boolean }[]; urlIssued: boolean };
+    const doc = (await Effect.runPromise(Effect.flatMap((await import("@forgegraph/runtime")).Storage, (s) => s.getDocument(ctx.tenant, "_forge/rights-job", "export-ada")).pipe(Effect.provide(engine.layer)))) as { staged: { disposed?: boolean }[]; urlIssued: boolean };
     expect(doc.staged.length).toBeGreaterThan(0);
     expect(doc.staged.every((s) => s.disposed === true)).toBe(true);
     expect(doc.urlIssued).toBe(false);
@@ -180,7 +180,7 @@ describe("subject rights", () => {
     expect(audit!.token).not.toContain(s1.id);
     expect(plan.subject.token).toBe(audit!.token);
     // the token is keyed: a different key produces a different token for the same identity
-    const other = new (await import("@forge/runtime")).Suppression(engine, "another-key");
+    const other = new (await import("@forgegraph/runtime")).Suppression(engine, "another-key");
     expect(other.token(ctx.tenant, `${E}/Student`, s1.id)).not.toBe(audit!.token);
   });
 });
