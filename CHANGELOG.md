@@ -7,7 +7,7 @@
 First public release. The project is now **ForgeGraph**: the compiler ships as
 the `forgec` binary from the `forgegraph-cli` crate, and the runtime packages
 are published on npm under the `@forgegraph` scope. Everything is Apache-2.0
-and developed in the open at https://github.com/gmackorg/forgegraph.
+and developed in the open at https://github.com/gmackie/forgec.
 
 ### Breaking
 

@@ -8,7 +8,7 @@
  *
  *   FORMULA    formula + binary name          (e.g. forgec)
  *   VERSION    release version, no leading v  (e.g. 0.3.0)
- *   REPO       owner/repo of the release      (e.g. gmackorg/forgegraph)
+ *   REPO       owner/repo of the release      (e.g. gmackie/forgec)
  *   TAP_REPO   owner/repo of the tap          (default gmackorg/homebrew-tap)
  *   DIST_DIR   directory holding <name>-<version>-<target>.tar.gz(.sha256)
  *   TAP_TOKEN  a token with push rights on the tap

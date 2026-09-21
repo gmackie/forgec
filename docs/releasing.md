@@ -95,6 +95,25 @@ Verify a published formula the way a user would:
 brew update && brew install gmackorg/tap/forgec && forgec --version
 ```
 
+## If the repository moves
+
+npm provenance attests that a package was built by a specific workflow in a
+specific repository, and npm rejects a publish whose `repository.url` names a
+different one. So the URL in the metadata is not decoration: it must be the
+repository the release workflow actually runs in.
+
+Moving the project is therefore one commit, made *before* the tag:
+
+```sh
+grep -rl 'gmackie/forgec' . --exclude-dir node_modules --exclude-dir target \
+  | xargs perl -pi -e 's{gmackie/forgec}{<new-owner>/<new-repo>}g'
+pnpm release:manifest && pnpm lint:workflows
+```
+
+Then move the three secrets to the new repository and re-point the `Mirror to
+Forgejo` remote if it changed. The mirror job deliberately has no
+repository-name guard, so it keeps working across a move.
+
 ## Publishing a crate for the first time
 
 crates.io reserves a name on first publish, and the first publish of each crate

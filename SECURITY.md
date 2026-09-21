@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Report privately through
-[GitHub Security Advisories](https://github.com/gmackorg/forgegraph/security/advisories/new),
+[GitHub Security Advisories](https://github.com/gmackie/forgec/security/advisories/new),
 or by email to **security@forgegraf.com**. Do not open a public issue, a
 discussion, or a pull request that demonstrates the problem.
 

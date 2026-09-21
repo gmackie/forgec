@@ -9,7 +9,7 @@ forgec --version
 ```
 
 Prebuilt binaries with SHA-256 checksums are attached to every
-[release](https://github.com/gmackorg/forgegraph/releases).
+[release](https://github.com/gmackie/forgec/releases).
 
 ## Toolchain for working on ForgeGraph itself
 

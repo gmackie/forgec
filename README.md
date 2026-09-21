@@ -33,7 +33,7 @@ cargo install forgegraph-cli       # from source, any platform with Rust 1.97+
 ```
 
 Prebuilt binaries for macOS (arm64, x86_64) and Linux (arm64, x86_64) are
-attached to every [release](https://github.com/gmackorg/forgegraph/releases)
+attached to every [release](https://github.com/gmackie/forgec/releases)
 with SHA-256 checksums.
 
 ```sh
@@ -148,6 +148,17 @@ withheld.
 
 Known gaps are stated as gaps: see the `notCertified` entries in
 `RELEASE_MANIFEST.json` and [docs/security-review.md](docs/security-review.md).
+
+### Where this lives
+
+Development and releases happen here, at
+[`gmackie/forgec`](https://github.com/gmackie/forgec) — issues, pull requests
+and the published artifacts all point at this repository, and npm provenance
+attests to builds from it. ForgeGraph as a whole lives at
+[gmackorg](https://github.com/gmackorg) and [forgegraf.com](https://forgegraf.com);
+if the compiler moves into that monorepo, the repository URLs move with it in a
+single commit and this note changes with them. Nothing in the published
+metadata points at a repository that did not build it.
 
 ## Contributing
 

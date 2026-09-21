@@ -14,7 +14,7 @@ You need:
   create two databases: `forge_node` and `forge_temporal`.
 
 ```sh
-git clone https://github.com/gmackorg/forgegraph && cd forgegraph
+git clone https://github.com/gmackie/forgec && cd forgegraph
 pnpm install
 cargo test --workspace          # the compiler
 pnpm -r run build && pnpm -r test   # the runtime and packages
@@ -83,7 +83,7 @@ you cannot see why, say so in the PR rather than pushing repeatedly; a flaky
 suite is a bug we want to know about.
 
 Discussion, design questions and "is this a good idea before I build it" belong
-in [Discussions](https://github.com/gmackorg/forgegraph/discussions).
+in [Discussions](https://github.com/gmackie/forgec/discussions).
 Vulnerabilities go through [SECURITY.md](SECURITY.md), never an issue.
 
 By contributing you agree your work is licensed under Apache-2.0, matching the
