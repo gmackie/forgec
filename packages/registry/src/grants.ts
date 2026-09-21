@@ -214,6 +214,11 @@ export class GrantRegistry {
     return { allowed: false, reason: "no applicable grant" };
   }
 
+  /** Revocation authority for rollbacks: a tombstone is final. */
+  isRevoked(digest: string): boolean {
+    return Boolean(this.admitted.get(digest)?.revoked);
+  }
+
   graphs(): { declared: Edge[]; approved: Edge[]; activated: Edge[]; observed: Edge[] } {
     const approved: Edge[] = [];
     const activated: Edge[] = [];

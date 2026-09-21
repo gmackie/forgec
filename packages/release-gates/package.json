@@ -1,0 +1,12 @@
+{
+  "name": "@forge/release-gates",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Governed previews and staged release gates (FORGE-071): sanitized preview profiles, minimum-evidence SLO gates, signed acknowledgments, retain-by-default cleanup.",
+  "exports": { ".": { "types": "./dist/index.d.ts", "source": "./src/index.ts", "import": "./dist/index.js", "default": "./dist/index.js" } },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run", "build": "tsc -p tsconfig.build.json" },
+  "dependencies": { "@forge/runtime": "workspace:*" },
+  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.0", "vitest": "^5.0.0" }
+}

@@ -7,7 +7,7 @@ import { Clock, CursorSecret, IdGen, Objects, Storage, type ObjectStoreAdapter, 
 /** Clocks of every test layer created in this process; Engine.testClockJump advances the latest. */
 export const testClocks: { jump: (ms: number) => void }[] = [];
 
-export function testLayer(storage: StorageAdapter, opts: { start?: string; secret?: string; runId?: string; objects?: ObjectStoreAdapter } = {}) {
+export function testLayer(storage: StorageAdapter, opts: { start?: string; secret?: string; runId?: string; objects?: ObjectStoreAdapter; idPrefix?: string } = {}) {
   let t = Date.parse(opts.start ?? "2026-01-01T00:00:00.000Z");
   testClocks.push({ jump: (ms) => void (t += ms) });
   const counters = new Map<string, number>();
@@ -20,7 +20,7 @@ export function testLayer(storage: StorageAdapter, opts: { start?: string; secre
       const prefix = r.name.slice(0, 3).toLowerCase();
       const n = (counters.get(prefix) ?? 0) + 1;
       counters.set(prefix, n);
-      return `${prefix}_${String(n).padStart(4, "0")}`;
+      return `${opts.idPrefix ?? ""}${prefix}_${String(n).padStart(4, "0")}`;
     },
     opId: () => `${runId}op_${String(++ops).padStart(6, "0")}`,
   });

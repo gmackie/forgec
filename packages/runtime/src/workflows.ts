@@ -330,6 +330,11 @@ export class Workflows {
     }).pipe(Effect.catch(() => Effect.succeed([] as string[])), Effect.provide(this.engine.layer));
   }
 
+  /** In-flight instances across every workflow (what a provider switch must drain, never copy). */
+  countInstances(tenant: string): Effect.Effect<number, never, never> {
+    return this.inflight(tenant).pipe(Effect.map((ids) => ids.length));
+  }
+
   // -------------------------------------------------------------- executor
   /** Run the instance until it blocks (wait/sleep) or ends; every transition is a CAS write. */
   advance(tenant: string, id: string, wf?: WorkflowDecl): Effect.Effect<Wire, ForgeError, RuntimeServices> {

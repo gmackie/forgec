@@ -29,3 +29,4 @@ export * from "./governance.js";
 export * from "./scope.js";
 export * from "./gatekeeper.js";
 export * from "./auth.js";
+export * from "./deployment-ledger.js";

@@ -391,6 +391,55 @@
     "RepoHost is an interface with an in-memory implementation; a Forgejo/GitHub adapter must implement openOrUpdate/get with the same head/approval semantics",
     "guardExternals is the runtime edge for external bindings; in-process function-to-function calls inside one package are not cross-service edges"
    ]
+  },
+  "M17": {
+   "status": "done",
+   "tickets": {
+    "FORGE-067": {
+     "status": "done",
+     "evidence": [
+      "forge_semantic::diff (was cli compat): findings carry direction (consumer/producer/both) and needs; new streams interfaces (OpenAPI endpoints/params), governance (surface narrowed/widened/removed, deny added/removed, purpose removed), dependencies (imports), policy (opaque bundle digest -> unknown unless a supported proof); facts.liveData always none; render(pr|changelog|security); whitespace/file moves produce no findings (PAR-140/141/142; crates/forge-cli/tests/cli.rs)"
+     ]
+    },
+    "FORGE-068": {
+     "status": "done",
+     "evidence": [
+      "forge_planner::migrations + `forge migrate OLD NEW`: phased DAG (preflight..contract) with expand/contract DDL (sqlite+postgres), review-gated backfills sized by the rollout, cache invalidation + receipt re-projection on narrowed surfaces, grant reapproval/retirement, subject index, taxonomy reclassification, projection rebuilds, workflow drains; unmapped personal field on an unscoped resource blocks (exit 2); runtime projects cached values through the caller's current surface (PAR-143, scope.test.ts with acme-next ContactPreference/CurrentPreference)"
+     ]
+    },
+    "FORGE-069": {
+     "status": "done",
+     "evidence": [
+      "packages/runtime/src/deployment-ledger.ts: CAS document ledger, artifact-bound approval, lease with fencing token, done steps skipped on resume, checkpoints resumed by the successor, stale controller cannot record or start steps, grant activation once per rollout (PAR-144); rollback consults the revocation authority (PAR-145, packages/registry/test/rollback.test.ts)"
+     ]
+    },
+    "FORGE-070": {
+     "status": "done",
+     "evidence": [
+      "docs/provider-cutover.md; export/1 gains `excluded.workflowInstances` + note; PAR-146 memory -> PostgreSQL cutover test with a sealed blob and a live workflow instance: ids/revisions/canonical hashes verify on both sides, unique claims rebuilt natively, no workflow history on the target"
+     ]
+    },
+    "FORGE-071": {
+     "status": "done",
+     "evidence": [
+      "packages/release-gates: previewProfile (production source sanitized by data semantics: direct identifiers pseudonymized deterministically, restricted content on subject resources redacted; branching refused), cleanupPolicy retain-by-default, sloGate with insufficient-evidence below minSamples/window or missing metric, HMAC acknowledgments bound to artifact+stage+gate and refused over non-pass gates (PAR-147)"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-140": "crates/forge-cli/tests/cli.rs compat",
+    "PAR-141": "cli.rs compat (direction)",
+    "PAR-142": "cli.rs compat (policy proof)",
+    "PAR-143": "packages/runtime/test/scope.test.ts cached values",
+    "PAR-144": "packages/runtime/test/deployment-ledger.test.ts",
+    "PAR-145": "packages/registry/test/rollback.test.ts",
+    "PAR-146": "packages/runtime/test/postgres.test.ts (FORGE_PG_URL)",
+    "PAR-147": "packages/release-gates/test/gates.test.ts"
+   },
+   "notes": [
+    "Comparing against a *deployed* model = pull the artifact the inventory reports for the endpoint (registry) and diff it; the CLI takes two bundles",
+    "IaC handoff is procedural (docs/provider-cutover.md); no provider deletion is automated anywhere"
+   ]
   }
  }
 }

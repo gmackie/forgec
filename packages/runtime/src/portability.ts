@@ -27,6 +27,8 @@ export interface Snapshot {
   exportedAt: string;
   manifest: { contractsVersion: string; buildHash: string; resources: string[] };
   resources: Record<string, ResourceExport>;
+  /** What the export deliberately leaves behind, so nobody mistakes absence for emptiness. */
+  excluded: { workflowInstances: number; note: string; rebuiltOnTarget: string[] };
 }
 
 /** Canonical bytes of a record set: sorted by id, stable key order, no adapter-private fields. */
@@ -94,6 +96,8 @@ export class Portability {
         resources[r.id] = { count: records.length, hash, records };
       }
       const b = self.engine.model.bundle;
+      // Native workflow history is never translated: instances are counted so the operator drains them, not moved.
+      const instances = yield* self.engine.workflows.countInstances(ctx.tenant);
       const snap: Snapshot = {
         version: EXPORT_VERSION,
         package: b.ir.package.name,
@@ -101,6 +105,7 @@ export class Portability {
         exportedAt: (yield* Clock).now(),
         manifest: { contractsVersion: b.contracts.version, buildHash: b.buildHash, resources: self.authoritative.map((r) => r.id) },
         resources,
+        excluded: { workflowInstances: instances, note: "workflow instances and their history are provider-native: drain them on the source or restart from a checkpoint; nothing is fabricated on the target", rebuiltOnTarget: ["projections", "caches", "subject indexes"] },
       };
       return snap as unknown as Wire;
     });

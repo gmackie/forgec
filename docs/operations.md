@@ -66,6 +66,11 @@ runs this live in both directions.
 
 ## Compatibility checks
 
-`forge compat old/app.json new/app.json` reports per stream (api, event,
-storage, lifecycle, workflow) with severities additive / migration / risk /
-breaking and exits 1 on breaking. Run it in CI against the last deployed bundle.
+`forge compat old/app.json new/app.json` reports per stream (api, interfaces,
+event, storage, lifecycle, workflow, classification, governance, dependencies,
+policy) with severities additive / migration / unknown / risk / breaking, a
+direction (which side breaks) and needs, and exits 1 on breaking; `--report
+pr|changelog|security` renders Markdown for an audience. `forge migrate old new`
+turns the diff into a phased migration plan (exit 2 when a step blocks). Run
+both in CI against the last deployed bundle (pull it from the registry by the
+digest the deployment inventory reports).

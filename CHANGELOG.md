@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- M17 rollout: `forge compat` is now `forge_semantic::diff` with direction,
+  needs, interfaces/governance/dependencies/policy streams and `--report`;
+  `forge migrate` emits a phased migration plan; deployment ledger
+  (`@forge/runtime` DeploymentLedger); export `excluded` section;
+  `docs/provider-cutover.md`; `@forge/release-gates`.
+
 - M16 grants: `@forge/registry/grants`, `approval-bot`, `grant-publication`;
   `schemas/dependency-grant.schema.json`; `docs/grant-lifecycle.md`.
 
