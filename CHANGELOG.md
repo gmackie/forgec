@@ -86,6 +86,12 @@ and developed in the open at https://github.com/gmackie/forgec.
   gitignored copy from `FORGE_D1_DATABASE_ID`. A public repository should not
   name someone else's database, and an editable placeholder is a placeholder
   waiting to be committed by accident.
+
+- Re-pinned the adapter capability manifest digests in `examples/acme`, whose
+  IDs moved to the `@forgegraph` scope.
+- `cargo clippy -D warnings` and `cargo fmt --check` now pass workspace-wide
+  and are enforced in CI.
+
 ### Fixed
 
 Two concurrency defects, both found by CI on a clean machine after they had
@@ -126,10 +132,6 @@ budget it widened was treating a symptom.
 - The workflow-failure assertion in `conformance/scenarios/workflows.json` now
   gets the same 30s poll budget as the workflow-completion assertion beside it
   — consistency between two assertions of the same kind, not a fix.
-- Re-pinned the adapter capability manifest digests in `examples/acme`, whose
-  IDs moved to the `@forgegraph` scope.
-- `cargo clippy -D warnings` and `cargo fmt --check` now pass workspace-wide
-  and are enforced in CI.
 
 ## 0.2.0 (2026-09-21)
 
