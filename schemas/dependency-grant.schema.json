@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forge.dev/schemas/dependency-grant.schema.json",
+  "title": "Forge dependency request and grant (FORGE-062)",
+  "description": "A caller's `uses` edges onto a callee become a signed request; a grant is the immutable, independently reviewed, signed record that admission and activation act on. A request is never access; a grant is not access until activated for the deployed identity.",
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "edge": {
+      "type": "object",
+      "required": ["kind", "callee", "caller", "purpose"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["function", "resource", "transition"] },
+        "callee": { "type": "string", "description": "Stable id of the callee function/resource/transition" },
+        "caller": { "type": "string", "description": "Stable id of the caller function" },
+        "purpose": { "type": "string", "description": "Purpose the call runs under on the callee (edition 2027 purpose transition); exact, never a union" },
+        "capability": { "type": "string" }
+      }
+    },
+    "callerIdentity": {
+      "type": "object",
+      "required": ["package", "version", "identity", "environment", "audience", "scope", "digests"],
+      "additionalProperties": false,
+      "properties": {
+        "package": { "type": "string" },
+        "version": { "type": "string" },
+        "identity": { "type": "string", "description": "Deployed identity the grant binds to (e.g. acme-prod/commerce)" },
+        "repo": { "type": "string" },
+        "environment": { "type": "string" },
+        "audience": { "type": "string" },
+        "scope": { "type": "string" },
+        "digests": { "type": "object", "additionalProperties": { "type": "string" }, "description": "source/wire/docs/security digests and buildHash of the caller artifact" }
+      }
+    },
+    "signature": { "type": "object", "required": ["keyId", "signature"], "properties": { "keyId": { "type": "string" }, "signature": { "type": "string" } } },
+    "request": {
+      "type": "object",
+      "required": ["version", "digest", "caller", "callee", "edges", "assurance", "lifetime", "provenance"],
+      "properties": {
+        "version": { "const": "dependency-request/1" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "caller": { "$ref": "#/$defs/callerIdentity" },
+        "callee": { "type": "object", "required": ["package", "version"], "properties": { "package": { "type": "string" }, "version": { "type": "string" }, "lock": { "$ref": "#/$defs/digest" } } },
+        "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+        "assurance": { "enum": ["workload-bound", "isolated-callable"] },
+        "lifetime": { "type": "object", "required": ["expiresAt"], "properties": { "expiresAt": { "type": "string", "format": "date-time" } } },
+        "provenance": { "type": "object", "required": ["ci", "commit", "head"], "properties": { "ci": { "type": "string" }, "commit": { "type": "string" }, "head": { "type": "string" } } },
+        "signature": { "$ref": "#/$defs/signature" }
+      }
+    },
+    "grant": {
+      "type": "object",
+      "required": ["version", "digest", "request", "caller", "callee", "edges", "assurance", "lifetime", "approvals", "repo", "branch", "head", "mergeCommit", "publishedAt", "signature"],
+      "properties": {
+        "version": { "const": "dependency-grant/1" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "request": { "$ref": "#/$defs/digest" },
+        "caller": { "$ref": "#/$defs/callerIdentity" },
+        "callee": { "$ref": "#/$defs/request/properties/callee" },
+        "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+        "assurance": { "enum": ["workload-bound", "isolated-callable"] },
+        "lifetime": { "$ref": "#/$defs/request/properties/lifetime" },
+        "approvals": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["group", "reviewer", "at", "head"], "properties": { "group": { "type": "string" }, "reviewer": { "type": "string" }, "at": { "type": "string" }, "head": { "type": "string" } } }, "description": "One independent approval per required reviewer group, each on the merged head" },
+        "repo": { "type": "string" },
+        "branch": { "type": "string", "description": "Protected branch the PR merged into" },
+        "head": { "type": "string", "description": "Reviewed head that was merged" },
+        "mergeCommit": { "type": "string" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "signature": { "$ref": "#/$defs/signature" }
+      }
+    }
+  },
+  "oneOf": [{ "$ref": "#/$defs/request" }, { "$ref": "#/$defs/grant" }]
+}

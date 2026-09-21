@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- M16 grants: `@forge/registry/grants`, `approval-bot`, `grant-publication`;
+  `schemas/dependency-grant.schema.json`; `docs/grant-lifecycle.md`.
+
 - M15 registry: `@forge/registry` (content-addressed signed artifacts with
   digest-locked resolution, rebuildable catalog with namespace/audience
   confidentiality and authority-qualified identities, deployment inventory

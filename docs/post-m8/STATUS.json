@@ -342,6 +342,55 @@
     "Registry is an in-process library with file/memory stores; an OCI distribution transport (registry HTTP API) is not implemented \u2014 the layout is OCI-compatible so a distribution server can serve the same blobs",
     "Certified profiles: node (memory store, file store); the deployment inventory binding was exercised against a live Node host"
    ]
+  },
+  "M16": {
+   "status": "done",
+   "tickets": {
+    "FORGE-062": {
+     "status": "done",
+     "evidence": [
+      "schemas/dependency-grant.schema.json + grants.ts types: request/grant with caller/callee identity, edges (callee, caller, purpose, capability), caller digests (source/wire/docs/security/buildHash), environment/audience/scope, assurance, lifetime, provenance, approvals; requestFrom derives edges from IR uses; compareRequests flags security widening independent of semver (PAR-132/134)"
+     ]
+    },
+    "FORGE-063": {
+     "status": "done",
+     "evidence": [
+      "approval-bot.ts: verifies the signed artifact, routes to configured owner repo, writes one file under grantsPath (projection of known fields; hooks/targets ignored), PR keyed per caller->callee so reruns update one PR, links caller commit/head, no execution path, grantsPath validated at construction (PAR-133/136)"
+     ]
+    },
+    "FORGE-064": {
+     "status": "done",
+     "evidence": [
+      "grant-publication.ts: merged into protected default branch, approvals on the merged head only (stale refused), one independent reviewer per required group (a dual-listed CODEOWNER counts once), signed immutable grant (PAR-134/135)"
+     ]
+    },
+    "FORGE-065": {
+     "status": "done",
+     "evidence": [
+      "GrantRegistry: admit (verified) -> activate (identity + acknowledged snapshot) -> verify exact (identity, callee, purpose) non-transitive; declared/approved/activated/observed graphs distinct; guardExternals wraps runtime external bindings (PAR-137/138)"
+     ]
+    },
+    "FORGE-066": {
+     "status": "done",
+     "evidence": [
+      "observeUse/retire (draining honours declared window; shortening is a policy decision), emergencyRevoke (epoch bump, tombstone survives re-activation), reviewUnused (suggestion with telemetry coverage, never automatic); docs/grant-lifecycle.md (PAR-139)"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-132": "packages/registry/test/grants.test.ts",
+    "PAR-133": "packages/registry/test/grants.test.ts",
+    "PAR-134": "packages/registry/test/grants.test.ts",
+    "PAR-135": "packages/registry/test/grants.test.ts",
+    "PAR-136": "packages/registry/test/grants.test.ts",
+    "PAR-137": "packages/registry/test/grants.test.ts",
+    "PAR-138": "packages/registry/test/grants.test.ts",
+    "PAR-139": "packages/registry/test/grants.test.ts"
+   },
+   "notes": [
+    "RepoHost is an interface with an in-memory implementation; a Forgejo/GitHub adapter must implement openOrUpdate/get with the same head/approval semantics",
+    "guardExternals is the runtime edge for external bindings; in-process function-to-function calls inside one package are not cross-service edges"
+   ]
   }
  }
 }

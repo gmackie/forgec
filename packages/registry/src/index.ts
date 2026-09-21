@@ -3,3 +3,6 @@ export * from "./catalog.js";
 export * from "./security.js";
 export * from "./deployments.js";
 export * from "./snapshots.js";
+export * from "./grants.js";
+export * from "./approval-bot.js";
+export * from "./grant-publication.js";
