@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "forge-console-edge",
+  "main": "src/edge.ts",
+  "compatibility_date": "2026-09-21",
+  "workers_dev": false,
+  "vars": { "ORIGIN_URL": "https://origin.example.com/__forge-console" }
+  // Add your custom domain: "routes": [{"pattern":"forge.example.com","custom_domain":true}]
+  // Store ORIGIN_TOKEN with `wrangler secret put`, never in this file.
+}

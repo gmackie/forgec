@@ -64,6 +64,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       # the Node-host and cutover suites need a second database on the same server
       - run: PGPASSWORD=forge psql -h localhost -U forge -d postgres -c "CREATE DATABASE forge_node" -c "CREATE DATABASE forge_temporal"
@@ -74,6 +76,53 @@ jobs:
       - run: pnpm -r run build
       - run: pnpm -r typecheck
       - run: pnpm -r test
+
+  console:
+    name: console OCI + browser acceptance
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:3
+        env:
+          OTEL_TRACES_EXPORTER: none
+          OTEL_METRICS_EXPORTER: none
+          OTEL_LOGS_EXPORTER: none
+        ports: ["15000:5000"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: "24.x", cache: pnpm }
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @forgegraph/console... build
+      - run: pnpm --filter @forgegraph/console typecheck
+      - run: pnpm --filter @forgegraph/console test
+        env:
+          OCI_TEST_URL: http://127.0.0.1:15000
+      - run: pnpm --filter @forgegraph/console exec playwright install --with-deps chromium
+      - name: Exercise the console against a real OCI registry
+        working-directory: packages/console
+        run: |
+          node scripts/local-test-server.mjs > /tmp/forge-console.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8787/healthz; then break; fi
+            sleep 1
+          done
+          pnpm exec playwright test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: console-acceptance
+          path: |
+            /tmp/forge-console*.png
+            /tmp/forge-console.log
+            packages/console/test-results
 
   differential:
     name: cross-profile differential
@@ -97,6 +146,8 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r run build
@@ -128,6 +179,8 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r run build
@@ -150,6 +203,8 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit --audit-level high || echo "::warning::pnpm audit reported advisories"

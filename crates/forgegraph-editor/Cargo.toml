@@ -1,0 +1,18 @@
+[package]
+name = "forgegraph-editor"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+description = "Browser-local Forge visual editor compiler bridge"
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+forgegraph-syntax = { path = "../forgegraph-syntax", version = "0.3.0" }
+forgegraph-semantic = { path = "../forgegraph-semantic", version = "0.3.0" }
+serde.workspace = true
+serde_json.workspace = true
