@@ -160,6 +160,13 @@ if the compiler moves into that monorepo, the repository URLs move with it in a
 single commit and this note changes with them. Nothing in the published
 metadata points at a repository that did not build it.
 
+## Management console
+
+The [Forge console](packages/console/README.md) uses Cloudflare Kumo, React and Effect
+to manage applications, environment configuration and signed packages stored in an OCI
+registry. Run it on Cloudflare Workers or Docker with your own authority, storage and
+credentials; no central service is required.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md). The short version: behaviour changes

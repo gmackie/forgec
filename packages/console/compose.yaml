@@ -1,0 +1,36 @@
+services:
+  console:
+    build:
+      context: ../..
+      dockerfile: packages/console/Dockerfile
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?Set a token of at least 32 characters}
+      INSTANCE_NAME: ${INSTANCE_NAME:-Forge}
+      INSTANCE_AUTHORITY: ${INSTANCE_AUTHORITY:?Set your instance authority}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8787}
+      SIGNING_KEY_JWK: ${SIGNING_KEY_JWK:?Set the private Ed25519 JWK}
+      SIGNING_KEY_ID: ${SIGNING_KEY_ID:-instance-v1}
+      OCI_URL: http://registry:5000
+      OCI_REPOSITORY: forge
+      OCI_ALLOW_HTTP: "true"
+      OTEL_SDK_DISABLED: "true"
+    volumes:
+      - console-data:/data
+    depends_on:
+      - registry
+    restart: unless-stopped
+  registry:
+    image: registry:3
+    environment:
+      # Distribution v3 otherwise enables its default tracing exporter.
+      OTEL_TRACES_EXPORTER: none
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+    volumes:
+      - registry-data:/var/lib/registry
+    restart: unless-stopped
+volumes:
+  console-data:
+  registry-data:

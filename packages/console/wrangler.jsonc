@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "forge-console",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "build": { "command": "pnpm --filter @forgegraph/registry... build && pnpm build" },
+  "assets": { "directory": "./dist/web", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true },
+  "d1_databases": [{ "binding": "DB", "database_name": "forge-console", "database_id": "REPLACE_WITH_YOUR_D1_ID", "migrations_dir": "migrations" }],
+  "vars": { "INSTANCE_NAME": "Forge", "INSTANCE_AUTHORITY": "registry.example.com" }
+}
