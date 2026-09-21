@@ -502,6 +502,55 @@
     "PAR-154": "deployment.test.ts",
     "PAR-155": "profiles.test.ts"
    }
+  },
+  "M19": {
+   "status": "done",
+   "tickets": {
+    "FORGE-077": {
+     "status": "done",
+     "evidence": [
+      "packages/governance/rights-planner: locate + data semantics + lineage \u2192 items/preserved/unknowns/external/verdict; other subjects preserved, holds honoured (PAR-156); unmodeled egress or sinks without an adapter \u2192 verdict unknown (PAR-157)"
+     ]
+    },
+    "FORGE-078": {
+     "status": "done",
+     "evidence": [
+      "rights-executor: CAS job document, chunked with per-chunk re-authorization, resumable; export revocation stops chunks and URL issuance, staged artifacts disposed per retention (PAR-161); erasure scrubs personal fields (structural kept), soft-deletes the subject record, deletes sealed blobs, records suppression; report names held/pending items"
+     ]
+    },
+    "FORGE-079": {
+     "status": "done",
+     "evidence": [
+      "@forge/runtime Suppression: keyed token (HMAC) ledger in its own document kind, guard on create/update/restore (Suppressed 410), portability import replays the target's current ledger (suppressed counts; verify reports the difference) (PAR-158/159); external acks requested/accepted/confirmed with confirmation reference required (PAR-160); token classified data.identity.pseudonymous/restricted in the audit view, never the raw id (PAR-162)"
+     ]
+    },
+    "FORGE-080": {
+     "status": "done",
+     "evidence": [
+      "recovery.ts: backup configured \u2260 RPO/RTO; only a successful drill inside the window is measured, else external-evidence-required/stale; key rotation staleness; legal holds; retentionVisible hides expired TTL/retainUntil items before cleanup (PAR-163)"
+     ]
+    },
+    "FORGE-081": {
+     "status": "done",
+     "evidence": [
+      "control-evidence.ts: control packs refuse compliance-claim titles and unattributed attestations; evidenceReport leads with assumptions/reviewRequired/stale/unknown; assertCompliance always refuses; bounded OSCAL component-definition export"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-156": "packages/governance/test/rights.test.ts",
+    "PAR-157": "packages/governance/test/rights.test.ts",
+    "PAR-158": "packages/governance/test/rights.test.ts",
+    "PAR-159": "packages/governance/test/rights.test.ts",
+    "PAR-160": "packages/governance/test/rights.test.ts",
+    "PAR-161": "packages/governance/test/rights.test.ts",
+    "PAR-162": "packages/governance/test/rights.test.ts",
+    "PAR-163": "packages/governance/test/evidence.test.ts"
+   },
+   "notes": [
+    "Erasure runs on the durable job document rather than a declared Forge workflow; the same chunk/re-authorization/resume semantics apply, and the suppression epoch is written by the executor",
+    "Restriction currently records the ledger entry (reads outside maintenance of a restricted subject are refused at write time; read-side restriction filtering is enforced through the suppression guard on update/restore and the retention filter)"
+   ]
   }
  }
 }

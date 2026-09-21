@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- M19 governance: `@forge/governance` (disposition planner, rights executor,
+  recovery evidence, control packs + OSCAL); runtime suppression ledger
+  (`Suppressed` 410 on recreation, import replays current suppression).
+
 - M18 providers: `@forge/adapters` (certification matrix, managed Postgres
   profiles + qualification, node:sqlite executor with the full conformance
   suite, resolved deployment plans, Terraform and self-hosted packs);

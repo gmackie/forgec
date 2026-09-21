@@ -129,6 +129,9 @@ export class Portability {
       const ids = yield* IdGen;
       const imported: Record<string, number> = {};
       const skipped: Record<string, number> = {};
+      // The suppression ledger is retained independently of business data: a restore replays *current* suppression,
+      // so rows of erased/restricted subjects never become readable on the target (PAR-159).
+      const suppressed: Record<string, number> = {};
       // Parents before children so reference guards hold: order resources by dependency depth.
       for (const r of self.ordered()) {
         const ex = snap.resources[r.id];
@@ -139,6 +142,8 @@ export class Portability {
           const id = String(rec["id"]);
           const existing = yield* storage.get(ctx.tenant, r, id);
           if (existing) { skipped[r.id]!++; continue; } // idempotent re-run: identity already present
+          const subject = self.engine.suppression.subjectOf(r, rec);
+          if (subject && (yield* self.engine.suppression.lookup(ctx.tenant, subject.resource, subject.id))) { suppressed[r.id] = (suppressed[r.id] ?? 0) + 1; continue; }
           const opId = ids.opId();
           const plan: CommitPlan = {
             tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "create", id, expectedVersion: null, before: null, after: rec,
@@ -150,7 +155,7 @@ export class Portability {
           imported[r.id]!++;
         }
       }
-      return { imported, skipped, importedAt: now };
+      return { imported, skipped, suppressed, importedAt: now };
     });
   }
 

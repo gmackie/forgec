@@ -24,6 +24,7 @@ import { Portability } from "./portability.js";
 import { Governance } from "./governance.js";
 import { Scope } from "./scope.js";
 import { Gatekeeper } from "./gatekeeper.js";
+import { Suppression } from "./suppression.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -250,9 +251,14 @@ export class Engine {
     const self = this;
     return Effect.gen(function* () {
       if (yield* self.portability.isFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
+      // A suppressed subject's data is never recreated or revived, whatever queued the write (PAR-158):
+      // creates are checked on the request body before any reference lookup can answer for the ledger.
+      const ref = self.model.operation(opId);
+      if (ref?.op.kind === "create") yield* self.suppression.guard(ref.resource, "create", body as StoredRecord, ctx);
       const plan = yield* self.planFor(opId, body, ctx);
       // Authorize current AND candidate state (PAR-110): a permitted update cannot move the record out of scope.
       yield* self.gatekeeper.requireWrite(opId, plan.resource, ctx, plan.before ? canonicalize(self.model, plan.resource, plan.before) : null, canonicalize(self.model, plan.resource, plan.after));
+      yield* self.suppression.guard(plan.resource, plan.kind, plan.after, ctx);
       yield* (yield* Storage).commit(plan);
       return self.resultOf(plan);
     });
@@ -271,6 +277,7 @@ export class Engine {
   readonly governance = new Governance(this);
   readonly scope = new Scope(this);
   readonly gatekeeper = new Gatekeeper(this);
+  readonly suppression = new Suppression(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {

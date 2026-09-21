@@ -35,6 +35,7 @@ export const ERROR_STATUS: Record<string, { status: number; retryable: boolean; 
   InspectionPending: { status: 409, retryable: true, title: "Content inspection pending" },
   InspectionBlocked: { status: 403, retryable: false, title: "Content blocked by inspection" },
   WriteFenced: { status: 503, retryable: true, title: "Writes fenced" },
+  Suppressed: { status: 410, retryable: false, title: "Subject suppressed" },
   WorkflowVersionMismatch: { status: 409, retryable: false, title: "Workflow version mismatch" },
   PayloadTooLarge: { status: 413, retryable: false, title: "Payload too large" },
   RateLimited: { status: 429, retryable: true, title: "Rate limited" },

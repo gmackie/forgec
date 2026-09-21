@@ -21,7 +21,7 @@ directions pass live on both; see `conformance/certification/latest.json` and
   deployment, operations, conformance)
 - CLI: `forge check | fmt | inspect | lock | build | compat | lsp | explain | import-openapi`
 
-Post-M8 program (`docs/post-m8/STATUS.json`): M9–M18 done — Postgres/Node
+Post-M8 program (`docs/post-m8/STATUS.json`): M9–M19 done — Postgres/Node
 profile, data taxonomy and governance, purpose capability algebra, trusted
 invocation context and Gatekeeper, and the interface layer (OpenAPI/Smithy
 exports, `/forge/discovery`, RPC bindings, MCP server, `forge-api` CLI,
@@ -33,7 +33,9 @@ inventory, signed policy snapshots) and callee-owned dependency grants
 and rollout control (`forge compat`/`forge migrate`, deployment ledger,
 `docs/provider-cutover.md`, `packages/release-gates`), and provider packs
 (`packages/adapters`: certification matrix, managed Postgres and SQLite
-qualification, Terraform and Docker/Nix emitters; `specs/profiles/matrix.json`).
+qualification, Terraform and Docker/Nix emitters; `specs/profiles/matrix.json`), and subject
+rights (`packages/governance`: disposition planner, durable rights executor,
+suppression ledger in the runtime, recovery evidence, control packs / OSCAL).
 
 ## Compiler (M1)
 
