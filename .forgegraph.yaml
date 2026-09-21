@@ -1,0 +1,38 @@
+app: forge-console
+server: https://forgegraf.com
+deploymentPlatform: cloudflare-workers
+healthCheckUrl: https://forge.gmac.io/healthz
+stages:
+  - name: production
+    url: https://forge.gmac.io
+    sortOrder: 20
+
+# The deployable in this repository is packages/console (@forgegraph/console): the management
+# UI and signed package registry served at forge.gmac.io. The compiler crates and the
+# @forgegraph/* runtime packages ship to crates.io and npm from .github/workflows/release.yml
+# and are not part of this app.
+#
+# Deploy ONLY via forge, not local wrangler — matching the convention in the other
+# Workers apps in this workspace:
+#
+#   forge deploy create --stage production
+#
+# Infrastructure is provisioned through ForgeGraph, which records the bindings in the
+# workspace rather than leaving them in a file someone has to keep in step:
+#
+#   forge db create --app forge-console --type d1 --stage production
+#   forge r2 create --app forge-console --name forge-console-artifacts --prefix FORGE_ARTIFACTS
+#   forge secret set SIGNING_KEY_JWK       --app forge-console --stage production  # node packages/console/scripts/keygen.mjs
+#   forge secret set REGISTRY_TOKEN_SECRET --app forge-console --stage production  # openssl rand -hex 32
+#
+# `forge r2 create` also mints bucket-scoped S3 credentials and stores them as stage secrets.
+# The worker itself does not use them — it reaches R2 through the `BLOBS` binding — but they
+# are what any out-of-band backup or inspection of the artifact bucket should use, rather than
+# an account-wide key.
+#
+# Not provisioned by forge: the two Cloudflare Access applications. `forge cloudflare access`
+# covers beta routes and CI runner identities, not arbitrary path-scoped policies, and this
+# deployment needs a Bypass application scoped to the `/v2` path so that container clients can
+# reach the registry — Access cannot authenticate `docker`. Create the bypass BEFORE the
+# application covering the hostname, or there is a window in which /v2 answers a login page to
+# every container client. `packages/console/scripts/edge-smoke.mjs` checks exactly that.

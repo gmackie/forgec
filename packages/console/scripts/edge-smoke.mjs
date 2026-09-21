@@ -59,6 +59,24 @@ await check("/v2/ answers the registry challenge and is NOT behind Access", asyn
   assert.match(challenge, /^Bearer realm=/, "no WWW-Authenticate challenge; docker cannot discover the token endpoint");
 });
 
+await check("the worker has its secrets, so it is not failing behind Access", async () => {
+  // Everything else here passes whether or not the worker can build its API: /healthz never
+  // touches it, /api/* is answered by Access at the edge, and /v2/* challenges before doing
+  // any work. This deployment was live and broken — every check green while /api/state
+  // returned "Instance configuration is incomplete" to anyone who actually signed in.
+  //
+  // The token endpoint is the one unauthenticated signal that a secret was loaded: it only
+  // offers Basic auth when REGISTRY_TOKEN_SECRET is present, and falls back to the Bearer
+  // challenge when it is missing.
+  const response = await fetch(`${base}/v2/token`, { redirect: "manual" });
+  const challenge = response.headers.get("www-authenticate") ?? "";
+  assert.match(
+    challenge,
+    /^Basic realm=/,
+    `expected a Basic challenge from /v2/token, got "${challenge}" — REGISTRY_TOKEN_SECRET is probably not set on the worker. Secrets stored with \`forge secret set\` live in ForgeGraph, not in Cloudflare; a worker deployed with wrangler needs \`wrangler secret put\` as well.`,
+  );
+});
+
 if (id && secret) {
   await check("a registry credential exchanges for a token that opens /v2/", async () => {
     const authorization = `Basic ${Buffer.from(`${id}:${secret}`).toString("base64")}`;

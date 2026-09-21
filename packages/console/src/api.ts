@@ -9,6 +9,7 @@ import {
 } from "./model.js";
 import type { OciRegistry } from "./oci.js";
 import { tokenAuth, type AuthAdapter } from "./auth.js";
+import type { CredentialStore } from "./credentials.js";
 const name = z.string().trim().min(1).max(120);
 const appInput = z
   .object({ name, description: z.string().max(2000).default("") })
@@ -57,6 +58,13 @@ const publishInput = z
     bundle: z.record(z.string(), z.unknown()),
   })
   .strict();
+const credentialInput = z
+  .object({
+    label: z.string().min(1).max(120),
+    scopes: z.array(z.enum(["pull", "push"])).min(1),
+    expiresAt: z.string().datetime().optional(),
+  })
+  .strict();
 export interface ApiOptions {
   store: StateStore;
   /** Supply an adapter, or `token` below to use the shared-administrator scheme. */
@@ -64,6 +72,8 @@ export interface ApiOptions {
   token?: string;
   authMode?: "token" | "cloudflare-access";
   identityAuthority?: string | null;
+  /** Registry credentials, when this instance serves its own /v2 endpoints. */
+  credentials?: CredentialStore | null;
   authority: string;
   name: string;
   runtime: string;
@@ -205,6 +215,49 @@ function route(request: Request) {
         ),
       );
       return json(result, 201);
+    }
+    // Registry credentials: minted by a human through this API, used by container clients that
+    // cannot authenticate the way a human does.
+    if (path === "/registry/credentials" || path.startsWith("/registry/credentials/")) {
+      if (!o.credentials)
+        return yield* Effect.fail(
+          new Problem(503, "This instance does not issue registry credentials."),
+        );
+      if (path === "/registry/credentials" && method === "GET")
+        return json({ credentials: yield* attempt(() => o.credentials!.list()) });
+      if (path === "/registry/credentials" && method === "POST") {
+        const input = yield* attempt(async () =>
+          decode(credentialInput, await body(request)),
+        );
+        const created = yield* attempt(() =>
+          o.credentials!.create({
+            label: input.label,
+            scopes: input.scopes,
+            createdBy: identity.actor,
+            ...(input.expiresAt ? { expiresAt: input.expiresAt } : {}),
+          }),
+        );
+        yield* attempt(() =>
+          appendAudit(o, `Registry credential issued`, `${created.credential.label} (${created.credential.id})`, identity.actor),
+        );
+        // The secret is returned exactly once and never stored in the clear.
+        return json(created, 201);
+      }
+      if (path.startsWith("/registry/credentials/") && method === "DELETE") {
+        const id = path.slice("/registry/credentials/".length);
+        const revoked = yield* attempt(() =>
+          o.credentials!.revoke(id, new Date().toISOString()),
+        );
+        if (!revoked)
+          return yield* Effect.fail(
+            new Problem(404, "No active credential with that id."),
+          );
+        yield* attempt(() =>
+          appendAudit(o, `Registry credential revoked`, id, identity.actor),
+        );
+        return json({ revoked: true });
+      }
+      return yield* Effect.fail(new Problem(405, "Method not allowed."));
     }
     const segments = path.split("/").filter(Boolean);
     const appRoute =
@@ -350,6 +403,36 @@ function route(request: Request) {
       );
     return json(view(state, o), status);
   });
+}
+/**
+ * Record an action in the audit log.
+ *
+ * Issuing or revoking a registry credential is the only trail for who granted push access, so a
+ * lost CAS race is retried rather than dropped. It is still best-effort: the credential change
+ * itself has already committed, and failing the request afterwards would be worse than an
+ * unrecorded entry.
+ */
+async function appendAudit(
+  o: ApiOptions,
+  action: string,
+  subject: string,
+  actor: string,
+): Promise<void> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const state = await o.store.read();
+    const expected = state.revision;
+    state.revision++;
+    state.audit.unshift({
+      id: crypto.randomUUID(),
+      at: new Date().toISOString(),
+      action,
+      subject,
+      actor,
+    });
+    state.audit = state.audit.slice(0, 200);
+    if (await o.store.save(expected, state)) return;
+  }
+  console.warn("console: could not record an audit entry", { action, subject });
 }
 export function createApi(
   options: ApiOptions,

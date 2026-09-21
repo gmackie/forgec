@@ -31,10 +31,16 @@ describe("console authentication behaviour", () => {
   // Without this the previous case's DOM persists and every query sees stale nodes.
   afterEach(cleanup);
   it("signs in with no token when the edge already authenticated the request", async () => {
-    const seen: RequestInit[] = [];
-    const fetcher = (async (_url: string, init: RequestInit) => {
-      seen.push(init);
-      return Response.json(emptyState);
+    // The console probes /healthz for the sign-in mode before calling the API, so assert on the
+    // API request itself rather than on call order.
+    const seen: { url: string; init?: RequestInit }[] = [];
+    const fetcher = (async (url: string, init?: RequestInit) => {
+      seen.push({ url: String(url), ...(init ? { init } : {}) });
+      return Response.json(
+        String(url).includes("/healthz")
+          ? { status: "ok", authMode: "cloudflare-access" }
+          : emptyState,
+      );
     }) as unknown as typeof fetch;
 
     render(<Console fetcher={fetcher} />);
@@ -42,8 +48,10 @@ describe("console authentication behaviour", () => {
     await waitFor(() => expect(screen.queryByLabelText("Administrator token")).toBeNull());
     await screen.findByText("Apps");
     // The browser must not invent an Authorization header it does not have.
-    expect(seen[0]?.headers).not.toHaveProperty("authorization");
-    expect(seen[0]?.credentials).toBe("same-origin");
+    const apiCall = seen.find((c) => c.url.includes("/api/state"));
+    expect(apiCall).toBeTruthy();
+    expect(apiCall!.init?.headers).not.toHaveProperty("authorization");
+    expect(apiCall!.init?.credentials).toBe("same-origin");
   });
 
   it("reports an HTML response by its status instead of a SyntaxError", async () => {

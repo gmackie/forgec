@@ -48,7 +48,7 @@ const server = createServer(async (req, res) => {
       `${scheme}//${req.headers.host || "localhost"}`,
     );
     let response: Response;
-    if (url.pathname === "/healthz") response = Response.json({ status: "ok" });
+    if (url.pathname === "/healthz") response = Response.json({ status: "ok", authMode: (config.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token") });
     else if (url.pathname.startsWith("/api/")) {
       const headers = new Headers();
       for (const [key, value] of Object.entries(req.headers))

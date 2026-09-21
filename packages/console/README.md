@@ -196,15 +196,32 @@ credentials this instance issues and stores in D1, and it must sit behind an Acc
 application scoped to the `/v2` path. Create that bypass *before* the application covering the
 hostname, so there is never a window in which `/v2` sits behind a login page.
 
+In a workspace managed by ForgeGraph, provision and deploy through it rather than with local
+`wrangler`, so the bindings are recorded where the rest of the fleet can see them:
+
 ```sh
-wrangler r2 bucket create forge-console-artifacts
-wrangler d1 create forge-console          # put the id into wrangler.gmac.jsonc
-wrangler d1 migrations apply forge-console --remote
-wrangler secret put SIGNING_KEY_JWK       # node scripts/keygen.mjs
-wrangler secret put REGISTRY_TOKEN_SECRET # openssl rand -hex 32
-wrangler deploy -c wrangler.gmac.jsonc
+forge db create     --app forge-console --type d1 --stage production
+forge r2 create     --app forge-console --name forge-console-artifacts --prefix FORGE_ARTIFACTS
+forge secret set SIGNING_KEY_JWK       --app forge-console --stage production   # scripts/keygen.mjs
+forge secret set REGISTRY_TOKEN_SECRET --app forge-console --stage production   # openssl rand -hex 32
+forge deploy create --stage production
 node scripts/edge-smoke.mjs https://forge.gmac.io
 ```
+
+Elsewhere, the same thing with the Cloudflare tooling directly:
+
+```sh
+wrangler r2 bucket create forge-console-artifacts
+wrangler d1 create forge-console          # put the id into your wrangler config
+wrangler d1 migrations apply forge-console --remote
+wrangler secret put SIGNING_KEY_JWK
+wrangler secret put REGISTRY_TOKEN_SECRET
+wrangler deploy -c wrangler.gmac.jsonc
+```
+
+The Access applications are not provisioned by either: `forge cloudflare access` covers beta
+routes and CI runner identities, not arbitrary path-scoped policies. Create them in Cloudflare
+Zero Trust, bypass first.
 
 `edge-smoke.mjs` checks the thing that is easiest to get wrong and hardest to diagnose: that
 `/v2/` answers with a `WWW-Authenticate` challenge and **not** an Access HTML page. If it
