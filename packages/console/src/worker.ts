@@ -1,4 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import { gitRepositories } from "./git.js";
 import { createApi } from "./api.js";
 import { registryFrom, secure, type Config } from "./config.js";
 import { stateText, type State, type StateStore } from "./model.js";
@@ -53,6 +54,7 @@ export default {
         name: env.INSTANCE_NAME || "Forge",
         runtime: "Cloudflare Workers",
         registry: await registryFrom(env),
+        git: gitRepositories(env),
       });
       return secure(await api(request));
     } catch (error) {

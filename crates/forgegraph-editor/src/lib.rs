@@ -84,8 +84,10 @@ pub fn inspect(input: &str) -> Value {
     };
     let current_module = module_of(&parsed);
     let mut symbols = Vec::new();
+    let mut documents = Vec::new();
     for file in &input.files {
         let parsed = forgegraph_syntax::parse(&file.text);
+        documents.push(json!({"path":file.path,"module":module_of(&parsed),"tree":tree(parsed.syntax(), &utf16_offsets(&file.text))}));
         if module_of(&parsed) != current_module {
             continue;
         }
@@ -125,7 +127,7 @@ pub fn inspect(input: &str) -> Value {
             diagnostic
         })
         .collect();
-    json!({"tree":syntax,"symbols":symbols,"diagnostics":diagnostics,
+    json!({"tree":syntax,"documents":documents,"symbols":symbols,"diagnostics":diagnostics,
         "taxonomy":serde_json::from_str::<Value>(forgegraph_semantic::taxonomy::TAXONOMY_JSON).expect("built-in taxonomy"),
         "scalars":forgegraph_semantic::compiler::SCALARS})
 }
@@ -187,6 +189,29 @@ mod tests {
                 .any(|n| n["kind"] == "FIELD_DECL")
         );
         assert_eq!(result["taxonomy"]["version"], "data-taxonomy/1");
+    }
+
+    #[test]
+    fn exposes_every_file_tree_for_application_browsing() {
+        let result = inspect(
+            &json!({"name":"@local/test", "currentFile":"a.forge", "files":[
+                {"path":"a.forge","text":"resource Person {\n id : id\n}\n"},
+                {"path":"b.forge","text":"purpose Support\n"}
+            ]})
+            .to_string(),
+        );
+        let documents = result["documents"]
+            .as_array()
+            .expect("application documents");
+        assert_eq!(documents.len(), 2);
+        assert_eq!(documents[1]["path"], "b.forge");
+        assert!(
+            documents[1]["tree"]["children"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|n| n["kind"] == "PURPOSE_DECL")
+        );
     }
 
     #[test]

@@ -197,10 +197,9 @@
 }
 .forge-field {
   display: grid;
-  grid-template-columns: 16px minmax(90px, 1fr) minmax(110px, 1fr) minmax(
-      150px,
-      1.5fr
-    ) auto 24px;
+  grid-template-columns:
+    16px minmax(90px, 1fr) minmax(110px, 1fr) minmax(150px, 1.5fr)
+    auto 24px;
   align-items: end;
   gap: 10px;
   padding: 14px 18px;
@@ -627,12 +626,22 @@
   border-radius: 4px;
   background: #fff9ef;
 }
-.field-expression input { width: 100%; }
-.document-outline h2 { margin: 12px 5px 6px; }
+.field-expression input {
+  width: 100%;
+}
+.document-outline h2 {
+  margin: 12px 5px 6px;
+}
 @media (max-width: 800px) {
-  .field-expression { grid-row: 5; }
-  .editor-files .document-outline { flex-wrap: wrap; }
-  .document-outline h2 { width: 100%; }
+  .field-expression {
+    grid-row: 5;
+  }
+  .editor-files .document-outline {
+    flex-wrap: wrap;
+  }
+  .document-outline h2 {
+    width: 100%;
+  }
 }
 .editor-files > div,
 .editor-files form > div {
@@ -642,4 +651,220 @@
 .editor-files input {
   min-width: 0;
   width: 100%;
+}
+.app-kind-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.kind-count {
+  font-size: 10px;
+  opacity: 0.65;
+}
+.app-browser {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 600px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 16px;
+}
+.app-declarations {
+  padding: 18px;
+  border-right: 1px solid var(--border);
+  background: #f6f8fb;
+  min-width: 0;
+}
+.app-declarations input {
+  width: 100%;
+  min-width: 0;
+}
+.app-declarations nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+}
+.app-declarations nav button {
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  height: auto;
+  min-height: 36px;
+}
+.app-detail {
+  min-width: 0;
+  padding: 24px;
+}
+.app-detail-heading {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.app-detail-heading h2 {
+  font-size: 26px;
+  font-weight: 650;
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+.read-traits {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.read-fields {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.read-fields th,
+.read-fields td {
+  padding: 14px 10px;
+  border-bottom: 1px solid #e5eaf0;
+  vertical-align: top;
+}
+.read-fields thead {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c7d90;
+}
+.read-fields small {
+  display: block;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: #9b703e;
+  margin-bottom: 5px;
+}
+.read-fields code {
+  white-space: normal;
+}
+.read-sections {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+.read-block {
+  padding: 14px;
+  border: 1px solid #e3e8f0;
+  border-left: 3px solid #a7bad6;
+  border-radius: 6px;
+  background: #fbfcfe;
+  min-width: 0;
+}
+.read-block h4 {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #6c7d90;
+  letter-spacing: 0.07em;
+  margin-bottom: 8px;
+}
+.read-block-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.read-block-content > .read-block {
+  flex: 1 1 170px;
+}
+.read-value,
+.read-words {
+  font: 12px/1.8 monospace;
+  overflow-wrap: anywhere;
+}
+.read-words {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.read-capability_decl,
+.read-purpose_binding {
+  border-left-color: #9875b4;
+  background: #fcfaff;
+}
+.studio-project-tools summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.studio-project-tools > div {
+  padding-top: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 800px) {
+  .app-browser {
+    grid-template-columns: 1fr;
+  }
+  .app-declarations {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-declarations nav {
+    display: flex;
+    overflow: auto;
+  }
+  .app-declarations nav button {
+    flex-shrink: 0;
+  }
+  .app-detail {
+    padding: 14px;
+  }
+  .app-kind-tabs {
+    flex-wrap: nowrap;
+    overflow: auto;
+  }
+  .app-kind-tabs button {
+    flex-shrink: 0;
+  }
+  .read-fields {
+    min-width: 550px;
+  }
+  .app-detail-heading h2 {
+    font-size: 22px;
+  }
+}
+.commit-changes {
+  max-height: 50vh;
+  overflow: auto;
+  margin: 20px 0;
+}
+.commit-changes summary {
+  cursor: pointer;
+  font-size: 12px;
+  margin: 12px 0;
+}
+.commit-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.commit-diff > div {
+  min-width: 0;
+}
+.commit-diff h4 {
+  font-size: 11px;
+  color: #6c7d90;
+}
+.commit-diff pre {
+  font: 11px/1.7 monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  background: #f4f6fa;
+}
+.studio-notice {
+  padding: 12px;
+  background: #eef8f1;
+  color: #315c41;
+  font-size: 12px;
+}
+@media (max-width: 800px) {
+  .commit-diff {
+    grid-template-columns: 1fr;
+  }
 }

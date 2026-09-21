@@ -18,29 +18,52 @@ unverified. This first version is a single-administrator console, not a multi-te
 
 ## Visual .forge editor
 
-The **Editor** is the landing page. It edits source files directly using a structured visual
-document, with Kumo controls and a relationship graph. Open existing `.forge` files or begin
-with the included example, create resources/shapes/enums/types/purposes/data classes, edit
-field types and optionality, select the built-in Forge data taxonomy, change length bounds,
-and edit capability include/allow/deny matrices and purpose bindings. Other syntax appears
-as nested editable syntax blocks, with exact source editing available for every construct.
+The **Editor** opens in a read view of the whole application. Tabs group resources, functions,
+sources, shapes, purposes, capabilities, types, data classes, events and workflows across all
+source files. Capabilities are listed by resource (for example `Contact.Support`). Search and
+select declarations without navigating files. The document presents fields, classifications,
+defaults, calculations and behavior as readable content; **Edit draft** enables Kumo controls.
+Source is a secondary view, read-only until editing is enabled.
 
 The Rust lossless parser and semantic compiler run as WebAssembly in a browser worker.
 Visual edits patch UTF-16 source ranges and preserve unrelated text and comments. Source
 and visual views share undo/redo history. Diagnostics identify actual Forge language errors.
 The relationship graph shows references, purpose bindings and inheritance from the active file,
-including links to declarations in other open files. The file sidebar includes a declaration
-outline for navigating large documents. Defaults and calculated expressions have labeled controls.
+including links to declarations in other open files. The application browser groups declarations across all source files. Defaults and calculated expressions have labeled controls.
 Classification describes data; purpose inheritance itself never grants access.
 
 **File storage:** drafts are saved in this browser’s local storage, independently of the
 server’s app inventory. Download `.forge` files to save source to disk; export/import a draft
 JSON to transfer all open files. Opening files replaces the browser workspace and can be
-undone. The editor does not write to a local Git checkout, commit changes or publish artifacts.
+undone. Local drafts do not write to a Git checkout or publish artifacts. Connected Git applications
+commit only through the explicit review flow described below.
 The first version supports 50 files / 500 KB, uses edition 2027 and the portable profile, and
 checks the open files without resolving external package dependencies. Run `forgec check`
 in the actual project for dependency-aware validation. Changing a declaration name edits
 that source token; it does not automatically rename references in other locations.
+
+### Git-backed applications
+
+Configure GitHub projects on the instance with `GIT_PROJECTS_JSON` and a server-side
+`GITHUB_TOKEN`. The token needs repository contents read/write permission. For example:
+
+```json
+[{"id":"desk","name":"Service desk","repository":"your-org/your-app","branch":"studio","root":"src"}]
+```
+
+The source root is relative to the repository; only regular `.forge` files under it can be
+changed. `Connect Git` loads a snapshot of the configured branch. Browse, choose **Edit draft**,
+then **Review changes** to inspect committed and draft source, enter a message, and create a
+real Git commit. All file changes are committed together. GitHub's atomic `expectedHeadOid`
+check rejects a commit if the branch has moved; the draft and its base revision remain saved
+in the browser. Branch protection may require committing on a working branch instead of main.
+Commit success returns to read view and clears the undo history at the new revision.
+
+Credentials stay on the server. Both Docker and Cloudflare Workers use the same provider API;
+no local Git executable or central Forge service is needed. The initial provider is GitHub.
+Other independently hosted instances can omit Git entirely. This does not publish OCI artifacts
+or deploy running apps. After a conflict, export your draft before loading a fresh repository
+snapshot to reconcile it; automatic merging is not implemented.
 
 ### Service desk demo
 
@@ -49,7 +72,7 @@ Forge package: organizations and contacts, tickets and replies, service plans, s
 native data classes and purposes, events, functions, a scheduled source and an escalation workflow.
 The editor imports those exact sources; the example and the UI cannot drift apart.
 Use **Load demo** to replace an existing draft after confirmation. Export first to retain a copy;
-loading is also undoable. Existing drafts are never silently migrated.
+loading clears the undo history and any Git connection. Existing drafts are never silently migrated.
 
 Try changing a plan's default allowance, inspecting its calculated balance, editing a ticket's
 capability matrix, following a cross-file relationship, and switching to source to inspect the result.
