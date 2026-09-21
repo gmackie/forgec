@@ -36,7 +36,9 @@ publishing anything, run the workflow manually from the Actions tab with
 | `github-release` | The GitHub release, with the binaries, their checksums and `RELEASE_MANIFEST.json` attached. |
 | `npm` | `pnpm -r publish` with [provenance](https://docs.npmjs.com/generating-provenance-statements). Already-published versions are skipped, so a re-run after a partial failure completes rather than fails. |
 | `crates` | `scripts/publish-crates.mjs`: `forgegraph-syntax → forgegraph-semantic → forgegraph-planner → forgegraph-codegen → forgegraph-cli`, waiting for the crates.io index between each so the next crate can resolve the last. Also skips versions that are already up. |
-| `homebrew` | `scripts/update-homebrew-tap.mjs` renders `Formula/forgec.rb` from the release artifacts and pushes it to `gmackorg/homebrew-tap`. |
+
+The Homebrew formula is **not** produced here. `gmackorg/homebrew-tap` pulls it
+from the release — see "The Homebrew tap" below.
 
 Every job is idempotent per version. Re-running a failed release does not
 double-publish.
@@ -50,44 +52,47 @@ Actions):
 | --- | --- | --- |
 | `NPM_TOKEN` | `npm` | An npm **automation** token for an account with publish rights on the `@forgegraph` scope. Granular tokens work; classic "publish" tokens also work. Provenance additionally requires the workflow's OIDC token, which is granted in the workflow itself (`id-token: write`) and needs no secret. |
 | `CARGO_REGISTRY_TOKEN` | `crates` | A crates.io API token scoped to `publish-update` (and `publish-new` for the first release of each crate). |
-| `HOMEBREW_TAP_TOKEN` | `homebrew` | A fine-grained PAT with **Contents: read and write** on `gmackorg/homebrew-tap` only. The default `GITHUB_TOKEN` cannot push to another repository. |
 
 `GITHUB_TOKEN` covers the GitHub release itself; nothing extra is needed for it.
+There is deliberately **no Homebrew secret**: the tap pulls rather than being
+pushed to.
 
-## Bootstrapping the Homebrew tap
+## The Homebrew tap
 
-The tap is shared by every CLI we publish, so this is done once, not once per
-project. It already exists: **https://github.com/gmackorg/homebrew-tap**.
+The tap is **https://github.com/gmackorg/homebrew-tap**, shared by every CLI we
+publish. It pulls; this repository does not push to it.
 
-If you ever need to recreate it, or set one up for another org:
+`bin/sync-formulae.mjs` runs there on a schedule (and on demand via the **Sync
+formulae** workflow), reads `tap.json`, and regenerates each formula from the
+latest GitHub release of the project that produces it. Checksums come from the
+`.sha256` files the release published — computed on the machine that built the
+binary, never recomputed from a download.
 
-1. Create a public repository named **`homebrew-tap`**. The `homebrew-` prefix
-   is what makes `brew install <owner>/tap/<formula>` resolve; users never type
-   the prefix.
-2. Give it a `README.md` and a `Formula/` directory. Nothing else is needed —
-   the release job creates `Formula/<name>.rb` on first publish.
-3. Mint the fine-grained PAT described above and add it as
-   `HOMEBREW_TAP_TOKEN` to every repository that publishes a CLI.
+This direction is deliberate. Pushing would require a credential that can write
+to the tap from *this* repository: a personal access token or a deploy key,
+held by every project we publish, rotated in every project, and able to do more
+than the one thing it is for. Pulling requires nothing — a workflow in the tap
+already has write access to the tap, and a public release is readable without
+auth. (Deploy keys are also disabled across `gmackorg`, which is a sensible
+policy and one this design does not ask anyone to change.)
 
-`scripts/update-homebrew-tap.mjs` is deliberately generic and driven entirely
-by environment variables, so it can be copied unchanged into any other CLI
-repository:
+The cost is latency: a formula appears within the schedule interval rather than
+the instant the release finishes. Run **Sync formulae** manually when you do
+not want to wait.
 
-```yaml
-- run: node scripts/update-homebrew-tap.mjs
-  env:
-    FORMULA: my-cli                       # formula name == binary name
-    VERSION: ${{ needs.verify.outputs.version }}
-    REPO: ${{ github.repository }}        # where the release assets live
-    TAP_REPO: gmackorg/homebrew-tap
-    TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-    DIST_DIR: dist                        # holds <name>-<version>-<target>.tar.gz(.sha256)
+### Adding another CLI to the tap
+
+Add four lines to `tap.json` in the tap repository:
+
+```json
+{ "name": "mytool", "repo": "owner/repo", "desc": "what it does", "license": "Apache-2.0" }
 ```
 
-It expects artifacts named `<FORMULA>-<VERSION>-<rust target triple>.tar.gz`
-with a sibling `.sha256`, and refuses to emit a formula for an artifact with no
-checksum. Platforms with no artifact are omitted from the formula rather than
-guessed at.
+The project's release must tag as `v<semver>` and attach
+`mytool-<version>-<rust target triple>.tar.gz` with a sibling `.sha256` for
+each platform it supports. Platforms with no published checksum are left out of
+the formula rather than guessed at. Nothing else is required of the project —
+in particular, no secret.
 
 Verify a published formula the way a user would:
 

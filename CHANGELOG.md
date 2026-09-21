@@ -37,7 +37,9 @@ and developed in the open at https://github.com/gmackie/forgec.
 
 - Published artifacts: five crates on crates.io, nine packages on npm with
   build provenance, prebuilt `forgec` binaries for macOS and Linux on both
-  architectures, and a Homebrew formula at `gmackorg/tap/forgec`.
+  architectures, and a Homebrew formula at `gmackorg/tap/forgec`. The tap
+  *pulls* the formula from each release rather than being pushed to, so this
+  repository holds no credential for it — see `docs/releasing.md`.
 - `docs/stability.md`: a per-package stability tier, also recorded in each
   `package.json` under `forgegraph.stability`.
 - `docs/releasing.md`: the release process, the required secrets, and how to

@@ -157,24 +157,6 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           DRY_RUN: ${{ env.DRY_RUN }}
 
-  homebrew:
-    name: homebrew tap (gmackorg)
-    needs: [verify, github-release, binaries]
-    if: ${{ github.event_name == 'push' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
-        with: { path: dist, pattern: "forgec-*", merge-multiple: true }
-      - uses: actions/setup-node@v5
-        with: { node-version: "24.x" }
-      - name: render and push the formula
-        run: node scripts/update-homebrew-tap.mjs
-        env:
-          FORMULA: forgec
-          VERSION: ${{ needs.verify.outputs.version }}
-          REPO: ${{ github.repository }}
-          TAP_REPO: gmackorg/homebrew-tap
-          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          DIST_DIR: dist
-          DRY_RUN: ${{ env.DRY_RUN }}
+  # The Homebrew formula is not pushed from here. gmackorg/homebrew-tap pulls it from this
+  # release on its own schedule (and on demand), using its own token — so this project holds no
+  # credential for that repository. See docs/releasing.md.
