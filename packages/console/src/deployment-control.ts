@@ -31,6 +31,7 @@ export interface Release {
   commit?: string;
 }
 export interface DeploymentRun {
+  runtimeUrl?:string;
   id: string;
   release: string;
   action: string;
