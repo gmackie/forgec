@@ -6987,7 +6987,19 @@ expression: doc
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                  "expectedVersion": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "expectedVersion"
+                ]
               }
             }
           }

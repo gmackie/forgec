@@ -1,6 +1,5 @@
 ---
 source: crates/forge-planner/tests/plan.rs
-assertion_line: 15
 expression: p.contracts
 ---
 {
@@ -1638,12 +1637,47 @@ expression: p.contracts
       "id": "@acme/commerce/_/FulfillOrder",
       "name": "FulfillOrder",
       "errors": [],
+      "input": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Order"
+          },
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Customer"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer"
+          }
+        },
+        "required": [
+          "order",
+          "customer",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "$ref": "#/components/schemas/OrderRecord"
+      },
       "generated": false
     },
     {
       "id": "@acme/commerce/_/RebuildOrderSummary",
       "name": "RebuildOrderSummary",
       "errors": [],
+      "input": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {},
       "generated": false
     },
     {
@@ -1658,6 +1692,29 @@ expression: p.contracts
         "PaymentDeclined",
         "PaymentUnavailable"
       ],
+      "input": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Order"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer"
+          }
+        },
+        "required": [
+          "order",
+          "expectedVersion"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "$ref": "#/components/schemas/OrderRecord"
+      },
       "generated": false
     }
   ],
@@ -1785,6 +1842,26 @@ expression: p.contracts
         "PaymentTimeout",
         "ShortPayment"
       ],
+      "input": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "string",
+            "x-forge-reference": "@acme/commerce/_/Order"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer"
+          }
+        },
+        "required": [
+          "order",
+          "expectedVersion"
+        ],
+        "additionalProperties": false
+      },
       "signals": [
         [
           "@acme/commerce/_/PaymentEvents",

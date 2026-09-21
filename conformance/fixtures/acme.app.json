@@ -4924,6 +4924,26 @@
           "PaymentTimeout",
           "ShortPayment"
         ],
+        "input": {
+          "type": "object",
+          "properties": {
+            "order": {
+              "type": "string",
+              "x-forge-reference": "@acme/commerce/_/Order"
+            },
+            "expectedVersion": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "order",
+            "expectedVersion"
+          ],
+          "additionalProperties": false
+        },
         "signals": [
           [
             "@acme/commerce/_/PaymentEvents",
@@ -19842,7 +19862,19 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "expectedVersion": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991,
+                      "x-forge-type": "integer"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "expectedVersion"
+                  ]
                 }
               }
             }

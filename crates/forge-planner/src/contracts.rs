@@ -61,6 +61,8 @@ pub struct WorkflowContract {
     pub version: u32,
     pub graph_hash: String,
     pub errors: Vec<String>,
+    /// Start input flattened to a JSON Schema object.
+    pub input: JsonSchema,
     /// Messages the workflow waits on: (channel id, message name).
     pub signals: Vec<(String, String)>,
     pub start: HttpBinding,
@@ -255,6 +257,7 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 version: w.version,
                 graph_hash: w.graph_hash.clone(),
                 errors: w.errors.clone(),
+                input: w.input.as_ref().map(|t| shape_or_record_schema(ir, &t.base)).unwrap_or_else(|| JsonSchema { ty: "object".into(), ..Default::default() }),
                 signals,
                 start: w.http.clone().unwrap_or_else(|| HttpBinding { method: "POST".into(), path: path.clone() }),
                 path,

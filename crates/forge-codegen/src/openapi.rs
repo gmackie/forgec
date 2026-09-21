@@ -238,7 +238,17 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
         let mut responses = Map::new();
         responses.insert("200".into(), json!({ "description": "Workflow instance", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WorkflowInstance" } } } }));
         responses.insert("401".into(), problem_response("Unauthenticated"));
-        put(&w.start.path, &w.start.method.to_lowercase(), json!({ "operationId": format!("{}.start", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.start", "parameters": params_for(&w.start.path, &[idem.clone()]), "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": responses.clone() }));
+        let mut start_input = schema_value(&w.input);
+        let path_params: Vec<String> = w.start.path.split('/').filter(|s| s.starts_with('{')).map(|s| s.trim_matches(|c| c == '{' || c == '}').to_string()).collect();
+        if let Some(props) = start_input["properties"].as_object_mut() {
+            for p in &path_params {
+                props.remove(p);
+            }
+        }
+        if let Some(req) = start_input["required"].as_array_mut() {
+            req.retain(|x| !path_params.iter().any(|p| Value::String(p.clone()) == *x));
+        }
+        put(&w.start.path, &w.start.method.to_lowercase(), json!({ "operationId": format!("{}.start", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.start", "parameters": params_for(&w.start.path, &[idem.clone()]), "requestBody": { "required": true, "content": { "application/json": { "schema": start_input } } }, "responses": responses.clone() }));
         put(&format!("{}/{{id}}", w.path), "get", json!({ "operationId": format!("{}.get", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.get", "parameters": params_for(&format!("{}/{{id}}", w.path), &[]), "responses": responses.clone() }));
         put(&format!("{}/{{id}}/cancel", w.path), "post", json!({ "operationId": format!("{}.cancel", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.cancel", "parameters": params_for(&format!("{}/{{id}}/cancel", w.path), &[]), "responses": responses.clone() }));
         put(&format!("{}/signals/{{message}}", w.path), "post", json!({ "operationId": format!("{}.signal", w.id), "tags": ["workflows"], "x-forge-kind": "workflow.signal", "parameters": params_for(&format!("{}/signals/{{message}}", w.path), &[]), "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["payload"], "properties": { "messageId": { "type": "string" }, "payload": { "type": "object" } } } } } }, "responses": { "200": { "description": "Delivery report", "content": { "application/json": { "schema": { "type": "object", "properties": { "delivered": { "type": "integer" }, "held": { "type": "integer" } } } } } } } }));
