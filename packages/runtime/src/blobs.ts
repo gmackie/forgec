@@ -98,7 +98,8 @@ export class Blobs {
       const { generation: providerGen } = yield* objects.seal(staging, sealed, expectedType);
       const rec = yield* self.mutate(r, id, expectedVersion, "blob.finalize", { uploadState: "ready", mediaType: expectedType, byteCount, digest: `sha256:${sha256}`, contentGeneration: generation, sealedGeneration: providerGen }, ctx);
       yield* objects.delete(staging);
-      return rec;
+      // A newly sealed generation starts `pending`: sealing never clears content (plan §7.3).
+      return { ...rec, inspection: { state: "pending", generation } };
     });
   }
 
@@ -109,6 +110,8 @@ export class Blobs {
       const current = yield* (yield* Storage).get(ctx.tenant, r, id);
       if (!current || current["deletedAt"]) return yield* Effect.fail(err("NotFound", `${r.name} ${id} not found`));
       if (current["uploadState"] !== "ready") return yield* Effect.fail(err("InvalidTransition", `content is not ready (${current["uploadState"]})`));
+      // Content inspection verdict (plan §7.3): quarantined and review-required never serve; pending only in the lenient profile.
+      yield* self.engine.governance.checkReadable(r, id, Number(current["contentGeneration"]), ctx);
       const key = self.sealedKey(ctx.tenant, r, id, Number(current["contentGeneration"]));
       const signed = yield* (yield* Objects).presignDownload(key, DOWNLOAD_TTL, String(current["mediaType"]));
       return { ...signed, mediaType: current["mediaType"], byteCount: current["byteCount"], digest: current["digest"] };

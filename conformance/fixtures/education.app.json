@@ -1,0 +1,3615 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "4a55bbb8c5cfb9f359962afeae5a4786c7165ff160195acc79b7d9998a3551a3",
+  "digests": {
+    "source": "bfdb7714c3534bbf55aa1f530e5d590339f231c4562e05be792b268ff66c98f7",
+    "wire": "b15bcfe68fec48da539c75343c002fc3b1c8e0cfec0529d0dc0c23f1cf3af230",
+    "docs": "6445542b53ac6584fce6ceb850fb55b65988b64fead98bf76d71dbd8ee9a41ea",
+    "security": "bd0197ac5db7e0d0a472978e892155ee69258b9919b531b061786e8240add9ac"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@fixtures/education",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [
+          {
+            "id": "@fixtures/education/_/AttendanceStatus",
+            "name": "AttendanceStatus",
+            "exported": false,
+            "synthesized": false,
+            "members": [
+              {
+                "name": "Present",
+                "value": "Present"
+              },
+              {
+                "name": "Absent",
+                "value": "Absent"
+              },
+              {
+                "name": "Excused",
+                "value": "Excused"
+              }
+            ]
+          }
+        ],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@fixtures/education/_/AttendanceRecord",
+            "name": "AttendanceRecord",
+            "kind": "resource",
+            "exported": true,
+            "doc": "Student erasure does not automatically delete Guardian or other students' data.",
+            "decorators": {
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false,
+              "subject": {
+                "binding": "from",
+                "field": "student"
+              },
+              "recordContext": "education"
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "student",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@fixtures/education/_/Student"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "date",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "date",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "status",
+                "type": {
+                  "base": {
+                    "kind": "enum",
+                    "id": "@fixtures/education/_/AttendanceStatus"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "healthNote",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 500
+                    }
+                  ],
+                  "dataClass": "data.health.note"
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byStudent",
+                "fields": [
+                  "student"
+                ],
+                "order": [
+                  {
+                    "field": "date",
+                    "direction": "desc"
+                  },
+                  {
+                    "field": "id",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@fixtures/education/_/AttendanceRecord.create",
+                "kind": "create"
+              },
+              {
+                "id": "@fixtures/education/_/AttendanceRecord.get",
+                "kind": "get"
+              },
+              {
+                "id": "@fixtures/education/_/AttendanceRecord.update",
+                "kind": "update"
+              },
+              {
+                "id": "@fixtures/education/_/AttendanceRecord.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@fixtures/education/_/AttendanceRecord.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@fixtures/education/_/AttendanceRecord.list.byStudent",
+                "kind": "list",
+                "query": "byStudent"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@fixtures/education/_/Guardian",
+            "name": "Guardian",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false,
+              "subject": {
+                "binding": "kind",
+                "kind": "person"
+              }
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "name",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 200
+                    }
+                  ],
+                  "dataClass": "data.identity.name"
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "email",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "email",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@fixtures/education/_/Guardian.create",
+                "kind": "create"
+              },
+              {
+                "id": "@fixtures/education/_/Guardian.get",
+                "kind": "get"
+              },
+              {
+                "id": "@fixtures/education/_/Guardian.update",
+                "kind": "update"
+              },
+              {
+                "id": "@fixtures/education/_/Guardian.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@fixtures/education/_/Guardian.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@fixtures/education/_/Student",
+            "name": "Student",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false,
+              "subject": {
+                "binding": "kind",
+                "kind": "person"
+              },
+              "recordContext": "education"
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "name",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 200
+                    }
+                  ],
+                  "dataClass": "data.identity.name"
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "guardian",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@fixtures/education/_/Guardian"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byGuardian",
+                "fields": [
+                  "guardian"
+                ],
+                "order": [
+                  {
+                    "field": "name",
+                    "direction": "asc"
+                  },
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@fixtures/education/_/Student.create",
+                "kind": "create"
+              },
+              {
+                "id": "@fixtures/education/_/Student.get",
+                "kind": "get"
+              },
+              {
+                "id": "@fixtures/education/_/Student.update",
+                "kind": "update"
+              },
+              {
+                "id": "@fixtures/education/_/Student.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@fixtures/education/_/Student.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@fixtures/education/_/Student.list.byGuardian",
+                "kind": "list",
+                "query": "byGuardian"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [
+          {
+            "id": "@fixtures/education/_/PresentDays",
+            "name": "PresentDays",
+            "exported": true,
+            "source": "@fixtures/education/_/AttendanceRecord",
+            "by": [
+              "student"
+            ],
+            "where": {
+              "kind": "binary",
+              "op": "==",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "healthNote"
+                ]
+              },
+              "rhs": {
+                "kind": "literal",
+                "literal": {
+                  "type": "null"
+                }
+              }
+            },
+            "order": [
+              {
+                "field": "date",
+                "direction": "desc"
+              },
+              {
+                "field": "id",
+                "direction": "desc"
+              }
+            ],
+            "fields": [
+              "id",
+              "date",
+              "status"
+            ]
+          }
+        ],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [
+          {
+            "id": "@fixtures/education/_/AttendanceOperations",
+            "name": "AttendanceOperations",
+            "exported": false
+          }
+        ],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "governance/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@fixtures/education",
+    "resources": [
+      {
+        "id": "@fixtures/education/_/AttendanceRecord",
+        "name": "AttendanceRecord",
+        "wireName": "attendance_record",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "student": {
+              "type": "string",
+              "x-forge-reference": "@fixtures/education/_/Student"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "x-forge-type": "date"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Present",
+                "Absent",
+                "Excused"
+              ],
+              "x-forge-enum": "@fixtures/education/_/AttendanceStatus"
+            },
+            "healthNote": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-type": "text",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "createdAt",
+            "updatedAt",
+            "student",
+            "date",
+            "status",
+            "healthNote"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "student": {
+              "type": "string",
+              "x-forge-reference": "@fixtures/education/_/Student"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "x-forge-type": "date"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Present",
+                "Absent",
+                "Excused"
+              ],
+              "x-forge-enum": "@fixtures/education/_/AttendanceStatus"
+            },
+            "healthNote": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-type": "text",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "student",
+            "date",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "student": {
+              "type": "string",
+              "x-forge-reference": "@fixtures/education/_/Student"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "x-forge-type": "date"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Present",
+                "Absent",
+                "Excused"
+              ],
+              "x-forge-enum": "@fixtures/education/_/AttendanceStatus"
+            },
+            "healthNote": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-type": "text",
+              "maxLength": 500
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byStudent",
+            "kind": "list",
+            "params": [
+              "student"
+            ],
+            "order": [
+              {
+                "field": "date",
+                "direction": "desc"
+              },
+              {
+                "field": "id",
+                "direction": "desc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@fixtures/education/_/AttendanceRecord.create",
+            "kind": "create"
+          },
+          {
+            "id": "@fixtures/education/_/AttendanceRecord.get",
+            "kind": "get"
+          },
+          {
+            "id": "@fixtures/education/_/AttendanceRecord.update",
+            "kind": "update"
+          },
+          {
+            "id": "@fixtures/education/_/AttendanceRecord.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@fixtures/education/_/AttendanceRecord.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@fixtures/education/_/AttendanceRecord.list.byStudent",
+            "kind": "list",
+            "query": "byStudent"
+          }
+        ]
+      },
+      {
+        "id": "@fixtures/education/_/Guardian",
+        "name": "Guardian",
+        "wireName": "guardian",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "x-forge-type": "email"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "createdAt",
+            "updatedAt",
+            "name",
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "x-forge-type": "email"
+            }
+          },
+          "required": [
+            "name",
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "x-forge-type": "email"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@fixtures/education/_/Guardian.create",
+            "kind": "create"
+          },
+          {
+            "id": "@fixtures/education/_/Guardian.get",
+            "kind": "get"
+          },
+          {
+            "id": "@fixtures/education/_/Guardian.update",
+            "kind": "update"
+          },
+          {
+            "id": "@fixtures/education/_/Guardian.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@fixtures/education/_/Guardian.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@fixtures/education/_/Student",
+        "name": "Student",
+        "wireName": "student",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "guardian": {
+              "type": "string",
+              "x-forge-reference": "@fixtures/education/_/Guardian"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "createdAt",
+            "updatedAt",
+            "name",
+            "guardian"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "guardian": {
+              "type": "string",
+              "x-forge-reference": "@fixtures/education/_/Guardian"
+            }
+          },
+          "required": [
+            "name",
+            "guardian"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "guardian": {
+              "type": "string",
+              "x-forge-reference": "@fixtures/education/_/Guardian"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byGuardian",
+            "kind": "list",
+            "params": [
+              "guardian"
+            ],
+            "order": [
+              {
+                "field": "name",
+                "direction": "asc"
+              },
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@fixtures/education/_/Student.create",
+            "kind": "create"
+          },
+          {
+            "id": "@fixtures/education/_/Student.get",
+            "kind": "get"
+          },
+          {
+            "id": "@fixtures/education/_/Student.update",
+            "kind": "update"
+          },
+          {
+            "id": "@fixtures/education/_/Student.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@fixtures/education/_/Student.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@fixtures/education/_/Student.list.byGuardian",
+            "kind": "list",
+            "query": "byGuardian"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [
+      {
+        "id": "@fixtures/education/_/PresentDays",
+        "name": "PresentDays",
+        "source": "@fixtures/education/_/AttendanceRecord",
+        "params": [
+          "student"
+        ],
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "x-forge-type": "date"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Present",
+                "Absent",
+                "Excused"
+              ],
+              "x-forge-enum": "@fixtures/education/_/AttendanceStatus"
+            }
+          },
+          "required": [
+            "id",
+            "date",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "order": [
+          {
+            "field": "date",
+            "direction": "desc"
+          },
+          {
+            "field": "id",
+            "direction": "desc"
+          }
+        ],
+        "http": {
+          "method": "GET",
+          "path": "/v1/views/present-days"
+        }
+      }
+    ],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "attendance_record",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "student",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "student",
+            "storage": "text"
+          },
+          {
+            "name": "date",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "date",
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "status",
+            "storage": "text"
+          },
+          {
+            "name": "health_note",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "healthNote",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "student"
+            ],
+            "references": "student",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "guardian",
+        "resource": "@fixtures/education/_/Guardian",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "name",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "name",
+            "storage": "text"
+          },
+          {
+            "name": "email",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "email",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "student",
+        "resource": "@fixtures/education/_/Student",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "name",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "name",
+            "storage": "text"
+          },
+          {
+            "name": "guardian",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "guardian",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "guardian"
+            ],
+            "references": "guardian",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      }
+    ],
+    "indexes": [
+      {
+        "name": "attendance_record_ix_by_student",
+        "table": "attendance_record",
+        "columns": [
+          "tenant",
+          "student",
+          "date",
+          "id"
+        ],
+        "unique": false,
+        "query": "byStudent"
+      },
+      {
+        "name": "student_ix_by_guardian",
+        "table": "student",
+        "columns": [
+          "tenant",
+          "guardian",
+          "name",
+          "id"
+        ],
+        "unique": false,
+        "query": "byGuardian"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@fixtures/education/_/AttendanceRecord",
+        "name": "AttendanceRecord",
+        "wireName": "attendance_record",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
+            "name": "byStudent",
+            "kind": "list",
+            "partitionFields": [
+              "student"
+            ],
+            "sortFields": [
+              "date",
+              "id"
+            ],
+            "sortDirections": [
+              "desc",
+              "desc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "student",
+              "date"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "student",
+            "target": "@fixtures/education/_/Student"
+          }
+        ],
+        "createActions": 6
+      },
+      {
+        "id": "@fixtures/education/_/Guardian",
+        "name": "Guardian",
+        "wireName": "guardian",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 4
+      },
+      {
+        "id": "@fixtures/education/_/Student",
+        "name": "Student",
+        "wireName": "student",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
+            "name": "byGuardian",
+            "kind": "list",
+            "partitionFields": [
+              "guardian"
+            ],
+            "sortFields": [
+              "name",
+              "id"
+            ],
+            "sortDirections": [
+              "asc",
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "guardian",
+              "name"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "guardian",
+            "target": "@fixtures/education/_/Guardian"
+          }
+        ],
+        "createActions": 6
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@fixtures/education",
+    "resources": [
+      {
+        "id": "@fixtures/education/_/AttendanceRecord",
+        "name": "AttendanceRecord",
+        "kind": "resource",
+        "label": "Attendance Record",
+        "plural": "Attendance Records",
+        "route": "attendance-records",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "student",
+            "label": "Student",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "reference": {
+              "resource": "@fixtures/education/_/Student",
+              "route": "student",
+              "titleField": "name",
+              "lookup": "@fixtures/education/_/Student.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "date",
+            "label": "Date",
+            "widget": "date",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "status",
+            "label": "Status",
+            "widget": "select",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "options": [
+              {
+                "value": "Present",
+                "label": "Present"
+              },
+              {
+                "value": "Absent",
+                "label": "Absent"
+              },
+              {
+                "value": "Excused",
+                "label": "Excused"
+              }
+            ]
+          },
+          {
+            "name": "healthNote",
+            "label": "Health Note",
+            "widget": "textarea",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "maxLength": 500
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "student",
+          "date",
+          "status",
+          "healthNote"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@fixtures/education/_/AttendanceRecord.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byStudent",
+            "op": "@fixtures/education/_/AttendanceRecord.list.byStudent",
+            "params": [
+              "student"
+            ],
+            "label": "By Student"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@fixtures/education/_/Guardian",
+        "name": "Guardian",
+        "kind": "resource",
+        "label": "Guardian",
+        "plural": "Guardians",
+        "route": "guardians",
+        "titleField": "name",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "name",
+            "label": "Name",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "widget": "email",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "name",
+          "email"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@fixtures/education/_/Guardian.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@fixtures/education/_/Student",
+        "name": "Student",
+        "kind": "resource",
+        "label": "Student",
+        "plural": "Students",
+        "route": "students",
+        "titleField": "name",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "name",
+            "label": "Name",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "guardian",
+            "label": "Guardian",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "reference": {
+              "resource": "@fixtures/education/_/Guardian",
+              "route": "guardian",
+              "titleField": "name",
+              "lookup": "@fixtures/education/_/Guardian.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "name",
+          "guardian"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@fixtures/education/_/Student.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byGuardian",
+            "op": "@fixtures/education/_/Student.list.byGuardian",
+            "params": [
+              "guardian"
+            ],
+            "label": "By Guardian"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-fixtures-education-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.create",
+        "kind": "create",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.get",
+        "kind": "get",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.update",
+        "kind": "update",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.delete",
+        "kind": "delete",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.list.all",
+        "kind": "list",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.list.byStudent",
+        "kind": "list",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.create",
+        "kind": "create",
+        "resource": "@fixtures/education/_/Guardian",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.get",
+        "kind": "get",
+        "resource": "@fixtures/education/_/Guardian",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.update",
+        "kind": "update",
+        "resource": "@fixtures/education/_/Guardian",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.delete",
+        "kind": "delete",
+        "resource": "@fixtures/education/_/Guardian",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.list.all",
+        "kind": "list",
+        "resource": "@fixtures/education/_/Guardian",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Student.create",
+        "kind": "create",
+        "resource": "@fixtures/education/_/Student",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Student.get",
+        "kind": "get",
+        "resource": "@fixtures/education/_/Student",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Student.update",
+        "kind": "update",
+        "resource": "@fixtures/education/_/Student",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Student.delete",
+        "kind": "delete",
+        "resource": "@fixtures/education/_/Student",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Student.list.all",
+        "kind": "list",
+        "resource": "@fixtures/education/_/Student",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/Student.list.byGuardian",
+        "kind": "list",
+        "resource": "@fixtures/education/_/Student",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixtures/education/_/PresentDays.query",
+        "kind": "view.query",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "student",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "date",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "status",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "healthNote",
+        "class": "data.health.note",
+        "ancestors": [
+          "data.health.note",
+          "data.health",
+          "data"
+        ],
+        "kinds": [
+          "health",
+          "communication"
+        ],
+        "identifiability": "indirect",
+        "handling": "restricted",
+        "personal": "yes",
+        "evidence": "declared",
+        "completeness": "classified"
+      },
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Guardian",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Guardian",
+        "field": "name",
+        "class": "data.identity.name",
+        "ancestors": [
+          "data.identity.name",
+          "data.identity",
+          "data"
+        ],
+        "kinds": [
+          "identity"
+        ],
+        "identifiability": "direct",
+        "handling": "confidential",
+        "personal": "yes",
+        "evidence": "declared",
+        "completeness": "classified"
+      },
+      {
+        "resource": "@fixtures/education/_/Guardian",
+        "field": "email",
+        "class": "data.contact.email",
+        "ancestors": [
+          "data.contact.email",
+          "data.contact",
+          "data"
+        ],
+        "kinds": [
+          "contact",
+          "identifier"
+        ],
+        "identifiability": "direct",
+        "handling": "confidential",
+        "personal": "yes",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@fixtures/education/_/Guardian",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Guardian",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Guardian",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Student",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Student",
+        "field": "name",
+        "class": "data.identity.name",
+        "ancestors": [
+          "data.identity.name",
+          "data.identity",
+          "data"
+        ],
+        "kinds": [
+          "identity"
+        ],
+        "identifiability": "direct",
+        "handling": "confidential",
+        "personal": "yes",
+        "evidence": "declared",
+        "completeness": "classified"
+      },
+      {
+        "resource": "@fixtures/education/_/Student",
+        "field": "guardian",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Student",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Student",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixtures/education/_/Student",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [
+      {
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "kind": "person",
+        "via": "student",
+        "accessPath": "byStudent",
+        "recordContext": "education"
+      },
+      {
+        "resource": "@fixtures/education/_/Guardian",
+        "kind": "person"
+      },
+      {
+        "resource": "@fixtures/education/_/Student",
+        "kind": "person",
+        "recordContext": "education"
+      }
+    ],
+    "summary": {
+      "classified": 3,
+      "inferred": 1,
+      "structural": 16
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.create",
+        "kind": "create",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "outputs": [
+          "id",
+          "student",
+          "date",
+          "status",
+          "healthNote",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "student",
+          "date",
+          "status",
+          "healthNote"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.get",
+        "kind": "get",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "outputs": [
+          "id",
+          "student",
+          "date",
+          "status",
+          "healthNote",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.update",
+        "kind": "update",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "outputs": [
+          "id",
+          "student",
+          "date",
+          "status",
+          "healthNote",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "student",
+          "date",
+          "status",
+          "healthNote"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.delete",
+        "kind": "delete",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "outputs": [
+          "id",
+          "student",
+          "date",
+          "status",
+          "healthNote",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.list.all",
+        "kind": "list",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "outputs": [
+          "id",
+          "student",
+          "date",
+          "status",
+          "healthNote",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/AttendanceRecord.list.byStudent",
+        "kind": "list",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "outputs": [
+          "id",
+          "student",
+          "date",
+          "status",
+          "healthNote",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "student"
+        ],
+        "orders": [
+          "date",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.create",
+        "kind": "create",
+        "resource": "@fixtures/education/_/Guardian",
+        "outputs": [
+          "id",
+          "name",
+          "email",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "name",
+          "email"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.get",
+        "kind": "get",
+        "resource": "@fixtures/education/_/Guardian",
+        "outputs": [
+          "id",
+          "name",
+          "email",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.update",
+        "kind": "update",
+        "resource": "@fixtures/education/_/Guardian",
+        "outputs": [
+          "id",
+          "name",
+          "email",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "name",
+          "email"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.delete",
+        "kind": "delete",
+        "resource": "@fixtures/education/_/Guardian",
+        "outputs": [
+          "id",
+          "name",
+          "email",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Guardian.list.all",
+        "kind": "list",
+        "resource": "@fixtures/education/_/Guardian",
+        "outputs": [
+          "id",
+          "name",
+          "email",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Student.create",
+        "kind": "create",
+        "resource": "@fixtures/education/_/Student",
+        "outputs": [
+          "id",
+          "name",
+          "guardian",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "name",
+          "guardian"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Student.get",
+        "kind": "get",
+        "resource": "@fixtures/education/_/Student",
+        "outputs": [
+          "id",
+          "name",
+          "guardian",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Student.update",
+        "kind": "update",
+        "resource": "@fixtures/education/_/Student",
+        "outputs": [
+          "id",
+          "name",
+          "guardian",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "name",
+          "guardian"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Student.delete",
+        "kind": "delete",
+        "resource": "@fixtures/education/_/Student",
+        "outputs": [
+          "id",
+          "name",
+          "guardian",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Student.list.all",
+        "kind": "list",
+        "resource": "@fixtures/education/_/Student",
+        "outputs": [
+          "id",
+          "name",
+          "guardian",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/Student.list.byGuardian",
+        "kind": "list",
+        "resource": "@fixtures/education/_/Student",
+        "outputs": [
+          "id",
+          "name",
+          "guardian",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "guardian"
+        ],
+        "orders": [
+          "name",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixtures/education/_/PresentDays.query",
+        "kind": "view.query",
+        "resource": "@fixtures/education/_/AttendanceRecord",
+        "outputs": [
+          "id",
+          "date",
+          "status"
+        ],
+        "writes": [],
+        "filters": [
+          "student",
+          "healthNote"
+        ],
+        "orders": [
+          "date",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  }
+}

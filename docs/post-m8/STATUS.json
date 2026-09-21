@@ -105,6 +105,54 @@
         "PAR-090": "drizzle-pg + raw-pg run identical scenarios",
         "PAR-091": "node-host.test.ts restart + drain"
       }
+    },
+    "M11": {
+      "status": "done",
+      "tickets": {
+        "FORGE-037": {
+          "status": "done",
+          "evidence": [
+            "packages/contracts/data-core/taxonomy.json (multi-label DAG, identifiability/handling/personal facets, inferred-from-type map, record contexts) embedded in forge-semantic::taxonomy",
+            "DataSemanticsIR (`dataSemantics` in app.json): class, ancestors, kinds, handling (monotone: a child never loosens an ancestor), evidence declared|inferred-from-type|structural, completeness; unclassified free text is restricted, never public",
+            "E-GOV-006 unknown taxonomy node / data class extends"
+          ]
+        },
+        "FORGE-038": {
+          "status": "done",
+          "evidence": [
+            "`@subject(person|organization|device)` and `@subject(from: field)` (E-GOV-005/007: a `from` binding needs `list by field`)",
+            "runtime admin.subjects.locate: records via declared bindings, linked subjects with share counts, cascade always empty (packages/runtime/test/subjects.test.ts)"
+          ]
+        },
+        "FORGE-039": {
+          "status": "done",
+          "evidence": [
+            "LineageIR (`lineage` in app.json): outputs/writes/filters/orders/groups per generated operation, views (hidden filter fields kept), projections (group keys), functions declared-not-proven with external sinks and publishes; coverage modeled|declared"
+          ]
+        },
+        "FORGE-040": {
+          "status": "done",
+          "evidence": [
+            "inspection ledger bound to sealed digest+generation: pending|allowed|quarantined|review-required; downloads honor verdicts (strict in edition 2027, pending served in 2026); a failed detector is review-required; quarantine is terminal per generation; a detector cannot touch declared classification (no such path exists)"
+          ]
+        },
+        "FORGE-041": {
+          "status": "done",
+          "evidence": [
+            "inventory summary in dataSemantics; `forge compat` classification stream (class-changed, handling-loosened, personal-field-added, subject-binding-*); fixtures examples/next/education and examples/next/industrial compile under edition 2027 and are exercised by tests"
+          ]
+        }
+      },
+      "scenarios": {
+        "PAR-092": "classification_subjects_and_lineage_lower_conservatively (ancestors kept, unknown restricted)",
+        "PAR-093": "subjects.test.ts (organization is not a person subject)",
+        "PAR-094": "subjects.test.ts (shared guardian linked, no cascade) + E-GOV-007",
+        "PAR-095": "lineage: PresentDays view filters on healthNote without emitting it",
+        "PAR-096": "lineage: SubmitOrder coverage=declared with external sink",
+        "PAR-097": "subjects.test.ts (failed detector -> review-required, never allowed)",
+        "PAR-098": "taxonomy node data.identifier.pseudonym: pseudonymous, confidential, personal (no test of a hashing transformation yet)",
+        "PAR-099": "industrial fixture: restricted, personal=no, no subjects"
+      }
     }
   }
 }

@@ -82,9 +82,10 @@ pub fn client_ts(c: &Contracts) -> String {
     for (action, method, path) in [("propose", "POST", "/v1/changesets"), ("get", "GET", "/v1/changesets/{id}"), ("preview", "GET", "/v1/changesets/{id}/preview"), ("approve", "POST", "/v1/changesets/{id}/approve"), ("commit", "POST", "/v1/changesets/{id}/commit")] {
         let _ = writeln!(out, "  {:?}: {{ method: {:?}, path: {:?}, kind: {:?}, resource: \"changesets\" }},", format!("{pkg}/_/changesets.{action}"), method, path, format!("changeset.{action}"));
     }
-    for action in ["export", "import", "verify", "fence"] {
+    for action in ["export", "import", "verify", "fence", "inspect"] {
         let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: {:?}, resource: \"admin\" }},", format!("{pkg}/_/admin.{action}"), format!("/v1/admin/{action}"), format!("admin.{action}"));
     }
+    let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: \"/v1/admin/subjects/locate\", kind: \"admin.subjects.locate\", resource: \"admin\" }},", format!("{pkg}/_/admin.subjects.locate"));
     for (action, path) in [("inspect", "/v1/imports/inspect"), ("stage", "/v1/imports/stage")] {
         let _ = writeln!(out, "  {:?}: {{ method: \"POST\", path: {:?}, kind: {:?}, resource: \"imports\" }},", format!("{pkg}/_/imports.{action}"), path, format!("import.{action}"));
     }
@@ -243,6 +244,8 @@ pub fn client_ts(c: &Contracts) -> String {
     let _ = writeln!(out, "      import: (snapshot) => t.unwrap(t.call({:?}, {{ snapshot }})),", format!("{pkg}/_/admin.import"));
     let _ = writeln!(out, "      verify: (snapshot) => t.unwrap(t.call({:?}, {{ snapshot }})),", format!("{pkg}/_/admin.verify"));
     let _ = writeln!(out, "      fence: (on) => t.unwrap(t.call({:?}, {{ on }})),", format!("{pkg}/_/admin.fence"));
+    let _ = writeln!(out, "      locateSubject: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/admin.subjects.locate"));
+    let _ = writeln!(out, "      inspect: (input) => t.unwrap(t.call({:?}, input)),", format!("{pkg}/_/admin.inspect"));
     let _ = writeln!(out, "    }},");
     let _ = writeln!(out, "    views: {{");
     for v in &c.views {
@@ -338,6 +341,10 @@ export interface AdminApi {
   import(snapshot: Snapshot): Promise<{ imported: Record<string, number>; skipped: Record<string, number>; importedAt: string }>;
   verify(snapshot: Snapshot): Promise<VerifyReport>;
   fence(on: boolean): Promise<{ fenced: boolean }>;
+  /** Records of one subject through declared bindings; linked subjects reported, never cascaded (plan §7.2). */
+  locateSubject(input: { kind: string; resource: string; id: string }): Promise<{ subject: { kind: string; resource: string; id: string }; records: { resource: string; count: number; via?: string }[]; linked: { resource: string; id: string; via: string; kind: string; sharedWith: number | null }[]; cascade: never[] }>;
+  /** Content inspection verdict bound to the sealed digest (plan §7.3). */
+  inspect(input: { resource: string; id: string; digest: string; verdict: "allowed" | "quarantined" | "failed" | "review"; detector: string; detail?: string }): Promise<{ id: string; generation: number; inspection: { state: string; generation: number } }>;
 }
 export interface ScheduleStatus { source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }
 export interface ScheduleTick { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }

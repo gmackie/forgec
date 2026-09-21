@@ -10113,5 +10113,2685 @@
         "businessErrors": []
       }
     ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "code",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "name",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "email",
+        "class": "data.contact.email",
+        "ancestors": [
+          "data.contact.email",
+          "data.contact",
+          "data"
+        ],
+        "kinds": [
+          "contact",
+          "identifier"
+        ],
+        "identifiability": "direct",
+        "handling": "confidential",
+        "personal": "yes",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "tier",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Customer",
+        "field": "deletedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Department",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Department",
+        "field": "customer",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Department",
+        "field": "name",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Department",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Department",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Department",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Department",
+        "field": "parent",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "customer",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "site",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "subtotal",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "tax",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "total",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "requestedOn",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "notes",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Order",
+        "field": "status",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "order",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "kind",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "label",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "uploadState",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "mediaType",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "byteCount",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "digest",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "uploadAttempt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "stagedMediaType",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "stagedByteCount",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "contentGeneration",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/OrderDocument",
+        "field": "sealedGeneration",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "customer",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "code",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "name",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "timezone",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "enabled",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/Site",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "site",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "maxOrderTotal",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "requiresApproval",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "effectiveFrom",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@acme/commerce/_/SitePolicy",
+        "field": "effectiveUntil",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "inferred": 5,
+      "structural": 43,
+      "unclassified": 14
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@acme/commerce/_/Customer.create",
+        "kind": "create",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [
+          "code",
+          "name",
+          "email",
+          "tier"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Customer.get",
+        "kind": "get",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Customer.update",
+        "kind": "update",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [
+          "name",
+          "email",
+          "tier"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Customer.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Customer.restore",
+        "kind": "restore",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Customer.find.byCode",
+        "kind": "find",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "code"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Customer.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Customer.list.byTier",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Customer",
+        "outputs": [
+          "id",
+          "code",
+          "name",
+          "email",
+          "tier",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "tier"
+        ],
+        "orders": [
+          "name",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Customer.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.create",
+        "kind": "create",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [
+          "customer",
+          "name"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.get",
+        "kind": "get",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.update",
+        "kind": "update",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [
+          "name"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.list.byCustomer",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [],
+        "filters": [
+          "customer"
+        ],
+        "orders": [
+          "name",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.move",
+        "kind": "move",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.children",
+        "kind": "children",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Department.ancestors",
+        "kind": "ancestors",
+        "resource": "@acme/commerce/_/Department",
+        "outputs": [
+          "id",
+          "customer",
+          "name",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "parent"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Department.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.create",
+        "kind": "create",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "requestedOn",
+          "notes"
+        ],
+        "filters": [
+          "site",
+          "customer"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.get",
+        "kind": "get",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.update",
+        "kind": "update",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [
+          "site",
+          "subtotal",
+          "tax",
+          "requestedOn",
+          "notes"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "site",
+          "customer"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.list.byCustomer",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [],
+        "filters": [
+          "customer"
+        ],
+        "orders": [
+          "createdAt",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.list.bySiteStatus",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [],
+        "filters": [
+          "site",
+          "status"
+        ],
+        "orders": [
+          "createdAt",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.status.submit",
+        "kind": "transition",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status",
+          "site",
+          "customer"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.status.approve",
+        "kind": "transition",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status",
+          "site",
+          "customer"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.status.complete",
+        "kind": "transition",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status",
+          "site",
+          "customer"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Order.status.cancel",
+        "kind": "transition",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "customer",
+          "site",
+          "subtotal",
+          "tax",
+          "total",
+          "requestedOn",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status",
+          "site",
+          "customer"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Order.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.create",
+        "kind": "create",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [
+          "order",
+          "kind",
+          "label"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.get",
+        "kind": "get",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.update",
+        "kind": "update",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [
+          "kind",
+          "label"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.list.byOrder",
+        "kind": "list",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [],
+        "filters": [
+          "order"
+        ],
+        "orders": [
+          "createdAt",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.beginUpload",
+        "kind": "beginUpload",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.finalizeUpload",
+        "kind": "finalizeUpload",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/OrderDocument.download",
+        "kind": "download",
+        "resource": "@acme/commerce/_/OrderDocument",
+        "outputs": [
+          "id",
+          "order",
+          "kind",
+          "label",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "uploadState",
+          "mediaType",
+          "byteCount",
+          "digest"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Site.create",
+        "kind": "create",
+        "resource": "@acme/commerce/_/Site",
+        "outputs": [
+          "id",
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Site.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Site.get",
+        "kind": "get",
+        "resource": "@acme/commerce/_/Site",
+        "outputs": [
+          "id",
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Site.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Site.update",
+        "kind": "update",
+        "resource": "@acme/commerce/_/Site",
+        "outputs": [
+          "id",
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "name",
+          "timezone",
+          "enabled"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Site.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Site.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce/_/Site",
+        "outputs": [
+          "id",
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Site.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Site.find.byCustomerCode",
+        "kind": "find",
+        "resource": "@acme/commerce/_/Site",
+        "outputs": [
+          "id",
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "customer",
+          "code"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Site.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Site.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Site",
+        "outputs": [
+          "id",
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Site.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/Site.list.byCustomer",
+        "kind": "list",
+        "resource": "@acme/commerce/_/Site",
+        "outputs": [
+          "id",
+          "customer",
+          "code",
+          "name",
+          "timezone",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "customer"
+        ],
+        "orders": [
+          "name",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/Site.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/SitePolicy.create",
+        "kind": "create",
+        "resource": "@acme/commerce/_/SitePolicy",
+        "outputs": [
+          "id",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [
+          "site",
+          "maxOrderTotal",
+          "requiresApproval"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/SitePolicy.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/SitePolicy.get",
+        "kind": "get",
+        "resource": "@acme/commerce/_/SitePolicy",
+        "outputs": [
+          "id",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/SitePolicy.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/SitePolicy.update",
+        "kind": "update",
+        "resource": "@acme/commerce/_/SitePolicy",
+        "outputs": [
+          "id",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [
+          "maxOrderTotal",
+          "requiresApproval"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/SitePolicy.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/SitePolicy.delete",
+        "kind": "delete",
+        "resource": "@acme/commerce/_/SitePolicy",
+        "outputs": [
+          "id",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/SitePolicy.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/SitePolicy.list.all",
+        "kind": "list",
+        "resource": "@acme/commerce/_/SitePolicy",
+        "outputs": [
+          "id",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/SitePolicy.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/SitePolicy.list.bySite",
+        "kind": "list",
+        "resource": "@acme/commerce/_/SitePolicy",
+        "outputs": [
+          "id",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "site"
+        ],
+        "orders": [
+          "effectiveFrom",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/SitePolicy.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/SitePolicy.effective.bySite",
+        "kind": "effective",
+        "resource": "@acme/commerce/_/SitePolicy",
+        "outputs": [
+          "id",
+          "site",
+          "maxOrderTotal",
+          "requiresApproval",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "effectiveFrom",
+          "effectiveUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [
+          "@acme/commerce/_/SitePolicy.changes"
+        ],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/PendingOrders.query",
+        "kind": "view.query",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "id",
+          "site",
+          "total",
+          "requestedOn"
+        ],
+        "writes": [],
+        "filters": [
+          "customer",
+          "status"
+        ],
+        "orders": [
+          "createdAt",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/CustomerOrderSummary.get",
+        "kind": "projection.get",
+        "resource": "@acme/commerce/_/Order",
+        "outputs": [
+          "orders",
+          "total"
+        ],
+        "writes": [],
+        "filters": [
+          "status"
+        ],
+        "orders": [],
+        "groups": [
+          "customer"
+        ],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@acme/commerce/_/FulfillOrder",
+        "kind": "function",
+        "outputs": [],
+        "writes": [],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "declared"
+      },
+      {
+        "operation": "@acme/commerce/_/RebuildOrderSummary",
+        "kind": "function",
+        "outputs": [],
+        "writes": [],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "declared"
+      },
+      {
+        "operation": "@acme/commerce/_/SubmitOrder",
+        "kind": "function",
+        "outputs": [],
+        "writes": [
+          "@acme/commerce/_/Order.status.submit"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [
+          "@acme/payments/_/AuthorizePayment"
+        ],
+        "publishes": [
+          "@acme/commerce/_/OrderEvents"
+        ],
+        "coverage": "declared"
+      }
+    ]
   }
 }

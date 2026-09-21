@@ -104,6 +104,27 @@ pub struct Module {
     pub data_classes: Vec<DataClass>,
 }
 
+pub use crate::taxonomy::{DataSemantics, Lineage, Taxonomy};
+
+/// `@subject(person)` — this record is about a subject of that kind; `@subject(from: field)` — it is about
+/// the subject of the referenced record (a guardian relationship needs a concrete link, not a role string).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "binding", rename_all = "camelCase")]
+pub enum SubjectBinding {
+    Kind { kind: String },
+    From { field: String },
+}
+impl SubjectBinding {
+    #[allow(non_snake_case)]
+    pub fn Kind(kind: impl Into<String>) -> Self {
+        SubjectBinding::Kind { kind: kind.into() }
+    }
+    #[allow(non_snake_case)]
+    pub fn From(field: impl Into<String>) -> Self {
+        SubjectBinding::From { field: field.into() }
+    }
+}
+
 /// Intent context. `extends` is taxonomy meaning only; it grants no field or action authority.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -455,9 +476,12 @@ pub struct ResourceDecorators {
     /// Edition 2027: every interface exposes this resource through a purpose surface.
     #[serde(default)]
     pub purpose_scoped: bool,
-    /// Edition 2027: subject binding kind (`person`, `organization`, `device`).
+    /// Edition 2027: who the record is about — a subject of a kind, or the subject of a referenced record.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub subject: Option<String>,
+    pub subject: Option<SubjectBinding>,
+    /// Edition 2027: `@record(education | healthcare | employment | industrial | finance | organizational)`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub record_context: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

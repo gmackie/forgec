@@ -31,6 +31,8 @@ export const ERROR_STATUS: Record<string, { status: number; retryable: boolean; 
   InvalidCursor: { status: 400, retryable: false, title: "Invalid cursor" },
   BudgetExceeded: { status: 422, retryable: false, title: "Budget exceeded" },
   ProjectionNotReady: { status: 503, retryable: true, title: "Projection not ready" },
+  InspectionPending: { status: 409, retryable: true, title: "Content inspection pending" },
+  InspectionBlocked: { status: 403, retryable: false, title: "Content blocked by inspection" },
   WriteFenced: { status: 503, retryable: true, title: "Writes fenced" },
   WorkflowVersionMismatch: { status: 409, retryable: false, title: "Workflow version mismatch" },
   PayloadTooLarge: { status: 413, retryable: false, title: "Payload too large" },

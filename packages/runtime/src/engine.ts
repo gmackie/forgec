@@ -21,6 +21,7 @@ import { Schedules } from "./schedules.js";
 import { Realtime } from "./realtime.js";
 import { Telemetry, type TraceContext } from "./telemetry.js";
 import { Portability } from "./portability.js";
+import { Governance } from "./governance.js";
 import { testClocks } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
@@ -94,6 +95,9 @@ export class Engine {
     }
     if (/\/admin\.(export|import|verify|fence)$/.test(opId)) {
       return self.portability.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
+    }
+    if (/\/admin\.(subjects\.locate|inspect)$/.test(opId)) {
+      return self.governance.handle(opId.slice(opId.indexOf("admin.") + 6), (input ?? {}) as Wire, ctx);
     }
     const ref = self.model.operation(opId);
     if (!ref) {
@@ -211,6 +215,7 @@ export class Engine {
   readonly realtime = new Realtime(this);
   readonly telemetry = new Telemetry(this);
   readonly portability = new Portability(this);
+  readonly governance = new Governance(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {

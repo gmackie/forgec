@@ -57,6 +57,9 @@ function builtinRoutes(model: Model): Route[] {
     adm("POST", "/v1/admin/import", "import"),
     adm("POST", "/v1/admin/verify", "verify"),
     adm("POST", "/v1/admin/fence", "fence"),
+    // Governance (plan §7): subject location and content inspection verdicts.
+    adm("POST", "/v1/admin/subjects/locate", "subjects.locate"),
+    adm("POST", "/v1/admin/inspect", "inspect"),
     imp("POST", "/v1/imports/inspect", "inspect"),
     imp("POST", "/v1/imports/stage", "stage"),
     mk("POST", "/v1/changesets", "propose"),
@@ -282,6 +285,8 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       case "admin.import":
       case "admin.verify":
       case "admin.fence":
+      case "admin.subjects.locate":
+      case "admin.inspect":
         input = (body ?? {}) as Record<string, unknown>;
         break;
       case "function":

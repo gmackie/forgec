@@ -223,6 +223,41 @@ pub fn compare(old: &Value, new: &Value) -> Report {
         }
     }
 
+    // ---- classification: data semantics and subject bindings (M11); loosening is breaking for governance
+    let sem = |v: &Value| -> BTreeMap<String, (String, String, String)> {
+        arr(v, &["dataSemantics", "fields"]).into_iter().map(|f| (format!("{}.{}", s(&f["resource"]), s(&f["field"])), (s(&f["class"]), s(&f["handling"]), s(&f["personal"])))).collect()
+    };
+    let (os, ns) = (sem(old), sem(new));
+    let rank = |h: &str| match h { "public" => 0, "internal" => 1, "confidential" => 2, "restricted" => 3, _ => 4 };
+    for (k, (oc, oh, _)) in &os {
+        if let Some((nc, nh, _)) = ns.get(k) {
+            if oc != nc {
+                push(&mut f, "classification", if rank(nh) < rank(oh) { "breaking" } else { "risk" }, "class-changed", k.clone(), format!("{oc} -> {nc}: consumers, grants and retention rules keyed on the class need review"));
+            } else if rank(nh) < rank(oh) {
+                push(&mut f, "classification", "breaking", "handling-loosened", k.clone(), format!("{oh} -> {nh}"));
+            }
+        }
+    }
+    for (k, (nc, _, personal)) in &ns {
+        if !os.contains_key(k) && personal == "yes" {
+            push(&mut f, "classification", "risk", "personal-field-added", k.clone(), format!("new personal-data field classified {nc}: purpose surfaces and subject rights must cover it"));
+        }
+    }
+    let subs = |v: &Value| -> BTreeMap<String, String> { arr(v, &["dataSemantics", "subjects"]).into_iter().map(|x| (s(&x["resource"]), format!("{}{}", s(&x["kind"]), x["via"].as_str().map(|v| format!(" via {v}")).unwrap_or_default()))).collect() };
+    let (osb, nsb) = (subs(old), subs(new));
+    for (r, b) in &osb {
+        match nsb.get(r) {
+            None => push(&mut f, "classification", "breaking", "subject-binding-removed", r.clone(), "records lose their subject linkage (erasure/access rights)".into()),
+            Some(nb) if nb != b => push(&mut f, "classification", "risk", "subject-binding-changed", r.clone(), format!("{b} -> {nb}")),
+            _ => {}
+        }
+    }
+    for r in nsb.keys() {
+        if !osb.contains_key(r) {
+            push(&mut f, "classification", "additive", "subject-binding-added", r.clone(), "records gain a subject linkage".into());
+        }
+    }
+
     // ---- workflows: in-flight instances are pinned to (version, graphHash)
     let wfs = |v: &Value| -> BTreeMap<String, (u64, String)> {
         arr(v, &["ir", "modules"]).into_iter().flat_map(|m| arr(m, &["workflows"])).map(|w| (s(&w["id"]), (w["version"].as_u64().unwrap_or(0), s(&w["graphHash"])))).collect()

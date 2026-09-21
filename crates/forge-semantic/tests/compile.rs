@@ -285,7 +285,7 @@ fn edition_2027_governance_declarations_lower_and_are_gated() {
     let ir = acme.ir.unwrap();
     let contact = ir.find_resource("@acme/commerce-next/_/Contact").unwrap();
     assert!(contact.decorators.purpose_scoped);
-    assert_eq!(contact.decorators.subject.as_deref(), Some("person"));
+    assert_eq!(contact.decorators.subject, Some(forge_semantic::ir::SubjectBinding::Kind("person")));
     assert_eq!(contact.capabilities.iter().map(|c| c.name.as_str()).collect::<Vec<_>>(), ["Identity", "ContactRead", "ContactMaintenance", "SupportRecord", "AgentSupport"]);
     let agent = contact.capabilities.iter().find(|c| c.name == "AgentSupport").unwrap();
     assert_eq!(agent.includes, vec!["SupportRecord"]);
@@ -385,4 +385,63 @@ fn dependency_resolution_never_executes_package_code() {
     assert!(out.diagnostics.is_empty());
     assert!(!canary.exists(), "package code must never run during resolution");
     assert_eq!(pkg.files.iter().map(|f| f.path.as_str()).collect::<Vec<_>>(), ["src/a.forge"]);
+}
+
+/// M11 (PAR-092/093/094/095/099): classification, subjects and lineage in the IR.
+#[test]
+fn classification_subjects_and_lineage_lower_conservatively() {
+    let edu = compile(&load_package(&examples().join("next/education")).unwrap(), &[]);
+    assert!(edu.diagnostics.is_empty(), "{:#?}", edu.diagnostics);
+    let ir = edu.ir.unwrap();
+    let student = ir.find_resource("@fixtures/education/_/Student").unwrap();
+    assert_eq!(student.decorators.subject, Some(forge_semantic::ir::SubjectBinding::Kind("person")));
+    assert_eq!(student.decorators.record_context.as_deref(), Some("education"));
+    let att = ir.find_resource("@fixtures/education/_/AttendanceRecord").unwrap();
+    assert_eq!(att.decorators.subject, Some(forge_semantic::ir::SubjectBinding::From("student")));
+    // PAR-092: the declared class keeps every ancestor; the health note is health AND communication.
+    let note = att.fields.iter().find(|f| f.name == "healthNote").unwrap();
+    assert_eq!(note.ty.data_class.as_deref(), Some("data.health.note"));
+    let sem = forge_semantic::ir::DataSemantics::of(&ir, &taxonomy());
+    let f = sem.field(&att.id, "healthNote").unwrap();
+    assert_eq!(f.evidence, "declared");
+    assert!(f.ancestors.iter().any(|a| a == "data.health") && f.ancestors.iter().any(|a| a == "data"));
+    assert_eq!(f.handling, "restricted");
+    assert_eq!(f.kinds, vec!["health", "communication"]);
+    // inferred from the scalar type: email is contact data even without @data
+    let g = sem.field("@fixtures/education/_/Guardian", "email").unwrap();
+    assert_eq!((g.class.as_str(), g.evidence.as_str()), ("data.contact.email", "inferred-from-type"));
+    // an unclassified free-text field is `unclassified`, never public
+    let bad = inline("@t/u", &[("src/a.forge", "resource R {\n  id : id\n  blob : text\n}\n")]);
+    let bad_ir = compile(&bad, &[]).ir.unwrap();
+    let bad_sem = forge_semantic::ir::DataSemantics::of(&bad_ir, &taxonomy());
+    let u = bad_sem.field("@t/u/_/R", "blob").unwrap();
+    assert_eq!((u.completeness.as_str(), u.handling.as_str()), ("unclassified", "restricted"));
+    // PAR-093: the organization is not a person subject; PAR-094: `from` bindings need a bounded access path.
+    let missing_path = inline("@t/s", &[("src/a.forge", "resource P {\n  id : id\n}\nresource R\n  @subject(from: p)\n{\n  id : id\n  p : P\n}\n")]);
+    assert!(codes_edition(missing_path, "2027").contains(&"E-GOV-007".into()));
+    let subjects = sem.subjects();
+    assert_eq!(subjects.iter().find(|s| s.resource == att.id).unwrap().via.as_deref(), Some("student"));
+    assert_eq!(subjects.iter().find(|s| s.resource == att.id).unwrap().access_path.as_deref(), Some("byStudent"));
+    // PAR-095: a view filtering on the hidden health field carries health processing in its lineage.
+    let lineage = forge_semantic::ir::Lineage::of(&ir);
+    let view = lineage.operations.iter().find(|o| o.operation == "@fixtures/education/_/PresentDays.query").unwrap();
+    assert!(view.filters.contains(&"healthNote".to_string()));
+    assert!(!view.outputs.contains(&"healthNote".to_string()));
+    assert_eq!(view.coverage, "modeled");
+    // PAR-096: a handwritten function's flow is declared, not proven.
+    let acme = compile(&load_package(&examples().join("acme")).unwrap(), &[&compile(&load_package(&examples().join("payments")).unwrap(), &[]).ir.unwrap()]).ir.unwrap();
+    let l2 = forge_semantic::ir::Lineage::of(&acme);
+    let submit = l2.operations.iter().find(|o| o.operation == "@acme/commerce/_/SubmitOrder").unwrap();
+    assert_eq!(submit.coverage, "declared");
+    assert!(submit.external_sinks.contains(&"@acme/payments/_/AuthorizePayment".to_string()));
+    // PAR-099: industrial data is restricted without being personal.
+    let ind = compile(&load_package(&examples().join("next/industrial")).unwrap(), &[]).ir.unwrap();
+    let s3 = forge_semantic::ir::DataSemantics::of(&ind, &taxonomy());
+    let formula = s3.field("@fixtures/industrial/_/ProcessRecipe", "formula").unwrap();
+    assert_eq!((formula.handling.as_str(), formula.personal.as_str()), ("restricted", "no"));
+    assert!(s3.subjects().iter().all(|s| s.resource != "@fixtures/industrial/_/ProcessRecipe"));
+}
+
+fn taxonomy() -> forge_semantic::ir::Taxonomy {
+    forge_semantic::ir::Taxonomy::core()
 }

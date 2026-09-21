@@ -62,7 +62,7 @@ export interface Resource {
   name: string;
   kind: "resource" | "blob";
   content?: ContentPolicy;
-  decorators: { tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; hierarchical?: boolean; effectiveDated?: { uniqueBy: string[] }; crud?: { path: string; operations?: string[]; actions: string[] } };
+  decorators: { tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; hierarchical?: boolean; effectiveDated?: { uniqueBy: string[] }; crud?: { path: string; operations?: string[]; actions: string[] }; purposeScoped?: boolean; subject?: { binding: "kind"; kind: string } | { binding: "from"; field: string }; recordContext?: string };
   fields: Field[];
   uniques: Unique[];
   finds: Find[];
@@ -116,8 +116,9 @@ export interface DataClassDecl { id: string; name: string; exported: boolean; ex
 export const KNOWN_FEATURES = ["governance/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; edition?: string }; modules: Module[]; requires?: string[] }
+export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }
 export interface Contracts { version: string; resources: { id: string; name: string; wireName: string; operations: Operation[] }[]; functions: { id: string; name: string; http?: HttpBinding }[] }
-export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan; realtime?: RealtimePlan; observability?: ObservabilityPlan }
+export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan; realtime?: RealtimePlan; observability?: ObservabilityPlan; dataSemantics?: DataSemanticsPlan; lineage?: unknown }
 
 export interface OperationRef {
   op: Operation;

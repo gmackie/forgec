@@ -194,6 +194,8 @@ fn main() -> Result<()> {
                 "schedules": plans.schedules,
                 "realtime": plans.realtime,
                 "observability": plans.observability,
+                "dataSemantics": forge_semantic::ir::DataSemantics::of(&ir, &forge_semantic::ir::Taxonomy::core()),
+                "lineage": forge_semantic::ir::Lineage::of(&ir),
             });
             std::fs::write(out_dir.join("app.json"), serde_json::to_string_pretty(&bundle)?)?;
             std::fs::write(out_dir.join("d1/0001_init.sql"), forge_planner::sql::render_sqlite(&plans.sql))?;

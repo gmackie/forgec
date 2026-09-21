@@ -11,10 +11,10 @@ use std::collections::{BTreeMap, BTreeSet};
 pub const SCALARS: &[&str] = &[
     "id", "text", "integer", "decimal", "money", "boolean", "date", "datetime", "localTime", "duration", "email", "timezone", "countryCode", "url", "json",
 ];
-const RESOURCE_DECORATORS: &[&str] = &["tenant", "timestamps", "softDelete", "versioned", "audited", "crud", "effectiveDated", "hierarchical", "label", "purposeScoped", "subject"];
+const RESOURCE_DECORATORS: &[&str] = &["tenant", "timestamps", "softDelete", "versioned", "audited", "crud", "effectiveDated", "hierarchical", "label", "purposeScoped", "subject", "record"];
 const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data"];
 /// Declarations and decorators that need `edition = "2027"`.
-const EDITION_2027_DECORATORS: &[&str] = &["purposeScoped", "subject", "data"];
+const EDITION_2027_DECORATORS: &[&str] = &["purposeScoped", "subject", "data", "record"];
 const FUNCTION_DECORATORS: &[&str] = &["http", "label"];
 const HTTP_METHODS: &[&str] = &["GET", "POST", "PUT", "PATCH", "DELETE"];
 const DEFAULT_MODULE: &str = "_";
@@ -488,11 +488,19 @@ impl<'a> Ctx<'a> {
         let name = name_tok.text().to_string();
         let mut immutable = false;
         let mut unique = false;
+        let mut data_class: Option<String> = None;
         for d in fd.decorators() {
             let Some(dn) = d.name() else { continue };
             match dn.text() {
                 "immutable" if allowed_decorators.contains(&"immutable") => immutable = true,
                 "unique" if allowed_decorators.contains(&"unique") => unique = true,
+                "data" if allowed_decorators.contains(&"data") => {
+                    self.require_edition_2027(file, tok_range(&dn), "`@data`");
+                    match d.args().first().and_then(|a| a.value()) {
+                        Some(ArgValue::Name(segs)) => data_class = self.resolve_data_class_or_path(&segs, module, file, range_of(&d)),
+                        _ => self.err("E-DEC-002", file, range_of(&d), "`@data` requires a data class or taxonomy path", None),
+                    }
+                }
                 "label" => {}
                 other => {
                     let sugg = suggest(other, allowed_decorators.iter().copied()).map(|s| format!("did you mean `@{s}`?"));
@@ -510,7 +518,20 @@ impl<'a> Ctx<'a> {
             return Some(Field { name, ty, default: None, derived: ir, immutable: true, server_owned: true, synthesized: false, hidden: false, doc: fd.doc() });
         }
         let te = fd.type_expr()?;
-        let ty = self.type_spec(&te, module, file)?;
+        let mut ty = self.type_spec(&te, module, file)?;
+        // A field's own @data wins; otherwise the alias's classification flows through.
+        if let Some(c) = data_class {
+            ty.data_class = Some(c);
+        } else if ty.data_class.is_none()
+            && let Some(n) = te.type_ref().and_then(|r| r.name())
+            && let [a] = n.segments().as_slice()
+            && let Some(Symbol { decl: Declaration::Type(t), .. }) = self.sym(module, a) {
+                let t = t.clone();
+                if let Some(dec) = t.decorators().find(|d| d.name().is_some_and(|n| n.text() == "data"))
+                    && let Some(ArgValue::Name(segs)) = dec.args().first().and_then(|a| a.value()) {
+                        ty.data_class = self.resolve_data_class_or_path(&segs, module, file, range_of(&dec));
+                    }
+            }
         let default = match fd.default() {
             Some(e) => self.default_literal(&e, &ty, module, file),
             None => None,
@@ -619,6 +640,19 @@ impl<'a> Ctx<'a> {
         let sugg = suggest(&segs.join("."), known.iter().map(|s| s.as_str())).map(|s| format!("did you mean `{s}`?"));
         self.err("E-GOV-003", file, range, format!("unknown purpose `{}`", segs.join(".")), sugg);
         None
+    }
+
+    /// `@data(Class)` (declared) or `@data(data.a.b)` (taxonomy path).
+    fn resolve_data_class_or_path(&mut self, segs: &[String], module: &str, file: usize, range: (usize, usize)) -> Option<String> {
+        if segs.first().map(|s| s.as_str()) == Some("data") {
+            let id = segs.join(".");
+            if Taxonomy::core().node(&id).is_none() {
+                self.err("E-GOV-006", file, range, format!("unknown taxonomy node `{id}`"), None);
+                return None;
+            }
+            return Some(id);
+        }
+        self.resolve_data_class(segs, module, file, range)
     }
 
     fn resolve_data_class(&mut self, segs: &[String], module: &str, file: usize, range: (usize, usize)) -> Option<String> {
@@ -774,7 +808,16 @@ impl<'a> Ctx<'a> {
                 "hierarchical" => d.hierarchical = true,
                 "purposeScoped" => d.purpose_scoped = true,
                 "subject" => {
-                    d.subject = dec.args().first().and_then(|a| a.value()).and_then(|v| if let ArgValue::Name(n) = v { n.first().cloned() } else { None });
+                    let args = dec.args();
+                    let arg = args.first();
+                    d.subject = match (arg.and_then(|a| a.label()), arg.and_then(|a| a.value())) {
+                        (Some(l), Some(ArgValue::Name(n))) if l == "from" => n.first().cloned().map(|f| SubjectBinding::From { field: f }),
+                        (None, Some(ArgValue::Name(n))) => n.first().cloned().map(|k| SubjectBinding::Kind { kind: k }),
+                        _ => None,
+                    };
+                }
+                "record" => {
+                    d.record_context = dec.args().first().and_then(|a| a.value()).and_then(|v| if let ArgValue::Name(n) = v { n.first().cloned() } else { None });
                 }
                 "crud" => {
                     let args = dec.args();
@@ -1052,9 +1095,28 @@ impl<'a> Ctx<'a> {
                     self.require_edition_2027(file, tok_range(&n), &format!("`@{}`", n.text()));
                 }
         }
-        if decorators.subject.is_some() && !matches!(decorators.subject.as_deref(), Some("person" | "organization" | "device")) {
-            self.err("E-GOV-005", file, range_of(r), "`@subject` kind must be `person`, `organization` or `device`", None);
+        match &decorators.subject {
+            Some(SubjectBinding::Kind { kind: k }) if !matches!(k.as_str(), "person" | "organization" | "device") => {
+                self.err("E-GOV-005", file, range_of(r), "`@subject` kind must be `person`, `organization` or `device`, or `@subject(from: field)`", None);
+            }
+            Some(SubjectBinding::From { field }) => {
+                // The referenced record carries the subject; a bounded access path must exist so one subject's
+                // records can be located without a scan (PAR-094).
+                match fields.iter().find(|f| &f.name == field) {
+                    Some(f) if matches!(f.ty.base, TypeBase::Reference { .. }) => {
+                        if !lists.iter().any(|l| l.fields.len() == 1 && &l.fields[0] == field) {
+                            self.err("E-GOV-007", file, range_of(r), format!("`@subject(from: {field})` needs `list by {field}` so a subject's records are locatable without a scan"), None);
+                        }
+                    }
+                    _ => self.err("E-GOV-005", file, range_of(r), format!("`@subject(from: {field})` must name a reference field of `{name}`"), None),
+                }
+            }
+            _ => {}
         }
+        if let Some(ctx) = &decorators.record_context
+            && !Taxonomy::core().record_contexts.iter().any(|c| c == ctx) {
+                self.err("E-GOV-008", file, range_of(r), format!("unknown record context `{ctx}`; known: {}", Taxonomy::core().record_contexts.join(", ")), None);
+            }
         let field_names: Vec<String> = fields.iter().map(|f| f.name.clone()).collect();
         let action_names: Vec<String> = lifecycle.as_ref().map(|l| l.transitions.iter().map(|t| format!("status.{}", t.action)).collect()).unwrap_or_default();
         let cap_names: Vec<String> = r.capabilities().filter_map(|c| c.name().map(|t| t.text().to_string())).collect();
@@ -1747,8 +1809,8 @@ impl<'a> Ctx<'a> {
                 (SymKind::DataClass, Declaration::DataClass(d)) => {
                     self.require_edition_2027(file, range_of(d), "`dataClass`");
                     let extends = d.extends().map(|q| q.text()).unwrap_or_default();
-                    if !extends.starts_with("data.") {
-                        self.err("E-GOV-006", file, range_of(d), format!("data class `{name}` must extend a taxonomy node under `data.`"), None);
+                    if Taxonomy::core().node(&extends).is_none() {
+                        self.err("E-GOV-006", file, range_of(d), format!("data class `{name}` must extend a known taxonomy node (got `{extends}`)"), None);
                     }
                     m.data_classes.push(DataClass { id, name, exported, doc: decl.doc(), extends });
                 }

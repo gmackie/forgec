@@ -34,6 +34,10 @@ export interface AdminApi {
   import(snapshot: Snapshot): Promise<{ imported: Record<string, number>; skipped: Record<string, number>; importedAt: string }>;
   verify(snapshot: Snapshot): Promise<VerifyReport>;
   fence(on: boolean): Promise<{ fenced: boolean }>;
+  /** Records of one subject through declared bindings; linked subjects reported, never cascaded (plan §7.2). */
+  locateSubject(input: { kind: string; resource: string; id: string }): Promise<{ subject: { kind: string; resource: string; id: string }; records: { resource: string; count: number; via?: string }[]; linked: { resource: string; id: string; via: string; kind: string; sharedWith: number | null }[]; cascade: never[] }>;
+  /** Content inspection verdict bound to the sealed digest (plan §7.3). */
+  inspect(input: { resource: string; id: string; digest: string; verdict: "allowed" | "quarantined" | "failed" | "review"; detector: string; detail?: string }): Promise<{ id: string; generation: number; inspection: { state: string; generation: number } }>;
 }
 export interface ScheduleStatus { source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }
 export interface ScheduleTick { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }
@@ -200,6 +204,8 @@ export const operations: Record<string, OperationSpec> = {
   "@acme/commerce/_/admin.import": { method: "POST", path: "/v1/admin/import", kind: "admin.import", resource: "admin" },
   "@acme/commerce/_/admin.verify": { method: "POST", path: "/v1/admin/verify", kind: "admin.verify", resource: "admin" },
   "@acme/commerce/_/admin.fence": { method: "POST", path: "/v1/admin/fence", kind: "admin.fence", resource: "admin" },
+  "@acme/commerce/_/admin.inspect": { method: "POST", path: "/v1/admin/inspect", kind: "admin.inspect", resource: "admin" },
+  "@acme/commerce/_/admin.subjects.locate": { method: "POST", path: "/v1/admin/subjects/locate", kind: "admin.subjects.locate", resource: "admin" },
   "@acme/commerce/_/imports.inspect": { method: "POST", path: "/v1/imports/inspect", kind: "import.inspect", resource: "imports" },
   "@acme/commerce/_/imports.stage": { method: "POST", path: "/v1/imports/stage", kind: "import.stage", resource: "imports" },
   "@acme/commerce/_/PendingOrders.query": { method: "GET", path: "/v1/views/pending-orders", kind: "view.query", resource: "PendingOrders" },
@@ -516,6 +522,8 @@ export function createClient(options: ClientOptions): ForgeClient {
       import: (snapshot) => t.unwrap(t.call("@acme/commerce/_/admin.import", { snapshot })),
       verify: (snapshot) => t.unwrap(t.call("@acme/commerce/_/admin.verify", { snapshot })),
       fence: (on) => t.unwrap(t.call("@acme/commerce/_/admin.fence", { on })),
+      locateSubject: (input) => t.unwrap(t.call("@acme/commerce/_/admin.subjects.locate", input)),
+      inspect: (input) => t.unwrap(t.call("@acme/commerce/_/admin.inspect", input)),
     },
     views: {
       pendingOrders: { query: (params, page) => t.unwrap(t.call("@acme/commerce/_/PendingOrders.query", { params, ...(page ?? {}) })) },
