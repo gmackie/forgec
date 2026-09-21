@@ -50,8 +50,8 @@ on every boot. Never enable it where untrusted callers can reach the process.
 
 ## Documentation
 
-[Getting started](https://github.com/gmackie/forgegraph/blob/main/docs/getting-started.md) ·
-[Portable profile](https://github.com/gmackie/forgegraph/blob/main/docs/portable-profile.md) ·
-[Operations](https://github.com/gmackie/forgegraph/blob/main/docs/operations.md)
+[Getting started](https://github.com/gmackorg/forgegraph/blob/main/docs/getting-started.md) ·
+[Portable profile](https://github.com/gmackorg/forgegraph/blob/main/docs/portable-profile.md) ·
+[Operations](https://github.com/gmackorg/forgegraph/blob/main/docs/operations.md)
 
 Apache-2.0

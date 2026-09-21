@@ -7,7 +7,7 @@
 First public release. The project is now **ForgeGraph**: the compiler ships as
 the `forgec` binary from the `forgegraph-cli` crate, and the runtime packages
 are published on npm under the `@forgegraph` scope. Everything is Apache-2.0
-and developed in the open at https://github.com/gmackie/forgegraph.
+and developed in the open at https://github.com/gmackorg/forgegraph.
 
 ### Breaking
 
@@ -28,7 +28,7 @@ and developed in the open at https://github.com/gmackie/forgegraph.
 
 - Published artifacts: five crates on crates.io, nine packages on npm with
   build provenance, prebuilt `forgec` binaries for macOS and Linux on both
-  architectures, and a Homebrew formula at `gmacko/tap/forgec`.
+  architectures, and a Homebrew formula at `gmackorg/tap/forgec`.
 - `docs/stability.md`: a per-package stability tier, also recorded in each
   `package.json` under `forgegraph.stability`.
 - `docs/releasing.md`: the release process, the required secrets, and how to
@@ -48,12 +48,18 @@ and developed in the open at https://github.com/gmackie/forgegraph.
 - Live deployment identifiers in `examples/acme` are placeholders. The
   certification evidence in `conformance/certification/latest.json` keeps every
   result and withholds only the private hostnames, marked as withheld.
-- `cloudflare-d1` and `aws-dynamodb` are **unverified against this build**.
-  They passed the full live suite at build `693d221a`; renaming the compiler
-  changed the build hash, and `RELEASE_MANIFEST.json` refuses to carry live
-  evidence across a build change. `node-postgres`, `sqlite-node` and
-  `runtime-memory` are certified against this build. Run `pnpm certify`
-  against your own deployments to restore the cloud claims.
+- Re-certified live against build `cfc8286a` after the rename: Cloudflare
+  (Workers + D1 + R2 + Queues + Workflows + Durable Objects + Cron Triggers)
+  and AWS (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions +
+  EventBridge + API Gateway WebSocket), 15 scenarios / 221 steps each, realtime
+  and provider switching in both directions, plus the differential across
+  memory / sqlite-node / PostgreSQL with 0 unexplained differences. All five
+  required profiles are certified against this build.
+- `examples/acme/deploy/cloudflare/resolve-config.mjs`: the committed
+  `wrangler.jsonc` keeps placeholders, and the `cf:*` scripts resolve a
+  gitignored copy from `FORGE_D1_DATABASE_ID`. A public repository should not
+  name someone else's database, and an editable placeholder is a placeholder
+  waiting to be committed by accident.
 - The workflow-failure assertion in `conformance/scenarios/workflows.json` now
   gets the same 30s poll budget as the workflow-completion assertion beside it.
   At 5s it failed under parallel load while passing in isolation — a flaky

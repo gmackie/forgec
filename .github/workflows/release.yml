@@ -167,7 +167,7 @@ jobs:
           FORMULA: forgec
           VERSION: ${{ needs.verify.outputs.version }}
           REPO: ${{ github.repository }}
-          TAP_REPO: gmacko/homebrew-tap
+          TAP_REPO: gmackorg/homebrew-tap
           TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           DIST_DIR: dist
           DRY_RUN: ${{ env.DRY_RUN }}

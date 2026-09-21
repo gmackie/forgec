@@ -3,13 +3,13 @@
  * Render a Homebrew formula from release artifacts and push it to a shared tap.
  *
  * Deliberately generic: every CLI we publish uses the same tap
- * (`gmacko/homebrew-tap`) and the same artifact convention, so this script is
+ * (`gmackorg/homebrew-tap`) and the same artifact convention, so this script is
  * copied unchanged into each repository and driven entirely by environment.
  *
  *   FORMULA    formula + binary name          (e.g. forgec)
  *   VERSION    release version, no leading v  (e.g. 0.3.0)
- *   REPO       owner/repo of the release      (e.g. gmackie/forgegraph)
- *   TAP_REPO   owner/repo of the tap          (default gmacko/homebrew-tap)
+ *   REPO       owner/repo of the release      (e.g. gmackorg/forgegraph)
+ *   TAP_REPO   owner/repo of the tap          (default gmackorg/homebrew-tap)
  *   DIST_DIR   directory holding <name>-<version>-<target>.tar.gz(.sha256)
  *   TAP_TOKEN  a token with push rights on the tap
  *   DRY_RUN    "true" renders and prints without pushing
@@ -32,7 +32,7 @@ const env = (k, fallback) => {
 const FORMULA = env("FORMULA");
 const VERSION = env("VERSION").replace(/^v/, "");
 const REPO = env("REPO");
-const TAP_REPO = env("TAP_REPO", "gmacko/homebrew-tap");
+const TAP_REPO = env("TAP_REPO", "gmackorg/homebrew-tap");
 const DIST = resolve(env("DIST_DIR", "dist"));
 const DRY = env("DRY_RUN", "false") === "true";
 

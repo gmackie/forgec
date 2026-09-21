@@ -12,4 +12,4 @@ const rest = text.slice(start);
 const next = rest.slice(1).search(/^## /m);
 const body = (next < 0 ? rest : rest.slice(0, next + 1)).trim();
 console.log(body);
-console.log(`\n---\n\nInstall the compiler:\n\n\`\`\`\nbrew install gmacko/tap/forgec        # macOS and Linux\ncargo install forgegraph-cli          # from source\n\`\`\`\n\nRuntime packages are on npm under \`@forgegraph/*\` with build provenance.\nCertified profiles and their evidence: \`RELEASE_MANIFEST.json\`.`);
+console.log(`\n---\n\nInstall the compiler:\n\n\`\`\`\nbrew install gmackorg/tap/forgec   # macOS and Linux\ncargo install forgegraph-cli       # from source\n\`\`\`\n\nRuntime packages are on npm under \`@forgegraph/*\` with build provenance.\nCertified profiles and their evidence: \`RELEASE_MANIFEST.json\`.`);

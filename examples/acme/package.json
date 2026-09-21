@@ -4,10 +4,10 @@
   "type": "module",
   "scripts": {
     "build": "cargo run -q -p forgegraph-cli -- build .",
-    "cf:dev": "wrangler dev --config deploy/cloudflare/wrangler.jsonc --port 8797",
-    "cf:migrate:local": "wrangler d1 migrations apply forge-acme --local --config deploy/cloudflare/wrangler.jsonc",
-    "cf:migrate:remote": "wrangler d1 migrations apply forge-acme --remote --config deploy/cloudflare/wrangler.jsonc",
-    "cf:deploy": "wrangler deploy --config deploy/cloudflare/wrangler.jsonc",
+    "cf:dev": "CFG=$(node deploy/cloudflare/resolve-config.mjs) && wrangler dev --config \"$CFG\" --port 8797",
+    "cf:migrate:local": "CFG=$(node deploy/cloudflare/resolve-config.mjs) && wrangler d1 migrations apply forge-acme --local --config \"$CFG\"",
+    "cf:migrate:remote": "CFG=$(node deploy/cloudflare/resolve-config.mjs) && wrangler d1 migrations apply forge-acme --remote --config \"$CFG\"",
+    "cf:deploy": "CFG=$(node deploy/cloudflare/resolve-config.mjs) && wrangler deploy --config \"$CFG\"",
     "aws:bundle": "node deploy/aws/bundle.mjs",
     "aws:synth": "pnpm aws:bundle && cdk synth --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out",
     "aws:deploy": "pnpm aws:bundle && cdk deploy --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out --require-approval never --outputs-file deploy/aws/outputs.json",
@@ -17,7 +17,8 @@
     "workspace:deploy": "pnpm workspace:build && wrangler deploy --config deploy/cloudflare/workspace.wrangler.jsonc",
     "node:serve": "pnpm node:bundle && node deploy/node/dist/server.mjs",
     "pg:migrate": "psql \"$FORGE_PG_URL\" -v ON_ERROR_STOP=1 -f migrations/postgres/0001_init.sql",
-    "node:bundle": "node deploy/node/bundle.mjs"
+    "node:bundle": "node deploy/node/bundle.mjs",
+    "cf:config": "node deploy/cloudflare/resolve-config.mjs"
   },
   "dependencies": {
     "@forgegraph/runtime": "workspace:*",

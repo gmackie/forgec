@@ -28,12 +28,12 @@ certified, with the reason, in [`RELEASE_MANIFEST.json`](RELEASE_MANIFEST.json).
 ## Install
 
 ```sh
-brew install gmacko/tap/forgec     # macOS and Linux
+brew install gmackorg/tap/forgec   # macOS and Linux
 cargo install forgegraph-cli       # from source, any platform with Rust 1.97+
 ```
 
 Prebuilt binaries for macOS (arm64, x86_64) and Linux (arm64, x86_64) are
-attached to every [release](https://github.com/gmackie/forgegraph/releases)
+attached to every [release](https://github.com/gmackorg/forgegraph/releases)
 with SHA-256 checksums.
 
 ```sh
@@ -130,24 +130,21 @@ their alternatives are in [`docs/decisions/`](docs/decisions).
 0.3.0 is the first public release. The API surface is 0.x and will move — pin
 exact versions.
 
-What is certified against *this* build, per
+All five required profiles are certified against *this* build, per
 [`RELEASE_MANIFEST.json`](RELEASE_MANIFEST.json):
 
-| profile | status |
+| profile | evidence |
 | --- | --- |
-| `node-postgres`, `sqlite-node`, `runtime-memory` | certified |
-| `cloudflare-d1`, `aws-dynamodb` | **unverified against this build** |
+| `cloudflare-d1` | live: 15 scenarios, 221 steps, realtime, switching both ways |
+| `aws-dynamodb` | live: 15 scenarios, 221 steps, realtime, switching both ways |
+| `node-postgres`, `sqlite-node`, `runtime-memory` | differential: 221 steps compared, 0 unexplained |
 
-Cloudflare and AWS passed the full live suite — 15 scenarios, 221 steps,
-realtime and provider switching in both directions — against build
-`693d221a`. Renaming the compiler to `forgec` changed the build hash, and the
-manifest's own rule is that live evidence does not transfer across a build:
-re-run `pnpm certify` against your own deployments to restore the claim. The
-evidence for the run that did happen is retained in
-`conformance/certification/latest.json`, with the private hostnames withheld.
-
-That is the whole point of the manifest — it would rather say "unverified"
-than carry a claim forward on the strength of it being *probably* still true.
+Live evidence is bound to the build it ran against and to a 90-day window. If
+either moves, the manifest downgrades that profile to `unverified` on its own
+rather than carrying the claim forward — so a stale manifest tells you it is
+stale instead of quietly lying. `conformance/certification/latest.json` holds
+the full run; only the private hostnames are withheld, and they are marked as
+withheld.
 
 Known gaps are stated as gaps: see the `notCertified` entries in
 `RELEASE_MANIFEST.json` and [docs/security-review.md](docs/security-review.md).

@@ -3,13 +3,13 @@
 ## Install the compiler
 
 ```sh
-brew install gmacko/tap/forgec     # macOS and Linux
+brew install gmackorg/tap/forgec   # macOS and Linux
 cargo install forgegraph-cli       # from source; needs Rust 1.97+
 forgec --version
 ```
 
 Prebuilt binaries with SHA-256 checksums are attached to every
-[release](https://github.com/gmackie/forgegraph/releases).
+[release](https://github.com/gmackorg/forgegraph/releases).
 
 ## Toolchain for working on ForgeGraph itself
 
@@ -55,9 +55,19 @@ deployment supplies a real one:
 createNodeHost({ bundle, auth: jwtAuth({ issuer, audience, secret, claims }) });
 ```
 
-Before deploying `examples/acme` anywhere reachable, replace the placeholder
-`database_id` in `deploy/cloudflare/wrangler.jsonc` with your own D1 database
-and drop `FORGE_AUTH` from its vars.
+The committed `deploy/cloudflare/wrangler.jsonc` carries a placeholder
+`database_id`, because a public repository should not name someone else's
+database. Point it at yours through the environment rather than editing the
+file — the `cf:*` scripts resolve a gitignored copy for you:
+
+```sh
+wrangler d1 create forge-acme          # once
+export FORGE_D1_DATABASE_ID=<the id from `wrangler d1 list`>
+pnpm cf:migrate:remote && pnpm cf:deploy
+```
+
+Before deploying anywhere reachable, also drop `FORGE_AUTH` from the config's
+vars and configure a real `AuthHost`.
 
 ## Run it on AWS
 

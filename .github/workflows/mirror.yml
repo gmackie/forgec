@@ -19,7 +19,7 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     # A fork has no mirror credentials and should not try.
-    if: github.repository == 'gmackie/forgegraph'
+    if: github.repository == 'gmackorg/forgegraph'
     steps:
       - uses: actions/checkout@v5
         with: { fetch-depth: 0 }

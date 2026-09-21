@@ -36,7 +36,7 @@ publishing anything, run the workflow manually from the Actions tab with
 | `github-release` | The GitHub release, with the binaries, their checksums and `RELEASE_MANIFEST.json` attached. |
 | `npm` | `pnpm -r publish` with [provenance](https://docs.npmjs.com/generating-provenance-statements). Already-published versions are skipped, so a re-run after a partial failure completes rather than fails. |
 | `crates` | `scripts/publish-crates.mjs`: `forge-syntax → forge-semantic → forge-planner → forge-codegen → forgegraph-cli`, waiting for the crates.io index between each so the next crate can resolve the last. Also skips versions that are already up. |
-| `homebrew` | `scripts/update-homebrew-tap.mjs` renders `Formula/forgec.rb` from the release artifacts and pushes it to `gmacko/homebrew-tap`. |
+| `homebrew` | `scripts/update-homebrew-tap.mjs` renders `Formula/forgec.rb` from the release artifacts and pushes it to `gmackorg/homebrew-tap`. |
 
 Every job is idempotent per version. Re-running a failed release does not
 double-publish.
@@ -50,18 +50,20 @@ Actions):
 | --- | --- | --- |
 | `NPM_TOKEN` | `npm` | An npm **automation** token for an account with publish rights on the `@forgegraph` scope. Granular tokens work; classic "publish" tokens also work. Provenance additionally requires the workflow's OIDC token, which is granted in the workflow itself (`id-token: write`) and needs no secret. |
 | `CARGO_REGISTRY_TOKEN` | `crates` | A crates.io API token scoped to `publish-update` (and `publish-new` for the first release of each crate). |
-| `HOMEBREW_TAP_TOKEN` | `homebrew` | A fine-grained PAT with **Contents: read and write** on `gmacko/homebrew-tap` only. The default `GITHUB_TOKEN` cannot push to another repository. |
+| `HOMEBREW_TAP_TOKEN` | `homebrew` | A fine-grained PAT with **Contents: read and write** on `gmackorg/homebrew-tap` only. The default `GITHUB_TOKEN` cannot push to another repository. |
 
 `GITHUB_TOKEN` covers the GitHub release itself; nothing extra is needed for it.
 
 ## Bootstrapping the Homebrew tap
 
 The tap is shared by every CLI we publish, so this is done once, not once per
-project.
+project. It already exists: **https://github.com/gmackorg/homebrew-tap**.
 
-1. Create a public repository named **`homebrew-tap`** under the `gmacko`
-   account. The `homebrew-` prefix is what makes
-   `brew install gmacko/tap/<formula>` resolve; users never type the prefix.
+If you ever need to recreate it, or set one up for another org:
+
+1. Create a public repository named **`homebrew-tap`**. The `homebrew-` prefix
+   is what makes `brew install <owner>/tap/<formula>` resolve; users never type
+   the prefix.
 2. Give it a `README.md` and a `Formula/` directory. Nothing else is needed —
    the release job creates `Formula/<name>.rb` on first publish.
 3. Mint the fine-grained PAT described above and add it as
@@ -77,7 +79,7 @@ repository:
     FORMULA: my-cli                       # formula name == binary name
     VERSION: ${{ needs.verify.outputs.version }}
     REPO: ${{ github.repository }}        # where the release assets live
-    TAP_REPO: gmacko/homebrew-tap
+    TAP_REPO: gmackorg/homebrew-tap
     TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
     DIST_DIR: dist                        # holds <name>-<version>-<target>.tar.gz(.sha256)
 ```
@@ -90,7 +92,7 @@ guessed at.
 Verify a published formula the way a user would:
 
 ```sh
-brew update && brew install gmacko/tap/forgec && forgec --version
+brew update && brew install gmackorg/tap/forgec && forgec --version
 ```
 
 ## Publishing a crate for the first time
@@ -103,7 +105,7 @@ tagged release that includes it; after that the release job takes over.
 ## After the release
 
 - Add a fresh `## Unreleased` heading to `CHANGELOG.md`.
-- Check that the tap formula installs (`brew install gmacko/tap/forgec`) and
+- Check that the tap formula installs (`brew install gmackorg/tap/forgec`) and
   that npm shows the provenance badge on `@forgegraph/runtime`.
 - The Forgejo mirror at `git.forgegraf.com/gmackie/forge` syncs from `main` and
   from tags; it is a mirror, not a publish target.

@@ -1,7 +1,7 @@
 {
   "version": "certification/1",
-  "at": "2026-09-21T05:10:04.356Z",
-  "commit": "1ac098d1f2298f019692f53f73afc543d2ae4e31",
+  "at": "2026-09-21T09:32:37.268Z",
+  "commit": "797e485a41475837808205662be7549a4dab2404",
   "package": {
     "name": "@acme/commerce",
     "version": "0.1.0",
@@ -33,7 +33,7 @@
       ]
     }
   },
-  "buildHash": "693d221a70f7768df402a99030fa793c635f2eb61332e62a4e866d0a1f697d35",
+  "buildHash": "cfc8286aa3a7ea75e84034aa4955a449eeb879e94c685bf7685ab95bae994c3d",
   "contractsVersion": "contracts/1",
   "profile": "portable-v1",
   "suites": {
@@ -75,33 +75,33 @@
         "latencyMs": {
           "crud-write:create": {
             "n": 20,
-            "p50": 186,
-            "p95": 351,
-            "max": 351
+            "p50": 200,
+            "p95": 371,
+            "max": 371
           },
           "crud-read:get": {
             "n": 20,
-            "p50": 76,
-            "p95": 146,
-            "max": 146
+            "p50": 81,
+            "p95": 351,
+            "max": 351
           },
           "crud-read:list": {
             "n": 20,
-            "p50": 52,
-            "p95": 131,
-            "max": 131
+            "p50": 68,
+            "p95": 287,
+            "max": 287
           },
           "crud-write:update": {
             "n": 20,
-            "p50": 218,
-            "p95": 354,
-            "max": 354
+            "p50": 210,
+            "p95": 291,
+            "max": 291
           },
           "function:SubmitOrder": {
             "n": 20,
-            "p50": 223,
-            "p95": 303,
-            "max": 303
+            "p50": 214,
+            "p95": 343,
+            "max": 343
           }
         },
         "atomicBudget": [
@@ -131,7 +131,7 @@
           }
         ]
       },
-      "urlRedacted": "the deployment this run certified was a private account endpoint; the host is withheld, the run is not"
+      "urlRedacted": "certified against a private account endpoint; the host is withheld, the run is not"
     },
     "aws-dynamodb": {
       "url": "https://<api-id>.execute-api.<region>.amazonaws.com",
@@ -164,33 +164,33 @@
         "latencyMs": {
           "crud-write:create": {
             "n": 20,
-            "p50": 131,
-            "p95": 178,
-            "max": 178
-          },
-          "crud-read:get": {
-            "n": 20,
-            "p50": 60,
-            "p95": 102,
-            "max": 102
-          },
-          "crud-read:list": {
-            "n": 20,
-            "p50": 59,
-            "p95": 75,
-            "max": 75
-          },
-          "crud-write:update": {
-            "n": 20,
-            "p50": 133,
+            "p50": 157,
             "p95": 417,
             "max": 417
           },
+          "crud-read:get": {
+            "n": 20,
+            "p50": 65,
+            "p95": 205,
+            "max": 205
+          },
+          "crud-read:list": {
+            "n": 20,
+            "p50": 67,
+            "p95": 161,
+            "max": 161
+          },
+          "crud-write:update": {
+            "n": 20,
+            "p50": 182,
+            "p95": 284,
+            "max": 284
+          },
           "function:SubmitOrder": {
             "n": 20,
-            "p50": 196,
-            "p95": 292,
-            "max": 292
+            "p50": 244,
+            "p95": 468,
+            "max": 468
           }
         },
         "atomicBudget": [
@@ -220,7 +220,7 @@
           }
         ]
       },
-      "urlRedacted": "the deployment this run certified was a private account endpoint; the host is withheld, the run is not"
+      "urlRedacted": "certified against a private account endpoint; the host is withheld, the run is not"
     }
   },
   "certified": true
