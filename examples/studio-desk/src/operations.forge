@@ -1,0 +1,63 @@
+export shape EscalationInput {
+  ticket : Ticket
+  expectedVersion : integer >= 1
+}
+
+/// A purpose-bound operation with explicit dependencies and emitted events.
+export function EscalateTicket
+  @http(POST, "/v1/escalations")
+{
+  input EscalationInput
+  output Ticket.Record<CustomerSupport>
+  purpose CustomerSupport
+
+  uses {
+    Ticket read
+    Ticket.status.assign
+  }
+
+  sends {
+    TicketEscalated to SupportEvents
+  }
+
+  errors {
+    AlreadyAssigned
+    ContactUnavailable
+  }
+
+  slo {
+    availability 99.9% over 28d
+    latency 99% <= 1s over 28d
+  }
+}
+
+function NotifyOnCall {
+  input SupportEvents.TicketEscalated
+  purpose IncidentResponse
+  uses { Ticket read }
+}
+
+function BuildSupportDigest {
+  purpose CustomerSupport
+  uses { Ticket read }
+}
+
+source DailySupportDigest {
+  cron "0 8 * * *"
+  timezone "UTC"
+  -> BuildSupportDigest
+}
+
+/// Escalation waits briefly before sending the follow-up notification.
+export workflow EscalationFollowUp {
+  input EscalationInput
+  output Ticket.Record
+  version 1
+
+  step assigned = EscalateTicket(ticket: input.ticket, expectedVersion: input.expectedVersion)
+    catch AlreadyAssigned -> fail Conflict
+  step pause = sleep 5m
+  return assigned
+
+  errors { Conflict }
+}

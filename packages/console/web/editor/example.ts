@@ -1,51 +1,22 @@
 import type { Project } from "./language.js";
+import contacts from "../../../../examples/studio-desk/src/contacts.forge?raw";
+import tickets from "../../../../examples/studio-desk/src/tickets.forge?raw";
+import plans from "../../../../examples/studio-desk/src/plans.forge?raw";
+import governance from "../../../../examples/studio-desk/src/governance.forge?raw";
+import types from "../../../../examples/studio-desk/src/types.forge?raw";
+import events from "../../../../examples/studio-desk/src/events.forge?raw";
+import operations from "../../../../examples/studio-desk/src/operations.forge?raw";
+
 export const example: Project = {
-  name: "@local/contacts",
+  name: "@demo/service-desk",
   currentFile: "contacts.forge",
   files: [
-    {
-      path: "contacts.forge",
-      text: `// A small Forge model. Every visual edit updates this source.
-export purpose ServiceProvision
-export purpose CustomerSupport extends ServiceProvision
-export purpose Marketing
-
-export dataClass ContactEmail extends data.contact.email
-
-export resource Contact
-  @tenant
-  @timestamps
-  @versioned
-  @purposeScoped
-  @subject(person)
-{
-  id : id
-  name : text length 1..120 @data(data.identity.name)
-  email : email @data(ContactEmail)
-
-  capability Directory {
-    read { id name }
-  }
-
-  capability Support {
-    includes Directory
-    read { email }
-    update { email }
-  }
-
-  for CustomerSupport { use Support }
-}
-
-export resource Note
-  @tenant
-  @timestamps
-  @versioned
-{
-  id : id
-  contact : Contact
-  body : text length 1..2000 @data(data.communication.content)
-}
-`,
-    },
+    { path: "contacts.forge", text: contacts },
+    { path: "tickets.forge", text: tickets },
+    { path: "plans.forge", text: plans },
+    { path: "governance.forge", text: governance },
+    { path: "types.forge", text: types },
+    { path: "events.forge", text: events },
+    { path: "operations.forge", text: operations },
   ],
 };

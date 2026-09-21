@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { children, nameOf } from "./model.js";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Banner } from "@cloudflare/kumo/components/banner";
 import {
@@ -41,6 +43,7 @@ export function ForgeEditor() {
     present: Project;
     future: Project[];
   }>(() => ({ past: [], present: initial(), future: [] }));
+  const [showDemo, setShowDemo] = useState(false);
   const project = history.present;
   const file = project.files.find((f) => f.path === project.currentFile)!;
   const [view, setView] = useState<"visual" | "split" | "source" | "graph">(
@@ -48,6 +51,7 @@ export function ForgeEditor() {
   );
   const [analysis, setAnalysis] = useState<{
     result: Analysis;
+    id: number;
     text: string;
     path: string;
   } | null>(null);
@@ -118,7 +122,7 @@ export function ForgeEditor() {
         return;
       }
       if (requested) {
-        setAnalysis({ result: e.data.analysis, ...requested });
+        setAnalysis({ result: e.data.analysis, id: e.data.id, ...requested });
         setError("");
       }
     };
@@ -237,7 +241,27 @@ export function ForgeEditor() {
         </div>
         <Badge variant="outline">Local compiler · edition 2027</Badge>
       </div>
+      <Dialog.Root open={showDemo} onOpenChange={setShowDemo}>
+        <Dialog size="base" className="editor">
+          <Dialog.Title className="dialog-title">Load the service desk demo?</Dialog.Title>
+          <Dialog.Description className="muted">
+            Explore seven files with customers, tickets, service plans, purposes,
+            events, and an escalation workflow. This replaces your browser draft.
+            Export it first to keep a copy, or use Undo immediately after loading.
+          </Dialog.Description>
+          <footer className="dialog-footer">
+            <Button onClick={() => setShowDemo(false)}>Cancel</Button>
+            <Button variant="primary" onClick={() => {
+              commit(structuredClone(example));
+              setView("visual");
+              setError("");
+              setShowDemo(false);
+            }}>Replace draft with demo</Button>
+          </footer>
+        </Dialog>
+      </Dialog.Root>
       <div className="editor-toolbar">
+        <Button onClick={() => setShowDemo(true)}>Load demo</Button>
         <Button
           icon={<FolderOpenIcon />}
           onClick={() => fileInput.current?.click()}
@@ -320,6 +344,17 @@ export function ForgeEditor() {
               </Button>
             ))}
           </nav>
+          {ready && analysis && (
+            <nav aria-label="Declarations in this file" className="document-outline">
+              <h2>In this file</h2>
+              {children(analysis.result.tree).filter(n => n.kind.endsWith("_DECL")).map(n => (
+                <Button key={n.start} variant="ghost" size="sm" onClick={() => {
+                  setView("visual");
+                  setTimeout(() => document.getElementById(`declaration-${n.start}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+                }}>{nameOf(file.text, n) || n.kind.replace("_DECL", "").toLowerCase()}</Button>
+              ))}
+            </nav>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -438,7 +473,7 @@ export function ForgeEditor() {
               >
                 {analysis ? (
                   <VisualDocument
-                    key={analysis.path + analysis.text}
+                    key={analysis.id}
                     source={analysis.text}
                     analysis={analysis.result}
                     onChange={(value) => {
@@ -464,8 +499,13 @@ export function ForgeEditor() {
                 />
               </div>
             )}
-            {view === "graph" && analysis && (
+            {view === "graph" && ready && analysis && (
               <Relationships
+                currentFile={file.path}
+                onOpenFile={(path) => {
+                  commit({ ...project, currentFile: path });
+                  setView("visual");
+                }}
                 analysis={analysis.result}
                 source={analysis.text}
                 onSelect={(n) => {

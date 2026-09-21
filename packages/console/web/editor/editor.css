@@ -619,3 +619,27 @@
 .range-control > .editor-label {
   margin: 0 4px 0 0;
 }
+
+.field-expression {
+  grid-column: 2 / -1;
+  padding: 10px 12px;
+  border-left: 3px solid #c99b5e;
+  border-radius: 4px;
+  background: #fff9ef;
+}
+.field-expression input { width: 100%; }
+.document-outline h2 { margin: 12px 5px 6px; }
+@media (max-width: 800px) {
+  .field-expression { grid-row: 5; }
+  .editor-files .document-outline { flex-wrap: wrap; }
+  .document-outline h2 { width: 100%; }
+}
+.editor-files > div,
+.editor-files form > div {
+  min-width: 0;
+  max-width: 100%;
+}
+.editor-files input {
+  min-width: 0;
+  width: 100%;
+}

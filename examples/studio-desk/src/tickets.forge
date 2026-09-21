@@ -1,0 +1,81 @@
+/// A support case moves through an explicit, auditable lifecycle.
+export resource Ticket
+  @tenant
+  @timestamps
+  @versioned
+  @audited
+  @purposeScoped
+  @subject(from: requester)
+  @crud("/v1/tickets", actions: [assign, resolve, reopen, close])
+{
+  id : id
+  requester : Contact @immutable
+  title : TicketTitle @data(SupportContent)
+  description : text length 1..4000 @data(SupportContent)
+  priority : TicketPriority = TicketPriority.Normal
+  estimatedHours : HourCount = 0
+  spentHours : HourCount = 0
+  remainingHours := estimatedHours - spentHours
+  dueOn : date?
+
+  lifecycle status {
+    initial New
+    terminal Closed
+    assign: New -> Active
+    resolve: Active -> Resolved
+    reopen: Resolved -> Active
+    close: Resolved -> Closed
+  }
+
+  capability Triage {
+    read { id requester title priority status dueOn }
+    update { priority dueOn }
+    filter { requester priority status }
+    order { createdAt }
+    actions { status.assign }
+  }
+
+  capability CaseWork {
+    includes Triage
+    read { description estimatedHours spentHours remainingHours }
+    update { description estimatedHours spentHours }
+    actions { status.resolve status.reopen status.close }
+  }
+
+  for CustomerSupport { use CaseWork }
+  for IncidentResponse { use CaseWork }
+
+  list by requester
+    order by createdAt desc
+  list by status, priority
+    order by createdAt desc
+}
+
+/// Replies are separate records so each message retains its author and visibility.
+export resource Reply
+  @tenant
+  @timestamps
+  @versioned
+  @purposeScoped
+  @subject(from: author)
+{
+  id : id
+  ticket : Ticket @immutable
+  author : Contact @immutable
+  body : text length 1..8000 @data(SupportContent)
+  visibility : ReplyVisibility = ReplyVisibility.Customer
+
+  capability Conversation {
+    read { id ticket author body visibility }
+    create { ticket author body visibility }
+    filter { ticket author }
+    order { createdAt }
+  }
+
+  for CustomerSupport { use Conversation }
+
+  list by ticket
+    order by createdAt asc
+  list by author
+    order by createdAt desc
+}

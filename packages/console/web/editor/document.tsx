@@ -165,6 +165,7 @@ export function VisualDocument({ source, analysis, onChange, onError }: Props) {
       textOf(source, n).startsWith("@data("),
     );
     const cls = classNode ? textOf(source, classNode).slice(6, -1) : "";
+    const expression = children(node).find(n => n.kind === "DEFAULT_VALUE" || n.kind === "DERIVED_VALUE");
     const optional = type?.children.find((n) => n.kind === "QUESTION");
     return (
       <div className="forge-field" key={node.start}>
@@ -190,6 +191,7 @@ export function VisualDocument({ source, analysis, onChange, onError }: Props) {
             />
           </div>
         )}
+        {!ref && expression?.kind === "DERIVED_VALUE" && <Badge variant="outline">Calculated</Badge>}
         <div className="classification-control">
           <span className="editor-label">Data class</span>
           <Select
@@ -241,6 +243,16 @@ export function VisualDocument({ source, analysis, onChange, onError }: Props) {
         >
           ×
         </Button>
+        {expression && (
+          <div className="field-expression">
+            <span className="editor-label">{expression.kind === "DERIVED_VALUE" ? "Calculated from" : "Default value"}</span>
+            <Edit
+              label={`${expression.kind === "DERIVED_VALUE" ? "Calculation" : "Default value"} for ${nameOf(source, node)}`}
+              value={textOf(source, expression)}
+              onCommit={v => replace(expression, v)}
+            />
+          </div>
+        )}
         <div className="field-details">
           {type &&
             children(type, "REFINEMENT").map((r) =>

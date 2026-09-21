@@ -28,7 +28,9 @@ as nested editable syntax blocks, with exact source editing available for every 
 The Rust lossless parser and semantic compiler run as WebAssembly in a browser worker.
 Visual edits patch UTF-16 source ranges and preserve unrelated text and comments. Source
 and visual views share undo/redo history. Diagnostics identify actual Forge language errors.
-The relationship graph shows references, purpose bindings and inheritance in the active file.
+The relationship graph shows references, purpose bindings and inheritance from the active file,
+including links to declarations in other open files. The file sidebar includes a declaration
+outline for navigating large documents. Defaults and calculated expressions have labeled controls.
 Classification describes data; purpose inheritance itself never grants access.
 
 **File storage:** drafts are saved in this browser’s local storage, independently of the
@@ -39,6 +41,20 @@ The first version supports 50 files / 500 KB, uses edition 2027 and the portable
 checks the open files without resolving external package dependencies. Run `forgec check`
 in the actual project for dependency-aware validation. Changing a declaration name edits
 that source token; it does not automatically rename references in other locations.
+
+### Service desk demo
+
+New browser drafts start with [`examples/studio-desk`](../../examples/studio-desk), a seven-file
+Forge package: organizations and contacts, tickets and replies, service plans, shared types,
+native data classes and purposes, events, functions, a scheduled source and an escalation workflow.
+The editor imports those exact sources; the example and the UI cannot drift apart.
+Use **Load demo** to replace an existing draft after confirmation. Export first to retain a copy;
+loading is also undoable. Existing drafts are never silently migrated.
+
+Try changing a plan's default allowance, inspecting its calculated balance, editing a ticket's
+capability matrix, following a cross-file relationship, and switching to source to inspect the result.
+This is a compilable application contract and editor fixture; it does not provision a running support service.
+Run `cargo run -p forgegraph-cli -- check examples/studio-desk` from the repository root.
 
 Build prerequisite: Rust 1.97+ with `rustup target add wasm32-unknown-unknown`.
 `pnpm build` builds the compiler module automatically. The Dockerfile includes a Rust build

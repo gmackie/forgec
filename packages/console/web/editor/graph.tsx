@@ -5,16 +5,21 @@ export function Relationships({
   analysis,
   source,
   onSelect,
+  onOpenFile,
+  currentFile,
 }: {
   analysis: Analysis;
   source: string;
   onSelect: (n: SyntaxNode) => void;
+  onOpenFile: (file: string) => void;
+  currentFile: string;
 }) {
   const nodes = children(analysis.tree).filter((n) =>
     ["RESOURCE_DECL", "SHAPE_DECL", "PURPOSE_DECL", "DATA_CLASS_DECL"].includes(
       n.kind,
     ),
   );
+  const external: { name: string; kind: string; file: string }[] = [];
   const edges: { from: number; to: number; label: string }[] = [];
   nodes.forEach((n, i) => {
     const inspect = (node: SyntaxNode) => {
@@ -27,7 +32,15 @@ export function Relationships({
           node.kind === "TYPE_REF"
             ? textOf(source, node)
             : textOf(source, children(node, "QUALIFIED_NAME")[0] ?? node);
-        const j = nodes.findIndex((other) => nameOf(source, other) === q);
+        let j = nodes.findIndex((other) => nameOf(source, other) === q);
+        if (j < 0) {
+          const symbol = analysis.symbols.find(s => s.name === q && s.file !== currentFile);
+          if (symbol) {
+            let index = external.findIndex(s => s.name === symbol.name && s.file === symbol.file);
+            if (index < 0) { index = external.length; external.push(symbol); }
+            j = nodes.length + index;
+          }
+        }
         if (j >= 0 && j !== i)
           edges.push({
             from: i,
@@ -43,22 +56,26 @@ export function Relationships({
     };
     inspect(n);
   });
+  const cards = [
+    ...nodes.map(n => ({ name: nameOf(source, n), kind: n.kind, file: currentFile, node: n })),
+    ...external.map(s => ({ ...s, node: null })),
+  ];
   const pos = (i: number) => ({
     x: 40 + (i % 2) * 360,
     y: 35 + Math.floor(i / 2) * 125,
   });
   return (
     <section className="relationship-panel">
-      <h3>Relationships in this file</h3>
+      <h3>Relationships from this file</h3>
       <p className="muted small">
         Select a declaration to return to its visual controls. Connections
-        reflect source references, not inferred access.
+        reflect source references. Dashed cards open a referenced file.
       </p>
       <div className="relationship-scroll">
         <svg
           role="img"
           aria-label="Forge declaration relationships"
-          viewBox={`0 0 730 ${Math.max(180, Math.ceil(nodes.length / 2) * 125 + 35)}`}
+          viewBox={`0 0 730 ${Math.max(180, Math.ceil(cards.length / 2) * 125 + 35)}`}
         >
           <defs>
             <marker
@@ -93,26 +110,29 @@ export function Relationships({
               </g>
             );
           })}
-          {nodes.map((n, i) => {
+          {cards.map((n, i) => {
             const p = pos(i);
             return (
               <g
-                key={n.start}
+                key={`${n.file}:${n.name}`}
                 role="button"
                 tabIndex={0}
-                aria-label={`Edit ${nameOf(source, n)}`}
-                onClick={() => onSelect(n)}
+                aria-label={n.node ? `Edit ${n.name}` : `Open ${n.name} in ${n.file}`}
+                onClick={() => n.node ? onSelect(n.node) : onOpenFile(n.file)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") onSelect(n);
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (n.node) onSelect(n.node); else onOpenFile(n.file);
+                  }
                 }}
                 className={`graph-node kind-${n.kind.toLowerCase()}`}
               >
-                <rect x={p.x} y={p.y} width="270" height="64" rx="10" />
+                <rect x={p.x} y={p.y} width="270" height="64" rx="10" strokeDasharray={n.node ? undefined : "5 3"} />
                 <text x={p.x + 16} y={p.y + 23} className="graph-kind">
-                  {n.kind.replace("_DECL", "").toLowerCase().replace("_", " ")}
+                  {n.node ? n.kind.replace("_DECL", "").toLowerCase().replace("_", " ") : n.file}
                 </text>
                 <text x={p.x + 16} y={p.y + 46}>
-                  {nameOf(source, n)}
+                  {n.name}
                 </text>
               </g>
             );
