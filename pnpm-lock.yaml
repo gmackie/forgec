@@ -10,6 +10,9 @@ importers:
 
   conformance:
     dependencies:
+      '@forge/adapters':
+        specifier: workspace:*
+        version: link:../packages/adapters
       '@forge/runtime':
         specifier: workspace:*
         version: link:../packages/runtime
@@ -20,6 +23,12 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.6
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
+      pg:
+        specifier: ^8.23.0
+        version: 8.23.0
       typescript:
         specifier: ^5.9.0
         version: 5.9.3

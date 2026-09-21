@@ -216,7 +216,7 @@ export class MemoryStorage implements StorageAdapter {
     for (const c of plan.claims) {
       if (c.after && c.after !== c.before) {
         const holder = this.claims.get(`${plan.tenant}|${c.after}`);
-        if (holder && holder !== plan.id) return (err("UniqueConflict", `${c.unique.fields.join(", ")} already in use`, { constraint: `${plan.resource.id}.unique.${c.unique.name}` }));
+        if (holder && holder !== plan.id) return (err("UniqueConflict", "a record with the same unique key exists", { constraint: `${plan.resource.id}.unique.${c.unique.name}` }));
       }
     }
     // reference guards: live in the same tenant at commit time

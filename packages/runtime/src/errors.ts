@@ -50,6 +50,8 @@ export class ForgeError extends Data.TaggedError("ForgeError")<{
   detail?: string;
   fields?: ProblemField[];
   constraint?: string;
+  /** Structured, provider-specific detail (e.g. the physical atomic budget); never free text. */
+  budget?: Record<string, number>;
 }> {
   /** Declared domain errors (`<function id>.<Name>`) are 409 unless declared otherwise. */
   get status(): number {
@@ -71,6 +73,7 @@ export class ForgeError extends Data.TaggedError("ForgeError")<{
       retryable: meta.retryable,
       ...(this.fields ? { fields: this.fields } : {}),
       ...(this.constraint ? { constraint: this.constraint } : {}),
+      ...(this.budget ? { budget: this.budget } : {}),
     };
   }
 }
@@ -79,5 +82,5 @@ function kebab(s: string): string {
   return s.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-export const err = (code: string, detail?: string, extra: { fields?: ProblemField[]; constraint?: string } = {}) =>
+export const err = (code: string, detail?: string, extra: { fields?: ProblemField[]; constraint?: string; budget?: Record<string, number> } = {}) =>
   new ForgeError({ code, ...(detail !== undefined ? { detail } : {}), ...extra });

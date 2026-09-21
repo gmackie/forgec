@@ -195,7 +195,8 @@ export class Changesets {
       if (doc.mode === "atomic") {
         const budget = self.budget(doc, plans, storage);
         if (doc.operations.length > ATOMIC_LOGICAL_LIMIT || budget.physicalActions > budget.physicalLimit) {
-          return yield* Effect.fail(err("BudgetExceeded", `atomic commit needs ${budget.physicalActions} physical actions across ${doc.operations.length} operations; limits are ${budget.physicalLimit} / ${ATOMIC_LOGICAL_LIMIT}`));
+          // The logical limit is contract; the physical count is provider-specific and travels as structured data.
+          return yield* Effect.fail(err("BudgetExceeded", `atomic commit of ${doc.operations.length} operations exceeds the atomic budget (logical limit ${ATOMIC_LOGICAL_LIMIT})`, { budget: { physicalActions: budget.physicalActions, physicalLimit: budget.physicalLimit, operations: doc.operations.length, logicalLimit: ATOMIC_LOGICAL_LIMIT } }));
         }
         const firstError = items.findIndex((i) => i.status === "error");
         if (firstError >= 0) {
