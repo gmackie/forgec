@@ -50,6 +50,14 @@ and developed in the open at https://github.com/gmackie/forgec.
   every workspace crate name must be free or already ours. crates.io names are
   permanent and publishing is ordered, so a name discovered to be taken partway
   through leaves everything before it published forever.
+- The `LICENSE` file is now the full Apache-2.0 text. It was a 15-line notice
+  pointing at the licence rather than a copy of it, while every crate and
+  package declared `Apache-2.0` and shipped that file as their licence —
+  Apache-2.0 requires the copy. It is also now inside each crate's own
+  directory: cargo pulls the workspace README into a tarball but not the
+  workspace LICENSE, so the crates would have published with none at all.
+  `scripts/check-packaging.mjs` now checks the crate tarballs too, and fails if
+  one carries no LICENSE, no README or no license field.
 - `scripts/check-workflows.mjs`, run by CI: workflow files must parse, and an
   unquoted `${{ }}` inside a `with: { }` flow mapping is rejected by name. YAML
   reads the expression's `{` as opening a map, which invalidates the entire

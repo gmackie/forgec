@@ -40,4 +40,25 @@ for (const dir of dirs) {
   }
   console.error(`${p.name}: ${files.length} files, ${(listing[0].size / 1024).toFixed(0)} KiB`);
 }
+// ---- crates ----------------------------------------------------------------
+// Cargo pulls the workspace README into each tarball but not the workspace LICENSE, so a crate
+// can ship declaring Apache-2.0 while carrying no copy of it. Apache-2.0 requires the copy.
+const crateDirs = readdirSync("crates", { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+for (const dir of crateDirs) {
+  const toml = readFileSync(join("crates", dir, "Cargo.toml"), "utf8");
+  if (/^publish\s*=\s*false/m.test(toml)) { console.error(`crates/${dir}: publish = false`); continue; }
+  const name = /^name\s*=\s*"([^"]+)"/m.exec(toml)?.[1] ?? dir;
+  let listing;
+  try {
+    listing = execFileSync("cargo", ["package", "-p", name, "--locked", "--allow-dirty", "--list"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).split("\n");
+  } catch {
+    fail(`${name}: cargo package --list failed`);
+    continue;
+  }
+  if (!listing.includes("LICENSE")) fail(`${name}: no LICENSE in the crate tarball (copy the workspace LICENSE into crates/${dir}/)`);
+  if (!listing.includes("README.md")) fail(`${name}: no README.md in the crate tarball`);
+  if (!/^license\s*=\s*"/m.test(toml) && !/license\.workspace\s*=\s*true/.test(toml)) fail(`${name}: no license field`);
+  console.error(`${name}: ${listing.filter(Boolean).length} files`);
+}
+
 process.exit(failed ? 1 : 0);
