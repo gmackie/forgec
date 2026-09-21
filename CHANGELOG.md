@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- M18 providers: `@forge/adapters` (certification matrix, managed Postgres
+  profiles + qualification, node:sqlite executor with the full conformance
+  suite, resolved deployment plans, Terraform and self-hosted packs);
+  `forge_outbox.trace` in the shared baseline; idempotent D1 migrations.
+
 - M17 rollout: `forge compat` is now `forge_semantic::diff` with direction,
   needs, interfaces/governance/dependencies/policy streams and `--report`;
   `forge migrate` emits a phased migration plan; deployment ledger

@@ -99,6 +99,53 @@ describe.skipIf(!url)("Node host on PostgreSQL", () => {
     expect(processed.rows[0].n).toBe(1);
   }, 30_000);
 
+  /** PAR-153 (self-hosted durable restart, node-postgres profile): the API/worker process dies between an
+   *  early external signal, a workflow start and the sweep that would advance it; a fresh process recovers
+   *  committed state and durable workflow progress from Postgres alone. */
+  it("PAR-153: crashes around workflow start, outbox delivery and an external signal lose nothing; the restarted host completes the workflow", async () => {
+    const tenant = `node-crash-${Date.now().toString(36)}`;
+    const c = client.createClient({ baseUrl: base, tenant, actor: "a" });
+    const cu = await c.customers.create({ code: "CRS", name: "C" });
+    const s = await c.sites.create({ customer: cu.id, code: "hq", name: "HQ", timezone: "UTC" });
+    const o = await c.orders.create({ customer: cu.id, site: s.id, subtotal: "10.00", tax: "1.00", requestedOn: "2026-09-20" });
+    const h = { "content-type": "application/json", "x-forge-tenant": tenant, "x-forge-actor": "a" };
+    // start the workflow (submits the order, stages OrderSubmitted in the outbox, parks at the payment wait) and crash: no sweep, no drain
+    const wf = await (await fetch(`${base}/v1/orders/${o.id}/process`, { method: "POST", headers: h, body: JSON.stringify({ expectedVersion: 1 }) })).json() as { id: string; status: string };
+    expect(wf.status).toBe("waiting");
+    host.server.closeAllConnections();
+    await host.stop();
+    // committed state survived: the order is Submitted, the instance and its wait are durable rows, the outbox row exists
+    expect((await pool.query("SELECT status FROM order_ WHERE tenant = $1 AND id = $2", [tenant, o.id])).rows[0].status).toBe("Submitted");
+    expect((await pool.query("SELECT count(*)::int AS n FROM forge_document WHERE tenant = $1 AND kind = 'workflow'", [tenant])).rows[0].n).toBeGreaterThan(0);
+    expect((await pool.query("SELECT count(*)::int AS n FROM forge_outbox WHERE tenant = $1", [tenant])).rows[0].n).toBeGreaterThan(0);
+    // second process: the outbox is swept (consumer runs once), then the external payment signal arrives and crashes the process again right after being accepted
+    await start();
+    await host.runtime.sweepAll();
+    const pay = await (await fetch(`${base}/v1/workflows/process-order/signals/PaymentCaptured`, { method: "POST", headers: h, body: JSON.stringify({ messageId: "pay-crash", payload: { authorizationId: "auth_c", reference: o.id, amount: "11.00" } }) })).json();
+    expect(pay).toMatchObject({ delivered: 1 });
+    host.server.closeAllConnections();
+    await host.stop();
+    // third process: whatever the signal had advanced before the crash is durable; the sweep finishes the rest
+    await start();
+    let done: { status: string } | null = null;
+    for (let i = 0; i < 40 && done?.status !== "completed"; i++) {
+      await host.runtime.sweepAll();
+      done = await (await fetch(`${base}/v1/workflows/process-order/${wf.id}`, { headers: h })).json() as { status: string };
+      if (done.status !== "completed") await new Promise((r) => setTimeout(r, 250));
+    }
+    expect(done?.status).toBe("completed");
+    expect((await client.createClient({ baseUrl: base, tenant, actor: "a" }).orders.get(o.id)).status).toBe("Approved");
+    // a duplicate of the signal after recovery is not applied twice
+    const dup = await (await fetch(`${base}/v1/workflows/process-order/signals/PaymentCaptured`, { method: "POST", headers: h, body: JSON.stringify({ messageId: "pay-crash", payload: { authorizationId: "auth_c", reference: o.id, amount: "11.00" } }) })).json();
+    expect(dup).toMatchObject({ delivered: 0 });
+    // outbox rows delivered, consumer ledger exactly once per message
+    const rows = await pool.query("SELECT status FROM forge_outbox WHERE tenant = $1", [tenant]);
+    expect(rows.rows.every((r: { status: string }) => r.status === "delivered")).toBe(true);
+    const processed = await pool.query("SELECT message_id, count(*)::int AS n FROM forge_processed WHERE tenant = $1 GROUP BY message_id", [tenant]);
+    expect(processed.rows.length).toBeGreaterThan(0);
+    expect(processed.rows.every((r: { n: number }) => r.n === 1)).toBe(true);
+  }, 90_000);
+
   it("drains in-flight requests on stop and refuses new ones", async () => {
     const slow = fetch(`${base}/v1/customers?tier=gold`, { headers: { "x-forge-tenant": "node-drain", "x-forge-actor": "a" } });
     await new Promise((r) => setTimeout(r, 15)); // let the request reach the server before the listener closes

@@ -1,0 +1,17 @@
+{
+  "version": "conformance-profile/1",
+  "id": "self-hosted-full",
+  "description": "Node + PostgreSQL + Temporal-backed workflows + durable messaging + S3-compatible objects, packaged by @forge/adapters/self-hosted.",
+  "status": "unverified",
+  "reason": "A Temporal workflow driver is not implemented; the pack can start Temporal (compose --temporal) but nothing is certified against it. Claiming this profile from the Compose topology alone would be name-based certification.",
+  "certifiedInstead": {
+    "id": "node-postgres",
+    "description": "Node host + PostgreSQL + in-process durable workflow driver + Postgres-backed outbox/inbox + FsBucket or S3 objects.",
+    "evidence": [
+      "packages/runtime/test/node-host.test.ts: 15 conformance scenarios over HTTP, realtime, restart resumes acknowledged outbox work, PAR-153 crash/restart around start, outbox delivery and an external signal",
+      "packages/runtime/test/postgres.test.ts: contract suite (raw-pg and drizzle-pg facades), PAR-146 cutover",
+      "conformance/certification/latest.json (pnpm certify with FORGE_PG_URL)"
+    ]
+  },
+  "requiredToCertify": ["Temporal workflow driver implementing WorkflowDriver (start/advance/wait/signal with task tokens)", "PAR-153 executed with the worker as a Temporal worker", "restart, early signal and outbox retry evidence retained"]
+}

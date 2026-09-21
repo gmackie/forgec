@@ -440,6 +440,68 @@
     "Comparing against a *deployed* model = pull the artifact the inventory reports for the endpoint (registry) and diff it; the CLI takes two bundles",
     "IaC handoff is procedural (docs/provider-cutover.md); no provider deletion is automated anywhere"
    ]
+  },
+  "M18": {
+   "status": "done",
+   "certifiedProfiles": [
+    "cloudflare-d1/workers/wrangler",
+    "aws-dynamodb/lambda/cdk",
+    "postgres-17/pg-direct/node-24/local (full contract)",
+    "postgres/pg-pooled-transaction (no-session-state contract)",
+    "sqlite-node (node:sqlite) through D1Storage",
+    "terraform packs for cloudflare + aws (validate passes; cloudflare Workflows named unsupported by provider 5.4.0)",
+    "docker/nix packs (secret-free; flake evaluates)"
+   ],
+   "unverified": [
+    "neon/direct",
+    "neon/pooled-transaction",
+    "planetscale-postgres/direct",
+    "turso/libsql",
+    "self-hosted-full (temporal)"
+   ],
+   "tickets": {
+    "FORGE-072": {
+     "status": "done",
+     "evidence": [
+      "packages/adapters/managed-postgres: exact product/mode profiles with transaction/cache/role/backup descriptors; resolveProfile refuses PlanetScale without engine and MySQL (PAR-149); qualifyPostgres certifies direct mode for the full contract and a transaction-mode pooler for the no-session-state contract only (PAR-148, local PG17); Neon/PlanetScale endpoints not run: unverified in specs/profiles/matrix.json"
+     ]
+    },
+    "FORGE-073": {
+     "status": "done",
+     "evidence": [
+      "packages/adapters/sqlite: pinned profiles, nodeSqliteExecutor, qualifySqlite; an FK-less engine is rejected (PAR-150); the 15 conformance scenarios pass through D1Storage on node:sqlite (certified sqlite-node); Turso itself unverified pending FORGE_TURSO_URL",
+      "D1 migration layering fixed: forge_outbox.trace in the shared baseline, incremental D1 migrations idempotent"
+     ]
+    },
+    "FORGE-074": {
+     "status": "done",
+     "evidence": [
+      "packages/adapters/terraform: pinned providers, sensitive variables by reference, import + prevent_destroy for adopted resources, separate ledger-driven migration job, ASL definitions shipped with the pack; nativeProjection == terraformProjection minus named provider gaps; terraform validate passes for aws and cloudflare (PAR-151)"
+     ]
+    },
+    "FORGE-075": {
+     "status": "done",
+     "evidence": [
+      "packages/adapters/self-hosted: Dockerfile (nonroot, read-only, health, SIGTERM), compose (external secrets, *_FILE env, no workflow-engine claim), flake.nix + NixOS module with LoadCredential; secret values never appear (PAR-152); flake evaluates with nix; upgrades/rollbacks go through the deployment ledger"
+     ]
+    },
+    "FORGE-076": {
+     "status": "partial",
+     "evidence": [
+      "conformance/profiles/self-hosted-full.json: unverified (no Temporal driver); node-postgres profile certified instead with PAR-153 crash/restart around start, outbox delivery and an external signal (packages/runtime/test/node-host.test.ts)"
+     ]
+    }
+   },
+   "scenarios": {
+    "PAR-148": "packages/adapters/test/profiles.test.ts (FORGE_PG_URL)",
+    "PAR-149": "profiles.test.ts",
+    "PAR-150": "packages/adapters/test/sqlite.test.ts",
+    "PAR-151": "packages/adapters/test/deployment.test.ts",
+    "PAR-152": "deployment.test.ts",
+    "PAR-153": "packages/runtime/test/node-host.test.ts",
+    "PAR-154": "deployment.test.ts",
+    "PAR-155": "profiles.test.ts"
+   }
   }
  }
 }
