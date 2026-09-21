@@ -3,15 +3,78 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./codecs": "./src/codecs.ts",
-    "./memory": "./src/adapters/memory.ts",
-    "./d1": "./src/adapters/d1.ts",
-    "./dynamodb": "./src/adapters/dynamodb.ts",
-    "./cloudflare": "./src/hosts/cloudflare.ts",
-    "./aws": "./src/hosts/aws.ts",
-    "./r2": "./src/adapters/r2.ts",
-    "./s3": "./src/adapters/s3.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./codecs": {
+      "types": "./dist/codecs.d.ts",
+      "source": "./src/codecs.ts",
+      "import": "./dist/codecs.js",
+      "default": "./dist/codecs.js"
+    },
+    "./memory": {
+      "types": "./dist/adapters/memory.d.ts",
+      "source": "./src/adapters/memory.ts",
+      "import": "./dist/adapters/memory.js",
+      "default": "./dist/adapters/memory.js"
+    },
+    "./d1": {
+      "types": "./dist/adapters/d1.d.ts",
+      "source": "./src/adapters/d1.ts",
+      "import": "./dist/adapters/d1.js",
+      "default": "./dist/adapters/d1.js"
+    },
+    "./dynamodb": {
+      "types": "./dist/adapters/dynamodb.d.ts",
+      "source": "./src/adapters/dynamodb.ts",
+      "import": "./dist/adapters/dynamodb.js",
+      "default": "./dist/adapters/dynamodb.js"
+    },
+    "./cloudflare": {
+      "types": "./dist/hosts/cloudflare.d.ts",
+      "source": "./src/hosts/cloudflare.ts",
+      "import": "./dist/hosts/cloudflare.js",
+      "default": "./dist/hosts/cloudflare.js"
+    },
+    "./aws": {
+      "types": "./dist/hosts/aws.d.ts",
+      "source": "./src/hosts/aws.ts",
+      "import": "./dist/hosts/aws.js",
+      "default": "./dist/hosts/aws.js"
+    },
+    "./r2": {
+      "types": "./dist/adapters/r2.d.ts",
+      "source": "./src/adapters/r2.ts",
+      "import": "./dist/adapters/r2.js",
+      "default": "./dist/adapters/r2.js"
+    },
+    "./s3": {
+      "types": "./dist/adapters/s3.d.ts",
+      "source": "./src/adapters/s3.ts",
+      "import": "./dist/adapters/s3.js",
+      "default": "./dist/adapters/s3.js"
+    },
+    "./node": {
+      "types": "./dist/hosts/node.d.ts",
+      "source": "./src/hosts/node.ts",
+      "import": "./dist/hosts/node.js",
+      "default": "./dist/hosts/node.js"
+    },
+    "./postgres": {
+      "types": "./dist/adapters/postgres.d.ts",
+      "source": "./src/adapters/postgres.ts",
+      "import": "./dist/adapters/postgres.js",
+      "default": "./dist/adapters/postgres.js"
+    },
+    "./compose": {
+      "types": "./dist/hosts/compose.d.ts",
+      "source": "./src/hosts/compose.ts",
+      "import": "./dist/hosts/compose.js",
+      "default": "./dist/hosts/compose.js"
+    }
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
@@ -29,11 +92,15 @@
     "@aws-sdk/s3-request-presigner": "^3.1136.0",
     "@aws-sdk/util-dynamodb": "3.996.9",
     "drizzle-orm": "^0.45.2",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0-rc.116",
+    "pg": "^8.23.0",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250920.0",
     "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.9.0",
     "vitest": "^5.0.0",
     "wrangler": "^4.83.0"

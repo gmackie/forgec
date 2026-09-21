@@ -9,6 +9,7 @@ await build({
   platform: "node",
   target: "node22",
   format: "esm",
+  conditions: ["source"],
   outfile: "deploy/aws/dist/index.mjs",
   banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
   sourcemap: false,

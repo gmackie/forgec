@@ -26,6 +26,8 @@ import { durationMs } from "./readmodels.js";
 import { Clock, IdGen, Storage, type RuntimeServices } from "./services.js";
 
 const KIND = "workflow";
+/** System tenant holding the registry of tenants with workflow instances (no business data). */
+const REGISTRY_TENANT = "_forge";
 
 type Doc = Record<string, unknown> & { _version?: number };
 export type InstanceStatus = "running" | "waiting" | "sleeping" | "completed" | "failed" | "cancelled";
@@ -206,6 +208,8 @@ export class Workflows {
       yield* storage.putDocument(ctx.tenant, KIND, self.docId(wf, id), inst, null);
       if (keyDoc) yield* storage.putDocument(ctx.tenant, KIND, keyDoc, { instance: id }, null).pipe(Effect.catch(() => Effect.void));
       yield* self.listMutate(ctx.tenant, self.activeId(wf), (ids) => [...ids, id]);
+      // Hosts without a native driver sweep in-flight instances; they need to know which tenants have any.
+      yield* self.listMutate(REGISTRY_TENANT, "tenants", (ids) => (ids.includes(ctx.tenant) ? ids : [...ids, ctx.tenant]));
       const state = yield* self.advance(ctx.tenant, id, wf);
       if (self.driver && ["running", "waiting", "sleeping"].includes(state["status"] as string)) {
         yield* Effect.tryPromise({ try: () => self.driver!.started(ctx.tenant, wf, id), catch: (e) => err("Internal", `workflow driver failed to start: ${String(e)}`) });
@@ -302,6 +306,14 @@ export class Workflows {
       }
       return { advanced };
     }).pipe(Effect.provide(this.engine.layer));
+  }
+
+  /** Tenants that have ever started a workflow instance (durable registry for sweep-driven hosts). */
+  tenants(): Effect.Effect<string[], never, never> {
+    return Effect.gen(function* () {
+      const doc = (yield* (yield* Storage).getDocument(REGISTRY_TENANT, KIND, "tenants")) as { ids?: string[] } | null;
+      return doc?.ids ?? [];
+    }).pipe(Effect.catch(() => Effect.succeed([] as string[])), Effect.provide(this.engine.layer));
   }
 
   /** Ids of instances that have not reached a terminal status. */

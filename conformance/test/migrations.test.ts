@@ -4,6 +4,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("reviewed migrations", () => {
+  it("the reviewed PostgreSQL baseline equals the generated one", () => {
+    const generated = readFileSync(resolve(import.meta.dirname, "..", "..", "examples", "acme", "generated", "postgres", "0001_init.sql"), "utf8");
+    const reviewed = readFileSync(resolve(import.meta.dirname, "..", "..", "examples", "acme", "migrations", "postgres", "0001_init.sql"), "utf8");
+    expect(reviewed).toBe(generated);
+  });
   it("0001_init.sql in examples/acme/migrations/d1 equals the generated baseline", () => {
     const generated = readFileSync(resolve(import.meta.dirname, "..", "fixtures", "acme.0001_init.sql"), "utf8");
     const reviewed = readFileSync(resolve(import.meta.dirname, "..", "..", "examples", "acme", "migrations", "d1", "0001_init.sql"), "utf8");

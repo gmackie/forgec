@@ -14,7 +14,10 @@
     "aws:destroy": "cdk destroy --app 'node --experimental-strip-types deploy/aws/app.ts' --output deploy/aws/cdk.out --force",
     "workspace:dev": "vite",
     "workspace:build": "vite build",
-    "workspace:deploy": "pnpm workspace:build && wrangler deploy --config deploy/cloudflare/workspace.wrangler.jsonc"
+    "workspace:deploy": "pnpm workspace:build && wrangler deploy --config deploy/cloudflare/workspace.wrangler.jsonc",
+    "node:serve": "pnpm node:bundle && node deploy/node/dist/server.mjs",
+    "pg:migrate": "psql \"$FORGE_PG_URL\" -v ON_ERROR_STOP=1 -f migrations/postgres/0001_init.sql",
+    "node:bundle": "node deploy/node/bundle.mjs"
   },
   "dependencies": {
     "@forge/runtime": "workspace:*",
@@ -24,7 +27,9 @@
     "@aws-sdk/util-dynamodb": "3.996.9",
     "@forge/react": "workspace:*",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "pg": "^8",
+    "ws": "^8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250920.0",

@@ -1,2 +1,2 @@
 import { defineConfig } from "vitest/config";
-export default defineConfig({ test: { include: ["test/**/*.test.tsx"], environment: "jsdom", setupFiles: ["./test/setup.ts"] }, esbuild: { jsx: "automatic" } });
+export default defineConfig({ resolve: { conditions: ["source"] }, test: { include: ["test/**/*.test.tsx"], environment: "jsdom", setupFiles: ["./test/setup.ts"] }, esbuild: { jsx: "automatic" } });

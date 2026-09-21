@@ -52,6 +52,59 @@
         "PAR-082": "dependency_resolution_never_executes_package_code + check_validates_pinned_extension_manifests_without_executing_them",
         "PAR-083": "ir_loading_fails_closed_on_unknown_critical_features (M8 artifact loads by rule; future artifact diagnosed)"
       }
+    },
+    "M10": {
+      "status": "done",
+      "tickets": {
+        "FORGE-032": {
+          "status": "done",
+          "evidence": [
+            "packages/runtime/src/hosts/compose.ts (named capability axes: StructuredStore, ObjectStore, ChannelTransport, WorkflowDriver, RealtimeHub; composeRuntime)",
+            "Cloudflare/AWS entrypoints unchanged; goldens unchanged (conformance/test/migrations.test.ts, client snapshot)"
+          ]
+        },
+        "FORGE-033": {
+          "status": "done",
+          "evidence": [
+            "forge_planner::sql::render_postgres (BIGINT exact minor units, COLLATE \"C\", boolean guarded assertion, FK-ordered DDL) + snapshot",
+            "packages/runtime/src/adapters/postgres.ts (SERIALIZABLE guarded batches, error class mapping)",
+            "packages/runtime/test/postgres.test.ts: 15 scenarios x 2 facades + classification (PAR-085/086)"
+          ]
+        },
+        "FORGE-034": {
+          "status": "done",
+          "evidence": [
+            "raw-pg and drizzle-pg facades over one SQL plan",
+            "PAR-087: pooled connection retains no transaction-local tenant context",
+            "interactive JS transactions are not offered: the batch is the only transactional primitive"
+          ]
+        },
+        "FORGE-035": {
+          "status": "done",
+          "evidence": [
+            "packages/runtime/src/hosts/node.ts (Fetch ingress, WebSocket hub, sweep loop, /healthz /readyz, bounded concurrency, graceful drain, filesystem object store served through signed URLs)",
+            "packages/runtime/test/node-host.test.ts: 15 scenarios over HTTP, realtime, restart resumes acknowledged outbox work (PAR-091), drain",
+            "examples/acme/deploy/node (bundled entrypoint)"
+          ]
+        },
+        "FORGE-036": {
+          "status": "partial",
+          "evidence": [
+            "node-postgres profile certified: conformance/reports/node-postgres.json (15/15), realtime, bench, live switch cloudflare-d1 -> node-postgres",
+            "PostgreSQL through Workers (Hyperdrive) and Lambda: not certified (pending FORGE-036 remainder / M18)"
+          ]
+        }
+      },
+      "scenarios": {
+        "PAR-084": "goldens unchanged after the adapter refactor (migrations.test.ts, client snapshot, 15 scenarios on all targets)",
+        "PAR-085": "postgres.test.ts classification",
+        "PAR-086": "postgres.test.ts m2.concurrency / m3.integrity / m2.idempotency on PostgreSQL",
+        "PAR-087": "postgres.test.ts pooled context isolation",
+        "PAR-088": "unsupported interactive transactions: not exposed by design (SqlExecutor has batch only)",
+        "PAR-089": "partial: node-postgres profile only",
+        "PAR-090": "drizzle-pg + raw-pg run identical scenarios",
+        "PAR-091": "node-host.test.ts restart + drain"
+      }
     }
   }
 }

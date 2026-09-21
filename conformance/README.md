@@ -18,6 +18,7 @@ the same code that application clients use — and write
 | --- | --- | --- | --- | --- |
 | runtime-memory | in-process | 15 | 221 | 0 |
 | cloudflare-d1 | `https://forge-acme.gmac.workers.dev` (Workers + D1 + R2 + Queues + Workflows + Cron Triggers + Durable Objects) | 15 | 221 | 0 |
+| node-postgres | bundled `deploy/node` on Node 24 + PostgreSQL 17 (local, `pnpm node:serve`) | 15 | 221 | 0 |
 | aws-dynamodb | `https://65geshs364.execute-api.us-east-1.amazonaws.com` (HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge + API Gateway WebSocket) | 15 | 221 | 0 |
 
 M8 adds `limits` (10 logical mutations per atomic changeset with the preview

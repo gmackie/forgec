@@ -36,6 +36,20 @@ with `FORGE_TABLE`, `FORGE_BUCKET`, `FORGE_QUEUES`, `FORGE_WORKFLOWS`,
 `RealtimeUrl`. DynamoDB needs no DDL for field changes; its key plan is in the
 bundle.
 
+## Node + PostgreSQL (self-hosted)
+
+`deploy/node/server.ts` composes the same runtime with `createPostgresStorage`
+and `createNodeHost` (Fetch ingress, WebSocket realtime, durable sweep loop,
+`/healthz` and `/readyz`, graceful drain, a directory-backed object store
+served through signed URLs). `pnpm pg:migrate` applies
+`migrations/postgres/0001_init.sql` (the reviewed PostgreSQL baseline: 64-bit
+exact numerics, `COLLATE "C"` text so ordering matches D1/DynamoDB);
+`pnpm node:serve` bundles with esbuild and runs `deploy/node/dist/server.mjs`.
+Environment: `FORGE_PG_URL`, `CURSOR_SECRET`, `PORT`, `FORGE_OBJECTS_DIR`,
+`FORGE_PUBLIC_URL`, `FORGE_CORS`, `FORGE_TELEMETRY=json|emf|silent`.
+Guarded batches run as `SERIALIZABLE` transactions; serialization failures are
+retried by the engine as transient conflicts.
+
 ## Phased rollout (plan §21)
 
 1. provision additive infrastructure;

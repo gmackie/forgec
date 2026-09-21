@@ -143,3 +143,16 @@ fn messaging_plan_has_one_durable_delivery_per_subscription_and_typed_envelopes(
     assert_eq!(pe.contract.as_deref(), Some("@acme/payments/_/PaymentEvents"));
     assert_eq!(pe.direction.as_deref(), Some("recv-only"));
 }
+
+/// FORGE-033: the PostgreSQL dialect renders the same relational plan with portable collation and exact numerics.
+#[test]
+fn postgres_dialect_preserves_portable_semantics() {
+    let plans = acme();
+    let pg = forge_planner::sql::render_postgres(&plans.sql);
+    assert!(pg.contains("\"code\" TEXT COLLATE \"C\" NOT NULL"), "text columns sort by byte order like D1/DynamoDB:\n{pg}");
+    assert!(pg.contains("\"subtotal\" BIGINT NOT NULL"), "money is exact minor units in a 64-bit integer");
+    assert!(pg.contains("CONSTRAINT forge_precondition CHECK (satisfied)"), "the guarded-batch assertion row is a boolean check");
+    assert!(pg.contains("CREATE TABLE forge_document") && pg.contains("CREATE TABLE forge_processed") && pg.contains("\"trace\" TEXT"), "the PostgreSQL baseline is the complete current schema");
+    assert!(!pg.contains("PRAGMA"));
+    insta::assert_snapshot!("postgres", pg);
+}
