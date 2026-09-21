@@ -115,10 +115,10 @@ export interface DataClassDecl { id: string; name: string; exported: boolean; ex
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
 export const KNOWN_FEATURES = ["governance/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
-export interface DomainIR { version: string; package: { name: string; edition?: string }; modules: Module[]; requires?: string[] }
+export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }
 export interface Contracts { version: string; resources: { id: string; name: string; wireName: string; operations: Operation[] }[]; functions: { id: string; name: string; http?: HttpBinding }[] }
-export interface AppBundle { version: string; buildHash: string; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan; realtime?: RealtimePlan; observability?: ObservabilityPlan; dataSemantics?: DataSemanticsPlan; lineage?: unknown }
+export interface AppBundle { version: string; buildHash: string; digests?: Record<string, string>; openapi?: unknown; ir: DomainIR; contracts: Contracts; sql: unknown; dynamo: unknown; ui?: unknown; messaging?: MessagingPlan; workflows?: WorkflowsPlan; schedules?: SchedulesPlan; realtime?: RealtimePlan; observability?: ObservabilityPlan; dataSemantics?: DataSemanticsPlan; lineage?: unknown }
 
 export interface OperationRef {
   op: Operation;

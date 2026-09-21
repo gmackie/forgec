@@ -126,3 +126,37 @@ describe("CORS", () => {
     expect(other.headers.get("access-control-allow-origin")).toBeNull();
   });
 });
+
+/** FORGE-056: bounded, authenticated discovery. Metadata for compatibility evaluation, never deployment trust. */
+describe("discovery", () => {
+  it("GET /forge/discovery is authenticated, bounded, and names contract digests, features and auth", async () => {
+    const anon = await handler(new Request("https://api.test/forge/discovery"));
+    expect(anon.status).toBe(401);
+    const res = await handler(req("GET", "/forge/discovery"));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("private, max-age=60");
+    const d = await res.json();
+    expect(d.version).toBe("forge-discovery/1");
+    expect(d.package).toMatchObject({ name: "@acme/commerce", version: bundle.ir.package.version });
+    expect(d.buildHash).toBe(bundle.buildHash);
+    expect(d.digests).toEqual(bundle.digests);
+    expect(d.contracts.version).toBe(bundle.contracts.version);
+    expect(d.auth).toEqual({ scheme: "dev-header", purposeHeader: "x-forge-purpose" });
+    expect(d.features).toEqual(expect.arrayContaining(["changesets", "imports", "workflows", "realtime"]));
+    expect(d.links).toEqual({ openapi: "/forge/openapi.json", mcp: "/forge/mcp" });
+    // bounded: counts and edition, not an operation-by-operation catalogue (the OpenAPI document carries that)
+    expect(d.operations).toEqual({ resources: bundle.contracts.resources.length, functions: expect.any(Number), workflows: 1, http: expect.any(Number) });
+    expect(Object.keys(d).sort()).toEqual(["auth", "buildHash", "contracts", "digests", "edition", "features", "links", "operations", "package", "profile", "version"]);
+  });
+
+  it("GET /forge/openapi.json serves the projection the build emitted, only to authenticated callers", async () => {
+    expect((await handler(new Request("https://api.test/forge/openapi.json"))).status).toBe(401);
+    const res = await handler(req("GET", "/forge/openapi.json"));
+    expect(res.status).toBe(200);
+    const doc = await res.json();
+    expect(doc.openapi).toBe("3.1.0");
+    expect(doc.info["x-forge-contracts"]).toBe(bundle.contracts.version);
+    expect(Object.keys(doc.paths)).toContain("/v1/customers/{id}");
+    expect(doc.paths["/v1/customers/{id}"].patch.operationId).toBe("@acme/commerce/_/Customer.update");
+  });
+});

@@ -40,6 +40,7 @@ export async function signTestJwt(payload: Record<string, unknown>, secret: stri
 export function jwtAuth(o: JwtAuthOptions): AuthHost {
   const skew = o.clockSkewSeconds ?? 30;
   return {
+    scheme: "bearer-jwt",
     async authenticate(req: Request): Promise<Principal | ReturnType<typeof err>> {
       const header = req.headers.get("authorization") ?? "";
       const m = /^Bearer\s+(.+)$/i.exec(header);

@@ -18,11 +18,14 @@ export interface Principal {
 }
 export interface AuthHost {
   authenticate(req: Request): Promise<Principal | ForgeError>;
+  /** Advertised in discovery so clients know which credential to present. */
+  scheme?: string;
 }
 
 /** Development-only: trust `x-forge-tenant` / `x-forge-actor` headers. Must be enabled explicitly. */
 export function devHeaderAuth(): AuthHost {
   return {
+    scheme: "dev-header",
     async authenticate(req) {
       const tenant = req.headers.get("x-forge-tenant");
       if (!tenant) return err("Unauthenticated", "x-forge-tenant header is required (development header auth)");
@@ -35,6 +38,29 @@ interface Route {
   method: string;
   segments: { literal?: string; param?: string }[];
   ref: OperationRef;
+}
+
+/** FORGE-056 discovery document: identity, digests, features and links. Counts, not a catalogue; the OpenAPI projection carries operations. */
+export function discovery(model: Model, auth: AuthHost): Record<string, unknown> {
+  const b = model.bundle;
+  const features = ["changesets", "imports", "admin.portability", "governance"];
+  if (model.workflows.length) features.push("workflows");
+  if (b.realtime && (b.realtime as { streams?: unknown[] }).streams?.length) features.push("realtime");
+  if (model.views.length || model.projections.length || model.caches.length) features.push("readmodels");
+  if (model.sources.length) features.push("schedules");
+  return {
+    version: "forge-discovery/1",
+    package: { name: b.ir.package.name, version: b.ir.package.version },
+    edition: b.ir.package.edition,
+    profile: b.ir.package.profile,
+    buildHash: b.buildHash,
+    digests: b.digests ?? {},
+    contracts: { version: b.contracts.version },
+    features,
+    auth: { scheme: auth.scheme ?? "bearer", purposeHeader: "x-forge-purpose" },
+    operations: { resources: b.contracts.resources.length, functions: model.functions.filter((f) => f.http).length, workflows: model.workflows.length, http: model.httpOperations().length + model.functions.filter((f) => f.http).length },
+    links: { openapi: "/forge/openapi.json", mcp: "/forge/mcp" },
+  };
 }
 
 /** Built-in routes (plan §12): changesets. Bound under the package's API prefix. */
@@ -195,6 +221,17 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     // authenticate before routing: anonymous callers learn nothing about the API shape
     const principal = await options.auth.authenticate(req);
     if (principal instanceof ForgeError) return problem(principal, requestId);
+
+    // FORGE-056: bounded discovery metadata. Compatibility evaluation input, never deployment trust:
+    // a client that finds a different digest runs `forge compat`, it does not assume equivalence.
+    if (req.method === "GET" && path[0] === "forge" && path.length === 2) {
+      const meta = { "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=60", "x-request-id": requestId };
+      if (path[1] === "discovery") return new Response(JSON.stringify(discovery(model, options.auth)), { status: 200, headers: meta });
+      if (path[1] === "openapi.json") {
+        if (!model.bundle.openapi) return problem(err("NotFound", "this build carries no OpenAPI projection"), requestId);
+        return new Response(JSON.stringify(model.bundle.openapi), { status: 200, headers: meta });
+      }
+    }
 
     // route
     let matched: { route: Route; params: Record<string, string> } | null = null;

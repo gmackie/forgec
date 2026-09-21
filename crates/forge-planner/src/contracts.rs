@@ -168,6 +168,10 @@ pub struct FunctionContract {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub http: Option<HttpBinding>,
     pub errors: Vec<String>,
+    /// Input shape flattened to a JSON Schema object (references keep `x-forge-reference`).
+    pub input: JsonSchema,
+    /// Output schema: a `$ref` to a record/shape, a scalar schema, or an empty object.
+    pub output: Value,
     pub generated: bool,
 }
 
@@ -187,7 +191,9 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             resources.push(resource(ir, r));
         }
         for f in &m.functions {
-            functions.push(FunctionContract { id: f.id.clone(), name: f.name.clone(), http: f.http.clone(), errors: f.errors.clone(), generated: f.generated });
+            let input = f.input.as_ref().map(|t| shape_or_record_schema(ir, &t.base)).unwrap_or_else(|| JsonSchema { ty: "object".into(), ..Default::default() });
+            let output = f.output.as_ref().map(|t| output_schema(ir, t)).unwrap_or_else(|| json!({}));
+            functions.push(FunctionContract { id: f.id.clone(), name: f.name.clone(), http: f.http.clone(), errors: f.errors.clone(), input, output, generated: f.generated });
         }
         for v in &m.views {
             let src = find_resource(&v.source).map(|r| resource(ir, r));
@@ -374,6 +380,47 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
         queries,
         lifecycle,
         operations: r.operations.clone(),
+    }
+}
+
+/// Flatten a shape (or a record/message) into an inline object schema for function inputs.
+fn shape_or_record_schema(ir: &DomainIR, base: &TypeBase) -> JsonSchema {
+    let mut s = JsonSchema { ty: "object".into(), ..Default::default() };
+    let dummy = Resource { id: String::new(), name: String::new(), kind: "resource".into(), exported: false, doc: None, decorators: Default::default(), fields: vec![], uniques: vec![], finds: vec![], lists: vec![], rules: vec![], lifecycle: None, content: None, operations: vec![], capabilities: vec![], purpose_bindings: vec![] };
+    let fields: Vec<Field> = match base {
+        TypeBase::Shape { id } => ir.find_shape(id).map(|sh| sh.fields.clone()).unwrap_or_default(),
+        TypeBase::Record { resource } | TypeBase::Reference { resource } => ir.find_resource(resource).map(|r| r.fields.iter().filter(|f| !f.hidden).cloned().collect()).unwrap_or_default(),
+        TypeBase::Message { channel, message } => ir.find_channel(channel).and_then(|c| c.messages.iter().find(|m| &m.name == message)).map(|m| m.fields.clone()).unwrap_or_default(),
+        _ => vec![],
+    };
+    for f in fields {
+        let owner = match base { TypeBase::Record { resource } | TypeBase::Reference { resource } => ir.find_resource(resource).cloned().unwrap_or_else(|| dummy.clone()), _ => dummy.clone() };
+        s.properties.insert(f.name.clone(), field_schema(ir, &owner, &f));
+        if !f.ty.optional && f.default.is_none() {
+            s.required.push(f.name.clone());
+        }
+    }
+    s
+}
+
+fn output_schema(ir: &DomainIR, t: &TypeSpec) -> Value {
+    match &t.base {
+        TypeBase::Record { resource } => {
+            let name = ir.find_resource(resource).map(|r| r.name.clone()).unwrap_or_default();
+            match &t.purpose {
+                Some(p) => json!({ "$ref": format!("#/components/schemas/{}{}Record", name, p.rsplit('/').next().unwrap_or(p)) }),
+                None => json!({ "$ref": format!("#/components/schemas/{name}Record") }),
+            }
+        }
+        TypeBase::Shape { id } => {
+            let s = shape_or_record_schema(ir, &t.base);
+            let _ = id;
+            serde_json::to_value(s).unwrap_or_else(|_| json!({}))
+        }
+        _ => {
+            let dummy = Resource { id: String::new(), name: String::new(), kind: "resource".into(), exported: false, doc: None, decorators: Default::default(), fields: vec![], uniques: vec![], finds: vec![], lists: vec![], rules: vec![], lifecycle: None, content: None, operations: vec![], capabilities: vec![], purpose_bindings: vec![] };
+            type_schema(ir, &dummy, t)
+        }
     }
 }
 
