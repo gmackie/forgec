@@ -1,6 +1,14 @@
 import { OciRegistry } from "./oci.js";
+import { R2Oci, type R2Like } from "./r2-oci.js";
 export interface Config {
   ADMIN_TOKEN?: string;
+  /** "token" (default) or "cloudflare-access". */
+  AUTH_MODE?: string;
+  ACCESS_TEAM_DOMAIN?: string;
+  ACCESS_AUD?: string;
+  /** "http" (default) or "r2". */
+  OCI_BACKEND?: string;
+  REGISTRY_TOKEN_SECRET?: string;
   INSTANCE_NAME?: string;
   INSTANCE_AUTHORITY?: string;
   OCI_URL?: string;
@@ -13,8 +21,15 @@ export interface Config {
 }
 export async function registryFrom(
   config: Config,
+  bindings?: { BLOBS?: R2Like },
 ): Promise<OciRegistry | null> {
-  if (!config.OCI_URL) return null;
+  const backendMode = config.OCI_BACKEND || "http";
+  // Unchanged default: no OCI_URL means the registry half is simply not configured.
+  if (backendMode === "http" && !config.OCI_URL) return null;
+  if (backendMode === "r2" && !bindings?.BLOBS)
+    throw new Error(
+      "OCI_BACKEND=r2 requires an R2 bucket binding named BLOBS, which only Cloudflare Workers provides.",
+    );
   if (
     !config.INSTANCE_AUTHORITY ||
     !config.OCI_REPOSITORY ||
@@ -37,8 +52,24 @@ export async function registryFrom(
   );
   const { d: _private, ...publicKey } = jwk;
   publicKey.key_ops = ["verify"];
+  if (backendMode === "r2")
+    return new OciRegistry({
+      backend: new R2Oci({
+        bucket: bindings!.BLOBS!,
+        repository: config.OCI_REPOSITORY,
+        url: `https://${config.INSTANCE_AUTHORITY}`,
+      }),
+      repository: config.OCI_REPOSITORY,
+      authority: config.INSTANCE_AUTHORITY,
+      signer: {
+        keyId: config.SIGNING_KEY_ID || "instance-v1",
+        privateKey,
+        publicKey,
+      },
+    });
   return new OciRegistry({
-    url: config.OCI_URL,
+    // Non-null: the http branch returned early above when this was unset.
+    url: config.OCI_URL!,
     repository: config.OCI_REPOSITORY,
     authority: config.INSTANCE_AUTHORITY,
     signer: {
