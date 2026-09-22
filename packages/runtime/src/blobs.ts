@@ -20,8 +20,8 @@ export class Blobs {
   private stagingKey(tenant: string, r: Resource, id: string, attempt: number): string {
     return `staging/${tenant}/${this.engine.model.wireName(r.id)}/${id}/${attempt}`;
   }
-  private sealedKey(tenant: string, r: Resource, id: string, generation: number): string {
-    return `sealed/${tenant}/${this.engine.model.wireName(r.id)}/${id}/${generation}`;
+  private sealedKey(tenant: string, r: Resource, id: string, generation: number, token?: string): string {
+    return `sealed/${tenant}/${this.engine.model.wireName(r.id)}/${id}/${generation}${token ? `/${token}` : ""}`;
   }
 
   /** A metadata mutation on the blob record, through the normal commit path (version guard, audit, outbox). */
@@ -78,6 +78,7 @@ export class Blobs {
       const objects = yield* Objects;
       const current = yield* storage.get(ctx.tenant, r, id);
       if (!current) return yield* Effect.fail(err("NotFound", `${r.name} ${id} not found`));
+      if (current["version"] !== expectedVersion) return yield* Effect.fail(err("VersionConflict", "blob changed before finalization"));
       if (current["uploadState"] !== "uploading") return yield* Effect.fail(err("InvalidTransition", `cannot finalize from ${current["uploadState"]}`));
       const attempt = Number(current["uploadAttempt"]);
       const staging = self.stagingKey(ctx.tenant, r, id, attempt);
@@ -92,11 +93,19 @@ export class Blobs {
         yield* objects.delete(staging);
         return rec;
       }
-      const { sha256, byteCount } = yield* objects.digest(staging, policy.maxBytes);
       const generation = Number(current["contentGeneration"] ?? 0) + 1;
-      const sealed = self.sealedKey(ctx.tenant, r, id, generation);
+      // Every contender gets a private immutable key. A failed metadata CAS can
+      // leave an orphan, but can never overwrite the object named by the winner.
+      const token = crypto.randomUUID();
+      const sealed = self.sealedKey(ctx.tenant, r, id, generation, token);
       const { generation: providerGen } = yield* objects.seal(staging, sealed, expectedType);
-      const rec = yield* self.mutate(r, id, expectedVersion, "blob.finalize", { uploadState: "ready", mediaType: expectedType, byteCount, digest: `sha256:${sha256}`, contentGeneration: generation, sealedGeneration: providerGen }, ctx);
+      // Hash the immutable copy, never the still-writable staging upload.
+      const { sha256, byteCount } = yield* objects.digest(sealed, policy.maxBytes);
+      if (byteCount !== expectedBytes) {
+        yield* objects.delete(sealed);
+        return yield* self.mutate(r, id, expectedVersion, "blob.reject", { uploadState: "rejected" }, ctx);
+      }
+      const rec = yield* self.mutate(r, id, expectedVersion, "blob.finalize", { uploadState: "ready", mediaType: expectedType, byteCount, digest: `sha256:${sha256}`, contentGeneration: generation, sealedGeneration: `forge-sealed/1|${token}|${providerGen ?? ""}` }, ctx);
       yield* objects.delete(staging);
       // A newly sealed generation starts `pending`: sealing never clears content (plan §7.3).
       return { ...rec, inspection: { state: "pending", generation } };
@@ -112,7 +121,15 @@ export class Blobs {
       if (current["uploadState"] !== "ready") return yield* Effect.fail(err("InvalidTransition", `content is not ready (${current["uploadState"]})`));
       // Content inspection verdict (plan §7.3): quarantined and review-required never serve; pending only in the lenient profile.
       yield* self.engine.governance.checkReadable(r, id, Number(current["contentGeneration"]), ctx);
-      const key = self.sealedKey(ctx.tenant, r, id, Number(current["contentGeneration"]));
+      const sealedGeneration = String(current["sealedGeneration"] ?? "");
+      let token: string | undefined;
+      if (sealedGeneration.startsWith("forge-sealed/")) {
+        const parts = sealedGeneration.split("|");
+        if (parts[0] !== "forge-sealed/1" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(parts[1] ?? "")) return yield* Effect.fail(err("ValidationFailed", "invalid sealed object identity"));
+        token = parts[1];
+      }
+      // Legacy rows retain their original generation-only object key.
+      const key = self.sealedKey(ctx.tenant, r, id, Number(current["contentGeneration"]), token);
       const signed = yield* (yield* Objects).presignDownload(key, DOWNLOAD_TTL, String(current["mediaType"]));
       return { ...signed, mediaType: current["mediaType"], byteCount: current["byteCount"], digest: current["digest"] };
     });
