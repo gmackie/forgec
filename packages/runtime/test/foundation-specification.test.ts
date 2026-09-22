@@ -10,13 +10,14 @@ import { Model, type AppBundle } from "../src/model.js";
 import { MemoryStorage } from "../src/adapters/memory.js";
 import { testLayer } from "../src/testing.js";
 import { resolveSpecificationSelector, resolveSpecificationSourceSpan, type SpecificationProvider } from "../src/foundation/specification.js";
-const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "../../../conformance/fixtures/specification/app.json"), "utf8")) as AppBundle;
+const fixture = process.env["FORGE_FOUNDATION_FIXTURE"] ?? resolve(import.meta.dirname, "../../../conformance/fixtures/specification");
+const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
 const prefix = "@forgegraph/foundation/specification/_/";
 const ctx = { tenant: "acme", actor: "user", requestId: "specification" };
 for (const adapter of ["memory", "sqlite"]) it(`${adapter}: pins reject selectors, edits and deletion; realizations keep hashes distinct`, async () => {
   const model = new Model(bundle);
   const db = new DatabaseSync(":memory:");
-  db.exec(readFileSync(resolve(import.meta.dirname, "../../../conformance/fixtures/specification/d1/0001_init.sql"), "utf8"));
+  db.exec(readFileSync(resolve(fixture, "d1/0001_init.sql"), "utf8"));
   const run = (s: SqlStatement) => ({ changes: Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes) });
   const executor: SqlExecutor = {
     facade: "sqlite-test",

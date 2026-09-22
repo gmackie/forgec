@@ -103,14 +103,21 @@ function main() {
     console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract validation only; implementation acceptance remains planned.' }, null, 2));
     return;
   }
-  if (slug === 'specification' && !all) {
-    run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
-    run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', 'packages/foundation/specification']);
-    run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-specification.test.ts']);
-    console.log(JSON.stringify({ suite, package: slug, status: 'passing', scope: 'append-only schema, memory/SQLite persistence, provider abstraction', providers: 'mock only; live certification not run' }));
+  if (['specification', 'identifiers'].includes(slug) && !all) {
+    const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
+    try {
+      if (slug === 'specification') run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
+      if (slug === 'identifiers') run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', 'packages/foundation/identifiers/fixtures/consumer']);
+      for (const name of ['first', 'second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}`, '--out', join(out, name)]);
+      for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts']) {
+        if (!readFileSync(join(out, 'first', file)).equals(readFileSync(join(out, 'second', file)))) throw new Error(`nondeterministic artifact: ${file}`);
+      }
+      run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', `test/foundation-${slug}.test.ts`], { FORGE_FOUNDATION_FIXTURE: join(out, 'first') });
+      console.log(JSON.stringify({ suite, package: slug, status: 'passing', deterministic: true, scope: 'local generated-bundle tests on memory/SQLite', providers: 'live certification not run' }));
+    } finally { rmSync(out, { recursive: true, force: true }); }
     return;
   }
-  if (slug !== 'composition' || all) throw new Error('Package implementations are planned. Currently only --suite local --package composition has an executable verifier.');
+  if (slug !== 'composition' || all) throw new Error('Local verifiers exist for composition, specification and identifiers; remaining package acceptance is planned.');
   const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
   const fixture = 'conformance/foundation/fixtures/composition/app';
   try {
