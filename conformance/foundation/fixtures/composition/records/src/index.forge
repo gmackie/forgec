@@ -1,0 +1,22 @@
+export resource EvidenceBundle
+  @tenant
+  @versioned
+{
+  id : id
+  label : text length 1..100
+}
+
+export shape RenameInput {
+  bundle : EvidenceBundle
+  expectedVersion : integer >= 1
+  label : text length 1..100
+}
+
+export function RenameEvidence {
+  input RenameInput
+  output EvidenceBundle.Record
+
+  uses {
+    EvidenceBundle write
+  }
+}
