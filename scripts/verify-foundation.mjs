@@ -103,11 +103,11 @@ function main() {
     console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract validation only; implementation acceptance remains planned.' }, null, 2));
     return;
   }
-  if (['specification', 'identifiers'].includes(slug) && !all) {
+  if (['specification', 'identifiers', 'participation'].includes(slug) && !all) {
     const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
     try {
       if (slug === 'specification') run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
-      if (slug === 'identifiers') run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', 'packages/foundation/identifiers/fixtures/consumer']);
+      if (slug !== 'specification') run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', `packages/foundation/${slug}/fixtures/consumer`]);
       for (const name of ['first', 'second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}`, '--out', join(out, name)]);
       for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts']) {
         if (!readFileSync(join(out, 'first', file)).equals(readFileSync(join(out, 'second', file)))) throw new Error(`nondeterministic artifact: ${file}`);
@@ -117,7 +117,7 @@ function main() {
     } finally { rmSync(out, { recursive: true, force: true }); }
     return;
   }
-  if (slug !== 'composition' || all) throw new Error('Local verifiers exist for composition, specification and identifiers; remaining package acceptance is planned.');
+  if (slug !== 'composition' || all) throw new Error('Local verifiers exist for composition, specification, identifiers and participation; remaining package acceptance is planned.');
   const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
   const fixture = 'conformance/foundation/fixtures/composition/app';
   try {

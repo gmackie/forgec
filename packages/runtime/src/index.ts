@@ -38,3 +38,4 @@ export * from "./actors.js";
 
 export * from "./foundation/specification.js";
 export * from "./foundation/identifiers.js";
+export * from "./foundation/participation.js";

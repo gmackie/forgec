@@ -1,0 +1,43 @@
+export resource Participant @tenant @timestamps @appendOnly {
+  id : id
+  label : text length 1..200
+}
+export resource ParticipationSet @tenant @timestamps @appendOnly {
+  id : id
+  label : text length 1..200
+}
+export resource ParticipationRole @tenant @timestamps @appendOnly {
+  id : id
+  namespace : text trim lowercase length 1..128
+  name : text trim length 1..64
+  unique namespace, name
+  find by namespace, name
+}
+export resource Participation @tenant @timestamps @appendOnly {
+  id : id
+  participationSet : ParticipationSet
+  participant : Participant
+  role : ParticipationRole
+  validFrom : datetime
+  validUntil : datetime?
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    validUntil == null || validUntil > validFrom
+  }
+  unique participationSet, participant, role, validFrom
+  list by participationSet
+  list by participant
+}
+export resource ParticipationEnd @tenant @timestamps @appendOnly {
+  id : id
+  participation : Participation @unique
+  effectiveAt : datetime
+  revoked : boolean
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    effectiveAt >= participation.validFrom
+  }
+  find by participation
+}

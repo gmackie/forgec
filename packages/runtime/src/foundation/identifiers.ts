@@ -1,4 +1,6 @@
 import { Effect } from "effect";
+import { findTerminalFact } from "./facts.js";
+import { decodeDatetime } from "../codecs.js";
 import type { Engine, CallContext } from "../engine.js";
 import { err, type ForgeError } from "../errors.js";
 import type { Wire } from "../decode.js";
@@ -43,13 +45,12 @@ export class Identifiers {
   lookup(qualified: QualifiedIdentifier, at: string, ctx: CallContext): Effect.Effect<IdentifierLookup | null, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
-      const instant = Date.parse(at);
-      if (!Number.isFinite(instant) || !/^\d{4}-\d{2}-\d{2}T/.test(at) || !/(Z|[+-]\d{2}:\d{2})$/.test(at)) return yield* Effect.fail(err("ValidationFailed", "lookup instant requires an offset datetime"));
+      const instant = yield* Effect.try({ try: () => Date.parse(decodeDatetime(at)), catch: () => err("ValidationFailed", "Invalid identifier lookup instant") });
       const identifier = yield* self.call("Identifier.find.byNamespaceIssuerScopeValue", { params: {
         namespace: qualified.namespace, issuerScope: qualified.issuer ?? "namespace", value: qualified.value,
       } }, ctx).pipe(Effect.catch(e => e.code === "NotFound" ? Effect.succeed(null) : Effect.fail(e)));
       if (!identifier || instant < Date.parse(String(identifier.validFrom)) || (identifier.validUntil != null && instant >= Date.parse(String(identifier.validUntil)))) return null;
-      const disposition = yield* self.call("IdentifierDisposition.find.byIdentifier", { params: { identifier: identifier.id } }, ctx).pipe(Effect.catch(e => e.code === "NotFound" ? Effect.succeed(null) : Effect.fail(e)));
+      const disposition = yield* findTerminalFact(self.engine, prefix + "IdentifierDisposition", "identifier", identifier.id, ctx);
       if (disposition && instant >= Date.parse(String(disposition.effectiveAt))) return null;
       return { identifier: String(identifier.id), identifierSet: String(identifier.identifierSet) };
     });
