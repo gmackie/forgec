@@ -879,3 +879,29 @@ fn edition_upgrade_is_explicit_and_non_destructive() {
     assert_eq!(r2["status"], "already on edition 2027");
     assert_eq!(r2["proposals"].as_array().unwrap().len(), 0);
 }
+
+#[test]
+fn inspect_concept_exports_a_partial_business_graph() {
+    let out = forgec()
+        .args([
+            "inspect",
+            examples().join("acme").to_str().unwrap(),
+            "--concept",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["projection"]["concept"]["version"], "concept-ir/1");
+    assert_eq!(value["conceptHash"].as_str().unwrap().len(), 64);
+    assert!(value["projection"]["coverage"].is_object());
+    assert_eq!(
+        value["graph"]["nodes"]["@acme/commerce/_/Customer"],
+        "entity"
+    );
+    assert!(value["projection"]["concept"].get("targets").is_none());
+}

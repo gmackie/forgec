@@ -1,0 +1,306 @@
+---
+source: crates/forgegraph-semantic/tests/concept.rs
+expression: concept
+---
+{
+  "version": "concept-ir/1",
+  "package": "@test/concept",
+  "entities": {
+    "@test/concept/_/Customer": {
+      "name": "Customer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@test/concept/_/Risk": {
+      "name": "Risk",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@test/concept/_/Transaction": {
+      "name": "Transaction",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {},
+  "externals": {
+    "@test/concept/_/CreditBureau": {
+      "name": "CreditBureau",
+      "data": {
+        "Customer": {
+          "base": {
+            "kind": "entity",
+            "id": "@test/concept/_/Customer",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {}
+    }
+  },
+  "principals": {
+    "@test/concept/_/Employee": {
+      "name": "Employee",
+      "attributes": {
+        "customer": {
+          "base": {
+            "kind": "entity",
+            "id": "@test/concept/_/Customer",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@test/concept/_/SameOrganization": {
+      "name": "SameOrganization",
+      "principal": "@test/concept/_/Employee",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@test/concept/_/Customer",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "customer.id",
+        "employee.customer"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "==",
+        "lhs": {
+          "kind": "name",
+          "path": [
+            "employee",
+            "customer"
+          ]
+        },
+        "rhs": {
+          "kind": "name",
+          "path": [
+            "customer",
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "processes": {
+    "@test/concept/_/AssessRisk": {
+      "name": "AssessRisk",
+      "purpose": null,
+      "principal": "@test/concept/_/Employee",
+      "authorizations": [
+        {
+          "policy": "@test/concept/_/SameOrganization",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@test/concept/_/AssessRisk#activation:nightly": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        },
+        "@test/concept/_/AssessRisk#activation:updated": {
+          "kind": "externalEvent",
+          "external": "@test/concept/_/CreditBureau",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@test/concept/_/AssessRisk#input:credit": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@test/concept/_/Customer",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@test/concept/_/CreditBureau"
+          },
+          "selection": {
+            "cardinality": "latest",
+            "forBinding": "customer",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@test/concept/_/AssessRisk#input:input": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@test/concept/_/Customer",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@test/concept/_/AssessRisk#input:transactions": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@test/concept/_/Transaction",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": "customer",
+            "predicate": null,
+            "during": "90d",
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@test/concept/_/AssessRisk#output:return": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@test/concept/_/Risk",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {}
+}

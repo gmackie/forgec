@@ -2,6 +2,7 @@
 
 pub mod capability;
 pub mod compiler;
+pub mod concept;
 pub mod cron;
 pub mod diagnostics;
 pub mod diff;

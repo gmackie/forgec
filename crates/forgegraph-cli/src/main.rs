@@ -33,10 +33,13 @@ enum Cmd {
         #[arg(long)]
         check: bool,
     },
-    /// Print the package's DomainIR as JSON.
+    /// Print the package's DomainIR, or its partial business ConceptIR, as JSON.
     Inspect {
         #[arg(default_value = ".")]
         path: PathBuf,
+        /// Project business semantics without runtime/provider details.
+        #[arg(long)]
+        concept: bool,
     },
     /// Compile and write generated artifacts (app bundle, D1 migration, TS client).
     Build {
@@ -537,12 +540,22 @@ fn main() -> Result<()> {
                 std::process::exit(1);
             }
         }
-        Cmd::Inspect { path } => {
+        Cmd::Inspect { path, concept } => {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             eprint!("{}", loaded.compilation.render());
             let Some(ir) = loaded.compilation.ir else {
                 std::process::exit(1)
             };
+            if concept {
+                let projection = forgegraph_semantic::concept::project(&ir);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(
+                        &serde_json::json!({"conceptHash": projection.concept.content_hash(), "graph": projection.concept.graph(), "projection": projection})
+                    )?
+                );
+                return Ok(());
+            }
             let out = serde_json::json!({
                 "buildHash": build_hash(&ir, &loaded.deps),
                 "digests": ir.digests(),

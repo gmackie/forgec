@@ -1,0 +1,1377 @@
+---
+source: crates/forgegraph-semantic/tests/concept.rs
+expression: projection
+---
+{
+  "concept": {
+    "version": "concept-ir/1",
+    "package": "@acme/commerce",
+    "entities": {
+      "@acme/commerce/_/Customer": {
+        "name": "Customer",
+        "fields": {
+          "code": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 3,
+                  "max": 32
+                }
+              ],
+              "normalizers": [
+                "trim",
+                "uppercase"
+              ],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "email": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "email",
+                "args": []
+              },
+              "optional": true,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "id": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "id",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "name": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 200
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "tier": {
+            "ty": {
+              "base": {
+                "kind": "enum",
+                "id": "@acme/commerce/_/CustomerTier"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": {
+              "type": "enumMember",
+              "value": {
+                "enum": "@acme/commerce/_/CustomerTier",
+                "member": "Standard"
+              }
+            },
+            "derived": null
+          }
+        },
+        "lifecycle": null,
+        "subject": null,
+        "recordContext": null,
+        "purposeScoped": false,
+        "capabilities": [],
+        "purposeBindings": []
+      },
+      "@acme/commerce/_/Department": {
+        "name": "Department",
+        "fields": {
+          "customer": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Customer",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "id": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "id",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "name": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 100
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          }
+        },
+        "lifecycle": null,
+        "subject": null,
+        "recordContext": null,
+        "purposeScoped": false,
+        "capabilities": [],
+        "purposeBindings": []
+      },
+      "@acme/commerce/_/Order": {
+        "name": "Order",
+        "fields": {
+          "customer": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Customer",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "id": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "id",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "notes": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": true,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "max": 2000
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "requestedOn": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "date",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "site": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Site",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "subtotal": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "money",
+                "args": [
+                  "USD"
+                ]
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "compare",
+                  "op": ">=",
+                  "value": {
+                    "type": "int",
+                    "value": "0"
+                  }
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "tax": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "money",
+                "args": [
+                  "USD"
+                ]
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "compare",
+                  "op": ">=",
+                  "value": {
+                    "type": "int",
+                    "value": "0"
+                  }
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "total": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "money",
+                "args": [
+                  "USD"
+                ]
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": {
+              "kind": "binary",
+              "op": "+",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "subtotal"
+                ]
+              },
+              "rhs": {
+                "kind": "name",
+                "path": [
+                  "tax"
+                ]
+              }
+            }
+          }
+        },
+        "lifecycle": {
+          "field": "status",
+          "enumId": "@acme/commerce/_/Order.Status",
+          "states": [
+            "Draft",
+            "Completed",
+            "Cancelled",
+            "Submitted",
+            "Approved"
+          ],
+          "initial": "Draft",
+          "terminals": [
+            "Completed",
+            "Cancelled"
+          ],
+          "transitions": [
+            {
+              "action": "submit",
+              "from": [
+                "Draft"
+              ],
+              "to": "Submitted",
+              "input": []
+            },
+            {
+              "action": "approve",
+              "from": [
+                "Submitted"
+              ],
+              "to": "Approved",
+              "input": []
+            },
+            {
+              "action": "complete",
+              "from": [
+                "Approved"
+              ],
+              "to": "Completed",
+              "input": []
+            },
+            {
+              "action": "cancel",
+              "from": [
+                "Draft",
+                "Submitted",
+                "Approved"
+              ],
+              "to": "Cancelled",
+              "input": [
+                {
+                  "name": "reason",
+                  "type": {
+                    "base": {
+                      "kind": "scalar",
+                      "name": "text",
+                      "args": []
+                    },
+                    "optional": false,
+                    "normalizers": [],
+                    "constraints": [
+                      {
+                        "kind": "length",
+                        "min": 1,
+                        "max": 500
+                      }
+                    ]
+                  },
+                  "immutable": false,
+                  "serverOwned": false,
+                  "synthesized": false
+                }
+              ]
+            }
+          ]
+        },
+        "subject": null,
+        "recordContext": null,
+        "purposeScoped": false,
+        "capabilities": [],
+        "purposeBindings": []
+      },
+      "@acme/commerce/_/OrderDocument": {
+        "name": "OrderDocument",
+        "fields": {
+          "kind": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 32
+                }
+              ],
+              "normalizers": [
+                "trim",
+                "lowercase"
+              ],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "label": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 200
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "order": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Order",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          }
+        },
+        "lifecycle": null,
+        "subject": null,
+        "recordContext": null,
+        "purposeScoped": false,
+        "capabilities": [],
+        "purposeBindings": []
+      },
+      "@acme/commerce/_/Site": {
+        "name": "Site",
+        "fields": {
+          "code": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 2,
+                  "max": 24
+                }
+              ],
+              "normalizers": [
+                "trim",
+                "uppercase"
+              ],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "customer": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Customer",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "enabled": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "boolean",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": {
+              "type": "bool",
+              "value": true
+            },
+            "derived": null
+          },
+          "id": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "id",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "name": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 200
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "timezone": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "timezone",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          }
+        },
+        "lifecycle": null,
+        "subject": null,
+        "recordContext": null,
+        "purposeScoped": false,
+        "capabilities": [],
+        "purposeBindings": []
+      },
+      "@acme/commerce/_/SitePolicy": {
+        "name": "SitePolicy",
+        "fields": {
+          "id": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "id",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          },
+          "maxOrderTotal": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "money",
+                "args": [
+                  "USD"
+                ]
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "compare",
+                  "op": ">=",
+                  "value": {
+                    "type": "int",
+                    "value": "0"
+                  }
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "requiresApproval": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "boolean",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": {
+              "type": "bool",
+              "value": false
+            },
+            "derived": null
+          },
+          "site": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Site",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": true,
+            "default": null,
+            "derived": null
+          }
+        },
+        "lifecycle": null,
+        "subject": null,
+        "recordContext": null,
+        "purposeScoped": false,
+        "capabilities": [],
+        "purposeBindings": []
+      }
+    },
+    "facts": {
+      "@acme/commerce/_/OrderEvents#fact:OrderSubmitted": {
+        "name": "OrderSubmitted",
+        "fields": {
+          "customer": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Customer",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "order": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Order",
+                "representation": "reference"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "revision": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "integer",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "compare",
+                  "op": ">=",
+                  "value": {
+                    "type": "int",
+                    "value": "1"
+                  }
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          }
+        }
+      },
+      "@acme/payments/_/PaymentEvents#fact:PaymentCaptured": {
+        "name": "PaymentCaptured",
+        "fields": {
+          "amount": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "money",
+                "args": [
+                  "USD"
+                ]
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "compare",
+                  "op": ">=",
+                  "value": {
+                    "type": "int",
+                    "value": "0"
+                  }
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "authorizationId": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 64
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "reference": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 64
+                }
+              ],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          }
+        }
+      }
+    },
+    "externals": {},
+    "principals": {},
+    "policies": {},
+    "processes": {
+      "@acme/commerce/_/FulfillOrder": {
+        "name": "FulfillOrder",
+        "purpose": null,
+        "principal": null,
+        "authorizations": [],
+        "activations": {
+          "@acme/commerce/_/FulfillOrder#activation:@acme/commerce/_/OrderEvents#fact:OrderSubmitted": {
+            "kind": "fact",
+            "fact": "@acme/commerce/_/OrderEvents#fact:OrderSubmitted"
+          }
+        },
+        "inputs": {
+          "@acme/commerce/_/FulfillOrder#input:input": {
+            "ty": {
+              "base": {
+                "kind": "fact",
+                "id": "@acme/commerce/_/OrderEvents#fact:OrderSubmitted"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "origin": {
+              "kind": "internal"
+            },
+            "selection": {
+              "cardinality": "one",
+              "forBinding": null,
+              "predicate": null,
+              "during": null,
+              "asOf": null
+            },
+            "authorization": null
+          }
+        },
+        "outputs": {
+          "@acme/commerce/_/FulfillOrder#output:return": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Order",
+                "representation": "record"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "disposition": {
+              "kind": "return"
+            }
+          }
+        },
+        "behavior": null
+      },
+      "@acme/commerce/_/ProcessOrder": {
+        "name": "ProcessOrder",
+        "purpose": null,
+        "principal": null,
+        "authorizations": [],
+        "activations": {
+          "@acme/commerce/_/ProcessOrder#activation:request": {
+            "kind": "request",
+            "payload": {
+              "base": {
+                "kind": "shape",
+                "id": "@acme/commerce/_/ProcessOrderInput"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            }
+          }
+        },
+        "inputs": {
+          "@acme/commerce/_/ProcessOrder#input:input": {
+            "ty": {
+              "base": {
+                "kind": "shape",
+                "id": "@acme/commerce/_/ProcessOrderInput"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "origin": {
+              "kind": "internal"
+            },
+            "selection": {
+              "cardinality": "one",
+              "forBinding": null,
+              "predicate": null,
+              "during": null,
+              "asOf": null
+            },
+            "authorization": null
+          }
+        },
+        "outputs": {
+          "@acme/commerce/_/ProcessOrder#output:return": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Order",
+                "representation": "record"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "disposition": {
+              "kind": "return"
+            }
+          }
+        },
+        "behavior": {
+          "kind": "workflow",
+          "waits": {
+            "@acme/commerce/_/ProcessOrder#step:captured": "@acme/commerce/_/PaymentEvents#fact:PaymentCaptured"
+          }
+        }
+      },
+      "@acme/commerce/_/RebuildOrderSummary": {
+        "name": "RebuildOrderSummary",
+        "purpose": null,
+        "principal": null,
+        "authorizations": [],
+        "activations": {
+          "@acme/commerce/_/RebuildOrderSummary#activation:@acme/commerce/_/NightlyReconciliation": {
+            "kind": "schedule",
+            "expression": "0 3 * * *",
+            "timezone": "UTC"
+          }
+        },
+        "inputs": {},
+        "outputs": {},
+        "behavior": null
+      },
+      "@acme/commerce/_/SubmitOrder": {
+        "name": "SubmitOrder",
+        "purpose": null,
+        "principal": null,
+        "authorizations": [],
+        "activations": {
+          "@acme/commerce/_/SubmitOrder#activation:request": {
+            "kind": "request",
+            "payload": {
+              "base": {
+                "kind": "shape",
+                "id": "@acme/commerce/_/SubmitOrderInput"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            }
+          }
+        },
+        "inputs": {
+          "@acme/commerce/_/SubmitOrder#input:input": {
+            "ty": {
+              "base": {
+                "kind": "shape",
+                "id": "@acme/commerce/_/SubmitOrderInput"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "origin": {
+              "kind": "internal"
+            },
+            "selection": {
+              "cardinality": "one",
+              "forBinding": null,
+              "predicate": null,
+              "during": null,
+              "asOf": null
+            },
+            "authorization": null
+          }
+        },
+        "outputs": {
+          "@acme/commerce/_/SubmitOrder#output:return": {
+            "ty": {
+              "base": {
+                "kind": "entity",
+                "id": "@acme/commerce/_/Order",
+                "representation": "record"
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "disposition": {
+              "kind": "return"
+            }
+          }
+        },
+        "behavior": null
+      }
+    },
+    "purposes": {},
+    "dataClasses": {},
+    "shapes": {
+      "@acme/commerce/_/Address": {
+        "city": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 100
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "country": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "countryCode",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "line1": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "line2": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [
+              {
+                "kind": "length",
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "@acme/commerce/_/ProcessOrderInput": {
+        "expectedVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "compare",
+                "op": ">=",
+                "value": {
+                  "type": "int",
+                  "value": "1"
+                }
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@acme/commerce/_/Order",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "@acme/commerce/_/SubmitOrderInput": {
+        "expectedVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "compare",
+                "op": ">=",
+                "value": {
+                  "type": "int",
+                  "value": "1"
+                }
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@acme/commerce/_/Order",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "enums": {
+      "@acme/commerce/_/CustomerTier": [
+        "Enterprise",
+        "Gold",
+        "Standard"
+      ],
+      "@acme/commerce/_/Order.Status": [
+        "Approved",
+        "Cancelled",
+        "Completed",
+        "Draft",
+        "Submitted"
+      ]
+    }
+  },
+  "realizations": {
+    "@acme/commerce/_/Customer": "@acme/commerce/_/Customer",
+    "@acme/commerce/_/Department": "@acme/commerce/_/Department",
+    "@acme/commerce/_/FulfillOrder": "@acme/commerce/_/FulfillOrder",
+    "@acme/commerce/_/FulfillOrder#activation:@acme/commerce/_/OrderEvents#fact:OrderSubmitted": "@acme/commerce/_/FulfillOrder",
+    "@acme/commerce/_/FulfillOrder#input:input": "@acme/commerce/_/FulfillOrder",
+    "@acme/commerce/_/FulfillOrder#output:return": "@acme/commerce/_/FulfillOrder",
+    "@acme/commerce/_/Order": "@acme/commerce/_/Order",
+    "@acme/commerce/_/OrderDocument": "@acme/commerce/_/OrderDocument",
+    "@acme/commerce/_/OrderEvents#fact:OrderSubmitted": "@acme/commerce/_/OrderEvents#message:OrderSubmitted",
+    "@acme/commerce/_/ProcessOrder": "@acme/commerce/_/ProcessOrder",
+    "@acme/commerce/_/ProcessOrder#activation:request": "@acme/commerce/_/ProcessOrder",
+    "@acme/commerce/_/ProcessOrder#input:input": "@acme/commerce/_/ProcessOrder",
+    "@acme/commerce/_/ProcessOrder#output:return": "@acme/commerce/_/ProcessOrder",
+    "@acme/commerce/_/ProcessOrder#step:captured": "@acme/commerce/_/ProcessOrder#step:captured",
+    "@acme/commerce/_/RebuildOrderSummary": "@acme/commerce/_/RebuildOrderSummary",
+    "@acme/commerce/_/RebuildOrderSummary#activation:@acme/commerce/_/NightlyReconciliation": "@acme/commerce/_/RebuildOrderSummary",
+    "@acme/commerce/_/Site": "@acme/commerce/_/Site",
+    "@acme/commerce/_/SitePolicy": "@acme/commerce/_/SitePolicy",
+    "@acme/commerce/_/SubmitOrder": "@acme/commerce/_/SubmitOrder",
+    "@acme/commerce/_/SubmitOrder#activation:request": "@acme/commerce/_/SubmitOrder",
+    "@acme/commerce/_/SubmitOrder#input:input": "@acme/commerce/_/SubmitOrder",
+    "@acme/commerce/_/SubmitOrder#output:return": "@acme/commerce/_/SubmitOrder",
+    "@acme/payments/_/PaymentEvents#fact:PaymentCaptured": "@acme/commerce/_/PaymentEvents#message:PaymentCaptured"
+  },
+  "coverage": {
+    "@acme/commerce": [
+      "partial legacy projection",
+      "read selections and implementation dataflow are not inferred",
+      "resource CRUD ownership is not inferred",
+      "unknown external boundaries and principals/ABAC",
+      "unknown logical producers"
+    ],
+    "@acme/commerce/_/FulfillOrder": [
+      "declared signature only; uses/sends are permissions, not proven consumption/production"
+    ],
+    "@acme/commerce/_/OrderEvents#fact:OrderSubmitted": [
+      "message contract does not prove immutable business occurrence",
+      "synthesized fact identity retains legacy contract namespace"
+    ],
+    "@acme/commerce/_/ProcessOrder": [
+      "workflow waits are candidates; business significance, ordering, conditions and correlation are not inferred"
+    ],
+    "@acme/commerce/_/RebuildOrderSummary": [
+      "declared signature only; uses/sends are permissions, not proven consumption/production"
+    ],
+    "@acme/commerce/_/SubmitOrder": [
+      "declared signature only; uses/sends are permissions, not proven consumption/production"
+    ],
+    "@acme/payments/_/PaymentEvents#fact:PaymentCaptured": [
+      "message contract does not prove immutable business occurrence",
+      "synthesized fact identity retains legacy contract namespace"
+    ]
+  }
+}
