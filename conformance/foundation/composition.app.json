@@ -1,0 +1,2499 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "b5a088e16a5effcebb11aaaa7349329cab2b41e6887d24e46486d9bf33edd1af",
+  "digests": {
+    "source": "7d97409503aba3f58601039b83a81ebf2d23bd6b74b9e867c6b2e091377fca76",
+    "wire": "f9662c02388832166c8c26c01fa140566104afbaa0325c1971c760644a87ebc5",
+    "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
+    "security": "fdb9e413ef6ab5022e6b0a19e3a08b5dd24d80657049d017b39d4aced9d7e250"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@foundation-probe/app",
+      "version": "0.1.0",
+      "edition": "2026",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [
+      {
+        "alias": "records",
+        "package": "@foundation-probe/records"
+      },
+      {
+        "alias": "remote",
+        "package": "@foundation-probe/remote"
+      }
+    ],
+    "modules": [
+      {
+        "id": "@foundation-probe/app/_",
+        "enums": [],
+        "types": [],
+        "shapes": [
+          {
+            "id": "@foundation-probe/app/_/PublishInput",
+            "name": "PublishInput",
+            "exported": false,
+            "fields": [
+              {
+                "name": "issue",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@foundation-probe/app/_/Issue"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "expectedVersion",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "title",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 100
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          }
+        ],
+        "resources": [
+          {
+            "id": "@foundation-probe/app/_/Issue",
+            "name": "Issue",
+            "kind": "resource",
+            "exported": false,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "evidence",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@foundation-probe/records/_/EvidenceBundle"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "title",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 100
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@foundation-probe/app/_/Issue.create",
+                "kind": "create"
+              },
+              {
+                "id": "@foundation-probe/app/_/Issue.get",
+                "kind": "get"
+              },
+              {
+                "id": "@foundation-probe/app/_/Issue.update",
+                "kind": "update"
+              },
+              {
+                "id": "@foundation-probe/app/_/Issue.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@foundation-probe/app/_/Issue.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [
+          {
+            "id": "@foundation-probe/app/_/PublishIssue",
+            "name": "PublishIssue",
+            "exported": false,
+            "input": {
+              "base": {
+                "kind": "shape",
+                "id": "@foundation-probe/app/_/PublishInput"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "output": {
+              "base": {
+                "kind": "record",
+                "resource": "@foundation-probe/app/_/Issue"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "uses": [
+              {
+                "kind": "resource",
+                "resource": "@foundation-probe/app/_/Issue",
+                "capability": "write"
+              },
+              {
+                "kind": "resource",
+                "resource": "@foundation-probe/records/_/EvidenceBundle",
+                "capability": "read"
+              },
+              {
+                "kind": "function",
+                "function": "@foundation-probe/remote/_/Notify"
+              }
+            ],
+            "sends": [],
+            "errors": [
+              "DeliveryUnavailable"
+            ],
+            "slo": [],
+            "generated": false
+          }
+        ],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      },
+      {
+        "id": "@foundation-probe/records/_",
+        "enums": [],
+        "types": [],
+        "shapes": [
+          {
+            "id": "@foundation-probe/records/_/RenameInput",
+            "name": "RenameInput",
+            "exported": true,
+            "fields": [
+              {
+                "name": "bundle",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@foundation-probe/records/_/EvidenceBundle"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "expectedVersion",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 100
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          }
+        ],
+        "resources": [
+          {
+            "id": "@foundation-probe/records/_/EvidenceBundle",
+            "name": "EvidenceBundle",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 100
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@foundation-probe/records/_/EvidenceBundle.create",
+                "kind": "create"
+              },
+              {
+                "id": "@foundation-probe/records/_/EvidenceBundle.get",
+                "kind": "get"
+              },
+              {
+                "id": "@foundation-probe/records/_/EvidenceBundle.update",
+                "kind": "update"
+              },
+              {
+                "id": "@foundation-probe/records/_/EvidenceBundle.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@foundation-probe/records/_/EvidenceBundle.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [
+          {
+            "id": "@foundation-probe/records/_/RenameEvidence",
+            "name": "RenameEvidence",
+            "exported": true,
+            "input": {
+              "base": {
+                "kind": "shape",
+                "id": "@foundation-probe/records/_/RenameInput"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "output": {
+              "base": {
+                "kind": "record",
+                "resource": "@foundation-probe/records/_/EvidenceBundle"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "uses": [
+              {
+                "kind": "resource",
+                "resource": "@foundation-probe/records/_/EvidenceBundle",
+                "capability": "write"
+              }
+            ],
+            "sends": [],
+            "errors": [],
+            "slo": [],
+            "generated": false
+          }
+        ],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": []
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@foundation-probe/app",
+    "resources": [
+      {
+        "id": "@foundation-probe/app/_/Issue",
+        "name": "Issue",
+        "wireName": "issue",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "evidence": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/records/_/EvidenceBundle"
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "evidence",
+            "title"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "evidence": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/records/_/EvidenceBundle"
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "evidence",
+            "title"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "evidence": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/records/_/EvidenceBundle"
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@foundation-probe/app/_/Issue.create",
+            "kind": "create"
+          },
+          {
+            "id": "@foundation-probe/app/_/Issue.get",
+            "kind": "get"
+          },
+          {
+            "id": "@foundation-probe/app/_/Issue.update",
+            "kind": "update"
+          },
+          {
+            "id": "@foundation-probe/app/_/Issue.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@foundation-probe/app/_/Issue.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@foundation-probe/records/_/EvidenceBundle",
+        "name": "EvidenceBundle",
+        "wireName": "evidence_bundle",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@foundation-probe/records/_/EvidenceBundle.create",
+            "kind": "create"
+          },
+          {
+            "id": "@foundation-probe/records/_/EvidenceBundle.get",
+            "kind": "get"
+          },
+          {
+            "id": "@foundation-probe/records/_/EvidenceBundle.update",
+            "kind": "update"
+          },
+          {
+            "id": "@foundation-probe/records/_/EvidenceBundle.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@foundation-probe/records/_/EvidenceBundle.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "id": "@foundation-probe/app/_/PublishIssue",
+        "name": "PublishIssue",
+        "errors": [
+          "DeliveryUnavailable"
+        ],
+        "input": {
+          "type": "object",
+          "properties": {
+            "issue": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/app/_/Issue"
+            },
+            "expectedVersion": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "issue",
+            "expectedVersion",
+            "title"
+          ],
+          "additionalProperties": false
+        },
+        "output": {
+          "$ref": "#/components/schemas/IssueRecord"
+        },
+        "generated": false
+      },
+      {
+        "id": "@foundation-probe/records/_/RenameEvidence",
+        "name": "RenameEvidence",
+        "errors": [],
+        "input": {
+          "type": "object",
+          "properties": {
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/records/_/EvidenceBundle"
+            },
+            "expectedVersion": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "bundle",
+            "expectedVersion",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "output": {
+          "$ref": "#/components/schemas/EvidenceBundleRecord"
+        },
+        "generated": false
+      }
+    ],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "issue",
+        "resource": "@foundation-probe/app/_/Issue",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "evidence",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "evidence",
+            "storage": "text"
+          },
+          {
+            "name": "title",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "title",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "evidence"
+            ],
+            "references": "evidence_bundle",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "evidence_bundle",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "label",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "label",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ],
+    "indexes": [],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@foundation-probe/app/_/Issue",
+        "name": "Issue",
+        "wireName": "issue",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "evidence",
+            "target": "@foundation-probe/records/_/EvidenceBundle"
+          }
+        ],
+        "createActions": 5
+      },
+      {
+        "id": "@foundation-probe/records/_/EvidenceBundle",
+        "name": "EvidenceBundle",
+        "wireName": "evidence_bundle",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 4
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@foundation-probe/app",
+    "resources": [
+      {
+        "id": "@foundation-probe/app/_/Issue",
+        "name": "Issue",
+        "kind": "resource",
+        "label": "Issue",
+        "plural": "Issues",
+        "route": "issues",
+        "titleField": "title",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "evidence",
+            "label": "Evidence",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "reference": {
+              "resource": "@foundation-probe/records/_/EvidenceBundle",
+              "route": "evidence-bundle",
+              "titleField": "label",
+              "lookup": "@foundation-probe/records/_/EvidenceBundle.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "title",
+            "label": "Title",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 100
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "title",
+          "evidence"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@foundation-probe/app/_/Issue.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@foundation-probe/records/_/EvidenceBundle",
+        "name": "EvidenceBundle",
+        "kind": "resource",
+        "label": "Evidence Bundle",
+        "plural": "Evidence Bundles",
+        "route": "evidence-bundles",
+        "titleField": "label",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "label",
+            "label": "Label",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 100
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "label"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@foundation-probe/records/_/EvidenceBundle.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-foundation-probe-app-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@foundation-probe/app/_/Issue.create",
+        "kind": "create",
+        "resource": "@foundation-probe/app/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.get",
+        "kind": "get",
+        "resource": "@foundation-probe/app/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.update",
+        "kind": "update",
+        "resource": "@foundation-probe/app/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.delete",
+        "kind": "delete",
+        "resource": "@foundation-probe/app/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/app/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/app/_/PublishIssue",
+        "kind": "function",
+        "class": "function",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": [
+          "@foundation-probe/app/_/PublishIssue.DeliveryUnavailable"
+        ]
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.create",
+        "kind": "create",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.get",
+        "kind": "get",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.update",
+        "kind": "update",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.delete",
+        "kind": "delete",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/records/_/RenameEvidence",
+        "kind": "function",
+        "class": "function",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@foundation-probe/app/_/Issue",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/app/_/Issue",
+        "field": "evidence",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/app/_/Issue",
+        "field": "title",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@foundation-probe/app/_/Issue",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "field": "label",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "structural": 5,
+      "unclassified": 2
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@foundation-probe/app/_/Issue.create",
+        "kind": "create",
+        "resource": "@foundation-probe/app/_/Issue",
+        "outputs": [
+          "id",
+          "evidence",
+          "title",
+          "version"
+        ],
+        "writes": [
+          "evidence",
+          "title"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.get",
+        "kind": "get",
+        "resource": "@foundation-probe/app/_/Issue",
+        "outputs": [
+          "id",
+          "evidence",
+          "title",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.update",
+        "kind": "update",
+        "resource": "@foundation-probe/app/_/Issue",
+        "outputs": [
+          "id",
+          "evidence",
+          "title",
+          "version"
+        ],
+        "writes": [
+          "evidence",
+          "title"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.delete",
+        "kind": "delete",
+        "resource": "@foundation-probe/app/_/Issue",
+        "outputs": [
+          "id",
+          "evidence",
+          "title",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/app/_/Issue.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/app/_/Issue",
+        "outputs": [
+          "id",
+          "evidence",
+          "title",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/app/_/PublishIssue",
+        "kind": "function",
+        "outputs": [],
+        "writes": [
+          "@foundation-probe/app/_/Issue"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [
+          "@foundation-probe/remote/_/Notify"
+        ],
+        "publishes": [],
+        "coverage": "declared"
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.create",
+        "kind": "create",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "outputs": [
+          "id",
+          "label",
+          "version"
+        ],
+        "writes": [
+          "label"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.get",
+        "kind": "get",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "outputs": [
+          "id",
+          "label",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.update",
+        "kind": "update",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "outputs": [
+          "id",
+          "label",
+          "version"
+        ],
+        "writes": [
+          "label"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.delete",
+        "kind": "delete",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "outputs": [
+          "id",
+          "label",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/records/_/EvidenceBundle.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/records/_/EvidenceBundle",
+        "outputs": [
+          "id",
+          "label",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/records/_/RenameEvidence",
+        "kind": "function",
+        "outputs": [],
+        "writes": [
+          "@foundation-probe/records/_/EvidenceBundle"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "declared"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@foundation-probe/app",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "IssueRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "evidence": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/records/_/EvidenceBundle"
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "evidence",
+            "title"
+          ]
+        },
+        "IssueCreate": {
+          "type": "object",
+          "properties": {
+            "evidence": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/records/_/EvidenceBundle"
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "evidence",
+            "title"
+          ]
+        },
+        "IssuePatch": {
+          "type": "object",
+          "properties": {
+            "evidence": {
+              "type": "string",
+              "x-forge-reference": "@foundation-probe/records/_/EvidenceBundle"
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false
+        },
+        "EvidenceBundleRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "label"
+          ]
+        },
+        "EvidenceBundleCreate": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "label"
+          ]
+        },
+        "EvidenceBundlePatch": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  },
+  "deployment": {
+    "version": "package-assembly/1",
+    "packages": [
+      {
+        "package": {
+          "name": "@foundation-probe/app",
+          "version": "0.1.0",
+          "edition": "2026",
+          "profile": "",
+          "targets": [],
+          "observability": {
+            "window": "28d",
+            "slo": []
+          }
+        },
+        "imports": [
+          {
+            "alias": "records",
+            "package": "@foundation-probe/records"
+          },
+          {
+            "alias": "remote",
+            "package": "@foundation-probe/remote"
+          }
+        ]
+      },
+      {
+        "package": {
+          "name": "@foundation-probe/records",
+          "version": "0.1.0",
+          "edition": "2026",
+          "profile": "",
+          "targets": [],
+          "observability": {
+            "window": "28d",
+            "slo": []
+          }
+        },
+        "imports": []
+      }
+    ]
+  }
+}
