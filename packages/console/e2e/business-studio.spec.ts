@@ -139,10 +139,17 @@ test("Use loads an explicit environment, reviews record edits and preserves inpu
   await expect(page.getByLabel("name of c1", { exact: true })).toHaveValue(
     "Updated customer",
   );
-  await expect(page.getByRole("button", { name: "Change environment", exact: true })).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Change environment", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Gizmos", exact: true }),
+  ).toBeDisabled();
   await page.getByRole("button", { name: "Apps", exact: true }).click();
   await page.getByRole("button", { name: "Editor", exact: true }).click();
-  await expect(page.getByLabel("name of c1", { exact: true })).toHaveValue("Updated customer");
+  await expect(page.getByLabel("name of c1", { exact: true })).toHaveValue(
+    "Updated customer",
+  );
   expect(calls.every((c) => !c.operationId.includes("changesets"))).toBe(true);
   await page
     .getByRole("button", { name: "Preview changes", exact: true })
@@ -158,5 +165,26 @@ test("Use loads an explicit environment, reviews record edits and preserves inpu
     calls.find((c) => c.operationId.endsWith("changesets.propose")).input
       .operations[0].input.patch,
   ).toEqual({ name: "Updated customer" });
+  await page.getByRole("button", { name: "Gizmos", exact: true }).click();
+  await page.getByRole("button", { name: /Customer directory/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Updated customer", exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Search directory page").fill("not a customer");
+  await expect(
+    page.getByText("No matching people on this page. Try another search."),
+  ).toBeVisible();
+  await page.getByLabel("Search directory page").fill("Updated");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Manage customers in forms" }).click();
+  await expect(page.getByLabel("name of c1", { exact: true })).toHaveValue(
+    "Updated customer",
+  );
   expect(calls.every((c) => c.buildHash === bundle.buildHash)).toBe(true);
 });

@@ -396,3 +396,17 @@ approval, commit, lifecycle action, and CSV flows are reused.
 Design saves still create a repository commit; they do not deploy the app.
 Use record edits are buffered until reviewed and committed; actions execute
 when confirmed. Browser draft storage applies to Design, not live-record edits.
+
+### Purpose-built gizmos
+
+After opening an environment in Use, **Data & forms** always exposes the generated
+record workspace. **Gizmos** lists compatible, purpose-built interfaces. The
+bundled **Customer directory** gives Customer/Contact collections a searchable
+card layout with pagination and a link back to the standard editing forms.
+
+To customize a business workflow, implement a React `GizmoDefinition` and register
+it in `web/gizmos/index.ts`. Each component receives the deployed descriptor, the
+same `ForgeCall` used by the forms, `openForms(route?)`, and `onDirtyChange`.
+Compatibility is declared by `supports(descriptor)`; no executable code is read
+from runtime metadata. See `packages/react/README.md` for the integration contract.
+There is no visual gizmo builder in this implementation.

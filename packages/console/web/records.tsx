@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Workspace, type ForgeCall } from "@forgegraph/react";
+import { GizmoWorkspace, type ForgeCall } from "@forgegraph/react";
 import { Button } from "@cloudflare/kumo/components/button";
 import type { RecordWorkspace, RuntimeTarget } from "../src/runtime-control.js";
+import { gizmos } from "./gizmos/index.js";
+import "./gizmos/gizmos.css";
 export type StudioApi = <T>(
   path: string,
   method?: string,
@@ -107,7 +109,8 @@ export function RecordWorkspaceView({ api }: { api: StudioApi }) {
               Change environment
             </Button>
           </div>
-          <Workspace
+          <GizmoWorkspace
+            gizmos={gizmos}
             descriptor={opened.contract.descriptor}
             call={call}
             onDirtyChange={setDirty}

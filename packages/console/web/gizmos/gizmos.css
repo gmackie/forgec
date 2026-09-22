@@ -1,0 +1,137 @@
+.gizmo-view-switch {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0.75rem;
+}
+.forge-gizmo-workspace button {
+  cursor: pointer;
+  border: 1px solid #d7dbe4;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: white;
+  color: #243049;
+}
+.forge-gizmo-workspace button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.gizmo-view-switch button[aria-pressed="true"] {
+  background: #edf2ff;
+  color: #2448a9;
+  border-color: #9fb7f0;
+}
+.gizmo-surface-description,
+.gizmo-launcher > p {
+  color: #566174;
+  margin-bottom: 1.25rem;
+}
+.gizmo-launcher,
+.gizmo-detail {
+  background: #fff;
+  color: #243049;
+  border: 1px solid #d7dbe4;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+.gizmo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.gizmo-cards button {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+  text-align: left;
+  padding: 1.5rem;
+}
+.gizmo-cards button:hover {
+  border-color: #4977d9;
+  background: #f7f9ff;
+}
+.gizmo-cards strong {
+  font-size: 1.15rem;
+}
+.gizmo-open {
+  color: #2448a9;
+}
+.gizmo-detail > header,
+.directory-tools,
+.customer-directory footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+}
+.gizmo-detail > header {
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e7ef;
+}
+.directory-tools label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 180px;
+  max-width: 420px;
+}
+.directory-tools input {
+  padding: 0.7rem;
+  border: 1px solid #cbd3e0;
+  border-radius: 8px;
+  width: 100%;
+}
+.directory-count {
+  font-size: 0.8rem;
+  color: #566174;
+  margin: 1rem 0;
+}
+.directory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 1rem;
+}
+.directory-grid article {
+  border: 1px solid #e2e7ef;
+  background: #f9fbff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  overflow-wrap: anywhere;
+}
+.directory-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: #e8efff;
+  border-radius: 50%;
+  color: #2448a9;
+  font-weight: 700;
+}
+.directory-grid h4 {
+  margin: 0.75rem 0;
+  font-size: 1.1rem;
+}
+.directory-grid dl {
+  margin: 0;
+}
+.directory-grid dt {
+  font-size: 0.72rem;
+  color: #566174;
+  margin-top: 0.6rem;
+}
+.directory-grid dd {
+  margin: 0.2rem 0 0;
+}
+.customer-directory footer {
+  margin-top: 1.5rem;
+}
+.forge-gizmo-workspace button:focus-visible,
+.customer-directory input:focus-visible {
+  outline: 2px solid #2448a9;
+  outline-offset: 3px;
+}
