@@ -16,3 +16,66 @@ TypeScript, Python and Go clients against a live Node host and compares canonica
 
 Importing a vendor API: `forgec import-openapi spec.json --package @vendor/name --out vendor/ --pin URL=FILE[@SHA256] --allow-host api.vendor.example`.
 The importer never fetches; see `FOREIGN_IDS.md` and `import-report.json` in the output.
+
+## GraphQL projection
+
+`@forgegraph/interfaces/graphql` projects the bundle's generated OpenAPI contracts
+into GraphQL, preserving canonical runtime operation IDs. Resource create/get/
+find/list/update/delete/restore/transition operations and HTTP-exposed functions
+are supported. Other operation kinds are reported in `projection.diagnostics`.
+Unsupported JSON schema shapes fail schema construction with a diagnostic rather
+than degrading to an untyped field. References remain IDs; joins and nested
+relationship resolvers are outside this initial profile.
+
+```ts
+import { projectGraphQL, graphqlHttp, diffGraphQL } from "@forgegraph/interfaces/graphql";
+import { createHttpHandler } from "@forgegraph/runtime";
+
+const mapping = {
+  operations: {
+    "@kanbanger/issues/_/Issue.get": "issue",
+    "@kanbanger/issues/_/Issue.create": "issueCreate",
+    "@kanbanger/issues/_/Issue.list.byTeam": "issues",
+  },
+  types: { IssueRecord: "Issue" },
+  fields: { IssueRecord: { status: "state" } },
+};
+const projection = projectGraphQL(engine.model.bundle, mapping);
+// projection.sdl is deterministic and can be checked into a client's contract.
+const handler = createHttpHandler(engine.model, engine, {
+  auth,
+  mounts: { "/forge/graphql": graphqlHttp(engine, mapping) },
+});
+```
+
+POST `{ "query": "{ issues(team: \"ENG\", limit: 20) { items { id title } next } }" }`
+with the host's usual authentication and `X-Forge-Purpose` header. `cursor` accepts
+the previous page's opaque `next` value; `limit` is 1–100. Mutations take an `input`
+body, plus path arguments and `expectedVersion` where required by the contract.
+Function body fields map back to the original function envelope. Functions are
+always GraphQL mutations because a GET binding alone does not prove purity.
+
+Resolvers use `localCallable(engine, principal)` and therefore the same tenant,
+purpose, capability, version, idempotency, and validation checks as other interfaces.
+`executeGraphQL(projection, callable, request, options)` also accepts an authenticated
+`httpCallable`. Client variables never set the trusted principal. Business errors
+appear in GraphQL `errors[].extensions.code/status`; internal error details are
+not returned. Output fields are nullable because purpose surfaces can omit them.
+The schema is a static contract, not a principal-specific field discovery API.
+
+Default identities encode canonical names without lossy punctuation removal.
+Explicit mappings give public contracts readable or legacy names; collisions and
+unknown mappings fail construction. Component mappings apply to inputs and outputs;
+input type names add `Input`. Enum identities and values are stable encoded names.
+Forge integers use `ForgeInteger` (safe 53-bit integers); exact decimals remain
+strings. `diffGraphQL(before, after)` reports GraphQL breaking/dangerous changes
+and changes to canonical resolver bindings even when the SDL is unchanged.
+
+The HTTP mount accepts POST only, rejects batches and bodies above 1 MiB, and
+bounds parsing, expanded selections, nesting, and root fields before invocation.
+It must be installed behind the existing authenticated host. There are no
+subscriptions, arbitrary SQL resolvers, or implicit scans. This is an opt-in
+interface package; it does not add a GraphQL route to every host automatically.
+
+See `examples/kanbanger-graphql` and `test/graphql.test.ts` for the issue-tracker
+compatibility fixture, cursor pagination, lifecycle actions, and permission tests.

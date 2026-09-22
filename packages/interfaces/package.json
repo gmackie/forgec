@@ -54,6 +54,12 @@
       "source": "./src/dashboards.ts",
       "import": "./dist/dashboards.js",
       "default": "./dist/dashboards.js"
+    },
+    "./graphql": {
+      "types": "./dist/graphql.d.ts",
+      "source": "./src/graphql.ts",
+      "import": "./dist/graphql.js",
+      "default": "./dist/graphql.js"
     }
   },
   "scripts": {
@@ -62,7 +68,8 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@forgegraph/runtime": "workspace:*"
+    "@forgegraph/runtime": "workspace:*",
+    "graphql": "^16.14.2"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
