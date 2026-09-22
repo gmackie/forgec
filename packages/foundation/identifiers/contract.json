@@ -1,0 +1,64 @@
+{
+  "slug": "identifiers",
+  "layer": "substrate",
+  "issue": 28,
+  "dependencies": [],
+  "facts": [
+    "IdentifierSet: sidecar attached by canonical application resource",
+    "Identifier: namespace, value, optional issuer, scope, validity and supersession"
+  ],
+  "operations": [
+    "AssignIdentifier(set, namespace, value, issuer?, validFrom?, validUntil?)",
+    "SupersedeIdentifier(old, replacement); RevokeIdentifier",
+    "LookupQualified(namespace, issuer?, value, at); ListBySet"
+  ],
+  "invariants": [
+    "Canonical Forge record and semantic IDs are never replaced by alternate identifiers",
+    "Uniqueness is tenant + namespace + issuer identity + normalized value; absent issuer has explicit namespace scope",
+    "Validity uses half-open intervals and does not silently release uniqueness for reuse",
+    "Supersession is explicit history; typed lookup returns IdentifierSet and domain resolves its typed owner"
+  ],
+  "acceptance": [
+    {
+      "id": "F28-01",
+      "description": "qualified identifier model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F28-02",
+      "description": "uniqueness/scoping semantics",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F28-03",
+      "description": "validity/supersession semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F28-04",
+      "description": "typed lookup surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F28-05",
+      "description": "no collision with Forge semantic ids",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F28-06",
+      "description": "fixtures for GitHub mapping, serial number and healthcare-style identifier",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "github-mapping",
+    "serial-number",
+    "healthcare-identifier"
+  ]
+}

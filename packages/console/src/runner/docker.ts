@@ -83,8 +83,8 @@ export class DockerProvider implements Provider {
   ): Promise<Instance> {
     // Images are installed by the release pipeline, and only configured immutable image IDs are accepted.
     if (
-      !/^sha256:[a-f0-9]{64}$/.test(release.image) &&
-      !/@sha256:[a-f0-9]{64}$/.test(release.image)
+      !/^sha256:[a-f0-9]{64}$/.test(release.image || "") &&
+      !/@sha256:[a-f0-9]{64}$/.test(release.image || "")
     )
       throw Error("Docker releases must use immutable image digests.");
     const name = `forge-managed-${target.id}-${id.slice(0, 8)}`;

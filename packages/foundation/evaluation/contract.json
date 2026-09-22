@@ -1,0 +1,68 @@
+{
+  "slug": "evaluation",
+  "layer": "substrate",
+  "issue": 32,
+  "dependencies": [
+    "specification",
+    "evidence"
+  ],
+  "facts": [
+    "EvaluationRun: immutable definition pin, operational phase, timing and executor",
+    "EvaluationSet: subject-owned run grouping sidecar",
+    "EvaluationRunEvidence: exact evidence-bundle association"
+  ],
+  "operations": [
+    "CreateEvaluationRun(set, pin); StartEvaluation; CompleteEvaluation",
+    "FailEvaluation; CancelEvaluation; ListRunsByDefinition; ListRunsBySet"
+  ],
+  "invariants": [
+    "Every run pins definition before execution; new definition never changes old runs",
+    "Typed domain observations/verdict reference EvaluationRun; no universal Result or key/JSON Observation",
+    "Operational completion is distinct from pass/fail or domain qualification verdict",
+    "Evidence attachments preserve exact support and governance; terminal run metadata is immutable"
+  ],
+  "acceptance": [
+    {
+      "id": "F32-01",
+      "description": "EvaluationRun envelope",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F32-02",
+      "description": "definition/specification pin integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F32-03",
+      "description": "typed observation/result satellite idiom",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F32-04",
+      "description": "evidence integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F32-05",
+      "description": "generic phase vs business-status guidance",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F32-06",
+      "description": "fixtures for ForgeGraph verification, LevelForge candidate evaluation, LLM eval and manufacturing inspection",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "forgegraph-verification",
+    "levelforge-candidate",
+    "llm-evaluation",
+    "manufacturing-inspection"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "slug": "collaboration",
+  "layer": "system",
+  "issue": 49,
+  "dependencies": [
+    "participation",
+    "artifact"
+  ],
+  "facts": [
+    "Thread",
+    "ThreadEntry",
+    "Reaction",
+    "Mention",
+    "ThreadParticipant",
+    "AttachmentLink"
+  ],
+  "operations": [
+    "Open thread",
+    "Append entry",
+    "React",
+    "Mention participant",
+    "Attach artifact",
+    "Close thread",
+    "Rebuild activity projection"
+  ],
+  "invariants": [
+    "Application resource points to Thread; Thread never polymorphically targets application resources",
+    "Mentions and participants use typed participation identity",
+    "Attachments use pinned artifact/content references",
+    "Activity is derived and reconstructible",
+    "Notifications are composed outside collaboration core"
+  ],
+  "acceptance": [
+    {
+      "id": "F49-01",
+      "description": "Thread/Entry/Reaction model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F49-02",
+      "description": "participation/mention integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F49-03",
+      "description": "attachment/artifact integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F49-04",
+      "description": "Discussable-style sidecar facet",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F49-05",
+      "description": "activity projection",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F49-06",
+      "description": "fixtures for KanBanger issue, ForgeGraph deployment and LevelForge candidate",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F49-R01",
+      "description": "Concurrent identical reactions obey uniqueness policy",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F49-R02",
+      "description": "Unauthorized mention or attachment reference is rejected",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F49-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F49-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "KanBanger issue",
+    "ForgeGraph deployment",
+    "LevelForge candidate"
+  ]
+}

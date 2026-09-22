@@ -133,3 +133,60 @@ test("deploys a release and invokes a function with generated sample data", asyn
     ),
   ).toBe(true);
 });
+test("uses Cloudflare endpoint controls and exposes the deployed Worker URL", async ({
+  page,
+}) => {
+  await page.route("**/api/deployments/targets", (r) =>
+    r.fulfill({
+      json: {
+        targets: [
+          {
+            id: "workers",
+            name: "Workers playground",
+            kind: "cloudflare",
+            runtimeId: "workers",
+          },
+        ],
+      },
+    }),
+  );
+  await page.route("**/api/deployments/targets/workers", (r) =>
+    r.fulfill({
+      json: {
+        releases: [
+          { id: "v1", name: "1.0.1", artifact: "sha256:abc", createdAt: "now" },
+        ],
+        activeDeployment: "run-1",
+        deployments: [
+          {
+            id: "run-1",
+            release: "v1",
+            action: "deploy",
+            status: "healthy",
+            createdAt: "2026-09-21T00:00:00Z",
+            logs: ["Worker healthy"],
+            runtimeUrl: "https://demo.example.workers.dev",
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto("/");
+  await page
+    .getByLabel("Administrator token")
+    .fill("local-console-test-token-1234567890");
+  await page.getByRole("button", { name: "Connect to instance" }).click();
+  await page.getByRole("button", { name: "Deployments", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Workers playground", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Pause endpoint", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Resume endpoint", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Worker endpoint" }),
+  ).toHaveAttribute("href", "https://demo.example.workers.dev");
+});

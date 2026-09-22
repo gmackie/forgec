@@ -1,0 +1,75 @@
+{
+  "slug": "entitlement",
+  "layer": "substrate",
+  "issue": 30,
+  "dependencies": [
+    "participation"
+  ],
+  "facts": [
+    "Entitlement: typed Participant holder, right, entitlement scope, quantity/unit and validity",
+    "Obligation: typed Participant obligated party, requirement, obligation scope, quantity/unit and due date",
+    "RightLifecycleEvent: issuance, revocation, expiry or renewal history"
+  ],
+  "operations": [
+    "IssueEntitlement; RecordObligation; RevokeEntitlement; ExpireEntitlement",
+    "RenewEntitlement(old, newValidity); DischargeObligation; CancelObligation",
+    "ListEffectiveRights(holder, scope, instant); ReadPipFacts"
+  ],
+  "invariants": [
+    "Entitlement and participation are separate facts and neither is an authorization decision",
+    "Rights, requirements and conditions use typed domain details, not policy language or arbitrary JSON",
+    "Quantities use exact decimals with explicit domain unit and nonnegative bounds; no implicit unit conversion",
+    "Renewal creates linked history; source agreement/decision/purchase associations are upper-layer typed satellites"
+  ],
+  "acceptance": [
+    {
+      "id": "F30-01",
+      "description": "entitlement model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F30-02",
+      "description": "obligation model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F30-03",
+      "description": "validity/revocation/expiry semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F30-04",
+      "description": "quantity/scoped-right support without becoming a ledger",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F30-05",
+      "description": "source/provenance relation",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F30-06",
+      "description": "Gatekeeper PIP example",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F30-07",
+      "description": "fixtures for software seat, warranty, course access and contractual obligation",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "software-seat",
+    "warranty",
+    "course-access",
+    "contractual-obligation",
+    "entitlement-pip"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "slug": "participation",
+  "layer": "substrate",
+  "issue": 29,
+  "dependencies": [],
+  "facts": [
+    "Participant: participation-specific identity handle",
+    "ParticipationSet: application-owned scope sidecar",
+    "Participation: participant + role + set + validity + recorded provenance"
+  ],
+  "operations": [
+    "RegisterParticipant; AddParticipation(set, participant, role, validity)",
+    "EndParticipation; RevokeParticipation; ListParticipantsAt(set, instant)",
+    "ReadParticipationFacts for Gatekeeper PIP"
+  ],
+  "invariants": [
+    "Participant is a typed handle, not resourceType plus id; Principal and organization/device mappings are typed satellites",
+    "Role vocabulary is owned by the consuming package, namespaced and validated through its typed wrapper",
+    "Validity is half-open; ended/revoked history remains queryable",
+    "Participation alone never grants authority; tenant and governance checks apply to PIP reads"
+  ],
+  "acceptance": [
+    {
+      "id": "F29-01",
+      "description": "participation aggregate and validity semantics",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F29-02",
+      "description": "role vocabulary extension mechanism",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F29-03",
+      "description": "typed participant identity strategy",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F29-04",
+      "description": "participation lookup/projection surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F29-05",
+      "description": "Gatekeeper/PIP integration example",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F29-06",
+      "description": "team, classroom and review-board fixtures",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "team",
+    "classroom",
+    "review-board",
+    "principal-pip",
+    "organization-participant"
+  ]
+}

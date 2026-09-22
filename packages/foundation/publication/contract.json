@@ -1,0 +1,108 @@
+{
+  "slug": "publication",
+  "layer": "system",
+  "issue": 48,
+  "dependencies": [
+    "decision",
+    "specification",
+    "artifact",
+    "evaluation",
+    "evidence",
+    "participation"
+  ],
+  "facts": [
+    "ReleaseCandidate",
+    "Release",
+    "PublicationChannel",
+    "Promotion",
+    "ReleaseAudienceLink"
+  ],
+  "operations": [
+    "Register candidate",
+    "Attach qualification",
+    "Publish release",
+    "Promote release",
+    "Deprecate release",
+    "Retire release"
+  ],
+  "invariants": [
+    "Release retains exact specification and artifact pins",
+    "Channel is mutable discovery and release is immutable history",
+    "Promotion creates a durable fact under qualification policy",
+    "Publication does not assert deployment or realization"
+  ],
+  "acceptance": [
+    {
+      "id": "F48-01",
+      "description": "candidate/release model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F48-02",
+      "description": "exact spec/artifact pins",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F48-03",
+      "description": "channel/audience model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F48-04",
+      "description": "promotion history",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F48-05",
+      "description": "qualification/evaluation/decision hooks",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F48-06",
+      "description": "deprecation/retirement lifecycle",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F48-07",
+      "description": "fixtures for software release, model release and controlled recipe/document publication",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F48-R01",
+      "description": "Concurrent promotions preserve a consistent channel and promotion history",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F48-R02",
+      "description": "Failed selected qualification gate blocks publication",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F48-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F48-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "software release",
+    "model release",
+    "controlled recipe publication",
+    "controlled document publication"
+  ]
+}

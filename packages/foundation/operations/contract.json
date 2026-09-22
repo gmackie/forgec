@@ -1,0 +1,113 @@
+{
+  "slug": "operations",
+  "layer": "system",
+  "issue": 45,
+  "dependencies": [
+    "specification",
+    "allocation",
+    "fulfillment",
+    "usage",
+    "lineage",
+    "evaluation",
+    "evidence"
+  ],
+  "facts": [
+    "Operation",
+    "OperationRun",
+    "PlannedAllocationLink",
+    "ActualAllocationLink",
+    "OperationFulfillmentLink",
+    "OperationUsageLink",
+    "OperationLineageLink"
+  ],
+  "operations": [
+    "Plan operation",
+    "Reserve resources",
+    "Start run",
+    "Link execution tasks",
+    "Record actual usage",
+    "Record inputs and outputs",
+    "Evaluate run",
+    "Complete or cancel run"
+  ],
+  "invariants": [
+    "Business operation identity is distinct from workQueue task identity",
+    "One run can span multiple execution tasks and fulfillments",
+    "Planned resources remain distinct from actual consumption",
+    "Usage and lineage retain durable source identities across retries"
+  ],
+  "acceptance": [
+    {
+      "id": "F45-01",
+      "description": "operation/run envelope",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F45-02",
+      "description": "specification pin",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F45-03",
+      "description": "planned vs actual allocations",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F45-04",
+      "description": "fulfillment/workQueue linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F45-05",
+      "description": "usage + lineage recording",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F45-06",
+      "description": "evaluation/evidence linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F45-07",
+      "description": "fixtures for manufacturing run, lab run, Bob development run and media/stream production",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F45-R01",
+      "description": "Retried execution does not double-record usage",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F45-R02",
+      "description": "Cancel and complete races release reservations at most once",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F45-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F45-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "manufacturing run",
+    "lab run",
+    "Bob development run",
+    "media/stream production"
+  ]
+}

@@ -11,7 +11,9 @@
     "release:manifest": "node --experimental-strip-types scripts/release-manifest.ts",
     "release:check": "node scripts/check-packaging.mjs",
     "lint:workflows": "node scripts/check-workflows.mjs",
-    "release:names": "node scripts/check-crate-names.mjs"
+    "release:names": "node scripts/check-crate-names.mjs",
+    "foundation:contracts": "node scripts/verify-foundation.mjs --suite contracts --all",
+    "foundation:composition": "node scripts/verify-foundation.mjs --suite local --package composition"
   },
   "license": "Apache-2.0",
   "type": "module",

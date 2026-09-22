@@ -1,0 +1,107 @@
+{
+  "slug": "agreement-catalog",
+  "layer": "system",
+  "issue": 43,
+  "dependencies": [
+    "decision",
+    "specification",
+    "participation",
+    "entitlement",
+    "evaluation",
+    "artifact",
+    "evidence"
+  ],
+  "facts": [
+    "Catalog",
+    "CatalogEntry",
+    "Offer",
+    "Agreement",
+    "AgreementParticipant",
+    "AgreementTermLink",
+    "AgreementEntitlementLink",
+    "AgreementObligationLink"
+  ],
+  "operations": [
+    "Publish offer",
+    "Qualify selection",
+    "Accept agreement",
+    "Issue rights and duties",
+    "Suspend agreement",
+    "Resume agreement",
+    "Terminate agreement"
+  ],
+  "invariants": [
+    "Offer is distinct from its specification",
+    "Agreement is distinct from its qualification Decision",
+    "Terms retain exact specification and artifact pins",
+    "Accepting an agreement issues linked entitlements and obligations once"
+  ],
+  "acceptance": [
+    {
+      "id": "F43-01",
+      "description": "Catalog/Entry/Offer model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F43-02",
+      "description": "Agreement + participant integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F43-03",
+      "description": "entitlements/obligations issued from agreement",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F43-04",
+      "description": "validity/suspension/termination lifecycle",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F43-05",
+      "description": "specification/artifact term pinning",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F43-06",
+      "description": "fixtures for SaaS plan, course offering, lab service and vendor agreement",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F43-R01",
+      "description": "Concurrent acceptance cannot duplicate rights or duties",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F43-R02",
+      "description": "Expired offer cannot be accepted without a new valid offer",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F43-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F43-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "SaaS plan",
+    "course offering",
+    "lab service",
+    "vendor agreement"
+  ]
+}
