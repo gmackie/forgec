@@ -1,0 +1,105 @@
+{
+  "slug": "reconciliation",
+  "layer": "system",
+  "issue": 46,
+  "dependencies": [
+    "specification",
+    "evaluation",
+    "fulfillment",
+    "evidence"
+  ],
+  "facts": [
+    "DesiredRevision",
+    "ObservedEvaluationLink",
+    "Drift",
+    "ReconciliationAttempt",
+    "ReconciliationResult"
+  ],
+  "operations": [
+    "Set desired revision",
+    "Record observation",
+    "Compare desired and observed",
+    "Start corrective attempt",
+    "Record attempt result",
+    "Reobserve"
+  ],
+  "invariants": [
+    "Desired revisions and observations remain durable history",
+    "Corrective attempts are fenced against the desired revision they read",
+    "Repeated reconciliation is idempotent for logical attempt identity",
+    "Drift explanations use semantic fields or anchors with provenance"
+  ],
+  "acceptance": [
+    {
+      "id": "F46-01",
+      "description": "desired revision model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F46-02",
+      "description": "observation/evaluation linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F46-03",
+      "description": "structured drift representation",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F46-04",
+      "description": "reconciliation attempt/result",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F46-05",
+      "description": "actor/workflow pattern integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F46-06",
+      "description": "source-map/semantic-anchor explanation hooks",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F46-07",
+      "description": "fixtures for ForgeGraph deployment, device config and repository policy",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F46-R01",
+      "description": "Stale controller cannot overwrite a newer desired revision",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F46-R02",
+      "description": "Crash and retry preserves attempt/result history and fence",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F46-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F46-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "ForgeGraph deployment",
+    "device configuration",
+    "repository policy"
+  ]
+}

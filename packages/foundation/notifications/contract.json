@@ -1,0 +1,108 @@
+{
+  "slug": "notifications",
+  "layer": "system",
+  "issue": 50,
+  "dependencies": [
+    "participation",
+    "delivery",
+    "artifact"
+  ],
+  "facts": [
+    "NotificationTopic",
+    "NotificationSubscription",
+    "NotificationPreference",
+    "NotificationEndpointLink",
+    "Notification",
+    "NotificationDeliveryLink",
+    "NotificationSuppression"
+  ],
+  "operations": [
+    "Subscribe",
+    "Set preference",
+    "Resolve audience",
+    "Create logical notification",
+    "Record suppression",
+    "Request delivery",
+    "Observe delivery outcome"
+  ],
+  "invariants": [
+    "Notifications owns audience and preference semantics",
+    "Delivery owns attempts and receipts",
+    "Logical notification identity deduplicates repeated triggering events",
+    "Suppression decisions are durable and explainable",
+    "Templates remain independent of any mandatory templating language"
+  ],
+  "acceptance": [
+    {
+      "id": "F50-01",
+      "description": "topic/subscription model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F50-02",
+      "description": "preference model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F50-03",
+      "description": "endpoint abstraction",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F50-04",
+      "description": "notification lifecycle",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F50-05",
+      "description": "Delivery integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F50-06",
+      "description": "dedup/suppression semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F50-07",
+      "description": "fixtures for KanBanger user notification, ForgeGraph operational alert and Bob task/update notification",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F50-R01",
+      "description": "Duplicate event resolves to one logical notification",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F50-R02",
+      "description": "Preference change and dispatch race obeys recorded policy",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F50-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F50-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "KanBanger user notification",
+    "ForgeGraph operational alert",
+    "Bob task/update notification"
+  ]
+}

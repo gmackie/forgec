@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateContracts } from '../verify-foundation.mjs';
+import { validateContracts, validateCatalogs } from '../verify-foundation.mjs';
 const contract = (slug, issue = 26, dependencies = [], layer = 'substrate') => ({ slug, issue, dependencies, layer, facts: ['fact'], operations: ['create'], invariants: ['invariant'], fixtures: ['fixture'], acceptance: [{ id: `${slug}-01`, description: 'verify', kind: 'runtime', status: 'planned' }] });
 const validate = cs => validateContracts(cs, { complete: false });
 test('dependency order is deterministic and accepts a diamond', () => {
@@ -24,4 +24,15 @@ test('passing requires evidence and malformed cases fail', () => {
   assert.match(validate([a]).errors.join(), /passing requires evidence/);
   a.acceptance[0] = null;
   assert.ok(validate([a]).errors.length > 0);
+});
+
+test('catalog drift fails even when contracts are valid', () => {
+  const c = contract('one');
+  const catalogs = {
+    substrate: {schemaVersion: 1, layer: 'substrate', packages: [{slug: c.slug, issue: c.issue, dependencies: [], contract: 'packages/foundation/one/contract.json', acceptanceIds: ['one-01']}]},
+    system: {schemaVersion: 1, layer: 'system', packages: []},
+  };
+  assert.deepEqual(validateCatalogs([c], catalogs), []);
+  catalogs.substrate.packages[0].dependencies.push('missing');
+  assert.match(validateCatalogs([c], catalogs).join(), /catalog does not match/);
 });

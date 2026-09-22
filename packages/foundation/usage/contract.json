@@ -1,0 +1,71 @@
+{
+  "slug": "usage",
+  "layer": "substrate",
+  "issue": 35,
+  "dependencies": [],
+  "facts": [
+    "UsageStream: subject-owned metering handle",
+    "UsageEvent: dimension, exact quantity/unit, point or interval, source event identity",
+    "UsageCorrection: superseding/retracting relation preserving original consumption"
+  ],
+  "operations": [
+    "IngestUsage(stream, source, eventKey, measurement)",
+    "CorrectUsage(original, replacement); RetractUsage(original)",
+    "AggregateUsage(stream, dimension, interval); RebuildUsageProjection"
+  ],
+  "invariants": [
+    "Same tenant/source/event key and same payload are idempotent; conflicting payload is rejected",
+    "Point event uses occurredAt; interval uses start/end with start < end and half-open semantics",
+    "Raw measurements are immutable; corrections are new records and cannot form cycles",
+    "Aggregation separates dimension/unit; derived totals can rebuild without double counting retractions"
+  ],
+  "acceptance": [
+    {
+      "id": "F35-01",
+      "description": "UsageEvent model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F35-02",
+      "description": "dimension/unit representation",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F35-03",
+      "description": "interval and point-event semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F35-04",
+      "description": "idempotent ingestion/source identity",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F35-05",
+      "description": "correction/supersession semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F35-06",
+      "description": "aggregation projections",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F35-07",
+      "description": "fixtures for LLM tokens, compute time and machine hours",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "llm-tokens",
+    "compute-time",
+    "machine-hours"
+  ]
+}

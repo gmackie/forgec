@@ -1,0 +1,104 @@
+{
+  "slug": "experiment",
+  "layer": "system",
+  "issue": 42,
+  "dependencies": [
+    "specification",
+    "participation",
+    "allocation",
+    "fulfillment",
+    "evaluation",
+    "evidence",
+    "artifact",
+    "lineage"
+  ],
+  "facts": [
+    "Experiment",
+    "ExperimentVariant",
+    "ExperimentAssignment",
+    "ExperimentEvaluationLink"
+  ],
+  "operations": [
+    "Register experiment",
+    "Register variant",
+    "Assign subject or run",
+    "Record assignment provenance",
+    "Link intervention fulfillment",
+    "Link evaluation",
+    "Close experiment"
+  ],
+  "invariants": [
+    "Assignment is an authoritative fact distinct from evaluation result",
+    "Assignment records method and seed or provenance where applicable",
+    "Assignments reference variants belonging to the same experiment",
+    "Analysis and outcome payloads remain typed domain facts"
+  ],
+  "acceptance": [
+    {
+      "id": "F42-01",
+      "description": "Experiment/Variant/Assignment model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F42-02",
+      "description": "specification pin",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F42-03",
+      "description": "assignment provenance/randomization metadata",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F42-04",
+      "description": "evaluation linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F42-05",
+      "description": "artifact/lineage linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F42-06",
+      "description": "fixtures for A/B test, LLM eval comparison, LevelForge candidate comparison and manufacturing DOE",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F42-R01",
+      "description": "Duplicate assignment request creates one assignment",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F42-R02",
+      "description": "Concurrent scarce-resource assignments cannot overallocate",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F42-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F42-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "A/B test",
+    "LLM evaluation comparison",
+    "LevelForge candidate comparison",
+    "manufacturing DOE"
+  ]
+}

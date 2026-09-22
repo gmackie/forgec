@@ -1,0 +1,75 @@
+{
+  "slug": "delivery",
+  "layer": "substrate",
+  "issue": 38,
+  "dependencies": [
+    "artifact",
+    "evidence"
+  ],
+  "facts": [
+    "DeliveryIntent: logical send identity, typed destination handle and pinned payload association",
+    "DeliveryAttempt: append-only numbered execution history and provider reference",
+    "DeliveryReceipt: acknowledgment/failure/uncertain outcome with evidence"
+  ],
+  "operations": [
+    "CreateDeliveryIntent(destination, payloadRevision?, idempotencyKey)",
+    "BeginAttempt; RecordAttemptFailure; RecordReceipt; MarkUncertain",
+    "RetryDelivery; CancelPendingDelivery; ReconcileProviderOutcome"
+  ],
+  "invariants": [
+    "Intent deduplication is separate from provider side-effect idempotency; no universal exactly-once promise",
+    "Attempt numbering and claim are conditional; retry never overwrites attempt history",
+    "Callbacks deduplicate by provider receipt identity; stale callbacks cannot downgrade a final acknowledgment",
+    "Artifact payload pins exact revision; typed content satellite may supply non-artifact payload without arbitrary JSON"
+  ],
+  "acceptance": [
+    {
+      "id": "F38-01",
+      "description": "DeliveryIntent model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F38-02",
+      "description": "DeliveryAttempt model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F38-03",
+      "description": "DeliveryReceipt/result semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F38-04",
+      "description": "idempotency and retry history",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F38-05",
+      "description": "provider-reference/provenance support",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F38-06",
+      "description": "evidence/artifact integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F38-07",
+      "description": "fixtures for email, webhook and file export",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "email",
+    "webhook",
+    "file-export",
+    "ambiguous-provider-success"
+  ]
+}

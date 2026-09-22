@@ -1,0 +1,105 @@
+{
+  "slug": "decision",
+  "layer": "system",
+  "issue": 39,
+  "dependencies": [
+    "participation",
+    "evidence",
+    "evaluation"
+  ],
+  "facts": [
+    "DecisionCase",
+    "DecisionOption",
+    "DecisionResponse",
+    "DecisionOutcome"
+  ],
+  "operations": [
+    "Open case",
+    "Add option",
+    "Invite participant",
+    "Record response",
+    "Withdraw response",
+    "Finalize outcome",
+    "Expire case",
+    "Open reconsideration"
+  ],
+  "invariants": [
+    "Outcome is durable and cannot be silently rewritten",
+    "Only eligible participants contribute responses under the pinned rule",
+    "Finalization and deadline expiry compete under one version guard",
+    "Reconsideration creates a second case linked to the original, preserving both histories"
+  ],
+  "acceptance": [
+    {
+      "id": "F39-01",
+      "description": "DecisionCase/Option/Response/Outcome resources",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F39-02",
+      "description": "participation integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F39-03",
+      "description": "decision-rule abstraction",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F39-04",
+      "description": "evidence attachment",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F39-05",
+      "description": "deadline/withdraw/expiry lifecycle",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F39-06",
+      "description": "reconsideration linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F39-07",
+      "description": "fixtures for human approval, release gate and review board",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F39-R01",
+      "description": "Concurrent finalization and expiry produces exactly one terminal outcome",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F39-R02",
+      "description": "Duplicate logical responses do not increase quorum",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F39-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F39-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "human approval",
+    "release gate",
+    "review board"
+  ]
+}

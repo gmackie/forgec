@@ -1,0 +1,74 @@
+{
+  "slug": "lineage",
+  "layer": "substrate",
+  "issue": 37,
+  "dependencies": [
+    "specification"
+  ],
+  "facts": [
+    "LineageNode: substrate-specific handle owned by a typed domain resource",
+    "LineageRelation: derived, aggregated, transformed, copied or extracted semantics",
+    "Transformation: explicit input/output memberships and optional specification pin"
+  ],
+  "operations": [
+    "CreateLineageNode; RecordDerivation; RecordAggregation",
+    "RecordTransformation(inputs, outputs, pin?); RecordCopy; RecordExtraction",
+    "TraverseAncestors; TraverseDescendants with explicit bounds"
+  ],
+  "invariants": [
+    "No generic relatedTo edge or polymorphic business resource pointer",
+    "Aggregation retains constituent identity; transformation has explicit input/output sets and does not infer Cartesian edges",
+    "Self-links and cycles are rejected with serialized graph guard; traversal and mutation have configured size/depth budgets",
+    "Committed provenance is immutable; correction creates explicit superseding record"
+  ],
+  "acceptance": [
+    {
+      "id": "F37-01",
+      "description": "LineageNode/handle model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F37-02",
+      "description": "explicit edge/relation semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F37-03",
+      "description": "aggregation vs transformation distinction",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F37-04",
+      "description": "execution/specification provenance",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F37-05",
+      "description": "graph traversal/read models",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F37-06",
+      "description": "cycle/size safety",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F37-07",
+      "description": "fixtures for software build, manufacturing batch, dataset transform and LevelForge generation",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "software-build",
+    "manufacturing-batch",
+    "dataset-transform",
+    "levelforge-generation"
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "layer": "system",
+  "status": "contracts-only",
+  "packages": [
+    {
+      "slug": "decision",
+      "issue": 39,
+      "dependencies": [
+        "participation",
+        "evidence",
+        "evaluation"
+      ],
+      "contract": "packages/foundation/decision/contract.json",
+      "acceptanceIds": [
+        "F39-01",
+        "F39-02",
+        "F39-03",
+        "F39-04",
+        "F39-05",
+        "F39-06",
+        "F39-07",
+        "F39-R01",
+        "F39-R02",
+        "F39-AUTH",
+        "F39-STORE"
+      ]
+    },
+    {
+      "slug": "assurance",
+      "issue": 40,
+      "dependencies": [
+        "specification",
+        "evaluation",
+        "evidence",
+        "artifact"
+      ],
+      "contract": "packages/foundation/assurance/contract.json",
+      "acceptanceIds": [
+        "F40-01",
+        "F40-02",
+        "F40-03",
+        "F40-04",
+        "F40-05",
+        "F40-06",
+        "F40-07",
+        "F40-R01",
+        "F40-R02",
+        "F40-AUTH",
+        "F40-STORE"
+      ]
+    },
+    {
+      "slug": "change",
+      "issue": 41,
+      "dependencies": [
+        "decision",
+        "specification",
+        "evaluation",
+        "fulfillment",
+        "evidence"
+      ],
+      "contract": "packages/foundation/change/contract.json",
+      "acceptanceIds": [
+        "F41-01",
+        "F41-02",
+        "F41-03",
+        "F41-04",
+        "F41-05",
+        "F41-06",
+        "F41-07",
+        "F41-R01",
+        "F41-R02",
+        "F41-AUTH",
+        "F41-STORE"
+      ]
+    },
+    {
+      "slug": "experiment",
+      "issue": 42,
+      "dependencies": [
+        "specification",
+        "participation",
+        "allocation",
+        "fulfillment",
+        "evaluation",
+        "evidence",
+        "artifact",
+        "lineage"
+      ],
+      "contract": "packages/foundation/experiment/contract.json",
+      "acceptanceIds": [
+        "F42-01",
+        "F42-02",
+        "F42-03",
+        "F42-04",
+        "F42-05",
+        "F42-06",
+        "F42-R01",
+        "F42-R02",
+        "F42-AUTH",
+        "F42-STORE"
+      ]
+    },
+    {
+      "slug": "agreement-catalog",
+      "issue": 43,
+      "dependencies": [
+        "decision",
+        "specification",
+        "participation",
+        "entitlement",
+        "evaluation",
+        "artifact",
+        "evidence"
+      ],
+      "contract": "packages/foundation/agreement-catalog/contract.json",
+      "acceptanceIds": [
+        "F43-01",
+        "F43-02",
+        "F43-03",
+        "F43-04",
+        "F43-05",
+        "F43-06",
+        "F43-R01",
+        "F43-R02",
+        "F43-AUTH",
+        "F43-STORE"
+      ]
+    },
+    {
+      "slug": "adjudication",
+      "issue": 44,
+      "dependencies": [
+        "decision",
+        "entitlement",
+        "evidence",
+        "evaluation",
+        "fulfillment",
+        "ledger",
+        "delivery"
+      ],
+      "contract": "packages/foundation/adjudication/contract.json",
+      "acceptanceIds": [
+        "F44-01",
+        "F44-02",
+        "F44-03",
+        "F44-04",
+        "F44-05",
+        "F44-06",
+        "F44-R01",
+        "F44-R02",
+        "F44-AUTH",
+        "F44-STORE"
+      ]
+    },
+    {
+      "slug": "operations",
+      "issue": 45,
+      "dependencies": [
+        "specification",
+        "allocation",
+        "fulfillment",
+        "usage",
+        "lineage",
+        "evaluation",
+        "evidence"
+      ],
+      "contract": "packages/foundation/operations/contract.json",
+      "acceptanceIds": [
+        "F45-01",
+        "F45-02",
+        "F45-03",
+        "F45-04",
+        "F45-05",
+        "F45-06",
+        "F45-07",
+        "F45-R01",
+        "F45-R02",
+        "F45-AUTH",
+        "F45-STORE"
+      ]
+    },
+    {
+      "slug": "reconciliation",
+      "issue": 46,
+      "dependencies": [
+        "specification",
+        "evaluation",
+        "fulfillment",
+        "evidence"
+      ],
+      "contract": "packages/foundation/reconciliation/contract.json",
+      "acceptanceIds": [
+        "F46-01",
+        "F46-02",
+        "F46-03",
+        "F46-04",
+        "F46-05",
+        "F46-06",
+        "F46-07",
+        "F46-R01",
+        "F46-R02",
+        "F46-AUTH",
+        "F46-STORE"
+      ]
+    },
+    {
+      "slug": "integration",
+      "issue": 47,
+      "dependencies": [
+        "reconciliation",
+        "identifiers",
+        "delivery",
+        "fulfillment",
+        "lineage",
+        "evidence"
+      ],
+      "contract": "packages/foundation/integration/contract.json",
+      "acceptanceIds": [
+        "F47-01",
+        "F47-02",
+        "F47-03",
+        "F47-04",
+        "F47-05",
+        "F47-06",
+        "F47-07",
+        "F47-R01",
+        "F47-R02",
+        "F47-AUTH",
+        "F47-STORE"
+      ]
+    },
+    {
+      "slug": "publication",
+      "issue": 48,
+      "dependencies": [
+        "decision",
+        "specification",
+        "artifact",
+        "evaluation",
+        "evidence",
+        "participation"
+      ],
+      "contract": "packages/foundation/publication/contract.json",
+      "acceptanceIds": [
+        "F48-01",
+        "F48-02",
+        "F48-03",
+        "F48-04",
+        "F48-05",
+        "F48-06",
+        "F48-07",
+        "F48-R01",
+        "F48-R02",
+        "F48-AUTH",
+        "F48-STORE"
+      ]
+    },
+    {
+      "slug": "collaboration",
+      "issue": 49,
+      "dependencies": [
+        "participation",
+        "artifact"
+      ],
+      "contract": "packages/foundation/collaboration/contract.json",
+      "acceptanceIds": [
+        "F49-01",
+        "F49-02",
+        "F49-03",
+        "F49-04",
+        "F49-05",
+        "F49-06",
+        "F49-R01",
+        "F49-R02",
+        "F49-AUTH",
+        "F49-STORE"
+      ]
+    },
+    {
+      "slug": "notifications",
+      "issue": 50,
+      "dependencies": [
+        "participation",
+        "delivery",
+        "artifact"
+      ],
+      "contract": "packages/foundation/notifications/contract.json",
+      "acceptanceIds": [
+        "F50-01",
+        "F50-02",
+        "F50-03",
+        "F50-04",
+        "F50-05",
+        "F50-06",
+        "F50-07",
+        "F50-R01",
+        "F50-R02",
+        "F50-AUTH",
+        "F50-STORE"
+      ]
+    }
+  ]
+}

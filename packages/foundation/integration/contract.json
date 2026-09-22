@@ -1,0 +1,111 @@
+{
+  "slug": "integration",
+  "layer": "system",
+  "issue": 47,
+  "dependencies": [
+    "reconciliation",
+    "identifiers",
+    "delivery",
+    "fulfillment",
+    "lineage",
+    "evidence"
+  ],
+  "facts": [
+    "Connection",
+    "ExternalMapping",
+    "SyncCursor",
+    "SyncRun",
+    "WebhookReceipt",
+    "SyncConflict"
+  ],
+  "operations": [
+    "Register connection",
+    "Bind qualified identifier",
+    "Receive webhook",
+    "Start sync run",
+    "Apply accepted records",
+    "Advance checkpoint",
+    "Resolve conflict",
+    "Record outbound delivery"
+  ],
+  "invariants": [
+    "Credentials stay in kernel secret or credential contracts",
+    "Internal resources retain canonical Forge identity",
+    "Sync direction and authority are explicit per connection or mapping policy",
+    "Checkpoint cannot advance beyond durably accepted work",
+    "Duplicate provider events share a logical receipt identity"
+  ],
+  "acceptance": [
+    {
+      "id": "F47-01",
+      "description": "Connection/provider metadata model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F47-02",
+      "description": "external mapping model based on qualified identifiers",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F47-03",
+      "description": "durable cursor/checkpoint",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F47-04",
+      "description": "SyncRun/fulfillment envelope",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F47-05",
+      "description": "webhook receipt/dedup",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F47-06",
+      "description": "reconciliation/conflict hooks",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F47-07",
+      "description": "fixtures for GitHub, Linear-style issue sync and one industrial/provider integration",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F47-R01",
+      "description": "Crash around checkpoint commit cannot lose accepted work or skip records",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F47-R02",
+      "description": "Duplicate webhook and concurrent cursor advance are idempotent and fenced",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F47-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F47-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "GitHub integration",
+    "Linear-style issue sync",
+    "industrial provider integration"
+  ]
+}

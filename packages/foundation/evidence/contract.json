@@ -1,0 +1,66 @@
+{
+  "slug": "evidence",
+  "layer": "substrate",
+  "issue": 33,
+  "dependencies": [
+    "artifact"
+  ],
+  "facts": [
+    "EvidenceBundle: subject-side support aggregate",
+    "EvidenceItem: source identity, classification, observedAt, artifact revision or typed source satellite"
+  ],
+  "operations": [
+    "CreateEvidenceBundle; AppendEvidenceItem; SealEvidenceBundle",
+    "ReadEvidence; ListItems; CreateSuccessorBundle"
+  ],
+  "invariants": [
+    "Subject points outward to bundle; Evidence never stores arbitrary subject type/id",
+    "Artifact-backed item pins an immutable ArtifactRevision and preserves its digest",
+    "Typed domain source satellite replaces polymorphic references; observations remain distinct from evaluation results",
+    "Classification and access rules apply to metadata as well as bytes; sealed support cannot be silently replaced"
+  ],
+  "acceptance": [
+    {
+      "id": "F33-01",
+      "description": "EvidenceBundle + EvidenceItem model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F33-02",
+      "description": "artifact/reference integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F33-03",
+      "description": "provenance/source semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F33-04",
+      "description": "governance/data-classification behavior",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F33-05",
+      "description": "sidecar attachment idiom",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F33-06",
+      "description": "fixtures for deployment verification, manufacturing inspection and agent review",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "deployment-verification",
+    "manufacturing-inspection",
+    "agent-review",
+    "confidential-evidence"
+  ]
+}

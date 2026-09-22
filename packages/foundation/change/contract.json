@@ -1,0 +1,110 @@
+{
+  "slug": "change",
+  "layer": "system",
+  "issue": 41,
+  "dependencies": [
+    "decision",
+    "specification",
+    "evaluation",
+    "fulfillment",
+    "evidence"
+  ],
+  "facts": [
+    "Change",
+    "ChangeImpactLink",
+    "ChangeDecisionLink",
+    "ChangeImplementationLink",
+    "ChangeVerificationLink",
+    "ChangeSupersession"
+  ],
+  "operations": [
+    "Propose change",
+    "Attach impact assessment",
+    "Attach decision",
+    "Schedule implementation",
+    "Record fulfillment",
+    "Verify change",
+    "Record rollback",
+    "Supersede change"
+  ],
+  "invariants": [
+    "From and to refer to exact immutable specification pins",
+    "Selected gate policy is fixed before execution",
+    "Rejected approval blocks gated implementation",
+    "Rollback and supersession create explicit history rather than editing original pins"
+  ],
+  "acceptance": [
+    {
+      "id": "F41-01",
+      "description": "exact from/to specification pins",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F41-02",
+      "description": "impact evaluation linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F41-03",
+      "description": "decision linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F41-04",
+      "description": "implementation fulfillment linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F41-05",
+      "description": "verification/evidence linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F41-06",
+      "description": "rollback/supersession semantics",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F41-07",
+      "description": "fixtures for software deployment, recipe change and policy change",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F41-R01",
+      "description": "Concurrent approval/implementation cannot bypass selected gate",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F41-R02",
+      "description": "Gated completion rejects missing verification while ungated policy permits it",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F41-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F41-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "software deployment",
+    "recipe change",
+    "policy change",
+    "simplified ungated change"
+  ]
+}

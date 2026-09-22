@@ -31,7 +31,7 @@ export function validateContracts(contracts, { complete = true } = {}) {
       if (!a || typeof a.id !== 'string' || !a.id.trim() || cases.has(a.id)) fail(s, 'invalid or duplicate acceptance id');
       if (a) cases.add(a.id);
       if (!a || typeof a.description !== 'string' || !a.description.trim() || !kinds.has(a.kind) || !statuses.has(a.status)) fail(s, 'invalid acceptance case');
-      if (a?.status === 'passing' && (!Array.isArray(a.evidence) || a.evidence.length === 0)) fail(s, `${a.id}: passing requires evidence`);
+      if (a?.status === 'passing') fail(s, `${a.id}: passing requires evidence verification, which is not implemented yet`);
     }
   }
   const visiting = new Set(), visited = new Set(), order = [];
@@ -50,6 +50,22 @@ export function validateContracts(contracts, { complete = true } = {}) {
   [...names.keys()].sort().forEach(s => visit(s));
   if (complete) for (let i = 26; i <= 50; i++) if (!issues.has(i)) errors.push(`missing issue #${i}`);
   return { errors, order, packages: contracts.length, cases: cases.size };
+}
+export function validateCatalogs(contracts, catalogs) {
+  const errors = [];
+  for (const layer of ['substrate', 'system']) {
+    const catalog = catalogs[layer];
+    if (catalog?.schemaVersion !== 1 || catalog.layer !== layer || !Array.isArray(catalog.packages)) {
+      errors.push(`${layer}: invalid catalog`); continue;
+    }
+    const expected = contracts.filter(c => c.layer === layer).map(c => ({ slug: c.slug, issue: c.issue, dependencies: [...c.dependencies].sort(), contract: `packages/foundation/${c.slug}/contract.json`, acceptanceIds: c.acceptance.map(a => a.id).sort() })).sort((a,b) => a.slug.localeCompare(b.slug));
+    let actual;
+    try {
+      actual = catalog.packages.map(c => ({ slug: c.slug, issue: c.issue, dependencies: [...c.dependencies].sort(), contract: c.contract, acceptanceIds: [...c.acceptanceIds].sort() })).sort((a,b) => a.slug.localeCompare(b.slug));
+    } catch { errors.push(`${layer}: invalid catalog entry`); continue; }
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) errors.push(`${layer}: catalog does not match package contracts`);
+  }
+  return errors;
 }
 export function readContracts(repoRoot = root) {
   const dir = join(repoRoot, 'packages/foundation');
@@ -82,6 +98,7 @@ function main() {
     if (slug && !contracts.some(c => c.slug === slug)) throw new Error(`unknown package: ${slug}`);
     // Validate the entire graph even when reviewing one package: direction is a global invariant.
     const result = validateContracts(contracts);
+    result.errors.push(...validateCatalogs(contracts, Object.fromEntries(['substrate', 'system'].map(layer => [layer, JSON.parse(readFileSync(join(root, `specs/foundation/${layer}s.json`), 'utf8'))]))));
     if (result.errors.length) throw new Error(result.errors.join('\n'));
     console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract validation only; implementation acceptance remains planned.' }, null, 2));
     return;
