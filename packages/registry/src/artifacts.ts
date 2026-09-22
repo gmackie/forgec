@@ -1,3 +1,4 @@
+import {verifySourceMap, type SourceMap} from "./source-map.js";
 /**
  * Immutable artifact publication and resolution (FORGE-057; PAR-124/125).
  *
@@ -30,7 +31,7 @@ export interface Manifest {
 }
 export interface Signature { keyId: string; authority: string; signature: string }
 export interface Published { digest: string; layers: Record<string, string>; manifest: Manifest }
-export interface Pulled { digest: string; manifest: Manifest; bundle: AppBundle; source: "registry" | "path" }
+export interface Pulled { sourceMap?: SourceMap; digest: string; manifest: Manifest; bundle: AppBundle; source: "registry" | "path" }
 export interface LockedDependency { name: string; version: string; hash: string; path?: string }
 
 export function canonical(v: unknown): string {
@@ -117,7 +118,7 @@ export class FileArtifactStore implements ArtifactStore {
 }
 
 // ---------------------------------------------------------------- registry
-export interface PublishRequest { name: string; version: string; bundle: AppBundle; provenance: Provenance; signer: Signer; audience?: string[]; retag?: boolean }
+export interface PublishRequest { sourceMap?: SourceMap; name: string; version: string; bundle: AppBundle; provenance: Provenance; signer: Signer; audience?: string[]; retag?: boolean }
 
 export class Registry {
   readonly authority: string;
@@ -141,6 +142,10 @@ export class Registry {
 
   async publish(r: PublishRequest): Promise<Published> {
     const layerText = Registry.layersOf(r.bundle);
+    if(r.sourceMap) {
+      const map=verifySourceMap(r.sourceMap,r.bundle,r.provenance.commit);
+      layerText["source-map/1"]=canonical(map);
+    }
     const layers: Record<string, string> = {};
     for (const [k, text] of Object.entries(layerText)) {
       const d = digestOf(text);
@@ -180,7 +185,8 @@ export class Registry {
     }
     const bundle = JSON.parse(blobs["bundle"]!) as AppBundle;
     Registry.checkSchema(bundle);
-    return { digest, manifest, bundle, source: "registry" };
+    const sourceMap=blobs["source-map/1"]!==undefined?verifySourceMap(JSON.parse(blobs["source-map/1"]),bundle,manifest.provenance.commit):undefined;
+    return { digest, manifest, bundle, source: "registry", ...(sourceMap?{sourceMap}:{}) };
   }
 
   /** Schema gate shared with the runtime: an artifact this toolchain cannot interpret is never activated. */

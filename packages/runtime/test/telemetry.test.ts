@@ -56,6 +56,9 @@ describe("operation events", () => {
     await run(engine.call("@acme/commerce/_/Customer.create", { code: "", name: "A" }, ctx));
     const c = events[0]!;
     expect(c).toMatchObject({ operation: "@acme/commerce/_/Customer.create", kind: "create", resource: "@acme/commerce/_/Customer", outcome: "good", status: 201, logical: true, attempt: 1, seq: 1 });
+    expect(c).toMatchObject({ buildHash: bundle.buildHash, semanticAnchor: "@acme/commerce/_/Customer#op:create" });
+    expect(engine.telemetry.dimensions(c)).not.toHaveProperty("forge.buildHash");
+    expect(engine.telemetry.dimensions(c)).not.toHaveProperty("forge.semanticAnchor");
     expect(typeof c.durationMs).toBe("number");
     expect(events[1]).toMatchObject({ outcome: "excluded", status: 422, code: "ValidationFailed", seq: 2 });
     expect(classify(200)).toBe("good");

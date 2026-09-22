@@ -197,6 +197,13 @@ fn build_writes_the_generated_bundle_migration_and_client() {
     );
     let bundle: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(out_dir.join("app.json")).unwrap()).unwrap();
+    let source_map: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(out_dir.join("source-map.json")).unwrap())
+            .unwrap();
+    assert_eq!(source_map["version"], "forge-source-map/1");
+    assert_eq!(source_map["buildHash"], bundle["buildHash"]);
+    assert!(source_map["anchors"]["@acme/commerce/_/ProcessOrder#step:submit"].is_object());
+    assert!(bundle.get("sourceMap").is_none());
     assert_eq!(bundle["version"], "app-bundle/1");
     assert_eq!(bundle["ir"]["version"], "domain-ir/1");
     assert_eq!(bundle["contracts"]["version"], "contracts/1");

@@ -173,6 +173,7 @@ impl Declaration {
                         | "function"
                         | "channel"
                         | "source"
+                        | "workflow"
                 )
             }),
         }

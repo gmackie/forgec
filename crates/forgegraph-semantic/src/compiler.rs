@@ -53,7 +53,7 @@ pub struct Compilation {
     /// Build-local UTF-8 spans, excluded from canonical DomainIR.
     pub source_index: BTreeMap<String, SourceSpan>,
     pub references: Vec<SourceReference>,
-    files: Vec<SourceFile>,
+    pub(crate) files: Vec<SourceFile>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]

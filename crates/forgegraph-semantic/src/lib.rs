@@ -7,6 +7,7 @@ pub mod diagnostics;
 pub mod diff;
 pub mod ir;
 pub mod package;
+pub mod source_map;
 pub mod taxonomy;
 
 pub use compiler::{Compilation, compile};

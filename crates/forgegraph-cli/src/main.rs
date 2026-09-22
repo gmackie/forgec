@@ -245,10 +245,10 @@ fn main() -> Result<()> {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             verify_lock(&path, &loaded.deps)?;
             eprint!("{}", loaded.compilation.render());
-            let Some(ir) = loaded.compilation.ir else {
+            let Some(ir) = loaded.compilation.ir.as_ref() else {
                 std::process::exit(1)
             };
-            let plans = match forgegraph_planner::plan(&ir) {
+            let plans = match forgegraph_planner::plan(ir) {
                 Ok(p) => p,
                 Err(e) => {
                     eprintln!("{e}");
@@ -260,7 +260,7 @@ fn main() -> Result<()> {
             let openapi = forgegraph_codegen::openapi(&plans.contracts, &plans.observability);
             let bundle = serde_json::json!({
                 "version": "app-bundle/1",
-                "buildHash": build_hash(&ir, &loaded.deps),
+                "buildHash": build_hash(ir, &loaded.deps),
                 "digests": ir.digests(),
                 "ir": ir,
                 "contracts": plans.contracts,
@@ -272,12 +272,21 @@ fn main() -> Result<()> {
                 "schedules": plans.schedules,
                 "realtime": plans.realtime,
                 "observability": plans.observability,
-                "dataSemantics": forgegraph_semantic::ir::DataSemantics::of(&ir, &forgegraph_semantic::ir::Taxonomy::core()),
-                "lineage": forgegraph_semantic::ir::Lineage::of(&ir),
-                "capabilities": forgegraph_semantic::ir::EffectiveCapabilities::of(&ir),
+                "dataSemantics": forgegraph_semantic::ir::DataSemantics::of(ir, &forgegraph_semantic::ir::Taxonomy::core()),
+                "lineage": forgegraph_semantic::ir::Lineage::of(ir),
+                "capabilities": forgegraph_semantic::ir::EffectiveCapabilities::of(ir),
                 // Served at /forge/openapi.json by every host: the runtime is a consumer of the projection, not its author.
                 "openapi": openapi,
             });
+            let source_map = loaded.compilation.source_map(
+                &build_hash(ir, &loaded.deps),
+                env!("CARGO_PKG_VERSION"),
+                std::env::var("FORGE_SOURCE_REVISION").ok().as_deref(),
+            );
+            std::fs::write(
+                out_dir.join("source-map.json"),
+                serde_json::to_string_pretty(&source_map)?,
+            )?;
             std::fs::write(
                 out_dir.join("app.json"),
                 serde_json::to_string_pretty(&bundle)?,
