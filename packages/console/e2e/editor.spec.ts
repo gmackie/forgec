@@ -35,7 +35,7 @@ test("edits a resource explicitly, preserves source, undoes and downloads", asyn
     .click();
   await page.getByLabel("Allow update email in Support").uncheck();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(page.getByLabel("Forge source")).toHaveValue(/update \{  \}/);
+  await expect(page.getByLabel("Forge source")).toHaveText(/update \{  \}/);
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download file" }).click();
   const download = await downloaded;
@@ -76,10 +76,10 @@ test("opens multi-file models without showing files and binds a shared purpose",
   await page.getByRole("option", { name: "Basic", exact: true }).click();
   await page.getByRole("button", { name: "Bind purpose", exact: true }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(page.getByLabel("Forge source")).toHaveValue(
+  await expect(page.getByLabel("Forge source")).toHaveText(
     /for Service \{ use Basic \}/,
   );
-  await expect(page.getByLabel("Forge source")).toHaveValue(
+  await expect(page.getByLabel("Forge source")).toHaveText(
     /type : text = "personal"/,
   );
 });
@@ -115,10 +115,10 @@ test("loads demo safely and keeps a default edit through undo, redo and reload",
   await page.getByRole("button", { name: /^Developer/ }).click();
   await page.getByRole("button", { name: "ServicePlan", exact: true }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(page.getByLabel("Forge source")).toHaveValue(
+  await expect(page.getByLabel("Forge source")).toHaveText(
     /includedHours : HourCount = 20/,
   );
-  await expect(page.getByLabel("Forge source")).toHaveAttribute("readonly", "");
+  await expect(page.getByLabel("Forge source")).toHaveAttribute("aria-readonly", "true");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(

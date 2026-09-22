@@ -27,7 +27,7 @@ test("composes resources with a focused field editor and native data catalog", a
     .click();
   await page.getByRole("button", { name: "Save field", exact: true }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(page.getByLabel("Forge source")).toHaveValue(
+  await expect(page.getByLabel("Forge source")).toHaveText(
     /email : email @data\(data.contact.email\)/,
   );
   await page.getByRole("button", { name: "Document", exact: true }).click();
@@ -63,7 +63,7 @@ test("defines function contracts and follows sources to their functions", async 
     .getByRole("button", { name: "Save endpoint", exact: true })
     .click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(page.getByLabel("Forge source")).toHaveValue(
+  await expect(page.getByLabel("Forge source")).toHaveText(
     /@http\(POST, "\/v2\/escalations"\)/,
   );
   await page.getByRole("tab", { name: /^Sources/ }).click();
@@ -112,7 +112,7 @@ test("edits function dependencies with labeled controls and restores an endpoint
     .click();
   await form.getByRole("button", { name: "Save", exact: true }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(page.getByLabel("Forge source")).toHaveValue(/Ticket write/);
+  await expect(page.getByLabel("Forge source")).toHaveText(/Ticket write/);
 });
 
 test("keeps the mobile field editor contained with its actions reachable", async ({

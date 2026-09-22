@@ -26,7 +26,7 @@ test("business design, developer details and live use are distinct and preserve 
   ).toBeVisible();
   await page.getByRole("button", { name: /^Developer/ }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(page.getByLabel("Forge source", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Forge source", { exact: true })).toHaveText(
     /businessEmail : email/,
   );
   await page.getByRole("tab", { name: /^Functions/ }).click();

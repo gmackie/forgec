@@ -10,6 +10,7 @@ import {
 import { deploymentAction, type DeploymentConnection } from "./deployment-control.js";
 import type { RuntimeConnection } from "./runtime-control.js";
 import { gitCommitSchema, type GitRepository } from "./git.js";
+import type { Studio } from "./studio.js";
 import type { OciRegistry } from "./oci.js";
 const name = z.string().trim().min(1).max(120);
 const appInput = z
@@ -60,6 +61,7 @@ const publishInput = z
   })
   .strict();
 export interface ApiOptions {
+  studio?: Studio;
   store: StateStore;
   token: string;
   authority: string;
@@ -196,20 +198,58 @@ function route(request: Request) {
     }
     if (path === "/git/projects" && method === "GET")
       return json({ projects: (o.git ?? []).map((g) => g.project) });
-    const gitRoute = path.match(/^\/git\/projects\/([a-z0-9-]+)(\/commits)?$/);
-    if (gitRoute) {
-      const repository = o.git?.find((g) => g.project.id === gitRoute[1]);
-      if (!repository)
-        return yield* Effect.fail(
-          new Problem(404, "Git project is not configured on this instance."),
-        );
-      if (method === "GET" && !gitRoute[2])
-        return json(yield* attempt(() => repository.snapshot()));
-      if (method === "POST" && gitRoute[2]) {
-        const input = yield* attempt(async () =>
-          decode(gitCommitSchema, await body(request)),
-        );
-        return json(yield* attempt(() => repository.commit(input)), 201);
+    const gitRoute = path.match(/^\/git\/projects\/([a-z0-9-]+)(?:\/(commits|branches|reviews|artifacts)(?:\/([A-Za-z0-9_-]+)(?:\/(decisions|comments))?)?)?$/);
+    if(gitRoute) {
+      const configured=o.git?.find(g=>g.project.id===gitRoute[1]);
+      if(!configured)return yield* Effect.fail(new Problem(404,"Git project is not configured on this instance."));
+      const repository=yield* attempt(async()=>configured.onBranch(url.searchParams.get("branch")||configured.project.branch));
+      const section=gitRoute[2],id=gitRoute[3],action=gitRoute[4];
+      const page=yield* attempt(async()=>decode(z.coerce.number().int().min(1).max(1000),url.searchParams.get("page")||1));
+      if(!section&&method==="GET")return json(yield* attempt(()=>repository.snapshot()));
+      if(section==="commits"&&!id&&method==="POST") {
+        const input=yield* attempt(async()=>decode(gitCommitSchema,await body(request)));
+        return json(yield* attempt(()=>repository.commit(input)),201);
+      }
+      if(section==="branches"&&!id&&method==="POST") {
+        const input=yield* attempt(async()=>decode(z.object({name:z.string().min(1).max(200),revision:z.string().regex(/^[a-f0-9]{40}$/)}).strict(),await body(request)));
+        return json(yield* attempt(()=>repository.createBranch(input.name,input.revision)),201);
+      }
+      if(section==="branches"&&!id&&method==="GET") {
+        const result=yield* attempt(()=>repository.branches(page));
+        if(o.studio)yield* attempt(()=>o.studio!.observe(configured,result.items,[]));
+        return json(result);
+      }
+      if(section==="commits"&&!id&&method==="GET") {
+        const result=yield* attempt(()=>repository.history(page));
+        if(o.studio)yield* attempt(()=>o.studio!.observe(configured,[],result.items));
+        return json(result);
+      }
+      if(section==="reviews"||section==="artifacts") {
+        if(!o.studio)return yield* Effect.fail(new Problem(503,"Studio metadata storage is not configured."));
+        const studio=o.studio;
+        if(!id&&method==="GET")return json(yield* attempt(()=>studio.list(configured,section==="reviews"?"ChangeReview":"IRArtifact",url.searchParams.get("cursor")||undefined)));
+        if(section==="reviews") {
+          if(!id&&method==="POST") {
+            const input=yield* attempt(async()=>decode(z.object({title:z.string().trim().min(1).max(200),description:z.string().max(4000),baseBranch:z.string().min(1).max(200),headBranch:z.string().min(1).max(200),headRevision:z.string().regex(/^[a-f0-9]{40}$/)}).strict(),await body(request)));
+            return json(yield* attempt(()=>studio.submit(configured,input)),201);
+          }
+          if(id&&!action&&method==="GET")return json(yield* attempt(()=>studio.detail(configured,id)));
+          if(id&&action==="decisions"&&method==="POST") {
+            const input=yield* attempt(async()=>decode(z.object({action:z.enum(["approve","requestChanges","close"]),expectedVersion:z.number().int().positive()}).strict(),await body(request)));
+            return json(yield* attempt(()=>studio.decide(configured,id,input.action,input.expectedVersion)));
+          }
+          if(id&&action==="comments"&&method==="POST") {
+            const input=yield* attempt(async()=>decode(z.object({body:z.string().trim().min(1).max(4000)}).strict(),await body(request)));
+            yield* attempt(()=>studio.review(configured,id));
+            return json(yield* attempt(()=>studio.call("ReviewComment","create",{review:id,body:input.body,author:"console-administrator"})),201);
+          }
+        }
+        if(section==="artifacts"&&!id&&method==="POST") {
+          const input=yield* attempt(async()=>decode(z.object({revision:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string().regex(/^sha256:[a-f0-9]{64}$/),location:z.string().min(1).max(2000).refine(s=>{try{const u=new URL(s);return ["https:","oci:"].includes(u.protocol)&&!u.username&&!u.password;}catch{return false;}}),byteCount:z.number().int().nonnegative(),compilerVersion:z.string().min(1).max(100),irVersion:z.string().min(1).max(100)}).strict(),await body(request)));
+          yield* attempt(()=>configured.snapshot(input.revision));
+          const record=yield* attempt(()=>studio.repository(configured));
+          return json(yield* attempt(()=>studio.call("IRArtifact","create",{...input,repository:record.id,key:`${record.id}:${input.revision}:${input.digest}`})),201);
+        }
       }
     }
     if(path==='/runtime/targets'&&method==='GET')return json({targets:(o.runtimes||[]).map(t=>t.public)});

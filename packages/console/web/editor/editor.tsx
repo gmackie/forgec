@@ -26,6 +26,8 @@ import { patch } from "./model.js";
 import type { GitProject, GitSnapshot } from "../../src/git.js";
 import { example } from "./example.js";
 import "./editor.css";
+import { RepositoryWorkspace } from "./reviews.js";
+import { SourceEditor } from "./source-editor.js";
 import type { StudioApi } from "../records.js";
 import { children, textOf } from "./model.js";
 const Records = lazy(() =>
@@ -327,11 +329,11 @@ export function ForgeEditor({
         }))
         .filter((f) => f.before !== f.after)
     : [];
-  async function loadRepository() {
+  async function loadRepository(branch?: string) {
     setGitBusy(true);
     setError("");
     try {
-      const snapshot: GitSnapshot = await gitApi(`/${repoId}`);
+      const snapshot: GitSnapshot = await gitApi(`/${branch && repository ? repository.id : repoId}${branch ? `?branch=${encodeURIComponent(branch)}` : ""}`);
       if (!snapshot.files.length)
         throw Error("This source directory contains no Forge files.");
       const next = {
@@ -357,7 +359,7 @@ export function ForgeEditor({
     setGitBusy(true);
     setError("");
     try {
-      const result = await gitApi(`/${repository.id}/commits`, {
+      const result = await gitApi(`/${repository.id}/commits${repository.branch !== repositories.find(r=>r.id===repository.id)?.branch ? `?branch=${encodeURIComponent(repository.branch)}` : ""}`, {
         base: repository.revision,
         message: commitMessage,
         files: project.files,
@@ -723,6 +725,7 @@ export function ForgeEditor({
             </Button>
           </div>
         )}
+        {repository && <details className="studio-repository-tools"><summary>Repository, branches & reviews</summary><RepositoryWorkspace key={repository.id + repository.branch + repository.revision} snapshot={repository} api={gitApi} dirty={changedFiles.length>0} onLoad={loadRepository}/></details>}
         {developer && (
           <details className="studio-routes">
             <summary>Declared API routes</summary>
@@ -968,37 +971,8 @@ export function ForgeEditor({
                       <label htmlFor="forge-source">
                         {entry.name} · {entry.path}
                       </label>
-                      {editing ? (
-                        <fieldset
-                          className="visual-fieldset"
-                          disabled={!ready || gitBusy}
-                        >
-                          <Edit
-                            key={entry.id}
-                            multiline
-                            label="Forge source"
-                            value={entry.source.slice(
-                              entry.node.start,
-                              entry.node.end,
-                            )}
-                            onCommit={(value) =>
-                              replaceEntry(
-                                patch(entry.source, entry.node, value),
-                              )
-                            }
-                          />
-                        </fieldset>
-                      ) : (
-                        <Textarea
-                          id="forge-source"
-                          aria-label="Forge source"
-                          readOnly
-                          value={entry.source.slice(
-                            entry.node.start,
-                            entry.node.end,
-                          )}
-                        />
-                      )}
+                      <SourceEditor key={entry.id} value={entry.source.slice(entry.node.start, entry.node.end)} readOnly={!editing || !ready || gitBusy}
+                        onCommit={value => replaceEntry(patch(entry.source,entry.node,value))} />
                       <Button
                         onClick={() => download(entry.path, entry.source)}
                       >

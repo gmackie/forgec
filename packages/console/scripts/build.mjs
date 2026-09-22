@@ -1,6 +1,7 @@
 import { build } from "esbuild";
 await build({
   entryPoints: ["src/node.ts"],
+  loader: {".sql":"text"},
   outfile: "dist/server.mjs",
   bundle: true,
   platform: "node",

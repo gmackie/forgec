@@ -1,3 +1,5 @@
+import { Studio } from "./studio.js";
+import type { D1Like } from "@forgegraph/runtime/d1";
 import {runtimeConnections} from "./runtime-control.js";
 import {deploymentConnections} from "./deployment-control.js";
 import type { D1Database } from "@cloudflare/workers-types";
@@ -51,6 +53,7 @@ export default {
         );
       const api = createApi({
         store: new D1State(env.DB),
+        studio: new Studio(env.DB as unknown as D1Like,env.ADMIN_TOKEN || ""),
         token: env.ADMIN_TOKEN || "",
         authority: env.INSTANCE_AUTHORITY,
         name: env.INSTANCE_NAME || "Forge",

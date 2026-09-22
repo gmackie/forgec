@@ -1894,3 +1894,16 @@
     flex-wrap: wrap;
   }
 }
+.studio-repository-tools { border: 1px solid #d5dbe5; border-radius: 10px; padding: 1rem; margin: 1rem 0; }
+.repository-workspace > header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 0; }
+.repository-workspace nav, .repository-workspace footer { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.repository-workspace li { padding: .75rem 0; border-bottom: 1px solid #e1e5eb; list-style: none; overflow-wrap: anywhere; }
+.repository-workspace li > button { margin: 0 .75rem; }
+.review-create, .artifact-form { display: grid; gap: .75rem; max-width: 680px; padding: 1rem 0; }
+.review-detail { border-top: 1px solid #d5dbe5; margin-top: 1rem; padding-top: 1rem; }
+.review-detail details { margin: 1rem 0; }
+.review-detail h5 { font-weight: 600; margin: .5rem 0; }
+.review-detail .commit-diff > div { min-width: 0; }
+.repository-workspace ul, .repository-workspace ol { padding: 0; }
+.forge-source-editor { width: 100%; min-width: 0; }
+@media(max-width:640px) { .review-detail .commit-diff { grid-template-columns: 1fr; } .repository-workspace > header { align-items: flex-start; flex-direction: column; } }

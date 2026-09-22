@@ -410,3 +410,43 @@ same `ForgeCall` used by the forms, `openForms(route?)`, and `onDirtyChange`.
 Compatibility is declared by `supports(descriptor)`; no executable code is read
 from runtime metadata. See `packages/react/README.md` for the integration contract.
 There is no visual gizmo builder in this implementation.
+
+### Source, repositories, and internal change reviews
+
+Developer Source uses a highlighted editor with line numbers and local undo.
+Enable **Edit draft** to change source; leaving the source editor applies the edit
+to the draft, and Escape cancels the current source edit.
+
+Connect a configured Git project, then open **Repository, branches & reviews**.
+Create a change branch from the loaded commit, open it, edit, and commit the draft.
+The Commits tab shows the selected branch's history. In Reviews, choose a target
+branch and submit the committed changes with a title and description.
+
+Reviews belong to Forge, with pinned base/head commits, source comparisons,
+comments, and Approve / Request changes / Close decisions. Approval neither
+merges nor deploys. If either branch has moved, approval and change requests
+are blocked; close the old review and submit a new one. Decisions describe the
+pinned commits, not any later branch state. All decisions and comments currently
+use the shared instance administrator identity, not individual reviewer accounts.
+GitHub remains the configured source provider; no GitHub pull request is created.
+
+Studio dogfoods `studio/src/studio.forge`. Its generated runtime stores repository
+inventory, observed branches, immutable commit provenance, reviews, comments,
+and IR artifact metadata in the console database. Git remains authoritative for
+branch heads. Reusing a project ID with a different repository or source root is
+rejected to preserve provenance; configure a new ID instead.
+
+IR artifacts register a commit, SHA-256 digest, HTTPS/OCI location, size, and
+compiler/IR versions. This is a provenance catalog: it does not upload, fetch,
+or verify artifact payloads.
+
+Node applies the generated Studio migration transactionally at startup.
+For Cloudflare, apply the configured D1 migrations before deploying this version:
+`pnpm exec wrangler d1 migrations apply forge-console --remote`.
+
+After changing the dogfood schema, run `pnpm studio:generate` and commit the
+compiled bundle and migration together. `pnpm studio:check` recompiles and checks
+that tracked artifacts match. Set `FORGE_COMPILER` to an existing forgec binary
+to avoid rebuilding it. The current generated migration initializes the schema;
+after it has been deployed, schema changes require a new forward migration,
+not replacement of migration 0003.

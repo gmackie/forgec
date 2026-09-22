@@ -161,8 +161,8 @@ test("types a complete source change without losing focus and shows immutable fi
   await source.press("ControlOrMeta+Home");
   await source.pressSequentially("// continuous typing\n", { delay: 20 });
   await expect(source).toBeFocused();
-  await expect(source).toHaveValue(/continuous typing/);
+  await expect(source).toHaveText(/continuous typing/);
   await page.getByRole("button", { name: "Document", exact: true }).click();
   await page.getByRole("button", { name: "Source", exact: true }).click();
-  await expect(source).toHaveValue(/continuous typing/);
+  await expect(source).toHaveText(/continuous typing/);
 });
