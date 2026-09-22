@@ -51,6 +51,7 @@ const DECL_KEYWORDS: &[&str] = &[
     "module",
     "export",
     "workflow",
+    "workQueue",
     "dataClass",
 ]; // `purpose` is also a function item, so it does not signal an unclosed block
 
@@ -341,6 +342,7 @@ impl<'a> Parser<'a> {
             "channel" => K::CHANNEL_DECL,
             "source" => K::SOURCE_DECL,
             "workflow" => K::WORKFLOW_DECL,
+            "workQueue" => K::WORK_QUEUE_DECL,
             "purpose" => K::PURPOSE_DECL,
             "dataClass" => K::DATA_CLASS_DECL,
             "on" => K::SUBSCRIPTION_DECL,
@@ -369,6 +371,29 @@ impl<'a> Parser<'a> {
             K::FUNCTION_DECL => self.function_body(),
             K::CHANNEL_DECL => self.channel_body(),
             K::SOURCE_DECL => self.source_body(),
+            K::WORK_QUEUE_DECL => {
+                self.expect_ident("queue name");
+                self.block(|p| {
+                    p.start(K::WORK_QUEUE_ITEM);
+                    let key = p.current_text().to_string();
+                    p.bump();
+                    match key.as_str() {
+                        "execute" => p.qualified_name("execution function"),
+                        "lease" => {
+                            p.expect(TokenKind::Duration, "lease duration");
+                        }
+                        "retry" | "capacity" | "runners" => {
+                            p.expect(TokenKind::Int, "queue bound");
+                        }
+                        _ => {
+                            p.error("unknown workQueue item");
+                            p.recover_line();
+                        }
+                    }
+                    p.finish();
+                    p.end_item();
+                });
+            }
             K::WORKFLOW_DECL => self.workflow_body(),
             K::PURPOSE_DECL => {
                 // edition 2027: `purpose Name [extends Parent]`

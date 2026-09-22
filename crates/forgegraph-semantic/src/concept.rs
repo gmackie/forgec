@@ -632,6 +632,9 @@ pub fn project(ir: &DomainIR) -> Projection {
         .into(),
     );
     for module in &ir.modules {
+        for queue in &module.work_queues {
+            out.coverage.insert(queue.id.clone(), ["work queue execution requirements and scheduling are not projected into ConceptIR".into()].into());
+        }
         for r in &module.resources {
             out.concept.entities.insert(
                 r.id.clone(),

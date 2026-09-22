@@ -32,3 +32,4 @@ export * from "./auth.js";
 export * from "./deployment-ledger.js";
 export * from "./suppression.js";
 export * from "./otlp.js";
+export * from "./work-queues.js";

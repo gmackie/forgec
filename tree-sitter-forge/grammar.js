@@ -25,6 +25,7 @@ module.exports = grammar({
           $.source_declaration,
           $.subscription_declaration,
           $.workflow_declaration,
+          $.work_queue_declaration,
           $.view_declaration,
           $.projection_declaration,
           $.cache_declaration,
@@ -347,6 +348,7 @@ module.exports = grammar({
           ),
         ),
       ),
+    work_queue_declaration: ($) => seq("workQueue", field("name", $.identifier), "{", repeat(choice(seq("execute",$.qualified_name),seq("lease",$.duration),seq(choice("retry","capacity","runners"),$.integer))), "}"),
     workflow_declaration: ($) =>
       seq(
         "workflow",

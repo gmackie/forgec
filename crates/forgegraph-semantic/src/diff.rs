@@ -92,6 +92,7 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "work-queue-definition-changed" => vec!["drain-or-migrate-queued-tasks"],
         "sequence-definition-changed" => {
             vec!["sequence-high-water-review", "existing-data-validation"]
         }
@@ -239,6 +240,21 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     {
         if old_sequences.get(id) != new_sequences.get(id) {
             push(&mut f,"storage","migration","sequence-definition-changed",id.clone(),"sequence added, removed or changed; preserve partition high-water marks and validate existing allocated values before activation".into());
+        }
+    }
+
+    let queues = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["workQueues"]))
+            .map(|q| (s(&q["id"]), q.clone()))
+            .collect()
+    };
+    let previous_queues = queues(old);
+    let current_queues = queues(new);
+    for (id, previous) in previous_queues {
+        if current_queues.get(&id) != Some(&previous) {
+            push(&mut f,"workflow","migration","work-queue-definition-changed",id,"queue definition changed or removed; preserve active claim fencing and pinned task requirements during migration".into());
         }
     }
 

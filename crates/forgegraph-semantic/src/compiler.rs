@@ -118,6 +118,7 @@ enum SymKind {
     Channel,
     Source,
     Workflow,
+    WorkQueue,
     Purpose,
     DataClass,
 }
@@ -416,6 +417,7 @@ impl<'a> Ctx<'a> {
                     Declaration::Function(_) => SymKind::Function,
                     Declaration::Channel(_) => SymKind::Channel,
                     Declaration::Source(_) => SymKind::Source,
+                    Declaration::WorkQueue(_) => SymKind::WorkQueue,
                     Declaration::Workflow(_) => SymKind::Workflow,
                     Declaration::Purpose(_) => SymKind::Purpose,
                     Declaration::DataClass(_) => SymKind::DataClass,
@@ -579,6 +581,7 @@ impl<'a> Ctx<'a> {
                         | SymKind::Cache
                         | SymKind::View
                         | SymKind::Projection
+                        | SymKind::WorkQueue
                         | SymKind::Workflow
                         | SymKind::Purpose
                         | SymKind::DataClass => {
@@ -4741,6 +4744,80 @@ impl<'a> Ctx<'a> {
                         m.channels.push(ch);
                     }
                 }
+                (SymKind::WorkQueue, Declaration::WorkQueue(q)) => {
+                    let mut queue = WorkQueue {
+                        id,
+                        name,
+                        execute: String::new(),
+                        lease_ms: 90_000,
+                        max_attempts: 3,
+                        max_tasks: 128,
+                        max_runners: 64,
+                    };
+                    let mut seen = BTreeSet::new();
+                    for item in q.items() {
+                        let key = item.key().unwrap_or_default();
+                        if !seen.insert(key.clone()) {
+                            self.err(
+                                "E-QUEUE-001",
+                                file,
+                                range_of(&item),
+                                "duplicate queue setting",
+                                None,
+                            );
+                        }
+                        if key == "execute" {
+                            if let Some(target) = item.target() {
+                                if let Some(Resolved::Function(function)) = self.resolve(
+                                    &target.segments(),
+                                    &module,
+                                    file,
+                                    range_of(&target),
+                                ) {
+                                    queue.execute = function;
+                                } else {
+                                    self.err(
+                                        "E-QUEUE-001",
+                                        file,
+                                        range_of(&item),
+                                        "queue execute must name a function",
+                                        None,
+                                    );
+                                }
+                            }
+                        } else {
+                            let text = item.value().unwrap_or_default();
+                            let number = if key == "lease" {
+                                text.strip_suffix("ms")
+                                    .and_then(|s| s.parse::<u32>().ok())
+                                    .or_else(|| {
+                                        text.strip_suffix('s')
+                                            .and_then(|s| s.parse::<u32>().ok())
+                                            .and_then(|n| n.checked_mul(1000))
+                                    })
+                            } else {
+                                text.parse::<u32>().ok()
+                            }
+                            .unwrap_or(0);
+                            match key.as_str() {
+                                "lease" => queue.lease_ms = number,
+                                "retry" => queue.max_attempts = number,
+                                "capacity" => queue.max_tasks = number,
+                                "runners" => queue.max_runners = number,
+                                _ => {}
+                            }
+                        }
+                    }
+                    if queue.execute.is_empty()
+                        || !(1000..=300000).contains(&queue.lease_ms)
+                        || !(1..=10).contains(&queue.max_attempts)
+                        || !(1..=128).contains(&queue.max_tasks)
+                        || !(1..=64).contains(&queue.max_runners)
+                    {
+                        self.err("E-QUEUE-002",file,range_of(q),"queue needs execute, lease 1s..300s, retry 1..10, capacity 1..128 and runners 1..64",None);
+                    }
+                    m.work_queues.push(queue);
+                }
                 (SymKind::Workflow, Declaration::Workflow(w)) => {
                     if let Some(wf) = self.workflow(w, &module, file, exported) {
                         m.workflows.push(wf);
@@ -4952,6 +5029,10 @@ impl<'a> Ctx<'a> {
                 .any(|r| r.fields.iter().any(|f| f.sequence.is_some()))
         }) {
             requires.push("sequences/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| !m.work_queues.is_empty()) {
+            requires.push("work-queues/1".into());
             requires.sort();
         }
         DomainIR {

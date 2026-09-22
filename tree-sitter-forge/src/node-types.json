@@ -1799,6 +1799,10 @@
           "named": true
         },
         {
+          "type": "work_queue_declaration",
+          "named": true
+        },
+        {
           "type": "workflow_declaration",
           "named": true
         }
@@ -2372,6 +2376,40 @@
     }
   },
   {
+    "type": "work_queue_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "duration",
+          "named": true
+        },
+        {
+          "type": "integer",
+          "named": true
+        },
+        {
+          "type": "qualified_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "workflow_declaration",
     "named": true,
     "fields": {
@@ -2570,6 +2608,10 @@
     "named": false
   },
   {
+    "type": "capacity",
+    "named": false
+  },
+  {
     "type": "catch",
     "named": false
   },
@@ -2649,6 +2691,10 @@
   },
   {
     "type": "errors",
+    "named": false
+  },
+  {
+    "type": "execute",
     "named": false
   },
   {
@@ -2745,6 +2791,10 @@
   },
   {
     "type": "latest",
+    "named": false
+  },
+  {
+    "type": "lease",
     "named": false
   },
   {
@@ -2852,11 +2902,19 @@
     "named": false
   },
   {
+    "type": "retry",
+    "named": false
+  },
+  {
     "type": "return",
     "named": false
   },
   {
     "type": "rules",
+    "named": false
+  },
+  {
+    "type": "runners",
     "named": false
   },
   {
@@ -2973,6 +3031,10 @@
   },
   {
     "type": "work",
+    "named": false
+  },
+  {
+    "type": "workQueue",
     "named": false
   },
   {

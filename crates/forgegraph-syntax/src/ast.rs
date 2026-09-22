@@ -98,6 +98,7 @@ pub enum Declaration {
     Source(SourceDecl),
     Subscription(SubscriptionDecl),
     Workflow(WorkflowDecl),
+    WorkQueue(WorkQueueDecl),
     Purpose(PurposeDecl),
     DataClass(DataClassDecl),
 }
@@ -119,6 +120,7 @@ impl Declaration {
             K::CHANNEL_DECL => Self::Channel(ChannelDecl(node)),
             K::SOURCE_DECL => Self::Source(SourceDecl(node)),
             K::SUBSCRIPTION_DECL => Self::Subscription(SubscriptionDecl(node)),
+            K::WORK_QUEUE_DECL => Self::WorkQueue(WorkQueueDecl(node)),
             K::WORKFLOW_DECL => Self::Workflow(WorkflowDecl(node)),
             K::PURPOSE_DECL => Self::Purpose(PurposeDecl(node)),
             K::DATA_CLASS_DECL => Self::DataClass(DataClassDecl(node)),
@@ -141,6 +143,7 @@ impl Declaration {
             Self::Channel(n) => &n.0,
             Self::Source(n) => &n.0,
             Self::Subscription(n) => &n.0,
+            Self::WorkQueue(n) => &n.0,
             Self::Workflow(n) => &n.0,
             Self::Purpose(n) => &n.0,
             Self::DataClass(n) => &n.0,
@@ -174,6 +177,7 @@ impl Declaration {
                         | "channel"
                         | "source"
                         | "workflow"
+                        | "workQueue"
                 )
             }),
         }
@@ -962,6 +966,26 @@ node!(TimezoneDecl, TIMEZONE_DECL);
 node!(TargetDecl, TARGET_DECL);
 
 // -------------------------------------------------------------- workflows
+node!(WorkQueueDecl, WORK_QUEUE_DECL);
+impl WorkQueueDecl {
+    pub fn items(&self) -> impl Iterator<Item = WorkQueueItem> + '_ {
+        children(&self.0)
+    }
+}
+node!(WorkQueueItem, WORK_QUEUE_ITEM);
+impl WorkQueueItem {
+    pub fn key(&self) -> Option<String> {
+        idents(&self.0).next().map(|t| t.text().to_string())
+    }
+    pub fn value(&self) -> Option<String> {
+        tokens(&self.0)
+            .find(|t| matches!(t.kind(), K::DURATION | K::INT))
+            .map(|t| t.text().to_string())
+    }
+    pub fn target(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+}
 node!(WorkflowDecl, WORKFLOW_DECL);
 impl WorkflowDecl {
     pub fn name(&self) -> Option<SyntaxToken> {

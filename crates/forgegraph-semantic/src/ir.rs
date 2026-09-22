@@ -26,6 +26,7 @@ pub const KNOWN_FEATURES: &[&str] = &[
     "collections/1",
     "workflow-map/1",
     "sequences/1",
+    "work-queues/1",
 ];
 
 impl DomainIR {
@@ -122,6 +123,8 @@ pub struct Module {
     pub caches: Vec<Cache>,
     #[serde(default)]
     pub workflows: Vec<Workflow>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub work_queues: Vec<WorkQueue>,
     /// Edition 2027 governance vocabulary (plan D07/D11): meaning, never authority.
     #[serde(default)]
     pub purposes: Vec<Purpose>,
@@ -203,6 +206,18 @@ pub struct CapabilityAtom {
 pub struct PurposeBinding {
     pub purpose: String,
     pub capability: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkQueue {
+    pub id: String,
+    pub name: String,
+    pub execute: String,
+    pub lease_ms: u32,
+    pub max_attempts: u32,
+    pub max_tasks: u32,
+    pub max_runners: u32,
 }
 
 /// Durable composition of capabilities with explicit control flow (plan §15).
