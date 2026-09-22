@@ -30,6 +30,7 @@ const RESOURCE_DECORATORS: &[&str] = &[
     "tenant",
     "timestamps",
     "softDelete",
+    "appendOnly",
     "versioned",
     "audited",
     "crud",
@@ -1959,6 +1960,7 @@ impl<'a> Ctx<'a> {
                 "tenant" => d.tenant = true,
                 "timestamps" => d.timestamps = true,
                 "softDelete" => d.soft_delete = true,
+                "appendOnly" => d.append_only = true,
                 "versioned" => d.versioned = true,
                 "audited" => d.audited = true,
                 "hierarchical" => d.hierarchical = true,
@@ -2451,6 +2453,19 @@ impl<'a> Ctx<'a> {
             .lifecycle()
             .and_then(|l| self.lifecycle(&l, module, file, &id, exported, enums_out));
 
+        if decorators.append_only {
+            if decorators.soft_delete
+                || decorators.hierarchical
+                || lifecycle.is_some()
+                || blob.is_some()
+            {
+                self.err("E-APPEND-001", file, range_of(r), "@appendOnly cannot combine with soft deletion, hierarchy, lifecycle or blob mutation", None);
+            }
+            for field in &mut fields {
+                field.immutable = true;
+            }
+        }
+
         // uniques
         let mut uniques: Vec<Unique> = unique_fields
             .iter()
@@ -2909,6 +2924,15 @@ impl<'a> Ctx<'a> {
                     );
                 }
             }
+        }
+
+        if decorators.append_only {
+            operations.retain(|op| {
+                matches!(
+                    op.kind.as_str(),
+                    "create" | "get" | "find" | "list" | "effective"
+                )
+            });
         }
 
         // ---- edition 2027: governance surface
@@ -5225,6 +5249,13 @@ impl<'a> Ctx<'a> {
                 .any(|r| r.fields.iter().any(|f| f.sequence.is_some()))
         }) {
             requires.push("sequences/1".into());
+            requires.sort();
+        }
+        if modules
+            .iter()
+            .any(|m| m.resources.iter().any(|r| r.decorators.append_only))
+        {
+            requires.push("append-only/1".into());
             requires.sort();
         }
         if modules.iter().any(|m| !m.work_queues.is_empty()) {

@@ -103,6 +103,13 @@ function main() {
     console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract validation only; implementation acceptance remains planned.' }, null, 2));
     return;
   }
+  if (slug === 'specification' && !all) {
+    run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
+    run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', 'packages/foundation/specification']);
+    run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-specification.test.ts']);
+    console.log(JSON.stringify({ suite, package: slug, status: 'passing', scope: 'append-only schema, memory/SQLite persistence, provider abstraction', providers: 'mock only; live certification not run' }));
+    return;
+  }
   if (slug !== 'composition' || all) throw new Error('Package implementations are planned. Currently only --suite local --package composition has an executable verifier.');
   const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
   const fixture = 'conformance/foundation/fixtures/composition/app';

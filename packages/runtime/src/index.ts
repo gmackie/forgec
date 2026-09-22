@@ -35,3 +35,5 @@ export * from "./otlp.js";
 export * from "./work-queues.js";
 export * from "./credentials.js";
 export * from "./actors.js";
+
+export * from "./foundation/specification.js";
