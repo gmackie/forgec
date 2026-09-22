@@ -652,7 +652,7 @@ fn lsp_publishes_diagnostics_and_formats() {
     );
     let init = recv(&mut stdout);
     assert_eq!(init["id"], 1);
-    assert_eq!(init["result"]["capabilities"]["textDocumentSync"], 1);
+    assert_eq!(init["result"]["capabilities"]["textDocumentSync"], 2);
     assert_eq!(
         init["result"]["capabilities"]["documentFormattingProvider"],
         true

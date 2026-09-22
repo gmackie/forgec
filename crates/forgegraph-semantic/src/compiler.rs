@@ -54,6 +54,7 @@ pub struct Compilation {
     pub source_index: BTreeMap<String, SourceSpan>,
     pub references: Vec<SourceReference>,
     pub(crate) files: Vec<SourceFile>,
+    pub(crate) parsed: BTreeMap<String, Parse>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -160,6 +161,14 @@ enum Resolved {
 }
 
 pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
+    compile_with_parser(pkg, deps, &mut |text| parse(text))
+}
+
+pub(crate) fn compile_with_parser(
+    pkg: &Package,
+    deps: &[&DomainIR],
+    parser: &mut impl FnMut(&str) -> Parse,
+) -> Compilation {
     let mut files: Vec<&SourceFile> = pkg.files.iter().collect();
     files.sort_by_key(|a| norm_path(&a.path));
 
@@ -196,7 +205,7 @@ pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
     // 1. parse
     for f in &files {
         let path = norm_path(&f.path);
-        let parse = parse(&f.text);
+        let parse = parser(&f.text);
         for e in parse.errors() {
             ctx.diags.push(Diagnostic {
                 code: "E-SYN-001".into(),
@@ -299,6 +308,11 @@ pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
     Compilation {
         source_index,
         references: ctx.references,
+        parsed: ctx
+            .files
+            .iter()
+            .map(|f| (f.path.clone(), f.parse.clone()))
+            .collect(),
         ir: if has_errors { None } else { Some(ir) },
         diagnostics: ctx.diags,
         files: files

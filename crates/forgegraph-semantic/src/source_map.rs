@@ -16,7 +16,10 @@ impl Compilation {
         let mut derivations: BTreeMap<String, Vec<Value>> = BTreeMap::new();
         for file in &self.files {
             sources.insert(file.path.clone(),json!({"digest":format!("sha256:{}",hash_hex(&file.text)),"byteLength":file.text.len()}));
-            let parsed = forgegraph_syntax::parse(&file.text);
+            let parsed = self
+                .parsed
+                .get(&file.path.replace('\\', "/"))
+                .expect("compiled file has a parse tree");
             let module = parsed
                 .root()
                 .declarations()

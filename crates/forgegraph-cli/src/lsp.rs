@@ -3,11 +3,13 @@
 //! diagnostics (with suggestions) are published for the edited file;
 //! `textDocument/formatting` returns the canonical formatting. Hand-rolled
 //! JSON-RPC keeps the compiler core free of server frameworks.
-use forgegraph_semantic::{compile, load_package};
+use forgegraph_semantic::analysis::AnalysisCache;
+use forgegraph_semantic::load_package;
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
 use std::path::{Path, PathBuf};
+use std::{cell::RefCell, rc::Rc};
 
 fn read_message(input: &mut impl BufRead) -> Option<Value> {
     let mut len = 0usize;
@@ -100,6 +102,32 @@ fn byte_position(text: &str, line: usize, character: usize) -> Option<usize> {
     }
     (units == character).then_some(start + text_line.len())
 }
+/// Apply sequential LSP changes atomically. Invalid UTF-16 ranges leave the buffer intact.
+fn apply_changes(text: &str, changes: &[Value]) -> Option<String> {
+    let mut next = text.to_string();
+    for change in changes {
+        let replacement = change["text"].as_str()?;
+        if let Some(range) = change.get("range") {
+            let start = byte_position(
+                &next,
+                range["start"]["line"].as_u64()? as usize,
+                range["start"]["character"].as_u64()? as usize,
+            )?;
+            let end = byte_position(
+                &next,
+                range["end"]["line"].as_u64()? as usize,
+                range["end"]["character"].as_u64()? as usize,
+            )?;
+            if start > end {
+                return None;
+            }
+            next.replace_range(start..end, replacement);
+        } else {
+            next = replacement.into();
+        }
+    }
+    Some(next)
+}
 fn path_to_uri(path: &Path) -> String {
     let mut uri = String::from("file://");
     for byte in path.to_string_lossy().bytes() {
@@ -115,7 +143,7 @@ fn path_to_uri(path: &Path) -> String {
 struct Analysis {
     root: PathBuf,
     package: forgegraph_semantic::Package,
-    compiled: forgegraph_semantic::Compilation,
+    compiled: Rc<forgegraph_semantic::Compilation>,
     anchors: BTreeMap<String, forgegraph_semantic::compiler::SourceSpan>,
     derivations: Value,
 }
@@ -166,6 +194,7 @@ struct Server {
     /// Open documents by absolute path: the compiler reads these instead of disk.
     open: BTreeMap<PathBuf, String>,
     roots: Vec<PathBuf>,
+    cache: RefCell<AnalysisCache>,
 }
 
 impl Server {
@@ -190,7 +219,8 @@ impl Server {
             for (_, path) in &package.dependency_paths {
                 visit(server, path.clone(), seen, out);
             }
-            let compiled = compile(
+            let compiled = server.cache.borrow_mut().analyze(
+                &root.to_string_lossy(),
                 &package,
                 &out.iter()
                     .filter_map(|a| a.compiled.ir.as_ref())
@@ -501,6 +531,7 @@ pub fn run() -> anyhow::Result<()> {
     let mut server = Server {
         open: BTreeMap::new(),
         roots: vec![],
+        cache: RefCell::new(AnalysisCache::default()),
     };
     while let Some(msg) = read_message(&mut input) {
         let method = msg["method"].as_str().unwrap_or("");
@@ -519,7 +550,7 @@ pub fn run() -> anyhow::Result<()> {
                 }
                 write_message(
                     &mut out,
-                    &json!({ "jsonrpc": "2.0", "id": id, "result": { "capabilities": { "textDocumentSync": 1, "documentFormattingProvider": true, "definitionProvider": true, "referencesProvider": true, "hoverProvider": true, "documentSymbolProvider": true, "workspaceSymbolProvider": true, "completionProvider": {"triggerCharacters":["."]} }, "serverInfo": { "name": "forgec", "version": env!("CARGO_PKG_VERSION") } } }),
+                    &json!({ "jsonrpc": "2.0", "id": id, "result": { "capabilities": { "textDocumentSync": 2, "documentFormattingProvider": true, "definitionProvider": true, "referencesProvider": true, "hoverProvider": true, "documentSymbolProvider": true, "workspaceSymbolProvider": true, "completionProvider": {"triggerCharacters":["."]} }, "serverInfo": { "name": "forgec", "version": env!("CARGO_PKG_VERSION") } } }),
                 );
             }
             "initialized" => {}
@@ -528,18 +559,27 @@ pub fn run() -> anyhow::Result<()> {
                     .as_str()
                     .unwrap_or("")
                     .to_string();
+                let path = uri_to_path(&uri);
                 let text = if method == "textDocument/didOpen" {
                     msg["params"]["textDocument"]["text"]
                         .as_str()
                         .unwrap_or("")
                         .to_string()
                 } else {
-                    msg["params"]["contentChanges"][0]["text"]
-                        .as_str()
-                        .unwrap_or("")
-                        .to_string()
+                    let previous = server
+                        .open
+                        .get(&path)
+                        .cloned()
+                        .or_else(|| std::fs::read_to_string(&path).ok())
+                        .unwrap_or_default();
+                    let Some(changes) = msg["params"]["contentChanges"].as_array() else {
+                        continue;
+                    };
+                    let Some(next) = apply_changes(&previous, changes) else {
+                        continue;
+                    };
+                    next
                 };
-                let path = uri_to_path(&uri);
                 server.open.insert(path.clone(), text);
                 let diagnostics = server.diagnostics_for(&path);
                 write_message(
@@ -550,6 +590,13 @@ pub fn run() -> anyhow::Result<()> {
             "textDocument/didClose" => {
                 let path = uri_to_path(msg["params"]["textDocument"]["uri"].as_str().unwrap_or(""));
                 server.open.remove(&path);
+            }
+            "forge/analysisStats" => {
+                let cache = server.cache.borrow();
+                write_message(
+                    &mut out,
+                    &json!({"jsonrpc":"2.0","id":id,"result":{"stats":cache.stats(),"dependencies":cache.dependencies()}}),
+                );
             }
             "textDocument/documentSymbol" | "workspace/symbol" => {
                 let mut result = vec![];
@@ -659,6 +706,7 @@ mod tests {
         let server = Server {
             open: BTreeMap::from([(path.clone(), source.into())]),
             roots: vec![],
+            cache: RefCell::new(AnalysisCache::default()),
         };
         let location = server.definition(&path, 1, 19);
         assert_eq!(location.len(), 1);
@@ -697,6 +745,7 @@ mod tests {
         let mut server = Server {
             open: BTreeMap::new(),
             roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
         };
         assert!(server.diagnostics_for(&path).is_empty());
         assert_eq!(
@@ -755,6 +804,7 @@ mod tests {
         let server = Server {
             open: BTreeMap::new(),
             roots: vec![],
+            cache: RefCell::new(AnalysisCache::default()),
         };
         assert!(
             server.diagnostics_for(&path).is_empty(),
@@ -771,5 +821,21 @@ mod tests {
         assert!(completions.iter().any(|v| v["label"] == "dep.Public"));
         assert!(!completions.iter().any(|v| v["label"] == "dep.Private"));
         std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn incremental_changes_follow_utf16_and_sequential_ranges() {
+        let changes = json!([
+            {"range":{"start":{"line":0,"character":1},"end":{"line":0,"character":3}},"text":"hello"},
+            {"range":{"start":{"line":0,"character":6},"end":{"line":0,"character":7}},"text":"!"}
+        ]);
+        assert_eq!(
+            apply_changes("a🧭b", changes.as_array().unwrap()).as_deref(),
+            Some("ahello!")
+        );
+        assert!(apply_changes("a🧭b",&[json!({"range":{"start":{"line":0,"character":2},"end":{"line":0,"character":3}},"text":"x"})]).is_none());
+        assert_eq!(
+            apply_changes("old", &[json!({"text":"new"})]).as_deref(),
+            Some("new")
+        );
     }
 }
