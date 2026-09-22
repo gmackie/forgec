@@ -374,8 +374,9 @@ module.exports = grammar({
         "step",
         field("name", $.identifier),
         "=",
-        choice($.step_call, seq("sleep", $.duration), $.step_wait),
+        choice($.step_map, $.step_call, seq("sleep", $.duration), $.step_wait),
       ),
+    step_map: ($) => seq("map", $.identifier, "in", $._expression, "concurrency", $.integer, "{", $.step_call, "}"),
     step_call: ($) =>
       prec.right(
         seq(

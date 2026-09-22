@@ -177,7 +177,10 @@ export function createWorkflowEntrypoint<B extends abstract new (...args: any[])
           } catch {
             // Deadline reached: the next advance applies the timeout terminal (or a late signal already consumed).
           }
-        } else if (state.status !== "running") {
+        } else if (state.status === "running") {
+          // Another driver may own a mapped child lease. Yield before polling again.
+          await step.sleep(`retry:${n}`, 1000);
+        } else {
           return state;
         }
       }

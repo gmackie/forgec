@@ -1,0 +1,2052 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "43e045e0fd0d29d8949540833614936642c99880b32ec1f1703c0ac1de7f2847",
+  "digests": {
+    "source": "688337f6dd8565b362461df25c8d74b8904fed532586308cf177012054796d5f",
+    "wire": "7f9554eb61135111a489e5436f06e15ed4b41edd6200b7c9c29f09c128dc8c3c",
+    "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
+    "security": "359a7132a27a5584ebce67e15e05f2e5c3d649b05865b0e06add981af44941c8"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@dogfood/workflow-map",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [],
+        "types": [],
+        "shapes": [
+          {
+            "id": "@dogfood/workflow-map/_/BatchInput",
+            "name": "BatchInput",
+            "exported": false,
+            "fields": [
+              {
+                "name": "candidates",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "list",
+                    "element": {
+                      "base": {
+                        "kind": "scalar",
+                        "name": "integer",
+                        "args": []
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": []
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 32
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          },
+          {
+            "id": "@dogfood/workflow-map/_/CandidateInput",
+            "name": "CandidateInput",
+            "exported": false,
+            "fields": [
+              {
+                "name": "candidate",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          },
+          {
+            "id": "@dogfood/workflow-map/_/Evaluation",
+            "name": "Evaluation",
+            "exported": false,
+            "fields": [
+              {
+                "name": "score",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          },
+          {
+            "id": "@dogfood/workflow-map/_/TargetInput",
+            "name": "TargetInput",
+            "exported": false,
+            "fields": [
+              {
+                "name": "target",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          },
+          {
+            "id": "@dogfood/workflow-map/_/Verification",
+            "name": "Verification",
+            "exported": false,
+            "fields": [
+              {
+                "name": "passed",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "boolean",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          },
+          {
+            "id": "@dogfood/workflow-map/_/VerificationInput",
+            "name": "VerificationInput",
+            "exported": false,
+            "fields": [
+              {
+                "name": "targets",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "list",
+                    "element": {
+                      "base": {
+                        "kind": "scalar",
+                        "name": "text",
+                        "args": []
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": []
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 16
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          }
+        ],
+        "resources": [],
+        "functions": [
+          {
+            "id": "@dogfood/workflow-map/_/EvaluateCandidate",
+            "name": "EvaluateCandidate",
+            "exported": true,
+            "input": {
+              "base": {
+                "kind": "shape",
+                "id": "@dogfood/workflow-map/_/CandidateInput"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "output": {
+              "base": {
+                "kind": "shape",
+                "id": "@dogfood/workflow-map/_/Evaluation"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "uses": [],
+            "sends": [],
+            "errors": [],
+            "slo": [],
+            "generated": false
+          },
+          {
+            "id": "@dogfood/workflow-map/_/VerifyTarget",
+            "name": "VerifyTarget",
+            "exported": true,
+            "input": {
+              "base": {
+                "kind": "shape",
+                "id": "@dogfood/workflow-map/_/TargetInput"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "output": {
+              "base": {
+                "kind": "shape",
+                "id": "@dogfood/workflow-map/_/Verification"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "uses": [],
+            "sends": [],
+            "errors": [],
+            "slo": [],
+            "generated": false
+          }
+        ],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [
+          {
+            "id": "@dogfood/workflow-map/_/EvaluateCandidates",
+            "name": "EvaluateCandidates",
+            "exported": true,
+            "version": 1,
+            "input": {
+              "base": {
+                "kind": "shape",
+                "id": "@dogfood/workflow-map/_/BatchInput"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "errors": [],
+            "steps": [
+              {
+                "kind": "map",
+                "id": "evaluations",
+                "binding": "candidate",
+                "source": {
+                  "kind": "name",
+                  "path": [
+                    "input",
+                    "candidates"
+                  ]
+                },
+                "concurrency": 4,
+                "max_items": 32,
+                "call": {
+                  "kind": "call",
+                  "id": "evaluations",
+                  "target": {
+                    "kind": "function",
+                    "function": "@dogfood/workflow-map/_/EvaluateCandidate"
+                  },
+                  "args": [
+                    {
+                      "name": "candidate",
+                      "value": {
+                        "kind": "name",
+                        "path": [
+                          "candidate"
+                        ]
+                      }
+                    }
+                  ],
+                  "catches": []
+                }
+              },
+              {
+                "kind": "return",
+                "value": {
+                  "kind": "name",
+                  "path": [
+                    "evaluations"
+                  ]
+                }
+              }
+            ],
+            "graphHash": "e073d5ca2b6b5657a74efcf22b2d21c648de8d60fdf504b7aa91c5512dd85cb0"
+          },
+          {
+            "id": "@dogfood/workflow-map/_/VerifyTargets",
+            "name": "VerifyTargets",
+            "exported": true,
+            "version": 1,
+            "input": {
+              "base": {
+                "kind": "shape",
+                "id": "@dogfood/workflow-map/_/VerificationInput"
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": []
+            },
+            "errors": [],
+            "steps": [
+              {
+                "kind": "map",
+                "id": "verifications",
+                "binding": "target",
+                "source": {
+                  "kind": "name",
+                  "path": [
+                    "input",
+                    "targets"
+                  ]
+                },
+                "concurrency": 2,
+                "max_items": 16,
+                "call": {
+                  "kind": "call",
+                  "id": "verifications",
+                  "target": {
+                    "kind": "function",
+                    "function": "@dogfood/workflow-map/_/VerifyTarget"
+                  },
+                  "args": [
+                    {
+                      "name": "target",
+                      "value": {
+                        "kind": "name",
+                        "path": [
+                          "target"
+                        ]
+                      }
+                    }
+                  ],
+                  "catches": []
+                }
+              },
+              {
+                "kind": "return",
+                "value": {
+                  "kind": "name",
+                  "path": [
+                    "verifications"
+                  ]
+                }
+              }
+            ],
+            "graphHash": "42a5e125801d8f5e1ce53382ece13993ec8db6c1cea5793d4514f3240d7afd69"
+          }
+        ],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "collections/1",
+      "workflow-map/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@dogfood/workflow-map",
+    "resources": [],
+    "functions": [
+      {
+        "id": "@dogfood/workflow-map/_/EvaluateCandidate",
+        "name": "EvaluateCandidate",
+        "errors": [],
+        "input": {
+          "type": "object",
+          "properties": {
+            "candidate": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "candidate"
+          ],
+          "additionalProperties": false
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "score"
+          ],
+          "additionalProperties": false
+        },
+        "generated": false
+      },
+      {
+        "id": "@dogfood/workflow-map/_/VerifyTarget",
+        "name": "VerifyTarget",
+        "errors": [],
+        "input": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "x-forge-type": "text"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "additionalProperties": false
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "passed"
+          ],
+          "additionalProperties": false
+        },
+        "generated": false
+      }
+    ],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [
+      {
+        "id": "@dogfood/workflow-map/_/EvaluateCandidates",
+        "name": "EvaluateCandidates",
+        "version": 1,
+        "graphHash": "e073d5ca2b6b5657a74efcf22b2d21c648de8d60fdf504b7aa91c5512dd85cb0",
+        "errors": [],
+        "input": {
+          "type": "object",
+          "properties": {
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "x-forge-type": "integer"
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 32
+            }
+          },
+          "required": [
+            "candidates"
+          ],
+          "additionalProperties": false
+        },
+        "signals": [],
+        "start": {
+          "method": "POST",
+          "path": "/v1/workflows/evaluate-candidates"
+        },
+        "path": "/v1/workflows/evaluate-candidates"
+      },
+      {
+        "id": "@dogfood/workflow-map/_/VerifyTargets",
+        "name": "VerifyTargets",
+        "version": 1,
+        "graphHash": "42a5e125801d8f5e1ce53382ece13993ec8db6c1cea5793d4514f3240d7afd69",
+        "errors": [],
+        "input": {
+          "type": "object",
+          "properties": {
+            "targets": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 16
+            }
+          },
+          "required": [
+            "targets"
+          ],
+          "additionalProperties": false
+        },
+        "signals": [],
+        "start": {
+          "method": "POST",
+          "path": "/v1/workflows/verify-targets"
+        },
+        "path": "/v1/workflows/verify-targets"
+      }
+    ],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [],
+    "indexes": [],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": []
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@dogfood/workflow-map",
+    "resources": []
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": [
+      {
+        "id": "@dogfood/workflow-map/_/EvaluateCandidates",
+        "name": "EvaluateCandidates",
+        "version": 1,
+        "graphHash": "e073d5ca2b6b5657a74efcf22b2d21c648de8d60fdf504b7aa91c5512dd85cb0",
+        "cloudflare": {
+          "name": "forge-dogfood-workflow-map-evaluate-candidates",
+          "binding": "WF_EVALUATE_CANDIDATES",
+          "className": "EvaluateCandidatesWorkflow"
+        },
+        "aws": {
+          "stateMachine": "forge-dogfood-workflow-map-evaluate-candidates",
+          "definition": {
+            "Comment": "Forge workflow driver for @dogfood/workflow-map/_/EvaluateCandidates; all step semantics live in the portable executor.",
+            "StartAt": "Advance",
+            "States": {
+              "Advance": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke",
+                "Parameters": {
+                  "FunctionName": "${LambdaArn}",
+                  "Payload": {
+                    "forge": "workflow.advance",
+                    "tenant.$": "$.tenant",
+                    "id.$": "$.id"
+                  }
+                },
+                "ResultSelector": {
+                  "status.$": "$.Payload.status",
+                  "dueAt.$": "$.Payload.dueAt",
+                  "timeoutSeconds.$": "$.Payload.timeoutSeconds"
+                },
+                "ResultPath": "$.state",
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.TaskFailed",
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 2.0
+                  }
+                ],
+                "Next": "Route"
+              },
+              "Route": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "sleeping",
+                    "Next": "Sleep"
+                  },
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "waiting",
+                    "Next": "WaitForSignal"
+                  },
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "running",
+                    "Next": "Advance"
+                  }
+                ],
+                "Default": "Done"
+              },
+              "Sleep": {
+                "Type": "Wait",
+                "TimestampPath": "$.state.dueAt",
+                "Next": "Advance"
+              },
+              "WaitForSignal": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                "Parameters": {
+                  "FunctionName": "${LambdaArn}",
+                  "Payload": {
+                    "forge": "workflow.wait",
+                    "tenant.$": "$.tenant",
+                    "id.$": "$.id",
+                    "taskToken.$": "$$.Task.Token"
+                  }
+                },
+                "TimeoutSecondsPath": "$.state.timeoutSeconds",
+                "ResultPath": null,
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.Timeout"
+                    ],
+                    "ResultPath": null,
+                    "Next": "Advance"
+                  }
+                ],
+                "Next": "Advance"
+              },
+              "Done": {
+                "Type": "Succeed"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "@dogfood/workflow-map/_/VerifyTargets",
+        "name": "VerifyTargets",
+        "version": 1,
+        "graphHash": "42a5e125801d8f5e1ce53382ece13993ec8db6c1cea5793d4514f3240d7afd69",
+        "cloudflare": {
+          "name": "forge-dogfood-workflow-map-verify-targets",
+          "binding": "WF_VERIFY_TARGETS",
+          "className": "VerifyTargetsWorkflow"
+        },
+        "aws": {
+          "stateMachine": "forge-dogfood-workflow-map-verify-targets",
+          "definition": {
+            "Comment": "Forge workflow driver for @dogfood/workflow-map/_/VerifyTargets; all step semantics live in the portable executor.",
+            "StartAt": "Advance",
+            "States": {
+              "Advance": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke",
+                "Parameters": {
+                  "FunctionName": "${LambdaArn}",
+                  "Payload": {
+                    "forge": "workflow.advance",
+                    "tenant.$": "$.tenant",
+                    "id.$": "$.id"
+                  }
+                },
+                "ResultSelector": {
+                  "status.$": "$.Payload.status",
+                  "dueAt.$": "$.Payload.dueAt",
+                  "timeoutSeconds.$": "$.Payload.timeoutSeconds"
+                },
+                "ResultPath": "$.state",
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "States.TaskFailed",
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 2.0
+                  }
+                ],
+                "Next": "Route"
+              },
+              "Route": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "sleeping",
+                    "Next": "Sleep"
+                  },
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "waiting",
+                    "Next": "WaitForSignal"
+                  },
+                  {
+                    "Variable": "$.state.status",
+                    "StringEquals": "running",
+                    "Next": "Advance"
+                  }
+                ],
+                "Default": "Done"
+              },
+              "Sleep": {
+                "Type": "Wait",
+                "TimestampPath": "$.state.dueAt",
+                "Next": "Advance"
+              },
+              "WaitForSignal": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+                "Parameters": {
+                  "FunctionName": "${LambdaArn}",
+                  "Payload": {
+                    "forge": "workflow.wait",
+                    "tenant.$": "$.tenant",
+                    "id.$": "$.id",
+                    "taskToken.$": "$$.Task.Token"
+                  }
+                },
+                "TimeoutSecondsPath": "$.state.timeoutSeconds",
+                "ResultPath": null,
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.Timeout"
+                    ],
+                    "ResultPath": null,
+                    "Next": "Advance"
+                  }
+                ],
+                "Next": "Advance"
+              },
+              "Done": {
+                "Type": "Succeed"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-dogfood-workflow-map-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@dogfood/workflow-map/_/EvaluateCandidate",
+        "kind": "function",
+        "class": "function",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/VerifyTarget",
+        "kind": "function",
+        "class": "function",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/EvaluateCandidates.start",
+        "kind": "workflow.start",
+        "class": "workflow",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/EvaluateCandidates.get",
+        "kind": "workflow.get",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/EvaluateCandidates.signal",
+        "kind": "workflow.signal",
+        "class": "workflow",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/EvaluateCandidates.cancel",
+        "kind": "workflow.cancel",
+        "class": "workflow",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/VerifyTargets.start",
+        "kind": "workflow.start",
+        "class": "workflow",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/VerifyTargets.get",
+        "kind": "workflow.get",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/VerifyTargets.signal",
+        "kind": "workflow.signal",
+        "class": "workflow",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/VerifyTargets.cancel",
+        "kind": "workflow.cancel",
+        "class": "workflow",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [],
+    "subjects": [],
+    "summary": {}
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@dogfood/workflow-map/_/EvaluateCandidate",
+        "kind": "function",
+        "outputs": [],
+        "writes": [],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "declared"
+      },
+      {
+        "operation": "@dogfood/workflow-map/_/VerifyTarget",
+        "kind": "function",
+        "outputs": [],
+        "writes": [],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "declared"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@dogfood/workflow-map",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {
+      "/v1/workflows/evaluate-candidates": {
+        "post": {
+          "operationId": "@dogfood/workflow-map/_/EvaluateCandidates.start",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.start",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "candidates": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "x-forge-type": "integer"
+                      },
+                      "uniqueItems": false,
+                      "x-forge-collection": "list",
+                      "maxItems": 32
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "candidates"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Workflow instance",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkflowInstance"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/workflows/evaluate-candidates/{id}": {
+        "get": {
+          "operationId": "@dogfood/workflow-map/_/EvaluateCandidates.get",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.get",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Workflow instance",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkflowInstance"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/workflows/evaluate-candidates/{id}/cancel": {
+        "post": {
+          "operationId": "@dogfood/workflow-map/_/EvaluateCandidates.cancel",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.cancel",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Workflow instance",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkflowInstance"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/workflows/evaluate-candidates/signals/{message}": {
+        "post": {
+          "operationId": "@dogfood/workflow-map/_/EvaluateCandidates.signal",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.signal",
+          "parameters": [
+            {
+              "name": "message",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "payload"
+                  ],
+                  "properties": {
+                    "messageId": {
+                      "type": "string"
+                    },
+                    "payload": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Delivery report",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "delivered": {
+                        "type": "integer"
+                      },
+                      "held": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/workflows/verify-targets": {
+        "post": {
+          "operationId": "@dogfood/workflow-map/_/VerifyTargets.start",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.start",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "targets": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "x-forge-type": "text"
+                      },
+                      "uniqueItems": false,
+                      "x-forge-collection": "list",
+                      "maxItems": 16
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "targets"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Workflow instance",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkflowInstance"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/workflows/verify-targets/{id}": {
+        "get": {
+          "operationId": "@dogfood/workflow-map/_/VerifyTargets.get",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.get",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Workflow instance",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkflowInstance"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/workflows/verify-targets/{id}/cancel": {
+        "post": {
+          "operationId": "@dogfood/workflow-map/_/VerifyTargets.cancel",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.cancel",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Workflow instance",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkflowInstance"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/v1/workflows/verify-targets/signals/{message}": {
+        "post": {
+          "operationId": "@dogfood/workflow-map/_/VerifyTargets.signal",
+          "tags": [
+            "workflows"
+          ],
+          "x-forge-kind": "workflow.signal",
+          "parameters": [
+            {
+              "name": "message",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "payload"
+                  ],
+                  "properties": {
+                    "messageId": {
+                      "type": "string"
+                    },
+                    "payload": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Delivery report",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "delivered": {
+                        "type": "integer"
+                      },
+                      "held": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

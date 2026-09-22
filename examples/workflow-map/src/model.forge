@@ -1,0 +1,38 @@
+shape BatchInput {
+  candidates : list<integer> length <= 32
+}
+shape CandidateInput {
+  candidate : integer
+}
+shape Evaluation {
+  score : integer
+}
+export function EvaluateCandidate {
+  input CandidateInput
+  output Evaluation
+}
+export workflow EvaluateCandidates {
+  input BatchInput
+  version 1
+  step evaluations = map candidate in input.candidates concurrency 4 {
+    EvaluateCandidate(candidate: candidate)
+  }
+  return evaluations
+}
+shape VerificationInput {
+  targets : list<text> length <= 16
+}
+shape TargetInput { target : text }
+shape Verification { passed : boolean }
+export function VerifyTarget {
+  input TargetInput
+  output Verification
+}
+export workflow VerifyTargets {
+  input VerificationInput
+  version 1
+  step verifications = map target in input.targets concurrency 2 {
+    VerifyTarget(target: target)
+  }
+  return verifications
+}

@@ -2983,6 +2983,10 @@
           "members": [
             {
               "type": "SYMBOL",
+              "name": "step_map"
+            },
+            {
+              "type": "SYMBOL",
               "name": "step_call"
             },
             {
@@ -3003,6 +3007,47 @@
               "name": "step_wait"
             }
           ]
+        }
+      ]
+    },
+    "step_map": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "map"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "STRING",
+          "value": "in"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_expression"
+        },
+        {
+          "type": "STRING",
+          "value": "concurrency"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "integer"
+        },
+        {
+          "type": "STRING",
+          "value": "{"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "step_call"
+        },
+        {
+          "type": "STRING",
+          "value": "}"
         }
       ]
     },

@@ -3659,6 +3659,7 @@ impl<'a> Ctx<'a> {
                     scope.ids.push(sid.clone());
                     let Some(body) = s.body() else { continue };
                     let step = match body {
+                        ast::StepBody::Map(m) => self.workflow_map(&sid, &m, module, file, scope),
                         ast::StepBody::Sleep(sl) => sl.duration().map(|d| Step::Sleep {
                             id: sid.clone(),
                             duration: d.text().to_string(),
@@ -3937,6 +3938,117 @@ impl<'a> Ctx<'a> {
             message,
             correlate,
             timeout,
+        })
+    }
+
+    fn workflow_map(
+        &mut self,
+        sid: &str,
+        m: &ast::StepMap,
+        module: &str,
+        file: usize,
+        scope: &mut WfScope,
+    ) -> Option<Step> {
+        let concurrency = m.concurrency()?.text().parse::<u32>().unwrap_or(0);
+        let source = m.source()?;
+        let Some(source_type) = self.workflow_expr_type(&source, module, scope) else {
+            self.err(
+                "E-WF-MAP-001",
+                file,
+                range_of(m),
+                "map input must resolve to a declared bounded list",
+                None,
+            );
+            return None;
+        };
+        let TypeBase::Collection {
+            collection: CollectionKind::List,
+            element,
+        } = source_type.base
+        else {
+            self.err(
+                "E-WF-MAP-001",
+                file,
+                range_of(m),
+                "map requires a bounded list input",
+                None,
+            );
+            return None;
+        };
+        let max_items = source_type
+            .constraints
+            .iter()
+            .filter_map(|c| {
+                if let Constraint::Length { max, .. } = c {
+                    *max
+                } else {
+                    None
+                }
+            })
+            .min()
+            .unwrap_or(0);
+        if concurrency == 0
+            || concurrency > 32
+            || max_items == 0
+            || max_items > 1024
+            || source_type.optional
+        {
+            self.err(
+                "E-WF-MAP-001",
+                file,
+                range_of(m),
+                "map requires a nonoptional bounded list and concurrency 1..32",
+                None,
+            );
+            return None;
+        }
+        let binding = m.binding()?.text().to_string();
+        if scope.bound.contains(&binding) {
+            self.err(
+                "E-WF-MAP-002",
+                file,
+                range_of(m),
+                "map binding shadows an existing workflow binding",
+                None,
+            );
+            return None;
+        }
+        let value = self.workflow_expr(&source, module, file, scope)?;
+        let mut child_scope = scope.clone();
+        child_scope.bound.push(binding.clone());
+        child_scope.types.push((binding.clone(), *element));
+        let call = self.workflow_call(sid, &m.call()?, module, file, &child_scope)?;
+        if let Step::Call {
+            target: CallTarget::Function { function },
+            ..
+        } = &call
+            && let Some(element) = self.function_output(function, module)
+        {
+            scope.types.push((
+                sid.into(),
+                TypeSpec {
+                    base: TypeBase::Collection {
+                        collection: CollectionKind::List,
+                        element: Box::new(element),
+                    },
+                    optional: false,
+                    constraints: vec![Constraint::Length {
+                        min: Some(0),
+                        max: Some(max_items),
+                    }],
+                    normalizers: vec![],
+                    purpose: None,
+                    data_class: None,
+                },
+            ));
+        }
+        Some(Step::Map {
+            id: sid.into(),
+            binding,
+            source: value,
+            concurrency,
+            max_items: max_items as u32,
+            call: Box::new(call),
         })
     }
 
@@ -4728,6 +4840,15 @@ impl<'a> Ctx<'a> {
                 .any(|t| !t.element_types().is_empty())
         }) {
             requires.push("collections/1".into());
+            requires.sort();
+        }
+        if self.files.iter().any(|f| {
+            f.parse
+                .syntax()
+                .descendants()
+                .any(|n| ast::StepMap::cast(n).is_some())
+        }) {
+            requires.push("workflow-map/1".into());
             requires.sort();
         }
         DomainIR {

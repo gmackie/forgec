@@ -129,6 +129,7 @@ pub enum SyntaxKind {
     WORKFLOW_VERSION,
     STEP_DECL,
     STEP_CALL,
+    STEP_MAP,
     STEP_SLEEP,
     STEP_WAIT,
     CATCH_CLAUSE,

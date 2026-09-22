@@ -31,6 +31,10 @@ export async function forgeInstance(input: DriveInput): Promise<AdvanceResult> {
       await sleep(Math.max(1, dueMs ?? 1000));
       continue;
     }
+    if (st.status === "running") {
+      await sleep(1000);
+      continue;
+    }
     // waiting: a signal already buffered wakes immediately; otherwise wait for one or for the deadline
     const before = consumed;
     const woke = await condition(() => wakes > before, dueMs !== null && dueMs > 0 ? dueMs : 365 * 24 * 3600 * 1000);

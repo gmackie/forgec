@@ -17,7 +17,7 @@
  * use native timers; the `sweep` here is the reference/fallback timer.
  */
 import { Cause, Effect } from "effect";
-import type { Wire } from "./decode.js";
+import { decodeValue, type Wire } from "./decode.js";
 import type { Envelope, Transport } from "./dispatch.js";
 import type { CallContext, Engine } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
@@ -218,6 +218,9 @@ export class Workflows {
     return Effect.gen(function* () {
       const storage = yield* Storage;
       const now = (yield* Clock).now();
+      if (wf.input && self.engine.model.bundle.ir.requires?.includes("workflow-map/1")) {
+        input = yield* Effect.try({try:()=>decodeValue(self.engine.model,wf.input!,input) as Wire,catch:()=>err("ValidationFailed","workflow input does not match its declared type")});
+      }
       const keyDoc = ctx.idempotencyKey ? `${wf.name}:start:${ctx.idempotencyKey}` : null;
       if (keyDoc) {
         const existing = (yield* storage.getDocument(ctx.tenant, KIND, keyDoc)) as { instance: string } | null;
@@ -430,6 +433,65 @@ export class Workflows {
           }
           if (self.faults.crashAfterStep === s.id) return yield* Effect.fail(err("Internal", `injected crash after ${s.id}`));
           return { ...inst, status: "running", bindings: { ...inst.bindings, [s.id]: exit.value }, pc: node.next, history: [...inst.history, { step: s.id, kind: "call", at: now }] };
+        }
+        case "map": {
+          const items = evalWf(s.source, env);
+          if (!Array.isArray(items) || items.length > s.max_items || s.max_items > 1024 || !Number.isInteger(s.concurrency) || s.concurrency < 1 || s.concurrency > 32) {
+            return self.finish(inst, "failed", now, {step:s.id,kind:"error",at:now}, {code:"InvalidMapInput"});
+          }
+          const storage = yield* Storage;
+          // Fixed waves bound the set of runnable positions even when drivers race.
+          // Each child receipt is durable independently of the parent checkpoint.
+          const results: unknown[] = [];
+          for (let offset = 0; offset < items.length; offset += s.concurrency) {
+            const current = yield* storage.getDocument(tenant, KIND, self.docId(wf,inst.id));
+            if (current?.["status"] !== "running" || current["pc"] !== inst.pc) return null;
+            const wave = items.slice(offset, offset + s.concurrency);
+            const outcomes = yield* Effect.forEach(wave, (item, local): Effect.Effect<Wire, ForgeError, RuntimeServices> => Effect.gen(function* () {
+              const index = offset + local;
+              const childId = `${self.docId(wf, inst.id)}:map:${s.id}:${index}`;
+              const existing = yield* storage.getDocument(tenant, "workflow-map", childId);
+              if (existing?.["state"] === "done") return existing;
+              const startedAt = (yield* Clock).now();
+              if (existing?.["state"] === "running" && String(existing["leaseUntil"]) > startedAt) return {blocked:true};
+              const expected = (existing?.["_version"] as number | undefined) ?? null;
+              const reserved = yield* storage.putDocument(tenant,"workflow-map",childId,{
+                state:"running",leaseUntil:new Date(Date.parse(startedAt)+300_000).toISOString(),
+              },expected).pipe(Effect.exit);
+              if (reserved._tag === "Failure") {
+                const error = Cause.squash(reserved.cause);
+                if (error instanceof ForgeError && error.code === "VersionConflict") return {blocked:true};
+                return yield* Effect.fail(error instanceof ForgeError ? error : err("Internal","map reservation failed"));
+              }
+              const {opId, input} = self.lower(s.call, {...env, [s.binding]:item});
+              const exit = yield* Effect.exit(self.engine.callInternal(opId, input, {
+                tenant, actor:"workflow", requestId:childId,
+                idempotencyKey:stepIdempotencyKey(inst, `${s.id}:${index}`),
+              }));
+              let outcome: Wire;
+              if (exit._tag === "Failure") {
+                const error = Cause.squash(exit.cause);
+                if (!(error instanceof ForgeError)) return yield* Effect.fail(err("Internal", "mapped activity died"));
+                if (error.code === "TransientConflict") return yield* Effect.fail(error);
+                outcome = {state:"done",error:{code:error.code}};
+              } else outcome = {state:"done",value:exit.value};
+              if (new TextEncoder().encode(JSON.stringify(outcome)).length > 256 * 1024) outcome = {state:"done",error:{code:"MapResultTooLarge"}};
+              // Losing drivers read the committed outcome rather than overwriting it.
+              yield* storage.putDocument(tenant,"workflow-map",childId,outcome,(expected ?? 0)+1).pipe(
+                Effect.catch(e=>e.code === "VersionConflict" ? Effect.void : Effect.fail(e)));
+              const saved = yield* storage.getDocument(tenant,"workflow-map",childId);
+              return saved!;
+            }), {concurrency:s.concurrency});
+            if (outcomes.some(o=>o["blocked"] || o["state"] !== "done")) return null;
+            const failed = outcomes.find(o=>o["error"]);
+            if (failed) return self.finish(inst,"failed",now,{step:s.id,kind:"error",at:now},failed["error"] as {code:string});
+            results.push(...outcomes.map(o=>o["value"]));
+            if (self.faults.crashAfterStep === s.id) return yield* Effect.fail(err("Internal", `injected crash after ${s.id}`));
+          }
+          if (new TextEncoder().encode(JSON.stringify(results)).length > 256 * 1024) {
+            return self.finish(inst,"failed",now,{step:s.id,kind:"error",at:now},{code:"MapResultTooLarge"});
+          }
+          return {...inst,status:"running",bindings:{...inst.bindings,[s.id]:results},pc:node.next,history:[...inst.history,{step:s.id,kind:"map",at:now}]};
         }
         case "sleep": {
           if (inst.status !== "sleeping" || inst.sleeping?.step !== s.id) {

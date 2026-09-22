@@ -1871,7 +1871,78 @@
           "named": true
         },
         {
+          "type": "step_map",
+          "named": true
+        },
+        {
           "type": "step_wait",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "step_map",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "boolean",
+          "named": true
+        },
+        {
+          "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "decimal",
+          "named": true
+        },
+        {
+          "type": "duration",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "integer",
+          "named": true
+        },
+        {
+          "type": "null",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "percent",
+          "named": true
+        },
+        {
+          "type": "qualified_name",
+          "named": true
+        },
+        {
+          "type": "step_call",
+          "named": true
+        },
+        {
+          "type": "string",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
           "named": true
         }
       ]
@@ -2512,6 +2583,10 @@
     "extra": true
   },
   {
+    "type": "concurrency",
+    "named": false
+  },
+  {
     "type": "content",
     "named": false
   },
@@ -2690,6 +2765,10 @@
   },
   {
     "type": "lowercase",
+    "named": false
+  },
+  {
+    "type": "map",
     "named": false
   },
   {

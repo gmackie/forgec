@@ -24,6 +24,7 @@ pub const KNOWN_FEATURES: &[&str] = &[
     "conditional-unique/1",
     "projection-aggregates/1",
     "collections/1",
+    "workflow-map/1",
 ];
 
 impl DomainIR {
@@ -230,6 +231,14 @@ pub struct Workflow {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Step {
+    Map {
+        id: String,
+        binding: String,
+        source: Expr,
+        concurrency: u32,
+        max_items: u32,
+        call: Box<Step>,
+    },
     Call {
         id: String,
         target: CallTarget,
@@ -271,6 +280,7 @@ impl Step {
     /// `kind:id` label used by tooling and tests.
     pub fn kind(&self) -> String {
         match self {
+            Step::Map { id, .. } => format!("map:{id}"),
             Step::Call { id, .. } => format!("call:{id}"),
             Step::Sleep { id, .. } => format!("sleep:{id}"),
             Step::Wait { id, .. } => format!("wait:{id}"),

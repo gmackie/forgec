@@ -1346,7 +1346,26 @@ impl<'a> Parser<'a> {
                 self.bump();
                 self.bump(); // step name
                 self.expect(TokenKind::Eq, "`=`");
-                if self.at_kw("sleep") {
+                if self.at_kw("map") {
+                    self.start(K::STEP_MAP);
+                    self.bump();
+                    self.expect_ident("map item binding");
+                    self.expect_kw("in");
+                    self.expr();
+                    self.eat_lines();
+                    self.expect_kw("concurrency");
+                    self.expect(TokenKind::Int, "concurrency limit");
+                    self.eat_lines();
+                    self.expect(TokenKind::LBrace, "`{`");
+                    self.eat_lines();
+                    self.start(K::STEP_CALL);
+                    self.qualified_name("mapped function");
+                    self.named_args();
+                    self.finish();
+                    self.eat_lines();
+                    self.expect(TokenKind::RBrace, "`}`");
+                    self.finish();
+                } else if self.at_kw("sleep") {
                     self.start(K::STEP_SLEEP);
                     self.bump();
                     self.expect(TokenKind::Duration, "sleep duration");

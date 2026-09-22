@@ -1040,6 +1040,7 @@ impl StepDecl {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StepBody {
     Call(StepCall),
+    Map(StepMap),
     Sleep(StepSleep),
     Wait(StepWait),
 }
@@ -1047,10 +1048,29 @@ impl StepBody {
     pub fn cast(node: SyntaxNode) -> Option<Self> {
         Some(match node.kind() {
             K::STEP_CALL => Self::Call(StepCall(node)),
+            K::STEP_MAP => Self::Map(StepMap(node)),
             K::STEP_SLEEP => Self::Sleep(StepSleep(node)),
             K::STEP_WAIT => Self::Wait(StepWait(node)),
             _ => return None,
         })
+    }
+}
+node!(StepMap, STEP_MAP);
+impl StepMap {
+    pub fn binding(&self) -> Option<SyntaxToken> {
+        idents(&self.0).nth(1)
+    }
+    pub fn source(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+    pub fn concurrency(&self) -> Option<SyntaxToken> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|e| e.into_token())
+            .find(|t| t.kind() == K::INT)
+    }
+    pub fn call(&self) -> Option<StepCall> {
+        child(&self.0)
     }
 }
 node!(StepCall, STEP_CALL);
