@@ -8,7 +8,7 @@ import { Effect } from "effect";
 import { compareBytes, encodeIdentity } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import type { List, Resource, Unique } from "../model.js";
-import type { AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { DocumentWrite, AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export class MemoryStorage implements StorageAdapter {
   readonly name = "memory";
@@ -162,6 +162,19 @@ export class MemoryStorage implements StorageAdapter {
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError> {
     const d = this.documents.get(`${tenant}|${kind}|${id}`);
     return Effect.succeed(d ? structuredClone({ ...d.doc, _version: d.version }) : null);
+  }
+
+  putDocuments(tenant: string, writes: DocumentWrite[]): Effect.Effect<void, ForgeError> {
+    if (writes.length > 24 || new Set(writes.map(w=>JSON.stringify([w.kind,w.id]))).size !== writes.length) return Effect.fail(err("BudgetExceeded", "document batch must contain at most 24 distinct keys"));
+    for (const w of writes) {
+      if ((this.documents.get(`${tenant}|${w.kind}|${w.id}`)?.version ?? null) !== w.expectedVersion) return Effect.fail(err("VersionConflict", "document changed concurrently"));
+    }
+    const prepared = writes.map(w=>{
+      const { _version, ...rest } = w.doc; void _version;
+      return {key:`${tenant}|${w.kind}|${w.id}`,value:{version:(w.expectedVersion ?? 0)+1,doc:structuredClone(rest)}};
+    });
+    for (const entry of prepared) this.documents.set(entry.key,entry.value);
+    return Effect.void;
   }
 
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {

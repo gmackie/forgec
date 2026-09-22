@@ -110,6 +110,8 @@ export interface ListQuery {
   limit: number;
 }
 
+export interface DocumentWrite { kind: string; id: string; doc: Record<string, unknown>; expectedVersion: number | null }
+
 export interface StorageAdapter {
   readonly name: string;
   get(tenant: string, resource: Resource, id: string): Effect.Effect<StoredRecord | null, ForgeError>;
@@ -144,6 +146,8 @@ export interface StorageAdapter {
   /** Opaque JSON documents keyed by (tenant, kind, id): changesets, jobs, import staging. */
   /** Admin export scan (plan §22): every stored row including soft-deleted ones, paged by an opaque cursor. */
   exportPage(tenant: string, resource: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError>;
+  /** Atomic bounded compare-and-swap: all versions match or no document changes. */
+  putDocuments(tenant: string, writes: DocumentWrite[]): Effect.Effect<void, ForgeError>;
   getDocument(tenant: string, kind: string, id: string): Effect.Effect<Record<string, unknown> | null, ForgeError>;
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError>;
 }

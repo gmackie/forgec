@@ -35,6 +35,14 @@ for (const adapter of ["memory","sqlite"] as const) {
       },
     };
     const storage = adapter === "memory" ? new MemoryStorage() : new D1Storage(executor,model);
+    // A stale version on the last document must roll back earlier writes too.
+    await Effect.runPromise(storage.putDocument("test","atomic","existing",{value:1},null));
+    await expect(Effect.runPromise(storage.putDocuments("test",[
+      {kind:"atomic",id:"new",doc:{value:2},expectedVersion:null},
+      {kind:"atomic",id:"existing",doc:{value:3},expectedVersion:99},
+    ]))).rejects.toThrow();
+    expect(await Effect.runPromise(storage.getDocument("test","atomic","new"))).toBeNull();
+    expect(await Effect.runPromise(storage.getDocument("test","atomic","existing"))).toMatchObject({value:1});
     const engine = new Engine(model,testLayer(storage));
     const call = (op:string, input:Record<string,unknown>,tenant="test")=>Effect.runPromise(engine.call(`${resource}.${op}`,input,{...ctx,tenant}));
     try {

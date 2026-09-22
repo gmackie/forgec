@@ -6,7 +6,7 @@
 import { Effect } from "effect";
 import { err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
-import type { CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 import { SqlMapping } from "./sql-mapping.js";
 import { rawD1Executor, type SqlExecutor, type SqlStatement } from "./sql-executor.js";
 
@@ -256,6 +256,28 @@ export class D1Storage implements StorageAdapter {
       const row = await this.db.first<{ version: number; body: string }>(st("SELECT version, body FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", tenant, kind, id));
       return row ? { ...(JSON.parse(row.body) as Record<string, unknown>), _version: row.version } : null;
     });
+  }
+
+  putDocuments(tenant: string, writes: DocumentWrite[]): Effect.Effect<void, ForgeError> {
+    if (writes.length > 24 || new Set(writes.map(w=>JSON.stringify([w.kind,w.id]))).size !== writes.length) return Effect.fail(err("BudgetExceeded", "document batch must contain at most 24 distinct keys"));
+    if (!writes.length) return Effect.void;
+    const op = `documents:${crypto.randomUUID()}`;
+    const statements: SqlStatement[] = [];
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    for (const w of writes) {
+      conditions.push(w.expectedVersion === null ? "NOT EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?)" : "EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ? AND version = ?)");
+      params.push(tenant,w.kind,w.id,...(w.expectedVersion === null ? [] : [w.expectedVersion]));
+    }
+    statements.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, (${conditions.join(" AND ")})`,op,...params));
+    for (const w of writes) {
+      const { _version, ...rest } = w.doc; void _version;
+      statements.push(w.expectedVersion === null
+        ? st("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, ?)",tenant,w.kind,w.id,JSON.stringify(rest))
+        : st("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?",JSON.stringify(rest),tenant,w.kind,w.id,w.expectedVersion));
+    }
+    statements.push(st("DELETE FROM _forge_assert WHERE op_id = ?",op));
+    return Effect.tryPromise({try:async()=>{await this.db.batch(statements);},catch:(e)=> /forge_precondition|UNIQUE constraint failed|database is locked/.test(String(e)) ? err("VersionConflict","document batch changed concurrently") : err("StorageUnavailable",String(e))});
   }
 
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {

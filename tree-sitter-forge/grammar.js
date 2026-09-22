@@ -270,9 +270,10 @@ module.exports = grammar({
     aggregate: ($) =>
       prec.right(
         seq(
-          choice("count", "sum", "min", "max"),
+          choice("count", "sum", "min", "max", "latest", "exists", "notExists"),
           $.identifier,
           optional(seq("as", $.identifier)),
+          optional(seq("where", $._expression)),
         ),
       ),
     function_declaration: ($) =>

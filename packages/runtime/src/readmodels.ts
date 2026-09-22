@@ -11,7 +11,7 @@ import type { Envelope, Transport } from "./dispatch.js";
 import type { CallContext, Engine } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
 import type { CacheDecl, Expr, ProjectionDecl, ViewDecl } from "./model.js";
-import { Clock, Storage, type RuntimeServices } from "./services.js";
+import { Clock, Storage, type DocumentWrite, type RuntimeServices } from "./services.js";
 
 const PROJ = "projection";
 const CACHE = "cache";
@@ -88,10 +88,30 @@ export class ReadModels {
   private contribution(p: ProjectionDecl, rec: Wire): Record<string, string> {
     const out: Record<string, string> = {};
     for (const a of p.aggregates) {
-      out[a.alias] = a.function === "count" ? "1" : a.scale !== undefined ? toMinor(String(rec[a.field] ?? "0"), a.scale).toString() : String(Math.trunc(Number(rec[a.field] ?? 0)));
+      if (a.filter && !evalExpr(this.engine.model,this.engine.model.resource(p.source),a.filter,rec)) continue;
+      if (["count","exists","notExists"].includes(a.function)) out[a.alias] = "1";
+      else if (rec[a.field] !== null && rec[a.field] !== undefined) out[a.alias] = a.scale !== undefined ? toMinor(String(rec[a.field]),a.scale).toString() : String(rec[a.field]);
     }
     return out;
   }
+  private adjust(p:ProjectionDecl, doc:Doc, values:Record<string,string>, sign:1|-1): void {
+    for (const a of p.aggregates) {
+      const value = values[a.alias];
+      if (value === undefined) continue;
+      if (["min","max","latest"].includes(a.function)) {
+        const key = `__values:${a.alias}`;
+        const counts = {...((doc[key] ?? {}) as Record<string,number>)};
+        const count = (counts[value] ?? 0)+sign;
+        if (count > 0) counts[value] = count; else delete counts[value];
+        if (Object.keys(counts).length > 256) throw err("BudgetExceeded","an extrema group supports at most 256 distinct values per aggregate");
+        doc[key] = counts;
+      } else {
+        doc[a.alias] = (BigInt(String(doc[a.alias] ?? "0"))+BigInt(sign)*BigInt(value)).toString();
+      }
+    }
+    if (new TextEncoder().encode(JSON.stringify(doc)).length > 256*1024) throw err("BudgetExceeded","projection group exceeds 256 KiB");
+  }
+
   private meta(p: ProjectionDecl, tenant: string) {
     return Effect.gen(function* () {
       return (yield* (yield* Storage).getDocument(tenant, PROJ, `${p.name}:meta`)) as ProjectionMeta | null;
@@ -102,8 +122,18 @@ export class ReadModels {
     const parts = key.split(SEP);
     p.by.forEach((f, i) => (out[f] = parts[i] ?? null));
     for (const a of p.aggregates) {
-      const raw = BigInt(String(doc?.[a.alias] ?? "0"));
-      out[a.alias] = a.function === "count" || a.scale === undefined ? Number(raw) : formatMinor(raw, a.scale);
+      if (["min","max","latest"].includes(a.function)) {
+        const values = Object.keys((doc?.[`__values:${a.alias}`] ?? {}) as Record<string,number>);
+        const resource = this.engine.model.resource(p.source);
+        const field = resource.fields.find(f=>f.name===a.field);
+        const numeric = a.scale !== undefined || (field?.type.base.kind === "scalar" && field.type.base.name === "integer");
+        values.sort((a,b)=>numeric ? (BigInt(a)<BigInt(b)?-1:BigInt(a)>BigInt(b)?1:0) : a<b?-1:a>b?1:0);
+        const value = a.function === "min" ? values[0] : values.at(-1);
+        out[a.alias] = value === undefined ? null : a.scale !== undefined ? formatMinor(BigInt(value),a.scale) : numeric ? Number(value) : value;
+      } else {
+        const raw = BigInt(String(doc?.[a.alias] ?? "0"));
+        out[a.alias] = a.function === "exists" ? raw>0n : a.function === "notExists" ? raw===0n : a.function === "count" || a.scale === undefined ? Number(raw) : formatMinor(raw,a.scale);
+      }
     }
     out["generation"] = generation;
     return out;
@@ -169,21 +199,24 @@ export class ReadModels {
       const live = canon !== null && self.contributes(p, canon);
       const newKey = live ? self.groupKey(p, canon) : undefined;
       const newValues = live ? self.contribution(p, canon) : undefined;
-      const adjust = (key: string, values: Record<string, string>, sign: 1n | -1n) =>
-        Effect.gen(function* () {
-          const gid = `${p.name}:${m.generation}:group:${key}`;
-          const doc = (yield* storage.getDocument(tenant, PROJ, gid)) as Doc | null;
-          const next: Doc = {};
-          for (const a of p.aggregates) next[a.alias] = (BigInt(String(doc?.[a.alias] ?? "0")) + sign * BigInt(values[a.alias] ?? "0")).toString();
-          yield* storage.putDocument(tenant, PROJ, gid, next, doc?._version ?? null);
-        });
-      if (ledger?.key && ledger.values) yield* adjust(ledger.key, ledger.values, -1n);
-      if (newKey !== undefined && newValues) yield* adjust(newKey, newValues, 1n);
+      const adjustments = new Map<string, {values:Record<string,string>;sign:1|-1}[]>();
+      if (ledger?.key !== undefined && ledger.values) adjustments.set(ledger.key,[{values:ledger.values,sign:-1}]);
+      if (newKey !== undefined && newValues) adjustments.set(newKey,[...(adjustments.get(newKey) ?? []),{values:newValues,sign:1}]);
+      const writes:DocumentWrite[]=[];
+      for (const [key,changes] of adjustments) {
+        const gid = `${p.name}:${m.generation}:group:${key}`;
+        const doc = (yield* storage.getDocument(tenant,PROJ,gid)) as Doc|null;
+        const next:Doc = {...doc};
+        try { for (const change of changes) self.adjust(p,next,change.values,change.sign); }
+        catch(e) {return yield* Effect.fail(e instanceof ForgeError ? e : err("Internal",String(e)));}
+        writes.push({kind:PROJ,id:gid,doc:next,expectedVersion:doc?._version ?? null});
+      }
       const entry: Contribution = { version: Math.max(version, canon ? Number(canon["version"] ?? 0) : 0) };
       if (newKey !== undefined && newValues) Object.assign(entry, { key: newKey, values: newValues });
-      yield* storage.putDocument(tenant, PROJ, ledgerId, entry, ledger?._version ?? null);
+      writes.push({kind:PROJ,id:ledgerId,doc:entry,expectedVersion:ledger?._version ?? null});
       const { _version, ...meta } = m;
-      yield* storage.putDocument(tenant, PROJ, `${p.name}:meta`, { ...meta, lastProcessed: { messageId: env.messageId, at: env.createdAt } }, _version ?? null);
+      writes.push({kind:PROJ,id:`${p.name}:meta`,doc:{...meta,lastProcessed:{messageId:env.messageId,at:env.createdAt}},expectedVersion:_version ?? null});
+      yield* storage.putDocuments(tenant,writes);
       return "applied" as const;
     });
   }
@@ -196,7 +229,7 @@ export class ReadModels {
       const r = self.engine.model.resource(p.source);
       const prev = yield* self.meta(p, ctx.tenant);
       const generation = (prev?.generation ?? 0) + 1;
-      const groups = new Map<string, Record<string, bigint>>();
+      const groups = new Map<string, Doc>();
       let cursor: unknown = null;
       for (let pages = 0; pages < 10_000; pages++) {
         const page = yield* self.engine.callInternal(`${r.id}.list.all`, { params: {}, limit: 100, ...(cursor ? { cursor } : {}) }, ctx);
@@ -205,16 +238,17 @@ export class ReadModels {
           const key = self.groupKey(p, rec);
           const values = self.contribution(p, rec);
           const g = groups.get(key) ?? {};
-          for (const a of p.aggregates) g[a.alias] = (g[a.alias] ?? 0n) + BigInt(values[a.alias]!);
+          try {self.adjust(p,g,values,1);} catch(e) {return yield* Effect.fail(e instanceof ForgeError ? e : err("Internal",String(e)));}
           groups.set(key, g);
           const entry: Contribution = { version: Number(rec["version"] ?? 0), key, values };
           yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:${generation}:contrib:${rec["id"]}`, entry, null);
         }
         cursor = page.next ?? null;
         if (!cursor) break;
+        if (pages === 9999) return yield* Effect.fail(err("BudgetExceeded","projection rebuild exceeds its bounded source working set"));
       }
       for (const [key, g] of groups) {
-        yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:${generation}:group:${key}`, Object.fromEntries(Object.entries(g).map(([k, v]) => [k, v.toString()])), null);
+        yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:${generation}:group:${key}`, g, null);
       }
       const meta: Omit<ProjectionMeta, "_version"> = { generation, status: "active", builtAt: (yield* Clock).now(), lastProcessed: null };
       yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:meta`, meta, prev?._version ?? null);

@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Cause, Effect } from "effect";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Model, type AppBundle } from "../src/model.js";
 import { Engine, type CallContext } from "../src/engine.js";
 import { ForgeError } from "../src/errors.js";
@@ -80,6 +80,25 @@ describe("projections", () => {
     await run(engine.call("@acme/commerce/_/Order.status.cancel", { id: o1.id, expectedVersion: 1, input: { reason: "x" } }, ctx));
     await apply();
     expect(await run(engine.call(`${P}.get`, { id: ids.customer }, ctx))).toMatchObject({ orders: 1, orderTotal: "20.25" });
+  });
+
+  it("retries an atomic ledger conflict without double counting", async () => {
+    await run(engine.call(`${P}.rebuild`, {}, ctx));
+    await order("10.00");
+    const original = storage.putDocuments.bind(storage);
+    let failed = false;
+    const spy = vi.spyOn(storage,"putDocuments").mockImplementation((tenant,writes)=>{
+      if (!failed && writes.some(w=>w.id.includes(":contrib:"))) {
+        failed = true;
+        return Effect.fail(new ForgeError({code:"VersionConflict",detail:"injected conflict before atomic commit"}));
+      }
+      return original(tenant,writes);
+    });
+    try {
+      await apply();
+      expect(failed).toBe(true);
+      expect(await run(engine.call(`${P}.get`,{id:ids.customer},ctx))).toMatchObject({orders:1,orderTotal:"10.00"});
+    } finally {spy.mockRestore();}
   });
 
   it("stale or duplicate events do not overwrite a newer contribution", async () => {

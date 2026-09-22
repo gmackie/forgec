@@ -1,0 +1,2127 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "47ab4a692b2e4227655161320f5a25cbdcf03611bd730638d8701b8797c6dd98",
+  "digests": {
+    "source": "fa6b41079d33c74e1dcb43a506cc7a988e6b5e94c13a8038f38bdbb7d832fc3c",
+    "wire": "1185bd0512f9012a8b4c6289bf5dfd4082fb7cd900c8a7870046a8fdf0072ea9",
+    "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
+    "security": "9db663160cc30791d56ebb32a55d7652435e88830b668c6098c278e82eb9bcf7"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@dogfood/portfolio",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [
+          {
+            "id": "@dogfood/portfolio/_/State",
+            "name": "State",
+            "exported": false,
+            "synthesized": false,
+            "members": [
+              {
+                "name": "Open",
+                "value": "Open"
+              },
+              {
+                "name": "Completed",
+                "value": "Completed"
+              }
+            ]
+          }
+        ],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@dogfood/portfolio/_/Issue",
+            "name": "Issue",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "project",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "state",
+                "type": {
+                  "base": {
+                    "kind": "enum",
+                    "id": "@dogfood/portfolio/_/State"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "default": {
+                  "type": "enumMember",
+                  "value": {
+                    "enum": "@dogfood/portfolio/_/State",
+                    "member": "Open"
+                  }
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "estimate",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "updated",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byProject",
+                "fields": [
+                  "project"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@dogfood/portfolio/_/Issue.create",
+                "kind": "create"
+              },
+              {
+                "id": "@dogfood/portfolio/_/Issue.get",
+                "kind": "get"
+              },
+              {
+                "id": "@dogfood/portfolio/_/Issue.update",
+                "kind": "update"
+              },
+              {
+                "id": "@dogfood/portfolio/_/Issue.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@dogfood/portfolio/_/Issue.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@dogfood/portfolio/_/Issue.list.byProject",
+                "kind": "list",
+                "query": "byProject"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [
+          {
+            "id": "@dogfood/portfolio/_/ProjectPortfolio",
+            "name": "ProjectPortfolio",
+            "exported": true,
+            "source": "@dogfood/portfolio/_/Issue",
+            "by": [
+              "project"
+            ],
+            "aggregates": [
+              {
+                "function": "count",
+                "field": "issues",
+                "alias": "issues"
+              },
+              {
+                "filter": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "state"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "State",
+                      "Open"
+                    ]
+                  }
+                },
+                "function": "count",
+                "field": "openIssues",
+                "alias": "openIssues"
+              },
+              {
+                "filter": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "state"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "State",
+                      "Open"
+                    ]
+                  }
+                },
+                "function": "sum",
+                "field": "estimate",
+                "alias": "openEstimate"
+              },
+              {
+                "function": "min",
+                "field": "estimate",
+                "alias": "smallest"
+              },
+              {
+                "function": "max",
+                "field": "estimate",
+                "alias": "largest"
+              },
+              {
+                "function": "latest",
+                "field": "updated",
+                "alias": "lastUpdate"
+              },
+              {
+                "filter": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "state"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "State",
+                      "Open"
+                    ]
+                  }
+                },
+                "function": "exists",
+                "field": "anyOpen",
+                "alias": "anyOpen"
+              },
+              {
+                "filter": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "state"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "State",
+                      "Open"
+                    ]
+                  }
+                },
+                "function": "notExists",
+                "field": "allDone",
+                "alias": "allDone"
+              }
+            ]
+          }
+        ],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "projection-aggregates/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@dogfood/portfolio",
+    "resources": [
+      {
+        "id": "@dogfood/portfolio/_/Issue",
+        "name": "Issue",
+        "wireName": "issue",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "Open",
+                "Completed"
+              ],
+              "x-forge-enum": "@dogfood/portfolio/_/State",
+              "default": "Open"
+            },
+            "estimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "updated": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "project",
+            "state",
+            "estimate",
+            "updated"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "Open",
+                "Completed"
+              ],
+              "x-forge-enum": "@dogfood/portfolio/_/State",
+              "default": "Open"
+            },
+            "estimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "updated": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "project",
+            "estimate",
+            "updated"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "Open",
+                "Completed"
+              ],
+              "x-forge-enum": "@dogfood/portfolio/_/State",
+              "default": "Open"
+            },
+            "estimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "updated": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byProject",
+            "kind": "list",
+            "params": [
+              "project"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@dogfood/portfolio/_/Issue.create",
+            "kind": "create"
+          },
+          {
+            "id": "@dogfood/portfolio/_/Issue.get",
+            "kind": "get"
+          },
+          {
+            "id": "@dogfood/portfolio/_/Issue.update",
+            "kind": "update"
+          },
+          {
+            "id": "@dogfood/portfolio/_/Issue.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@dogfood/portfolio/_/Issue.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@dogfood/portfolio/_/Issue.list.byProject",
+            "kind": "list",
+            "query": "byProject"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [
+      {
+        "id": "@dogfood/portfolio/_/ProjectPortfolio",
+        "name": "ProjectPortfolio",
+        "source": "@dogfood/portfolio/_/Issue",
+        "by": [
+          "project"
+        ],
+        "record": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "issues": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            },
+            "openIssues": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            },
+            "openEstimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "smallest": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "largest": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lastUpdate": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "x-forge-type": "datetime",
+                  "x-forge-precision": "ms"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "anyOpen": {
+              "type": "boolean"
+            },
+            "allDone": {
+              "type": "boolean"
+            },
+            "generation": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "project",
+            "issues",
+            "openIssues",
+            "openEstimate",
+            "smallest",
+            "largest",
+            "lastUpdate",
+            "anyOpen",
+            "allDone",
+            "generation"
+          ],
+          "additionalProperties": false
+        },
+        "path": "/v1/projections/project-portfolio"
+      }
+    ],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "issue",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "project",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "project",
+            "storage": "text"
+          },
+          {
+            "name": "state",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "state",
+            "storage": "text"
+          },
+          {
+            "name": "estimate",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "estimate",
+            "storage": "integer"
+          },
+          {
+            "name": "updated",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updated",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ],
+    "indexes": [
+      {
+        "name": "issue_ix_by_project",
+        "table": "issue",
+        "columns": [
+          "tenant",
+          "project",
+          "id"
+        ],
+        "unique": false,
+        "query": "byProject"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@dogfood/portfolio/_/Issue",
+        "name": "Issue",
+        "wireName": "issue",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
+            "name": "byProject",
+            "kind": "list",
+            "partitionFields": [
+              "project"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "project"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@dogfood/portfolio",
+    "resources": [
+      {
+        "id": "@dogfood/portfolio/_/Issue",
+        "name": "Issue",
+        "kind": "resource",
+        "label": "Issue",
+        "plural": "Issues",
+        "route": "issues",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "project",
+            "label": "Project",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "state",
+            "label": "State",
+            "widget": "select",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "options": [
+              {
+                "value": "Open",
+                "label": "Open"
+              },
+              {
+                "value": "Completed",
+                "label": "Completed"
+              }
+            ]
+          },
+          {
+            "name": "estimate",
+            "label": "Estimate",
+            "widget": "integer",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "updated",
+            "label": "Updated",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "project",
+          "state",
+          "estimate",
+          "updated"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@dogfood/portfolio/_/Issue.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byProject",
+            "op": "@dogfood/portfolio/_/Issue.list.byProject",
+            "params": [
+              "project"
+            ],
+            "label": "By Project"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-dogfood-portfolio-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@dogfood/portfolio/_/Issue.create",
+        "kind": "create",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.get",
+        "kind": "get",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.update",
+        "kind": "update",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.delete",
+        "kind": "delete",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.list.all",
+        "kind": "list",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.list.byProject",
+        "kind": "list",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/ProjectPortfolio.get",
+        "kind": "projection.get",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/ProjectPortfolio.status",
+        "kind": "projection.status",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/portfolio/_/ProjectPortfolio.rebuild",
+        "kind": "projection.rebuild",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "class": "job",
+        "slo": {
+          "availability": "99%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 30000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000,
+          30000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@dogfood/portfolio/_/Issue",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/portfolio/_/Issue",
+        "field": "project",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/portfolio/_/Issue",
+        "field": "state",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/portfolio/_/Issue",
+        "field": "estimate",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/portfolio/_/Issue",
+        "field": "updated",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/portfolio/_/Issue",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "structural": 5,
+      "unclassified": 1
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@dogfood/portfolio/_/Issue.create",
+        "kind": "create",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "state",
+          "estimate",
+          "updated",
+          "version"
+        ],
+        "writes": [
+          "project",
+          "state",
+          "estimate",
+          "updated"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.get",
+        "kind": "get",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "state",
+          "estimate",
+          "updated",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.update",
+        "kind": "update",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "state",
+          "estimate",
+          "updated",
+          "version"
+        ],
+        "writes": [
+          "project",
+          "state",
+          "estimate",
+          "updated"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.delete",
+        "kind": "delete",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "state",
+          "estimate",
+          "updated",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.list.all",
+        "kind": "list",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "state",
+          "estimate",
+          "updated",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/portfolio/_/Issue.list.byProject",
+        "kind": "list",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "state",
+          "estimate",
+          "updated",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "project"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/portfolio/_/ProjectPortfolio.get",
+        "kind": "projection.get",
+        "resource": "@dogfood/portfolio/_/Issue",
+        "outputs": [
+          "issues",
+          "openIssues",
+          "estimate",
+          "estimate",
+          "estimate",
+          "updated",
+          "anyOpen",
+          "allDone"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [],
+        "groups": [
+          "project"
+        ],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@dogfood/portfolio",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "IssueRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "Open",
+                "Completed"
+              ],
+              "x-forge-enum": "@dogfood/portfolio/_/State",
+              "default": "Open"
+            },
+            "estimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "updated": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "project",
+            "state",
+            "estimate",
+            "updated"
+          ]
+        },
+        "IssueCreate": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "Open",
+                "Completed"
+              ],
+              "x-forge-enum": "@dogfood/portfolio/_/State",
+              "default": "Open"
+            },
+            "estimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "updated": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "project",
+            "estimate",
+            "updated"
+          ]
+        },
+        "IssuePatch": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "Open",
+                "Completed"
+              ],
+              "x-forge-enum": "@dogfood/portfolio/_/State",
+              "default": "Open"
+            },
+            "estimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "updated": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ProjectPortfolioRecord": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "issues": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            },
+            "openIssues": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            },
+            "openEstimate": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "smallest": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "largest": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lastUpdate": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "x-forge-type": "datetime",
+                  "x-forge-precision": "ms"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "anyOpen": {
+              "type": "boolean"
+            },
+            "allDone": {
+              "type": "boolean"
+            },
+            "generation": {
+              "type": "integer",
+              "x-forge-type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "project",
+            "issues",
+            "openIssues",
+            "openEstimate",
+            "smallest",
+            "largest",
+            "lastUpdate",
+            "anyOpen",
+            "allDone",
+            "generation"
+          ]
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  }
+}

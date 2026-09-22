@@ -1056,13 +1056,21 @@ impl<'a> Parser<'a> {
                     p.finish();
                     p.end_item();
                 }
-                "count" | "sum" | "min" | "max" if p.nth(1) == TokenKind::Ident => {
+                "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"
+                    if p.nth(1) == TokenKind::Ident =>
+                {
                     p.start(K::AGGREGATE_DECL);
                     p.bump();
                     p.bump();
                     if p.at_kw("as") {
                         p.bump();
                         p.expect_ident("alias");
+                    }
+                    if p.at_kw("where") {
+                        p.start(K::WHERE_DECL);
+                        p.bump();
+                        p.expr();
+                        p.finish();
                     }
                     p.finish();
                     p.end_item();

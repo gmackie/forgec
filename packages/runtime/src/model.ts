@@ -86,7 +86,7 @@ export interface FunctionDecl {
 export interface WebSocketBinding { path: string }
 export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; websocket?: WebSocketBinding; messages: { name: string; fields: Field[] }[] }
 export interface ViewDecl { id: string; name: string; source: string; by: string[]; where?: Expr; order: OrderKey[]; fields: string[] }
-export interface AggregateDecl { function: "count" | "sum" | "min" | "max"; field: string; alias: string; scale?: number }
+export interface AggregateDecl { function: "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"; field: string; alias: string; scale?: number; filter?: Expr }
 export interface ProjectionDecl { id: string; name: string; source: string; by: string[]; where?: Expr; aggregates: AggregateDecl[]; crud?: { path: string; operations?: string[]; actions: string[] } }
 export interface CacheDecl { id: string; name: string; keys: Field[]; loader: Expr; freshUntil: Expr; staleUntil?: Expr }
 export type WorkflowTerminal = { kind: "return"; value: Expr } | { kind: "fail"; error: string };
@@ -113,7 +113,7 @@ export interface MessagingPlan {
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1"];
+export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1", "projection-aggregates/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }

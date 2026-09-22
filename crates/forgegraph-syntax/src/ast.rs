@@ -607,7 +607,7 @@ impl QueryDecl {
             .unwrap_or_default()
     }
     /// (function, field, alias)
-    pub fn aggregates(&self) -> Vec<(String, String, String)> {
+    pub fn aggregates(&self) -> Vec<(String, String, String, Option<Expr>)> {
         children::<AggregateDecl>(&self.0)
             .filter_map(|a| {
                 let toks: Vec<String> = idents(&a.0).map(|t| t.text().to_string()).collect();
@@ -618,7 +618,12 @@ impl QueryDecl {
                 } else {
                     field.clone()
                 };
-                Some((f, field, alias))
+                Some((
+                    f,
+                    field,
+                    alias,
+                    child::<WhereDecl>(&a.0).and_then(|w| w.0.children().find_map(Expr::cast)),
+                ))
             })
             .collect()
     }

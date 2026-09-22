@@ -4578,6 +4578,16 @@ impl<'a> Ctx<'a> {
             requires.push("conditional-unique/1".into());
             requires.sort();
         }
+        if modules.iter().any(|m| {
+            m.projections.iter().any(|p| {
+                p.aggregates
+                    .iter()
+                    .any(|a| a.filter.is_some() || !matches!(a.function.as_str(), "count" | "sum"))
+            })
+        }) {
+            requires.push("projection-aggregates/1".into());
+            requires.sort();
+        }
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
             requires,
@@ -4744,8 +4754,8 @@ impl<'a> Ctx<'a> {
             let aggregates: Vec<Aggregate> = q
                 .aggregates()
                 .into_iter()
-                .map(|(function, field, alias)| {
-                    if function != "count" {
+                .map(|(function, field, alias, predicate)| {
+                    if !matches!(function.as_str(), "count" | "exists" | "notExists") {
                         check(self, &field, &function);
                     }
                     let scale = fields.iter().find(|f| f.name == field).and_then(|f| match &f.ty.base {
@@ -4753,12 +4763,34 @@ impl<'a> Ctx<'a> {
                         TypeBase::Scalar { name, args } if name == "decimal" => args.first().and_then(|a| a.parse().ok()).or(Some(2)),
                         _ => None,
                     });
-                    if matches!(function.as_str(), "min" | "max") {
-                        self.err("W-PROJ-002", file, range_of(q), format!("`{function}` is not invertible; deletions and decreases trigger group recomputation for `{alias}`"), None);
+                    if function == "sum" && !fields.iter().any(|f|f.name == field && matches!(&f.ty.base,TypeBase::Scalar {name,..} if matches!(name.as_str(),"integer"|"decimal"|"money"))) {
+                        self.err("E-PROJ-004",file,range_of(q),"sum requires an integer, decimal or money field",None);
                     }
-                    Aggregate { function, field, alias, scale }
+                    if matches!(function.as_str(),"min"|"max"|"latest") && !fields.iter().any(|f|f.name == field && matches!(&f.ty.base,TypeBase::Scalar {name,..} if matches!(name.as_str(),"integer"|"decimal"|"money"|"date"|"datetime"))) {
+                        self.err("E-PROJ-004",file,range_of(q),"min/max/latest requires a numeric, date or datetime field",None);
+                    }
+                    let filter = predicate.as_ref().and_then(|e|self.expr(e,module,file,Some(&source)));
+                    Aggregate { function, field, alias, scale, filter }
                 })
                 .collect();
+            let mut aliases = BTreeSet::new();
+            for aggregate in &aggregates {
+                if !aliases.insert(&aggregate.alias)
+                    || by.contains(&aggregate.alias)
+                    || aggregate.alias == "generation"
+                {
+                    self.err(
+                        "E-PROJ-005",
+                        file,
+                        range_of(q),
+                        format!(
+                            "aggregate alias `{}` collides with another result field",
+                            aggregate.alias
+                        ),
+                        None,
+                    );
+                }
+            }
             if by.is_empty() {
                 self.err("E-PROJ-001", file, range_of(q), "a projection must group with `by <fields>`; ungrouped aggregates need a bounded working set", Some("add `by <field>`".into()));
             }

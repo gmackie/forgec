@@ -67,6 +67,17 @@ pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
 /// indexed query into a scan or an equality partition into an ambiguous one.
 fn validate(ir: &DomainIR) -> Result<(), PlanError> {
     for m in &ir.modules {
+        for projection in &m.projections {
+            if let Some(source) = ir
+                .modules
+                .iter()
+                .flat_map(|m| &m.resources)
+                .find(|r| r.id == projection.source)
+                && !source.decorators.versioned
+            {
+                return Err(PlanError {code:"E-PLAN-PROJECTION-001".into(),declaration:projection.id.clone(),message:"incremental projections require a @versioned source for revision-based contribution deduplication".into()});
+            }
+        }
         for r in &m.resources {
             for l in &r.lists {
                 for f in &l.fields {

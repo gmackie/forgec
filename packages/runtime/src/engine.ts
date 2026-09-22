@@ -684,6 +684,7 @@ export class Engine {
           getDocument: (...a) => storage.getDocument(...a),
           exportPage: (...a) => storage.exportPage(...a),
           putDocument: (...a) => storage.putDocument(...a),
+          putDocuments: (...a) => storage.putDocuments(...a),
           outboxSweep: (...a) => storage.outboxSweep(...a),
           outboxTenants: () => storage.outboxTenants(),
           outboxClaim: (...a) => storage.outboxClaim(...a),

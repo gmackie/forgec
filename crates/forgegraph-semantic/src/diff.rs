@@ -91,6 +91,7 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "projection-definition-changed" => vec!["rebuild-projection-generation"],
         "unique-invariant-changed" => {
             vec!["existing-data-validation", "rebuild-indexes-and-claims"]
         }
@@ -163,6 +164,17 @@ pub fn compare(old: &Value, new: &Value) -> Report {
             && old_uniques != new_uniques
         {
             push(&mut f,"storage","migration","unique-invariant-changed",id.clone(),"uniqueness keys or conditions changed; validate existing rows and rebuild indexes/claims before activation".into());
+        }
+    }
+
+    let projections = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle,&["ir","modules"]).into_iter().flat_map(|m|arr(m,&["projections"])).map(|p|(s(&p["id"]),serde_json::json!({"source":p["source"],"by":p["by"],"where":p["where"],"aggregates":p["aggregates"]}))).collect()
+    };
+    for (id, previous) in projections(old) {
+        if let Some(current) = projections(new).get(&id)
+            && &previous != current
+        {
+            push(&mut f,"storage","migration","projection-definition-changed",id,"projection grouping, filters or aggregates changed; build a new generation before serving the new contract".into());
         }
     }
 

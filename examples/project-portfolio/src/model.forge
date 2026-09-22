@@ -1,0 +1,24 @@
+enum State {
+  Open
+  Completed
+}
+export resource Issue @tenant @versioned {
+  id : id
+  project : text
+  state : State = State.Open
+  estimate : integer >= 0
+  updated : datetime
+  list by project
+}
+export projection ProjectPortfolio {
+  from Issue
+  by project
+  count issues
+  count openIssues where state == State.Open
+  sum estimate as openEstimate where state == State.Open
+  min estimate as smallest
+  max estimate as largest
+  latest updated as lastUpdate
+  exists anyOpen where state == State.Open
+  notExists allDone where state == State.Open
+}

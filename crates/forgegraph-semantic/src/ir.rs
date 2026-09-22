@@ -19,7 +19,11 @@ pub struct DomainIR {
 }
 
 /// Features this compiler/runtime build understands. Unknown `requires` entries fail closed.
-pub const KNOWN_FEATURES: &[&str] = &["governance/1", "conditional-unique/1"];
+pub const KNOWN_FEATURES: &[&str] = &[
+    "governance/1",
+    "conditional-unique/1",
+    "projection-aggregates/1",
+];
 
 impl DomainIR {
     /// Load an IR produced by another build: version and critical features must be understood.
@@ -341,6 +345,8 @@ pub struct View {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Aggregate {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter: Option<Expr>,
     pub function: String,
     pub field: String,
     pub alias: String,

@@ -11,7 +11,7 @@ import { Effect } from "effect";
 import { encodeIdentity, sortKey } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Unique } from "../model.js";
-import type { CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export const PENDING_INDEX = "pending-index";
 
@@ -347,6 +347,16 @@ export class DynamoStorage implements StorageAdapter {
       void SK;
       return { ...rest, _version: Number(docVersion) };
     });
+  }
+
+  putDocuments(tenant: string, writes: DocumentWrite[]): Effect.Effect<void, ForgeError> {
+    if (writes.length > 24 || new Set(writes.map(w=>JSON.stringify([w.kind,w.id]))).size !== writes.length) return Effect.fail(err("BudgetExceeded", "document batch must contain at most 24 distinct keys"));
+    if (!writes.length) return Effect.void;
+    const items = writes.map(w=>{
+      const { _version,...rest } = w.doc; void _version;
+      return {Put:{TableName:this.table,Item:{...rest,...this.documentKey(tenant,w.kind,w.id),docVersion:(w.expectedVersion ?? 0)+1},ConditionExpression:w.expectedVersion === null ? "attribute_not_exists(PK)" : "docVersion = :v",...(w.expectedVersion === null ? {} : {ExpressionAttributeValues:{":v":w.expectedVersion}})}};
+    });
+    return Effect.tryPromise({try:async()=>{await this.doc.send(new TransactWriteCommand({TransactItems:items}));},catch:(e)=> (e as Error).name === "TransactionCanceledException" ? err("VersionConflict","document batch changed concurrently") : err("StorageUnavailable",String(e))});
   }
 
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {

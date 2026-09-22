@@ -265,6 +265,7 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             for a in &p.aggregates {
                 let schema = match (a.function.as_str(), a.scale) {
                     ("count", _) => json!({ "type": "integer", "x-forge-type": "integer" }),
+                    ("exists" | "notExists", _) => json!({ "type": "boolean" }),
                     (_, Some(scale)) => {
                         json!({ "type": "string", "x-forge-type": "decimal", "x-forge-scale": scale })
                     }
@@ -272,6 +273,11 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                         .as_ref()
                         .and_then(|s| s.record.properties.get(&a.field).cloned())
                         .unwrap_or(json!({ "type": "number" })),
+                };
+                let schema = if matches!(a.function.as_str(), "min" | "max" | "latest") {
+                    json!({"anyOf":[schema,{"type":"null"}]})
+                } else {
+                    schema
                 };
                 record.properties.insert(a.alias.clone(), schema);
                 record.required.push(a.alias.clone());

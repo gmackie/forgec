@@ -546,7 +546,7 @@ fn views_projections_and_caches_elaborate_and_are_checked() {
             "resource R {\n  id : id\n  g : text\n  n : integer\n}\nprojection P {\n  from R\n  by g\n  max n as biggest\n}\n",
         )],
     );
-    assert_eq!(codes(non_invertible), vec!["W-PROJ-002"]);
+    assert!(codes(non_invertible).is_empty()); // bounded extrema ledger avoids recomputation scans
 }
 
 #[test]
