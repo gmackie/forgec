@@ -38,3 +38,6 @@
 ["{" "}" "(" ")" "[" "]"] @punctuation.bracket
 ["," ":" "."] @punctuation.delimiter
 ["=" ":=" "->" "<" ">" "<=" ">=" "==" "!=" "&&" "||" "+" "-" "*" "/" "!" "?" "|" ".."] @operator
+
+(facet_declaration name: (identifier) @type)
+"facet" @keyword

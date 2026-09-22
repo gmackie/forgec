@@ -4,3 +4,5 @@
  (message_declaration) (lifecycle_block) (rules_block) (capability_declaration)
  (purpose_binding) (uses_block) (sends_block) (errors_block) (slo_block)
  (content_block) (choice) (parallel)] @fold
+
+(facet_declaration) @fold

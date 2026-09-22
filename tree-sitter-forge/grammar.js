@@ -16,6 +16,7 @@ module.exports = grammar({
           $.enum_declaration,
           $.type_declaration,
           $.shape_declaration,
+          $.facet_declaration,
           $.resource_declaration,
           $.blob_declaration,
           $.function_declaration,
@@ -70,6 +71,7 @@ module.exports = grammar({
         $.type_expression,
         repeat($.decorator),
       ),
+    facet_declaration: $ => seq('facet', field('name', $.identifier), block($.field_declaration)),
     shape_declaration: ($) =>
       seq("shape", field("name", $.identifier), block($.field_declaration)),
     type_expression: ($) =>

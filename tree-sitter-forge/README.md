@@ -16,12 +16,11 @@ functions/uses, channels/subscriptions, sources/schedules, workflows, views,
 projections, caches, purposes, classifications, and capability blocks are covered.
 References in queries are syntactic only; local captures do not resolve packages.
 
-Facets (#19), collections (#17), work queues (#8), and actors (#16) are pending
-compiler features. They are not advertised as supported language syntax here.
-A proposed facet is included in the recovery corpus, so a following resource
-remains navigable without implying the compiler accepts the facet. Source
-fixtures use the canonical `source ... { -> Function }` form; proposed resource
-exposure syntax must land in the compiler before entering the valid corpus.
+Structural facets and their applications are covered by the shared valid corpus.
+Collections (#17), work queues (#8), and actors (#16) remain pending compiler
+features and are not advertised as supported syntax. Source fixtures use the
+canonical `source ... { -> Function }` form; proposed resource exposure syntax
+must land in the compiler before entering the valid corpus.
 
 The editor parser deliberately tolerates whitespace/newline placement more
 broadly than Rowan. An error-free Tree-sitter tree is not proof of a valid Forge

@@ -87,6 +87,7 @@ pub enum Declaration {
     Enum(EnumDecl),
     Type(TypeDecl),
     Shape(ShapeDecl),
+    Facet(FacetDecl),
     Resource(ResourceDecl),
     Blob(BlobDecl),
     Cache(CacheDecl),
@@ -108,6 +109,7 @@ impl Declaration {
             K::ENUM_DECL => Self::Enum(EnumDecl(node)),
             K::TYPE_DECL => Self::Type(TypeDecl(node)),
             K::SHAPE_DECL => Self::Shape(ShapeDecl(node)),
+            K::FACET_DECL => Self::Facet(FacetDecl(node)),
             K::RESOURCE_DECL => Self::Resource(ResourceDecl(node)),
             K::BLOB_DECL => Self::Blob(BlobDecl(node)),
             K::CACHE_DECL => Self::Cache(CacheDecl(node)),
@@ -130,6 +132,7 @@ impl Declaration {
             Self::Enum(n) => &n.0,
             Self::Type(n) => &n.0,
             Self::Shape(n) => &n.0,
+            Self::Facet(n) => &n.0,
             Self::Resource(n) => &n.0,
             Self::Blob(n) => &n.0,
             Self::Cache(n) => &n.0,
@@ -161,6 +164,7 @@ impl Declaration {
                         | "enum"
                         | "type"
                         | "shape"
+                        | "facet"
                         | "resource"
                         | "blob"
                         | "cache"
@@ -241,6 +245,12 @@ impl TypeDecl {
     }
 }
 
+node!(FacetDecl, FACET_DECL);
+impl FacetDecl {
+    pub fn fields(&self) -> impl Iterator<Item = FieldDecl> + '_ {
+        children(&self.0)
+    }
+}
 node!(ShapeDecl, SHAPE_DECL);
 impl ShapeDecl {
     pub fn name(&self) -> Option<SyntaxToken> {

@@ -59,6 +59,7 @@ pub enum SyntaxKind {
     ENUM_MEMBER,
     TYPE_DECL,
     SHAPE_DECL,
+    FACET_DECL,
     RESOURCE_DECL,
     BLOB_DECL,
     CACHE_DECL,

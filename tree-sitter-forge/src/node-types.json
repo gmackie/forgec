@@ -643,6 +643,32 @@
     }
   },
   {
+    "type": "facet_declaration",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "field_declaration",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "fail_statement",
     "named": true,
     "fields": {},
@@ -1677,6 +1703,10 @@
           "named": true
         },
         {
+          "type": "facet_declaration",
+          "named": true
+        },
+        {
           "type": "function_declaration",
           "named": true
         },
@@ -2500,6 +2530,10 @@
   },
   {
     "type": "extends",
+    "named": false
+  },
+  {
+    "type": "facet",
     "named": false
   },
   {

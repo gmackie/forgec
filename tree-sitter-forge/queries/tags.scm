@@ -13,3 +13,5 @@
 (field_declaration name: (identifier) @name) @definition.field
 (call_expression function: (qualified_name) @name) @reference.call
 (step_call function: (qualified_name) @name) @reference.call
+
+(facet_declaration name: (identifier) @name) @definition.class

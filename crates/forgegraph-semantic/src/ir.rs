@@ -96,6 +96,12 @@ pub struct Module {
     pub enums: Vec<EnumDecl>,
     pub types: Vec<TypeAlias>,
     pub shapes: Vec<Shape>,
+    /// Compile-time field templates, never runtime supertypes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub facets: Vec<Shape>,
+    /// Effective field anchor -> originating facet field anchor. No source paths.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub facet_origins: std::collections::BTreeMap<String, String>,
     pub resources: Vec<Resource>,
     pub functions: Vec<Function>,
     pub channels: Vec<Channel>,

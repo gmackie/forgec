@@ -50,6 +50,10 @@
             },
             {
               "type": "SYMBOL",
+              "name": "facet_declaration"
+            },
+            {
+              "type": "SYMBOL",
               "name": "resource_declaration"
             },
             {
@@ -394,6 +398,43 @@
             "type": "SYMBOL",
             "name": "decorator"
           }
+        }
+      ]
+    },
+    "facet_declaration": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "facet"
+        },
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "{"
+            },
+            {
+              "type": "REPEAT",
+              "content": {
+                "type": "SYMBOL",
+                "name": "field_declaration"
+              }
+            },
+            {
+              "type": "STRING",
+              "value": "}"
+            }
+          ]
         }
       ]
     },

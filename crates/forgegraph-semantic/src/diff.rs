@@ -939,6 +939,24 @@ pub fn compare(old: &Value, new: &Value) -> Report {
         }
     }
 
+    // Explain effective-shape changes using semantic origins, never source paths.
+    let mut origins = BTreeMap::new();
+    for artifact in [old, new] {
+        for module in arr(artifact, &["ir", "modules"]) {
+            if let Some(map) = module["facetOrigins"].as_object() {
+                for (anchor, origin) in map {
+                    origins.insert(anchor.replace("#field:", "."), s(origin));
+                }
+            }
+        }
+    }
+    for finding in &mut f {
+        if let Some(origin) = origins.get(&finding.subject) {
+            finding
+                .detail
+                .push_str(&format!("; field contributed by {origin}"));
+        }
+    }
     let rank = |sev: &str| match sev {
         "breaking" => 4,
         "risk" => 3,

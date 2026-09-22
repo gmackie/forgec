@@ -26,6 +26,7 @@ pub const SCALARS: &[&str] = &[
     "json",
 ];
 const RESOURCE_DECORATORS: &[&str] = &[
+    "facet",
     "tenant",
     "timestamps",
     "softDelete",
@@ -49,7 +50,22 @@ const DEFAULT_MODULE: &str = "_";
 pub struct Compilation {
     pub ir: Option<DomainIR>,
     pub diagnostics: Vec<Diagnostic>,
+    /// Build-local UTF-8 spans, excluded from canonical DomainIR.
+    pub source_index: BTreeMap<String, SourceSpan>,
+    pub references: Vec<SourceReference>,
     files: Vec<SourceFile>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct SourceSpan {
+    pub file: String,
+    pub start: usize,
+    pub end: usize,
+}
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct SourceReference {
+    pub span: SourceSpan,
+    pub target: String,
 }
 
 impl Compilation {
@@ -91,6 +107,7 @@ enum SymKind {
     Enum,
     Type,
     Shape,
+    Facet,
     Resource,
     Blob,
     Cache,
@@ -121,6 +138,8 @@ struct Ctx<'a> {
     imports: BTreeMap<String, BTreeSet<String>>,
     /// Resources whose fields are being derived right now (recursion guard).
     resolving: Vec<String>,
+    facet_origins: BTreeMap<String, String>,
+    references: Vec<SourceReference>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -152,6 +171,8 @@ pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
         symbols: BTreeMap::new(),
         imports: BTreeMap::new(),
         resolving: Vec::new(),
+        facet_origins: BTreeMap::new(),
+        references: Vec::new(),
     };
     for (alias, name) in &pkg.dependencies {
         match deps.iter().find(|d| &d.package.name == name) {
@@ -212,7 +233,72 @@ pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
     let has_errors = ctx.diags.iter().any(|d| d.is_error());
     ctx.diags
         .sort_by(|a, b| (&a.file, a.start, &a.code).cmp(&(&b.file, b.start, &b.code)));
+    let mut source_index = BTreeMap::new();
+    for ((module, name), symbol) in &ctx.symbols {
+        let id = ctx.id(module, name);
+        let span = |range: (usize, usize)| SourceSpan {
+            file: ctx.files[symbol.file].path.clone(),
+            start: range.0,
+            end: range.1,
+        };
+        source_index.insert(
+            id.clone(),
+            span((
+                u32::from(symbol.decl.syntax().text_range().start()) as usize,
+                u32::from(symbol.decl.syntax().text_range().end()) as usize,
+            )),
+        );
+        for node in symbol
+            .decl
+            .syntax()
+            .children()
+            .filter(|n| n.kind() == forgegraph_syntax::SyntaxKind::FIELD_DECL)
+        {
+            let field = ast::FieldDecl::cast(node).unwrap();
+            if let Some(name) = field.name() {
+                source_index.insert(
+                    format!("{id}#field:{}", name.text()),
+                    span(range_of(&field)),
+                );
+            }
+        }
+        if let Declaration::Resource(resource) = &symbol.decl {
+            for node in resource
+                .syntax()
+                .descendants()
+                .filter(|n| n.kind() == forgegraph_syntax::SyntaxKind::NAME_EXPR)
+            {
+                if let Some(q) = node.children().find_map(ast::QualifiedName::cast)
+                    && let [field] = q.segments().as_slice()
+                {
+                    let anchor = format!("{id}#field:{field}");
+                    if let Some(target) = ctx.facet_origins.get(&anchor) {
+                        ctx.references.push(SourceReference {
+                            span: span(range_of(&q)),
+                            target: target.clone(),
+                        });
+                    }
+                }
+            }
+        }
+    }
+    for (effective, origin) in &ctx.facet_origins {
+        if let Some(span) = source_index.get(origin).cloned() {
+            source_index.insert(effective.clone(), span);
+        }
+    }
+    ctx.references.sort_by(|a, b| {
+        (&a.span.file, a.span.start, a.span.end, &a.target).cmp(&(
+            &b.span.file,
+            b.span.start,
+            b.span.end,
+            &b.target,
+        ))
+    });
+    ctx.references.dedup();
     Compilation {
+        source_index,
+        references: ctx.references,
         ir: if has_errors { None } else { Some(ir) },
         diagnostics: ctx.diags,
         files: files
@@ -305,6 +391,7 @@ impl<'a> Ctx<'a> {
                     Declaration::Enum(_) => SymKind::Enum,
                     Declaration::Type(_) => SymKind::Type,
                     Declaration::Shape(_) => SymKind::Shape,
+                    Declaration::Facet(_) => SymKind::Facet,
                     Declaration::Resource(_) => SymKind::Resource,
                     Declaration::Blob(_) => SymKind::Blob,
                     Declaration::Cache(_) => SymKind::Cache,
@@ -423,7 +510,8 @@ impl<'a> Ctx<'a> {
                         SymKind::Function => Resolved::Function(id),
                         SymKind::Channel => Resolved::Channel(id),
                         SymKind::Type => Resolved::Type(self.alias_base(module, a)),
-                        SymKind::Source
+                        SymKind::Facet
+                        | SymKind::Source
                         | SymKind::Cache
                         | SymKind::View
                         | SymKind::Projection
@@ -1442,6 +1530,7 @@ impl<'a> Ctx<'a> {
                 if !nested {
                     self.resolving.pop();
                 }
+                out.extend(self.applied_facets(&r, module, file));
                 self.diags.truncate(saved); // reported by the owning pass, not here
                 out.extend(self.synthesized_fields(
                     &self.decorators_of(&r),
@@ -1518,6 +1607,141 @@ impl<'a> Ctx<'a> {
             }
             Expr::Call { .. } => scalar("json"),
         })
+    }
+
+    /// Validate templates even when unused. Facets cannot supply derived fields or uniqueness.
+    fn facet_fields(&mut self, facet: &ast::FacetDecl, module: &str, file: usize) -> Vec<Field> {
+        let mut fields = Vec::new();
+        let mut names = BTreeSet::new();
+        for fd in facet.fields() {
+            let name = fd.name().map(|n| n.text().to_string()).unwrap_or_default();
+            if !names.insert(name.clone()) || name == "id" || fd.derived().is_some() {
+                self.err("E-FACET-002", file, range_of(&fd), format!("facet field `{name}` must be a distinct declared non-identity field; derived fields are not supported"), None);
+                continue;
+            }
+            if let Some(field) =
+                self.field(&fd, module, file, None, &["immutable", "label", "data"])
+            {
+                fields.push(field);
+            }
+        }
+        fields.sort_by(|a, b| a.name.cmp(&b.name));
+        fields
+    }
+
+    fn applied_facets(
+        &mut self,
+        resource: &ast::ResourceDecl,
+        module: &str,
+        file: usize,
+    ) -> Vec<Field> {
+        let mut out = Vec::new();
+        let mut seen = BTreeSet::new();
+        for dec in resource
+            .decorators()
+            .filter(|d| d.name().is_some_and(|n| n.text() == "facet"))
+        {
+            self.require_edition_2027(file, range_of(&dec), "`@facet`");
+            if dec.args().is_empty() {
+                self.err(
+                    "E-FACET-001",
+                    file,
+                    range_of(&dec),
+                    "@facet requires at least one facet name",
+                    None,
+                );
+            }
+            for arg in dec.args() {
+                let Some(ArgValue::Name(parts)) = arg.value().filter(|_| arg.label().is_none())
+                else {
+                    self.err(
+                        "E-FACET-001",
+                        file,
+                        range_of(&arg),
+                        "@facet expects positional facet names",
+                        None,
+                    );
+                    continue;
+                };
+                let resolved = match parts.as_slice() {
+                    [name] => match self.sym(module, name) {
+                        Some(Symbol {
+                            decl: Declaration::Facet(facet),
+                            file: origin,
+                            ..
+                        }) => {
+                            let facet = facet.clone();
+                            let origin = *origin;
+                            Some((
+                                self.id(module, name),
+                                self.facet_fields(&facet, module, origin),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    [alias, rest @ ..]
+                        if self
+                            .imports
+                            .get(module)
+                            .is_some_and(|imports| imports.contains(alias)) =>
+                    {
+                        self.deps.get(alias).and_then(|dep| {
+                            dep.modules.iter().find_map(|m| {
+                                let name = match rest {
+                                    [n] if m.id == "_" => n,
+                                    [mo, n] if mo == &m.id => n,
+                                    _ => return None,
+                                };
+                                m.facets
+                                    .iter()
+                                    .find(|f| f.name == *name && f.exported)
+                                    .map(|f| (f.id.clone(), f.fields.clone()))
+                            })
+                        })
+                    }
+                    _ => None,
+                };
+                let Some((facet_id, fields)) = resolved else {
+                    self.err(
+                        "E-FACET-001",
+                        file,
+                        range_of(&arg),
+                        format!("`{}` is not a visible facet", parts.join(".")),
+                        None,
+                    );
+                    continue;
+                };
+                let (start, end) = range_of(&arg);
+                self.references.push(SourceReference {
+                    span: SourceSpan {
+                        file: self.files[file].path.clone(),
+                        start,
+                        end,
+                    },
+                    target: facet_id.clone(),
+                });
+                if !seen.insert(facet_id.clone()) {
+                    self.err(
+                        "E-FACET-003",
+                        file,
+                        range_of(&arg),
+                        format!("facet `{facet_id}` is applied more than once"),
+                        None,
+                    );
+                    continue;
+                }
+                let resource_id = self.id(module, resource.name().unwrap().text());
+                for field in fields {
+                    self.facet_origins.insert(
+                        format!("{resource_id}#field:{}", field.name),
+                        format!("{facet_id}#field:{}", field.name),
+                    );
+                    out.push(field);
+                }
+            }
+        }
+        out.sort_by(|a, b| a.name.cmp(&b.name));
+        out
     }
 
     // ------------------------------------------------------------ resources
@@ -1814,6 +2038,13 @@ impl<'a> Ctx<'a> {
                 fields.push(f);
             }
         }
+        for f in self.applied_facets(r, module, file) {
+            if !declared_names.insert(f.name.clone()) {
+                self.err("E-FACET-003", file, range_of(r), format!("facet field `{}` collides with another field on `{name}`; overrides are not allowed", f.name), None);
+            } else {
+                fields.push(f);
+            }
+        }
         if blob.is_some() && !declared_names.contains("id") {
             // Blobs synthesize their id.
             fields.insert(
@@ -1874,11 +2105,12 @@ impl<'a> Ctx<'a> {
         }
         for s in &synthesized {
             if declared_names.contains(&s.name) {
-                let tok = r
+                let span = r
                     .fields()
                     .find_map(|f| f.name().filter(|t| t.text() == s.name))
-                    .unwrap();
-                self.err("E-RES-001", file, tok_range(&tok), format!("field `{}` collides with a field synthesized by the resource's decorators or lifecycle", s.name), None);
+                    .map(|t| tok_range(&t))
+                    .unwrap_or_else(|| range_of(r));
+                self.err("E-RES-001", file, span, format!("field `{}` collides with a field synthesized by the resource's decorators or lifecycle", s.name), None);
             }
         }
         fields.extend(synthesized);
@@ -3651,6 +3883,7 @@ impl<'a> Ctx<'a> {
                         .filter_map(|fd| self.field(&fd, module, file, None, &["immutable"]))
                         .map(|f| (f.name, f.ty))
                         .collect();
+
                     self.diags.truncate(saved); // reported once where the shape is lowered
                     return out;
                 }
@@ -3994,6 +4227,17 @@ impl<'a> Ctx<'a> {
                         extends,
                     });
                 }
+                (SymKind::Facet, Declaration::Facet(s)) => {
+                    self.require_edition_2027(file, range_of(s), "`facet`");
+                    let fields = self.facet_fields(s, &module, file);
+                    m.facets.push(Shape {
+                        id,
+                        name,
+                        exported,
+                        doc: decl.doc(),
+                        fields,
+                    });
+                }
                 (SymKind::Shape, Declaration::Shape(s)) => {
                     let mut fields = Vec::new();
                     for fd in s.fields() {
@@ -4181,6 +4425,13 @@ impl<'a> Ctx<'a> {
         for m in &mut modules {
             m.enums.sort_by(|a, b| a.id.cmp(&b.id));
             m.types.sort_by(|a, b| a.id.cmp(&b.id));
+            m.facets.sort_by(|a, b| a.id.cmp(&b.id));
+            m.facet_origins = self
+                .facet_origins
+                .iter()
+                .filter(|(key, _)| key.starts_with(&format!("{}/{}/", self.pkg.name, m.id)))
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect();
             m.shapes.sort_by(|a, b| a.id.cmp(&b.id));
             m.resources.sort_by(|a, b| a.id.cmp(&b.id));
             m.functions.sort_by(|a, b| a.id.cmp(&b.id));
