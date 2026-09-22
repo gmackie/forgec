@@ -370,3 +370,29 @@ Results remain in browser session memory. Build/revision preconditions reject st
 External runtimes must advertise invocation-preconditions; GET function input binding is currently
 unsupported in the playground. Deployment status records the last action's health check, not
 continuous monitoring.
+
+### Design, Use, and Developer
+
+Studio opens in **Design**, with business labels, a form preview whose fields open
+configuration, familiar field types, and schedule presets. **Developer** shares
+that draft and undo history, and adds source, explicit function routes, HTTP
+settings, and full compiler diagnostics. **Use** opens deployed records only
+after selecting an environment; it does not apply the Design draft. Switching
+between these three views preserves their in-memory edits.
+
+Use connects through the existing `RUNTIME_TARGETS_JSON` configuration and
+instance authentication. Runtime credentials remain on the console server; the
+runtime continues to enforce their tenant, purpose, and authorization context.
+These views are presentation choices, not new authorization roles.
+
+Deploy this runtime version to enable its authenticated
+`GET /forge/workspace.json` endpoint. It serves the compiled UI descriptor and
+record operation bindings. The console's `/api/runtime/targets/:id/workspace`
+and `POST /api/runtime/targets/:id/record` endpoints load that contract and forward
+only its declared operations, preserving build/deployment and record-version
+preconditions. Older runtimes show an upgrade message. Existing preview,
+approval, commit, lifecycle action, and CSV flows are reused.
+
+Design saves still create a repository commit; they do not deploy the app.
+Use record edits are buffered until reviewed and committed; actions execute
+when confirmed. Browser draft storage applies to Design, not live-record edits.

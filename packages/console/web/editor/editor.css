@@ -1742,3 +1742,155 @@
 .field-dialog input:not([type="checkbox"]) {
   width: 100%;
 }
+
+/* Business workspace: purpose first, technical detail in Developer. */
+.studio-modes {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--line, #dedee5);
+  border-radius: 16px;
+  background: var(--surface, #fff);
+}
+.studio-modes button {
+  flex: 1;
+  height: auto;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.75rem 1rem;
+}
+.studio-modes small {
+  font-weight: 400;
+  font-size: 0.75rem;
+}
+.app-studio [hidden] {
+  display: none !important;
+}
+.studio-form-preview,
+.studio-connect-card {
+  border: 1px solid var(--line, #dedee5);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  background: var(--surface, #fff);
+}
+.studio-preview-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.studio-preview-fields button {
+  text-align: left;
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid #d5d8de;
+  background: transparent;
+}
+.studio-preview-fields button:not(:disabled):hover {
+  border-color: #6c55d9;
+  background: #f4f1ff;
+}
+.studio-preview-fields strong,
+.studio-preview-fields span {
+  display: block;
+}
+.studio-preview-fields span {
+  margin-top: 0.5rem;
+  border: 1px solid #d5d8de;
+  padding: 0.65rem;
+  border-radius: 5px;
+  color: #555;
+  background: #fff;
+}
+.studio-connect-card {
+  max-width: 620px;
+}
+.studio-connect-card label {
+  display: block;
+  margin: 1rem 0;
+}
+.studio-connect-card select,
+.studio-connect-card input {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  margin-top: 0.35rem;
+}
+.studio-live-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background: #e8f5ee;
+  color: #16412e;
+  border: 1px solid #a4c8b4;
+  border-radius: 12px;
+  margin: 1.25rem 0;
+}
+.studio-use .forge-workspace {
+  min-height: 400px !important;
+  overflow: auto;
+  color: #172031;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+.studio-use .forge-workspace button {
+  border: 1px solid #c8ced8;
+  border-radius: 5px;
+  padding: 0.4rem 0.6rem;
+  margin: 0.15rem;
+  cursor: pointer;
+}
+.studio-use .forge-workspace button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.studio-use .forge-workspace input,
+.studio-use .forge-workspace select {
+  padding: 0.4rem;
+  border: 1px solid #d5d8de;
+  border-radius: 4px;
+}
+.studio-routes {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+}
+.studio-routes button {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  max-width: 100%;
+  overflow: auto;
+}
+@media (max-width: 640px) {
+  .studio-modes {
+    gap: 0.2rem;
+    padding: 0.3rem;
+  }
+  .studio-modes button {
+    padding: 0.6rem;
+    align-items: center;
+    min-height: 44px;
+  }
+  .studio-modes small {
+    display: none;
+  }
+  .studio-use .forge-workspace {
+    grid-template-columns: 1fr !important;
+  }
+  .studio-use .forge-workspace > main {
+    overflow: auto;
+  }
+  .studio-use .forge-workspace header {
+    flex-wrap: wrap;
+  }
+}

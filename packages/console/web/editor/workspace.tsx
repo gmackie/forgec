@@ -39,6 +39,7 @@ import {
 } from "./composer-model.js";
 import { Edit, VisualDocument } from "./document.js";
 interface Props {
+  developer?: boolean;
   entry: Declaration;
   analysis: Analysis;
   entries: Declaration[];
@@ -99,7 +100,9 @@ function FieldForm({
   onSave,
   onClose,
   onError,
+  developer = false,
 }: {
+  developer?: boolean;
   entry: Declaration;
   field: SyntaxNode | null;
   analysis: Analysis;
@@ -174,6 +177,62 @@ function FieldForm({
             {field && children(field, "DERIVED_VALUE").length ? (
               <div className="calculated-note">
                 Calculated field<small>The type follows the expression.</small>
+              </div>
+            ) : !developer ? (
+              <div>
+                <label htmlFor="business-field-type">Field type</label>
+                <select
+                  id="business-field-type"
+                  aria-label="Field type"
+                  value={draft.type.replace(/\?$/, "")}
+                  onChange={(e) =>
+                    change(
+                      "type",
+                      e.target.value + (draft.type.endsWith("?") ? "?" : ""),
+                    )
+                  }
+                >
+                  {Object.entries({
+                    text: "Text",
+                    integer: "Whole number",
+                    boolean: "Yes or no",
+                    email: "Email address",
+                    date: "Date",
+                    datetime: "Date and time",
+                    [draft.type.replace(/\?$/, "")]:
+                      (
+                        {
+                          text: "Text",
+                          integer: "Whole number",
+                          boolean: "Yes or no",
+                          email: "Email address",
+                          date: "Date",
+                          datetime: "Date and time",
+                        } as Record<string, string>
+                      )[draft.type.replace(/\?$/, "")] ||
+                      draft.type.replace(/\?$/, ""),
+                  }).map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+                <label>
+                  <input
+                    type="checkbox"
+                    disabled={!/^[A-Za-z_][A-Za-z0-9_.]*\??$/.test(draft.type)}
+                    checked={!draft.type.includes("?")}
+                    onChange={(e) =>
+                      change(
+                        "type",
+                        draft.type.replace(/\?$/, "") +
+                          (e.target.checked ? "" : "?"),
+                      )
+                    }
+                  />{" "}
+                  Required
+                </label>
+                {!/^[A-Za-z_][A-Za-z0-9_.]*\??$/.test(draft.type) && <small>Custom constraints are preserved. Configure them in Developer view.</small>}
               </div>
             ) : (
               <Input
@@ -375,11 +434,53 @@ export function ResourceWorkspace(props: Props) {
           </Button>
         ))}
       </nav>
+      {!props.developer && section === "Fields" && (
+        <section className="studio-form-preview" aria-label="Form preview">
+          <div>
+            <p className="eyebrow">FORM PREVIEW · DESIGN ONLY</p>
+            <h3>{entry.name}</h3>
+            <p>
+              {editing
+                ? "Select a field to change how it works."
+                : "Choose Edit draft to change these fields."}{" "}
+              This preview does not save records.
+            </p>
+          </div>
+          <div className="studio-preview-fields">
+            {fields.map((f) => {
+              const d = fieldDraft(source, f);
+              return (
+                <button
+                  type="button"
+                  key={f.start}
+                  disabled={!editing}
+                  aria-label={`Configure ${d.name}`}
+                  onClick={() => setSelectedField(f)}
+                >
+                  <strong>
+                    {d.name.replace(/([a-z])([A-Z])/g, "$1 $2")}
+                    {!d.type.includes("?") && d.type !== "id" && !children(f, "DERIVED_VALUE").length && " *"}
+                  </strong>
+                  <span>
+                    {d.type === "id" ? "Assigned automatically" : children(f, "DERIVED_VALUE").length ? "Calculated automatically" : d.type.startsWith("bool")
+                      ? "☐ Yes / No"
+                      : d.type.startsWith("email")
+                        ? "name@example.com"
+                        : d.type.startsWith("date")
+                          ? "Choose a date"
+                          : `Enter ${d.name}`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
       {section === "Fields" && (
         <section className="composer-card">
           <SectionHeading
-            title="Schema"
-            description="The information this resource holds."
+            title={props.developer ? "Schema" : "Fields"}
+            description="The information you keep for each record."
             action={
               editing ? (
                 <Button
@@ -749,6 +850,7 @@ export function ResourceWorkspace(props: Props) {
       )}
       {selectedField !== undefined && (
         <FieldForm
+          developer={props.developer ?? false}
           key={selectedField?.start ?? "new"}
           entry={entry}
           field={selectedField}
@@ -1008,32 +1110,34 @@ export function FunctionWorkspace(props: Props) {
   };
   return (
     <div className="function-composer">
-      <div className="function-route">
-        <span className="function-icon">
-          <LightningIcon size={25} />
-        </span>
-        <div>
-          <span className="eyebrow">ENTRY POINT</span>
-          {http ? (
-            <p>
-              <b>{endpoint?.[1] || "HTTP"}</b>
-              <code>{endpoint?.[2] || textOf(source, http)}</code>
-            </p>
-          ) : (
-            <p>Internal function</p>
-          )}
+      {props.developer && (
+        <div className="function-route">
+          <span className="function-icon">
+            <LightningIcon size={25} />
+          </span>
+          <div>
+            <span className="eyebrow">ENTRY POINT</span>
+            {http ? (
+              <p>
+                <b>{endpoint?.[1] || "HTTP"}</b>
+                <code>{endpoint?.[2] || textOf(source, http)}</code>
+              </p>
+            ) : (
+              <p>Internal function</p>
+            )}
+          </div>
+          <div className="route-purpose">
+            <ShieldCheckIcon />
+            {children(node, "FUNCTION_PURPOSE")[0]
+              ? textOf(source, children(node, "FUNCTION_PURPOSE")[0]!).replace(
+                  /^purpose\s+/,
+                  "",
+                )
+              : "No purpose specified"}
+          </div>
         </div>
-        <div className="route-purpose">
-          <ShieldCheckIcon />
-          {children(node, "FUNCTION_PURPOSE")[0]
-            ? textOf(source, children(node, "FUNCTION_PURPOSE")[0]!).replace(
-                /^purpose\s+/,
-                "",
-              )
-            : "No purpose specified"}
-        </div>
-      </div>
-      {editing && (
+      )}
+      {editing && props.developer && (
         <form className="inline-builder route-editor" onSubmit={saveHttp}>
           <Select
             aria-label="HTTP method"
@@ -1271,30 +1375,32 @@ export function FunctionWorkspace(props: Props) {
             </section>
           );
         })}
-        <section className="composer-card">
-          <SectionHeading
-            title="Service objectives"
-            description="Reliability and latency expectations."
-          />
-          {children(node, "SLO_BLOCK")
-            .flatMap((b) => children(b, "SLO_ITEM"))
-            .map((n, i) => (
-              <div className="slo-row" key={n.start}>
-                {editing ? (
-                  <Edit
-                    label={`Service objective ${i + 1}`}
-                    value={textOf(source, n)}
-                    onCommit={(v) => onChange(patch(source, n, v))}
-                  />
-                ) : (
-                  <code>{textOf(source, n)}</code>
-                )}
-              </div>
-            ))}
-          {!children(node, "SLO_BLOCK").length && (
-            <p className="composer-empty">No service objectives declared.</p>
-          )}
-        </section>
+        {props.developer && (
+          <section className="composer-card">
+            <SectionHeading
+              title="Service objectives"
+              description="Reliability and latency expectations."
+            />
+            {children(node, "SLO_BLOCK")
+              .flatMap((b) => children(b, "SLO_ITEM"))
+              .map((n, i) => (
+                <div className="slo-row" key={n.start}>
+                  {editing ? (
+                    <Edit
+                      label={`Service objective ${i + 1}`}
+                      value={textOf(source, n)}
+                      onCommit={(v) => onChange(patch(source, n, v))}
+                    />
+                  ) : (
+                    <code>{textOf(source, n)}</code>
+                  )}
+                </div>
+              ))}
+            {!children(node, "SLO_BLOCK").length && (
+              <p className="composer-empty">No service objectives declared.</p>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );
@@ -1306,6 +1412,7 @@ export function SourceWorkspace({
   editing,
   onChange,
   onSelect,
+  developer,
 }: Props) {
   const { source, node } = entry;
   const clause = (
@@ -1369,18 +1476,82 @@ export function SourceWorkspace({
         <ClockIcon size={40} />
         <div>
           <p className="eyebrow">SCHEDULED SOURCE</p>
-          <h3>A recurring entry point</h3>
-          <p>Runs a function on a schedule, in an explicit time zone.</p>
+          <h3>Run an action automatically</h3>
+          <p>Choose when an action runs and which time zone to use.</p>
         </div>
       </div>
       <section className="composer-card">
         <div className="source-settings">
-          {clause("CRON_DECL", "cron", "Cron schedule", true)}
+          {developer ? (
+            clause("CRON_DECL", "cron", "Cron schedule", true)
+          ) : (
+            <label>
+              Repeat
+              <select
+                aria-label="Repeat schedule"
+                disabled={!editing}
+                value={(() => {
+                  const n = children(node, "CRON_DECL")[0];
+                  const raw = n
+                    ? textOf(source, n)
+                        .replace(/^cron\s+/, "")
+                        .trim()
+                    : '""';
+                  try {
+                    return JSON.parse(raw);
+                  } catch {
+                    return "";
+                  }
+                })()}
+                onChange={(e) =>
+                  onChange(
+                    setClause(
+                      source,
+                      node,
+                      "CRON_DECL",
+                      "cron",
+                      JSON.stringify(e.target.value),
+                    ),
+                  )
+                }
+              >
+                <option value="">Choose a schedule</option>
+                <option value="0 8 * * *">Every day at 8:00 AM</option>
+                <option value="0 8 * * 1-5">Weekdays at 8:00 AM</option>
+                <option value="0 8 * * 1">Every Monday at 8:00 AM</option>
+                <option value="0 * * * *">Every hour</option>
+                {(() => {
+                  const n = children(node, "CRON_DECL")[0];
+                  if (!n) return null;
+                  try {
+                    const v = JSON.parse(
+                      textOf(source, n)
+                        .replace(/^cron\s+/, "")
+                        .trim(),
+                    );
+                    return [
+                      "0 8 * * *",
+                      "0 8 * * 1-5",
+                      "0 8 * * 1",
+                      "0 * * * *",
+                    ].includes(v) ? null : (
+                      <option value={v}>
+                        Custom schedule (configured in Developer)
+                      </option>
+                    );
+                  } catch {
+                    return null;
+                  }
+                })()}
+              </select>
+            </label>
+          )}
           {clause("TIMEZONE_DECL", "timezone", "Time zone", true)}
         </div>
         <p className="muted small">
-          Cron uses minute, hour, day of month, month, and day of week. Forge
-          validates the schedule.
+          {developer
+            ? "Cron uses minute, hour, day of month, month, and day of week."
+            : "Times follow the selected time zone. Developer view supports custom schedules."}
         </p>
       </section>
       <div className="source-connection">

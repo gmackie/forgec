@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
@@ -26,6 +26,21 @@ import { patch } from "./model.js";
 import type { GitProject, GitSnapshot } from "../../src/git.js";
 import { example } from "./example.js";
 import "./editor.css";
+import type { StudioApi } from "../records.js";
+import { children, textOf } from "./model.js";
+const Records = lazy(() =>
+  import("../records.js").then((m) => ({ default: m.RecordWorkspaceView })),
+);
+const businessLabels: Partial<Record<Category, string>> = {
+  Resources: "Data",
+  Functions: "Actions",
+  Sources: "Schedules",
+  Purposes: "Data access",
+  Shapes: "Forms",
+  Types: "Field types",
+  Events: "Events",
+  "Data classes": "Data classifications",
+};
 const storageKey = "forge.visual-editor.v1";
 function initial(): Project {
   try {
@@ -46,7 +61,17 @@ function initial(): Project {
   } catch {}
   return structuredClone(example);
 }
-export function ForgeEditor({ token = "" }: { token?: string }) {
+export function ForgeEditor({
+  token = "",
+  api,
+}: {
+  token?: string;
+  api?: StudioApi;
+}) {
+  const [mode, setMode] = useState<"Design" | "Use" | "Developer">("Design");
+  const [used, setUsed] = useState(false);
+  const developer = mode === "Developer";
+  const label = (c: Category) => (developer ? c : businessLabels[c] || c);
   const [editing, setEditing] = useState(false);
   const [repositories, setRepositories] = useState<GitProject[]>([]);
   const [repository, setRepository] = useState<GitSnapshot | null>(() => {
@@ -394,618 +419,722 @@ export function ForgeEditor({ token = "" }: { token?: string }) {
     });
   };
   return (
-    <div className="forge-editor app-studio">
-      <div className="editor-title">
-        <div>
-          <p className="eyebrow">FORGE STUDIO · APPLICATION</p>
-          <h1>{project.name}</h1>
-          <p className="muted">
-            {editing
-              ? "Editing a draft. Review changes before committing."
-              : "Explore your application model."}
-          </p>
-        </div>
-        <Badge variant="outline">
-          {repository
-            ? `${repository.branch} · ${repository.revision.slice(0, 8)}${changedFiles.length ? " · Uncommitted changes" : ""}`
-            : "Local demo / draft"}
-        </Badge>
-      </div>
-      <div className="editor-toolbar">
-        <Button
-          disabled={gitBusy}
-          variant={editing ? "secondary" : "primary"}
-          onClick={() => {
-            setEditing(!editing);
-            setView("visual");
-          }}
-        >
-          {editing ? "Read view" : "Edit draft"}
-        </Button>
-        {editing && (
-          <>
-            <Button
-              aria-label="Undo edit"
-              disabled={!history.past.length}
-              onClick={undo}
-            >
-              Undo
-            </Button>
-            <Button
-              aria-label="Redo edit"
-              disabled={!history.future.length}
-              onClick={redo}
-            >
-              Redo
-            </Button>
-          </>
-        )}
-        <Button disabled={gitBusy} onClick={() => setConnectOpen(true)}>
-          {repository ? "Change repository" : "Connect Git"}
-        </Button>
-        {repository && (
+    <div className={`forge-editor app-studio studio-${mode.toLowerCase()}`}>
+      <nav className="studio-modes" aria-label="Workspace view">
+        {(["Design", "Use", "Developer"] as const).map((m) => (
           <Button
-            variant="primary"
-            disabled={gitBusy || !changedFiles.length}
-            onClick={() => setReviewOpen(true)}
-          >
-            Review changes ({changedFiles.length})
-          </Button>
-        )}
-        <span className="declaration-spacer" />
-        <details className="studio-project-tools">
-          <summary>Project tools</summary>
-          <div className="editor-row">
-            <Button disabled={gitBusy} onClick={() => setShowDemo(true)}>
-              Load demo
-            </Button>
-            <Button
-              disabled={gitBusy || !!repository}
-              onClick={() => fileInput.current?.click()}
-            >
-              Open .forge files
-            </Button>
-            <Button
-              onClick={() =>
-                download("forge-draft.json", JSON.stringify(project, null, 2))
-              }
-            >
-              Export draft
-            </Button>
-          </div>
-        </details>
-        <input
-          ref={fileInput}
-          type="file"
-          accept=".forge,.json"
-          multiple
-          hidden
-          onChange={(e) => {
-            void importFiles(e.target.files).catch((e) => setError(String(e)));
-            e.target.value = "";
-          }}
-        />
-      </div>
-      <Dialog.Root open={showDemo} onOpenChange={setShowDemo}>
-        <Dialog className="editor">
-          <Dialog.Title className="dialog-title">
-            Load the service desk demo?
-          </Dialog.Title>
-          <Dialog.Description>
-            This replaces your browser draft, disconnects Git, and clears undo
-            history. Export your changes first to keep a copy.
-          </Dialog.Description>
-          <footer className="dialog-footer">
-            <Button onClick={() => setShowDemo(false)}>Cancel</Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                setRepository(null);
-                setHistory({
-                  past: [],
-                  present: structuredClone(example),
-                  future: [],
-                });
-                setSelected("");
-                setCategory("Resources");
-                setShowDemo(false);
-                setEditing(false);
-              }}
-            >
-              Replace draft with demo
-            </Button>
-          </footer>
-        </Dialog>
-      </Dialog.Root>
-      <Dialog.Root
-        open={connectOpen}
-        onOpenChange={(open) => {
-          if (!gitBusy) setConnectOpen(open);
-        }}
-      >
-        <Dialog className="editor">
-          <Dialog.Title className="dialog-title">
-            Connect a Git application
-          </Dialog.Title>
-          <Dialog.Description>
-            Load a committed snapshot from an instance-configured repository.
-            This replaces your browser draft and its undo history. Export any
-            changes you want to keep first.
-          </Dialog.Description>
-          {repositories.length ? (
-            <Select
-              aria-label="Git application"
-              value={repoId}
-              items={Object.fromEntries(
-                repositories.map((r) => [
-                  r.id,
-                  `${r.name} · ${r.repository} / ${r.branch}`,
-                ]),
-              )}
-              onValueChange={(v) => setRepoId(String(v))}
-            />
-          ) : (
-            <p className="muted">
-              No repositories are configured. The instance operator can add
-              GitHub repositories with GIT_PROJECTS_JSON and a server-side
-              GITHUB_TOKEN.
-            </p>
-          )}
-          <footer className="dialog-footer">
-            <Button disabled={gitBusy} onClick={() => setConnectOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              loading={gitBusy}
-              disabled={!repoId}
-              onClick={() => void loadRepository()}
-            >
-              Load repository
-            </Button>
-          </footer>
-          {error && <p role="alert">{error}</p>}
-        </Dialog>
-      </Dialog.Root>
-      <Dialog.Root
-        open={reviewOpen}
-        onOpenChange={(open) => {
-          if (!gitBusy) setReviewOpen(open);
-        }}
-      >
-        <Dialog className="editor" size="xl">
-          <Dialog.Title className="dialog-title">Review changes</Dialog.Title>
-          <Dialog.Description>
-            Commit to {repository?.repository} on {repository?.branch}. Git will
-            reject the commit if this branch has changed since revision{" "}
-            {repository?.revision.slice(0, 8)}.
-          </Dialog.Description>
-          <div className="commit-changes">
-            {changedFiles.map((f) => (
-              <details key={f.path} open>
-                <summary>
-                  {f.path} ·{" "}
-                  {f.before === undefined
-                    ? "Added"
-                    : f.after === undefined
-                      ? "Deleted"
-                      : "Modified"}
-                </summary>
-                <div className="commit-diff">
-                  <div>
-                    <h4>Committed</h4>
-                    <pre>{f.before ?? "Not present"}</pre>
-                  </div>
-                  <div>
-                    <h4>Draft</h4>
-                    <pre>{f.after ?? "Deleted"}</pre>
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
-          <Textarea
-            aria-label="Commit message"
-            placeholder="Describe why you changed this application"
-            value={commitMessage}
-            onChange={(e) => setCommitMessage(e.target.value)}
-            disabled={gitBusy}
-          />
-          <p className="muted small">
-            {diagnostics.filter((d) => d.severity === "error").length} compiler
-            errors. Fix errors before committing.
-          </p>
-          <footer className="dialog-footer">
-            <Button disabled={gitBusy} onClick={() => setReviewOpen(false)}>
-              Keep editing
-            </Button>
-            <Button
-              variant="primary"
-              loading={gitBusy}
-              disabled={
-                !changedFiles.length ||
-                !commitMessage.trim() ||
-                !ready ||
-                diagnostics.some((d) => d.severity === "error")
-              }
-              onClick={() => void createCommit()}
-            >
-              Commit changes
-            </Button>
-          </footer>
-          {error && <p role="alert">{error}</p>}
-        </Dialog>
-      </Dialog.Root>
-      {notice && (
-        <p role="status" className="studio-notice">
-          {notice}
-        </p>
-      )}
-      {error && (
-        <div role="alert">
-          <Banner variant="error" title={error} />
-          <Button
+            key={m}
+            aria-pressed={mode === m}
+            variant={mode === m ? "primary" : "ghost"}
             onClick={() => {
-              setError("");
-              setWorkerEpoch((v) => v + 1);
+              setMode(m);
+              if (m === "Use") setUsed(true);
+              if (m === "Design") setView("visual");
             }}
           >
-            Restart compiler
+            {m}
+            <small>
+              {m === "Design"
+                ? "Shape your application"
+                : m === "Use"
+                  ? "Work with live records"
+                  : "Routes, source & diagnostics"}
+            </small>
           </Button>
+        ))}
+      </nav>
+      {used && (
+        <div hidden={mode !== "Use"}>
+          <Suspense fallback={<p>Loading record workspace…</p>}>
+            {api ? (
+              <Records api={api} />
+            ) : (
+              <p>Connect to an instance to work with live records.</p>
+            )}
+          </Suspense>
         </div>
       )}
-      <div
-        className="app-kind-tabs"
-        role="tablist"
-        aria-label="Application declarations"
-      >
-        {categories
-          .filter((c) =>
-            [
-              "Resources",
-              "Functions",
-              "Sources",
-              "Data catalog",
-              "Purposes",
-            ].includes(c),
-          )
-          .map((c) => (
+      <div hidden={mode === "Use"}>
+        <div className="editor-title">
+          <div>
+            <p className="eyebrow">FORGE STUDIO · APPLICATION</p>
+            <h1>{project.name}</h1>
+            <p className="muted">
+              {editing
+                ? "Design draft · Changes are saved in this browser. Review them before saving to your application."
+                : "Design your data, actions, and workflows. Use opens records from a deployed application."}
+            </p>
+          </div>
+          <Badge variant="outline">
+            {repository
+              ? developer
+                ? `${repository.branch} · ${repository.revision.slice(0, 8)}`
+                : `${changedFiles.length ? "Draft changes" : "Saved design"} · Not deployed`
+              : "Local demo / draft"}
+          </Badge>
+        </div>
+        <div className="editor-toolbar">
+          <Button
+            disabled={gitBusy}
+            variant={editing ? "secondary" : "primary"}
+            onClick={() => {
+              setEditing(!editing);
+              setView("visual");
+            }}
+          >
+            {editing ? "Read view" : "Edit draft"}
+          </Button>
+          {editing && (
+            <>
+              <Button
+                aria-label="Undo edit"
+                disabled={!history.past.length}
+                onClick={undo}
+              >
+                Undo
+              </Button>
+              <Button
+                aria-label="Redo edit"
+                disabled={!history.future.length}
+                onClick={redo}
+              >
+                Redo
+              </Button>
+            </>
+          )}
+          <Button disabled={gitBusy} onClick={() => setConnectOpen(true)}>
+            {developer
+              ? repository
+                ? "Change repository"
+                : "Connect Git"
+              : repository
+                ? "Change application"
+                : "Open application"}
+          </Button>
+          {repository && (
             <Button
-              key={c}
-              role="tab"
-              aria-selected={category === c}
-              variant={category === c ? "secondary" : "ghost"}
+              variant="primary"
+              disabled={gitBusy || !changedFiles.length}
+              onClick={() => setReviewOpen(true)}
+            >
+              Review changes ({changedFiles.length})
+            </Button>
+          )}
+          <span className="declaration-spacer" />
+          <details className="studio-project-tools">
+            <summary>{developer ? "Project tools" : "Draft options"}</summary>
+            <div className="editor-row">
+              <Button disabled={gitBusy} onClick={() => setShowDemo(true)}>
+                Load demo
+              </Button>
+              <Button
+                disabled={gitBusy || !!repository}
+                onClick={() => fileInput.current?.click()}
+              >
+                Open .forge files
+              </Button>
+              <Button
+                onClick={() =>
+                  download("forge-draft.json", JSON.stringify(project, null, 2))
+                }
+              >
+                Export draft
+              </Button>
+            </div>
+          </details>
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".forge,.json"
+            multiple
+            hidden
+            onChange={(e) => {
+              void importFiles(e.target.files).catch((e) =>
+                setError(String(e)),
+              );
+              e.target.value = "";
+            }}
+          />
+        </div>
+        <Dialog.Root open={showDemo} onOpenChange={setShowDemo}>
+          <Dialog className="editor">
+            <Dialog.Title className="dialog-title">
+              Load the service desk demo?
+            </Dialog.Title>
+            <Dialog.Description>
+              This replaces your browser draft, disconnects Git, and clears undo
+              history. Export your changes first to keep a copy.
+            </Dialog.Description>
+            <footer className="dialog-footer">
+              <Button onClick={() => setShowDemo(false)}>Cancel</Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setRepository(null);
+                  setHistory({
+                    past: [],
+                    present: structuredClone(example),
+                    future: [],
+                  });
+                  setSelected("");
+                  setCategory("Resources");
+                  setShowDemo(false);
+                  setEditing(false);
+                }}
+              >
+                Replace draft with demo
+              </Button>
+            </footer>
+          </Dialog>
+        </Dialog.Root>
+        <Dialog.Root
+          open={connectOpen}
+          onOpenChange={(open) => {
+            if (!gitBusy) setConnectOpen(open);
+          }}
+        >
+          <Dialog className="editor">
+            <Dialog.Title className="dialog-title">
+              {developer ? "Connect a Git application" : "Open an application"}
+            </Dialog.Title>
+            <Dialog.Description>
+              Load a committed snapshot from an instance-configured repository.
+              This replaces your browser draft and its undo history. Export any
+              changes you want to keep first.
+            </Dialog.Description>
+            {repositories.length ? (
+              <Select
+                aria-label="Git application"
+                value={repoId}
+                items={Object.fromEntries(
+                  repositories.map((r) => [
+                    r.id,
+                    `${r.name} · ${r.repository} / ${r.branch}`,
+                  ]),
+                )}
+                onValueChange={(v) => setRepoId(String(v))}
+              />
+            ) : (
+              <p className="muted">
+                No applications are connected yet. Ask your administrator to
+                connect your application repository.
+              </p>
+            )}
+            <footer className="dialog-footer">
+              <Button disabled={gitBusy} onClick={() => setConnectOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                loading={gitBusy}
+                disabled={!repoId}
+                onClick={() => void loadRepository()}
+              >
+                {developer ? "Load repository" : "Open application"}
+              </Button>
+            </footer>
+            {error && <p role="alert">{error}</p>}
+          </Dialog>
+        </Dialog.Root>
+        <Dialog.Root
+          open={reviewOpen}
+          onOpenChange={(open) => {
+            if (!gitBusy) setReviewOpen(open);
+          }}
+        >
+          <Dialog className="editor" size="xl">
+            <Dialog.Title className="dialog-title">Review changes</Dialog.Title>
+            <Dialog.Description>
+              {developer
+                ? `Commit to ${repository?.repository} on ${repository?.branch}. Changes are checked against revision ${repository?.revision.slice(0, 8)}.`
+                : "Save this design to your application. This does not deploy it or change live records. If someone has saved a newer design, your draft will be kept for review."}
+            </Dialog.Description>
+            <div className="commit-changes">
+              {changedFiles.map((f) => (
+                <details key={f.path} open>
+                  <summary>
+                    {f.path} ·{" "}
+                    {f.before === undefined
+                      ? "Added"
+                      : f.after === undefined
+                        ? "Deleted"
+                        : "Modified"}
+                  </summary>
+                  <div className="commit-diff">
+                    <div>
+                      <h4>Committed</h4>
+                      <pre>{f.before ?? "Not present"}</pre>
+                    </div>
+                    <div>
+                      <h4>Draft</h4>
+                      <pre>{f.after ?? "Deleted"}</pre>
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+            <Textarea
+              aria-label={developer ? "Commit message" : "Change description"}
+              placeholder="Describe why you changed this application"
+              value={commitMessage}
+              onChange={(e) => setCommitMessage(e.target.value)}
+              disabled={gitBusy}
+            />
+            <p className="muted small">
+              {diagnostics.filter((d) => d.severity === "error").length} issues
+              to resolve before saving.
+            </p>
+            <footer className="dialog-footer">
+              <Button disabled={gitBusy} onClick={() => setReviewOpen(false)}>
+                Keep editing
+              </Button>
+              <Button
+                variant="primary"
+                loading={gitBusy}
+                disabled={
+                  !changedFiles.length ||
+                  !commitMessage.trim() ||
+                  !ready ||
+                  diagnostics.some((d) => d.severity === "error")
+                }
+                onClick={() => void createCommit()}
+              >
+                {developer ? "Commit changes" : "Save design"}
+              </Button>
+            </footer>
+            {error && <p role="alert">{error}</p>}
+          </Dialog>
+        </Dialog.Root>
+        {notice && (
+          <p role="status" className="studio-notice">
+            {notice}
+          </p>
+        )}
+        {error && (
+          <div role="alert">
+            <Banner variant="error" title={error} />
+            <Button
               onClick={() => {
-                setCategory(c);
+                setError("");
+                setWorkerEpoch((v) => v + 1);
+              }}
+            >
+              Restart compiler
+            </Button>
+          </div>
+        )}
+        {developer && (
+          <details className="studio-routes">
+            <summary>Declared API routes</summary>
+            <p>
+              Explicit function bindings in this draft. Generated resource
+              routes and deployed routes may differ.
+            </p>
+            {entries.flatMap((e) =>
+              children(e.node, "DECORATOR")
+                .filter((n) => textOf(e.source, n).startsWith("@http("))
+                .map((n) => (
+                  <Button
+                    key={`${e.id}:${n.start}`}
+                    onClick={() => choose(e.id)}
+                  >
+                    <strong>{e.name}</strong>
+                    <code>{textOf(e.source, n)}</code>
+                  </Button>
+                )),
+            )}
+          </details>
+        )}
+        <div
+          className="app-kind-tabs"
+          role="tablist"
+          aria-label="Application declarations"
+        >
+          {categories
+            .filter((c) =>
+              [
+                "Resources",
+                "Functions",
+                "Sources",
+                "Data catalog",
+                "Purposes",
+              ].includes(c),
+            )
+            .map((c) => (
+              <Button
+                key={c}
+                role="tab"
+                aria-selected={category === c}
+                variant={category === c ? "secondary" : "ghost"}
+                onClick={() => {
+                  setCategory(c);
+                  setSelected("");
+                  setSearch("");
+                  setView("visual");
+                }}
+              >
+                {label(c)}{" "}
+                <span className="kind-count">
+                  {c === "Data catalog"
+                    ? (analysis?.result.dataSemantics?.fields.length ?? 0)
+                    : entries.filter((e) => e.category === c).length}
+                </span>
+              </Button>
+            ))}
+          <Select
+            aria-label="More definitions"
+            value={
+              [
+                "Resources",
+                "Functions",
+                "Sources",
+                "Data catalog",
+                "Purposes",
+              ].includes(category)
+                ? "__more"
+                : category
+            }
+            items={{
+              __more: "More definitions",
+              ...Object.fromEntries(
+                categories
+                  .filter(
+                    (c) =>
+                      ![
+                        "Resources",
+                        "Functions",
+                        "Sources",
+                        "Data catalog",
+                        "Purposes",
+                      ].includes(c),
+                  )
+                  .map((c) => [c, label(c)]),
+              ),
+            }}
+            onValueChange={(value) => {
+              if (value !== "__more") {
+                setCategory(String(value) as Category);
                 setSelected("");
                 setSearch("");
                 setView("visual");
-              }}
-            >
-              {c}{" "}
-              <span className="kind-count">
-                {c === "Data catalog"
-                  ? (analysis?.result.dataSemantics?.fields.length ?? 0)
-                  : entries.filter((e) => e.category === c).length}
-              </span>
-            </Button>
-          ))}
-        <Select
-          aria-label="More definitions"
-          value={
-            [
-              "Resources",
-              "Functions",
-              "Sources",
-              "Data catalog",
-              "Purposes",
-            ].includes(category)
-              ? "__more"
-              : category
-          }
-          items={{
-            __more: "More definitions",
-            ...Object.fromEntries(
-              categories
-                .filter(
-                  (c) =>
-                    ![
-                      "Resources",
-                      "Functions",
-                      "Sources",
-                      "Data catalog",
-                      "Purposes",
-                    ].includes(c),
-                )
-                .map((c) => [c, c]),
-            ),
-          }}
-          onValueChange={(value) => {
-            if (value !== "__more") {
-              setCategory(String(value) as Category);
-              setSelected("");
-              setSearch("");
-              setView("visual");
-            }
-          }}
-        />
-      </div>
-      {category === "Data catalog" && analysis ? (
-        <DataCatalog
-          analysis={analysis.result}
-          entries={entries}
-          onSelect={choose}
-        />
-      ) : (
-        <div className="app-browser">
-          <aside className="app-declarations">
-            <Input
-              aria-label="Find declaration"
-              placeholder={`Find ${category.toLowerCase()}…`}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <nav aria-label={category}>
-              {visible.map((e) => (
-                <Button
-                  key={e.id}
-                  aria-label={e.name}
-                  variant={entry?.id === e.id ? "secondary" : "ghost"}
-                  onClick={() => choose(e.id)}
-                >
-                  <span>{e.name}</span>
-                  <small className="declaration-preview">
-                    {declarationSummary(e)}
-                  </small>
-                  {e.module !== "_" && <small>{e.module}</small>}
-                </Button>
-              ))}
-            </nav>
-            {!visible.length && (
-              <p className="muted">No matching {category.toLowerCase()}.</p>
-            )}
-          </aside>
-          <section className="app-detail" aria-busy={!ready}>
-            {entry ? (
-              <>
-                <header className="app-detail-heading">
-                  <div>
-                    <p className="eyebrow">{entry.category}</p>
-                    {editing && named(entry.source, entry.node) ? (
-                      <Edit
-                        label="Declaration name"
-                        value={entry.name}
-                        onCommit={(value) => {
-                          if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(value))
-                            replaceEntry(
-                              patch(
-                                entry.source,
-                                named(entry.source, entry.node)!,
-                                value,
-                              ),
-                            );
-                          else setError("Use a valid declaration name.");
-                        }}
-                      />
-                    ) : (
-                      <h2>{entry.name}</h2>
-                    )}
-                    <p className="muted">{declarationSummary(entry)}</p>
-                  </div>
-                  <div className="editor-row">
-                    <Button size="sm" onClick={() => setView("visual")}>
-                      Document
-                    </Button>
-                    <Button size="sm" onClick={() => setView("source")}>
-                      Source
-                    </Button>
-                    <Button size="sm" onClick={() => setView("graph")}>
-                      Relationships
-                    </Button>
-                  </div>
-                </header>
-                {view === "visual" &&
-                  analysis &&
-                  (["RESOURCE_DECL", "FUNCTION_DECL", "SOURCE_DECL"].includes(
-                    entry.node.kind,
-                  ) ? (
-                    <fieldset
-                      className="visual-fieldset composer-fieldset"
-                      disabled={!ready || gitBusy}
-                      aria-label="Application document"
-                    >
-                      {entry.node.kind === "RESOURCE_DECL" ? (
-                        <ResourceWorkspace
-                          key={entry.id}
-                          entry={entry}
-                          entries={entries}
-                          analysis={analysis.result}
-                          editing={editing}
-                          onChange={replaceEntry}
-                          onError={setError}
-                          onSelect={choose}
-                        />
-                      ) : entry.node.kind === "FUNCTION_DECL" ? (
-                        <FunctionWorkspace
-                          key={entry.id}
-                          entry={entry}
-                          entries={entries}
-                          analysis={analysis.result}
-                          editing={editing}
-                          onChange={replaceEntry}
-                          onError={setError}
-                          onSelect={choose}
+              }
+            }}
+          />
+        </div>
+        {category === "Data catalog" && analysis ? (
+          <DataCatalog
+            analysis={analysis.result}
+            entries={entries}
+            onSelect={choose}
+          />
+        ) : (
+          <div className="app-browser">
+            <aside className="app-declarations">
+              <Input
+                aria-label="Find declaration"
+                placeholder={`Find ${label(category).toLowerCase()}…`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <nav aria-label={category}>
+                {visible.map((e) => (
+                  <Button
+                    key={e.id}
+                    aria-label={e.name}
+                    variant={entry?.id === e.id ? "secondary" : "ghost"}
+                    onClick={() => choose(e.id)}
+                  >
+                    <span>{e.name}</span>
+                    <small className="declaration-preview">
+                      {declarationSummary(e)}
+                    </small>
+                    {e.module !== "_" && <small>{e.module}</small>}
+                  </Button>
+                ))}
+              </nav>
+              {!visible.length && (
+                <p className="muted">No matching {category.toLowerCase()}.</p>
+              )}
+            </aside>
+            <section className="app-detail" aria-busy={!ready}>
+              {entry ? (
+                <>
+                  <header className="app-detail-heading">
+                    <div>
+                      <p className="eyebrow">{label(entry.category)}</p>
+                      {editing && named(entry.source, entry.node) ? (
+                        <Edit
+                          label="Declaration name"
+                          value={entry.name}
+                          onCommit={(value) => {
+                            if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(value))
+                              replaceEntry(
+                                patch(
+                                  entry.source,
+                                  named(entry.source, entry.node)!,
+                                  value,
+                                ),
+                              );
+                            else setError("Use a valid declaration name.");
+                          }}
                         />
                       ) : (
-                        <SourceWorkspace
-                          key={entry.id}
-                          entry={entry}
-                          entries={entries}
-                          analysis={analysis.result}
-                          editing={editing}
-                          onChange={replaceEntry}
-                          onError={setError}
-                          onSelect={choose}
-                        />
+                        <h2>{entry.name}</h2>
                       )}
-                    </fieldset>
-                  ) : !editing ? (
-                    <ReadDocument entry={entry} />
-                  ) : (
-                    <fieldset
-                      className="visual-fieldset"
-                      disabled={!ready || gitBusy}
-                      aria-label="Visual Forge document"
-                    >
-                      <VisualDocument
-                        key={`${analysis.id}:${entry.id}`}
-                        source={entry.source}
-                        analysis={analysis.result}
-                        selection={entry}
-                        onChange={replaceEntry}
-                        onError={setError}
-                      />
-                    </fieldset>
-                  ))}
-                {view === "source" && (
-                  <div className="source-pane">
-                    <label htmlFor="forge-source">
-                      {entry.name} · {entry.path}
-                    </label>
-                    {editing ? (
+                      <p className="muted">{declarationSummary(entry)}</p>
+                    </div>
+                    <div className="editor-row">
+                      <Button size="sm" onClick={() => setView("visual")}>
+                        Document
+                      </Button>
+                      {developer && (
+                        <Button size="sm" onClick={() => setView("source")}>
+                          Source
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={() => setView("graph")}>
+                        Relationships
+                      </Button>
+                    </div>
+                  </header>
+                  {view === "visual" &&
+                    analysis &&
+                    (["RESOURCE_DECL", "FUNCTION_DECL", "SOURCE_DECL"].includes(
+                      entry.node.kind,
+                    ) ? (
+                      <fieldset
+                        className="visual-fieldset composer-fieldset"
+                        disabled={!ready || gitBusy}
+                        aria-label="Application document"
+                      >
+                        {entry.node.kind === "RESOURCE_DECL" ? (
+                          <ResourceWorkspace
+                            key={entry.id}
+                            entry={entry}
+                            entries={entries}
+                            analysis={analysis.result}
+                            editing={editing}
+                            developer={developer}
+                            onChange={replaceEntry}
+                            onError={setError}
+                            onSelect={choose}
+                          />
+                        ) : entry.node.kind === "FUNCTION_DECL" ? (
+                          <FunctionWorkspace
+                            key={entry.id}
+                            entry={entry}
+                            entries={entries}
+                            analysis={analysis.result}
+                            editing={editing}
+                            developer={developer}
+                            onChange={replaceEntry}
+                            onError={setError}
+                            onSelect={choose}
+                          />
+                        ) : (
+                          <SourceWorkspace
+                            key={entry.id}
+                            entry={entry}
+                            entries={entries}
+                            analysis={analysis.result}
+                            editing={editing}
+                            developer={developer}
+                            onChange={replaceEntry}
+                            onError={setError}
+                            onSelect={choose}
+                          />
+                        )}
+                      </fieldset>
+                    ) : !editing ? (
+                      <ReadDocument entry={entry} />
+                    ) : (
                       <fieldset
                         className="visual-fieldset"
                         disabled={!ready || gitBusy}
+                        aria-label="Visual Forge document"
                       >
-                        <Edit
-                          key={entry.id}
-                          multiline
-                          label="Forge source"
+                        <VisualDocument
+                          key={`${analysis.id}:${entry.id}`}
+                          source={entry.source}
+                          analysis={analysis.result}
+                          selection={entry}
+                          onChange={replaceEntry}
+                          onError={setError}
+                        />
+                      </fieldset>
+                    ))}
+                  {view === "source" && (
+                    <div className="source-pane">
+                      <label htmlFor="forge-source">
+                        {entry.name} · {entry.path}
+                      </label>
+                      {editing ? (
+                        <fieldset
+                          className="visual-fieldset"
+                          disabled={!ready || gitBusy}
+                        >
+                          <Edit
+                            key={entry.id}
+                            multiline
+                            label="Forge source"
+                            value={entry.source.slice(
+                              entry.node.start,
+                              entry.node.end,
+                            )}
+                            onCommit={(value) =>
+                              replaceEntry(
+                                patch(entry.source, entry.node, value),
+                              )
+                            }
+                          />
+                        </fieldset>
+                      ) : (
+                        <Textarea
+                          id="forge-source"
+                          aria-label="Forge source"
+                          readOnly
                           value={entry.source.slice(
                             entry.node.start,
                             entry.node.end,
                           )}
-                          onCommit={(value) =>
-                            replaceEntry(patch(entry.source, entry.node, value))
-                          }
                         />
-                      </fieldset>
-                    ) : (
-                      <Textarea
-                        id="forge-source"
-                        aria-label="Forge source"
-                        readOnly
-                        value={entry.source.slice(
-                          entry.node.start,
-                          entry.node.end,
-                        )}
-                      />
-                    )}
-                    <Button onClick={() => download(entry.path, entry.source)}>
-                      Download file
+                      )}
+                      <Button
+                        onClick={() => download(entry.path, entry.source)}
+                      >
+                        Download file
+                      </Button>
+                    </div>
+                  )}
+                  {view === "graph" && ready && analysis && (
+                    <Relationships
+                      analysis={analysis.result}
+                      source={file.text}
+                      currentFile={file.path}
+                      onOpenFile={(path) => {
+                        const target = entries.find((e) => e.path === path);
+                        if (target) choose(target.id);
+                      }}
+                      onSelect={(node) => {
+                        const target = entries.find(
+                          (e) =>
+                            e.path === file.path && e.node.start === node.start,
+                        );
+                        if (target) choose(target.id);
+                      }}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="editor-empty">
+                  {analysis
+                    ? `No ${category.toLowerCase()} yet.`
+                    : "Loading the Forge application…"}
+                </div>
+              )}
+              {editing && (
+                <details className="create-definition">
+                  <summary>
+                    {developer
+                      ? "Create a definition"
+                      : "Add to your application"}
+                  </summary>
+                  <form
+                    className="declaration-builder"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(newName)) return;
+                      const templates: Record<string, string> = {
+                        resource: `export resource ${newName} @tenant @timestamps @versioned {\n  id : id\n}`,
+                        shape: `export shape ${newName} {\n  value : text\n}`,
+                        purpose: `export purpose ${newName}`,
+                        dataClass: `export dataClass ${newName} extends data.unknown`,
+                        enum: `export enum ${newName} {\n  First = "first"\n}`,
+                        type: `export type ${newName} = text`,
+                        function: `export function ${newName} {\n}`,
+                        source: `source ${newName} {\n  cron "0 8 * * *"\n  timezone "UTC"\n}`,
+                      };
+                      update(file.text + "\n" + templates[newKind] + "\n");
+                      setNewName("");
+                    }}
+                  >
+                    <Select
+                      aria-label="Declaration kind"
+                      value={newKind}
+                      onValueChange={(v) => setNewKind(String(v))}
+                      items={{
+                        resource: developer ? "Resource" : "Data collection",
+                        shape: "Shape",
+                        purpose: "Purpose",
+                        dataClass: "Data class",
+                        enum: "Enum",
+                        type: "Type alias",
+                        function: developer ? "Function" : "Business action",
+                        source: developer ? "Source" : "Schedule",
+                      }}
+                    />
+                    <Input
+                      aria-label="New declaration name"
+                      placeholder="Name, for example Customer"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      required
+                    />
+                    <Button type="submit">
+                      {developer ? "Add declaration" : "Add"}
                     </Button>
-                  </div>
-                )}
-                {view === "graph" && ready && analysis && (
-                  <Relationships
-                    analysis={analysis.result}
-                    source={file.text}
-                    currentFile={file.path}
-                    onOpenFile={(path) => {
-                      const target = entries.find((e) => e.path === path);
-                      if (target) choose(target.id);
-                    }}
-                    onSelect={(node) => {
-                      const target = entries.find(
-                        (e) =>
-                          e.path === file.path && e.node.start === node.start,
-                      );
-                      if (target) choose(target.id);
-                    }}
-                  />
-                )}
-              </>
-            ) : (
-              <div className="editor-empty">
-                {analysis
-                  ? `No ${category.toLowerCase()} yet.`
-                  : "Loading the Forge application…"}
-              </div>
-            )}
-            {editing && (
-              <details className="create-definition">
-                <summary>Create a definition</summary>
-                <form
-                  className="declaration-builder"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(newName)) return;
-                    const templates: Record<string, string> = {
-                      resource: `export resource ${newName} @tenant @timestamps @versioned {\n  id : id\n}`,
-                      shape: `export shape ${newName} {\n  value : text\n}`,
-                      purpose: `export purpose ${newName}`,
-                      dataClass: `export dataClass ${newName} extends data.unknown`,
-                      enum: `export enum ${newName} {\n  First = "first"\n}`,
-                      type: `export type ${newName} = text`,
-                      function: `export function ${newName} {\n}`,
-                      source: `source ${newName} {\n  cron "0 8 * * *"\n  timezone "UTC"\n}`,
-                    };
-                    update(file.text + "\n" + templates[newKind] + "\n");
-                    setNewName("");
-                  }}
-                >
-                  <Select
-                    aria-label="Declaration kind"
-                    value={newKind}
-                    onValueChange={(v) => setNewKind(String(v))}
-                    items={{
-                      resource: "Resource",
-                      shape: "Shape",
-                      purpose: "Purpose",
-                      dataClass: "Data class",
-                      enum: "Enum",
-                      type: "Type alias",
-                      function: "Function",
-                      source: "Source",
-                    }}
-                  />
-                  <Input
-                    aria-label="New declaration name"
-                    placeholder="Declaration name"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    required
-                  />
-                  <Button type="submit">Add declaration</Button>
-                </form>
-              </details>
-            )}
-          </section>
-        </div>
-      )}
-      <footer className="editor-status">
-        <span>{saved}</span>
-        <span role="status">
-          {ready
-            ? `${diagnostics.filter((d) => d.severity === "error").length} errors · ${diagnostics.filter((d) => d.severity === "warning").length} warnings`
-            : "Checking source…"}
-        </span>
-      </footer>
-      <details
-        className="editor-diagnostics"
-        open={diagnostics.some((d) => d.severity === "error")}
-      >
-        <summary>Forge diagnostics ({diagnostics.length})</summary>
-        {diagnostics.map((d, i) => (
-          <div className={`diagnostic diagnostic-${d.severity}`} key={i}>
-            <strong>{d.code}</strong>
-            <span>
-              {d.message}
-              <small>{d.file}</small>
-            </span>
+                  </form>
+                </details>
+              )}
+            </section>
           </div>
-        ))}
-      </details>
+        )}
+        <footer className="editor-status">
+          <span>{saved}</span>
+          <span role="status">
+            {ready
+              ? `${diagnostics.filter((d) => d.severity === "error").length} errors · ${diagnostics.filter((d) => d.severity === "warning").length} warnings`
+              : "Checking source…"}
+          </span>
+        </footer>
+        <details
+          className="editor-diagnostics"
+          open={diagnostics.some((d) => d.severity === "error")}
+        >
+          <summary>
+            {developer ? "Forge diagnostics" : "Things to check"} (
+            {diagnostics.length})
+          </summary>
+          {diagnostics.map((d, i) => (
+            <div className={`diagnostic diagnostic-${d.severity}`} key={i}>
+              {developer && <strong>{d.code}</strong>}
+              <span>
+                {d.message}
+                {d.suggestion && <p>{d.suggestion}</p>}
+                {developer ? (
+                  <small>{d.file}</small>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const target =
+                        entries.find(
+                          (e) =>
+                            e.path === d.file &&
+                            e.node.start <= d.start &&
+                            e.node.end >= d.start,
+                        ) ?? entries.find((e) => e.path === d.file);
+                      if (target) choose(target.id);
+                    }}
+                  >
+                    Review affected item
+                  </Button>
+                )}
+              </span>
+            </div>
+          ))}
+        </details>
+      </div>
     </div>
   );
 }

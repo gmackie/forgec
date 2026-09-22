@@ -7,6 +7,7 @@ test("browses the whole app by declaration kind and only edits explicitly", asyn
     .getByLabel("Administrator token")
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
+  await page.getByRole("button", { name: /^Developer/ }).click();
   await expect(
     page.getByRole("tab", { name: "Resources", exact: false }),
   ).toBeVisible();
@@ -104,6 +105,7 @@ test("reviews a Git draft, retains it on conflict, then records a successful com
     .getByLabel("Administrator token")
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
+  await page.getByRole("button", { name: /^Developer/ }).click();
   await page.getByRole("button", { name: "Connect Git", exact: true }).click();
   await page.getByRole("button", { name: "Load repository" }).click();
   await expect(
@@ -147,6 +149,7 @@ test("types a complete source change without losing focus and shows immutable fi
     .getByLabel("Administrator token")
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
+  await page.getByRole("button", { name: /^Developer/ }).click();
   await page.getByRole("button", { name: "Organization", exact: true }).click();
   await expect(
     page.getByRole("row").filter({ hasText: "OrganizationCode" }),

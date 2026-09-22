@@ -18,11 +18,14 @@ export interface WorkspaceProps {
   descriptor: UiDescriptor;
   call: ForgeCall;
   initialRoute?: string;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const pkgOf = (d: UiDescriptor) => d.package;
 
-export function Workspace({ descriptor, call, initialRoute }: WorkspaceProps) {
+export function Workspace({ descriptor, call, initialRoute, onDirtyChange }: WorkspaceProps) {
+  const [dirty, setDirty] = useState(false);
+  const reportDirty = useCallback((value: boolean) => { setDirty(value); onDirtyChange?.(value); }, [onDirtyChange]);
   const [route, setRoute] = useState(initialRoute ?? descriptor.resources[0]?.route ?? "");
   const resource = descriptor.resources.find((r) => r.route === route) ?? descriptor.resources[0];
   return (
@@ -32,14 +35,14 @@ export function Workspace({ descriptor, call, initialRoute }: WorkspaceProps) {
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {descriptor.resources.map((r) => (
             <li key={r.id}>
-              <button onClick={() => setRoute(r.route)} aria-current={r.route === route ? "page" : undefined} style={{ display: "block", width: "100%", textAlign: "left", background: r.route === route ? "#eef" : "transparent", border: 0, padding: "6px 8px", cursor: "pointer" }}>
+              <button disabled={dirty && r.route !== route} onClick={() => setRoute(r.route)} aria-current={r.route === route ? "page" : undefined} style={{ display: "block", width: "100%", textAlign: "left", background: r.route === route ? "#eef" : "transparent", border: 0, padding: "6px 8px", cursor: "pointer" }}>
                 {r.plural}
               </button>
             </li>
           ))}
         </ul>
       </nav>
-      <main style={{ padding: 16 }}>{resource ? <ResourceView key={resource.id} resource={resource} descriptor={descriptor} call={call} /> : null}</main>
+      <main style={{ padding: 16 }}>{resource ? <ResourceView key={resource.id} resource={resource} descriptor={descriptor} call={call} onDirtyChange={reportDirty} /> : null}</main>
     </div>
   );
 }
@@ -47,12 +50,13 @@ export function Workspace({ descriptor, call, initialRoute }: WorkspaceProps) {
 // ------------------------------------------------------------------ resource view
 
 interface ViewProps {
+  onDirtyChange: (dirty: boolean) => void;
   resource: UiResource;
   descriptor: UiDescriptor;
   call: ForgeCall;
 }
 
-function ResourceView({ resource, descriptor, call }: ViewProps) {
+function ResourceView({ resource, descriptor, call, onDirtyChange }: ViewProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [tick, setTick] = useState(0);
   const buffer = useMemo(() => new EditBuffer(resource), [resource]);
@@ -64,6 +68,19 @@ function ResourceView({ resource, descriptor, call }: ViewProps) {
   const [params, setParams] = useState<Record<string, string>>({});
   const bump = () => setTick((t) => t + 1);
 
+  const dirty = buffer.dirty().length > 0;
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { onDirtyChange(dirty || busy || importOpen || !!action || !!preview); }, [dirty, busy, importOpen, action, preview, onDirtyChange]);
+  useEffect(() => {
+    if (!dirty && !busy) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, busy]);
+  const perform = async (task: () => Promise<void>) => {
+    setBusy(true);
+    try { await task(); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  };
   const list = resource.lists[listSel];
 
   const reload = useCallback(async () => {
@@ -135,31 +152,32 @@ function ResourceView({ resource, descriptor, call }: ViewProps) {
   const columns = resource.fields.filter((f) => resource.tableColumns.includes(f.name) || editableFields.includes(f));
 
   return (
-    <div>
+    <fieldset disabled={busy} style={{border:0,padding:0,minWidth:0}}>
+      {dirty && <p role="status">You have unsaved record changes. Review or revert them before changing collections or filters.</p>}
       <header style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
         <h1 style={{ fontSize: 20, margin: 0 }}>{resource.plural}</h1>
         {resource.lists.length > 1 && (
-          <select aria-label="Query" value={listSel} onChange={(e) => setListSel(Number(e.target.value))}>
+          <select aria-label="Query" value={listSel} disabled={dirty} onChange={(e) => setListSel(Number(e.target.value))}>
             {resource.lists.map((l, i) => (
               <option key={l.name} value={i}>{l.label}</option>
             ))}
           </select>
         )}
         {list?.params.map((p) => (
-          <input key={p} aria-label={`filter ${p}`} placeholder={p} value={params[p] ?? ""} onChange={(e) => setParams({ ...params, [p]: e.target.value })} />
+          <input key={p} aria-label={`filter ${p}`} placeholder={p} disabled={dirty} value={params[p] ?? ""} onChange={(e) => setParams({ ...params, [p]: e.target.value })} />
         ))}
         <span style={{ flex: 1 }} />
         <button onClick={() => { buffer.addNew(); bump(); }}>Add row</button>
         <button onClick={() => { buffer.revertAll(); bump(); }} disabled={buffer.dirty().length === 0}>Revert</button>
-        <button onClick={doPreview} disabled={buffer.dirty().length === 0}>Preview changes</button>
-        <button onClick={() => setImportOpen(true)}>Import CSV</button>
+        <button onClick={() => void perform(doPreview)} disabled={buffer.dirty().length === 0}>Preview changes</button>
+        <button disabled={dirty} onClick={() => setImportOpen(true)}>Import CSV</button>
       </header>
       {error && (
         <div role="alert" style={{ background: "#fee", border: "1px solid #c99", padding: 8, marginBottom: 8 }}>
           {error} <button onClick={() => setError(null)} aria-label="dismiss">×</button>
         </div>
       )}
-      <table style={{ borderCollapse: "collapse", width: "100%" }}>
+      <fieldset disabled={!!preview} style={{border:0,padding:0,minWidth:0}}><table style={{ borderCollapse: "collapse", width: "100%" }}>
         <thead>
           <tr>
             {columns.map((f) => (
@@ -183,7 +201,7 @@ function ResourceView({ resource, descriptor, call }: ViewProps) {
                 {resource.actions.length > 0 && (
                   <td>
                     {rec && resource.actions.filter((a) => a.from.includes(String(rec["status"]))).map((a) => (
-                      <button key={a.name} onClick={() => setAction({ row: rec, action: a })} style={{ marginRight: 4 }}>{a.label}</button>
+                      <button key={a.name} disabled={dirty} onClick={() => setAction({ row: rec, action: a })} style={{ marginRight: 4 }}>{a.label}</button>
                     ))}
                   </td>
                 )}
@@ -194,12 +212,12 @@ function ResourceView({ resource, descriptor, call }: ViewProps) {
             <tr><td colSpan={columns.length + 1} style={{ padding: 12, color: "#666" }}>{list?.params.length ? `Enter ${list.params.join(", ")} to browse.` : "No records."}</td></tr>
           )}
         </tbody>
-      </table>
+      </table></fieldset>
 
       {preview && (
         <dialog open role="dialog" aria-label="Changeset preview" style={{ position: "fixed", inset: "10% 20%", padding: 16, border: "1px solid #999", background: "white", maxHeight: "80vh", overflow: "auto" }}>
-          <h2>Preview</h2>
-          <p>{preview.items.length} operation(s), {preview.budget.physicalActions} physical actions (limit {preview.budget.physicalLimit}); atomic {preview.budget.atomicAllowed ? "allowed" : "not allowed"}.</p>
+          <h2>Review record changes</h2>
+          <p>Review {preview.items.length} record change(s) before saving to this environment.</p>
           <ol>
             {preview.items.map((it: any) => (
               <li key={it.index} style={{ marginBottom: 6 }}>
@@ -212,17 +230,17 @@ function ResourceView({ resource, descriptor, call }: ViewProps) {
               </li>
             ))}
           </ol>
-          <button onClick={doCommit} disabled={preview.items.every((i: any) => i.status === "error")}>Commit</button>{" "}
+          <button onClick={() => void perform(doCommit)} disabled={preview.items.every((i: any) => i.status === "error")}>Save changes</button>{" "}
           <button onClick={() => setPreview(null)}>Back</button>
         </dialog>
       )}
 
       {action && (
-        <ActionDialog action={action.action} row={action.row} resource={resource} onRun={runAction} onCancel={() => setAction(null)} />
+        <ActionDialog action={action.action} row={action.row} resource={resource} onRun={input => perform(() => runAction(input))} onCancel={() => setAction(null)} />
       )}
 
       {importOpen && <ImportDialog resource={resource} descriptor={descriptor} call={call} onDone={async () => { setImportOpen(false); await reload(); }} onCancel={() => setImportOpen(false)} />}
-    </div>
+    </fieldset>
   );
 }
 

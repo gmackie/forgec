@@ -672,7 +672,7 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
         <main className="content">
           {page==='Deployments'&&<Suspense fallback={<p>Loading deployments…</p>}><DeploymentWorkspace api={api} onTest={id=>{setRuntimeTarget(id);setPage('Playground');}}/></Suspense>}
           {page==='Playground'&&<Suspense fallback={<p>Loading playground…</p>}><FunctionPlayground api={api} initialTarget={runtimeTarget}/></Suspense>}
-          {page === "Editor" ? <Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} /></Suspense> : null}
+          <div hidden={page !== "Editor"}><Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} api={api} /></Suspense></div>
           <ErrorMessage error={error} />
           {notice ? (
             <p className="notice" role="status">

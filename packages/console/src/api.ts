@@ -213,13 +213,15 @@ function route(request: Request) {
       }
     }
     if(path==='/runtime/targets'&&method==='GET')return json({targets:(o.runtimes||[]).map(t=>t.public)});
-    const runtimeRoute=path.match(/^\/runtime\/targets\/([a-z0-9-]+)\/(catalog|invoke)$/);
+    const runtimeRoute=path.match(/^\/runtime\/targets\/([a-z0-9-]+)\/(catalog|invoke|workspace|record)$/);
     if(runtimeRoute){
       const target=o.runtimes?.find(t=>t.public.id===runtimeRoute[1]);
       if(!target)return yield* Effect.fail(new Problem(404,'Runtime is not configured on this instance.'));
       if(method==='GET'&&runtimeRoute[2]==='catalog')return json(yield* attempt(()=>target.catalog()));
-      if(method==='POST'&&runtimeRoute[2]==='invoke'){
+      if(method==='GET'&&runtimeRoute[2]==='workspace')return json(yield* attempt(()=>target.workspace()));
+      if(method==='POST'&&['invoke','record'].includes(runtimeRoute[2]!)){
         const input=yield* attempt(async()=>decode(z.object({operationId:z.string().min(1).max(300),input:z.record(z.string(),z.unknown()),buildHash:z.string().min(1).max(200),deploymentRevision:z.string().max(200).optional(),purpose:z.string().max(200).optional(),idempotencyKey:z.string().max(200).optional()}).strict(),await body(request)));
+        if(runtimeRoute[2] === "record") return json(yield* attempt(()=>target.record(input)));
         return json(yield* attempt(()=>target.invoke(input)));
       }
     }

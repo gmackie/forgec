@@ -57,7 +57,7 @@ describe("Workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Preview changes" }));
     await waitFor(() => expect(screen.getByRole("dialog")).toHaveTextContent("name: Acme → Acme Inc"));
     expect(screen.getByRole("dialog")).toHaveTextContent("create Customer");
-    fireEvent.click(screen.getByRole("button", { name: "Commit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     await waitFor(() => expect(screen.getByRole("table")).toHaveTextContent("BETA"));
     expect(await run("@acme/commerce/_/Customer.get", { id: c.id })).toMatchObject({ name: "Acme Inc", version: 2 });
   });

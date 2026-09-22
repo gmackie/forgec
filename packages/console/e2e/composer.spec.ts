@@ -5,6 +5,7 @@ async function login(page: import("@playwright/test").Page) {
     .getByLabel("Administrator token")
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
+  await page.getByRole("button", { name: /^Developer/ }).click();
   await expect(page.getByRole("tab", { name: /^Resources/ })).toBeVisible();
 }
 test("composes resources with a focused field editor and native data catalog", async ({

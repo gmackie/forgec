@@ -1,9 +1,16 @@
+import type { UiDescriptor } from "@forgegraph/react";
 import { Problem } from "./model.js";
 export interface RuntimeTarget {
   id: string;
   name: string;
   endpoint: string;
   token: string;
+}
+export interface RecordWorkspace {
+  buildHash: string;
+  deploymentRevision?: string;
+  descriptor: UiDescriptor;
+  operations: { id: string; method: string; path: string; kind: string }[];
 }
 export interface Invocation {
   operationId: string;
@@ -234,7 +241,12 @@ export class RuntimeConnection {
           method: method.toUpperCase(),
           path,
           kind: op["x-forge-kind"] || "function",
-          summary: op.summary || op.operationId.split("/").at(-1).replace(/([a-z0-9])([A-Z])/g, "$1 $2"),
+          summary:
+            op.summary ||
+            op.operationId
+              .split("/")
+              .at(-1)
+              .replace(/([a-z0-9])([A-Z])/g, "$1 $2"),
           sample: sampleInput(schema, spec.value),
           schema,
         });
@@ -249,6 +261,101 @@ export class RuntimeConnection {
       observedAt: new Date().toISOString(),
       operations,
     };
+  }
+  async workspace(): Promise<RecordWorkspace> {
+    const response = await this.request("/forge/workspace.json");
+    const value = response.value;
+    if (!response.ok)
+      throw new Problem(
+        response.status === 404 ? 409 : 502,
+        "This environment cannot provide a record workspace. Deploy a build with workspace support.",
+      );
+    if (
+      typeof value?.buildHash !== "string" ||
+      value?.descriptor?.version !== "ui/1" ||
+      !Array.isArray(value.descriptor.resources) ||
+      !Array.isArray(value.operations) ||
+      response.build !== value.buildHash
+    )
+      throw new Problem(
+        502,
+        "The record workspace contract is incomplete or changed. Reload it.",
+      );
+    return {
+      ...value,
+      ...(response.deploymentRevision
+        ? { deploymentRevision: response.deploymentRevision }
+        : {}),
+    };
+  }
+  async record(input: Invocation) {
+    const workspace = await this.workspace();
+    if (
+      workspace.buildHash !== input.buildHash ||
+      workspace.deploymentRevision !== input.deploymentRevision
+    )
+      throw new Problem(
+        409,
+        "The running application changed. Reopen the record workspace before saving.",
+      );
+    const op = workspace.operations.find((o) => o.id === input.operationId);
+    if (!op)
+      throw new Problem(
+        404,
+        "This operation is not available in the record workspace.",
+      );
+    const value = input.input as Record<string, any>;
+    let path = op.path.replace(/\{([^}]+)\}/g, (_, key: string) => {
+      if (value[key] === undefined) throw new Problem(400, `Missing ${key}.`);
+      return encodeURIComponent(String(value[key]));
+    });
+    if (op.method === "GET") {
+      const query = new URLSearchParams();
+      for (const [key, v] of Object.entries({
+        ...value.params,
+        ...(value.limit !== undefined ? { limit: value.limit } : {}),
+        ...(value.cursor ? { cursor: value.cursor } : {}),
+      }))
+        if (v !== undefined && v !== null) query.set(key, String(v));
+      if (query.size) path += "?" + query;
+    }
+    const payload =
+      op.kind === "update"
+        ? value.patch
+        : op.kind === "transition"
+          ? value.input
+          : value;
+    const response = await this.request(path, {
+      method: op.method,
+      headers: {
+        "content-type": "application/json",
+        "x-forge-if-build": workspace.buildHash,
+        ...(workspace.deploymentRevision
+          ? { "x-forge-if-deployment": workspace.deploymentRevision }
+          : {}),
+        ...(value.expectedVersion !== undefined
+          ? { "if-match": `"${value.expectedVersion}"` }
+          : {}),
+        ...(input.purpose ? { "x-forge-purpose": input.purpose } : {}),
+        ...(input.idempotencyKey
+          ? { "idempotency-key": input.idempotencyKey }
+          : {}),
+      },
+      ...(["GET", "DELETE"].includes(op.method)
+        ? {}
+        : { body: JSON.stringify(payload ?? {}) }),
+    });
+    return response.ok
+      ? { ok: true, value: response.value }
+      : {
+          ok: false,
+          status: response.status,
+          code: response.value?.code || "RequestFailed",
+          problem: response.value ?? {
+            code: "RequestFailed",
+            detail: "The record operation failed.",
+          },
+        };
   }
   async invoke(input: Invocation) {
     const catalog = await this.catalog();
