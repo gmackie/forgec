@@ -28,6 +28,7 @@ pub struct ConceptIR {
 pub struct Entity {
     pub name: String,
     pub fields: BTreeMap<String, Field>,
+    pub invariants: Vec<ir::Unique>,
     pub lifecycle: Option<ir::Lifecycle>,
     pub subject: Option<ir::SubjectBinding>,
     pub record_context: Option<String>,
@@ -624,6 +625,7 @@ pub fn project(ir: &DomainIR) -> Projection {
                     name: r.name.clone(),
                     fields: fields(&r.fields),
                     lifecycle: r.lifecycle.clone(),
+                    invariants: r.uniques.clone(),
                     subject: r.decorators.subject.clone(),
                     record_context: r.decorators.record_context.clone(),
                     purpose_scoped: r.decorators.purpose_scoped,

@@ -2178,11 +2178,17 @@ impl<'a> Ctx<'a> {
         fields.extend(synthesized);
         let field_names: Vec<String> = fields.iter().map(|f| f.name.clone()).collect();
 
+        // lifecycle
+        let lifecycle = r
+            .lifecycle()
+            .and_then(|l| self.lifecycle(&l, module, file, &id, exported, enums_out));
+
         // uniques
         let mut uniques: Vec<Unique> = unique_fields
             .iter()
             .map(|f| Unique {
                 name: f.clone(),
+                condition: None,
                 fields: vec![f.clone()],
                 within: vec![],
             })
@@ -2206,13 +2212,54 @@ impl<'a> Ctx<'a> {
                 n.push_str("_within_");
                 n.push_str(&within.join("_"));
             }
+            let condition = u.condition().map(|(predicate, values)| {
+                if !decorators.versioned {
+                    self.err("E-EXCLUSIVE-005",file,range_of(&u),"conditional uniqueness requires @versioned so stale updates cannot release another commit's claim",None);
+                }
+                let known = match fields.iter().find(|f| f.name == predicate).map(|f| &f.ty.base) {
+                    Some(TypeBase::Enum {id}) => self.enum_members(id,module).into_iter().map(|m|(m.name,m.value)).collect::<BTreeMap<_,_>>(),
+                    Some(TypeBase::Status { .. }) => lifecycle.as_ref().map(|l| l.states.iter().map(|s|(s.clone(),s.clone())).collect()).unwrap_or_default(),
+                    _ => { self.err("E-EXCLUSIVE-001",file,range_of(&u),"conditional uniqueness requires an enum or lifecycle status field",None); BTreeMap::new() },
+                };
+                let mut wire_values = Vec::new();
+                for value in values {
+                    if let Some(wire) = known.get(&value) {wire_values.push(wire.clone());}
+                    else {self.err("E-EXCLUSIVE-002",file,range_of(&u),format!("unknown conditional uniqueness member `{value}`"),None);}
+                }
+                for key in fs.iter().chain(within.iter()) {
+                    if fields.iter().find(|f| &f.name == key).is_some_and(|f| f.ty.optional || matches!(f.ty.base,TypeBase::Shape {..}|TypeBase::Record {..}|TypeBase::Message {..})) {
+                        self.err("E-EXCLUSIVE-003",file,range_of(&u),"conditional uniqueness keys must be required scalar, enum or identity fields",None);
+                    }
+                }
+                wire_values.sort(); wire_values.dedup();
+                UniqueCondition {field:predicate,values:wire_values}
+            });
+            if let Some(predicate) = &condition {
+                n.push_str("_when_");
+                n.push_str(&hash_hex(&serde_json::to_string(predicate).unwrap())[..12]);
+            }
             uniques.push(Unique {
+                condition,
                 name: n,
                 fields: fs,
                 within,
             });
         }
         uniques.sort_by(|a, b| a.name.cmp(&b.name));
+        for pair in uniques.windows(2) {
+            if pair[0].name == pair[1].name {
+                self.err(
+                    "E-EXCLUSIVE-004",
+                    file,
+                    range_of(r),
+                    format!(
+                        "duplicate uniqueness key `{}`; combine its conditions in one declaration",
+                        pair[0].name
+                    ),
+                    None,
+                );
+            }
+        }
 
         // finds
         let mut finds = Vec::new();
@@ -2237,7 +2284,7 @@ impl<'a> Ctx<'a> {
                 continue;
             }
             let set: BTreeSet<&String> = fs.iter().collect();
-            match uniques.iter().find(|u| u.fields.iter().chain(u.within.iter()).collect::<BTreeSet<_>>() == set) {
+            match uniques.iter().find(|u| u.condition.is_none() && u.fields.iter().chain(u.within.iter()).collect::<BTreeSet<_>>() == set) {
                 Some(u) => finds.push(Find { name: camel(&fs), fields: fs.clone(), covered_by: u.name.clone() }),
                 None => self.err("E-QRY-001", file, range_of(&fd), format!("`find by {}` is not covered by a unique constraint, so it cannot return zero-or-one", fs.join(", ")), Some(format!("declare `unique {}` or use `list by`", fs.join(", ")))),
             }
@@ -2328,11 +2375,6 @@ impl<'a> Ctx<'a> {
                 }
             }
         }
-
-        // lifecycle
-        let lifecycle = r
-            .lifecycle()
-            .and_then(|l| self.lifecycle(&l, module, file, &id, exported, enums_out));
 
         // operations
         let mut operations = Vec::new();
@@ -4516,7 +4558,7 @@ impl<'a> Ctx<'a> {
             })
             .collect();
         imports.sort_by(|a, b| a.alias.cmp(&b.alias));
-        let requires = if self.pkg.edition == "2027"
+        let mut requires = if self.pkg.edition == "2027"
             && modules.iter().any(|m| {
                 !m.purposes.is_empty()
                     || !m.data_classes.is_empty()
@@ -4528,6 +4570,14 @@ impl<'a> Ctx<'a> {
         } else {
             vec![]
         };
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.uniques.iter().any(|u| u.condition.is_some()))
+        }) {
+            requires.push("conditional-unique/1".into());
+            requires.sort();
+        }
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
             requires,

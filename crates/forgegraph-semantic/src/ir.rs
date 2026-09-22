@@ -19,7 +19,7 @@ pub struct DomainIR {
 }
 
 /// Features this compiler/runtime build understands. Unknown `requires` entries fail closed.
-pub const KNOWN_FEATURES: &[&str] = &["governance/1"];
+pub const KNOWN_FEATURES: &[&str] = &["governance/1", "conditional-unique/1"];
 
 impl DomainIR {
     /// Load an IR produced by another build: version and critical features must be understood.
@@ -612,8 +612,18 @@ pub struct ContentPolicy {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct UniqueCondition {
+    pub field: String,
+    /// Canonical enum wire values. The predicate holds when the field matches any value.
+    pub values: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Unique {
     pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub condition: Option<UniqueCondition>,
     pub fields: Vec<String>,
     pub within: Vec<String>,
 }

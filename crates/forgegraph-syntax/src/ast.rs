@@ -634,6 +634,12 @@ node!(AggregateDecl, AGGREGATE_DECL);
 
 node!(UniqueDecl, UNIQUE_DECL);
 impl UniqueDecl {
+    pub fn condition(&self) -> Option<(String, Vec<String>)> {
+        let node = self.0.children().find(|n| n.kind() == K::WHERE_DECL)?;
+        let names: Vec<String> = idents(&node).map(|t| t.text().to_string()).collect();
+        Some((names.get(1)?.clone(), names.into_iter().skip(3).collect()))
+    }
+
     pub fn fields(&self) -> Vec<String> {
         children::<FieldList>(&self.0)
             .next()

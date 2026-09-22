@@ -91,6 +91,9 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "unique-invariant-changed" => {
+            vec!["existing-data-validation", "rebuild-indexes-and-claims"]
+        }
         "column-type-changed" => vec!["data-rewrite"],
         "column-added" | "table-added" => vec!["expand-ddl"],
         "column-removed" | "table-removed" => vec!["retention-decision", "contract-ddl"],
@@ -145,6 +148,23 @@ pub fn compare(old: &Value, new: &Value) -> Report {
             needs: needs_of(code),
         })
     };
+
+    let resources = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .map(|r| (s(&r["id"]), r["uniques"].clone()))
+            .collect()
+    };
+    let before = resources(old);
+    let after = resources(new);
+    for (id, old_uniques) in &before {
+        if let Some(new_uniques) = after.get(id)
+            && old_uniques != new_uniques
+        {
+            push(&mut f,"storage","migration","unique-invariant-changed",id.clone(),"uniqueness keys or conditions changed; validate existing rows and rebuild indexes/claims before activation".into());
+        }
+    }
 
     // ---- API: contracts (record/create/patch schemas per resource, operations, functions, enums)
     let old_res = by_id(arr(old, &["contracts", "resources"]), "id");

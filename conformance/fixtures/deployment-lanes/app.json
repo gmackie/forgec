@@ -1,0 +1,1972 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "d927c3b57ed626f572741c7ddf7be6817e68af9f24402a34c026f3daf10454f3",
+  "digests": {
+    "source": "76a60102b0c20f07822dec0e32d7ffbded7054d0b561df7014e411cd2092ab7f",
+    "wire": "20096d0d32ac88cb184c602d577646523c92a51be58e6d189a876a7345fdf237",
+    "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
+    "security": "5f870025d3e5fb6fab31377961c3626b3bd45eec7ebf518903b51cbbd6384080"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@dogfood/deployments",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [
+          {
+            "id": "@dogfood/deployments/_/Deployment.Status",
+            "name": "Deployment.Status",
+            "exported": true,
+            "synthesized": true,
+            "members": [
+              {
+                "name": "Pending",
+                "value": "Pending"
+              },
+              {
+                "name": "Active",
+                "value": "Active"
+              },
+              {
+                "name": "Failed",
+                "value": "Failed"
+              },
+              {
+                "name": "Deploying",
+                "value": "Deploying"
+              },
+              {
+                "name": "HealthChecking",
+                "value": "HealthChecking"
+              }
+            ]
+          }
+        ],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@dogfood/deployments/_/Deployment",
+            "name": "Deployment",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "application",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "stage",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "target",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "status",
+                "type": {
+                  "base": {
+                    "kind": "status",
+                    "resource": "@dogfood/deployments/_/Deployment"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [
+              {
+                "name": "application_stage_target_when_060d200e6837",
+                "condition": {
+                  "field": "status",
+                  "values": [
+                    "Deploying",
+                    "HealthChecking",
+                    "Pending"
+                  ]
+                },
+                "fields": [
+                  "application",
+                  "stage",
+                  "target"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "lifecycle": {
+              "field": "status",
+              "enumId": "@dogfood/deployments/_/Deployment.Status",
+              "states": [
+                "Pending",
+                "Active",
+                "Failed",
+                "Deploying",
+                "HealthChecking"
+              ],
+              "initial": "Pending",
+              "terminals": [
+                "Active",
+                "Failed"
+              ],
+              "transitions": [
+                {
+                  "action": "deploy",
+                  "from": [
+                    "Pending"
+                  ],
+                  "to": "Deploying",
+                  "input": []
+                },
+                {
+                  "action": "check",
+                  "from": [
+                    "Deploying"
+                  ],
+                  "to": "HealthChecking",
+                  "input": []
+                },
+                {
+                  "action": "activate",
+                  "from": [
+                    "HealthChecking"
+                  ],
+                  "to": "Active",
+                  "input": []
+                },
+                {
+                  "action": "fail",
+                  "from": [
+                    "Pending",
+                    "Deploying",
+                    "HealthChecking"
+                  ],
+                  "to": "Failed",
+                  "input": []
+                }
+              ]
+            },
+            "operations": [
+              {
+                "id": "@dogfood/deployments/_/Deployment.create",
+                "kind": "create"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.get",
+                "kind": "get"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.update",
+                "kind": "update"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.status.deploy",
+                "kind": "transition",
+                "action": "deploy"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.status.check",
+                "kind": "transition",
+                "action": "check"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.status.activate",
+                "kind": "transition",
+                "action": "activate"
+              },
+              {
+                "id": "@dogfood/deployments/_/Deployment.status.fail",
+                "kind": "transition",
+                "action": "fail"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "conditional-unique/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@dogfood/deployments",
+    "resources": [
+      {
+        "id": "@dogfood/deployments/_/Deployment",
+        "name": "Deployment",
+        "wireName": "deployment",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Pending",
+                "Active",
+                "Failed",
+                "Deploying",
+                "HealthChecking"
+              ],
+              "x-forge-status": "@dogfood/deployments/_/Deployment",
+              "readOnly": true
+            },
+            "application": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "stage": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "target": {
+              "type": "string",
+              "x-forge-type": "text"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "application",
+            "stage",
+            "target"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "application": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "stage": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "target": {
+              "type": "string",
+              "x-forge-type": "text"
+            }
+          },
+          "required": [
+            "application",
+            "stage",
+            "target"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "application": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "stage": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "target": {
+              "type": "string",
+              "x-forge-type": "text"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "lifecycle": {
+          "field": "status",
+          "states": [
+            "Pending",
+            "Active",
+            "Failed",
+            "Deploying",
+            "HealthChecking"
+          ],
+          "initial": "Pending",
+          "actions": [
+            {
+              "name": "deploy",
+              "from": [
+                "Pending"
+              ],
+              "to": "Deploying",
+              "input": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            {
+              "name": "check",
+              "from": [
+                "Deploying"
+              ],
+              "to": "HealthChecking",
+              "input": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            {
+              "name": "activate",
+              "from": [
+                "HealthChecking"
+              ],
+              "to": "Active",
+              "input": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            {
+              "name": "fail",
+              "from": [
+                "Pending",
+                "Deploying",
+                "HealthChecking"
+              ],
+              "to": "Failed",
+              "input": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          ]
+        },
+        "operations": [
+          {
+            "id": "@dogfood/deployments/_/Deployment.create",
+            "kind": "create"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.get",
+            "kind": "get"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.update",
+            "kind": "update"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.status.deploy",
+            "kind": "transition",
+            "action": "deploy"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.status.check",
+            "kind": "transition",
+            "action": "check"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.status.activate",
+            "kind": "transition",
+            "action": "activate"
+          },
+          {
+            "id": "@dogfood/deployments/_/Deployment.status.fail",
+            "kind": "transition",
+            "action": "fail"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "deployment",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "application",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "application",
+            "storage": "text"
+          },
+          {
+            "name": "stage",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "stage",
+            "storage": "text"
+          },
+          {
+            "name": "target",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "target",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "status",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "deployment_status",
+            "expression": "status IN ('Pending', 'Active', 'Failed', 'Deploying', 'HealthChecking')"
+          }
+        ]
+      }
+    ],
+    "indexes": [
+      {
+        "name": "deployment_uq_application_stage_target_when_060d200e6837",
+        "table": "deployment",
+        "columns": [
+          "tenant",
+          "application",
+          "stage",
+          "target"
+        ],
+        "unique": true,
+        "predicate": "\"status\" IN ('Deploying', 'HealthChecking', 'Pending')",
+        "constraint": "application_stage_target_when_060d200e6837"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@dogfood/deployments/_/Deployment",
+        "name": "Deployment",
+        "wireName": "deployment",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "application_stage_target_when_060d200e6837",
+            "keyFields": [
+              "application",
+              "stage",
+              "target"
+            ],
+            "condition": {
+              "field": "status",
+              "values": [
+                "Deploying",
+                "HealthChecking",
+                "Pending"
+              ]
+            }
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@dogfood/deployments",
+    "resources": [
+      {
+        "id": "@dogfood/deployments/_/Deployment",
+        "name": "Deployment",
+        "kind": "resource",
+        "label": "Deployment",
+        "plural": "Deployments",
+        "route": "deployments",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "application",
+            "label": "Application",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "stage",
+            "label": "Stage",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "target",
+            "label": "Target",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "status",
+            "label": "Status",
+            "widget": "status",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": false
+          }
+        ],
+        "tableColumns": [
+          "status",
+          "id",
+          "application",
+          "stage",
+          "target"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@dogfood/deployments/_/Deployment.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-dogfood-deployments-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@dogfood/deployments/_/Deployment.create",
+        "kind": "create",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.get",
+        "kind": "get",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.update",
+        "kind": "update",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.delete",
+        "kind": "delete",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.list.all",
+        "kind": "list",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.deploy",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.check",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.activate",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.fail",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@dogfood/deployments/_/Deployment",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/deployments/_/Deployment",
+        "field": "application",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/deployments/_/Deployment",
+        "field": "stage",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/deployments/_/Deployment",
+        "field": "target",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/deployments/_/Deployment",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/deployments/_/Deployment",
+        "field": "status",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "structural": 3,
+      "unclassified": 3
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@dogfood/deployments/_/Deployment.create",
+        "kind": "create",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [
+          "application",
+          "stage",
+          "target"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.get",
+        "kind": "get",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.update",
+        "kind": "update",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [
+          "application",
+          "stage",
+          "target"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.delete",
+        "kind": "delete",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.list.all",
+        "kind": "list",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.deploy",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.check",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.activate",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/deployments/_/Deployment.status.fail",
+        "kind": "transition",
+        "resource": "@dogfood/deployments/_/Deployment",
+        "outputs": [
+          "id",
+          "application",
+          "stage",
+          "target",
+          "version",
+          "status"
+        ],
+        "writes": [
+          "status"
+        ],
+        "filters": [
+          "id",
+          "version",
+          "status"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@dogfood/deployments",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "DeploymentRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Pending",
+                "Active",
+                "Failed",
+                "Deploying",
+                "HealthChecking"
+              ],
+              "x-forge-status": "@dogfood/deployments/_/Deployment",
+              "readOnly": true
+            },
+            "application": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "stage": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "target": {
+              "type": "string",
+              "x-forge-type": "text"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "status",
+            "application",
+            "stage",
+            "target"
+          ]
+        },
+        "DeploymentCreate": {
+          "type": "object",
+          "properties": {
+            "application": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "stage": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "target": {
+              "type": "string",
+              "x-forge-type": "text"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "application",
+            "stage",
+            "target"
+          ]
+        },
+        "DeploymentPatch": {
+          "type": "object",
+          "properties": {
+            "application": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "stage": {
+              "type": "string",
+              "x-forge-type": "text"
+            },
+            "target": {
+              "type": "string",
+              "x-forge-type": "text"
+            }
+          },
+          "additionalProperties": false
+        },
+        "DeploymentDeployInput": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "DeploymentCheckInput": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "DeploymentActivateInput": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "DeploymentFailInput": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  }
+}

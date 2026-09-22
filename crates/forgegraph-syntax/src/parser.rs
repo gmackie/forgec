@@ -737,6 +737,24 @@ impl<'a> Parser<'a> {
                 self.bump();
                 self.field_list();
             }
+            if self.at_kw("while") {
+                self.start(K::WHERE_DECL);
+                self.bump();
+                self.expect_ident("predicate field");
+                if self.at_kw("in") {
+                    self.bump();
+                } else {
+                    self.error("expected `in`");
+                }
+                self.expect(TokenKind::LBracket, "`[` ");
+                self.expect_ident("enum member");
+                while self.at(TokenKind::Comma) {
+                    self.bump();
+                    self.expect_ident("enum member");
+                }
+                self.expect(TokenKind::RBracket, "`]`");
+                self.finish();
+            }
             self.finish();
             self.end_item();
         } else if t == "find" && n1t == "by" {

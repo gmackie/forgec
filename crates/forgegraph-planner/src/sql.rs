@@ -61,6 +61,8 @@ pub struct Index {
     pub columns: Vec<String>,
     pub unique: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub predicate: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub query: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub constraint: Option<String>,
@@ -145,6 +147,18 @@ pub fn plan(ir: &DomainIR) -> SqlSchema {
                     table: tname.clone(),
                     columns: key(&cols),
                     unique: true,
+                    predicate: u.condition.as_ref().map(|condition| {
+                        format!(
+                            "\"{}\" IN ({})",
+                            naming::column(&condition.field),
+                            condition
+                                .values
+                                .iter()
+                                .map(|value| format!("'{}'", value.replace('\'', "''")))
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        )
+                    }),
                     query: None,
                     constraint: Some(u.name.clone()),
                 });
@@ -168,6 +182,7 @@ pub fn plan(ir: &DomainIR) -> SqlSchema {
                     table: tname.clone(),
                     columns,
                     unique: false,
+                    predicate: None,
                     query: Some(l.name.clone()),
                     constraint: None,
                 });
@@ -415,7 +430,7 @@ pub fn render_postgres(s: &SqlSchema) -> String {
     out.push_str("CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);\n");
     for i in &s.indexes {
         out.push_str(&format!(
-            "CREATE {}INDEX {} ON {} ({});\n",
+            "CREATE {}INDEX {} ON {} ({}){};\n",
             if i.unique { "UNIQUE " } else { "" },
             i.name,
             i.table,
@@ -423,7 +438,11 @@ pub fn render_postgres(s: &SqlSchema) -> String {
                 .iter()
                 .map(|c| q(c))
                 .collect::<Vec<_>>()
-                .join(", ")
+                .join(", "),
+            i.predicate
+                .as_ref()
+                .map(|p| format!(" WHERE {p}"))
+                .unwrap_or_default()
         ));
     }
     out
@@ -472,11 +491,15 @@ pub fn render_sqlite(s: &SqlSchema) -> String {
     out.push_str("CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);\n");
     for i in &s.indexes {
         out.push_str(&format!(
-            "CREATE {}INDEX {} ON {} ({});\n",
+            "CREATE {}INDEX {} ON {} ({}){};\n",
             if i.unique { "UNIQUE " } else { "" },
             i.name,
             i.table,
-            i.columns.join(", ")
+            i.columns.join(", "),
+            i.predicate
+                .as_ref()
+                .map(|p| format!(" WHERE {p}"))
+                .unwrap_or_default()
         ));
     }
     out

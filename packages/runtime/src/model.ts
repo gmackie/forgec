@@ -48,7 +48,7 @@ export interface Field {
   synthesized: boolean;
   hidden?: boolean;
 }
-export interface Unique { name: string; fields: string[]; within: string[] }
+export interface Unique { name: string; fields: string[]; within: string[]; condition?: { field: string; values: string[] } }
 export interface Find { name: string; fields: string[]; coveredBy: string }
 export interface OrderKey { field: string; direction: string }
 export interface List { name: string; fields: string[]; order: OrderKey[] }
@@ -113,7 +113,7 @@ export interface MessagingPlan {
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["governance/1"];
+export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }

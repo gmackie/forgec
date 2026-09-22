@@ -162,7 +162,7 @@ module.exports = grammar({
     field_list: ($) => comma($.identifier),
     unique_declaration: ($) =>
       prec.right(
-        seq("unique", $.field_list, optional(seq("within", $.field_list))),
+        seq("unique", $.field_list, optional(seq("within", $.field_list)), optional(seq("while", $.identifier, "in", "[", comma($.identifier), "]"))),
       ),
     find_declaration: ($) => seq("find", "by", $.field_list),
     list_declaration: ($) =>

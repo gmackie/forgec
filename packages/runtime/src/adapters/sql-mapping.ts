@@ -49,7 +49,9 @@ export class SqlMapping {
   uniqueByColumns(table: string, columns: string[]): string | undefined {
     const schema = this.model.bundle.sql as SqlSchema;
     const set = [...columns].sort().join(",");
-    return schema.indexes.find((i) => i.unique && i.table === table && [...i.columns].sort().join(",") === set)?.constraint;
+    const matches = schema.indexes.filter((i) => i.unique && i.table === table && [...i.columns].sort().join(",") === set);
+    // SQLite reports columns, not the failed partial-index name. Do not guess when several match.
+    return matches.length === 1 ? matches[0]!.constraint : undefined;
   }
   toColumn(f: Field, value: unknown): unknown {
     if (value === null || value === undefined) return null;

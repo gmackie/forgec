@@ -314,6 +314,7 @@ export class Engine {
 
   // ------------------------------------------------------------ helpers
   claimKey(r: Resource, u: Unique, rec: Wire): string | null {
+    if (u.condition && !u.condition.values.includes(String(rec[u.condition.field]))) return null;
     const self = this;
     const fields = [...u.within, ...u.fields];
     const values = fields.map((f) => rec[f]);
@@ -635,7 +636,7 @@ export class Engine {
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "transition", id, expectedVersion: expected, before, after,
-        claims: [], references: [], dependents: [], hardDelete: false,
+        claims: self.claimChanges(r, before, after), references: [], dependents: [], hardDelete: false,
         audit: { ...self.audit(`status.${action}`, r, id, after, ctx, opId, now), payload: input }, outbox: self.changeEvent(r, `status.${action}`, id, after, ctx, opId, now),
       };
       return plan;

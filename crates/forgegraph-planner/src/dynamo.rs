@@ -36,6 +36,8 @@ pub struct DynamoResource {
 pub struct Claim {
     pub name: String,
     pub key_fields: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub condition: Option<UniqueCondition>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -65,6 +67,7 @@ pub fn plan(ir: &DomainIR) -> DynamoPlan {
                 .iter()
                 .map(|u| Claim {
                     name: u.name.clone(),
+                    condition: u.condition.clone(),
                     key_fields: u.within.iter().chain(u.fields.iter()).cloned().collect(),
                 })
                 .collect();

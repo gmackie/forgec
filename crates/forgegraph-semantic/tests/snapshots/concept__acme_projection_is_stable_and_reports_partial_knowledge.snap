@@ -116,6 +116,15 @@ expression: projection
             "derived": null
           }
         },
+        "invariants": [
+          {
+            "name": "code",
+            "fields": [
+              "code"
+            ],
+            "within": []
+          }
+        ],
         "lifecycle": null,
         "subject": null,
         "recordContext": null,
@@ -184,6 +193,7 @@ expression: projection
             "derived": null
           }
         },
+        "invariants": [],
         "lifecycle": null,
         "subject": null,
         "recordContext": null,
@@ -375,6 +385,7 @@ expression: projection
             }
           }
         },
+        "invariants": [],
         "lifecycle": {
           "field": "status",
           "enumId": "@acme/commerce/_/Order.Status",
@@ -526,6 +537,7 @@ expression: projection
             "derived": null
           }
         },
+        "invariants": [],
         "lifecycle": null,
         "subject": null,
         "recordContext": null,
@@ -657,6 +669,17 @@ expression: projection
             "derived": null
           }
         },
+        "invariants": [
+          {
+            "name": "code_within_customer",
+            "fields": [
+              "code"
+            ],
+            "within": [
+              "customer"
+            ]
+          }
+        ],
         "lifecycle": null,
         "subject": null,
         "recordContext": null,
@@ -750,6 +773,7 @@ expression: projection
             "derived": null
           }
         },
+        "invariants": [],
         "lifecycle": null,
         "subject": null,
         "recordContext": null,
