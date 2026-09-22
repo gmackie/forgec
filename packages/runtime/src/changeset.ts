@@ -132,7 +132,7 @@ export class Changesets {
       const items: ItemResult[] = [];
       const plans: (CommitPlan | null)[] = [];
       for (const [index, o] of doc.operations.entries()) {
-        const exit = yield* Effect.exit(self.engine.planFor(o.op, o.input, ctx));
+        const exit = yield* Effect.exit(self.engine.planFor(o.op, o.input, ctx, true));
         if (exit._tag === "Success") {
           items.push({ index, op: o.op, status: "ok", diff: diffOf(exit.value), result: self.engine.resultOf(exit.value) });
           plans.push(exit.value);

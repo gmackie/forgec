@@ -3,7 +3,7 @@
  * by stable id, inputs decoded through the common pipeline, and every write
  * becomes a CommitPlan executed atomically by the storage adapter.
  */
-import { Effect, Layer } from "effect";
+import { Cause, Effect, Layer } from "effect";
 import { encodeIdentity, sortKey } from "./codecs.js";
 import { decodeCursor, encodeCursor } from "./cursor.js";
 import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
@@ -223,13 +223,14 @@ export class Engine {
   }
 
   /** Build the commit plan for a mutation without persisting it (used by single calls and changeset preview). */
-  planFor(opId: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
+  planFor(opId: string, body: Wire, ctx: CallContext, preview = false): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     const ref = self.model.operation(opId);
     if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     const { op, resource } = ref;
     switch (op.kind) {
       case "create":
+        if (preview && resource.fields.some(f=>f.sequence)) return Effect.fail(err("SequencePreviewUnsupported","sequence allocation requires a committed create; changeset previews cannot reserve numbers"));
         return self.create(resource, body, ctx);
       case "update":
         return self.update(resource, body, ctx);
@@ -439,6 +440,27 @@ export class Engine {
         after["mediaType"] = null;
         after["byteCount"] = null;
         after["digest"] = null;
+      }
+      for (const field of r.fields) {
+        if (!field.sequence) continue;
+        const sequence = field.sequence;
+        const partition = sequence.partition ? after[sequence.partition] : null;
+        const key = JSON.stringify([r.id,field.name,partition]);
+        const storage = yield* Storage;
+        let allocated = false;
+        for (let attempt=0; attempt<64; attempt++) {
+          const current = yield* storage.getDocument(ctx.tenant,"sequence",key);
+          const last = current?.["last"];
+          const next = last === undefined ? sequence.start : Number(last)+1;
+          if (!Number.isSafeInteger(next) || next < sequence.start || next > sequence.max) {
+            return yield* Effect.fail(err("SequenceExhausted", `sequence ${r.name}.${field.name} is exhausted or requires migration`));
+          }
+          const reservation = yield* storage.putDocument(ctx.tenant,"sequence",key,{last:next},(current?.["_version"] as number | undefined) ?? null).pipe(Effect.exit);
+          if (reservation._tag === "Success") {after[field.name]=next; allocated=true;break;}
+          const error = Cause.squash(reservation.cause);
+          if (!(error instanceof ForgeError) || error.code !== "VersionConflict") return yield* Effect.fail(error instanceof ForgeError ? error : err("Internal","sequence reservation failed"));
+        }
+        if (!allocated) return yield* Effect.fail(err("TransientConflict","sequence contention; retry the operation"));
       }
       const guards = self.referenceGuards(r, after, null);
       const refs = yield* self.loadReferences(r, after, ctx, guards);

@@ -46,6 +46,8 @@ pub struct Fact {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Field {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sequence: Option<ir::Sequence>,
     pub ty: ConceptType,
     pub immutable: bool,
     pub default: Option<ir::Literal>,
@@ -532,6 +534,7 @@ fn fields(source: &[ir::Field]) -> BTreeMap<String, Field> {
                     immutable: f.immutable,
                     default: f.default.clone(),
                     derived: f.derived.clone(),
+                    sequence: f.sequence.clone(),
                 },
             )
         })

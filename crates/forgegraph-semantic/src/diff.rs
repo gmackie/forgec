@@ -92,6 +92,9 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "sequence-definition-changed" => {
+            vec!["sequence-high-water-review", "existing-data-validation"]
+        }
         "collection-type-changed" => vec!["existing-data-validation", "codec-migration-review"],
         "projection-definition-changed" => vec!["rebuild-projection-generation"],
         "unique-invariant-changed" => {
@@ -207,6 +210,35 @@ pub fn compare(old: &Value, new: &Value) -> Report {
         {
             push(&mut f, "api", "breaking", "collection-type-changed", id,
                 "collection kind, element codec or bounds changed; validate stored values and review producer/consumer compatibility".into());
+        }
+    }
+
+    let sequences = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .flat_map(|r| {
+                arr(r, &["fields"])
+                    .into_iter()
+                    .filter(|f| !f["sequence"].is_null())
+                    .map(move |f| {
+                        (
+                            format!("{}.{}", s(&r["id"]), s(&f["name"])),
+                            f["sequence"].clone(),
+                        )
+                    })
+            })
+            .collect()
+    };
+    let old_sequences = sequences(old);
+    let new_sequences = sequences(new);
+    for id in old_sequences
+        .keys()
+        .chain(new_sequences.keys())
+        .collect::<std::collections::BTreeSet<_>>()
+    {
+        if old_sequences.get(id) != new_sequences.get(id) {
+            push(&mut f,"storage","migration","sequence-definition-changed",id.clone(),"sequence added, removed or changed; preserve partition high-water marks and validate existing allocated values before activation".into());
         }
     }
 

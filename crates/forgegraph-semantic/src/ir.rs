@@ -25,6 +25,7 @@ pub const KNOWN_FEATURES: &[&str] = &[
     "projection-aggregates/1",
     "collections/1",
     "workflow-map/1",
+    "sequences/1",
 ];
 
 impl DomainIR {
@@ -540,6 +541,8 @@ pub struct Shape {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Field {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sequence: Option<Sequence>,
     pub name: String,
     #[serde(rename = "type")]
     pub ty: TypeSpec,
@@ -555,6 +558,14 @@ pub struct Field {
     pub hidden: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub doc: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Sequence {
+    pub partition: Option<String>,
+    pub start: u64,
+    pub max: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

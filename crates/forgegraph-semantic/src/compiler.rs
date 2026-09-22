@@ -40,7 +40,7 @@ const RESOURCE_DECORATORS: &[&str] = &[
     "subject",
     "record",
 ];
-const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data"];
+const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data", "sequence"];
 /// Declarations and decorators that need `edition = "2027"`.
 const EDITION_2027_DECORATORS: &[&str] = &["purposeScoped", "subject", "data", "record"];
 const FUNCTION_DECORATORS: &[&str] = &["http", "label"];
@@ -1203,6 +1203,7 @@ impl<'a> Ctx<'a> {
                         ),
                     }
                 }
+                "sequence" if allowed_decorators.contains(&"sequence") => {}
                 "label" => {}
                 other => {
                     let sugg = suggest(other, allowed_decorators.iter().copied())
@@ -1248,6 +1249,7 @@ impl<'a> Ctx<'a> {
                 ty,
                 default: None,
                 derived: ir,
+                sequence: None,
                 immutable: true,
                 server_owned: true,
                 synthesized: false,
@@ -1287,6 +1289,7 @@ impl<'a> Ctx<'a> {
             ty,
             default,
             derived: None,
+            sequence: None,
             immutable,
             server_owned: false,
             synthesized: false,
@@ -2065,6 +2068,7 @@ impl<'a> Ctx<'a> {
             ty,
             default: None,
             derived: None,
+            sequence: None,
             immutable: false,
             server_owned: true,
             synthesized: true,
@@ -2104,6 +2108,7 @@ impl<'a> Ctx<'a> {
                 ty: scalar("datetime", false),
                 default: None,
                 derived: None,
+                sequence: None,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -2115,6 +2120,7 @@ impl<'a> Ctx<'a> {
                 ty: scalar("datetime", true),
                 default: None,
                 derived: None,
+                sequence: None,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -2137,6 +2143,7 @@ impl<'a> Ctx<'a> {
                 },
                 default: None,
                 derived: None,
+                sequence: None,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -2232,6 +2239,93 @@ impl<'a> Ctx<'a> {
                 fields.push(f);
             }
         }
+        for fd in r.fields() {
+            for decorator in fd
+                .decorators()
+                .filter(|d| d.name().is_some_and(|n| n.text() == "sequence"))
+            {
+                let field_name = fd.name()?.text().to_string();
+                let mut sequence = Sequence {
+                    partition: None,
+                    start: 1,
+                    max: 9_007_199_254_740_991,
+                };
+                let mut labels = BTreeSet::new();
+                for arg in decorator.args() {
+                    let label = arg.label().unwrap_or_default();
+                    if !labels.insert(label.clone()) {
+                        self.err(
+                            "E-SEQ-001",
+                            file,
+                            range_of(&decorator),
+                            "duplicate sequence argument",
+                            None,
+                        );
+                    }
+                    match (label.as_str(), arg.value()) {
+                        ("partition", Some(ArgValue::Name(names))) if names.len() == 1 => {
+                            sequence.partition = Some(names[0].clone())
+                        }
+                        ("start" | "max", Some(ArgValue::Literal(value))) => {
+                            if let Ok(n) = value.parse::<u64>() {
+                                if label == "start" {
+                                    sequence.start = n;
+                                } else {
+                                    sequence.max = n;
+                                }
+                            } else {
+                                self.err(
+                                    "E-SEQ-001",
+                                    file,
+                                    range_of(&decorator),
+                                    "sequence bounds must be positive safe integers",
+                                    None,
+                                );
+                            }
+                        }
+                        _ => self.err(
+                            "E-SEQ-001",
+                            file,
+                            range_of(&decorator),
+                            "expected partition: field, start: integer or max: integer",
+                            None,
+                        ),
+                    }
+                }
+                if sequence.start == 0
+                    || sequence.start > sequence.max
+                    || sequence.max > 9_007_199_254_740_991
+                {
+                    self.err(
+                        "E-SEQ-001",
+                        file,
+                        range_of(&decorator),
+                        "sequence bounds must satisfy 1 <= start <= max <= 9007199254740991",
+                        None,
+                    );
+                }
+                if let Some(partition) = &sequence.partition {
+                    match fields.iter_mut().find(|f| &f.name==partition && f.name!=field_name) {
+                        Some(f) if !f.ty.optional && !f.server_owned && f.derived.is_none() && (matches!(&f.ty.base, TypeBase::Reference {..} | TypeBase::Enum {..}) || matches!(&f.ty.base, TypeBase::Scalar {name,..} if name == "text" || name == "id")) => { f.immutable=true; }
+                        _ => self.err("E-SEQ-002",file,range_of(&decorator),"sequence partition must be a required text/id field distinct from the allocated field",None),
+                    }
+                }
+                if let Some(f) = fields.iter_mut().find(|f| f.name == field_name) {
+                    if f.sequence.is_some()
+                        || f.ty.optional
+                        || f.default.is_some()
+                        || f.derived.is_some()
+                        || !matches!(&f.ty.base,TypeBase::Scalar {name,..} if name=="integer")
+                        || !f.ty.constraints.is_empty()
+                    {
+                        self.err("E-SEQ-003",file,range_of(&decorator),"sequence requires a plain required integer field without a default, derivation or second sequence",None);
+                    }
+                    f.sequence = Some(sequence);
+                    f.immutable = true;
+                    f.server_owned = true;
+                }
+            }
+        }
         for f in self.applied_facets(r, module, file) {
             if !declared_names.insert(f.name.clone()) {
                 self.err("E-FACET-003", file, range_of(r), format!("facet field `{}` collides with another field on `{name}`; overrides are not allowed", f.name), None);
@@ -2258,6 +2352,7 @@ impl<'a> Ctx<'a> {
                     },
                     default: None,
                     derived: None,
+                    sequence: None,
                     immutable: true,
                     server_owned: true,
                     synthesized: true,
@@ -4851,6 +4946,14 @@ impl<'a> Ctx<'a> {
             requires.push("workflow-map/1".into());
             requires.sort();
         }
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.fields.iter().any(|f| f.sequence.is_some()))
+        }) {
+            requires.push("sequences/1".into());
+            requires.sort();
+        }
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
             requires,
@@ -4886,6 +4989,7 @@ fn blob_fields() -> Vec<Field> {
         ty,
         default: None,
         derived: None,
+        sequence: None,
         immutable: false,
         server_owned: true,
         synthesized: true,

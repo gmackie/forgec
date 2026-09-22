@@ -16,6 +16,8 @@ export const ERROR_STATUS: Record<string, { status: number; retryable: boolean; 
   Forbidden: { status: 403, retryable: false, title: "Forbidden" },
   NotFound: { status: 404, retryable: false, title: "Not found" },
   MethodNotAllowed: { status: 405, retryable: false, title: "Method not allowed" },
+  SequenceExhausted: { status: 409, retryable: false, title: "Sequence exhausted" },
+  SequencePreviewUnsupported: { status: 422, retryable: false, title: "Sequence preview unsupported" },
   ValidationFailed: { status: 422, retryable: false, title: "Validation failed" },
   UnknownField: { status: 422, retryable: false, title: "Unknown field" },
   PreconditionRequired: { status: 428, retryable: false, title: "Precondition required" },

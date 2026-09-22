@@ -642,6 +642,11 @@ pub fn field_schema(ir: &DomainIR, owner: &Resource, f: &Field) -> Value {
         if f.server_owned {
             obj.insert("readOnly".into(), json!(true));
         }
+        if let Some(sequence) = &f.sequence {
+            obj.insert("x-forge-sequence".into(), json!(sequence));
+            obj.insert("minimum".into(), json!(sequence.start));
+            obj.insert("maximum".into(), json!(sequence.max));
+        }
         if !f.ty.normalizers.is_empty() {
             obj.insert("x-forge-normalizers".into(), json!(f.ty.normalizers));
         }
