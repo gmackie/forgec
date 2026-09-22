@@ -1,0 +1,74 @@
+{
+  "slug": "artifact",
+  "layer": "substrate",
+  "issue": 27,
+  "dependencies": [
+    "specification"
+  ],
+  "facts": [
+    "Artifact: stable logical identity",
+    "ArtifactRevision: immutable digest, media type, byte size and sealed content reference",
+    "ArtifactComponent: immutable parent revision to child revision membership"
+  ],
+  "operations": [
+    "CreateArtifact",
+    "PublishRevision(artifact, sealedContent, digest, mediaType, size, specificationPin?)",
+    "AddManifestComponents before publication; GetRevision; ListRevisions"
+  ],
+  "invariants": [
+    "Digest is verified against sealed bytes; byte size is nonnegative integer bytes",
+    "Publication freezes revision metadata and component membership; component refs pin exact revisions",
+    "Blob location changes do not change artifact identity or content digest",
+    "Public capabilities reject update/delete of published revisions; governance protects content access"
+  ],
+  "acceptance": [
+    {
+      "id": "F27-01",
+      "description": "artifact + immutable revision model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F27-02",
+      "description": "content digest/media type/size semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F27-03",
+      "description": "blob/object-store integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F27-04",
+      "description": "optional manifest/component representation",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F27-05",
+      "description": "provenance hooks",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F27-06",
+      "description": "typed sidecar usage from application resources",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F27-07",
+      "description": "fixtures for build artifact, evidence artifact, generated asset and document",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "build-artifact",
+    "evidence-artifact",
+    "generated-asset",
+    "document"
+  ]
+}

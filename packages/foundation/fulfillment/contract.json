@@ -1,0 +1,70 @@
+{
+  "slug": "fulfillment",
+  "layer": "substrate",
+  "issue": 31,
+  "dependencies": [
+    "specification",
+    "evidence"
+  ],
+  "facts": [
+    "FulfillmentSet: intent-side grouping handle",
+    "Fulfillment: phase, optional specification pin, evidence bundle, executor and timing",
+    "FulfillmentReplacement: explicit predecessor/successor relationship"
+  ],
+  "operations": [
+    "CreateFulfillment(set, specificationPin?, evidenceBundle?)",
+    "StartFulfillment; CompleteFulfillment; FailFulfillment; CancelFulfillment",
+    "RecordReplacement; ListByIntentSet"
+  ],
+  "invariants": [
+    "Domain owns request payload, partial quantities, business status and typed outcome satellites",
+    "Multiple fulfillments share a set; retries preserve intent identity and cannot erase earlier attempts",
+    "Replacement points within the same intent set and cannot form a cycle",
+    "Execution task failure/cancellation is not automatically business completion or cancellation"
+  ],
+  "acceptance": [
+    {
+      "id": "F31-01",
+      "description": "fulfillment envelope",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F31-02",
+      "description": "relation to domain-owned request/intent",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F31-03",
+      "description": "multiple/partial/replacement fulfillment semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F31-04",
+      "description": "workQueue integration example",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F31-05",
+      "description": "typed outcome satellite example",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F31-06",
+      "description": "fixtures for Bob development run, lab service and provisioning",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "bob-development-run",
+    "lab-service",
+    "provisioning",
+    "workqueue-adapter",
+    "typed-outcome"
+  ]
+}
