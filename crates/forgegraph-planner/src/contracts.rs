@@ -450,6 +450,23 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
     ordered.extend(r.fields.iter().filter(|f| f.synthesized));
     ordered.extend(r.fields.iter().filter(|f| !f.synthesized && f.name != "id"));
     for f in ordered {
+        if f.secret {
+            record.properties.insert(
+                format!("{}Present", f.name),
+                json!({"type":"boolean","readOnly":true}),
+            );
+            record.required.push(format!("{}Present", f.name));
+            let mut schema = field_schema(ir, r, f);
+            schema["writeOnly"] = json!(true);
+            create.properties.insert(f.name.clone(), schema.clone());
+            if !f.ty.optional {
+                create.required.push(f.name.clone());
+            }
+            if !f.immutable {
+                patch.properties.insert(f.name.clone(), schema);
+            }
+            continue;
+        }
         if f.hidden {
             continue;
         }
@@ -569,6 +586,17 @@ fn shape_or_record_schema(ir: &DomainIR, base: &TypeBase) -> JsonSchema {
         _ => vec![],
     };
     for f in fields {
+        if f.secret {
+            s.properties.insert(
+                format!("{}Present", f.name),
+                json!({"type":"boolean","readOnly":true}),
+            );
+            s.required.push(format!("{}Present", f.name));
+            continue;
+        }
+        if f.hidden {
+            continue;
+        }
         let owner = match base {
             TypeBase::Record { resource } | TypeBase::Reference { resource } => ir
                 .find_resource(resource)

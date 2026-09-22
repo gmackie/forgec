@@ -48,3 +48,8 @@ it("redacts classified collection contents despite structural container labels",
   const audit = new Redactor(collections).auditRecord(resource,{recipients:["private@example.com"]});
   expect(audit["recipients"]).toBe("[redacted:collection]");
 });
+
+it("credential plaintext is never released by structural classification",()=>{
+ const credentials=JSON.parse(readFileSync(resolve(import.meta.dirname,"../../../conformance/fixtures/credentials/app.json"),"utf8")) as AppBundle;
+ expect(new Redactor(credentials).auditValue("@dogfood/credentials/_/Integration","accessToken","private-token")).toBe("[redacted:secret]");
+});

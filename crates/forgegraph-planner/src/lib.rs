@@ -161,6 +161,37 @@ fn validate(ir: &DomainIR) -> Result<(), PlanError> {
             }
         }
         for r in &m.resources {
+            let secrets: Vec<_> = r
+                .fields
+                .iter()
+                .filter(|f| f.secret)
+                .map(|f| f.name.as_str())
+                .collect();
+            if !secrets.is_empty() {
+                let indexed = r
+                    .uniques
+                    .iter()
+                    .flat_map(|u| u.fields.iter().chain(&u.within))
+                    .chain(
+                        r.lists
+                            .iter()
+                            .flat_map(|l| l.fields.iter().chain(l.order.iter().map(|o| &o.field))),
+                    );
+                if indexed.into_iter().any(|f| secrets.contains(&f.as_str()))
+                    || !r.rules.is_empty()
+                    || r.fields.iter().any(|f| f.derived.is_some())
+                {
+                    return Err(PlanError {code:"E-PLAN-SECRET-001".into(),declaration:r.id.clone(),message:"credential resources cannot index secrets or use row rules/derived fields in this profile".into()});
+                }
+                if m.projections.iter().any(|p| p.source == r.id) || !m.views.is_empty() {
+                    return Err(PlanError {
+                        code: "E-PLAN-SECRET-001".into(),
+                        declaration: r.id.clone(),
+                        message: "credential resources cannot feed read models in this profile"
+                            .into(),
+                    });
+                }
+            }
             for f in &r.fields {
                 validate_collection(ir, &f.ty, 0, &r.id)?;
             }

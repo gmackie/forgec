@@ -89,6 +89,7 @@ export class Portability {
   export(ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
+      if(self.authoritative.some(r=>r.fields.some(f=>f.secret || f.sequence))) return yield* Effect.fail(err("ValidationFailed","credential/sequence resources require a dedicated key and counter migration; record-only export is unsupported"));
       const resources: Record<string, ResourceExport> = {};
       for (const r of self.authoritative) {
         const records = yield* self.scanAll(ctx.tenant, r);
@@ -113,6 +114,7 @@ export class Portability {
 
   private checkSnapshot(snap: Snapshot | undefined): Effect.Effect<Snapshot, ForgeError> {
     const b = this.engine.model.bundle;
+    if(this.authoritative.some(r=>r.fields.some(f=>f.secret || f.sequence))) return Effect.fail(err("ValidationFailed","credential/sequence resources require a dedicated key and counter migration; record-only import is unsupported"));
     if (!snap || snap.version !== EXPORT_VERSION) return Effect.fail(err("ValidationFailed", `expected an ${EXPORT_VERSION} snapshot`));
     if (snap.package !== b.ir.package.name) return Effect.fail(err("ValidationFailed", `snapshot is for ${snap.package}, this deployment is ${b.ir.package.name}`));
     if (snap.manifest?.contractsVersion !== b.contracts.version) return Effect.fail(err("ValidationFailed", `snapshot contracts ${snap.manifest?.contractsVersion} differ from ${b.contracts.version}; migrate the snapshot first`));

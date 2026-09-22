@@ -42,6 +42,7 @@ export class Imports {
   private resource(body: Wire): Effect.Effect<Resource, ForgeError> {
     const id = String(body["resource"] ?? "");
     const r = this.engine.model.resources.find((x) => x.id === id);
+    if(r?.fields.some(f=>f.secret)) return Effect.fail(err("ValidationFailed","credential resources cannot be staged from CSV"));
     return r ? Effect.succeed(r) : Effect.fail(err("ValidationFailed", `unknown resource ${id}`, { fields: [{ path: "resource", code: "Unknown", message: "not a declared resource" }] }));
   }
 

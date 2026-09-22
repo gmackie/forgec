@@ -40,7 +40,7 @@ const RESOURCE_DECORATORS: &[&str] = &[
     "subject",
     "record",
 ];
-const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data", "sequence"];
+const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data", "sequence", "secret"];
 /// Declarations and decorators that need `edition = "2027"`.
 const EDITION_2027_DECORATORS: &[&str] = &["purposeScoped", "subject", "data", "record"];
 const FUNCTION_DECORATORS: &[&str] = &["http", "label"];
@@ -1206,6 +1206,7 @@ impl<'a> Ctx<'a> {
                         ),
                     }
                 }
+                "secret" if allowed_decorators.contains(&"secret") => {}
                 "sequence" if allowed_decorators.contains(&"sequence") => {}
                 "label" => {}
                 other => {
@@ -1253,6 +1254,7 @@ impl<'a> Ctx<'a> {
                 default: None,
                 derived: ir,
                 sequence: None,
+                secret: false,
                 immutable: true,
                 server_owned: true,
                 synthesized: false,
@@ -1293,6 +1295,7 @@ impl<'a> Ctx<'a> {
             default,
             derived: None,
             sequence: None,
+            secret: false,
             immutable,
             server_owned: false,
             synthesized: false,
@@ -2072,6 +2075,7 @@ impl<'a> Ctx<'a> {
             default: None,
             derived: None,
             sequence: None,
+            secret: false,
             immutable: false,
             server_owned: true,
             synthesized: true,
@@ -2112,6 +2116,7 @@ impl<'a> Ctx<'a> {
                 default: None,
                 derived: None,
                 sequence: None,
+                secret: false,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -2124,6 +2129,7 @@ impl<'a> Ctx<'a> {
                 default: None,
                 derived: None,
                 sequence: None,
+                secret: false,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -2147,6 +2153,7 @@ impl<'a> Ctx<'a> {
                 default: None,
                 derived: None,
                 sequence: None,
+                secret: false,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -2329,6 +2336,33 @@ impl<'a> Ctx<'a> {
                 }
             }
         }
+        for fd in r.fields() {
+            if let Some(secret) = fd
+                .decorators()
+                .find(|d| d.name().is_some_and(|n| n.text() == "secret"))
+            {
+                let field_name = fd.name()?.text().to_string();
+                if !secret.args().is_empty()
+                    || declared_names.contains(&format!("{field_name}Present"))
+                    || !decorators.versioned
+                {
+                    self.err("E-SECRET-001",file,range_of(&secret),"@secret requires a versioned resource, no arguments and an unused <field>Present name",None);
+                }
+                if let Some(field) = fields.iter_mut().find(|f| f.name == field_name) {
+                    if field.name == "id"
+                        || field.default.is_some()
+                        || field.derived.is_some()
+                        || field.sequence.is_some()
+                        || !field.ty.normalizers.is_empty()
+                        || !matches!(&field.ty.base,TypeBase::Scalar {name,..} if name=="text")
+                    {
+                        self.err("E-SECRET-001",file,range_of(&secret),"@secret requires a text field without a default, derivation or sequence",None);
+                    }
+                    field.secret = true;
+                    field.hidden = true;
+                }
+            }
+        }
         for f in self.applied_facets(r, module, file) {
             if !declared_names.insert(f.name.clone()) {
                 self.err("E-FACET-003", file, range_of(r), format!("facet field `{}` collides with another field on `{name}`; overrides are not allowed", f.name), None);
@@ -2356,6 +2390,7 @@ impl<'a> Ctx<'a> {
                     default: None,
                     derived: None,
                     sequence: None,
+                    secret: false,
                     immutable: true,
                     server_owned: true,
                     synthesized: true,
@@ -5035,6 +5070,14 @@ impl<'a> Ctx<'a> {
             requires.push("work-queues/1".into());
             requires.sort();
         }
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.fields.iter().any(|f| f.secret))
+        }) {
+            requires.push("credentials/1".into());
+            requires.sort();
+        }
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
             requires,
@@ -5071,6 +5114,7 @@ fn blob_fields() -> Vec<Field> {
         default: None,
         derived: None,
         sequence: None,
+        secret: false,
         immutable: false,
         server_owned: true,
         synthesized: true,

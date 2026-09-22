@@ -116,6 +116,7 @@ export class Changesets {
       const mode = body["mode"] === "atomic" ? "atomic" : "resumable";
       const operations: ProposedOp[] = ops.map((o: any, i: number) => {
         if (!o || typeof o.op !== "string" || !self.engine.model.operation(o.op)) throw new ForgeError({ code: "ValidationFailed", detail: `operations[${i}].op is not a known operation` });
+        if(self.engine.model.operation(o.op)?.resource.fields.some(f=>f.secret)) throw err("ValidationFailed","credential resources cannot be staged in changesets");
         return { op: o.op, input: (o.input ?? {}) as Wire };
       });
       const id = (yield* IdGen).opId();

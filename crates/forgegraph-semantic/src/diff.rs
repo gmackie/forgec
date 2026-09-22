@@ -92,6 +92,11 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "credential-definition-changed" => vec![
+            "seal-existing-data",
+            "credential-interface-review",
+            "key-migration-review",
+        ],
         "work-queue-definition-changed" => vec!["drain-or-migrate-queued-tasks"],
         "sequence-definition-changed" => {
             vec!["sequence-high-water-review", "existing-data-validation"]
@@ -255,6 +260,35 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     for (id, previous) in previous_queues {
         if current_queues.get(&id) != Some(&previous) {
             push(&mut f,"workflow","migration","work-queue-definition-changed",id,"queue definition changed or removed; preserve active claim fencing and pinned task requirements during migration".into());
+        }
+    }
+
+    let credentials = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .flat_map(|r| {
+                arr(r, &["fields"])
+                    .into_iter()
+                    .filter(|f| f["secret"] == true)
+                    .map(move |f| {
+                        (
+                            format!("{}.{}", s(&r["id"]), s(&f["name"])),
+                            f["type"].clone(),
+                        )
+                    })
+            })
+            .collect()
+    };
+    let old_credentials = credentials(old);
+    let new_credentials = credentials(new);
+    for id in old_credentials
+        .keys()
+        .chain(new_credentials.keys())
+        .collect::<std::collections::BTreeSet<_>>()
+    {
+        if old_credentials.get(id) != new_credentials.get(id) {
+            push(&mut f,"storage","migration","credential-definition-changed",id.clone(),"credential field added, removed or changed; seal/backfill existing data, review interfaces and migrate keys before activation".into());
         }
     }
 

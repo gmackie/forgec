@@ -27,6 +27,7 @@ pub const KNOWN_FEATURES: &[&str] = &[
     "workflow-map/1",
     "sequences/1",
     "work-queues/1",
+    "credentials/1",
 ];
 
 impl DomainIR {
@@ -556,6 +557,8 @@ pub struct Shape {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Field {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub secret: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sequence: Option<Sequence>,
     pub name: String,

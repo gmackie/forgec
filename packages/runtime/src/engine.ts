@@ -60,13 +60,16 @@ export function stableJson(v: unknown): string {
 }
 
 export interface EngineOptions {
+  secrets?: import("./credentials.js").SecretAdapter;
   functions?: FunctionImpl[];
   externals?: Record<string, ExternalBinding>;
 }
 
 export class Engine {
   readonly functions: Functions;
+  private readonly secrets: import("./credentials.js").SecretAdapter | undefined;
   constructor(readonly model: Model, readonly layer: Layer.Layer<RuntimeServices>, options: EngineOptions = {}) {
+    this.secrets = options.secrets;
     this.functions = new Functions(this, options.functions ?? [], options.externals ?? {});
   }
 
@@ -228,6 +231,7 @@ export class Engine {
     const ref = self.model.operation(opId);
     if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     const { op, resource } = ref;
+    if (preview && resource.fields.some(f=>f.secret) && ["create","update"].includes(op.kind)) return Effect.fail(err("ValidationFailed","credential writes cannot be previewed"));
     switch (op.kind) {
       case "create":
         if (preview && resource.fields.some(f=>f.sequence)) return Effect.fail(err("SequencePreviewUnsupported","sequence allocation requires a committed create; changeset previews cannot reserve numbers"));
@@ -417,6 +421,17 @@ export class Engine {
     return [{ tenant: ctx.tenant, opId, ordinal: 0, channel: `${r.id}.changes`, message, payload: { id, version: after["version"] ?? null, ...extra }, createdAt: at, ...(ctx.trace ? { trace: ctx.trace } : {}) }];
   }
 
+  private sealSecrets(r:Resource,record:Wire,changed:Wire,ctx:CallContext):Effect.Effect<void,ForgeError> {
+    const self=this;
+    return Effect.gen(function*(){
+      for(const field of r.fields) {
+        if(!field.secret || !Object.hasOwn(changed,field.name) || record[field.name]===null) continue;
+        if(!self.secrets) return yield* Effect.fail(err("DependencyUnavailable","credential sealing adapter is not configured"));
+        record[field.name]=yield* Effect.tryPromise({try:()=>self.secrets!.seal({tenant:ctx.tenant,resource:r.id,record:String(record["id"]),field:field.name},String(record[field.name])),catch:()=>err("DependencyUnavailable","credential sealing failed")});
+      }
+    });
+  }
+
   // ------------------------------------------------------------ create
   private create(r: Resource, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
@@ -462,6 +477,7 @@ export class Engine {
         }
         if (!allocated) return yield* Effect.fail(err("TransientConflict","sequence contention; retry the operation"));
       }
+      yield* self.sealSecrets(r,after,value,ctx);
       const guards = self.referenceGuards(r, after, null);
       const refs = yield* self.loadReferences(r, after, ctx, guards);
       yield* self.checkRules(r, after, refs);
@@ -583,6 +599,7 @@ export class Engine {
       const after: Wire = { ...before, ...patch };
       if (r.decorators.versioned) after["version"] = (before["version"] as number) + 1;
       if (r.decorators.timestamps) after["updatedAt"] = now;
+      yield* self.sealSecrets(r,after,patch,ctx);
       const guards = self.referenceGuards(r, after, new Set(Object.keys(patch)));
       const refs = yield* self.loadReferences(r, after, ctx, guards);
       yield* self.checkRules(r, after, refs);

@@ -39,8 +39,10 @@ export class Redactor {
   private readonly classes = new Map<string, FieldClass>();
   /** Fields whose values are identifiers (ids and references): bounded in type, unbounded in value, so always tokenized. */
   private readonly identifiers = new Set<string>();
+  private readonly secrets = new Set<string>();
   private readonly collections = new Set<string>();
   constructor(bundle: AppBundle, private readonly key = "forge-audit-key") {
+    for (const m of bundle.ir.modules) for (const r of m.resources) for (const f of r.fields) if(f.secret) this.secrets.add(`${r.id}.${f.name}`);
     for (const f of bundle.dataSemantics?.fields ?? []) this.classes.set(`${f.resource}.${f.field}`, { class: f.class, handling: f.handling, personal: f.personal, identifiability: f.identifiability });
     for (const f of bundle.dataSemantics?.fields ?? []) if(f.field.includes("[]")) this.collections.add(`${f.resource}.${f.field.slice(0,f.field.indexOf("[]"))}`);
     for (const m of bundle.ir.modules) for (const r of m.resources) for (const f of r.fields) if (f.type.base.kind === "reference" || (f.type.base.kind === "scalar" && f.type.base.name === "id")) this.identifiers.add(`${r.id}.${f.name}`);
@@ -56,6 +58,7 @@ export class Redactor {
     const policy = SINK_POLICIES[sink];
     if (policy.values === "none") return undefined;
     if (value === null || value === undefined) return value;
+    if(this.secrets.has(`${resource}.${field}`)) return "[redacted:secret]";
     const c = this.classOf(resource, field);
     if (!c) return "[redacted:unclassified]";
     if (this.collections.has(`${resource}.${field}`)) {
