@@ -628,6 +628,8 @@ pub enum Expr {
 #[serde(rename_all = "camelCase")]
 pub struct ResourceDecorators {
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub write_once: bool,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub append_only: bool,
     pub tenant: bool,
     pub timestamps: bool,

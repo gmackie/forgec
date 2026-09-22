@@ -103,7 +103,7 @@ function main() {
     console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract validation only; implementation acceptance remains planned.' }, null, 2));
     return;
   }
-  if (['specification', 'identifiers', 'participation'].includes(slug) && !all) {
+  if (['specification', 'identifiers', 'participation', 'artifact'].includes(slug) && !all) {
     const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
     try {
       if (slug === 'specification') run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
@@ -117,7 +117,7 @@ function main() {
     } finally { rmSync(out, { recursive: true, force: true }); }
     return;
   }
-  if (slug !== 'composition' || all) throw new Error('Local verifiers exist for composition, specification, identifiers and participation; remaining package acceptance is planned.');
+  if (slug !== 'composition' || all) throw new Error('Local verifiers exist for composition, specification, identifiers, participation and artifact; remaining package acceptance is planned.');
   const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
   const fixture = 'conformance/foundation/fixtures/composition/app';
   try {

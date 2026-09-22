@@ -31,6 +31,7 @@ const RESOURCE_DECORATORS: &[&str] = &[
     "timestamps",
     "softDelete",
     "appendOnly",
+    "writeOnce",
     "versioned",
     "audited",
     "crud",
@@ -1961,6 +1962,7 @@ impl<'a> Ctx<'a> {
                 "timestamps" => d.timestamps = true,
                 "softDelete" => d.soft_delete = true,
                 "appendOnly" => d.append_only = true,
+                "writeOnce" => d.write_once = true,
                 "versioned" => d.versioned = true,
                 "audited" => d.audited = true,
                 "hierarchical" => d.hierarchical = true,
@@ -2453,6 +2455,20 @@ impl<'a> Ctx<'a> {
             .lifecycle()
             .and_then(|l| self.lifecycle(&l, module, file, &id, exported, enums_out));
 
+        if decorators.write_once
+            && (blob.is_none()
+                || decorators.soft_delete
+                || decorators.hierarchical
+                || lifecycle.is_some())
+        {
+            self.err(
+                "E-SEAL-001",
+                file,
+                range_of(r),
+                "@writeOnce requires a blob without soft deletion, hierarchy or lifecycle",
+                None,
+            );
+        }
         if decorators.append_only {
             if decorators.soft_delete
                 || decorators.hierarchical
@@ -2926,6 +2942,14 @@ impl<'a> Ctx<'a> {
             }
         }
 
+        if decorators.write_once {
+            operations.retain(|op| {
+                !matches!(
+                    op.kind.as_str(),
+                    "update" | "delete" | "restore" | "move" | "transition"
+                )
+            });
+        }
         if decorators.append_only {
             operations.retain(|op| {
                 matches!(
@@ -5256,6 +5280,13 @@ impl<'a> Ctx<'a> {
             .any(|m| m.resources.iter().any(|r| r.decorators.append_only))
         {
             requires.push("append-only/1".into());
+            requires.sort();
+        }
+        if modules
+            .iter()
+            .any(|m| m.resources.iter().any(|r| r.decorators.write_once))
+        {
+            requires.push("sealed-content/1".into());
             requires.sort();
         }
         if modules.iter().any(|m| !m.work_queues.is_empty()) {

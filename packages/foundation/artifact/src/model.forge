@@ -1,0 +1,31 @@
+import specification
+
+export resource Artifact @tenant @appendOnly {
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+  find by key
+}
+export blob ArtifactContent @tenant @writeOnce {
+  content {
+    mediaTypes ["application/octet-stream", "application/json", "application/pdf", "text/plain", "image/png", "image/jpeg"]
+    maxBytes 33554432
+  }
+}
+export resource ArtifactRevision @tenant @appendOnly @timestamps {
+  id : id
+  artifact : Artifact
+  content : ArtifactContent @unique
+  digest : text length 71..71 pattern "^sha256:[0-9a-f]{64}$"
+  mediaType : text length 1..128
+  byteCount : integer >= 0
+  specificationPin : specification.SpecificationPin?
+  rules {
+    content.uploadState == "ready"
+    digest == content.digest
+    mediaType == content.mediaType
+    byteCount == content.byteCount
+  }
+  list by artifact
+  find by content
+}

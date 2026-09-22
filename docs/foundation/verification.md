@@ -1,3 +1,31 @@
+# Current Foundation implementation verification
+
+The integrated `business-studio` workspace now includes executable experimental
+packages for specification (#26), artifact (#27), identifiers (#28) and participation
+(#29). Their READMEs describe implemented behavior and outstanding acceptance. The
+213 contract entries remain planned; local slices do not establish full acceptance.
+
+Run `node scripts/verify-foundation.mjs --suite local --package <slug>` for any of
+those four slugs or `composition`. Package verifiers build twice, compare generated
+artifacts and run memory/SQLite tests against the fresh output. Live provider mode
+still fails explicitly; no skipped test is counted as certification.
+
+Latest integrated verification (2026-09-22): Rust workspace tests and strict Clippy
+passed; runtime TypeScript checking passed; runtime suite 278 passed / 104 skipped.
+Regressions cover append-only operation enforcement, exact source pins, retained
+identifier claims, participation history, unreadable terminal facts, sealed-copy
+hashing, finalizer races, write-once publication, empty content and governed downloads.
+Typed consumer fixtures compile against real co-deployed package dependencies.
+
+The specification package still needs live Git adapters and authenticated map
+provenance. Artifact manifest membership freezing/relocation remains unimplemented.
+Identifiers currently have one normalization profile. Participation currently permits
+different-start overlaps and has no live PIP freshness/epoch integration. Kernel
+staged references and repeated-record transaction composition remain unresolved.
+
+The historical baseline below records the first composition change, before these
+package slices and the Studio/runtime integration.
+
 # First Foundation slice verification
 
 Verified 2026-09-22 in the `foundation-integration` JJ workspace, based on GitHub main `36dccaa30d24ac4e70f8032b9f7bbca27f57dfe8`.

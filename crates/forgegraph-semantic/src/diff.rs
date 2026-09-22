@@ -201,6 +201,33 @@ pub fn compare(old: &Value, new: &Value) -> Report {
         }
     }
 
+    let write_once = |bundle: &Value| -> BTreeMap<String, bool> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .map(|r| {
+                (
+                    s(&r["id"]),
+                    r["decorators"]["writeOnce"].as_bool().unwrap_or(false),
+                )
+            })
+            .collect()
+    };
+    for (id, previous) in write_once(old) {
+        if let Some(current) = write_once(new).get(&id)
+            && *current != previous
+        {
+            push(
+                &mut f,
+                "storage",
+                "migration",
+                "write-once-changed",
+                id,
+                "content immutability changed; review published artifacts before activation".into(),
+            );
+        }
+    }
+
     let projections = |bundle: &Value| -> BTreeMap<String, Value> {
         arr(bundle,&["ir","modules"]).into_iter().flat_map(|m|arr(m,&["projections"])).map(|p|(s(&p["id"]),serde_json::json!({"source":p["source"],"by":p["by"],"where":p["where"],"aggregates":p["aggregates"]}))).collect()
     };

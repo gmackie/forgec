@@ -35,6 +35,7 @@ export class Blobs {
       const now = (yield* Clock).now();
       const opId = (yield* IdGen).opId();
       const after: Wire = { ...before, ...patch, version: expectedVersion + 1, updatedAt: now };
+      yield* self.engine.gatekeeper.requireWrite(`${r.id}.${kind === "blob.beginUpload" ? "beginUpload" : "finalizeUpload"}`, r, ctx, before, after);
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "update", id, expectedVersion, before, after,
         claims: [], references: [], dependents: [], hardDelete: false,
@@ -56,10 +57,12 @@ export class Blobs {
       const mediaType = String(body["mediaType"] ?? "");
       const byteCount = Number(body["byteCount"]);
       if (!policy.mediaTypes.includes(mediaType)) return yield* Effect.fail(err("ValidationFailed", `media type ${mediaType} is not allowed`, { fields: [{ path: "mediaType", code: "NotAllowed", message: `allowed: ${policy.mediaTypes.join(", ")}` }] }));
-      if (!Number.isInteger(byteCount) || byteCount <= 0) return yield* Effect.fail(err("ValidationFailed", "byteCount must be a positive integer", { fields: [{ path: "byteCount", code: "InvalidInteger", message: "positive integer required" }] }));
+      if (!Number.isInteger(byteCount) || byteCount < 0 || (byteCount === 0 && !r.decorators.writeOnce)) return yield* Effect.fail(err("ValidationFailed", "byteCount must be a positive integer (or zero for write-once content)", { fields: [{ path: "byteCount", code: "InvalidInteger", message: "nonnegative integer required; ordinary upload intents require positive bytes" }] }));
       if (byteCount > policy.maxBytes) return yield* Effect.fail(err("PayloadTooLarge", `${byteCount} bytes exceeds the limit of ${policy.maxBytes}`));
       const current = yield* (yield* Storage).get(ctx.tenant, r, id);
       if (!current) return yield* Effect.fail(err("NotFound", `${r.name} ${id} not found`));
+      yield* self.engine.gatekeeper.requireRead(`${r.id}.beginUpload`, r, ctx, current);
+      if (r.decorators.writeOnce && current["uploadState"] === "ready") return yield* Effect.fail(err("InvalidTransition", "write-once content is already sealed"));
       const attempt = Number(current["uploadAttempt"] ?? 0) + 1;
       const key = self.stagingKey(ctx.tenant, r, id, attempt);
       const upload = yield* (yield* Objects).presignUpload(key, mediaType, byteCount, UPLOAD_TTL);
@@ -78,6 +81,7 @@ export class Blobs {
       const objects = yield* Objects;
       const current = yield* storage.get(ctx.tenant, r, id);
       if (!current) return yield* Effect.fail(err("NotFound", `${r.name} ${id} not found`));
+      yield* self.engine.gatekeeper.requireRead(`${r.id}.finalizeUpload`, r, ctx, current);
       if (current["version"] !== expectedVersion) return yield* Effect.fail(err("VersionConflict", "blob changed before finalization"));
       if (current["uploadState"] !== "uploading") return yield* Effect.fail(err("InvalidTransition", `cannot finalize from ${current["uploadState"]}`));
       const attempt = Number(current["uploadAttempt"]);
@@ -119,6 +123,7 @@ export class Blobs {
       const current = yield* (yield* Storage).get(ctx.tenant, r, id);
       if (!current || current["deletedAt"]) return yield* Effect.fail(err("NotFound", `${r.name} ${id} not found`));
       if (current["uploadState"] !== "ready") return yield* Effect.fail(err("InvalidTransition", `content is not ready (${current["uploadState"]})`));
+      yield* self.engine.gatekeeper.requireRead(`${r.id}.download`, r, ctx, current);
       // Content inspection verdict (plan §7.3): quarantined and review-required never serve; pending only in the lenient profile.
       yield* self.engine.governance.checkReadable(r, id, Number(current["contentGeneration"]), ctx);
       const sealedGeneration = String(current["sealedGeneration"] ?? "");

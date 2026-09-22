@@ -63,4 +63,18 @@ For the current substrate algorithms, calculate one final update per pool/accoun
 
 ## Remaining limits
 
-`functions.ts` readers currently call the engine directly while mutations append plans. A transaction read overlay is not established by the passing tests above. General stale read-set validation, read-your-writes, atomic sibling creation, immutable record deletion controls, and provider physical budgets remain separate required probes. The three green memory tests must not be reported as completion of those gates.
+`functions.ts` readers currently call the engine directly while mutations append plans. A transaction read overlay is not established by the passing tests above. General stale read-set validation, read-your-writes, atomic sibling creation, and provider physical budgets remain separate required probes. The three green memory tests must not be reported as completion of those gates.
+
+## Implemented since the baseline: immutable facts and sealed content
+
+`@appendOnly` removes resource update/delete/restore/transition operations; runtime
+checks also reject injected mutation operations. `@writeOnce` blobs accept upload
+attempts until sealed and then reject reuploads, metadata updates and deletion.
+Changing either annotation produces a compatibility migration finding. Dedicated
+compiler tests and generated-package memory/SQLite tests exercise these invariants.
+Direct adapters and administrative migration tooling remain trusted boundaries.
+
+Blob finalization now hashes an isolated sealed copy. Reproduced races previously
+allowed digest/content mismatch and losing finalizers to overwrite winning bytes;
+both have passing regressions. Legacy object keys remain readable. These fixes do
+not establish general transaction read overlays or live provider certification.

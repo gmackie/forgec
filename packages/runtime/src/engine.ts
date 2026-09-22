@@ -120,6 +120,7 @@ export class Engine {
       return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     }
     const { op, resource } = ref;
+    if (resource.decorators.writeOnce && ["update", "delete", "restore", "move", "transition"].includes(op.kind)) return Effect.fail(err("MethodNotAllowed", `${resource.name} has write-once content`));
     if (resource.decorators.appendOnly && !["create", "get", "find", "list", "effective"].includes(op.kind)) return Effect.fail(err("MethodNotAllowed", `${resource.name} is append-only`));
     const body = (input ?? {}) as Wire;
     return self.scope.resolve(resource, ctx).pipe(Effect.flatMap((surface) => (surface ? self.scopedOperation(surface, op, resource, body, ctx) : self.operation(opId, op, resource, body, ctx))));
@@ -232,6 +233,7 @@ export class Engine {
     const ref = self.model.operation(opId);
     if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     const { op, resource } = ref;
+    if (resource.decorators.writeOnce && ["update", "delete", "restore", "move", "transition"].includes(op.kind)) return Effect.fail(err("MethodNotAllowed", `${resource.name} has write-once content`));
     if (resource.decorators.appendOnly && op.kind !== "create") return Effect.fail(err("MethodNotAllowed", `${resource.name} is append-only`));
     if (preview && resource.fields.some(f=>f.secret) && ["create","update"].includes(op.kind)) return Effect.fail(err("ValidationFailed","credential writes cannot be previewed"));
     switch (op.kind) {

@@ -65,7 +65,7 @@ export interface Resource {
   name: string;
   kind: "resource" | "blob";
   content?: ContentPolicy;
-  decorators: { appendOnly?: boolean; tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; hierarchical?: boolean; effectiveDated?: { uniqueBy: string[] }; crud?: { path: string; operations?: string[]; actions: string[] }; purposeScoped?: boolean; subject?: { binding: "kind"; kind: string } | { binding: "from"; field: string }; recordContext?: string };
+  decorators: { appendOnly?: boolean; writeOnce?: boolean; tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; hierarchical?: boolean; effectiveDated?: { uniqueBy: string[] }; crud?: { path: string; operations?: string[]; actions: string[] }; purposeScoped?: boolean; subject?: { binding: "kind"; kind: string } | { binding: "from"; field: string }; recordContext?: string };
   fields: Field[];
   uniques: Unique[];
   finds: Find[];
@@ -119,7 +119,7 @@ export interface MessagingPlan {
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["append-only/1", "governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1", "actors/1"];
+export const KNOWN_FEATURES = ["sealed-content/1", "append-only/1", "governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1", "actors/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }

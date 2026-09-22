@@ -79,3 +79,30 @@ fn specification_pins_use_compiler_semantic_anchors_across_file_moves() {
     );
     assert_ne!(first["revision"], second["revision"]);
 }
+
+#[test]
+fn write_once_requires_a_blob_and_removes_metadata_mutations() {
+    let c = compile(
+        &Package::inline(
+            "@test/seal",
+            vec![(
+                "src/a.forge".into(),
+                "resource R @writeOnce { id : id }".into(),
+            )],
+        ),
+        &[],
+    );
+    assert!(c.ir.is_none());
+    assert!(c.render().contains("E-SEAL-001"));
+    let c = compile(&Package::inline("@test/seal", vec![("src/a.forge".into(), "blob B @writeOnce { content { mediaTypes [\"application/octet-stream\"]\n maxBytes 100\n } }".into())]), &[]);
+    assert!(c.ir.is_some(), "{}", c.render());
+    let ir = c.ir.unwrap();
+    assert!(ir.requires.contains(&"sealed-content/1".into()));
+    let r = &ir.modules[0].resources[0];
+    assert!(
+        !r.operations
+            .iter()
+            .any(|op| matches!(op.kind.as_str(), "update" | "delete"))
+    );
+    assert!(r.operations.iter().any(|op| op.kind == "finalizeUpload"));
+}
