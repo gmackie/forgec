@@ -71,7 +71,10 @@ fn package_root(file: &Path) -> Option<PathBuf> {
 
 /// (line, character) of a byte offset, UTF-16 units as LSP requires.
 fn position(text: &str, offset: usize) -> Value {
-    let offset = offset.min(text.len());
+    let mut offset = offset.min(text.len());
+    while !text.is_char_boundary(offset) {
+        offset -= 1;
+    }
     let before = &text[..offset];
     let line = before.matches('\n').count();
     let col_start = before.rfind('\n').map(|i| i + 1).unwrap_or(0);
@@ -109,99 +112,358 @@ fn path_to_uri(path: &Path) -> String {
     uri
 }
 
+struct Analysis {
+    root: PathBuf,
+    package: forgegraph_semantic::Package,
+    compiled: forgegraph_semantic::Compilation,
+    anchors: BTreeMap<String, forgegraph_semantic::compiler::SourceSpan>,
+    derivations: Value,
+}
+impl Analysis {
+    fn location(&self, span: &forgegraph_semantic::compiler::SourceSpan) -> Option<Value> {
+        let source = self.package.files.iter().find(|s| s.path == span.file)?;
+        Some(
+            json!({"uri":path_to_uri(&self.root.join(&span.file)),"range":{"start":position(&source.text,span.start),"end":position(&source.text,span.end)}}),
+        )
+    }
+}
+fn target_at(analysis: &[Analysis], file: &Path, line: usize, character: usize) -> Option<String> {
+    for a in analysis {
+        let Some(source) = a
+            .package
+            .files
+            .iter()
+            .find(|s| a.root.join(&s.path) == file)
+        else {
+            continue;
+        };
+        let offset = byte_position(&source.text, line, character)?;
+        if let Some(reference) = a
+            .compiled
+            .references
+            .iter()
+            .filter(|r| r.span.file == source.path && r.span.start <= offset && offset < r.span.end)
+            .min_by_key(|r| r.span.end - r.span.start)
+        {
+            return Some(reference.target.clone());
+        }
+        return a
+            .anchors
+            .iter()
+            .filter(|(id, span)| {
+                a.derivations.get(*id).is_none()
+                    && span.file == source.path
+                    && span.start <= offset
+                    && offset < span.end
+            })
+            .min_by_key(|(_, span)| span.end - span.start)
+            .map(|(id, _)| id.clone());
+    }
+    None
+}
+
 struct Server {
     /// Open documents by absolute path: the compiler reads these instead of disk.
     open: BTreeMap<PathBuf, String>,
+    roots: Vec<PathBuf>,
 }
 
 impl Server {
+    fn analysis(&self, file: &Path) -> Vec<Analysis> {
+        fn visit(
+            server: &Server,
+            root: PathBuf,
+            seen: &mut std::collections::BTreeSet<PathBuf>,
+            out: &mut Vec<Analysis>,
+        ) {
+            if !seen.insert(root.canonicalize().unwrap_or_else(|_| root.clone())) {
+                return;
+            }
+            let Ok(mut package) = load_package(&root) else {
+                return;
+            };
+            for source in &mut package.files {
+                if let Some(text) = server.open.get(&root.join(&source.path)) {
+                    source.text = text.clone();
+                }
+            }
+            for (_, path) in &package.dependency_paths {
+                visit(server, path.clone(), seen, out);
+            }
+            let compiled = compile(
+                &package,
+                &out.iter()
+                    .filter_map(|a| a.compiled.ir.as_ref())
+                    .collect::<Vec<_>>(),
+            );
+            let map = compiled.source_map("editor", env!("CARGO_PKG_VERSION"), None);
+            let anchors = serde_json::from_value(map["anchors"].clone()).unwrap_or_default();
+            out.push(Analysis {
+                root,
+                package,
+                compiled,
+                anchors,
+                derivations: map["derivations"].clone(),
+            });
+        }
+        let mut out = vec![];
+        if let Some(root) = package_root(file) {
+            visit(self, root, &mut Default::default(), &mut out);
+        }
+        out
+    }
+
     fn definition(&self, file: &Path, line: usize, character: usize) -> Vec<Value> {
-        let Some(root) = package_root(file) else {
+        let analysis = self.analysis(file);
+        let Some(target) = target_at(&analysis, file, line, character) else {
             return vec![];
         };
-        let Ok(mut pkg) = load_package(&root) else {
+        analysis
+            .iter()
+            .filter_map(|a| a.anchors.get(&target).and_then(|span| a.location(span)))
+            .collect()
+    }
+
+    fn references(
+        &self,
+        file: &Path,
+        line: usize,
+        character: usize,
+        declaration: bool,
+    ) -> Vec<Value> {
+        let analysis = self.analysis(file);
+        let Some(target) = target_at(&analysis, file, line, character) else {
             return vec![];
         };
-        for source in &mut pkg.files {
-            if let Some(text) = self.open.get(&root.join(&source.path)) {
-                source.text = text.clone();
+        let mut locations = vec![];
+        for a in &analysis {
+            if declaration
+                && let Some(span) = a.anchors.get(&target)
+                && let Some(location) = a.location(span)
+            {
+                locations.push(location);
+            }
+            for reference in &a.compiled.references {
+                if reference.target == target
+                    && let Some(location) = a.location(&reference.span)
+                {
+                    locations.push(location);
+                }
             }
         }
-        let dep_pkgs: Vec<_> = pkg
-            .dependency_paths
+        locations.sort_by_key(Value::to_string);
+        locations.dedup();
+        locations
+    }
+
+    fn hover(&self, file: &Path, line: usize, character: usize) -> Value {
+        let analysis = self.analysis(file);
+        let Some(target) = target_at(&analysis, file, line, character) else {
+            return Value::Null;
+        };
+        let mut description = target.clone();
+        for a in &analysis {
+            if let Some(span) = a.anchors.get(&target)
+                && let Some(source) = a.package.files.iter().find(|s| s.path == span.file)
+                && let Some(text) = source.text.get(span.start..span.end)
+            {
+                description.push_str("\n\n");
+                description.push_str(text.lines().next().unwrap_or_default());
+            }
+            if let Some(derivations) = a.derivations.as_object() {
+                for (effective, edges) in derivations {
+                    if let Some(edges) = edges.as_array()
+                        && edges
+                            .iter()
+                            .any(|edge| edge["kind"] == "facet-field" && edge["from"] == target)
+                    {
+                        description.push_str(&format!("\nEffective field: {effective}"));
+                        for edge in edges {
+                            description.push_str(&format!(
+                                "\n{}: {}",
+                                edge["kind"].as_str().unwrap_or_default(),
+                                edge["from"].as_str().unwrap_or_default()
+                            ));
+                        }
+                    }
+                }
+            }
+            if let Some(edges) = a.derivations.get(&target).and_then(Value::as_array) {
+                for edge in edges {
+                    description.push_str(&format!(
+                        "\n{}: {}",
+                        edge["kind"].as_str().unwrap_or_default(),
+                        edge["from"].as_str().unwrap_or_default()
+                    ));
+                }
+            }
+        }
+        json!({"contents":{"kind":"plaintext","value":description}})
+    }
+
+    fn symbols(&self, file: &Path, only_file: bool, query: &str) -> Vec<Value> {
+        let mut symbols = vec![];
+        for a in self.analysis(file) {
+            for (anchor, span) in &a.anchors {
+                if only_file && a.root.join(&span.file) != file {
+                    continue;
+                }
+                // Generated operations and inherited fields are not source declarations.
+                if a.derivations.get(anchor).is_some() {
+                    continue;
+                }
+                if anchor.contains('#')
+                    && !anchor.contains("#field:")
+                    && !anchor.contains("#step:")
+                    && !anchor.contains("#lifecycle:")
+                    && !anchor.contains("#message:")
+                {
+                    continue;
+                }
+                let name = anchor.rsplit(['/', ':']).next().unwrap_or(anchor);
+                if !name.to_lowercase().contains(&query.to_lowercase()) {
+                    continue;
+                }
+                if let Some(location) = a.location(span) {
+                    symbols.push(json!({"name":name,"kind":if anchor.contains("field:") {8} else {13},"location":location,"containerName":anchor}));
+                }
+            }
+        }
+        symbols
+    }
+
+    fn completion(&self, file: &Path, line: usize, character: usize) -> Vec<Value> {
+        use forgegraph_syntax::{SyntaxKind as K, ast::Declaration};
+        let analysis = self.analysis(file);
+        let Some(current) = analysis
             .iter()
-            .filter_map(|(_, p)| load_package(p).ok().map(|pkg| (p.clone(), pkg)))
-            .collect();
-        let deps: Vec<_> = dep_pkgs.iter().map(|(_, p)| compile(p, &[])).collect();
-        let compiled = compile(
-            &pkg,
-            &deps
-                .iter()
-                .filter_map(|c| c.ir.as_ref())
-                .collect::<Vec<_>>(),
-        );
-        let Some(relative) = file
-            .strip_prefix(&root)
-            .ok()
-            .map(|p| p.to_string_lossy().replace('\\', "/"))
+            .find(|a| a.package.files.iter().any(|s| a.root.join(&s.path) == file))
         else {
             return vec![];
         };
-        let Some(source) = pkg
+        let Some(source) = current
+            .package
             .files
             .iter()
-            .find(|s| s.path.replace('\\', "/") == relative)
+            .find(|s| current.root.join(&s.path) == file)
         else {
             return vec![];
         };
         let Some(offset) = byte_position(&source.text, line, character) else {
             return vec![];
         };
-        let target = compiled
-            .references
-            .iter()
-            .filter(|r| r.span.file == relative && r.span.start <= offset && offset < r.span.end)
-            .min_by_key(|r| r.span.end - r.span.start)
-            .map(|r| r.target.clone());
-        let Some(target) = target else {
+        let parsed = forgegraph_syntax::parse(&source.text);
+        let module_of = |p: &forgegraph_syntax::Parse| {
+            p.root()
+                .declarations()
+                .find_map(|d| {
+                    if let Declaration::Module(m) = d {
+                        m.path().map(|p| p.text())
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or_else(|| "_".into())
+        };
+        let module = module_of(&parsed);
+        let in_uses = parsed.syntax().descendants().any(|n| {
+            n.kind() == K::USES_BLOCK
+                && u32::from(n.text_range().start()) as usize <= offset
+                && offset <= u32::from(n.text_range().end()) as usize
+        });
+        if !in_uses {
             return vec![];
-        };
-        let mut locations = Vec::new();
-        let mut add = |base: &Path,
-                       package: &forgegraph_semantic::Package,
-                       out: &forgegraph_semantic::Compilation| {
-            if let Some(span) = out.source_index.get(&target)
-                && let Some(text) = package
-                    .files
-                    .iter()
-                    .find(|s| s.path.replace('\\', "/") == span.file)
-                    .map(|s| s.text.as_str())
-            {
-                locations.push(json!({"uri":path_to_uri(&base.join(&span.file)),"range":{"start":position(text,span.start),"end":position(text,span.end)}}));
-            }
-        };
-        add(&root, &pkg, &compiled);
-        for ((root, pkg), out) in dep_pkgs.iter().zip(deps.iter()) {
-            add(root, pkg, out);
         }
-        locations
+        let imports: std::collections::BTreeSet<String> = current
+            .package
+            .files
+            .iter()
+            .flat_map(|source| {
+                let parsed = forgegraph_syntax::parse(&source.text);
+                if module_of(&parsed) != module {
+                    return vec![];
+                }
+                parsed
+                    .root()
+                    .declarations()
+                    .filter_map(|d| {
+                        if let Declaration::Import(i) = d {
+                            i.alias()
+                                .map(|a| a.text().to_string())
+                                .or_else(|| i.path().map(|p| p.text()))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+        let mut result = vec![];
+        for a in &analysis {
+            let local = a.root == current.root;
+            let aliases: Vec<String> = if local {
+                vec![String::new()]
+            } else {
+                current
+                    .package
+                    .dependencies
+                    .iter()
+                    .filter(|(alias, name)| name == &a.package.name && imports.contains(alias))
+                    .map(|(alias, _)| format!("{alias}."))
+                    .collect()
+            };
+            for source in &a.package.files {
+                let parsed = forgegraph_syntax::parse(&source.text);
+                let target_module = module_of(&parsed);
+                if local && target_module != module {
+                    continue;
+                }
+                if !local && target_module != "_" {
+                    continue;
+                }
+                for decl in parsed.root().declarations() {
+                    if !local && !decl.is_exported() {
+                        continue;
+                    }
+                    if !matches!(
+                        decl,
+                        Declaration::Resource(_) | Declaration::Blob(_) | Declaration::Function(_)
+                    ) {
+                        continue;
+                    }
+                    let Some(name) = decl.name() else {
+                        continue;
+                    };
+                    for alias in &aliases {
+                        let label = format!("{alias}{}", name.text());
+                        let anchor =
+                            format!("{}/{}/{}", a.package.name, target_module, name.text());
+                        result.push(json!({"label":label,"kind":if matches!(decl,Declaration::Function(_)){3}else{7},"detail":anchor}));
+                        if let Declaration::Resource(resource) = &decl
+                            && let Some(lifecycle) = resource.lifecycle()
+                        {
+                            for transition in lifecycle.transitions() {
+                                if let Some(action) = transition.action() {
+                                    result.push(json!({"label":format!("{label}.status.{}",action.text()),"kind":3,"detail":format!("{anchor}#lifecycle:status/transition:{}",action.text())}));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        result.sort_by_key(Value::to_string);
+        result.dedup();
+        result
     }
 
     fn diagnostics_for(&self, file: &Path) -> Vec<Value> {
-        let Some(root) = package_root(file) else {
+        let analysis = self.analysis(file);
+        let Some(current) = analysis.iter().find(|a| file.starts_with(&a.root)) else {
             return vec![];
         };
-        let Ok(mut pkg) = load_package(&root) else {
-            return vec![];
-        };
-        // Overlay unsaved buffers (file paths are package-root relative).
-        for f in &mut pkg.files {
-            if let Some(text) = self.open.get(&root.join(&f.path)) {
-                f.text = text.clone();
-            }
-        }
         let rel = file
-            .strip_prefix(&root)
+            .strip_prefix(&current.root)
             .ok()
             .map(|p| p.to_string_lossy().replace('\\', "/"));
         let text = self
@@ -210,13 +472,7 @@ impl Server {
             .cloned()
             .or_else(|| std::fs::read_to_string(file).ok())
             .unwrap_or_default();
-        let deps: Vec<forgegraph_semantic::DomainIR> = pkg
-            .dependency_paths
-            .iter()
-            .filter_map(|(_, p)| load_package(p).ok())
-            .filter_map(|d| compile(&d, &[]).ir)
-            .collect();
-        let out = compile(&pkg, &deps.iter().collect::<Vec<_>>());
+        let out = &current.compiled;
         out.diagnostics
             .iter()
             .filter(|d| rel.as_deref().is_some_and(|r| d.file.replace('\\', "/") == r))
@@ -244,15 +500,28 @@ pub fn run() -> anyhow::Result<()> {
     let mut out = stdout.lock();
     let mut server = Server {
         open: BTreeMap::new(),
+        roots: vec![],
     };
     while let Some(msg) = read_message(&mut input) {
         let method = msg["method"].as_str().unwrap_or("");
         let id = msg.get("id").cloned();
         match method {
-            "initialize" => write_message(
-                &mut out,
-                &json!({ "jsonrpc": "2.0", "id": id, "result": { "capabilities": { "textDocumentSync": 1, "documentFormattingProvider": true, "definitionProvider": true }, "serverInfo": { "name": "forgec", "version": env!("CARGO_PKG_VERSION") } } }),
-            ),
+            "initialize" => {
+                if let Some(uri) = msg["params"]["rootUri"].as_str() {
+                    server.roots.push(uri_to_path(uri));
+                }
+                if let Some(folders) = msg["params"]["workspaceFolders"].as_array() {
+                    for folder in folders {
+                        if let Some(uri) = folder["uri"].as_str() {
+                            server.roots.push(uri_to_path(uri));
+                        }
+                    }
+                }
+                write_message(
+                    &mut out,
+                    &json!({ "jsonrpc": "2.0", "id": id, "result": { "capabilities": { "textDocumentSync": 1, "documentFormattingProvider": true, "definitionProvider": true, "referencesProvider": true, "hoverProvider": true, "documentSymbolProvider": true, "workspaceSymbolProvider": true, "completionProvider": {"triggerCharacters":["."]} }, "serverInfo": { "name": "forgec", "version": env!("CARGO_PKG_VERSION") } } }),
+                );
+            }
             "initialized" => {}
             "textDocument/didOpen" | "textDocument/didChange" => {
                 let uri = msg["params"]["textDocument"]["uri"]
@@ -281,6 +550,53 @@ pub fn run() -> anyhow::Result<()> {
             "textDocument/didClose" => {
                 let path = uri_to_path(msg["params"]["textDocument"]["uri"].as_str().unwrap_or(""));
                 server.open.remove(&path);
+            }
+            "textDocument/documentSymbol" | "workspace/symbol" => {
+                let mut result = vec![];
+                if method == "textDocument/documentSymbol" {
+                    let path =
+                        uri_to_path(msg["params"]["textDocument"]["uri"].as_str().unwrap_or(""));
+                    result = server.symbols(&path, true, "");
+                } else {
+                    for path in server
+                        .open
+                        .keys()
+                        .cloned()
+                        .chain(server.roots.iter().map(|r| r.join("forge.toml")))
+                    {
+                        result.extend(server.symbols(
+                            &path,
+                            false,
+                            msg["params"]["query"].as_str().unwrap_or(""),
+                        ));
+                    }
+                    result.sort_by_key(Value::to_string);
+                    result.dedup();
+                }
+                write_message(&mut out, &json!({"jsonrpc":"2.0","id":id,"result":result}));
+            }
+            "textDocument/hover" | "textDocument/references" | "textDocument/completion" => {
+                let path = uri_to_path(msg["params"]["textDocument"]["uri"].as_str().unwrap_or(""));
+                let line = msg["params"]["position"]["line"].as_u64().unwrap_or(0) as usize;
+                let character =
+                    msg["params"]["position"]["character"].as_u64().unwrap_or(0) as usize;
+                let result = if method == "textDocument/completion" {
+                    json!(server.completion(&path, line, character))
+                } else if method == "textDocument/hover" {
+                    server.hover(&path, line, character)
+                } else {
+                    json!(
+                        server.references(
+                            &path,
+                            line,
+                            character,
+                            msg["params"]["context"]["includeDeclaration"]
+                                .as_bool()
+                                .unwrap_or(false)
+                        )
+                    )
+                };
+                write_message(&mut out, &json!({"jsonrpc":"2.0","id":id,"result":result}));
             }
             "textDocument/definition" => {
                 let path = uri_to_path(msg["params"]["textDocument"]["uri"].as_str().unwrap_or(""));
@@ -342,6 +658,7 @@ mod tests {
         let source = "// 🧭\nresource R @facet(Spatial) {\n id : id\n doubled := x + x\n}\n";
         let server = Server {
             open: BTreeMap::from([(path.clone(), source.into())]),
+            roots: vec![],
         };
         let location = server.definition(&path, 1, 19);
         assert_eq!(location.len(), 1);
@@ -357,6 +674,102 @@ mod tests {
         assert_eq!(field[0]["range"]["start"]["character"], 16);
         assert_eq!(byte_position("a🧭b", 0, 3), Some(5));
         assert_eq!(byte_position("a🧭b", 0, 2), None);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn cross_file_symbols_references_hover_and_scoped_uses_completion() {
+        let root = std::env::temp_dir().join(format!("forge-semantic-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("forge.toml"),
+            "[package]\nname = \"@test/nav\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        let declarations = root.join("src/model.forge");
+        std::fs::write(
+            &declarations,
+            "resource R { id : id }\nshape Input { value : text }\nfunction Callee {}\n",
+        )
+        .unwrap();
+        let path = root.join("src/call.forge");
+        let source = "function Caller {\n input Input\n uses {\n R read\n Callee\n }\n}\n";
+        std::fs::write(&path, source).unwrap();
+        let mut server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+        };
+        assert!(server.diagnostics_for(&path).is_empty());
+        assert_eq!(
+            server.definition(&path, 1, 8)[0]["uri"],
+            path_to_uri(&declarations)
+        );
+        assert_eq!(
+            server.definition(&path, 4, 2)[0]["uri"],
+            path_to_uri(&declarations)
+        );
+        assert_eq!(server.references(&declarations, 2, 10, false).len(), 1);
+        assert_eq!(server.references(&declarations, 2, 10, true).len(), 2);
+        assert!(
+            server.hover(&path, 4, 2)["contents"]["value"]
+                .as_str()
+                .unwrap()
+                .contains("@test/nav/_/Callee")
+        );
+        assert_eq!(server.symbols(&path, false, "Caller").len(), 1);
+        assert_eq!(server.symbols(&path, true, "Caller").len(), 1);
+        let completion = server.completion(&path, 4, 1);
+        assert!(completion.iter().any(|v| v["label"] == "Callee"));
+        assert!(completion.iter().any(|v| v["label"] == "R"));
+        assert!(!completion.iter().any(|v| v["label"] == "Input"));
+        assert!(server.completion(&path, 1, 8).is_empty());
+        server
+            .open
+            .insert(path.clone(), source.replace("Callee", "Missing"));
+        assert!(!server.diagnostics_for(&path).is_empty());
+        assert_eq!(server.symbols(&path, true, "Caller").len(), 1);
+        assert_eq!(server.references(&declarations, 2, 10, false).len(), 0);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn imported_symbols_resolve_and_completion_hides_private_declarations() {
+        let root = std::env::temp_dir().join(format!("forge-import-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::create_dir_all(root.join("dep/src")).unwrap();
+        std::fs::write(root.join("forge.toml"), "[package]\nname = \"@test/root\"\nversion = \"0.1.0\"\n[dependencies]\ndep = { path = \"dep\" }\n").unwrap();
+        std::fs::write(
+            root.join("dep/forge.toml"),
+            "[package]\nname = \"@test/dep\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("dep/src/index.forge"),
+            "export function Public {}\nfunction Private {}\n",
+        )
+        .unwrap();
+        let path = root.join("src/index.forge");
+        std::fs::write(
+            &path,
+            "import dep\nfunction Caller {\n uses {\n dep.Public\n }\n}\n",
+        )
+        .unwrap();
+        let server = Server {
+            open: BTreeMap::new(),
+            roots: vec![],
+        };
+        assert!(
+            server.diagnostics_for(&path).is_empty(),
+            "{:?}",
+            server.diagnostics_for(&path)
+        );
+        assert!(
+            server.definition(&path, 3, 5)[0]["uri"]
+                .as_str()
+                .unwrap()
+                .ends_with("dep/src/index.forge")
+        );
+        let completions = server.completion(&path, 3, 1);
+        assert!(completions.iter().any(|v| v["label"] == "dep.Public"));
+        assert!(!completions.iter().any(|v| v["label"] == "dep.Private"));
         std::fs::remove_dir_all(root).unwrap();
     }
 }

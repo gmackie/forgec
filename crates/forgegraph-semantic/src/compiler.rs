@@ -56,13 +56,13 @@ pub struct Compilation {
     pub(crate) files: Vec<SourceFile>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct SourceSpan {
     pub file: String,
     pub start: usize,
     pub end: usize,
 }
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct SourceReference {
     pub span: SourceSpan,
     pub target: String,
@@ -484,6 +484,54 @@ impl<'a> Ctx<'a> {
     // ------------------------------------------------------------ resolve
     /// Resolve a qualified name in type/value position.
     fn resolve(
+        &mut self,
+        segs: &[String],
+        module: &str,
+        file: usize,
+        range: (usize, usize),
+    ) -> Option<Resolved> {
+        let resolved = self.resolve_inner(segs, module, file, range);
+        let target = match &resolved {
+            Some(Resolved::Function(id) | Resolved::Channel(id)) => Some(id.clone()),
+            Some(Resolved::Transition { resource, action }) => {
+                Some(format!("{resource}#lifecycle:status/transition:{action}"))
+            }
+            Some(Resolved::Type(ty)) => match ty {
+                TypeBase::Enum { id } | TypeBase::Shape { id } => Some(id.clone()),
+                TypeBase::Reference { resource }
+                | TypeBase::Record { resource }
+                | TypeBase::Identity { resource }
+                | TypeBase::Status { resource } => Some(resource.clone()),
+                TypeBase::Message { channel, message } => {
+                    Some(format!("{channel}#message:{message}"))
+                }
+                _ => None,
+            },
+            None => None,
+        };
+        // Preserve the declared alias as the navigation target, even when it lowers to a scalar.
+        let target = if let [name] = segs {
+            self.sym(module, name)
+                .filter(|s| s.kind == SymKind::Type)
+                .map(|_| self.id(module, name))
+                .or(target)
+        } else {
+            target
+        };
+        if let Some(target) = target {
+            self.references.push(SourceReference {
+                span: SourceSpan {
+                    file: self.files[file].path.clone(),
+                    start: range.0,
+                    end: range.1,
+                },
+                target,
+            });
+        }
+        resolved
+    }
+
+    fn resolve_inner(
         &mut self,
         segs: &[String],
         module: &str,
