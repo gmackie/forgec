@@ -1,0 +1,22 @@
+{
+  "name": "tree-sitter-forge",
+  "version": "0.1.0",
+  "description": "Tree-sitter editor grammar for Forge",
+  "type": "commonjs",
+  "license": "Apache-2.0",
+  "files": [
+    "grammar.js",
+    "tree-sitter.json",
+    "src",
+    "queries"
+  ],
+  "scripts": {
+    "generate": "tree-sitter generate",
+    "test": "cargo test -p tree-sitter-forge"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmackie/forgec",
+    "directory": "tree-sitter-forge"
+  }
+}

@@ -36,6 +36,21 @@ jobs:
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace --locked
 
+  editor-grammar:
+    name: Tree-sitter generation and Rowan drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: "24.x" }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install tree-sitter-cli --version 0.25.10 --locked
+      - run: tree-sitter generate
+        working-directory: tree-sitter-forge
+      - run: git diff --exit-code -- tree-sitter-forge/src
+      - run: cargo test -p tree-sitter-forge --locked
+
   runtime:
     name: runtime + packages (node ${{ matrix.node }})
     runs-on: ubuntu-latest

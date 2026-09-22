@@ -1,0 +1,13 @@
+resource Words {
+  order : text
+  type : text
+  list : text
+  status : text
+  query : text
+  list by order
+}
+source Http @http(POST, "/words") { -> Handle }
+function Handle {
+  output text
+  uses { Words read }
+}

@@ -1,0 +1,15 @@
+(resource_declaration name: (identifier) @name) @definition.class
+(blob_declaration name: (identifier) @name) @definition.class
+(shape_declaration name: (identifier) @name) @definition.class
+(enum_declaration name: (identifier) @name) @definition.class
+(type_declaration name: (identifier) @name) @definition.type
+(function_declaration name: (identifier) @name) @definition.function
+(workflow_declaration name: (identifier) @name) @definition.function
+(source_declaration name: (identifier) @name) @definition.function
+(channel_declaration name: (identifier) @name) @definition.class
+(view_declaration name: (identifier) @name) @definition.class
+(projection_declaration name: (identifier) @name) @definition.class
+(cache_declaration name: (identifier) @name) @definition.class
+(field_declaration name: (identifier) @name) @definition.field
+(call_expression function: (qualified_name) @name) @reference.call
+(step_call function: (qualified_name) @name) @reference.call
