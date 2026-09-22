@@ -1,0 +1,104 @@
+{
+  "slug": "adjudication",
+  "layer": "system",
+  "issue": 44,
+  "dependencies": [
+    "decision",
+    "entitlement",
+    "evidence",
+    "evaluation",
+    "fulfillment",
+    "ledger",
+    "delivery"
+  ],
+  "facts": [
+    "AdjudicationCase",
+    "AdjudicationItem",
+    "Determination",
+    "AdjustmentReasonLink",
+    "AuthorizedOutcomeLink",
+    "SettlementLink"
+  ],
+  "operations": [
+    "Open adjudication",
+    "Associate entitlement",
+    "Evaluate item",
+    "Record determination",
+    "Authorize fulfillment",
+    "Link settlement",
+    "Deliver explanation"
+  ],
+  "invariants": [
+    "Determination records entitlement-qualified context and source-backed reasons",
+    "Decision owns decision facts and Ledger owns financial postings",
+    "Settlement references authorization and cannot exceed its defined scope",
+    "Typed claim or request payload remains domain owned"
+  ],
+  "acceptance": [
+    {
+      "id": "F44-01",
+      "description": "adjudication case/determination model",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F44-02",
+      "description": "entitlement/coverage integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F44-03",
+      "description": "evidence/evaluation integration",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F44-04",
+      "description": "decision/reason linkage",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F44-05",
+      "description": "fulfillment/ledger settlement hooks",
+      "kind": "compile",
+      "status": "planned"
+    },
+    {
+      "id": "F44-06",
+      "description": "fixtures for expense, warranty and healthcare preauthorization",
+      "kind": "fixture",
+      "status": "planned"
+    },
+    {
+      "id": "F44-R01",
+      "description": "Retried settlement hook cannot create duplicate ledger postings",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F44-R02",
+      "description": "Concurrent determination cannot authorize contradictory terminal outcomes",
+      "kind": "concurrency",
+      "status": "planned"
+    },
+    {
+      "id": "F44-AUTH",
+      "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F44-STORE",
+      "description": "Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips",
+      "kind": "provider",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "expense reimbursement",
+    "warranty claim",
+    "healthcare preauthorization"
+  ]
+}
