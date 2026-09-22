@@ -103,3 +103,5 @@ export function resolveRequirements(requirements: Requirement[], manifests: Capa
       return { adapter: m.id, digest: digestOf(m), resolutions, satisfied: unsatisfied.length === 0, unsatisfied };
     });
 }
+
+export * from "./execution.js";
