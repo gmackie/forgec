@@ -28,6 +28,7 @@ pub const KNOWN_FEATURES: &[&str] = &[
     "sequences/1",
     "work-queues/1",
     "credentials/1",
+    "search-exact/1",
 ];
 
 impl DomainIR {
@@ -715,6 +716,8 @@ pub struct Find {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct List {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub search_mode: Option<String>,
     pub name: String,
     pub fields: Vec<String>,
     pub order: Vec<OrderKey>,

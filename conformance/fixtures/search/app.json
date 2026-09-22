@@ -1,0 +1,4135 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "82f92f4b3295ec87ece7f4cdb4197179d04a34c26079b1048204e7c9b03edb58",
+  "digests": {
+    "source": "05cad166205ac226704a2ed2d09be948556a98ec04d5cd69edea41e2e7d49620",
+    "wire": "754b716d802a87b48e3a730ca53b72d3df5ad1042d16f830d427ff7df3181f77",
+    "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
+    "security": "37b7ef6af38b706d809d458436df522b06724d04eff7d1693b8bbcac37367328"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@dogfood/search",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@dogfood/search/_/AgentTask",
+            "name": "AgentTask",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "repository",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim",
+                    "lowercase"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "searchMode": "exact",
+                "name": "search_byRepositoryLabel",
+                "fields": [
+                  "repository",
+                  "label"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@dogfood/search/_/AgentTask.create",
+                "kind": "create"
+              },
+              {
+                "id": "@dogfood/search/_/AgentTask.get",
+                "kind": "get"
+              },
+              {
+                "id": "@dogfood/search/_/AgentTask.update",
+                "kind": "update"
+              },
+              {
+                "id": "@dogfood/search/_/AgentTask.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@dogfood/search/_/AgentTask.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@dogfood/search/_/AgentTask.list.search_byRepositoryLabel",
+                "kind": "list",
+                "query": "search_byRepositoryLabel"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@dogfood/search/_/DeliveryEvidence",
+            "name": "DeliveryEvidence",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "commitSha",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "kind",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "searchMode": "exact",
+                "name": "search_byCommitShaKind",
+                "fields": [
+                  "commitSha",
+                  "kind"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@dogfood/search/_/DeliveryEvidence.create",
+                "kind": "create"
+              },
+              {
+                "id": "@dogfood/search/_/DeliveryEvidence.get",
+                "kind": "get"
+              },
+              {
+                "id": "@dogfood/search/_/DeliveryEvidence.update",
+                "kind": "update"
+              },
+              {
+                "id": "@dogfood/search/_/DeliveryEvidence.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@dogfood/search/_/DeliveryEvidence.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@dogfood/search/_/DeliveryEvidence.list.search_byCommitShaKind",
+                "kind": "list",
+                "query": "search_byCommitShaKind"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@dogfood/search/_/Issue",
+            "name": "Issue",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "crud": {
+                "path": "/v1/issues",
+                "actions": []
+              },
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "project",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "title",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim",
+                    "lowercase"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "searchMode": "exact",
+                "name": "search_byProjectTitle",
+                "fields": [
+                  "project",
+                  "title"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@dogfood/search/_/Issue.create",
+                "kind": "create",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/issues"
+                }
+              },
+              {
+                "id": "@dogfood/search/_/Issue.get",
+                "kind": "get",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/issues/{id}"
+                }
+              },
+              {
+                "id": "@dogfood/search/_/Issue.update",
+                "kind": "update",
+                "http": {
+                  "method": "PATCH",
+                  "path": "/v1/issues/{id}"
+                }
+              },
+              {
+                "id": "@dogfood/search/_/Issue.delete",
+                "kind": "delete",
+                "http": {
+                  "method": "DELETE",
+                  "path": "/v1/issues/{id}"
+                }
+              },
+              {
+                "id": "@dogfood/search/_/Issue.list.all",
+                "kind": "list",
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/issues"
+                }
+              },
+              {
+                "id": "@dogfood/search/_/Issue.list.search_byProjectTitle",
+                "kind": "list",
+                "query": "search_byProjectTitle",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/issues/search/by-project-title"
+                }
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "search-exact/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@dogfood/search",
+    "resources": [
+      {
+        "id": "@dogfood/search/_/AgentTask",
+        "name": "AgentTask",
+        "wireName": "agent_task",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "repository": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "repository",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "required": [
+            "repository",
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "searchMode": "exact",
+            "name": "search_byRepositoryLabel",
+            "kind": "list",
+            "params": [
+              "repository",
+              "label"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@dogfood/search/_/AgentTask.create",
+            "kind": "create"
+          },
+          {
+            "id": "@dogfood/search/_/AgentTask.get",
+            "kind": "get"
+          },
+          {
+            "id": "@dogfood/search/_/AgentTask.update",
+            "kind": "update"
+          },
+          {
+            "id": "@dogfood/search/_/AgentTask.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@dogfood/search/_/AgentTask.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@dogfood/search/_/AgentTask.list.search_byRepositoryLabel",
+            "kind": "list",
+            "query": "search_byRepositoryLabel"
+          }
+        ]
+      },
+      {
+        "id": "@dogfood/search/_/DeliveryEvidence",
+        "name": "DeliveryEvidence",
+        "wireName": "delivery_evidence",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "commitSha": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "commitSha",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "commitSha": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "commitSha",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "commitSha": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "searchMode": "exact",
+            "name": "search_byCommitShaKind",
+            "kind": "list",
+            "params": [
+              "commitSha",
+              "kind"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@dogfood/search/_/DeliveryEvidence.create",
+            "kind": "create"
+          },
+          {
+            "id": "@dogfood/search/_/DeliveryEvidence.get",
+            "kind": "get"
+          },
+          {
+            "id": "@dogfood/search/_/DeliveryEvidence.update",
+            "kind": "update"
+          },
+          {
+            "id": "@dogfood/search/_/DeliveryEvidence.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@dogfood/search/_/DeliveryEvidence.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@dogfood/search/_/DeliveryEvidence.list.search_byCommitShaKind",
+            "kind": "list",
+            "query": "search_byCommitShaKind"
+          }
+        ]
+      },
+      {
+        "id": "@dogfood/search/_/Issue",
+        "name": "Issue",
+        "wireName": "issue",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "project": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "project",
+            "title"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "required": [
+            "project",
+            "title"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "searchMode": "exact",
+            "name": "search_byProjectTitle",
+            "kind": "list",
+            "params": [
+              "project",
+              "title"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@dogfood/search/_/Issue.create",
+            "kind": "create",
+            "http": {
+              "method": "POST",
+              "path": "/v1/issues"
+            }
+          },
+          {
+            "id": "@dogfood/search/_/Issue.get",
+            "kind": "get",
+            "http": {
+              "method": "GET",
+              "path": "/v1/issues/{id}"
+            }
+          },
+          {
+            "id": "@dogfood/search/_/Issue.update",
+            "kind": "update",
+            "http": {
+              "method": "PATCH",
+              "path": "/v1/issues/{id}"
+            }
+          },
+          {
+            "id": "@dogfood/search/_/Issue.delete",
+            "kind": "delete",
+            "http": {
+              "method": "DELETE",
+              "path": "/v1/issues/{id}"
+            }
+          },
+          {
+            "id": "@dogfood/search/_/Issue.list.all",
+            "kind": "list",
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/issues"
+            }
+          },
+          {
+            "id": "@dogfood/search/_/Issue.list.search_byProjectTitle",
+            "kind": "list",
+            "query": "search_byProjectTitle",
+            "http": {
+              "method": "GET",
+              "path": "/v1/issues/search/by-project-title"
+            }
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "agent_task",
+        "resource": "@dogfood/search/_/AgentTask",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "repository",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "repository",
+            "storage": "text"
+          },
+          {
+            "name": "label",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "label",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "delivery_evidence",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "commit_sha",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "commitSha",
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "kind",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "issue",
+        "resource": "@dogfood/search/_/Issue",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "project",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "project",
+            "storage": "text"
+          },
+          {
+            "name": "title",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "title",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ],
+    "indexes": [
+      {
+        "name": "agent_task_ix_search_by_repository_label",
+        "table": "agent_task",
+        "columns": [
+          "tenant",
+          "repository",
+          "label",
+          "id"
+        ],
+        "unique": false,
+        "query": "search_byRepositoryLabel"
+      },
+      {
+        "name": "delivery_evidence_ix_search_by_commit_sha_kind",
+        "table": "delivery_evidence",
+        "columns": [
+          "tenant",
+          "commit_sha",
+          "kind",
+          "id"
+        ],
+        "unique": false,
+        "query": "search_byCommitShaKind"
+      },
+      {
+        "name": "issue_ix_search_by_project_title",
+        "table": "issue",
+        "columns": [
+          "tenant",
+          "project",
+          "title",
+          "id"
+        ],
+        "unique": false,
+        "query": "search_byProjectTitle"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@dogfood/search/_/AgentTask",
+        "name": "AgentTask",
+        "wireName": "agent_task",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
+            "name": "search_byRepositoryLabel",
+            "kind": "list",
+            "partitionFields": [
+              "repository",
+              "label"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "repository",
+              "label"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      },
+      {
+        "id": "@dogfood/search/_/DeliveryEvidence",
+        "name": "DeliveryEvidence",
+        "wireName": "delivery_evidence",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
+            "name": "search_byCommitShaKind",
+            "kind": "list",
+            "partitionFields": [
+              "commitSha",
+              "kind"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "commitSha",
+              "kind"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      },
+      {
+        "id": "@dogfood/search/_/Issue",
+        "name": "Issue",
+        "wireName": "issue",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          },
+          {
+            "name": "search_byProjectTitle",
+            "kind": "list",
+            "partitionFields": [
+              "project",
+              "title"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version",
+              "project",
+              "title"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@dogfood/search",
+    "resources": [
+      {
+        "id": "@dogfood/search/_/AgentTask",
+        "name": "AgentTask",
+        "kind": "resource",
+        "label": "Agent Task",
+        "plural": "Agent Tasks",
+        "route": "agent-tasks",
+        "titleField": "label",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "repository",
+            "label": "Repository",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "label",
+            "label": "Label",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "label",
+          "repository"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@dogfood/search/_/AgentTask.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "search_byRepositoryLabel",
+            "op": "@dogfood/search/_/AgentTask.list.search_byRepositoryLabel",
+            "params": [
+              "repository",
+              "label"
+            ],
+            "label": "By Repository & Label"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@dogfood/search/_/DeliveryEvidence",
+        "name": "DeliveryEvidence",
+        "kind": "resource",
+        "label": "Delivery Evidence",
+        "plural": "Delivery Evidences",
+        "route": "delivery-evidences",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "commitSha",
+            "label": "Commit Sha",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          },
+          {
+            "name": "kind",
+            "label": "Kind",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "commitSha",
+          "kind"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@dogfood/search/_/DeliveryEvidence.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "search_byCommitShaKind",
+            "op": "@dogfood/search/_/DeliveryEvidence.list.search_byCommitShaKind",
+            "params": [
+              "commitSha",
+              "kind"
+            ],
+            "label": "By Commit Sha & Kind"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@dogfood/search/_/Issue",
+        "name": "Issue",
+        "kind": "resource",
+        "label": "Issue",
+        "plural": "Issues",
+        "route": "issues",
+        "titleField": "title",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "project",
+            "label": "Project",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          },
+          {
+            "name": "title",
+            "label": "Title",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "title",
+          "project"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@dogfood/search/_/Issue.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "search_byProjectTitle",
+            "op": "@dogfood/search/_/Issue.list.search_byProjectTitle",
+            "params": [
+              "project",
+              "title"
+            ],
+            "label": "By Project & Title"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-dogfood-search-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@dogfood/search/_/AgentTask.create",
+        "kind": "create",
+        "resource": "@dogfood/search/_/AgentTask",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.get",
+        "kind": "get",
+        "resource": "@dogfood/search/_/AgentTask",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.update",
+        "kind": "update",
+        "resource": "@dogfood/search/_/AgentTask",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.delete",
+        "kind": "delete",
+        "resource": "@dogfood/search/_/AgentTask",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.list.all",
+        "kind": "list",
+        "resource": "@dogfood/search/_/AgentTask",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.list.search_byRepositoryLabel",
+        "kind": "list",
+        "resource": "@dogfood/search/_/AgentTask",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.create",
+        "kind": "create",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.get",
+        "kind": "get",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.update",
+        "kind": "update",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.delete",
+        "kind": "delete",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.list.all",
+        "kind": "list",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.list.search_byCommitShaKind",
+        "kind": "list",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.create",
+        "kind": "create",
+        "resource": "@dogfood/search/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.get",
+        "kind": "get",
+        "resource": "@dogfood/search/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.update",
+        "kind": "update",
+        "resource": "@dogfood/search/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.delete",
+        "kind": "delete",
+        "resource": "@dogfood/search/_/Issue",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.list.all",
+        "kind": "list",
+        "resource": "@dogfood/search/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.list.search_byProjectTitle",
+        "kind": "list",
+        "resource": "@dogfood/search/_/Issue",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@dogfood/search/_/AgentTask",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/search/_/AgentTask",
+        "field": "repository",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/search/_/AgentTask",
+        "field": "label",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/search/_/AgentTask",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "field": "commitSha",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "field": "kind",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/search/_/Issue",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/search/_/Issue",
+        "field": "project",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/search/_/Issue",
+        "field": "title",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/search/_/Issue",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "structural": 6,
+      "unclassified": 6
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@dogfood/search/_/AgentTask.create",
+        "kind": "create",
+        "resource": "@dogfood/search/_/AgentTask",
+        "outputs": [
+          "id",
+          "repository",
+          "label",
+          "version"
+        ],
+        "writes": [
+          "repository",
+          "label"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.get",
+        "kind": "get",
+        "resource": "@dogfood/search/_/AgentTask",
+        "outputs": [
+          "id",
+          "repository",
+          "label",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.update",
+        "kind": "update",
+        "resource": "@dogfood/search/_/AgentTask",
+        "outputs": [
+          "id",
+          "repository",
+          "label",
+          "version"
+        ],
+        "writes": [
+          "repository",
+          "label"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.delete",
+        "kind": "delete",
+        "resource": "@dogfood/search/_/AgentTask",
+        "outputs": [
+          "id",
+          "repository",
+          "label",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.list.all",
+        "kind": "list",
+        "resource": "@dogfood/search/_/AgentTask",
+        "outputs": [
+          "id",
+          "repository",
+          "label",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/AgentTask.list.search_byRepositoryLabel",
+        "kind": "list",
+        "resource": "@dogfood/search/_/AgentTask",
+        "outputs": [
+          "id",
+          "repository",
+          "label",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "repository",
+          "label"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.create",
+        "kind": "create",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "outputs": [
+          "id",
+          "commitSha",
+          "kind",
+          "version"
+        ],
+        "writes": [
+          "commitSha",
+          "kind"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.get",
+        "kind": "get",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "outputs": [
+          "id",
+          "commitSha",
+          "kind",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.update",
+        "kind": "update",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "outputs": [
+          "id",
+          "commitSha",
+          "kind",
+          "version"
+        ],
+        "writes": [
+          "commitSha",
+          "kind"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.delete",
+        "kind": "delete",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "outputs": [
+          "id",
+          "commitSha",
+          "kind",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.list.all",
+        "kind": "list",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "outputs": [
+          "id",
+          "commitSha",
+          "kind",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/DeliveryEvidence.list.search_byCommitShaKind",
+        "kind": "list",
+        "resource": "@dogfood/search/_/DeliveryEvidence",
+        "outputs": [
+          "id",
+          "commitSha",
+          "kind",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "commitSha",
+          "kind"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.create",
+        "kind": "create",
+        "resource": "@dogfood/search/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "title",
+          "version"
+        ],
+        "writes": [
+          "project",
+          "title"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.get",
+        "kind": "get",
+        "resource": "@dogfood/search/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "title",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.update",
+        "kind": "update",
+        "resource": "@dogfood/search/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "title",
+          "version"
+        ],
+        "writes": [
+          "project",
+          "title"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.delete",
+        "kind": "delete",
+        "resource": "@dogfood/search/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "title",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.list.all",
+        "kind": "list",
+        "resource": "@dogfood/search/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "title",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/search/_/Issue.list.search_byProjectTitle",
+        "kind": "list",
+        "resource": "@dogfood/search/_/Issue",
+        "outputs": [
+          "id",
+          "project",
+          "title",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "project",
+          "title"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@dogfood/search",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "AgentTaskRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "repository": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "repository",
+            "label"
+          ]
+        },
+        "AgentTaskCreate": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "label"
+          ]
+        },
+        "AgentTaskPatch": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "DeliveryEvidenceRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "commitSha": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "commitSha",
+            "kind"
+          ]
+        },
+        "DeliveryEvidenceCreate": {
+          "type": "object",
+          "properties": {
+            "commitSha": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "commitSha",
+            "kind"
+          ]
+        },
+        "DeliveryEvidencePatch": {
+          "type": "object",
+          "properties": {
+            "commitSha": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "additionalProperties": false
+        },
+        "IssueRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "project": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "project",
+            "title"
+          ]
+        },
+        "IssueCreate": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "project",
+            "title"
+          ]
+        },
+        "IssuePatch": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {
+      "/v1/issues": {
+        "post": {
+          "operationId": "@dogfood/search/_/Issue.create",
+          "tags": [
+            "Issue"
+          ],
+          "x-forge-kind": "create",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "201": {
+              "description": "Created",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/IssueRecord"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "UniqueConflict / ReferenceMissing",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueCreate"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "get": {
+          "operationId": "@dogfood/search/_/Issue.list.all",
+          "tags": [
+            "Issue"
+          ],
+          "x-forge-kind": "list",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Page",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "items",
+                      "next",
+                      "limit"
+                    ],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/IssueRecord"
+                        }
+                      },
+                      "next": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "InvalidCursor",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        }
+      },
+      "/v1/issues/{id}": {
+        "get": {
+          "operationId": "@dogfood/search/_/Issue.get",
+          "tags": [
+            "Issue"
+          ],
+          "x-forge-kind": "get",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/IssueRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        },
+        "patch": {
+          "operationId": "@dogfood/search/_/Issue.update",
+          "tags": [
+            "Issue"
+          ],
+          "x-forge-kind": "update",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/IssueRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict (stale If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuePatch"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "delete": {
+          "operationId": "@dogfood/search/_/Issue.delete",
+          "tags": [
+            "Issue"
+          ],
+          "x-forge-kind": "delete",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/IssueRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "HasDependents / InvalidTransition",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        }
+      },
+      "/v1/issues/search/by-project-title": {
+        "get": {
+          "operationId": "@dogfood/search/_/Issue.list.search_byProjectTitle",
+          "tags": [
+            "Issue"
+          ],
+          "x-forge-kind": "list",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "project",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "x-forge-type": "text",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            {
+              "name": "title",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "x-forge-type": "text",
+                "minLength": 1,
+                "maxLength": 128,
+                "x-forge-normalizers": [
+                  "trim",
+                  "lowercase"
+                ]
+              }
+            },
+            {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Page",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "items",
+                      "next",
+                      "limit"
+                    ],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/IssueRecord"
+                        }
+                      },
+                      "next": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "InvalidCursor",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        }
+      }
+    }
+  }
+}

@@ -215,6 +215,11 @@ fn validate(ir: &DomainIR) -> Result<(), PlanError> {
                     return Err(PlanError {code:"E-PLAN-COLLECTION-002".into(),declaration:r.id.clone(),message:"collections cannot be index, uniqueness or order keys in the portable profile".into()});
                 }
             }
+            for search in r.lists.iter().filter(|l| l.search_mode.is_some()) {
+                if search.search_mode.as_deref()!=Some("exact") || search.fields.len()>4 || search.fields.iter().any(|name|r.fields.iter().find(|f|&f.name==name).is_some_and(|f|matches!(&f.ty.base,forgegraph_semantic::ir::TypeBase::Scalar {name,..} if name=="text") && !f.ty.constraints.iter().any(|c|matches!(c,forgegraph_semantic::ir::Constraint::Length {max:Some(max),..} if *max<=128)))) {
+                    return Err(PlanError {code:"E-PLAN-SEARCH-001".into(),declaration:r.id.clone(),message:"portable exact search supports at most four equality fields and requires text length <= 128; no scan fallback is available".into()});
+                }
+            }
             for l in &r.lists {
                 for f in &l.fields {
                     let field = r

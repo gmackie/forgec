@@ -1307,8 +1307,26 @@
         "type": "SEQ",
         "members": [
           {
-            "type": "STRING",
-            "value": "list"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "list"
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "search"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  }
+                ]
+              }
+            ]
           },
           {
             "type": "STRING",

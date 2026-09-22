@@ -1,0 +1,18 @@
+export resource Issue @tenant @versioned @crud("/v1/issues") {
+ id : id
+ project : text length 1..64
+ title : text trim lowercase length 1..128
+ search exact by project, title
+}
+export resource AgentTask @tenant @versioned {
+ id : id
+ repository : text length 1..128
+ label : text trim lowercase length 1..128
+ search exact by repository, label
+}
+export resource DeliveryEvidence @tenant @versioned {
+ id : id
+ commitSha : text length 1..64
+ kind : text length 1..64
+ search exact by commitSha, kind
+}

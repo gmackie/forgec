@@ -800,10 +800,14 @@ impl<'a> Parser<'a> {
             self.field_list();
             self.finish();
             self.end_item();
-        } else if t == "list" && n1t == "by" {
+        } else if (t == "list" && n1t == "by") || t == "search" {
+            let search = t == "search";
             self.start(K::LIST_DECL);
             self.bump();
-            self.bump();
+            if search {
+                self.expect_ident("search mode");
+            }
+            self.expect_kw("by");
             self.field_list();
             let i = self.sig_after_lines(self.pos);
             if self.raw_kind(i) == TokenKind::Ident

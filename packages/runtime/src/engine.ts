@@ -547,12 +547,13 @@ export class Engine {
     return Effect.gen(function* () {
       const l = r.lists.find((x) => x.name === query)!;
       const values = yield* self.queryValues(r, l.fields, body["params"]);
+      const cursorQuery = l.searchMode ? `${opId}:${yield* Effect.promise(()=>sha256(stableJson(values)))}` : opId;
       const rawLimit = body["limit"];
       const limit = typeof rawLimit === "number" && rawLimit > 0 ? Math.min(Math.floor(rawLimit), PAGE_MAX) : PAGE_DEFAULT;
       const secret = (yield* CursorSecret).key;
       let after: { keys: string[]; values: unknown[]; id: string } | null = null;
       if (typeof body["cursor"] === "string" && body["cursor"]) {
-        const state = yield* decodeCursor(secret, body["cursor"], { q: opId, t: ctx.tenant });
+        const state = yield* decodeCursor(secret, body["cursor"], { q: cursorQuery, t: ctx.tenant });
         after = { keys: state.k, values: state.r, id: state.id };
       }
       const storage = yield* Storage;
@@ -577,7 +578,7 @@ export class Engine {
       let next: string | null = null;
       if (page.hasMore && page.records.length) {
         const last = page.records[page.records.length - 1]!;
-        next = yield* encodeCursor(secret, { q: opId, v: 1, t: ctx.tenant, k: keys(last), r: l.order.map((o) => last[o.field] ?? null), id: String(last["id"]) });
+        next = yield* encodeCursor(secret, { q: cursorQuery, v: 1, t: ctx.tenant, k: keys(last), r: l.order.map((o) => last[o.field] ?? null), id: String(last["id"]) });
       }
       return { items, next, limit, ...(plan.kind !== "none" ? { plan: { kind: plan.kind, ...(plan.policy ? { policy: plan.policy } : {}) } } : {}) };
     });

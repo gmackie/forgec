@@ -54,7 +54,7 @@ export interface Field {
 export interface Unique { name: string; fields: string[]; within: string[]; condition?: { field: string; values: string[] } }
 export interface Find { name: string; fields: string[]; coveredBy: string }
 export interface OrderKey { field: string; direction: string }
-export interface List { name: string; fields: string[]; order: OrderKey[] }
+export interface List { searchMode?: "exact"; name: string; fields: string[]; order: OrderKey[] }
 export interface Transition { action: string; from: string[]; to: string; input: Field[] }
 export interface Lifecycle { field: string; enumId: string; states: string[]; initial: string; terminals: string[]; transitions: Transition[] }
 export interface HttpBinding { method: string; path: string }
@@ -118,7 +118,7 @@ export interface MessagingPlan {
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1"];
+export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }

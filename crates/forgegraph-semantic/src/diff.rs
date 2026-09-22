@@ -92,6 +92,7 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "search-index-changed" => vec!["rebuild-search-index", "cursor-invalidation"],
         "credential-definition-changed" => vec![
             "seal-existing-data",
             "credential-interface-review",
@@ -289,6 +290,30 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     {
         if old_credentials.get(id) != new_credentials.get(id) {
             push(&mut f,"storage","migration","credential-definition-changed",id.clone(),"credential field added, removed or changed; seal/backfill existing data, review interfaces and migrate keys before activation".into());
+        }
+    }
+
+    let searches = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .flat_map(|r| {
+                arr(r, &["lists"])
+                    .into_iter()
+                    .filter(|l| !l["searchMode"].is_null())
+                    .map(move |l| (format!("{}.{}", s(&r["id"]), s(&l["name"])), l.clone()))
+            })
+            .collect()
+    };
+    let old_search = searches(old);
+    let new_search = searches(new);
+    for id in old_search
+        .keys()
+        .chain(new_search.keys())
+        .collect::<std::collections::BTreeSet<_>>()
+    {
+        if old_search.get(id) != new_search.get(id) {
+            push(&mut f,"storage","migration","search-index-changed",id.clone(),"search index changed; rebuild physical access paths and invalidate outstanding search cursors".into());
         }
     }
 

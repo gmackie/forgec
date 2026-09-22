@@ -168,7 +168,7 @@ module.exports = grammar({
       ),
     find_declaration: ($) => seq("find", "by", $.field_list),
     list_declaration: ($) =>
-      prec.right(seq("list", "by", $.field_list, optional($.order_clause))),
+      prec.right(seq(choice("list",seq("search",$.identifier)), "by", $.field_list, optional($.order_clause))),
     order_clause: ($) => seq("order", "by", comma($.order_key)),
     order_key: ($) =>
       prec.right(seq($.identifier, optional(choice("asc", "desc")))),

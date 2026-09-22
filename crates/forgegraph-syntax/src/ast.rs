@@ -689,6 +689,14 @@ impl FindDecl {
 }
 node!(ListDecl, LIST_DECL);
 impl ListDecl {
+    pub fn search_mode(&self) -> Option<String> {
+        let mut ids = idents(&self.0);
+        if ids.next().is_some_and(|t| t.text() == "search") {
+            ids.next().map(|t| t.text().to_string())
+        } else {
+            None
+        }
+    }
     pub fn fields(&self) -> Option<FieldList> {
         child(&self.0)
     }

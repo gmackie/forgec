@@ -138,6 +138,8 @@ pub struct ResourceContract {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryContract {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub search_mode: Option<String>,
     pub name: String,
     pub kind: String,
     pub params: Vec<String>,
@@ -488,6 +490,7 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
         .finds
         .iter()
         .map(|f| QueryContract {
+            search_mode: None,
             name: f.name.clone(),
             kind: "find".into(),
             params: f.fields.clone(),
@@ -495,6 +498,7 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
         })
         .collect();
     queries.extend(r.lists.iter().map(|l| QueryContract {
+        search_mode: l.search_mode.clone(),
         name: l.name.clone(),
         kind: "list".into(),
         params: l.fields.clone(),

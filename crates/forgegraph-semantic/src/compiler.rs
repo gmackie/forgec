@@ -2602,14 +2602,41 @@ impl<'a> Ctx<'a> {
                     direction: dir,
                 });
             }
+            let search_mode = ld.search_mode();
+            if let Some(mode) = &search_mode {
+                if mode != "exact" {
+                    self.err("E-SEARCH-001",file,range_of(&ld),"this profile supports only indexed exact search; prefix/tokenized/ranked modes need a certified provider plan",None);
+                }
+                if !fs.iter().any(|name| {
+                    fields.iter().any(|f| {
+                        &f.name == name
+                            && !f.ty.optional
+                            && matches!(&f.ty.base,TypeBase::Scalar {name,..} if name=="text")
+                    })
+                }) {
+                    self.err(
+                        "E-SEARCH-002",
+                        file,
+                        range_of(&ld),
+                        "exact search requires a nonoptional text search field",
+                        None,
+                    );
+                }
+            }
             lists.push(List {
-                name: camel(&fs),
+                name: if search_mode.is_some() {
+                    format!("search_{}", camel(&fs))
+                } else {
+                    camel(&fs)
+                },
+                search_mode,
                 fields: fs,
                 order,
             });
         }
         // Every resource has a bounded default browse: tenant-scoped, paged, ordered by id.
         lists.push(List {
+            search_mode: None,
             name: "all".into(),
             fields: vec![],
             order: vec![OrderKey {
@@ -2737,7 +2764,9 @@ impl<'a> Ctx<'a> {
             );
         }
         for l in &lists {
-            let path = if l.fields.is_empty() {
+            let path = if l.search_mode.is_some() {
+                format!("/search/{}", kebab(&l.fields))
+            } else if l.fields.is_empty() {
                 String::new()
             } else {
                 format!("/queries/{}", kebab(&l.fields))
@@ -5076,6 +5105,14 @@ impl<'a> Ctx<'a> {
                 .any(|r| r.fields.iter().any(|f| f.secret))
         }) {
             requires.push("credentials/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.lists.iter().any(|l| l.search_mode.is_some()))
+        }) {
+            requires.push("search-exact/1".into());
             requires.sort();
         }
         DomainIR {
