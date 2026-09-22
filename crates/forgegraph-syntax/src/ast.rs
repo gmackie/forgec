@@ -99,6 +99,7 @@ pub enum Declaration {
     Subscription(SubscriptionDecl),
     Workflow(WorkflowDecl),
     WorkQueue(WorkQueueDecl),
+    Actor(ActorDecl),
     Purpose(PurposeDecl),
     DataClass(DataClassDecl),
 }
@@ -120,6 +121,7 @@ impl Declaration {
             K::CHANNEL_DECL => Self::Channel(ChannelDecl(node)),
             K::SOURCE_DECL => Self::Source(SourceDecl(node)),
             K::SUBSCRIPTION_DECL => Self::Subscription(SubscriptionDecl(node)),
+            K::ACTOR_DECL => Self::Actor(ActorDecl(node)),
             K::WORK_QUEUE_DECL => Self::WorkQueue(WorkQueueDecl(node)),
             K::WORKFLOW_DECL => Self::Workflow(WorkflowDecl(node)),
             K::PURPOSE_DECL => Self::Purpose(PurposeDecl(node)),
@@ -143,6 +145,7 @@ impl Declaration {
             Self::Channel(n) => &n.0,
             Self::Source(n) => &n.0,
             Self::Subscription(n) => &n.0,
+            Self::Actor(n) => &n.0,
             Self::WorkQueue(n) => &n.0,
             Self::Workflow(n) => &n.0,
             Self::Purpose(n) => &n.0,
@@ -178,6 +181,7 @@ impl Declaration {
                         | "source"
                         | "workflow"
                         | "workQueue"
+                        | "actor"
                 )
             }),
         }
@@ -974,6 +978,27 @@ node!(TimezoneDecl, TIMEZONE_DECL);
 node!(TargetDecl, TARGET_DECL);
 
 // -------------------------------------------------------------- workflows
+node!(ActorDecl, ACTOR_DECL);
+impl ActorDecl {
+    pub fn items(&self) -> impl Iterator<Item = ActorItem> + '_ {
+        children(&self.0)
+    }
+    pub fn key(&self) -> Option<String> {
+        idents(&self.0).last().map(|t| t.text().to_string())
+    }
+}
+node!(ActorItem, ACTOR_ITEM);
+impl ActorItem {
+    pub fn kind(&self) -> Option<String> {
+        idents(&self.0).next().map(|t| t.text().to_string())
+    }
+    pub fn command(&self) -> Option<String> {
+        idents(&self.0).nth(1).map(|t| t.text().to_string())
+    }
+    pub fn target(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+}
 node!(WorkQueueDecl, WORK_QUEUE_DECL);
 impl WorkQueueDecl {
     pub fn items(&self) -> impl Iterator<Item = WorkQueueItem> + '_ {

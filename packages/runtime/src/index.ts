@@ -34,3 +34,4 @@ export * from "./suppression.js";
 export * from "./otlp.js";
 export * from "./work-queues.js";
 export * from "./credentials.js";
+export * from "./actors.js";

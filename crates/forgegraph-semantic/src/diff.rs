@@ -92,6 +92,7 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "actor-definition-changed" => vec!["actor-state-migration", "fenced-owner-cutover"],
         "search-index-changed" => vec!["rebuild-search-index", "cursor-invalidation"],
         "credential-definition-changed" => vec![
             "seal-existing-data",
@@ -314,6 +315,20 @@ pub fn compare(old: &Value, new: &Value) -> Report {
     {
         if old_search.get(id) != new_search.get(id) {
             push(&mut f,"storage","migration","search-index-changed",id.clone(),"search index changed; rebuild physical access paths and invalidate outstanding search cursors".into());
+        }
+    }
+
+    let actors = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["actors"]))
+            .map(|a| (s(&a["id"]), a.clone()))
+            .collect()
+    };
+    let current_actors = actors(new);
+    for (id, previous) in actors(old) {
+        if current_actors.get(&id) != Some(&previous) {
+            push(&mut f,"workflow","migration","actor-definition-changed",id,"actor state, commands or identity changed; migrate durable state and fence old owners before activation".into());
         }
     }
 

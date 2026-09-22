@@ -635,6 +635,16 @@ pub fn project(ir: &DomainIR) -> Projection {
         .into(),
     );
     for module in &ir.modules {
+        for actor in &module.actors {
+            out.coverage.insert(
+                actor.id.clone(),
+                [
+                    "keyed actor commands, alarms and ownership are not projected into ConceptIR"
+                        .into(),
+                ]
+                .into(),
+            );
+        }
         for queue in &module.work_queues {
             out.coverage.insert(queue.id.clone(), ["work queue execution requirements and scheduling are not projected into ConceptIR".into()].into());
         }

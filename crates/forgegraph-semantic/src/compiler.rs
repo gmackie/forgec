@@ -119,6 +119,7 @@ enum SymKind {
     Source,
     Workflow,
     WorkQueue,
+    Actor,
     Purpose,
     DataClass,
 }
@@ -417,6 +418,7 @@ impl<'a> Ctx<'a> {
                     Declaration::Function(_) => SymKind::Function,
                     Declaration::Channel(_) => SymKind::Channel,
                     Declaration::Source(_) => SymKind::Source,
+                    Declaration::Actor(_) => SymKind::Actor,
                     Declaration::WorkQueue(_) => SymKind::WorkQueue,
                     Declaration::Workflow(_) => SymKind::Workflow,
                     Declaration::Purpose(_) => SymKind::Purpose,
@@ -581,6 +583,7 @@ impl<'a> Ctx<'a> {
                         | SymKind::Cache
                         | SymKind::View
                         | SymKind::Projection
+                        | SymKind::Actor
                         | SymKind::WorkQueue
                         | SymKind::Workflow
                         | SymKind::Purpose
@@ -4808,6 +4811,135 @@ impl<'a> Ctx<'a> {
                         m.channels.push(ch);
                     }
                 }
+                (SymKind::Actor, Declaration::Actor(actor)) => {
+                    let states: Vec<_> = actor
+                        .items()
+                        .filter(|item| item.kind().as_deref() == Some("state"))
+                        .collect();
+                    if states.len() != 1 {
+                        self.err(
+                            "E-ACTOR-001",
+                            file,
+                            range_of(actor),
+                            "actor requires exactly one typed state",
+                            None,
+                        );
+                        continue;
+                    }
+                    let Some(target) = states[0].target() else {
+                        continue;
+                    };
+                    let Some(state) = self.type_ref_spec(&target, &module, file) else {
+                        continue;
+                    };
+                    if !matches!(state.base, TypeBase::Shape { .. }) {
+                        self.err(
+                            "E-ACTOR-001",
+                            file,
+                            range_of(actor),
+                            "actor state must be a shape",
+                            None,
+                        );
+                    }
+                    let mut messages = BTreeMap::new();
+                    let mut handlers = BTreeMap::new();
+                    for item in actor
+                        .items()
+                        .filter(|item| item.kind().as_deref() == Some("on"))
+                    {
+                        let (Some(command), Some(target)) = (item.command(), item.target()) else {
+                            continue;
+                        };
+                        let Some(Resolved::Function(function)) =
+                            self.resolve(&target.segments(), &module, file, range_of(&target))
+                        else {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler must be a function",
+                                None,
+                            );
+                            continue;
+                        };
+                        let fields = self.function_input_types(&function, &module);
+                        if fields.is_empty() {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler needs a typed input shape",
+                                None,
+                            );
+                            continue;
+                        }
+                        let Some(output) = self.function_output(&function, &module) else {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler must return its state shape",
+                                None,
+                            );
+                            continue;
+                        };
+                        if output.base != state.base {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler output must match actor state",
+                                None,
+                            );
+                        }
+                        let input = self
+                            .sym(&module, function.rsplit('/').next().unwrap_or_default())
+                            .and_then(|s| {
+                                if let Declaration::Function(f) = &s.decl {
+                                    f.input()
+                                } else {
+                                    None
+                                }
+                            });
+                        let Some(input) = input.and_then(|n| self.type_ref_spec(&n, &module, file))
+                        else {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler must be local with a typed input",
+                                None,
+                            );
+                            continue;
+                        };
+                        if messages.insert(command.clone(), input).is_some() {
+                            self.err(
+                                "E-ACTOR-003",
+                                file,
+                                range_of(&item),
+                                "duplicate actor command",
+                                None,
+                            );
+                        }
+                        handlers.insert(command, function);
+                    }
+                    if messages.is_empty() {
+                        self.err(
+                            "E-ACTOR-002",
+                            file,
+                            range_of(actor),
+                            "actor needs at least one command",
+                            None,
+                        );
+                    }
+                    m.actors.push(Actor {
+                        id,
+                        key: actor.key().unwrap_or_default(),
+                        state,
+                        messages,
+                        handlers,
+                    });
+                }
                 (SymKind::WorkQueue, Declaration::WorkQueue(q)) => {
                     let mut queue = WorkQueue {
                         id,
@@ -5113,6 +5245,10 @@ impl<'a> Ctx<'a> {
                 .any(|r| r.lists.iter().any(|l| l.search_mode.is_some()))
         }) {
             requires.push("search-exact/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| !m.actors.is_empty()) {
+            requires.push("actors/1".into());
             requires.sort();
         }
         DomainIR {

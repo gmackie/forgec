@@ -29,6 +29,7 @@ pub const KNOWN_FEATURES: &[&str] = &[
     "work-queues/1",
     "credentials/1",
     "search-exact/1",
+    "actors/1",
 ];
 
 impl DomainIR {
@@ -127,6 +128,8 @@ pub struct Module {
     pub workflows: Vec<Workflow>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub work_queues: Vec<WorkQueue>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub actors: Vec<Actor>,
     /// Edition 2027 governance vocabulary (plan D07/D11): meaning, never authority.
     #[serde(default)]
     pub purposes: Vec<Purpose>,
@@ -220,6 +223,16 @@ pub struct WorkQueue {
     pub max_attempts: u32,
     pub max_tasks: u32,
     pub max_runners: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Actor {
+    pub id: String,
+    pub key: String,
+    pub state: TypeSpec,
+    pub messages: std::collections::BTreeMap<String, TypeSpec>,
+    pub handlers: std::collections::BTreeMap<String, String>,
 }
 
 /// Durable composition of capabilities with explicit control flow (plan §15).

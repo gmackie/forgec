@@ -109,6 +109,7 @@ export interface ObservabilityPlan { version: string; dimensions: string[]; clas
 export interface WorkflowsPlan { version: string; workflows: { id: string; name: string; version: number; graphHash: string; cloudflare: { name: string; binding: string; className: string }; aws: { stateMachine: string; definition: unknown } }[] }
 export interface SourceDecl { id: string; name: string; cron?: string; timezone?: string; target: string }
 export interface Module {
+  actors?: import("./actors.js").ActorDefinition[];
   workQueues?: (import("./work-queues.js").QueueDefinition & {name:string;execute:string})[]; id: string; shapes?: { id: string; fields: Field[] }[]; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[]; purposes?: PurposeDecl[]; dataClasses?: DataClassDecl[] }
 export interface MessagingPlan {
   channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
@@ -118,7 +119,7 @@ export interface MessagingPlan {
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1"];
+export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1", "actors/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }

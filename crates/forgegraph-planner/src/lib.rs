@@ -108,7 +108,35 @@ fn validate_collection(
 /// Physical-plan validation shared by both targets (plan §3.3): never turn an
 /// indexed query into a scan or an equality partition into an ambiguous one.
 fn validate(ir: &DomainIR) -> Result<(), PlanError> {
+    if ir.modules.iter().any(|m| !m.actors.is_empty())
+        && (ir.package.profile != "actor-preview"
+            || ir.package.targets.is_empty()
+            || ir
+                .package
+                .targets
+                .iter()
+                .any(|t| !matches!(t.as_str(), "node-sqlite" | "cloudflare-do-preview")))
+    {
+        return Err(PlanError {code:"E-PLAN-ACTOR-001".into(),declaration:ir.package.name.clone(),message:"actors require the explicit actor-preview profile and node-sqlite/cloudflare-do-preview targets; production distributed certification is not available".into()});
+    }
     for m in &ir.modules {
+        for actor in &m.actors {
+            validate_collection(ir, &actor.state, 0, &actor.id)?;
+            for ty in actor.messages.values() {
+                validate_collection(ir, ty, 0, &actor.id)?;
+            }
+            for handler in actor.handlers.values() {
+                if let Some(function) = ir
+                    .modules
+                    .iter()
+                    .flat_map(|m| &m.functions)
+                    .find(|f| &f.id == handler)
+                    && (!function.uses.is_empty() || !function.sends.is_empty())
+                {
+                    return Err(PlanError {code:"E-PLAN-ACTOR-002".into(),declaration:actor.id.clone(),message:"actor preview handlers must be pure reducers; stage external effects through the actor effect ledger instead of function uses/sends".into()});
+                }
+            }
+        }
         for projection in &m.projections {
             if let Some(source) = ir
                 .modules

@@ -1,0 +1,10 @@
+[package]
+name = "@dogfood/actors"
+version = "0.1.0"
+edition = "2027"
+[source]
+root = "src"
+entry = "src/model.forge"
+[compatibility]
+profile = "actor-preview"
+targets = ["node-sqlite", "cloudflare-do-preview"]

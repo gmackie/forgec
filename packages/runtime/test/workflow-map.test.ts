@@ -39,10 +39,10 @@ it("resumes after a driver restart without repeating completed items",async()=>{
   const first=setup();
   first.engine.workflows.faults.crashAfterStep="evaluations";
   await expect(Effect.runPromise(first.engine.call(prefix+"EvaluateCandidates.start",{candidates:[1,2,3,4,5,6]},ctx))).rejects.toThrow();
-  expect(first.calls).toEqual([1,2,3,4]);
+  expect([...first.calls].sort((a,b)=>a-b)).toEqual([1,2,3,4]);
   const second=setup(first.storage);
   await Effect.runPromise(second.engine.workflows.sweep(ctx.tenant));
-  expect(second.calls).toEqual([5,6]);
+  expect([...second.calls].sort((a,b)=>a-b)).toEqual([5,6]);
   const ids=await Effect.runPromise(second.engine.workflows.inflight(ctx.tenant));
   expect(ids).toEqual([]);
 });

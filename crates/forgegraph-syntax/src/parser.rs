@@ -52,6 +52,7 @@ const DECL_KEYWORDS: &[&str] = &[
     "export",
     "workflow",
     "workQueue",
+    "actor",
     "dataClass",
 ]; // `purpose` is also a function item, so it does not signal an unclosed block
 
@@ -343,6 +344,7 @@ impl<'a> Parser<'a> {
             "source" => K::SOURCE_DECL,
             "workflow" => K::WORKFLOW_DECL,
             "workQueue" => K::WORK_QUEUE_DECL,
+            "actor" => K::ACTOR_DECL,
             "purpose" => K::PURPOSE_DECL,
             "dataClass" => K::DATA_CLASS_DECL,
             "on" => K::SUBSCRIPTION_DECL,
@@ -371,6 +373,31 @@ impl<'a> Parser<'a> {
             K::FUNCTION_DECL => self.function_body(),
             K::CHANNEL_DECL => self.channel_body(),
             K::SOURCE_DECL => self.source_body(),
+            K::ACTOR_DECL => {
+                self.expect_ident("actor name");
+                self.expect_kw("keyed");
+                self.expect_kw("by");
+                self.expect_ident("actor key");
+                self.block_allow("on", |p| {
+                    p.start(K::ACTOR_ITEM);
+                    let key = p.current_text().to_string();
+                    p.bump();
+                    match key.as_str() {
+                        "state" => p.qualified_name("actor state shape"),
+                        "on" => {
+                            p.expect_ident("command name");
+                            p.expect(TokenKind::Arrow, "`->`");
+                            p.qualified_name("handler function");
+                        }
+                        _ => {
+                            p.error("expected actor state or on command");
+                            p.recover_line();
+                        }
+                    }
+                    p.finish();
+                    p.end_item();
+                });
+            }
             K::WORK_QUEUE_DECL => {
                 self.expect_ident("queue name");
                 self.block(|p| {
@@ -429,6 +456,9 @@ impl<'a> Parser<'a> {
     // ---------------------------------------------------------------- blocks
     /// `{` NL* ( item NL+ )* `}` with per-item recovery.
     fn block(&mut self, item: impl Fn(&mut Self)) {
+        self.block_allow("", item);
+    }
+    fn block_allow(&mut self, allowed: &str, item: impl Fn(&mut Self)) {
         if !self.expect(TokenKind::LBrace, "`{`") {
             return;
         }
@@ -444,6 +474,7 @@ impl<'a> Parser<'a> {
             }
             // A declaration keyword inside a block means the block was never closed.
             if self.at(TokenKind::Ident)
+                && self.current_text() != allowed
                 && DECL_KEYWORDS.contains(&self.current_text())
                 && self.nth(1) == TokenKind::Ident
                 && !matches!(self.nth(1), TokenKind::Colon)
