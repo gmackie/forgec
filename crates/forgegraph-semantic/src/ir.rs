@@ -23,6 +23,7 @@ pub const KNOWN_FEATURES: &[&str] = &[
     "governance/1",
     "conditional-unique/1",
     "projection-aggregates/1",
+    "collections/1",
 ];
 
 impl DomainIR {
@@ -440,14 +441,44 @@ pub struct TypeSpec {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum TypeBase {
-    Scalar { name: String, args: Vec<String> },
-    Enum { id: String },
-    Shape { id: String },
-    Reference { resource: String },
-    Record { resource: String },
-    Identity { resource: String },
-    Status { resource: String },
-    Message { channel: String, message: String },
+    Collection {
+        collection: CollectionKind,
+        element: Box<TypeSpec>,
+    },
+    Scalar {
+        name: String,
+        args: Vec<String>,
+    },
+    Enum {
+        id: String,
+    },
+    Shape {
+        id: String,
+    },
+    Reference {
+        resource: String,
+    },
+    Record {
+        resource: String,
+    },
+    Identity {
+        resource: String,
+    },
+    Status {
+        resource: String,
+    },
+    Message {
+        channel: String,
+        message: String,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum CollectionKind {
+    List,
+    Set,
+    Map,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -64,6 +64,10 @@ pub struct ConceptType {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
 pub enum Type {
+    Collection {
+        collection: ir::CollectionKind,
+        element: Box<ConceptType>,
+    },
     Scalar {
         name: String,
         args: Vec<String>,
@@ -262,7 +266,7 @@ fn type_id(ty: &ConceptType) -> Option<&str> {
         Type::Entity { id, .. } | Type::Fact { id } | Type::Shape { id } | Type::Enum { id } => {
             Some(id)
         }
-        Type::Scalar { .. } => None,
+        Type::Scalar { .. } | Type::Collection { .. } => None,
     }
 }
 impl ConceptIR {
@@ -474,6 +478,13 @@ fn fact_id(channel: &str, message: &str) -> String {
 }
 fn ty(t: &ir::TypeSpec) -> ConceptType {
     let base = match &t.base {
+        ir::TypeBase::Collection {
+            collection,
+            element,
+        } => Type::Collection {
+            collection: *collection,
+            element: Box::new(ty(element)),
+        },
         ir::TypeBase::Scalar { name, args } => Type::Scalar {
             name: name.clone(),
             args: args.clone(),

@@ -76,7 +76,8 @@ fn direction_of(code: &str) -> Option<&'static str> {
         | "parameter-required"
         | "workflow-removed"
         | "dependency-removed" => "producer",
-        "graph-changed-without-version"
+        "collection-type-changed"
+        | "graph-changed-without-version"
         | "table-removed"
         | "column-removed"
         | "column-type-changed"
@@ -91,6 +92,7 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "collection-type-changed" => vec!["existing-data-validation", "codec-migration-review"],
         "projection-definition-changed" => vec!["rebuild-projection-generation"],
         "unique-invariant-changed" => {
             vec!["existing-data-validation", "rebuild-indexes-and-claims"]
@@ -175,6 +177,36 @@ pub fn compare(old: &Value, new: &Value) -> Report {
             && &previous != current
         {
             push(&mut f,"storage","migration","projection-definition-changed",id,"projection grouping, filters or aggregates changed; build a new generation before serving the new contract".into());
+        }
+    }
+
+    // JSON storage does not reveal element codec or collection-bound changes.
+    let collection_fields = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| {
+                arr(m, &["resources"])
+                    .into_iter()
+                    .chain(arr(m, &["shapes"]))
+            })
+            .flat_map(|r| {
+                arr(r, &["fields"]).into_iter().map(move |field| {
+                    (
+                        format!("{}.{}", s(&r["id"]), s(&field["name"])),
+                        field["type"].clone(),
+                    )
+                })
+            })
+            .collect()
+    };
+    let current_fields = collection_fields(new);
+    for (id, previous) in collection_fields(old) {
+        if let Some(current) = current_fields.get(&id)
+            && previous != *current
+            && (previous["base"]["kind"] == "collection" || current["base"]["kind"] == "collection")
+        {
+            push(&mut f, "api", "breaking", "collection-type-changed", id,
+                "collection kind, element codec or bounds changed; validate stored values and review producer/consumer compatibility".into());
         }
     }
 

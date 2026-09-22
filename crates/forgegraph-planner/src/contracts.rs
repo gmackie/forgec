@@ -664,8 +664,31 @@ fn literal_json(l: &Literal) -> Value {
     }
 }
 
+fn collection_element_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
+    let mut schema = if matches!(ty.base, TypeBase::Shape { .. }) {
+        serde_json::to_value(shape_or_record_schema(ir, &ty.base)).unwrap()
+    } else {
+        type_schema(ir, owner, ty)
+    };
+    if ty.optional {
+        let base = schema["type"].clone();
+        schema["type"] = json!([base, "null"]);
+    }
+    schema
+}
 fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
     let mut s = match &ty.base {
+        TypeBase::Collection {
+            collection,
+            element,
+        } => match collection {
+            CollectionKind::Map => {
+                json!({"type":"object","additionalProperties":collection_element_schema(ir,owner,element),"x-forge-collection":"map"})
+            }
+            CollectionKind::List | CollectionKind::Set => {
+                json!({"type":"array","items":collection_element_schema(ir,owner,element),"uniqueItems":*collection==CollectionKind::Set,"x-forge-collection":if *collection==CollectionKind::Set {"set"}else{"list"}})
+            }
+        },
         TypeBase::Scalar { name, args } => match name.as_str() {
             "id" => {
                 json!({ "type": "string", "x-forge-type": "id", "maxLength": 64, "pattern": "^[A-Za-z0-9_-]+$" })
@@ -734,10 +757,32 @@ fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
             match c {
                 Constraint::Length { min, max } => {
                     if let Some(min) = min {
-                        obj.insert("minLength".into(), json!(min));
+                        obj.insert(
+                            match &ty.base {
+                                TypeBase::Collection {
+                                    collection: CollectionKind::Map,
+                                    ..
+                                } => "minProperties",
+                                TypeBase::Collection { .. } => "minItems",
+                                _ => "minLength",
+                            }
+                            .into(),
+                            json!(min),
+                        );
                     }
                     if let Some(max) = max {
-                        obj.insert("maxLength".into(), json!(max));
+                        obj.insert(
+                            match &ty.base {
+                                TypeBase::Collection {
+                                    collection: CollectionKind::Map,
+                                    ..
+                                } => "maxProperties",
+                                TypeBase::Collection { .. } => "maxItems",
+                                _ => "maxLength",
+                            }
+                            .into(),
+                            json!(max),
+                        );
                     }
                 }
                 Constraint::Compare { op, value } => {

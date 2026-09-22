@@ -512,15 +512,20 @@ impl<'a> Parser<'a> {
     fn type_expr(&mut self) {
         self.start(K::TYPE_EXPR);
         self.start(K::TYPE_REF);
+        let collection = matches!(self.current_text(), "list" | "set" | "map");
         self.qualified_name("type name");
-        if self.at(TokenKind::Lt) && self.type_args_ahead() {
+        if self.at(TokenKind::Lt) && (collection || self.type_args_ahead()) {
             self.start(K::TYPE_ARGS);
             self.bump();
             loop {
                 self.start(K::TYPE_ARG);
-                match self.current() {
-                    TokenKind::Ident | TokenKind::Int | TokenKind::String => self.bump(),
-                    _ => self.error("expected type argument"),
+                if collection {
+                    self.type_expr();
+                } else {
+                    match self.current() {
+                        TokenKind::Ident | TokenKind::Int | TokenKind::String => self.bump(),
+                        _ => self.error("expected type argument"),
+                    }
                 }
                 self.finish();
                 if self.at(TokenKind::Comma) {
@@ -568,7 +573,13 @@ impl<'a> Parser<'a> {
                     self.expect(TokenKind::String, "pattern string");
                     self.finish();
                 }
-                k if Self::is_compare_kind(k) => {
+                k if Self::is_compare_kind(k)
+                    && !(k == TokenKind::Gt
+                        && !matches!(
+                            self.nth(1),
+                            TokenKind::Int | TokenKind::Decimal | TokenKind::Minus
+                        )) =>
+                {
                     self.start(K::REFINEMENT);
                     self.bump();
                     self.literal_or_error();

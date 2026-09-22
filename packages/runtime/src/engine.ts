@@ -374,6 +374,9 @@ export class Engine {
 
   private checkRules(r: Resource, after: Wire, refs: Record<string, Wire | null>): Effect.Effect<void, ForgeError> {
     const self = this;
+    if (self.model.bundle.ir.requires?.includes("collections/1") && new TextEncoder().encode(JSON.stringify(after)).length > 256 * 1024) {
+      return Effect.fail(err("ValidationFailed", "record exceeds the 256 KiB collection profile limit"));
+    }
     const failures = r.rules.filter((rule) => !evalExpr(self.model, r, rule, after, undefined, refs));
     if (failures.length === 0) return Effect.void;
     return Effect.fail(err("ValidationFailed", "a row rule was violated", { fields: failures.map((rule) => ({ path: "", code: "RuleViolation", message: describeRule(rule) })) }));

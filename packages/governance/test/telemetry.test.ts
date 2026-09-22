@@ -40,3 +40,11 @@ describe("PAR-164: sensitive values never reach generated sinks", () => {
     expect(rawLoggingEscapes("const x = 1;\n")).toEqual([]);
   });
 });
+
+it("redacts classified collection contents despite structural container labels",()=>{
+  const collections = JSON.parse(readFileSync(resolve(import.meta.dirname,"../../../conformance/fixtures/collections/app.json"),"utf8")) as AppBundle;
+  const resource = "@dogfood/collections/_/MailingGroup";
+  expect(collections.dataSemantics?.fields.some(f=>f.resource===resource && f.field==="recipients[]" && f.class.includes("ContactEmail"))).toBe(true);
+  const audit = new Redactor(collections).auditRecord(resource,{recipients:["private@example.com"]});
+  expect(audit["recipients"]).toBe("[redacted:collection]");
+});

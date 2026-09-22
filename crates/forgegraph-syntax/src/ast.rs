@@ -276,6 +276,16 @@ impl TypeExpr {
 }
 node!(TypeRef, TYPE_REF);
 impl TypeRef {
+    pub fn element_types(&self) -> Vec<TypeExpr> {
+        child::<TypeArgs>(&self.0)
+            .map(|a| {
+                children::<TypeArg>(&a.0)
+                    .filter_map(|arg| child::<TypeExpr>(&arg.0))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     pub fn name(&self) -> Option<QualifiedName> {
         child(&self.0)
     }

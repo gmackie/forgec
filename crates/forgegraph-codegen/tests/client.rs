@@ -124,3 +124,13 @@ fn smithy_export_is_stable() {
     assert!(idl.contains("operation CustomerCreate {"));
     insta::assert_snapshot!("smithy", idl);
 }
+
+#[test]
+fn collection_clients_preserve_elements_and_nullable_arrays() {
+    let c = compile(&forgegraph_semantic::Package::inline("@test/types",vec![("src/a.forge".into(), "shape Item { name : text }\nresource R { id : id\n items : list<Item>? length <= 8\n labels : map<text,text> length <= 8\n}".into())]),&[]);
+    assert!(c.ir.is_some(), "{}", c.render());
+    let plans = plan(&c.ir.unwrap()).unwrap();
+    let ts = client_ts(&plans.contracts);
+    assert!(ts.contains("Array<{ \"name\": string }> | null"), "{ts}");
+    assert!(ts.contains("Record<string, string>"), "{ts}");
+}

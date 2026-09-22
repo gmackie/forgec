@@ -36,9 +36,54 @@ function boundsOf(t: TypeSpec): { min?: number | string; max?: number | string; 
   return b;
 }
 
+/** Stable object-key order used to compare normalized set members. */
+function canonicalCollectionValue(value:unknown):string {
+  if (Array.isArray(value)) return `[${value.map(canonicalCollectionValue).join(",")}]`;
+  if (value && typeof value==="object") return `{${Object.entries(value).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([k,v])=>`${JSON.stringify(k)}:${canonicalCollectionValue(v)}`).join(",")}}`;
+  return JSON.stringify(value);
+}
+
 /** Decode one wire value of a declared type into its canonical form. */
-export function decodeValue(model: Model, t: TypeSpec, input: unknown): unknown {
+export function decodeValue(model: Model, t: TypeSpec, input: unknown, depth = 0): unknown {
+  if (depth > 12) throw new CodecError("NestingTooDeep");
+  if (input === null && t.optional) return null;
   const b = t.base;
+  if (b.kind === "collection") {
+    const max = Math.min(...t.constraints.filter(c=>c.kind==="length" && c.max!==undefined).map(c=>c.kind==="length"?c.max!:Infinity));
+    const min = Math.max(0,...t.constraints.filter(c=>c.kind==="length").map(c=>c.kind==="length"?c.min ?? 0:0));
+    if (!Number.isFinite(max) || max>1024) throw new CodecError("UnboundedCollection");
+    const map = b.collection === "map";
+    if (map ? input===null || typeof input!=="object" || Array.isArray(input) : !Array.isArray(input)) throw new CodecError("InvalidCollection");
+    const count = map ? Object.keys(input as object).length : (input as unknown[]).length;
+    if (count<min || count>max) throw new CodecError("LengthOutOfRange");
+    let result: unknown;
+    if (map) {
+      result=Object.fromEntries(Object.entries(input as Wire).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([key,value])=>{
+        if (new TextEncoder().encode(key).length>256) throw new CodecError("MapKeyTooLong");
+        return [key,decodeValue(model,b.element,value,depth+1)];
+      }));
+    } else {
+      const items=(input as unknown[]).map(value=>decodeValue(model,b.element,value,depth+1));
+      if (b.collection==="set") {
+        const pairs=items.map(value=>[canonicalCollectionValue(value),value] as const).sort(([a],[b])=>a<b?-1:a>b?1:0);
+        if (pairs.some(([key],i)=>i>0&&pairs[i-1]![0]===key)) throw new CodecError("DuplicateSetValue");
+        result=pairs.map(([,value])=>value);
+      } else result=items;
+    }
+    if (new TextEncoder().encode(JSON.stringify(result)).length>256*1024) throw new CodecError("CollectionTooLarge");
+    return result;
+  }
+  if (b.kind === "shape") {
+    const shape=model.bundle.ir.modules.flatMap(m=>m.shapes ?? []).find(s=>s.id===b.id);
+    if (!shape || input===null || typeof input!=="object" || Array.isArray(input)) throw new CodecError("InvalidShape");
+    const values=input as Wire;
+    if (Object.keys(values).some(key=>!shape.fields.some(f=>f.name===key))) throw new CodecError("UnknownField");
+    return Object.fromEntries([...shape.fields].sort((a,b)=>a.name<b.name?-1:1).map(f=>{
+      const value=Object.hasOwn(values,f.name)?values[f.name]:defaultOf(model,f);
+      if (value===undefined || value===null&&!f.type.optional) throw new CodecError("Required");
+      return [f.name,decodeValue(model,f.type,value,depth+1)];
+    }));
+  }
   if (b.kind === "scalar") {
     const bounds = boundsOf(t);
     switch (b.name) {

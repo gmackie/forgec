@@ -20,20 +20,51 @@ fn ts_type(schema: &Value, optional_null: bool) -> String {
                 "string" => "string".into(),
                 "integer" | "number" => "number".into(),
                 "boolean" => "boolean".into(),
+                "array" => format!("Array<{}>", ts_type(&schema["items"], false)),
+                "object"
+                    if schema
+                        .get("additionalProperties")
+                        .is_some_and(Value::is_object) =>
+                {
+                    format!(
+                        "Record<string, {}>",
+                        ts_type(&schema["additionalProperties"], false)
+                    )
+                }
+                "object" if schema["properties"].is_object() => format!(
+                    "{{ {} }}",
+                    schema["properties"]
+                        .as_object()
+                        .unwrap()
+                        .iter()
+                        .map(|(name, ty)| format!(
+                            "{name:?}{}: {}",
+                            if schema["required"]
+                                .as_array()
+                                .is_some_and(|a| a.iter().any(|s| s == name))
+                            {
+                                ""
+                            } else {
+                                "?"
+                            },
+                            ts_type(ty, false)
+                        ))
+                        .collect::<Vec<_>>()
+                        .join("; ")
+                ),
+
                 _ => "unknown".into(),
             },
             Some(Value::Array(ts)) => ts
                 .iter()
                 .filter_map(|t| t.as_str())
                 .map(|t| {
-                    match t {
-                        "string" => "string",
-                        "integer" | "number" => "number",
-                        "boolean" => "boolean",
-                        "null" => "null",
-                        _ => "unknown",
+                    if t == "null" {
+                        return "null".to_string();
                     }
-                    .to_string()
+                    let mut member = schema.clone();
+                    member["type"] = Value::String(t.into());
+                    ts_type(&member, false)
                 })
                 .collect::<Vec<_>>()
                 .join(" | "),

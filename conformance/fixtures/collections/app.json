@@ -1,0 +1,2958 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "b2f0d19cf25246400d839d3feb132b0ea0e7336d68a74906d31d204e302e0768",
+  "digests": {
+    "source": "9f5be34de889e4ec5ddc8a6a0e64a11bd807d0200ce270a718d7962e5e11709f",
+    "wire": "baa7d116ba08a37afcb1dbfe8807af6e7c426f0f6b9f72a324af5e034ea3e8c9",
+    "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
+    "security": "1291919529ff6147fb962436548878f325f89e2037160886b97ed3dddc29ce38"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@dogfood/collections",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [],
+        "types": [
+          {
+            "id": "@dogfood/collections/_/Recipient",
+            "name": "Recipient",
+            "exported": false,
+            "type": {
+              "base": {
+                "kind": "scalar",
+                "name": "email",
+                "args": []
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": [],
+              "dataClass": "@dogfood/collections/_/ContactEmail"
+            },
+            "dataClass": "@dogfood/collections/_/ContactEmail"
+          }
+        ],
+        "shapes": [
+          {
+            "id": "@dogfood/collections/_/Objective",
+            "name": "Objective",
+            "exported": false,
+            "fields": [
+              {
+                "name": "title",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 100
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "score",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ]
+          }
+        ],
+        "resources": [
+          {
+            "id": "@dogfood/collections/_/LevelDefinition",
+            "name": "LevelDefinition",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "objectives",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "list",
+                    "element": {
+                      "base": {
+                        "kind": "shape",
+                        "id": "@dogfood/collections/_/Objective"
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": []
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 20
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "tags",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "set",
+                    "element": {
+                      "base": {
+                        "kind": "scalar",
+                        "name": "text",
+                        "args": []
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": []
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 32
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "metadata",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "map",
+                    "element": {
+                      "base": {
+                        "kind": "scalar",
+                        "name": "text",
+                        "args": []
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": []
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "grid",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "list",
+                    "element": {
+                      "base": {
+                        "kind": "collection",
+                        "collection": "list",
+                        "element": {
+                          "base": {
+                            "kind": "scalar",
+                            "name": "integer",
+                            "args": []
+                          },
+                          "optional": false,
+                          "normalizers": [],
+                          "constraints": []
+                        }
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": [
+                        {
+                          "kind": "length",
+                          "max": 8
+                        }
+                      ]
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 8
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@dogfood/collections/_/LevelDefinition.create",
+                "kind": "create"
+              },
+              {
+                "id": "@dogfood/collections/_/LevelDefinition.get",
+                "kind": "get"
+              },
+              {
+                "id": "@dogfood/collections/_/LevelDefinition.update",
+                "kind": "update"
+              },
+              {
+                "id": "@dogfood/collections/_/LevelDefinition.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@dogfood/collections/_/LevelDefinition.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@dogfood/collections/_/MailingGroup",
+            "name": "MailingGroup",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "recipients",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "set",
+                    "element": {
+                      "base": {
+                        "kind": "scalar",
+                        "name": "email",
+                        "args": []
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": [],
+                      "dataClass": "@dogfood/collections/_/ContactEmail"
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 100
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "labels",
+                "type": {
+                  "base": {
+                    "kind": "collection",
+                    "collection": "map",
+                    "element": {
+                      "base": {
+                        "kind": "scalar",
+                        "name": "text",
+                        "args": []
+                      },
+                      "optional": false,
+                      "normalizers": [],
+                      "constraints": []
+                    }
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "max": 16
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@dogfood/collections/_/MailingGroup.create",
+                "kind": "create"
+              },
+              {
+                "id": "@dogfood/collections/_/MailingGroup.get",
+                "kind": "get"
+              },
+              {
+                "id": "@dogfood/collections/_/MailingGroup.update",
+                "kind": "update"
+              },
+              {
+                "id": "@dogfood/collections/_/MailingGroup.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@dogfood/collections/_/MailingGroup.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": [
+          {
+            "id": "@dogfood/collections/_/ContactEmail",
+            "name": "ContactEmail",
+            "exported": false,
+            "extends": "data.contact.email"
+          }
+        ]
+      }
+    ],
+    "requires": [
+      "collections/1",
+      "governance/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@dogfood/collections",
+    "resources": [
+      {
+        "id": "@dogfood/collections/_/LevelDefinition",
+        "name": "LevelDefinition",
+        "wireName": "level_definition",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "objectives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "x-forge-type": "text",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "score"
+                ],
+                "additionalProperties": false
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "minItems": 1,
+              "maxItems": 20
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 32
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 64
+            },
+            "grid": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                "uniqueItems": false,
+                "x-forge-collection": "list",
+                "maxItems": 8
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "objectives",
+            "tags",
+            "metadata",
+            "grid"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "objectives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "x-forge-type": "text",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "score"
+                ],
+                "additionalProperties": false
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "minItems": 1,
+              "maxItems": 20
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 32
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 64
+            },
+            "grid": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                "uniqueItems": false,
+                "x-forge-collection": "list",
+                "maxItems": 8
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "objectives",
+            "tags",
+            "metadata",
+            "grid"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "objectives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "x-forge-type": "text",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "score"
+                ],
+                "additionalProperties": false
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "minItems": 1,
+              "maxItems": 20
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 32
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 64
+            },
+            "grid": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                "uniqueItems": false,
+                "x-forge-collection": "list",
+                "maxItems": 8
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 8
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@dogfood/collections/_/LevelDefinition.create",
+            "kind": "create"
+          },
+          {
+            "id": "@dogfood/collections/_/LevelDefinition.get",
+            "kind": "get"
+          },
+          {
+            "id": "@dogfood/collections/_/LevelDefinition.update",
+            "kind": "update"
+          },
+          {
+            "id": "@dogfood/collections/_/LevelDefinition.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@dogfood/collections/_/LevelDefinition.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@dogfood/collections/_/MailingGroup",
+        "name": "MailingGroup",
+        "wireName": "mailing_group",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email",
+                "x-forge-type": "email"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 100
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 16
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "recipients",
+            "labels"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email",
+                "x-forge-type": "email"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 100
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 16
+            }
+          },
+          "required": [
+            "recipients",
+            "labels"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email",
+                "x-forge-type": "email"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 100
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 16
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@dogfood/collections/_/MailingGroup.create",
+            "kind": "create"
+          },
+          {
+            "id": "@dogfood/collections/_/MailingGroup.get",
+            "kind": "get"
+          },
+          {
+            "id": "@dogfood/collections/_/MailingGroup.update",
+            "kind": "update"
+          },
+          {
+            "id": "@dogfood/collections/_/MailingGroup.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@dogfood/collections/_/MailingGroup.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "level_definition",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "objectives",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "objectives",
+            "storage": "json"
+          },
+          {
+            "name": "tags",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "tags",
+            "storage": "json"
+          },
+          {
+            "name": "metadata",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "metadata",
+            "storage": "json"
+          },
+          {
+            "name": "grid",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "grid",
+            "storage": "json"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "mailing_group",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "recipients",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "recipients",
+            "storage": "json"
+          },
+          {
+            "name": "labels",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "labels",
+            "storage": "json"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ],
+    "indexes": [],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@dogfood/collections/_/LevelDefinition",
+        "name": "LevelDefinition",
+        "wireName": "level_definition",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 4
+      },
+      {
+        "id": "@dogfood/collections/_/MailingGroup",
+        "name": "MailingGroup",
+        "wireName": "mailing_group",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 4
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@dogfood/collections",
+    "resources": [
+      {
+        "id": "@dogfood/collections/_/LevelDefinition",
+        "name": "LevelDefinition",
+        "kind": "resource",
+        "label": "Level Definition",
+        "plural": "Level Definitions",
+        "route": "level-definitions",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "objectives",
+            "label": "Objectives",
+            "widget": "json",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "minLength": 1,
+            "maxLength": 20
+          },
+          {
+            "name": "tags",
+            "label": "Tags",
+            "widget": "json",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "maxLength": 32
+          },
+          {
+            "name": "metadata",
+            "label": "Metadata",
+            "widget": "json",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "maxLength": 64
+          },
+          {
+            "name": "grid",
+            "label": "Grid",
+            "widget": "json",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "maxLength": 8
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@dogfood/collections/_/LevelDefinition.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@dogfood/collections/_/MailingGroup",
+        "name": "MailingGroup",
+        "kind": "resource",
+        "label": "Mailing Group",
+        "plural": "Mailing Groups",
+        "route": "mailing-groups",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "recipients",
+            "label": "Recipients",
+            "widget": "json",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "maxLength": 100
+          },
+          {
+            "name": "labels",
+            "label": "Labels",
+            "widget": "json",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "maxLength": 16
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@dogfood/collections/_/MailingGroup.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-dogfood-collections-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.create",
+        "kind": "create",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.get",
+        "kind": "get",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.update",
+        "kind": "update",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.delete",
+        "kind": "delete",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.list.all",
+        "kind": "list",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.create",
+        "kind": "create",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.get",
+        "kind": "get",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.update",
+        "kind": "update",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.delete",
+        "kind": "delete",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.list.all",
+        "kind": "list",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "objectives",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "objectives[]",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "objectives[].title",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "objectives[].score",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "tags",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "tags[]",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "metadata",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "metadata[]",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "grid",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "grid[]",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "grid[][]",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "field": "recipients",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "field": "recipients[]",
+        "class": "@dogfood/collections/_/ContactEmail",
+        "ancestors": [
+          "@dogfood/collections/_/ContactEmail",
+          "data.contact.email",
+          "data.contact",
+          "data"
+        ],
+        "kinds": [
+          "contact",
+          "identifier"
+        ],
+        "identifiability": "direct",
+        "handling": "confidential",
+        "personal": "yes",
+        "evidence": "declared",
+        "completeness": "classified"
+      },
+      {
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "field": "labels",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "field": "labels[]",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "classified": 1,
+      "structural": 6,
+      "unclassified": 12
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.create",
+        "kind": "create",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "outputs": [
+          "id",
+          "objectives",
+          "tags",
+          "metadata",
+          "grid",
+          "version"
+        ],
+        "writes": [
+          "objectives",
+          "tags",
+          "metadata",
+          "grid"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.get",
+        "kind": "get",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "outputs": [
+          "id",
+          "objectives",
+          "tags",
+          "metadata",
+          "grid",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.update",
+        "kind": "update",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "outputs": [
+          "id",
+          "objectives",
+          "tags",
+          "metadata",
+          "grid",
+          "version"
+        ],
+        "writes": [
+          "objectives",
+          "tags",
+          "metadata",
+          "grid"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.delete",
+        "kind": "delete",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "outputs": [
+          "id",
+          "objectives",
+          "tags",
+          "metadata",
+          "grid",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/LevelDefinition.list.all",
+        "kind": "list",
+        "resource": "@dogfood/collections/_/LevelDefinition",
+        "outputs": [
+          "id",
+          "objectives",
+          "tags",
+          "metadata",
+          "grid",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.create",
+        "kind": "create",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "outputs": [
+          "id",
+          "recipients",
+          "labels",
+          "version"
+        ],
+        "writes": [
+          "recipients",
+          "labels"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.get",
+        "kind": "get",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "outputs": [
+          "id",
+          "recipients",
+          "labels",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.update",
+        "kind": "update",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "outputs": [
+          "id",
+          "recipients",
+          "labels",
+          "version"
+        ],
+        "writes": [
+          "recipients",
+          "labels"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.delete",
+        "kind": "delete",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "outputs": [
+          "id",
+          "recipients",
+          "labels",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@dogfood/collections/_/MailingGroup.list.all",
+        "kind": "list",
+        "resource": "@dogfood/collections/_/MailingGroup",
+        "outputs": [
+          "id",
+          "recipients",
+          "labels",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@dogfood/collections",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "LevelDefinitionRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "objectives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "x-forge-type": "text",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "score"
+                ],
+                "additionalProperties": false
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "minItems": 1,
+              "maxItems": 20
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 32
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 64
+            },
+            "grid": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                "uniqueItems": false,
+                "x-forge-collection": "list",
+                "maxItems": 8
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 8
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "objectives",
+            "tags",
+            "metadata",
+            "grid"
+          ]
+        },
+        "LevelDefinitionCreate": {
+          "type": "object",
+          "properties": {
+            "objectives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "x-forge-type": "text",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "score"
+                ],
+                "additionalProperties": false
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "minItems": 1,
+              "maxItems": 20
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 32
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 64
+            },
+            "grid": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                "uniqueItems": false,
+                "x-forge-collection": "list",
+                "maxItems": 8
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 8
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "objectives",
+            "tags",
+            "metadata",
+            "grid"
+          ]
+        },
+        "LevelDefinitionPatch": {
+          "type": "object",
+          "properties": {
+            "objectives": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "x-forge-type": "text",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "score": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "score"
+                ],
+                "additionalProperties": false
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "minItems": 1,
+              "maxItems": 20
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 32
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 64
+            },
+            "grid": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                "uniqueItems": false,
+                "x-forge-collection": "list",
+                "maxItems": 8
+              },
+              "uniqueItems": false,
+              "x-forge-collection": "list",
+              "maxItems": 8
+            }
+          },
+          "additionalProperties": false
+        },
+        "MailingGroupRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email",
+                "x-forge-type": "email"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 100
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 16
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "recipients",
+            "labels"
+          ]
+        },
+        "MailingGroupCreate": {
+          "type": "object",
+          "properties": {
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email",
+                "x-forge-type": "email"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 100
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 16
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "recipients",
+            "labels"
+          ]
+        },
+        "MailingGroupPatch": {
+          "type": "object",
+          "properties": {
+            "recipients": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email",
+                "x-forge-type": "email"
+              },
+              "uniqueItems": true,
+              "x-forge-collection": "set",
+              "maxItems": 100
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "x-forge-type": "text"
+              },
+              "x-forge-collection": "map",
+              "maxProperties": 16
+            }
+          },
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  }
+}

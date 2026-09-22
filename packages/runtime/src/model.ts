@@ -10,6 +10,7 @@ export interface TypeSpec {
   constraints: Constraint[];
 }
 export type TypeBase =
+  | { kind: "collection"; collection: "list" | "set" | "map"; element: TypeSpec }
   | { kind: "scalar"; name: string; args: string[] }
   | { kind: "enum"; id: string }
   | { kind: "shape"; id: string }
@@ -104,7 +105,7 @@ export interface RealtimePlan { version: string; profile: { frame: string; maxFr
 export interface ObservabilityPlan { version: string; dimensions: string[]; classification: Record<string, string>; window: string; operations: { operation: string; kind: string; resource?: string; class: string; slo: { availability: string; latencyGood: string; latencyWithinMs: number; window: string }; histogramBoundariesMs: number[]; businessErrors: string[] }[] }
 export interface WorkflowsPlan { version: string; workflows: { id: string; name: string; version: number; graphHash: string; cloudflare: { name: string; binding: string; className: string }; aws: { stateMachine: string; definition: unknown } }[] }
 export interface SourceDecl { id: string; name: string; cron?: string; timezone?: string; target: string }
-export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[]; purposes?: PurposeDecl[]; dataClasses?: DataClassDecl[] }
+export interface Module { id: string; shapes?: { id: string; fields: Field[] }[]; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[]; purposes?: PurposeDecl[]; dataClasses?: DataClassDecl[] }
 export interface MessagingPlan {
   channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
   subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
@@ -113,7 +114,7 @@ export interface MessagingPlan {
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1", "projection-aggregates/1"];
+export const KNOWN_FEATURES = ["governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }

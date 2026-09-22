@@ -77,9 +77,10 @@ pub fn storage_of(ty: &TypeSpec) -> (&'static str, &'static str) {
             "json" => ("TEXT", "json"),
             _ => ("TEXT", "text"),
         },
-        TypeBase::Shape { .. } | TypeBase::Record { .. } | TypeBase::Message { .. } => {
-            ("TEXT", "json")
-        }
+        TypeBase::Collection { .. }
+        | TypeBase::Shape { .. }
+        | TypeBase::Record { .. }
+        | TypeBase::Message { .. } => ("TEXT", "json"),
         _ => ("TEXT", "text"),
     }
 }

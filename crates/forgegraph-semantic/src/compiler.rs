@@ -141,6 +141,7 @@ struct Ctx<'a> {
     resolving: Vec<String>,
     facet_origins: BTreeMap<String, String>,
     references: Vec<SourceReference>,
+    type_depth: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -182,6 +183,7 @@ pub(crate) fn compile_with_parser(
         resolving: Vec::new(),
         facet_origins: BTreeMap::new(),
         references: Vec::new(),
+        type_depth: 0,
     };
     for (alias, name) in &pkg.dependencies {
         match deps.iter().find(|d| &d.package.name == name) {
@@ -725,6 +727,16 @@ impl<'a> Ctx<'a> {
     }
 
     fn alias_base(&self, module: &str, name: &str) -> TypeBase {
+        self.alias_base_bounded(module, name, 0)
+    }
+    fn alias_base_bounded(&self, module: &str, name: &str, depth: usize) -> TypeBase {
+        // The normal type expansion reports the cycle; base lookup must not overflow first.
+        if depth >= 32 {
+            return TypeBase::Scalar {
+                name: "text".into(),
+                args: vec![],
+            };
+        }
         // A type alias contributes its base; refinements are merged by the caller.
         if let Some(Symbol {
             decl: Declaration::Type(t),
@@ -747,7 +759,7 @@ impl<'a> Ctx<'a> {
                         SymKind::Enum => TypeBase::Enum { id },
                         SymKind::Shape => TypeBase::Shape { id },
                         SymKind::Resource | SymKind::Blob => TypeBase::Reference { resource: id },
-                        SymKind::Type => self.alias_base(module, a),
+                        SymKind::Type => self.alias_base_bounded(module, a, depth + 1),
                         _ => TypeBase::Scalar {
                             name: "text".into(),
                             args: vec![],
@@ -922,10 +934,66 @@ impl<'a> Ctx<'a> {
 
     // ------------------------------------------------------------ types
     fn type_spec(&mut self, te: &ast::TypeExpr, module: &str, file: usize) -> Option<TypeSpec> {
+        if self.type_depth >= 32 {
+            self.err(
+                "E-COLLECTION-003",
+                file,
+                range_of(te),
+                "type expansion exceeds the maximum depth or contains a recursive alias",
+                None,
+            );
+            return None;
+        }
+        self.type_depth += 1;
+        let result = self.type_spec_inner(te, module, file);
+        self.type_depth -= 1;
+        result
+    }
+    fn type_spec_inner(
+        &mut self,
+        te: &ast::TypeExpr,
+        module: &str,
+        file: usize,
+    ) -> Option<TypeSpec> {
         let tr = te.type_ref()?;
         let name = tr.name()?;
         let segs = name.segments();
-        let res = self.resolve(&segs, module, file, range_of(&name))?;
+        let collection = segs.len() == 1 && matches!(segs[0].as_str(), "list" | "set" | "map");
+        let res = if collection {
+            let types = tr.element_types();
+            let map = segs[0] == "map";
+            if types.len() != if map { 2 } else { 1 } {
+                self.err(
+                    "E-COLLECTION-001",
+                    file,
+                    range_of(&tr),
+                    "list/set require one element type; map requires text and a value type",
+                    None,
+                );
+                return None;
+            }
+            if map && types[0].syntax().text().to_string().trim() != "text" {
+                self.err(
+                    "E-COLLECTION-001",
+                    file,
+                    range_of(&tr),
+                    "map keys must be text",
+                    None,
+                );
+                return None;
+            }
+            let element = self.type_spec(types.last().unwrap(), module, file)?;
+            Resolved::Type(TypeBase::Collection {
+                collection: match segs[0].as_str() {
+                    "list" => CollectionKind::List,
+                    "set" => CollectionKind::Set,
+                    _ => CollectionKind::Map,
+                },
+                element: Box::new(element),
+            })
+        } else {
+            self.resolve(&segs, module, file, range_of(&name))?
+        };
         let Resolved::Type(mut base) = res else {
             self.err(
                 "E-TYPE-001",
@@ -941,7 +1009,7 @@ impl<'a> Ctx<'a> {
             if !args.is_empty() {
                 *a = args;
             }
-        } else if !args.is_empty() {
+        } else if !args.is_empty() && !collection {
             self.err(
                 "E-TYPE-002",
                 file,
@@ -952,6 +1020,7 @@ impl<'a> Ctx<'a> {
         }
         // Inherit alias refinements.
         let (mut normalizers, mut constraints) = (Vec::new(), Vec::new());
+        let mut inherited_data = None;
         if let [a] = segs.as_slice()
             && let Some(Symbol {
                 decl: Declaration::Type(t),
@@ -963,6 +1032,8 @@ impl<'a> Ctx<'a> {
             if let Some(spec) = self.type_spec(&inner, module, file) {
                 normalizers = spec.normalizers;
                 constraints = spec.constraints;
+                base = spec.base;
+                inherited_data = spec.data_class;
             }
         }
         for r in te.refinements() {
@@ -1026,13 +1097,74 @@ impl<'a> Ctx<'a> {
                 ),
             }
         }
+        if let TypeBase::Collection { element, .. } = &base {
+            let upper = constraints
+                .iter()
+                .filter_map(|c| {
+                    if let Constraint::Length { max, .. } = c {
+                        *max
+                    } else {
+                        None
+                    }
+                })
+                .min();
+            let lower = constraints
+                .iter()
+                .filter_map(|c| {
+                    if let Constraint::Length { min, .. } = c {
+                        *min
+                    } else {
+                        None
+                    }
+                })
+                .max()
+                .unwrap_or(0);
+            if upper.is_none_or(|n| n > 1024 || n < lower)
+                || constraints
+                    .iter()
+                    .any(|c| !matches!(c, Constraint::Length { .. }))
+                || !normalizers.is_empty()
+            {
+                self.err("E-COLLECTION-002",file,range_of(te),"collections require consistent length bounds with an upper bound at most 1024 and no scalar refinements",None);
+            }
+            let mut depth = 1;
+            let mut nested = &element.base;
+            while let TypeBase::Collection { element, .. } = nested {
+                depth += 1;
+                nested = &element.base;
+            }
+            if depth > 4 {
+                self.err(
+                    "E-COLLECTION-003",
+                    file,
+                    range_of(te),
+                    "collection nesting exceeds the portable depth of four",
+                    None,
+                );
+            }
+        }
+        if let [a] = segs.as_slice()
+            && let Some(Symbol {
+                decl: Declaration::Type(alias),
+                ..
+            }) = self.sym(module, a)
+        {
+            let alias = alias.clone();
+            if let Some(d) = alias
+                .decorators()
+                .find(|d| d.name().is_some_and(|n| n.text() == "data"))
+                && let Some(ArgValue::Name(path)) = d.args().first().and_then(|a| a.value())
+            {
+                inherited_data = self.resolve_data_class_or_path(&path, module, file, range_of(&d));
+            }
+        }
         Some(TypeSpec {
             base,
             optional: te.is_optional(),
             normalizers,
             constraints,
             purpose: None,
-            data_class: None,
+            data_class: inherited_data,
         })
     }
 
@@ -2227,7 +2359,7 @@ impl<'a> Ctx<'a> {
                     else {self.err("E-EXCLUSIVE-002",file,range_of(&u),format!("unknown conditional uniqueness member `{value}`"),None);}
                 }
                 for key in fs.iter().chain(within.iter()) {
-                    if fields.iter().find(|f| &f.name == key).is_some_and(|f| f.ty.optional || matches!(f.ty.base,TypeBase::Shape {..}|TypeBase::Record {..}|TypeBase::Message {..})) {
+                    if fields.iter().find(|f| &f.name == key).is_some_and(|f| f.ty.optional || matches!(f.ty.base,TypeBase::Shape {..}|TypeBase::Record {..}|TypeBase::Message {..}|TypeBase::Collection {..})) {
                         self.err("E-EXCLUSIVE-003",file,range_of(&u),"conditional uniqueness keys must be required scalar, enum or identity fields",None);
                     }
                 }
@@ -4588,6 +4720,16 @@ impl<'a> Ctx<'a> {
             requires.push("projection-aggregates/1".into());
             requires.sort();
         }
+        if self.files.iter().any(|f| {
+            f.parse
+                .syntax()
+                .descendants()
+                .filter_map(ast::TypeRef::cast)
+                .any(|t| !t.element_types().is_empty())
+        }) {
+            requires.push("collections/1".into());
+            requires.sort();
+        }
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
             requires,
@@ -5000,6 +5142,10 @@ fn describe_type(t: &TypeSpec) -> String {
         TypeBase::Record { resource } => format!("{}.Record", short_id(resource)),
         TypeBase::Identity { resource } => format!("{}.Identity", short_id(resource)),
         TypeBase::Status { resource } => format!("{}.Status", short_id(resource)),
+        TypeBase::Collection {
+            collection,
+            element,
+        } => format!("{collection:?}<{element:?}>"),
         TypeBase::Message { channel, message } => format!("{}.{message}", short_id(channel)),
     }
 }

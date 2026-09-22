@@ -547,7 +547,7 @@
               "members": [
                 {
                   "type": "SYMBOL",
-                  "name": "qualified_name"
+                  "name": "type_expression"
                 },
                 {
                   "type": "SYMBOL",
@@ -573,7 +573,7 @@
                     "members": [
                       {
                         "type": "SYMBOL",
-                        "name": "qualified_name"
+                        "name": "type_expression"
                       },
                       {
                         "type": "SYMBOL",
@@ -3633,7 +3633,11 @@
       "name": "doc_comment"
     }
   ],
-  "conflicts": [],
+  "conflicts": [
+    [
+      "type_expression"
+    ]
+  ],
   "precedences": [],
   "externals": [],
   "inline": [],

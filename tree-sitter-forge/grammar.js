@@ -5,6 +5,7 @@ module.exports = grammar({
   name: "forge",
   extras: ($) => [/\s/, ";", $.comment, $.doc_comment],
   word: ($) => $.identifier,
+  conflicts: ($) => [[$.type_expression]],
   rules: {
     source_file: ($) => repeat($._declaration),
     _declaration: ($) =>
@@ -81,7 +82,7 @@ module.exports = grammar({
         seq(field("name", $.qualified_name), optional($.type_arguments)),
       ),
     type_arguments: ($) =>
-      seq("<", comma(choice($.qualified_name, $.integer, $.string)), ">"),
+      seq("<", comma(choice($.type_expression, $.integer, $.string)), ">"),
     refinement: ($) =>
       choice(
         "trim",
