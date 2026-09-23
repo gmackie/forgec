@@ -1,0 +1,95 @@
+import { DatabaseSync, type SQLInputValue } from "node:sqlite";
+import { D1Storage } from "../src/adapters/d1.js";
+import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { Effect } from "effect";
+import { expect, it } from "vitest";
+import { Engine } from "../src/engine.js";
+import { Model, type AppBundle } from "../src/model.js";
+import { MemoryStorage } from "../src/adapters/memory.js";
+import { testLayer } from "../src/testing.js";
+import { Usage, type UsageInput } from "../src/foundation/usage.js";
+import { localAuthorizer } from "../src/gatekeeper.js";
+const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.dirname, "../../../conformance/fixtures/usage-consumer");
+const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
+const prefix = "@forgegraph/foundation/usage/_/", consumer = "@foundation-probe/usage-consumers/_/";
+const ctx = { tenant: "acme", actor: "user", requestId: "usage" };
+for (const adapter of ["memory", "sqlite"]) it(`${adapter}: exact usage, source identity, correction history and reproducible projections`, async () => {
+  const model = new Model(bundle), db = new DatabaseSync(":memory:");
+  db.exec(readFileSync(resolve(fixture, "d1/0001_init.sql"), "utf8"));
+  const execute = (s: SqlStatement) => ({ changes: Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes) });
+  const executor: SqlExecutor = {
+    facade: "sqlite-test",
+    first: async <T>(s: SqlStatement) => (db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T | null,
+    all: async <T>(s: SqlStatement) => db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
+    run: async s => execute(s),
+    batch: async statements => { db.exec("BEGIN"); try { const results = statements.map(execute); db.exec("COMMIT"); return results; } catch (error) { db.exec("ROLLBACK"); throw error; } },
+  };
+  try {
+    const engine = new Engine(model, testLayer(adapter === "memory" ? new MemoryStorage() : new D1Storage(executor, model)));
+    const call = (op: string, input: Record<string, unknown>, context = ctx) => Effect.runPromise(engine.call(prefix + op, input, context));
+    const service = new Usage(engine), run = Effect.runPromise;
+    const source = await call("UsageSource.create", { key: "meter" });
+    const tokens = await call("UsageDimension.create", { key: "tokens", unit: "token" });
+    const cpu = await call("UsageDimension.create", { key: "compute", unit: "second" });
+    const machine = await call("UsageDimension.create", { key: "machine", unit: "hour" });
+    const stream = await call("UsageStream.create", { label: "LLM", dimension: tokens.id });
+    const compute = await call("UsageStream.create", { label: "CPU", dimension: cpu.id });
+    const equipment = await call("UsageStream.create", { label: "Machine", dimension: machine.id });
+    for (const [name, field, id] of [["LlmSession", "tokenUsage", stream.id], ["ComputeRun", "computeUsage", compute.id], ["MachineRun", "machineUsage", equipment.id]]) await run(engine.call(consumer + name + ".create", { [String(field)]: id }, ctx));
+    const from = "2026-01-01T00:00:00Z", until = "2026-01-02T00:00:00Z";
+    const point: UsageInput = { stream: String(stream.id), dimension: String(tokens.id), unit: "token", quantity: "9007199254.000001", ordinal: 1, source: String(source.id), eventKey: "tokens-1", occurredAt: from };
+    const outcomes = await Promise.allSettled(Array.from({ length: 8 }, () => run(service.ingest(point, ctx))));
+    expect(outcomes.filter(x => x.status === "fulfilled")).toHaveLength(8);
+    const original = (outcomes[0] as PromiseFulfilledResult<Record<string, unknown>>).value;
+    expect(new Set(outcomes.map(x => (x as PromiseFulfilledResult<Record<string, unknown>>).value.id)).size).toBe(1);
+    expect((await run(service.ingest({ ...point, quantity: "9007199254.000001" }, ctx))).id).toBe(original.id);
+    await expect(run(service.ingest({ ...point, quantity: "1" }, ctx))).rejects.toMatchObject({ code: "IdempotencyMismatch" });
+    await expect(run(service.ingest({ ...point, eventKey: "bad-unit", ordinal: 2, unit: "second" }, ctx))).rejects.toThrow();
+    await expect(run(service.ingest({ ...point, eventKey: "bad-dimension", ordinal: 2, dimension: String(cpu.id), unit: "second" }, ctx))).rejects.toThrow();
+    await expect(run(service.ingest({ ...point, eventKey: "bad-precision", ordinal: 2, quantity: "0.0000001" }, ctx))).rejects.toThrow();
+    await expect(run(service.ingest({ ...point, eventKey: "mixed-time", ordinal: 2, intervalStart: from, intervalEnd: until }, ctx))).rejects.toThrow();
+    const boundary = await run(service.ingest({ ...point, eventKey: "boundary", ordinal: 2, quantity: "5", occurredAt: until }, ctx));
+    const before = await run(service.aggregate(String(stream.id), from, until, ctx));
+    expect(before.quantity).toBe("9007199254.000001");
+    expect(before.eventIds).toEqual([original.id]);
+    const replacement = await run(service.ingest({ ...point, eventKey: "replacement", ordinal: 3, quantity: "0.1", replacementFor: String(original.id) }, ctx));
+    expect((await run(service.aggregate(String(stream.id), from, until, ctx))).quantity).toBe(before.quantity);
+    await run(service.correct(String(original.id), String(replacement.id), "Correct meter", ctx));
+    await expect(run(service.correct(String(replacement.id), String(original.id), "Cycle", ctx))).rejects.toThrow();
+    await expect(run(service.retract(String(original.id), "Second terminal", ctx))).rejects.toThrow();
+    expect((await run(service.aggregate(String(stream.id), from, until, ctx))).quantity).toBe("0.100000");
+    expect(await run(service.replay(before, ctx))).toBe("9007199254.000001");
+    const competing = await Promise.allSettled([
+      run(service.retract(String(replacement.id), "Invalid observation", ctx)),
+      run(service.retract(String(replacement.id), "Competing retraction", ctx)),
+    ]);
+    expect(competing.filter(r => r.status === "fulfilled")).toHaveLength(1);
+    expect((await run(service.aggregate(String(stream.id), from, until, ctx))).quantity).toBe("0.000000");
+    const interval: UsageInput = { stream: String(compute.id), dimension: String(cpu.id), unit: "second", quantity: "0.100001", ordinal: 1, source: String(source.id), eventKey: "cpu", intervalStart: from, intervalEnd: until };
+    await run(service.ingest(interval, ctx));
+    await run(service.ingest({ ...interval, eventKey: "cpu2", ordinal: 2, quantity: "0.200002" }, ctx));
+    expect((await run(service.aggregate(String(compute.id), from, until, ctx))).quantity).toBe("0.300003");
+    await expect(run(service.aggregate(String(compute.id), "2026-01-01T12:00:00Z", until, ctx))).rejects.toThrow();
+    await expect(run(service.ingest({ ...interval, eventKey: "empty", ordinal: 3, intervalEnd: from }, ctx))).rejects.toThrow();
+    await run(service.ingest({ ...interval, stream: String(equipment.id), dimension: String(machine.id), unit: "hour", eventKey: "machine", quantity: "1.5" }, ctx));
+    expect((await run(service.aggregate(String(equipment.id), from, until, ctx))).quantity).toBe("1.500000");
+    for (let i = 3; i < 106; i++) await run(service.ingest({ ...interval, ordinal: i, eventKey: `page-${i}`, quantity: "0.000001" }, ctx));
+    expect((await run(service.aggregate(String(compute.id), from, until, ctx))).quantity).toBe("0.300106");
+    const raw = { ...point, eventKey: "raw-source", ordinal: 4, quantity: "2", occurredAt: until };
+    const rawEvent = await call("UsageEvent.create", raw);
+    expect((await run(service.ingest(raw, ctx))).id).toBe(rawEvent.id);
+    await expect(run(service.ingest({ ...raw, quantity: "3" }, ctx))).rejects.toMatchObject({ code: "IdempotencyMismatch" });
+    await expect(run(service.ingest({ ...point, eventKey: "bad-successor", ordinal: 5, replacementFor: String(replacement.id), stream: String(compute.id), dimension: String(cpu.id), unit: "second" }, ctx))).rejects.toThrow();
+    for (const name of ["UsageEvent", "UsageCorrection"]) await expect(call(name + ".delete", { id: original.id })).rejects.toThrow();
+    await expect(run(service.aggregate(String(stream.id), from, until, { ...ctx, tenant: "other" }))).rejects.toThrow();
+    await expect(run(service.ingest({ ...point, eventKey: "foreign", ordinal: 4 }, { ...ctx, tenant: "other" }))).rejects.toThrow();
+    const guarded = new Engine(model, engine.layer);
+    guarded.gatekeeper.authorizer = localAuthorizer({ policies: ["UsageStream", "UsageDimension", "UsageEvent"].map(name => ({ id: name, actions: [prefix + name + ".*"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
+    await expect(run(new Usage(guarded).aggregate(String(stream.id), from, until, ctx))).rejects.toMatchObject({ code: "NotFound" });
+    await expect(run(new Usage(guarded).retract(String(boundary.id), "Denied mutation", ctx))).rejects.toThrow();
+    const restarted = new Usage(new Engine(model, engine.layer));
+    expect(await run(restarted.replay(before, ctx))).toBe(before.quantity);
+  } finally { db.close(); }
+});

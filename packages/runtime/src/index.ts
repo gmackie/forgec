@@ -45,3 +45,5 @@ export * from "./foundation/party.js";
 export * from "./foundation/evidence.js";
 export * from "./foundation/classification.js";
 export * from "./foundation/availability.js";
+export * from "./foundation/usage.js";
+export * from "./foundation/evaluation.js";

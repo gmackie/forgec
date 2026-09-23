@@ -4,20 +4,26 @@
   "issue": 35,
   "dependencies": [],
   "facts": [
-    "UsageStream: subject-owned metering handle",
-    "UsageEvent: dimension, exact quantity/unit, point or interval, source event identity",
-    "UsageCorrection: superseding/retracting relation preserving original consumption"
+    "UsageDimension: immutable dimension key and exact unit",
+    "UsageSource: tenant-scoped ingestion authority identity",
+    "UsageStream: typed subject-owned dimension-specific handle",
+    "UsageEvent: immutable decimal<6> quantity, point or interval, source identity and ordered optional replacement provenance",
+    "UsageCorrection: immutable unique terminal replacement/retraction fact"
   ],
   "operations": [
-    "IngestUsage(stream, source, eventKey, measurement)",
-    "CorrectUsage(original, replacement); RetractUsage(original)",
-    "AggregateUsage(stream, dimension, interval); RebuildUsageProjection"
+    "Usage.ingest with source-identity replay/conflict detection",
+    "Usage.correct and Usage.retract with unique terminal facts",
+    "Usage.aggregate with exact BigInt sum and contributing immutable IDs",
+    "Usage.replay with authorization and dimension validation"
   ],
   "invariants": [
-    "Same tenant/source/event key and same payload are idempotent; conflicting payload is rejected",
-    "Point event uses occurredAt; interval uses start/end with start < end and half-open semantics",
-    "Raw measurements are immutable; corrections are new records and cannot form cycles",
-    "Aggregation separates dimension/unit; derived totals can rebuild without double counting retractions"
+    "Same tenant/source/event key and same normalized payload are idempotent; conflicting payload is rejected",
+    "Dimension/unit and per-stream ordinal are explicit; conversion and sequence allocation remain external",
+    "Point uses occurredAt; interval uses start/end with start < end and half-open semantics; partial interval aggregation fails",
+    "Raw measurements are immutable; staged forward-ordinal same-stream replacements contribute only through committed correction links",
+    "Each original has one terminal correction; competing correction/retraction admits one winner; forward ordinals prevent cycles",
+    "Aggregation fails closed on unreadable events/corrections, uses exact minor units and provides a reproducible contributing-ID manifest",
+    "Live aggregation is bounded and not a transactional snapshot; authoritative billing requires a separate closure protocol"
   ],
   "acceptance": [
     {

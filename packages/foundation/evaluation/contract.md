@@ -1,6 +1,6 @@
 # evaluation substrate contract
 
-Phase 0 contract; implementation and every acceptance case remain **planned**.
+Experimental local implementation. All six acceptance cases execute generated memory/SQLite bundles; hosted providers are not certified.
 Logical Forge identity: `@forgegraph/foundation/evaluation`. Initial release target: experimental `0.1.0`.
 Source: [issue #32](https://github.com/gmackie/forgec/issues/32), under [epic #25](https://github.com/gmackie/forgec/issues/25).
 
@@ -10,7 +10,7 @@ Source: [issue #32](https://github.com/gmackie/forgec/issues/32), under [epic #2
 - EvaluationSet: subject-owned run grouping sidecar
 - EvaluationRunEvidence: exact evidence-bundle association
 
-Subject points to EvaluationSet; a typed satellite may reference both run and subject for precise association. Planned -> Running -> Completed or Failed; Planned/Running -> Cancelled. Domain verdict (for example unacceptable quality) may accompany Completed execution. Executor is an evaluation-specific handle with typed adapter satellite. Parent run/batch membership must be bounded and acyclic. Reproducibility metadata uses pinned typed configuration satellites; domain measurements retain explicit units outside this envelope.
+Subject points to EvaluationSet; a typed satellite may reference both run and subject for precise association. Phase is derived from immutable facts: Planned → Running → Completed or Failed; Planned/Running → Cancelled. Unique terminal facts win over concurrently recorded start intents. Domain verdict (for example unacceptable quality) may accompany Completed execution. Executor is an evaluation-specific handle with typed adapter satellite. Parent run/batch membership must be bounded and acyclic. Reproducibility metadata uses pinned typed configuration satellites; domain measurements retain explicit units outside this envelope.
 
 ## Dependencies and composition
 
