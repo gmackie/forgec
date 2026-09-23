@@ -170,6 +170,18 @@ impl ConceptIR {
                 bound.push((&interval.from, false));
                 if let Some(to) = &interval.to {
                     bound.push((to, true));
+                    if let (Some(start), Some(end)) = (fs.get(&interval.from), fs.get(to)) {
+                        let mut end_type = end.ty.clone();
+                        end_type.optional = false;
+                        if value_type(&start.ty) != value_type(&end_type) {
+                            problem(
+                                &mut errors,
+                                "E-L0-TEMPORAL",
+                                id,
+                                "interval endpoints must use the same date or timestamp type",
+                            );
+                        }
+                    }
                     if to == &interval.from {
                         problem(
                             &mut errors,
@@ -260,6 +272,7 @@ impl ConceptIR {
                     selection.tie_break.iter().any(|key| {
                         fs.get(key).is_some_and(|f| {
                             f.immutable
+                                && !f.ty.optional
                                 && matches!(&f.ty.base, Type::Scalar {name, ..} if name == "id")
                         })
                     })
@@ -273,13 +286,34 @@ impl ConceptIR {
                     );
                 }
             }
+            let mut tie_fields = BTreeSet::new();
             for field in &selection.tie_break {
-                if !fields(self, &selection.target).is_some_and(|f| f.contains_key(field)) {
+                if !tie_fields.insert(field) {
                     problem(
                         &mut errors,
                         "E-L0-TEMPORAL",
                         id,
-                        format!("unknown tie-break field {field}"),
+                        "duplicate tie-break field",
+                    );
+                }
+                if !fields(self, &selection.target)
+                    .and_then(|fs| fs.get(field))
+                    .is_some_and(|f| {
+                        matches!(
+                            value_type(&f.ty),
+                            Ok(ValueType::Bool
+                                | ValueType::Number
+                                | ValueType::Text
+                                | ValueType::Time
+                                | ValueType::Date)
+                        )
+                    })
+                {
+                    problem(
+                        &mut errors,
+                        "E-L0-TEMPORAL",
+                        id,
+                        format!("tie-break field {field} must be a required orderable scalar"),
                     );
                 }
             }
@@ -493,6 +527,7 @@ enum ValueType {
     Number,
     Text,
     Time,
+    Date,
     Null,
     Record(String),
     Collection(Box<ValueType>),
@@ -505,7 +540,8 @@ fn value_type(ty: &crate::concept::ConceptType) -> Result<ValueType, String> {
         Type::Scalar { name, .. } => match name.as_str() {
             "boolean" | "bool" => Ok(ValueType::Bool),
             "integer" | "int" | "decimal" => Ok(ValueType::Number),
-            "datetime" | "timestamp" | "date" => Ok(ValueType::Time),
+            "datetime" | "timestamp" => Ok(ValueType::Time),
+            "date" => Ok(ValueType::Date),
             "text" | "id" => Ok(ValueType::Text),
             _ => Err(format!("unsupported contract scalar {name}")),
         },
@@ -550,7 +586,7 @@ impl ConceptIR {
             }
             Expr::Literal { literal } => match literal {
                 Literal::Bool(_) => Ok(ValueType::Bool),
-                Literal::Int(v) | Literal::Decimal(v) | Literal::Percent(v)
+                Literal::Int(v) | Literal::Decimal(v)
                     if v.parse::<f64>().is_ok_and(f64::is_finite) =>
                 {
                     Ok(ValueType::Number)
@@ -579,7 +615,9 @@ impl ConceptIR {
                     {
                         Ok(ValueType::Bool)
                     }
-                    "<" | "<=" | ">" | ">=" if matches!(a, ValueType::Number | ValueType::Time) => {
+                    "<" | "<=" | ">" | ">="
+                        if matches!(a, ValueType::Number | ValueType::Time | ValueType::Date) =>
+                    {
                         Ok(ValueType::Bool)
                     }
                     "+" | "-" | "*" if a == ValueType::Number => Ok(ValueType::Number),
@@ -663,13 +701,28 @@ impl ConceptIR {
                 TemporalRelation::During { from, to } => vec![from, to],
                 TemporalRelation::Latest => vec![],
             };
+            let axis_type = self
+                .semantics
+                .temporal
+                .get(&selection.target)
+                .and_then(|temporal| match selection.axis {
+                    TemporalAxis::Occurrence => temporal.occurrence.as_ref(),
+                    TemporalAxis::Valid => temporal.valid.as_ref().map(|interval| &interval.from),
+                    TemporalAxis::Knowledge => {
+                        temporal.knowledge.as_ref().map(|interval| &interval.from)
+                    }
+                })
+                .and_then(|name| fields(self, &selection.target)?.get(name))
+                .and_then(|field| value_type(&field.ty).ok());
             for expression in expressions {
-                if self.expression_type(expression, &scope) != Ok(ValueType::Time) {
+                let actual = self.expression_type(expression, &scope).ok();
+                if !matches!(actual, Some(ValueType::Time | ValueType::Date)) || actual != axis_type
+                {
                     problem(
                         &mut errors,
                         "E-L0-TEMPORAL",
                         id,
-                        "selector bounds must reference typed business-time values in their context",
+                        "selector bounds must match the selected axis date or timestamp type in their context",
                     );
                 }
             }

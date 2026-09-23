@@ -255,3 +255,80 @@ fn views_cannot_project_credentials_or_change_authoritative_data() {
     assert_eq!(before.entities, after.entities);
     assert!(!before.semantic_changes(&after).is_empty());
 }
+
+#[test]
+fn temporal_bounds_preserve_calendar_dates_and_instant_types() {
+    let mut v = fixture("commerce");
+    v["entities"][id("SettlementPosition")]["fields"]["validFrom"]["ty"]["base"]["name"] =
+        json!("date");
+    assert!(ConceptIR::load(&v).unwrap_err().contains("E-L0-TEMPORAL"));
+    v["facts"][id("PaymentReceived")]["fields"]["occurredAt"]["ty"]["base"]["name"] = json!("date");
+    ConceptIR::load(&v).unwrap();
+    v["semantics"]["selections"][id("validAtOccurrence")]["relation"] = json!({
+        "kind":"during", "from":{"kind":"name", "path":["occurrence", "occurredAt"]},
+        "to":{"kind":"name", "path":["occurrence", "knownAt"]}
+    });
+    assert!(ConceptIR::load(&v).is_err_and(|e| e.contains("E-L0-TEMPORAL")));
+    v["semantics"]["selections"][id("validAtOccurrence")]["relation"]["to"]["path"] =
+        json!(["current", "validFrom"]);
+    ConceptIR::load(&v).unwrap();
+    v["semantics"]["contracts"][id("Available")]["predicate"] = json!({
+        "kind":"binary", "op":"<=", "lhs":{"kind":"name", "path":["current", "validFrom"]},
+        "rhs":{"kind":"name", "path":["occurrence", "occurredAt"]}
+    });
+    ConceptIR::load(&v).unwrap();
+    v["semantics"]["contracts"][id("Available")]["predicate"]["rhs"]["path"] =
+        json!(["occurrence", "knownAt"]);
+    assert!(ConceptIR::load(&v).is_err_and(|e| e.contains("E-L0-CONTRACT")));
+    let mut aliases = fixture("commerce");
+    aliases["entities"][id("SettlementPosition")]["fields"]["validUntil"] =
+        aliases["entities"][id("SettlementPosition")]["fields"]["validFrom"].clone();
+    aliases["entities"][id("SettlementPosition")]["fields"]["validUntil"]["ty"]["base"]["name"] =
+        json!("timestamp");
+    aliases["entities"][id("SettlementPosition")]["fields"]["validUntil"]["ty"]["optional"] =
+        json!(true);
+    aliases["semantics"]["temporal"][id("SettlementPosition")]["valid"]["to"] = json!("validUntil");
+    aliases["facts"][id("PaymentReceived")]["fields"]["occurredAt"]["ty"]["base"]["name"] =
+        json!("timestamp");
+    ConceptIR::load(&aliases).unwrap();
+}
+
+#[test]
+fn temporal_intervals_and_latest_require_compatible_orderable_fields() {
+    let base = fixture("commerce");
+    let mut cases = vec![];
+    let mut v = base.clone();
+    v["entities"][id("SettlementPosition")]["fields"]["validUntil"] =
+        v["entities"][id("SettlementPosition")]["fields"]["validFrom"].clone();
+    v["entities"][id("SettlementPosition")]["fields"]["validUntil"]["ty"]["base"]["name"] =
+        json!("date");
+    v["semantics"]["temporal"][id("SettlementPosition")]["valid"]["to"] = json!("validUntil");
+    cases.push(v);
+    let mut latest = base.clone();
+    latest["semantics"]["selections"][id("validAtOccurrence")]["relation"] =
+        json!({"kind":"latest"});
+    latest["semantics"]["selections"][id("validAtOccurrence")]["tie_break"] = json!(["id"]);
+    ConceptIR::load(&latest).unwrap();
+    let mut v = latest.clone();
+    v["entities"][id("SettlementPosition")]["fields"]["id"]["ty"]["optional"] = json!(true);
+    cases.push(v);
+    for keys in [json!(["id", "creditor"]), json!(["id", "id"])] {
+        let mut v = latest.clone();
+        v["semantics"]["selections"][id("validAtOccurrence")]["tie_break"] = keys;
+        cases.push(v);
+    }
+    for (i, v) in cases.iter().enumerate() {
+        assert!(
+            ConceptIR::load(v).is_err_and(|e| e.contains("E-L0-TEMPORAL")),
+            "case {i} must reject ambiguous temporal ordering"
+        );
+    }
+}
+
+#[test]
+fn percent_literals_cannot_bypass_quantity_type_checks() {
+    let mut v = fixture("commerce");
+    v["semantics"]["contracts"][id("Available")]["predicate"]["rhs"] =
+        json!({"kind":"literal", "literal":{"type":"percent", "value":"50"}});
+    assert!(ConceptIR::load(&v).is_err_and(|e| e.contains("E-L0-CONTRACT")));
+}
