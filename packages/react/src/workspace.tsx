@@ -44,7 +44,7 @@ export function Workspace({ descriptor, call, initialRoute, onDirtyChange, onRou
           ))}
         </ul>
       </nav>
-      <main style={{ padding: 16 }}>{resource ? <ResourceView key={resource.id} resource={resource} descriptor={descriptor} call={call} onDirtyChange={reportDirty} canDelete={operations?.includes(`${resource.id}.delete`) ?? false} /> : null}</main>
+      <main style={{ padding: 16 }}>{resource ? <ResourceView key={resource.id} resource={resource} descriptor={descriptor} call={call} onDirtyChange={reportDirty} {...(operations ? { operations } : {})} /> : null}</main>
     </div>
   );
 }
@@ -52,14 +52,20 @@ export function Workspace({ descriptor, call, initialRoute, onDirtyChange, onRou
 // ------------------------------------------------------------------ resource view
 
 interface ViewProps {
-  canDelete: boolean;
+  operations?: readonly string[];
   onDirtyChange: (dirty: boolean) => void;
   resource: UiResource;
   descriptor: UiDescriptor;
   call: ForgeCall;
 }
 
-function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: ViewProps) {
+function ResourceView({ resource, descriptor, call, onDirtyChange, operations }: ViewProps) {
+  const allows = (op: string) => !operations || operations.includes(op);
+  const reviewAvailable = ["propose", "preview", "approve", "commit"].every((op) => allows(`${pkgOf(descriptor)}/_/changesets.${op}`));
+  const canCreate = reviewAvailable && allows(`${resource.id}.create`);
+  const canUpdate = reviewAvailable && allows(`${resource.id}.update`);
+  const canDelete = reviewAvailable && (operations?.includes(`${resource.id}.delete`) ?? false);
+  const lists = useMemo(() => resource.lists.filter((l) => !operations || operations.includes(l.op)), [resource, operations]);
   const [rows, setRows] = useState<Row[]>([]);
   const [tick, setTick] = useState(0);
   const buffer = useMemo(() => new EditBuffer(resource), [resource]);
@@ -67,7 +73,13 @@ function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: 
   const [error, setError] = useState<string | null>(null);
   const [action, setAction] = useState<{ row: Row; action: UiAction } | null>(null);
   const [importOpen, setImportOpen] = useState(false);
-  const [listSel, setListSel] = useState(0);
+  const [listSel, setListSel] = useState(() => Math.max(0, lists.findIndex((l) => !l.params.length)));
+  const [pages, setPages] = useState<(string | undefined)[]>([undefined]);
+  const [next, setNext] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState("");
+  const request = useRef(0);
+  const cursor = pages[pages.length - 1];
   const [params, setParams] = useState<Record<string, string>>({});
   const bump = () => setTick((t) => t + 1);
 
@@ -84,35 +96,29 @@ function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: 
     setBusy(true);
     try { await task(); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   };
-  const list = resource.lists[listSel];
+  const list = lists[listSel];
 
   const reload = useCallback(async () => {
-    if (!list) return;
-    if (list.params.some((p) => !params[p])) {
-      setRows([]);
-      buffer.load([]);
+    const ticket = ++request.current;
+    setRows([]); buffer.load([]); setNext(null); setError(null); bump();
+    if (!list || list.params.some((p) => !params[p])) { setLoading(false); return; }
+    setLoading(true);
+    try {
+      const r = await call(list.op, { params: Object.fromEntries(list.params.map((p) => [p, params[p]])), limit: 100, ...(cursor ? { cursor } : {}) });
+      if (ticket !== request.current) return;
+      if (!r.ok) { setError(`${r.code}: ${r.problem.detail ?? ""}`); return; }
+      if (!Array.isArray(r.value?.items)) throw Error("The record response was incomplete. Refresh to retry.");
+      setRows(r.value.items); buffer.load(r.value.items);
+      setNext(typeof r.value.next === "string" && r.value.next !== cursor ? r.value.next : null);
       bump();
-      return;
-    }
-    const r = await call(list.op, { params: Object.fromEntries(list.params.map((p) => [p, params[p]])), limit: 100 });
-    if (r.ok) {
-      setRows(r.value.items);
-      buffer.load(r.value.items);
-      setError(null);
-    } else setError(`${r.code}: ${r.problem.detail ?? ""}`);
-    bump();
-  }, [call, list, params, buffer]);
+    } catch (e) { if (ticket === request.current) setError((e as Error).message); }
+    finally { if (ticket === request.current) setLoading(false); }
+  }, [call, list, params, buffer, cursor]);
 
   useEffect(() => {
     void reload();
+    return () => { ++request.current; };
   }, [reload]);
-
-  // Resources whose every list needs a parameter are browsed through a reference from another resource;
-  // the first parameter-less list, if any, is the default.
-  useEffect(() => {
-    const i = resource.lists.findIndex((l) => l.params.length === 0);
-    if (i >= 0) setListSel(i);
-  }, [resource]);
 
   const doPreview = async () => {
     const issues = buffer.validate();
@@ -122,6 +128,11 @@ function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: 
     }
     const proposal = buildChangeset(buffer);
     if (proposal.operations.length === 0) return;
+    if (!reviewAvailable || proposal.operations.some((operation) => !allows(operation.op))) {
+      setError("This environment does not expose the required write or review operations.");
+      return;
+    }
+    setNotice("");
     const pkg = pkgOf(descriptor);
     const p = await call(`${pkg}/_/changesets.propose`, proposal);
     if (!p.ok) return setError(`${p.code}: ${p.problem.detail ?? ""}`);
@@ -138,43 +149,50 @@ function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: 
     const c = await call(`${pkg}/_/changesets.commit`, { id: preview.id });
     setPreview(null);
     if (!c.ok) return setError(`${c.code}: ${c.problem.detail ?? ""}`);
-    if (c.value.status !== "committed") setError(`Changeset ${c.value.status}: ${c.value.results.filter((r: any) => r.status === "error").map((r: any) => `${r.op.split(".").pop()} #${r.index}: ${r.error.code}`).join("; ")}`);
+    const failure = c.value.status !== "committed" ? `Changeset ${c.value.status}: ${c.value.results.filter((r: any) => r.status === "error").map((r: any) => `${r.op.split(".").pop()} #${r.index}: ${r.error.code}`).join("; ")}` : null;
     buffer.revertAll();
     await reload();
+    if (failure) setError(failure);
+    else setNotice("Record changes saved.");
   };
 
   const runAction = async (input: Row) => {
     if (!action) return;
     const r = await call(action.action.op, { id: action.row["id"], expectedVersion: action.row["version"], input });
     setAction(null);
-    if (!r.ok) setError(`${r.code}: ${r.problem.detail ?? ""}`);
     await reload();
+    if (!r.ok) setError(`${r.code}: ${r.problem.detail ?? ""}`);
+    else setNotice("Action completed.");
   };
 
   const editableFields = resource.fields.filter((f) => f.editableOnCreate || f.editableOnUpdate);
   const columns = resource.fields.filter((f) => resource.tableColumns.includes(f.name) || editableFields.includes(f));
 
   return (
-    <fieldset disabled={busy} style={{border:0,padding:0,minWidth:0}}>
+    <fieldset disabled={busy || loading} style={{border:0,padding:0,minWidth:0}}>
+      {loading && <p role="status">Loading records…</p>}
+      {notice && <p role="status">{notice}</p>}
+      {!reviewAvailable && <p>This environment exposes browsing but not the record review operations needed to save edits.</p>}
       {dirty && <p role="status">You have unsaved record changes. Review or revert them before changing collections or filters.</p>}
-      <header style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+      <fieldset disabled={!!preview} style={{border:0,padding:0,minWidth:0}}><header style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
         <h1 style={{ fontSize: 20, margin: 0 }}>{resource.plural}</h1>
-        {resource.lists.length > 1 && (
-          <select aria-label="Query" value={listSel} disabled={dirty} onChange={(e) => setListSel(Number(e.target.value))}>
-            {resource.lists.map((l, i) => (
+        {lists.length > 1 && (
+          <select aria-label="Query" value={listSel} disabled={dirty} onChange={(e) => { setListSel(Number(e.target.value)); setPages([undefined]); setParams({}); }}>
+            {lists.map((l, i) => (
               <option key={l.name} value={i}>{l.label}</option>
             ))}
           </select>
         )}
         {list?.params.map((p) => (
-          <input key={p} aria-label={`filter ${p}`} placeholder={p} disabled={dirty} value={params[p] ?? ""} onChange={(e) => setParams({ ...params, [p]: e.target.value })} />
+          <input key={p} aria-label={`filter ${p}`} placeholder={p} disabled={dirty} value={params[p] ?? ""} onChange={(e) => {setParams({ ...params, [p]: e.target.value }); setPages([undefined]);}} />
         ))}
         <span style={{ flex: 1 }} />
-        <button onClick={() => { buffer.addNew(); bump(); }}>Add row</button>
+        <button disabled={dirty} onClick={() => void reload()}>Refresh records</button>
+        {canCreate && <button onClick={() => { buffer.addNew(); bump(); }}>Add row</button>}
         <button onClick={() => { buffer.revertAll(); bump(); }} disabled={buffer.dirty().length === 0}>Revert</button>
         <button onClick={() => void perform(doPreview)} disabled={buffer.dirty().length === 0}>Preview changes</button>
-        <button disabled={dirty} onClick={() => setImportOpen(true)}>Import CSV</button>
-      </header>
+        {reviewAvailable && allows(`${pkgOf(descriptor)}/_/imports.inspect`) && allows(`${pkgOf(descriptor)}/_/imports.stage`) && <button disabled={dirty} onClick={() => setImportOpen(true)}>Import CSV</button>}
+      </header></fieldset>
       {error && (
         <div role="alert" style={{ background: "#fee", border: "1px solid #c99", padding: 8, marginBottom: 8 }}>
           {error} <button onClick={() => setError(null)} aria-label="dismiss">×</button>
@@ -198,14 +216,14 @@ function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: 
               <tr key={id} data-testid={`row-${id}`} style={{ background: isNew ? "#efe" : dirty ? "#ffd" : undefined }}>
                 {columns.map((f) => (
                   <td key={f.name} style={{ padding: 2, borderBottom: "1px solid #eee" }}>
-                    <Cell rowId={id} field={f} buffer={buffer} call={call} onChange={bump} readOnly={buffer.isDeleted(id) || (isNew ? !f.editableOnCreate : !f.editableOnUpdate)} />
+                    <Cell rowId={id} field={f} buffer={buffer} call={call} onChange={bump} readOnly={buffer.isDeleted(id) || (isNew ? !canCreate || !f.editableOnCreate : !canUpdate || !f.editableOnUpdate)} />
                   </td>
                 ))}
                 {(
                   <td>
                     {buffer.isDeleted(id) ? <><span role="status">Pending deletion</span><button onClick={() => { buffer.restorePending(id); bump(); }}>Undo delete</button></> : isNew ? <button onClick={() => { buffer.remove(id); bump(); }}>Discard row</button> : canDelete ? <button aria-label={`Delete ${String(rec?.[resource.titleField] ?? id)}`} onClick={() => { buffer.stageDelete(id); bump(); }}>Delete</button> : null}
-                    {rec && !buffer.isDeleted(id) && resource.actions.filter((a) => a.from.includes(String(rec["status"]))).map((a) => (
-                      <button key={a.name} disabled={dirty} onClick={() => setAction({ row: rec, action: a })} style={{ marginRight: 4 }}>{a.label}</button>
+                    {rec && !buffer.isDeleted(id) && resource.actions.filter((a) => allows(a.op) && a.from.includes(String(rec["status"]))).map((a) => (
+                      <button key={a.name} disabled={buffer.dirty().length > 0} onClick={() => setAction({ row: rec, action: a })} style={{ marginRight: 4 }}>{a.label}</button>
                     ))}
                   </td>
                 )}
@@ -218,6 +236,11 @@ function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: 
         </tbody>
       </table></fieldset>
 
+      <div className="forge-browse-pages">
+        <button disabled={dirty || !!preview || pages.length === 1} onClick={() => setPages((p) => p.slice(0,-1))}>Previous page</button>
+        <span>Page {pages.length} · {rows.length} loaded records</span>
+        <button disabled={dirty || !!preview || !next} onClick={() => {if (next) setPages((p) => [...p,next]);}}>Next page</button>
+      </div>
       {preview && (
         <dialog open role="dialog" aria-label="Changeset preview" style={{ position: "fixed", inset: "10% 20%", padding: 16, border: "1px solid #999", background: "white", maxHeight: "80vh", overflow: "auto" }}>
           <h2>Review record changes</h2>

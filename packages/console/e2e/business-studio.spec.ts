@@ -94,7 +94,7 @@ test("Use loads an explicit environment, reviews record edits and preserves inpu
       json: {
         buildHash: bundle.buildHash,
         descriptor: bundle.ui,
-        operations: [],
+        operations: ["@acme/commerce/_/Customer.list.all", "@acme/commerce/_/Customer.create", "@acme/commerce/_/Customer.update", ...["propose","preview","approve","commit"].map((name) => `@acme/commerce/_/changesets.${name}`)].map((id) => ({id,method:"POST",path:"/test",kind:"test"})),
       },
     }),
   );

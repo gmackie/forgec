@@ -105,10 +105,10 @@ describe("Workspace", () => {
 it("deletes through review and commit only when the workspace exposes deletion", async () => {
   const customer = await run("@acme/commerce/_/Customer.create", {code:"DELETE",name:"Delete me"});
   const descriptor=(bundle as any).ui;
-  const rendered=render(<Workspace descriptor={descriptor} call={call} initialRoute="customers" operations={[]}/>);
+  const rendered=render(<Workspace descriptor={descriptor} call={call} initialRoute="customers" operations={["@acme/commerce/_/Customer.list.all"]}/>);
   await waitFor(()=>expect(screen.getByRole("table")).toHaveTextContent("DELETE"));
   expect(screen.queryByRole("button",{name:"Delete Delete me"})).toBeNull();
-  rendered.rerender(<Workspace descriptor={descriptor} call={call} initialRoute="customers" operations={["@acme/commerce/_/Customer.delete"]}/>);
+  rendered.rerender(<Workspace descriptor={descriptor} call={call} initialRoute="customers" operations={["@acme/commerce/_/Customer.delete", "@acme/commerce/_/Customer.list.all", ...["propose","preview","approve","commit"].map((name) => `@acme/commerce/_/changesets.${name}`)]}/>);
   fireEvent.click(screen.getByRole("button",{name:"Delete Delete me"}));
   expect(await run("@acme/commerce/_/Customer.get",{id:customer.id})).toMatchObject({name:"Delete me"});
   fireEvent.click(screen.getByRole("button",{name:"Undo delete"}));
@@ -119,4 +119,33 @@ it("deletes through review and commit only when the workspace exposes deletion",
   expect(await run("@acme/commerce/_/Customer.get",{id:customer.id})).toMatchObject({name:"Delete me"});
   fireEvent.click(screen.getByRole("button",{name:"Save changes"}));
   await waitFor(()=>expect(screen.getByRole("table")).not.toHaveTextContent("DELETE"));
+});
+
+it("paginates editable records and blocks paging while changes are pending", async () => {
+  const calls: any[]=[];
+  const fake: ForgeCall=async(op,input)=>{
+    calls.push({op,input});
+    return {ok:true,value:(input as any).cursor ? {items:[{id:"second",name:"Second",code:"B",version:1}],next:null} : {items:[{id:"first",name:"First",code:"A",version:1}],next:"page-2"}};
+  };
+  render(<Workspace descriptor={(bundle as any).ui} call={fake} initialRoute="customers"/>);
+  await screen.findByLabelText("name of first");
+  fireEvent.change(screen.getByLabelText("name of first"),{target:{value:"Changed"}});
+  expect(screen.getByRole("button",{name:"Next page"})).toBeDisabled();
+  expect(screen.getByRole("button",{name:"Refresh records"})).toBeDisabled();
+  fireEvent.click(screen.getByRole("button",{name:"Revert"}));
+  fireEvent.click(screen.getByRole("button",{name:"Next page"}));
+  expect(await screen.findByLabelText("name of second")).toHaveValue("Second");
+  expect(calls.at(-1).input.cursor).toBe("page-2");
+  fireEvent.click(screen.getByRole("button",{name:"Previous page"}));
+  expect(await screen.findByLabelText("name of first")).toHaveValue("First");
+});
+
+it("uses the deployed catalog to hide unavailable writes and leaves records readable", async () => {
+  const fake: ForgeCall=async()=>({ok:true,value:{items:[{id:"one",name:"Readable",code:"R"}],next:null}});
+  render(<Workspace descriptor={(bundle as any).ui} call={fake} initialRoute="customers" operations={["@acme/commerce/_/Customer.list.all"]}/>);
+  await waitFor(()=>expect(screen.getByRole("table")).toHaveTextContent("Readable"));
+  expect(screen.queryByRole("textbox",{name:"name of one"})).toBeNull();
+  expect(screen.queryByRole("button",{name:"Add row"})).toBeNull();
+  expect(screen.queryByRole("button",{name:"Import CSV"})).toBeNull();
+  expect(screen.getByText(/not the record review operations/)).toBeVisible();
 });
