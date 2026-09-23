@@ -1,0 +1,31 @@
+import artifact
+
+export resource EvidenceBundle @tenant @timestamps @appendOnly {
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+  find by key
+}
+export resource EvidenceSource @tenant @appendOnly {
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+  find by key
+}
+export resource EvidenceItem @tenant @timestamps @appendOnly {
+  id : id
+  bundle : EvidenceBundle
+  source : EvidenceSource
+  sourceRecord : text length 1..200
+  kind : text length 1..100
+  observedAt : datetime
+  revision : artifact.ArtifactRevision?
+  digest : text? length 71..71 pattern "^sha256:[0-9a-f]{64}$"
+  provenance : text length 1..1000
+  rules {
+    revision == null || (digest != null && digest == revision.digest)
+  }
+  unique bundle, source, sourceRecord
+  list by bundle
+  list by source
+}

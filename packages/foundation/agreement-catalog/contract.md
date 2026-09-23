@@ -77,3 +77,7 @@ Fixtures:
 - vendor agreement: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
 
 Application-named fixtures must record the inspected application repository revision and map real types/operations before being described as dogfooding. Synthetic cases establish only contract usability. Tests build actual imported consumer schemas, then exercise generated runtime surfaces; helper mocks and schema snapshots alone do not prove durable behavior. The independent handoff includes accepted dependency digests, compiler/runtime versions, exact commands, case results and provider configuration. Missing provider infrastructure is explicitly blocked evidence, never a silently passing skip.
+
+## Expanded identity boundary (#52)
+
+Party owns business actor identity. Holder, obligated party and agreement-party references use Party directly; Participation is only required where role/membership facts are used. Dependencies: decision, specification, participation, entitlement, evaluation, artifact, evidence, party.

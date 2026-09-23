@@ -4,11 +4,15 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { fingerprint, schedule } from './foundation-state.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const scope = JSON.parse(readFileSync(join(root, 'specs/foundation/scope.json'), 'utf8')).packages;
 const kinds = new Set(['compile', 'runtime', 'concurrency', 'provider', 'fixture']);
 const statuses = new Set(['planned', 'passing', 'blocked']);
-export function validateContracts(contracts, { complete = true } = {}) {
+export function validateContracts(contracts, { complete = true, expectedScope = scope } = {}) {
   const errors = [], names = new Map(), cases = new Set(), issues = new Set();
   const fail = (slug, text) => errors.push(`${slug}: ${text}`);
   for (const c of contracts) {
@@ -18,9 +22,9 @@ export function validateContracts(contracts, { complete = true } = {}) {
     if (names.has(s)) fail(s, 'duplicate slug');
     names.set(s, c);
     if (!['substrate', 'system'].includes(c.layer)) fail(s, 'invalid layer');
-    if (!Number.isInteger(c.issue) || c.issue < 26 || c.issue > 50 || issues.has(c.issue)) fail(s, 'invalid or duplicate issue');
+    if (!Number.isInteger(c.issue) || !expectedScope.some(p => p.issue === c.issue) || issues.has(c.issue)) fail(s, 'invalid or duplicate issue');
     issues.add(c.issue);
-    if (c.layer === 'substrate' && c.issue > 38 || c.layer === 'system' && c.issue < 39) fail(s, 'issue/layer mismatch');
+    if (!expectedScope.some(p => p.issue === c.issue && p.slug === s && p.layer === c.layer)) fail(s, 'issue/slug/layer does not match explicit scope');
     for (const field of ['facts', 'operations', 'invariants', 'fixtures']) {
       if (!Array.isArray(c[field]) || c[field].length === 0 || c[field].some(x => typeof x !== 'string' || !x.trim())) fail(s, `${field} must contain nonempty strings`);
     }
@@ -31,7 +35,7 @@ export function validateContracts(contracts, { complete = true } = {}) {
       if (!a || typeof a.id !== 'string' || !a.id.trim() || cases.has(a.id)) fail(s, 'invalid or duplicate acceptance id');
       if (a) cases.add(a.id);
       if (!a || typeof a.description !== 'string' || !a.description.trim() || !kinds.has(a.kind) || !statuses.has(a.status)) fail(s, 'invalid acceptance case');
-      if (a?.status === 'passing' && (a.verification !== 'local' || !['specification', 'artifact', 'identifiers', 'participation'].includes(s) || !Array.isArray(a.evidence) || !a.evidence.length || a.evidence.some(path => typeof path !== 'string' || !/^(packages\/runtime\/test\/foundation-[a-z-]+\.test\.ts|packages\/runtime\/test\/blobs\.test\.ts|crates\/forgegraph-semantic\/tests\/append_only\.rs)$/.test(path) || !existsSync(join(root, path))))) fail(s, `${a.id}: passing requires evidence and a supported local verification suite`);
+      if (a?.status === 'passing' && (a.verification !== 'local' || !existsSync(join(root, `packages/foundation/${s}/verification.json`)) || !Array.isArray(a.evidence) || !a.evidence.length || a.evidence.some(path => typeof path !== 'string' || !/^(packages\/runtime\/test\/foundation-[a-z-]+\.test\.ts|packages\/runtime\/test\/blobs\.test\.ts|crates\/forgegraph-semantic\/tests\/append_only\.rs)$/.test(path) || !existsSync(join(root, path))))) fail(s, `${a.id}: passing requires evidence and a supported local verification suite`);
     }
   }
   const visiting = new Set(), visited = new Set(), order = [];
@@ -48,7 +52,7 @@ export function validateContracts(contracts, { complete = true } = {}) {
     visiting.delete(s); visited.add(s); order.push(s);
   }
   [...names.keys()].sort().forEach(s => visit(s));
-  if (complete) for (let i = 26; i <= 50; i++) if (!issues.has(i)) errors.push(`missing issue #${i}`);
+  if (complete) for (const { issue } of expectedScope) if (!issues.has(issue)) errors.push(`missing issue #${issue}`);
   return { errors, order, packages: contracts.length, cases: cases.size };
 }
 export function validateCatalogs(contracts, catalogs) {
@@ -83,27 +87,39 @@ function run(cmd, args, env = {}) {
 }
 function main() {
   const args = process.argv.slice(2);
-  let suite = 'contracts', slug, all = false;
+  let suite = 'contracts', slug, all = false, statePath;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--suite') suite = args[++i];
     else if (args[i] === '--package') slug = args[++i];
     else if (args[i] === '--all') all = true;
+    else if (args[i] === '--state') statePath = args[++i];
     else throw new Error(`unknown argument: ${args[i]}`);
   }
-  if (!['contracts', 'local', 'providers'].includes(suite)) throw new Error('suite must be contracts, local or providers');
+  if (!['contracts', 'local', 'providers', 'ready'].includes(suite)) throw new Error('suite must be contracts, local, providers or ready');
   if (all && slug) throw new Error('choose --all or --package, not both');
   if (suite === 'providers') throw new Error('Foundation provider verification is not implemented yet; no certification claimed.');
-  if (suite === 'contracts') {
+  if (suite === 'contracts' || suite === 'ready') {
     const contracts = readContracts();
     if (slug && !contracts.some(c => c.slug === slug)) throw new Error(`unknown package: ${slug}`);
     // Validate the entire graph even when reviewing one package: direction is a global invariant.
     const result = validateContracts(contracts);
     result.errors.push(...validateCatalogs(contracts, Object.fromEntries(['substrate', 'system'].map(layer => [layer, JSON.parse(readFileSync(join(root, `specs/foundation/${layer}s.json`), 'utf8'))]))));
     if (result.errors.length) throw new Error(result.errors.join('\n'));
+    if (suite === 'ready') {
+      if (!statePath) throw new Error('--suite ready requires --state <execution receipts JSON>; issue status alone cannot release work');
+      const graph = JSON.parse(readFileSync(join(root, 'specs/foundation/dependencies.json'), 'utf8'));
+      const state = JSON.parse(readFileSync(resolve(statePath), 'utf8'));
+      const digests = new Map();
+      console.log(JSON.stringify(schedule(graph, contracts, state, {kernelFingerprint: fingerprint(root, 'specification', contracts), fingerprintOf: slug => { if (!digests.has(slug)) digests.set(slug, fingerprint(root, slug, contracts)); return digests.get(slug); }}), null, 2));
+      return;
+    }
     console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract/evidence structure only; run local package suites to execute acceptance. Hosted provider certification is separate.' }, null, 2));
     return;
   }
-  if (['specification', 'identifiers', 'participation', 'artifact'].includes(slug) && !all) {
+  const verifierPath = slug && /^[a-z]+(?:-[a-z]+)*$/.test(slug) ? join(root, `packages/foundation/${slug}/verification.json`) : '';
+  if (verifierPath && existsSync(verifierPath) && !all) {
+    const verifier = JSON.parse(readFileSync(verifierPath, 'utf8'));
+    if (verifier.version !== 1 || !Array.isArray(verifier.tests) || !verifier.tests.length || verifier.tests.some(t => typeof t !== 'string' || !/^test\/[a-z0-9-]+\.test\.ts$/.test(t))) throw new Error('Invalid package verifier');
     const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
     try {
       if (slug === 'specification') run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
@@ -113,16 +129,18 @@ function main() {
       for (const [first, second] of [['first', 'second'], ['consumer-first', 'consumer-second']]) for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts']) {
         if (!readFileSync(join(out, first, file)).equals(readFileSync(join(out, second, file)))) throw new Error(`nondeterministic artifact: ${file}`);
       }
-      run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', `test/foundation-${slug}`, ...(slug === 'artifact' ? ['test/blobs.test.ts'] : [])], { FORGE_FOUNDATION_FIXTURE: join(out, 'first'), FORGE_FOUNDATION_CONSUMER: join(out, 'consumer-first') });
+      run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', ...verifier.tests], { FORGE_FOUNDATION_FIXTURE: join(out, 'first'), FORGE_FOUNDATION_CONSUMER: join(out, 'consumer-first') });
       if (slug === 'specification') {
         run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', 'packages/foundation/artifact/fixtures/consumer', '--out', join(out, 'artifact-consumer')]);
         run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-artifact-consumer.test.ts'], { FORGE_FOUNDATION_CONSUMER: join(out, 'artifact-consumer') });
       }
-      console.log(JSON.stringify({ suite, package: slug, status: 'passing', deterministic: true, scope: 'local generated-bundle tests on memory/SQLite', acceptance: readContracts().find(c => c.slug === slug).acceptance.map(a => a.id), providers: 'live certification not run' }));
+      const receipt = { version: 1, package: slug, suite: 'local', status: 'passing', fingerprint: fingerprint(root, slug, readContracts()), verifiedAt: new Date().toISOString(), commands: [`cargo check/build ${slug} and consumer; deterministic double build`, `vitest run ${verifier.tests.join(' ')}`], artifacts: ['first', 'consumer-first'].map(dir => ({path: `${dir}/app.json`, sha256: createHash('sha256').update(readFileSync(join(out, dir, 'app.json'))).digest('hex')})), providers: 'live certification not run' };
+      const reportDir = join(root, 'conformance/reports/foundation'); mkdirSync(reportDir, {recursive: true}); writeFileSync(join(reportDir, `${slug}.json`), JSON.stringify(receipt, null, 2)+'\n');
+      console.log(JSON.stringify({...receipt, deterministic: true, scope: 'local generated-bundle tests; package requirement acceptance and provider evidence remain separate'}));
     } finally { rmSync(out, { recursive: true, force: true }); }
     return;
   }
-  if (slug !== 'composition' || all) throw new Error('Local verifiers exist for composition, specification, identifiers, participation and artifact; remaining package acceptance is planned.');
+  if (slug !== 'composition' || all) throw new Error('No package-local verifier found; implementation acceptance remains incomplete.');
   const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
   const fixture = 'conformance/foundation/fixtures/composition/app';
   try {

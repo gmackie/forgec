@@ -1,0 +1,63 @@
+{
+  "slug": "quotation-pricing",
+  "layer": "system",
+  "issue": 65,
+  "dependencies": [
+    "agreement-catalog",
+    "specification",
+    "evaluation",
+    "ledger",
+    "party"
+  ],
+  "facts": [
+    "Contextual quote/lines and immutable priced snapshot, revision/expiry/acceptance and agreement linkage."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for quotation-pricing"
+  ],
+  "invariants": [
+    "Party owns pricing actor context. Ledger supplies quantitative/value contract, not quote computation or automatic settlement. If value types move lower, remove Ledger edge explicitly at freeze. Domain Order/Selection joins remain above.",
+    "SaaS/service/procurement; offer/spec pins; typed monetary and nonmonetary values; rate boundary and adjustment provenance; accept/expire race; issue agreement once."
+  ],
+  "acceptance": [
+    {
+      "id": "F65-01",
+      "description": "quote + quote-line/snapshot model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F65-02",
+      "description": "offer/specification pinning",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F65-03",
+      "description": "pricing/rate/adjustment extensibility",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F65-04",
+      "description": "revise/expire/accept lifecycle",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F65-05",
+      "description": "agreement/order integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F65-06",
+      "description": "fixtures for SaaS, service quote and procurement quote",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for SaaS, service quote and procurement quote"
+  ]
+}

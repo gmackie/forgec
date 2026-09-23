@@ -1,0 +1,61 @@
+{
+  "slug": "qualification",
+  "layer": "substrate",
+  "issue": 56,
+  "dependencies": [
+    "party",
+    "specification",
+    "evidence"
+  ],
+  "facts": [
+    "Definition/pin, award, requirement, domain-owned level vocabulary and qualification-specific subject handle."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for qualification"
+  ],
+  "invariants": [
+    "Evaluation/Assurance producers and Routing consumers use upper bridges. Qualification does not import Assurance, Routing or Allocation.",
+    "Technician/vendor/Runner; validity/revocation; level-comparison compatibility; issuer/evidence pins; typed Party and machine subjects; award grants no authorization."
+  ],
+  "acceptance": [
+    {
+      "id": "F56-01",
+      "description": "qualification definition + awarded qualification",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F56-02",
+      "description": "requirement model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F56-03",
+      "description": "level/validity semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F56-04",
+      "description": "evidence/attestation hooks",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F56-05",
+      "description": "Routing integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F56-06",
+      "description": "fixtures for technician skill, vendor qualification and Runner qualification",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for technician skill, vendor qualification and Runner qualification"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "slug": "intake",
+  "layer": "system",
+  "issue": 60,
+  "dependencies": [
+    "specification",
+    "artifact",
+    "evaluation",
+    "party"
+  ],
+  "facts": [
+    "Pinned form, typed submitter association, preserved raw artifact and typed transformation contract."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for intake"
+  ],
+  "invariants": [
+    "Party is the identity seam; submission does not require membership. Anonymous submitter policy explicit. Consent/evidence and Selection adapters remain above.",
+    "Expense/vendor/clinical intake; exact form/content revision; validation rejection; wrong output type rejected at compile time; retries do not duplicate domain records."
+  ],
+  "acceptance": [
+    {
+      "id": "F60-01",
+      "description": "form/spec pin",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F60-02",
+      "description": "submission envelope",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F60-03",
+      "description": "raw artifact preservation",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F60-04",
+      "description": "validation/evaluation hooks",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F60-05",
+      "description": "typed transform contract",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F60-06",
+      "description": "fixtures for expense, vendor onboarding and clinical-style intake",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for expense, vendor onboarding and clinical-style intake"
+  ]
+}

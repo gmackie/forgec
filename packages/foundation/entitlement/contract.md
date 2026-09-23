@@ -66,3 +66,7 @@ node scripts/verify-foundation.mjs --package entitlement --suite providers --req
 ```
 
 The fixture paths and verification runner above are planned interfaces; they do not exist merely because this contract names them. Phase 0 verification only checks contract structure, frozen DAG and checkbox coverage. Runtime acceptance must use generated bundles with real engine operations, deterministic clocks/IDs and provider fakes for external calls. Cover successful and rejected transitions, authorization, tenant isolation, immutable history, retries, concurrency and restart. Provider acceptance fails on missing required infrastructure; local/emulated results remain distinct from live certification. Record commands, versions, dependency digests and each case result, including blockers. A schema compile or snapshot is insufficient proof of behavioral invariants.
+
+## Expanded identity boundary (#52)
+
+Party owns business actor identity. Holder, obligated party and agreement-party references use Party directly; Participation is only required where role/membership facts are used. Dependencies: party.

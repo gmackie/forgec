@@ -1,0 +1,63 @@
+{
+  "slug": "selection",
+  "layer": "system",
+  "issue": 59,
+  "dependencies": [
+    "specification",
+    "participation",
+    "evaluation",
+    "decision",
+    "agreement-catalog"
+  ],
+  "facts": [
+    "Solicitation, typed submission envelope, evaluated shortlist and durable award/agreement link."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for selection"
+  ],
+  "invariants": [
+    "Artifact submissions, Intake and Quote-to-Submission adapters; no reverse Agreement-to-Selection or Quote-to-Selection core edge.",
+    "Procurement/hiring/grants; pinned criteria, deadlines, ties/ranking when enabled, duplicate award guard and winning agreement trace."
+  ],
+  "acceptance": [
+    {
+      "id": "F59-01",
+      "description": "solicitation/call model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F59-02",
+      "description": "submission envelope",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F59-03",
+      "description": "evaluation/decision integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F59-04",
+      "description": "award/selection fact",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F59-05",
+      "description": "shortlist/ranking support where justified",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F59-06",
+      "description": "fixtures for procurement, hiring and grants",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for procurement, hiring and grants"
+  ]
+}
