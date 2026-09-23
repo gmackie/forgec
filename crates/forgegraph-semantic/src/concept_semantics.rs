@@ -12,6 +12,10 @@ pub struct BusinessSemantics {
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub interactions: BTreeMap<String, Interaction>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub subjects: BTreeMap<String, Subject>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub representations: BTreeMap<String, SubjectRepresentation>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub selections: BTreeMap<String, TemporalSelection>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub contracts: BTreeMap<String, Contract>,
@@ -28,6 +32,23 @@ impl BusinessSemantics {
     pub fn is_empty(&self) -> bool {
         self == &Self::default()
     }
+}
+
+/// Domain-owned actor identity. Profiles classify meaning; they are not compiler subtypes.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Subject {
+    pub carrier: String,
+    pub profiles: BTreeSet<String>,
+}
+/// Explicit principal-to-actor mapping carried by a typed, optionally scoped relationship.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SubjectRepresentation {
+    pub relationship: String,
+    pub principal_role: String,
+    pub subject_role: String,
+    pub scope_roles: BTreeSet<String>,
 }
 
 /// An engagement has an entity identity; occurrences and work remain separate declarations.
@@ -171,6 +192,7 @@ impl ConceptIR {
         let mut errors = self.validate_expressions();
         let s = &self.semantics;
         errors.extend(self.validate_interactions());
+        errors.extend(self.validate_subjects());
         for (id, temporal) in &s.temporal {
             let Some(fs) = fields(self, id) else {
                 problem(
@@ -886,6 +908,16 @@ impl ConceptIR {
                 kind: kind.into(),
             });
         };
+        for (id, subject) in &self.semantics.subjects {
+            graph.nodes.insert(id.clone(), "subject".into());
+            edge(id, &subject.carrier, id, "carrier");
+        }
+        for (id, representation) in &self.semantics.representations {
+            graph
+                .nodes
+                .insert(id.clone(), "subjectRepresentation".into());
+            edge(id, &representation.relationship, id, "represents");
+        }
         for (id, interaction) in &self.semantics.interactions {
             graph.nodes.insert(id.clone(), "interaction".into());
             edge(id, &interaction.carrier, id, "carrier");

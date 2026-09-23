@@ -1062,3 +1062,36 @@ fn concept_closed_check_is_opt_in() {
     );
     std::fs::remove_file(path).unwrap();
 }
+
+#[test]
+fn check_engagements_accepts_observed_records_and_rejects_parent_cycles() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/interactions");
+    let path = std::env::temp_dir().join(format!("forge-engagements-{}.json", std::process::id()));
+    let mut snapshot: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("realizations/support.json")).unwrap())
+            .unwrap();
+    let check = || {
+        Command::new(env!("CARGO_BIN_EXE_forgec"))
+            .args(["concept", "check-engagements"])
+            .arg(root.join("support.json"))
+            .arg(&path)
+            .output()
+            .unwrap()
+    };
+    std::fs::write(&path, serde_json::to_vec(&snapshot).unwrap()).unwrap();
+    let output = check();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let result: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(result["implementationProven"], false);
+    snapshot["engagements"][0]["parent"] = serde_json::json!("call-1");
+    std::fs::write(&path, serde_json::to_vec(&snapshot).unwrap()).unwrap();
+    let output = check();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("parent engagement cycle"));
+    std::fs::remove_file(path).unwrap();
+}

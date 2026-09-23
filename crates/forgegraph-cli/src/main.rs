@@ -126,6 +126,8 @@ enum ConceptCmd {
         #[arg(long)]
         closed: bool,
     },
+    /// Validate recorded engagement membership, bounds, and parent links.
+    CheckEngagements { path: PathBuf, snapshot: PathBuf },
     /// Inspect the semantic graph and invariant producer responsibilities.
     Inspect { path: PathBuf },
     /// Compare semantic declarations independently of implementation choices.
@@ -299,6 +301,15 @@ fn main() -> Result<()> {
                         }
                     }
                     serde_json::json!({"valid":true, "conceptHash":concept.content_hash(), "implementationProven":false})
+                }
+                ConceptCmd::CheckEngagements { path, snapshot } => {
+                    let concept = load_concept(&path)?;
+                    let records = serde_json::from_slice(&std::fs::read(snapshot)?)?;
+                    let errors = concept.check_engagement_snapshot(&records);
+                    if !errors.is_empty() {
+                        return Err(anyhow!(serde_json::to_string(&errors)?));
+                    }
+                    serde_json::json!({"valid":true,"conceptHash":concept.content_hash(),"scope":"supplied-engagement-snapshot","implementationProven":false})
                 }
                 ConceptCmd::Inspect { path } => {
                     let concept = load_concept(&path)?;
