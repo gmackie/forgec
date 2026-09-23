@@ -4335,7 +4335,8 @@ impl<'a> Ctx<'a> {
             );
             return None;
         }
-        let binding = m.binding()?.text().to_string();
+        let binding_token = m.binding()?;
+        let binding = binding_token.text().to_string();
         if scope.bound.contains(&binding) {
             self.err(
                 "E-WF-MAP-002",
@@ -4349,8 +4350,36 @@ impl<'a> Ctx<'a> {
         let value = self.workflow_expr(&source, module, file, scope)?;
         let mut child_scope = scope.clone();
         child_scope.bound.push(binding.clone());
+        self.record_workflow_type(&element.base, module, 0);
         child_scope.types.push((binding.clone(), *element));
-        let call = self.workflow_call(sid, &m.call()?, module, file, &child_scope)?;
+        let anchor = format!("{}#step:{sid}/binding:{binding}", scope.workflow);
+        let (start, end) = tok_range(&binding_token);
+        self.workflow_origins.insert(
+            anchor.clone(),
+            SourceSpan {
+                file: self.files[file].path.clone(),
+                start,
+                end,
+            },
+        );
+        child_scope.origins.insert(binding.clone(), anchor);
+        let call_ast = m.call()?;
+        let (start, end) = range_of(&call_ast);
+        self.workflow_scopes.push(WorkflowScope {
+            span: SourceSpan {
+                file: self.files[file].path.clone(),
+                start,
+                end,
+            },
+            workflow: scope.workflow.clone(),
+            bindings: child_scope
+                .types
+                .iter()
+                .filter(|(name, _)| child_scope.bound.contains(name))
+                .cloned()
+                .collect(),
+        });
+        let call = self.workflow_call(sid, &call_ast, module, file, &child_scope)?;
         if let Step::Call {
             target: CallTarget::Function { function },
             ..

@@ -467,7 +467,20 @@ impl Server {
                 && u32::from(n.text_range().start()) as usize <= offset
                 && offset <= u32::from(n.text_range().end()) as usize
         });
-        if !in_uses && workflow.is_none() {
+        // Restrict type suggestions to the qualified name, excluding refinements and
+        // literal type arguments. Nested collection element names have their own TypeRef.
+        let type_name = parsed
+            .syntax()
+            .descendants()
+            .filter_map(forgegraph_syntax::ast::TypeRef::cast)
+            .filter_map(|ty| ty.name())
+            .find(|name| {
+                let range = name.syntax().text_range();
+                u32::from(range.start()) as usize <= offset
+                    && offset <= u32::from(range.end()) as usize
+            });
+        let in_type = type_name.is_some();
+        if !in_uses && workflow.is_none() && !in_type {
             return vec![];
         }
         let in_wait = parsed.syntax().descendants().any(|n| {
@@ -540,6 +553,18 @@ impl Server {
             })
             .collect();
         let mut result = vec![];
+        if in_type {
+            result.extend(
+                forgegraph_semantic::compiler::SCALARS
+                    .iter()
+                    .map(|name| json!({"label":name,"kind":25,"detail":"built-in scalar"})),
+            );
+            result.extend(
+                ["list", "set", "map"]
+                    .iter()
+                    .map(|name| json!({"label":name,"kind":7,"detail":"bounded collection"})),
+            );
+        }
         for a in &analysis {
             let local = a.root == current.root;
             let aliases: Vec<String> = if local {
@@ -559,11 +584,41 @@ impl Server {
                 if local && target_module != module {
                     continue;
                 }
-                if !local && target_module != "_" {
+                if !in_type && !local && target_module != "_" {
                     continue;
                 }
                 for decl in parsed.root().declarations() {
                     if !local && !decl.is_exported() {
+                        continue;
+                    }
+                    if in_type {
+                        let Some(name) = decl.name() else { continue };
+                        let mut names = match &decl {
+                            Declaration::Shape(_) | Declaration::Enum(_) | Declaration::Type(_) => {
+                                vec![name.text().to_string()]
+                            }
+                            Declaration::Resource(_) | Declaration::Blob(_) => {
+                                ["", ".Record", ".Id", ".Status"]
+                                    .iter()
+                                    .map(|suffix| format!("{}{suffix}", name.text()))
+                                    .collect()
+                            }
+                            Declaration::Channel(channel) => channel
+                                .messages()
+                                .filter_map(|m| {
+                                    m.name().map(|message| {
+                                        format!("{}.{}", name.text(), message.text())
+                                    })
+                                })
+                                .collect(),
+                            _ => vec![],
+                        };
+                        names.sort();
+                        for alias in &aliases {
+                            for name in &names {
+                                result.push(json!({"label":format!("{alias}{name}"),"kind":7,"detail":format!("{}/{target_module}/{name}", a.package.name)}));
+                            }
+                        }
                         continue;
                     }
                     if in_wait {
@@ -615,6 +670,22 @@ impl Server {
                         }
                     }
                 }
+            }
+        }
+        if let Some(name) = type_name {
+            let range = name.syntax().text_range();
+            let start = u32::from(range.start()) as usize;
+            let prefix = &source.text[start..offset];
+            result.retain(|item| {
+                item["label"]
+                    .as_str()
+                    .is_some_and(|label| label.starts_with(prefix))
+            });
+            for item in &mut result {
+                item["textEdit"] = json!({
+                    "range": {"start":position(&source.text, start), "end":position(&source.text, u32::from(range.end()) as usize)},
+                    "newText":item["label"],
+                });
             }
         }
         result.sort_by_key(Value::to_string);
@@ -905,7 +976,12 @@ mod tests {
         assert!(completion.iter().any(|v| v["label"] == "Callee"));
         assert!(completion.iter().any(|v| v["label"] == "R"));
         assert!(!completion.iter().any(|v| v["label"] == "Input"));
-        assert!(server.completion(&path, 1, 8).is_empty());
+        assert!(
+            server
+                .completion(&path, 1, 8)
+                .iter()
+                .any(|v| v["label"] == "Input")
+        );
         server
             .open
             .insert(path.clone(), source.replace("Callee", "Missing"));
@@ -1027,6 +1103,89 @@ mod tests {
     }
 
     #[test]
+    fn workflow_map_items_have_local_completion_and_distinct_navigation() {
+        let root = std::env::temp_dir().join(format!("forge-map-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("forge.toml"),
+            "[package]\nname = \"@test/map-nav\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        let path = root.join("src/model.forge");
+        let source = "shape Item { value : text }\nshape Batch { items : list<Item> length <= 8 }\nfunction Echo { input Item\n output Item }\nworkflow Flow {\n input Batch\n version 1\n step first = map item in input.items concurrency 2 {\n Echo(value: item.value)\n }\n step second = map item in input.items concurrency 2 {\n Echo(value: item.value)\n }\n return second\n}\n";
+        std::fs::write(&path, source).unwrap();
+        let mut server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
+        };
+        assert!(
+            server.diagnostics_for(&path).is_empty(),
+            "{:?}",
+            server.diagnostics_for(&path)
+        );
+        let at = |text: &str, offset: usize| {
+            let p = position(text, offset);
+            (
+                p["line"].as_u64().unwrap() as usize,
+                p["character"].as_u64().unwrap() as usize,
+            )
+        };
+        for (offset, expected_line) in source
+            .match_indices("item.value")
+            .map(|(i, _)| i)
+            .zip([7, 10])
+        {
+            let (line, col) = at(source, offset);
+            let definitions = server.definition(&path, line, col);
+            assert_eq!(definitions.len(), 1);
+            assert_eq!(definitions[0]["range"]["start"]["line"], expected_line);
+            let references = server.references(&path, line, col, true);
+            assert_eq!(
+                references.len(),
+                2,
+                "map items must not share reference identities"
+            );
+            let (line, col) = at(source, offset + "item.".len());
+            assert!(
+                server
+                    .completion(&path, line, col)
+                    .iter()
+                    .any(|v| v["label"] == "value")
+            );
+            let (line, col) = at(source, offset + "item".len());
+            assert!(
+                server
+                    .completion(&path, line, col)
+                    .iter()
+                    .any(|v| v["label"] == "item")
+            );
+        }
+        for needle in ["in input", "return second"] {
+            let (line, col) = at(source, source.rfind(needle).unwrap() + needle.len());
+            assert!(
+                !server
+                    .completion(&path, line, col)
+                    .iter()
+                    .any(|v| v["label"] == "item")
+            );
+        }
+        let incomplete = source.replacen("item.value", "item.", 1);
+        server.open.insert(path.clone(), incomplete.clone());
+        let (line, col) = at(
+            &incomplete,
+            incomplete.find("item.").unwrap() + "item.".len(),
+        );
+        assert!(
+            server
+                .completion(&path, line, col)
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
     fn imported_symbols_resolve_and_completion_hides_private_declarations() {
         let root = std::env::temp_dir().join(format!("forge-import-lsp-{}", std::process::id()));
         std::fs::create_dir_all(root.join("src")).unwrap();
@@ -1069,6 +1228,107 @@ mod tests {
         assert!(!completions.iter().any(|v| v["label"] == "dep.Private"));
         std::fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn type_completion_filters_visibility_and_replaces_qualified_names() {
+        let root = std::env::temp_dir().join(format!("forge-type-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::create_dir_all(root.join("dep/src")).unwrap();
+        std::fs::write(root.join("forge.toml"), "[package]\nname = \"@test/types\"\nversion = \"0.1.0\"\n[dependencies]\ndep = { path = \"dep\" }\n").unwrap();
+        std::fs::write(
+            root.join("dep/forge.toml"),
+            "[package]\nname = \"@test/contracts\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        std::fs::write(root.join("dep/src/index.forge"), "export shape Public { value : text }\nshape Private { value : text }\nexport resource Record { id : id }\nexport function Run {}\n").unwrap();
+        std::fs::write(
+            root.join("src/hidden.forge"),
+            "module hidden\nshape Hidden { value : text }\n",
+        )
+        .unwrap();
+        let path = root.join("src/index.forge");
+        let source = "import dep\nshape Local { value : text }\nchannel Events { message Arrived { value : text } }\nshape Input {\n a : dep.Public\n b : list<Local> length <= 8\n c : text\n d : Events.Arrived\n}\nfunction Caller { input Local\n output dep.Public }\n";
+        std::fs::write(&path, source).unwrap();
+        let mut server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
+        };
+        assert!(
+            server.diagnostics_for(&path).is_empty(),
+            "{:?}",
+            server.diagnostics_for(&path)
+        );
+        let complete = |server: &Server, text: &str, needle: &str| {
+            let offset = text.rfind(needle).unwrap() + needle.len();
+            let pos = position(text, offset);
+            server.completion(
+                &path,
+                pos["line"].as_u64().unwrap() as usize,
+                pos["character"].as_u64().unwrap() as usize,
+            )
+        };
+        let imported = complete(&server, source, "a : dep.");
+        assert!(imported.iter().any(|v| v["label"] == "dep.Public"));
+        assert!(imported.iter().any(|v| v["label"] == "dep.Record.Id"));
+        assert!(
+            !imported
+                .iter()
+                .any(|v| v["label"] == "dep.Private" || v["label"] == "dep.Run")
+        );
+        let public = imported
+            .iter()
+            .find(|v| v["label"] == "dep.Public")
+            .unwrap();
+        assert_eq!(
+            public["textEdit"]["range"]["start"],
+            json!({"line":4,"character":5})
+        );
+        assert_eq!(
+            public["textEdit"]["range"]["end"],
+            json!({"line":4,"character":15})
+        );
+        assert_eq!(public["textEdit"]["newText"], "dep.Public");
+        assert!(
+            complete(&server, source, "list<Lo")
+                .iter()
+                .any(|v| v["label"] == "Local")
+        );
+        assert!(
+            complete(&server, source, "c : te")
+                .iter()
+                .any(|v| v["label"] == "text")
+        );
+        assert!(
+            complete(&server, source, "d : Events.")
+                .iter()
+                .any(|v| v["label"] == "Events.Arrived")
+        );
+        assert!(complete(&server, source, "length <= ").is_empty());
+        assert!(
+            complete(&server, source, "input Lo")
+                .iter()
+                .any(|v| v["label"] == "Local")
+        );
+        assert!(
+            complete(&server, source, "output dep.")
+                .iter()
+                .any(|v| v["label"] == "dep.Public")
+        );
+        let incomplete = source.replace("a : dep.Public", "a : dep.");
+        server.open.insert(path.clone(), incomplete.clone());
+        assert!(
+            complete(&server, &incomplete, "a : dep.")
+                .iter()
+                .any(|v| v["label"] == "dep.Public")
+        );
+        let unimported = source.replace("import dep\n", "");
+        server.open.insert(path.clone(), unimported.clone());
+        assert!(complete(&server, &unimported, "a : dep.").is_empty());
+        let all = complete(&server, &unimported, "c : ");
+        assert!(!all.iter().any(|v| v["label"] == "Hidden" || v["label"].as_str().unwrap().starts_with("dep.")));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn incremental_changes_follow_utf16_and_sequential_ranges() {
         let changes = json!([
