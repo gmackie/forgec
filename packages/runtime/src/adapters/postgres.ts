@@ -1,8 +1,8 @@
 /**
  * PostgreSQL adapter (FORGE-033/034). The relational plan and the guarded
  * mutation protocol are the SQL ones already executed on D1: every commit is a
- * list of statements whose first inserts the `_forge_assert` row with the
- * evaluated preconditions and whose CHECK aborts the batch. Here a batch is
+ * list of statements beginning with a guarded assertion. PostgreSQL evaluates that predicate
+ * natively and aborts on false, without writing a shared `_forge_assert` row. A batch is
  * one transaction; PostgreSQL error classes are mapped onto the same stable
  * outcomes (unique conflict, missing reference, precondition failed,
  * serialization retry). Text columns carry `COLLATE "C"` so keyset order is
@@ -38,6 +38,11 @@ export function translateError(e: unknown, statementSql: string): Error {
     // detail: Key (tenant, code)=(t, ACME) already exists.
     const cols = /Key \(([^)]+)\)=/.exec(pe.detail ?? "")?.[1]?.split(",").map((s) => s.trim()) ?? [];
     const table = pe.table ?? /INSERT INTO (\w+)/.exec(statementSql)?.[1] ?? "";
+    // A generated record's primary key replaces the create-absence guard. Preserve the
+    // shared classifier's id-collision outcome instead of reporting a business unique key.
+    if (pe.constraint?.endsWith("_pkey") && cols.includes("id") && cols.every((c) => c === "id" || c === "tenant")) {
+      return new Error("CHECK constraint failed: forge_precondition");
+    }
     return new Error(`UNIQUE constraint failed: ${cols.map((c) => `${table}.${c}`).join(", ")}`);
   }
   if (code === "23503") return new Error("FOREIGN KEY constraint failed");
@@ -56,8 +61,20 @@ async function runTransaction(client: PoolClient, statements: SqlStatement[], te
     if (tenant) await client.query("SELECT set_config('forge.tenant', $1, true)", [tenant]);
     for (const s of statements) {
       try {
-        const r = await client.query(toPositional(s.sql), s.params as unknown[]);
-        out.push({ changes: r.rowCount ?? 0 });
+        const assertion = "INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, ";
+        if (s.sql.startsWith(assertion)) {
+          // Evaluate exactly the shared guard inside the same SERIALIZABLE transaction.
+          // A native transaction can abort directly; it needs no shared assertion row whose
+          // later DELETE introduces predicate-lock overlap among unrelated writers.
+          const r = await client.query(toPositional(`SELECT ${s.sql.slice(assertion.length)} AS satisfied`), s.params.slice(1));
+          if (r.rows[0]?.satisfied !== true && r.rows[0]?.satisfied !== 1) throw new Error("CHECK constraint failed: forge_precondition");
+          out.push({ changes: 1 });
+        } else if (s.sql === "DELETE FROM _forge_assert WHERE op_id = ?") {
+          out.push({ changes: 1 });
+        } else {
+          const r = await client.query(toPositional(s.sql), s.params as unknown[]);
+          out.push({ changes: r.rowCount ?? 0 });
+        }
       } catch (e) {
         throw translateError(e, s.sql);
       }
@@ -142,6 +159,7 @@ export async function drizzlePgExecutor(pool: Pool): Promise<SqlExecutor> {
 
 /** The same storage semantics as D1, on PostgreSQL. */
 export class PostgresStorage extends D1Storage {
+  protected override readonly assertCreateAbsent = false;
   constructor(executor: SqlExecutor, model: Model) {
     super(executor, model);
     (this as { name: string }).name = `postgres/${executor.facade}`;
@@ -150,19 +168,22 @@ export class PostgresStorage extends D1Storage {
   /**
    * A serialization failure under SERIALIZABLE is the expected outcome of concurrency, not a
    * fault: PostgreSQL's own guidance is to retry the whole transaction. Every commit in this
-   * protocol writes `_forge_assert` and may write `forge_outbox`, so writers that share no
-   * business state still overlap on predicate locks and conflict. Inheriting D1's budget (3
+   * protocol retains real business guard reads, which can overlap on predicate locks even
+   * when the application considers the commands independent. Inheriting D1's budget (3
    * attempts inside 75ms) meant independent concurrent writes failed with a 503 at a
    * double-digit rate — the same calls that succeed on D1 and DynamoDB, which is precisely the
    * kind of divergence the differential suite exists to catch.
    *
-   * Exponential with jitter, ~2s of total budget before giving up. A caller that still sees
-   * TransientConflict is seeing real, sustained contention rather than an artefact of the
-   * isolation level.
+   * Full jitter spreads each retry across the entire exponential window. A fixed exponential
+   * floor with a small additive jitter synchronizes losing writers into repeated collisions
+   * on shared predicate locks, even when their business records are independent (#82).
+   * Ten attempts retain the previous expected total sleep (~2.27s); the maximum is ~4.54s.
+   * Exhaustion still returns TransientConflict: finite retries cannot guarantee progress
+   * under arbitrary load, including false-positive SERIALIZABLE conflicts.
    */
   protected override readonly retryAttempts = 10;
   protected override retryDelayMs(attempt: number): number {
-    return Math.floor(2 ** attempt * 2 + Math.random() * 10 * attempt);
+    return Math.floor(Math.random() * (2 ** attempt * 4 + 10 * attempt));
   }
 }
 
