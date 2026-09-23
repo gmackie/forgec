@@ -158,7 +158,7 @@ node scripts/verify-foundation-certification.mjs \
   --out /tmp/foundation-provider-certification.json
 ```
 
-This gate rebuilds all consumer artifacts and requires all 42 cells. It validates
+This gate rebuilds all consumer artifacts and requires all 48 cells (16 profiles × 3 providers). It validates
 current source fingerprints, exact profile criteria/assertions, raw Vitest report
 digests and skip/todo counts, observed provider identities, and D1 deployment
 bundle/harness identity. Missing/stale evidence produces a failed aggregate and
@@ -169,16 +169,20 @@ certification. Re-run it after code changes rather than reusing an old index.
 
 Dedicated infrastructure provisioning is documented in `conformance/foundation/providers/README.md`; recorded test resource identifiers are in `docs/foundation/test-infrastructure.json`. The PostgreSQL Compose configuration validates, but this workstation has no running Docker daemon; executed PostgreSQL evidence uses the native PostgreSQL17 service.
 
-## Verified implementation checkpoint
+## Earlier verified implementation checkpoint
 
-At `9c92db7bfa73dc1523bb1570f6ccd60c3ce684a0`, after integrating installable app adapters and reviewed migration composition, all 14 profiles passed on native PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every bundle and accepted all 42 cells. `provider-evidence/certification.json` indexes the retained receipts and raw reports. The earlier checkpoint separately passed the five core traces on each provider. This satisfies the bounded database profiles for F34-05, F36-06 and F39–50 STORE. It does not certify hosted object bytes or deployed application adoption.
+At `9c92db7bfa73dc1523bb1570f6ccd60c3ce684a0`, after integrating installable app adapters and reviewed migration composition, all 14 profiles passed on native PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every bundle and accepted all 42 cells. `provider-evidence/certification-9c92db7b.json` indexes those retained receipts and raw reports. The earlier checkpoint separately passed the five core traces on each provider. This satisfies the bounded database profiles for F34-05, F36-06 and F39–50 STORE. It does not certify hosted object bytes or deployed application adoption.
 
-Contract files retain their original package-local status (`294/308` passing, 14 provider IDs planned); provider acceptance is established separately by the source-bound aggregate receipt. This avoids treating a local verifier as proof of hosted behavior or rewriting its input contracts after certification.
+At that historical checkpoint, contract files retained package-local status (`294/308` passing, 14 provider IDs planned); provider acceptance is established separately by the source-bound aggregate receipt. This avoids treating a local verifier as proof of hosted behavior or rewriting its input contracts after certification.
 
 The earlier checkpoint aggregate is retained as `provider-evidence/certification-834dd37c.json`; it is historical evidence, not the current-source gate.
 
-The previous implementation aggregate is retained as `provider-evidence/certification-f64c1b81.json`. The current refresh had one D1 Operations transport failure, followed by a passing full-profile run in a fresh tenant. Its failed receipt/raw report and `retry-notes-9c92db7b.md` are retained; the aggregate selects the passing retry and validates all 42 cells.
+The previous implementation aggregate is retained as `provider-evidence/certification-f64c1b81.json`. That earlier refresh had one D1 Operations transport failure, followed by a passing full-profile run in a fresh tenant. Its failed receipt/raw report and `retry-notes-9c92db7b.md` are retained; the aggregate selects the passing retry and validates all 42 cells.
 
-## Expansion in progress
+## Expanded verified checkpoint
 
-Resource relations (#79) and settlement (#80) add provider profiles in the current implementation wave. The retained 42-cell aggregate above belongs to `9c92db7b`; it does not certify changed source or these new packages. New concurrency profiles and a complete matching-source refresh are required after integration.
+At `f98cee96eabc499ac170acfd475a4590011ff062`, all 16 profiles pass on PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every consumer bundle and accepted all 48 cells with matching source, artifacts, exact assertions, raw reports and observed provider identity. No failed receipts occurred in this matrix. Resource relations adds six hosted assertions and settlement adds nine, including real Agreement issuance and independent Ledger association. The current index is `provider-evidence/certification.json`.
+
+The previous 42-cell aggregate is retained as `provider-evidence/certification-9c92db7b.json`. Older checkpoint references remain historical evidence only.
+
+The expanded contracts contain 330 criteria: 312 local passes, 16 provider criteria whose acceptance is established separately by this aggregate, and two deferred ConceptIR integration criteria. Provider evidence does not imply delivery of #75/#77 compiler temporal/relationship semantics, hosted object durability, or application deployment adoption.

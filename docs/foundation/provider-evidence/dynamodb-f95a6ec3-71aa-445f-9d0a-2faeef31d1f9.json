@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-settlement-invariants/1",
+  "coverageCriteria": [
+    "F80-STORE"
+  ],
+  "status": "passing",
+  "runId": "f95a6ec3-71aa-445f-9d0a-2faeef31d1f9",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "7206f7b38f51f8beb9b29ac7ed3b1258a7c6993d317a5505d5dd97cb8f8a3b1e",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "67032616162a844af3c539db79c1ba3e0c8a9ffbbe6f0b247eefec928030fd2f"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "23902e6092b3382f24f02700d501bee23a34aeb95b38954de67ba51c9a573001"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "1e7ad5b0b9560c663ccdb44858918162c45d3dd0f6cbdb06b4a4589dac2a4d20"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: CommerceReceivable partial materialization and settlement retain neutral temporal positions",
+    "hosted: ExpenseReimbursement partial materialization and settlement retain neutral temporal positions",
+    "hosted: ServiceCredit partial materialization and settlement retain neutral temporal positions",
+    "hosted: one source atomically settles multiple positions and cannot be overspent or reused",
+    "hosted: immutable reversals corrections and effective-time prefixes preserve explainable history",
+    "hosted: trusted source admission authorization isolation and failed publication never mint balances",
+    "hosted: issued Agreement authority and independent exact Ledger association remain explicit",
+    "hosted: obligation terminal races and unadmitted raw publications fail closed",
+    "hosted: late domain proof cannot confer authority on an earlier raw publication"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T17:22:05.303Z",
+  "passedTraces": [
+    "hosted: CommerceReceivable partial materialization and settlement retain neutral temporal positions",
+    "hosted: ExpenseReimbursement partial materialization and settlement retain neutral temporal positions",
+    "hosted: ServiceCredit partial materialization and settlement retain neutral temporal positions",
+    "hosted: one source atomically settles multiple positions and cannot be overspent or reused",
+    "hosted: immutable reversals corrections and effective-time prefixes preserve explainable history",
+    "hosted: trusted source admission authorization isolation and failed publication never mint balances",
+    "hosted: issued Agreement authority and independent exact Ledger association remain explicit",
+    "hosted: obligation terminal races and unadmitted raw publications fail closed",
+    "hosted: late domain proof cannot confer authority on an earlier raw publication"
+  ],
+  "testReportSha256": "cb35dc7880e2d96b509a0631a464fa4101d04cafae9f200e58bfdd17c4dfe99c",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "f95a6ec3-71aa-445f-9d0a-2faeef31d1f9",
+    "tenantPrefix": "foundation-cert-f95a6ec3-71aa-445f-9d0a-2faeef31d1f9",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

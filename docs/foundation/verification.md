@@ -1,6 +1,6 @@
 # Foundation implementation verification
 
-The expanded scope contains 41 packages and 308 acceptance IDs. Each implemented package has a `verification.json` descriptor, typed generated consumer, runtime helper and focused behavior tests. Status is per criterion in `contract.json`; provider requirements are recorded separately in the source-bound 42-cell certification receipt. Package READMEs/contract implementation sections document bounded profiles and durable pending protocols.
+The expanded scope contains 43 packages and 330 acceptance IDs. Each implemented package has a `verification.json` descriptor, typed generated consumer, runtime helper and focused behavior tests. Status is per criterion in `contract.json`; provider requirements are recorded separately in the source-bound provider certification receipt. Package READMEs/contract implementation sections document bounded profiles and durable pending protocols.
 
 Run:
 
@@ -15,7 +15,7 @@ node scripts/verify-foundation.mjs --suite local --package scheduling
 
 Set `FORGE_FOUNDATION_PG_URL` to a test PostgreSQL database to add isolated UUID schemas per test. Memory and SQLite always run. CI supplies PostgreSQL17. Hosted D1 and DynamoDB require separate credentials/infrastructure; provider mode explicitly fails instead of returning a false pass. Existing unrelated infrastructure suites may skip and their skips do not count as Foundation acceptance.
 
-All 41 implementations are now integrated and independently tested in their supported local profiles. Full-suite results and the exact pushed checkpoint are recorded in the PR; source-fingerprinted receipts remain the per-package execution evidence. The earlier 38-package checkpoint58bcc7c6086a passed480 runtime,155 Rust and13 harness tests.
+All 43 implementations are now integrated and independently tested in their supported local profiles. Full-suite results and the exact pushed checkpoint are recorded in the PR; source-fingerprinted receipts remain the per-package execution evidence. The earlier 38-package checkpoint58bcc7c6086a passed480 runtime,155 Rust and13 harness tests.
 
 Synthetic application/domain consumers establish typed composition usability, not real-application adoption. `application-provenance.md` maps inspected application revisions and actual types to those probes. Append-only candidate rows are often inert until a validated publication journal/seal; use the package helper's authoritative read API. Admission/authority facts must be protected by normal kernel policies. The runtime cannot infer application user identity or permissions from Participation membership.
 
@@ -42,6 +42,12 @@ All CI jobs pass in [run 35879253526](https://github.com/gmackie/forgec/actions/
 
 Hosted database certification passes all 42 cells at the current implementation checkpoint. `provider-evidence/certification.json` retains the validated source/artifact/identity/raw-report index. One initial D1 Operations transport failure is retained alongside the successful full-profile retry; see the retry notes.
 
-## New issue wave
+## Resource relations and settlement checkpoint
 
-Foundation #79 (resource relations) and #80 (settlement) extend the registered scope to 43 packages. Their implementation and fresh integrated evidence are in progress. The 41-package/42-provider-cell checkpoint above remains historical evidence for `9c92db7b`, not certification of this new wave. Application integration/staging enablement is deferred by user request. The ConceptIR semantic dependencies are recorded in `resource-settlement-semantics.md` and remain distinct acceptance gates.
+Implementation `f98cee96eabc499ac170acfd475a4590011ff062` adds #79 resource relations and #80 settlement, bringing the registered scope to 43 packages and 330 criteria. All 43 dependency-ordered package verifiers pass with memory, SQLite and native PostgreSQL. The full runtime passes 674 tests (50 unrelated infrastructure skips), and all 62 harness tests pass. Runtime typecheck, workspace builds, packaging and actual tarball consumer checks pass. All six existing adapter regression runners retain 24 assertions; application integration and staging enablement remain deferred by user request.
+
+Resource relations has 18 independently executed tests covering typed domain relations, provenance, atomic handoff, temporal knowledge, hostile evidence and authorization. Settlement has 27 independently executed tests covering three domains, exact partial materialization/settlement, source uniqueness, multi-position atomicity, reversals, effective-time bounds, actual Agreement issuance, Ledger association and late proof rejection.
+
+Both packages use explicit package-owned temporal fields and publication knowledge. The ConceptIR temporal/relationship bridges remain planned (`F79-SEMANTIC`, `F80-SEMANTIC`); those gates require actual #75/#77 compiler semantics. See `resource-settlement-semantics.md` and package READMEs. Historical economic/relation queries still require current read authority and valid upstream authority; they fail closed when that authority becomes unreadable rather than returning a recomputed partial balance.
+
+CI run35894158062 passes after retrying the Node22 job. The initial unchanged PostgreSQL contention test exhausted retries for2/64 independent writes; #82 and `postgres-contention-f98cee96.md` retain that failure, eleven successful focused reproductions and the successful identical-source CI retry. No assertions or adapter behavior were weakened. All 48 expanded provider cells pass the final aggregate gate, which rebuilt all16 bundles and validated source fingerprints, exact assertions, raw report hashes and provider identity. The current retained index is `provider-evidence/certification.json`; previous42-cell evidence is archived as `certification-9c92db7b.json`.

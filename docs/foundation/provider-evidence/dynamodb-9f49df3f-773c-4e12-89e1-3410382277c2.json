@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-resource-relations-invariants/1",
+  "coverageCriteria": [
+    "F79-STORE"
+  ],
+  "status": "passing",
+  "runId": "9f49df3f-773c-4e12-89e1-3410382277c2",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "38a6e851b0534f2954968cdd59055f546733ec42b9a62463002197e31b82d4fe",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "5824e08b2824ee1b984ac6394ed4c0251e4ae313db750ceaa088bec89d340f0e"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "f8386cad2c49bce881799081b6483836014e9b6ed0afd74f00ed81bc6e76fa1a"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "5907011ecda0255296db14e14a6cd231ee2aae06c8cb7b27375519ec6d115101"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: typed leased equipment, consignment and cloud relations remain distinct with extensible exact extent",
+    "hosted: atomic custody handoff has one winner, inert loser, historical knowledge and restart replay",
+    "hosted: future ends and backdated termination preserve half-open valid time and inclusive knowledge boundaries",
+    "hosted: denied successor Party cannot partially end custody and empty evidence cannot publish",
+    "hosted: equal knowledge timestamps are inclusive and staged successors stay inert",
+    "hosted: denied dependency reads and mismatched or future provenance cannot publish a relation"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T17:16:22.897Z",
+  "passedTraces": [
+    "hosted: typed leased equipment, consignment and cloud relations remain distinct with extensible exact extent",
+    "hosted: atomic custody handoff has one winner, inert loser, historical knowledge and restart replay",
+    "hosted: future ends and backdated termination preserve half-open valid time and inclusive knowledge boundaries",
+    "hosted: denied successor Party cannot partially end custody and empty evidence cannot publish",
+    "hosted: equal knowledge timestamps are inclusive and staged successors stay inert",
+    "hosted: denied dependency reads and mismatched or future provenance cannot publish a relation"
+  ],
+  "testReportSha256": "7938a6f54840b16e26b1d2e5ba857ce55b1fa3b7addbf2abbd6d76bfe17144fc",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "9f49df3f-773c-4e12-89e1-3410382277c2",
+    "tenantPrefix": "foundation-cert-9f49df3f-773c-4e12-89e1-3410382277c2",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}
