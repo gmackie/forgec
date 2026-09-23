@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { Effect } from "effect";
 import { expect, it } from "vitest";
 import { Model,type AppBundle } from "../src/model.js";
+import { err } from "../src/errors.js";
 import { Engine } from "../src/engine.js";
 import { featureAdapters, featureStorage, unavailable } from "./helpers/feature-storage.js";
 import { testLayer } from "../src/testing.js";
@@ -33,5 +34,112 @@ for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapte
   expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,smallest:5,largest:5,lastUpdate:"2026-01-01T00:00:00.000Z"});
   await apply(changed); // duplicate revision
   expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,smallest:5,largest:5});
+  } finally { await close(); }
+});
+
+for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapter}: an interrupted rebuild cannot poison the next generation`,async()=>{
+  const model=new Model(bundle);
+  const {storage,close}=await featureStorage("project-portfolio",model,adapter);
+  try {
+    const engine=new Engine(model,testLayer(storage));
+    const call=(operation:string,body:Record<string,unknown>)=>Effect.runPromise(engine.call(operation,body,ctx));
+    const row=await call(`${R}.create`,{project:"forge",estimate:2,updated:"2026-01-01T00:00:00Z"});
+    await call(`${P}.rebuild`,{});
+    await call(`${R}.update`,{id:row.id,expectedVersion:1,patch:{estimate:9}});
+    const write=storage.putDocument.bind(storage);
+    let interrupt=true;
+    storage.putDocument=(tenant,kind,id,doc,version)=>{
+      if(interrupt && id.includes(":group:")) { interrupt=false; return Effect.fail(err("TransientConflict","simulated host interruption")); }
+      return write(tenant,kind,id,doc,version);
+    };
+    await expect(call(`${P}.rebuild`,{})).rejects.toThrow();
+    expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:2,generation:1});
+    // A new host must skip the abandoned generation, not collide with its ledger rows.
+    storage.putDocument=write;
+    const restarted=new Engine(model,testLayer(storage));
+    await Effect.runPromise(restarted.call(`${P}.rebuild`,{},ctx));
+    expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:9,generation:3});
+  } finally { await close(); }
+});
+
+for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapter}: initial build retains concurrent events for replay`,async()=>{
+  const model=new Model(bundle);
+  const {storage,close}=await featureStorage("project-portfolio",model,adapter);
+  try {
+    const engine=new Engine(model,testLayer(storage));
+    const call=(operation:string,body:Record<string,unknown>)=>Effect.runPromise(engine.call(operation,body,ctx));
+    const row=await call(`${R}.create`,{project:"forge",estimate:2,updated:"2026-01-01T00:00:00Z"});
+    const write=storage.putDocument.bind(storage);
+    let delivered=false;
+    let updated:Record<string,unknown>;
+    const envelope=()=>({channel:`${R}.changes`,message:"Updated",messageId:"during-build",tenant:ctx.tenant,opId:"during-build",ordinal:0,payload:updated,createdAt:"2026-01-01T00:00:00Z"});
+    storage.putDocument=(tenant,kind,id,doc,version)=>{
+      if(!delivered && id.includes(":group:")) {
+        delivered=true;
+        return Effect.promise(async()=>{
+          updated=await call(`${R}.update`,{id:row.id,expectedVersion:1,patch:{estimate:9}});
+          await expect(engine.applyProjectionEvent(P,envelope())).rejects.toMatchObject({code:"ProjectionNotReady"});
+        }).pipe(Effect.flatMap(()=>write(tenant,kind,id,doc,version)));
+      }
+      return write(tenant,kind,id,doc,version);
+    };
+    await call(`${P}.rebuild`,{});
+    expect(delivered).toBe(true);
+    expect(await engine.applyProjectionEvent(P,envelope())).toBe("applied");
+    expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:9});
+  } finally { await close(); }
+});
+
+for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapter}: active event updates fence rebuild publication without poisoning retries`,async()=>{
+  const model=new Model(bundle);
+  const {storage,close}=await featureStorage("project-portfolio",model,adapter);
+  try {
+    const engine=new Engine(model,testLayer(storage));
+    const call=(operation:string,body:Record<string,unknown>)=>Effect.runPromise(engine.call(operation,body,ctx));
+    const row=await call(`${R}.create`,{project:"forge",estimate:2,updated:"2026-01-01T00:00:00Z"});
+    await call(`${P}.rebuild`,{});
+    const write=storage.putDocument.bind(storage);
+    let delivered=false;
+    storage.putDocument=(tenant,kind,id,doc,version)=>{
+      if(!delivered && id.includes(":group:")) {
+        delivered=true;
+        return Effect.promise(async()=>{
+          const updated=await call(`${R}.update`,{id:row.id,expectedVersion:1,patch:{estimate:9}});
+          expect(await engine.applyProjectionEvent(P,{channel:`${R}.changes`,message:"Updated",messageId:"fence",tenant:ctx.tenant,opId:"fence",ordinal:0,payload:updated,createdAt:"2026-01-01T00:00:00Z"})).toBe("applied");
+        }).pipe(Effect.flatMap(()=>write(tenant,kind,id,doc,version)));
+      }
+      return write(tenant,kind,id,doc,version);
+    };
+    await expect(call(`${P}.rebuild`,{})).rejects.toMatchObject({code:"VersionConflict"});
+    expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:9,generation:1});
+    storage.putDocument=write;
+    await call(`${P}.rebuild`,{});
+    expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:9,generation:3});
+    expect(await call(`${P}.status`,{})).not.toHaveProperty("reservedGeneration");
+  } finally { await close(); }
+});
+
+for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapter}: concurrent rebuilds reserve disjoint generations`,async()=>{
+  const model=new Model(bundle);
+  const {storage,close}=await featureStorage("project-portfolio",model,adapter);
+  try {
+    const engine=new Engine(model,testLayer(storage));
+    const call=(operation:string,body:Record<string,unknown>)=>Effect.runPromise(engine.call(operation,body,ctx));
+    await call(`${R}.create`,{project:"forge",estimate:2,updated:"2026-01-01T00:00:00Z"});
+    await call(`${P}.rebuild`,{});
+    const write=storage.putDocument.bind(storage);
+    let raced=false;
+    storage.putDocument=(tenant,kind,id,doc,version)=>{
+      if(!raced && id.includes(":group:")) {
+        raced=true;
+        return Effect.promise(async()=>{ await call(`${P}.rebuild`,{}); }).pipe(Effect.flatMap(()=>write(tenant,kind,id,doc,version)));
+      }
+      return write(tenant,kind,id,doc,version);
+    };
+    await expect(call(`${P}.rebuild`,{})).rejects.toMatchObject({code:"VersionConflict"});
+    expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:2,generation:3});
+    storage.putDocument=write;
+    await call(`${P}.rebuild`,{});
+    expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:2,generation:4});
   } finally { await close(); }
 });
