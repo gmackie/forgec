@@ -127,7 +127,7 @@ function main() {
       run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', `packages/foundation/${slug}/fixtures/consumer`]);
       for (const name of ['first', 'second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}`, '--out', join(out, name)]);
       for (const name of ['consumer-first', 'consumer-second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}/fixtures/consumer`, '--out', join(out, name)]);
-      for (const [first, second] of [['first', 'second'], ['consumer-first', 'consumer-second']]) for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts']) {
+      for (const [first, second] of [['first', 'second'], ['consumer-first', 'consumer-second']]) for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts', 'openapi.json', 'api.smithy', 'source-map.json', 'README.md']) {
         if (!readFileSync(join(out, first, file)).equals(readFileSync(join(out, second, file)))) throw new Error(`nondeterministic artifact: ${file}`);
       }
       run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', ...verifier.tests], { FORGE_FOUNDATION_FIXTURE: join(out, 'first'), FORGE_FOUNDATION_CONSUMER: join(out, 'consumer-first') });
@@ -148,7 +148,7 @@ function main() {
     run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', fixture]);
     for (const name of ['app', 'records', 'remote']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'fmt', `conformance/foundation/fixtures/composition/${name}`, '--check']);
     for (const name of ['first', 'second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', fixture, '--out', join(out, name)]);
-    for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts']) {
+    for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts', 'openapi.json', 'api.smithy', 'source-map.json', 'README.md']) {
       if (!readFileSync(join(out, 'first', file)).equals(readFileSync(join(out, 'second', file)))) throw new Error(`nondeterministic artifact: ${file}`);
     }
     run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-composition.test.ts'], { FORGE_FOUNDATION_BUNDLE: join(out, 'first/app.json') });

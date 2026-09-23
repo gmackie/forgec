@@ -8,39 +8,66 @@
     "evidence"
   ],
   "facts": [
-    "Definition/pin, award, requirement, domain-owned level vocabulary and qualification-specific subject handle."
+    "QualificationDefinition: immutable key and SpecificationPin",
+    "QualificationLevel: domain-owned code and ordered rank within exact definition",
+    "QualificationSubject and PartySubject: typed subject handle and Party mapping",
+    "QualificationRequirement: definition and optional minimum level",
+    "Qualification: immutable issuer-identified award with validity and optional EvidenceSeal",
+    "QualificationRevocation: unique immutable terminal fact"
   ],
   "operations": [
-    "Typed creation, query and lifecycle operations for qualification"
+    "Qualifications.award(subject, definition, level?, issuer, issuerRecord, issuedAt, expiresAt?, support?)",
+    "Qualifications.revoke(qualification, effectiveAt, reason)",
+    "Qualifications.satisfies(subject, requirement, at)"
   ],
   "invariants": [
     "Evaluation/Assurance producers and Routing consumers use upper bridges. Qualification does not import Assurance, Routing or Allocation.",
-    "Technician/vendor/Runner; validity/revocation; level-comparison compatibility; issuer/evidence pins; typed Party and machine subjects; award grants no authorization."
+    "Technician/vendor/Runner; validity/revocation; level-comparison compatibility; issuer/evidence pins; typed Party and machine subjects; award grants no authorization.",
+    "Ranks compare only within the exact immutable definition; no implicit cross-version equivalence",
+    "Awards and revocations are append-only with issuer-record and terminal uniqueness",
+    "Qualification grants no authorization; eligible lookup consumes pages and rechecks hidden terminal/support facts",
+    "Routing acceptance and actual attestation-producer adapters remain separately verified upper integrations"
   ],
   "acceptance": [
     {
       "id": "F56-01",
       "description": "qualification definition + awarded qualification",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-qualification.test.ts"
+      ]
     },
     {
       "id": "F56-02",
       "description": "requirement model",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-qualification.test.ts"
+      ]
     },
     {
       "id": "F56-03",
       "description": "level/validity semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-qualification.test.ts"
+      ]
     },
     {
       "id": "F56-04",
       "description": "evidence/attestation hooks",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-qualification.test.ts"
+      ]
     },
     {
       "id": "F56-05",
@@ -52,10 +79,16 @@
       "id": "F56-06",
       "description": "fixtures for technician skill, vendor qualification and Runner qualification",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-qualification.test.ts"
+      ]
     }
   ],
   "fixtures": [
-    "fixtures for technician skill, vendor qualification and Runner qualification"
+    "technician-skill",
+    "vendor-qualification",
+    "runner-qualification"
   ]
 }

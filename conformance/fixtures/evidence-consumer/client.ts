@@ -309,11 +309,13 @@ export interface EvidenceBundleRecord {
   updatedAt: string;
   key: string;
   label: string;
+  predecessor: string | null;
 }
 
 export interface EvidenceBundleCreate {
   key: string;
   label: string;
+  predecessor?: string | null;
 }
 
 export interface EvidenceBundlePatch {
@@ -345,6 +347,42 @@ export interface EvidenceItemCreate {
 }
 
 export interface EvidenceItemPatch {
+}
+
+export interface EvidenceMemberRecord {
+  id: string;
+  bundle: string;
+  item: string;
+  next: string | null;
+  depth: number;
+}
+
+export interface EvidenceMemberCreate {
+  bundle: string;
+  item: string;
+  next?: string | null;
+  depth: number;
+}
+
+export interface EvidenceMemberPatch {
+}
+
+export interface EvidenceSealRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  bundle: string;
+  head: string | null;
+  recordedBy: string;
+}
+
+export interface EvidenceSealCreate {
+  bundle: string;
+  head?: string | null;
+  recordedBy: string;
+}
+
+export interface EvidenceSealPatch {
 }
 
 export interface EvidenceSourceRecord {
@@ -442,6 +480,12 @@ export interface EvidenceBundleApi {
 export interface EvidenceItemApi {
 }
 
+export interface EvidenceMemberApi {
+}
+
+export interface EvidenceSealApi {
+}
+
 export interface EvidenceSourceApi {
 }
 
@@ -488,6 +532,8 @@ export interface ForgeClient {
   artifactRevisions: ArtifactRevisionApi;
   evidenceBundles: EvidenceBundleApi;
   evidenceItems: EvidenceItemApi;
+  evidenceMembers: EvidenceMemberApi;
+  evidenceSeals: EvidenceSealApi;
   evidenceSources: EvidenceSourceApi;
   realizations: RealizationApi;
   repositorys: RepositoryApi;
@@ -558,6 +604,10 @@ export function createClient(options: ClientOptions): ForgeClient {
     evidenceBundles: {
     },
     evidenceItems: {
+    },
+    evidenceMembers: {
+    },
+    evidenceSeals: {
     },
     evidenceSources: {
     },

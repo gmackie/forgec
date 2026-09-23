@@ -460,6 +460,13 @@
             "x-forge-type": "text",
             "minLength": 1,
             "maxLength": 200
+          },
+          "predecessor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
           }
         },
         "additionalProperties": false,
@@ -468,7 +475,8 @@
           "createdAt",
           "updatedAt",
           "key",
-          "label"
+          "label",
+          "predecessor"
         ]
       },
       "EvidenceBundleCreate": {
@@ -485,6 +493,13 @@
             "x-forge-type": "text",
             "minLength": 1,
             "maxLength": 200
+          },
+          "predecessor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
           }
         },
         "additionalProperties": false,
@@ -651,6 +666,168 @@
         ]
       },
       "EvidenceItemPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "EvidenceMemberRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "bundle": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+          },
+          "item": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceItem"
+          },
+          "next": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 128,
+            "x-forge-type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "bundle",
+          "item",
+          "next",
+          "depth"
+        ]
+      },
+      "EvidenceMemberCreate": {
+        "type": "object",
+        "properties": {
+          "bundle": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+          },
+          "item": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceItem"
+          },
+          "next": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 128,
+            "x-forge-type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "bundle",
+          "item",
+          "depth"
+        ]
+      },
+      "EvidenceMemberPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "EvidenceSealRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "bundle": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+          },
+          "head": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "bundle",
+          "head",
+          "recordedBy"
+        ]
+      },
+      "EvidenceSealCreate": {
+        "type": "object",
+        "properties": {
+          "bundle": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+          },
+          "head": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "bundle",
+          "recordedBy"
+        ]
+      },
+      "EvidenceSealPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false

@@ -47,3 +47,6 @@ export * from "./foundation/classification.js";
 export * from "./foundation/availability.js";
 export * from "./foundation/usage.js";
 export * from "./foundation/evaluation.js";
+export * from "./foundation/entitlement.js";
+export * from "./foundation/qualification.js";
+export * from "./foundation/intake.js";

@@ -24,3 +24,7 @@ Expense/vendor/clinical intake; exact form/content revision; validation rejectio
 - F60-06: fixtures for expense, vendor onboarding and clinical-style intake
 
 Compile typed consumer fixtures, execute generated-bundle behaviors and adversarial cases, and bind evidence to accepted dependency revisions. Provider certification is separate from local tests.
+
+## Implemented local slice
+
+See README.md for typed transform boundaries. All six criteria have generated memory/SQLite evidence in foundation-intake.test.ts. No hosted-provider certification is claimed.

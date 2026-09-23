@@ -91,16 +91,6 @@ CREATE TABLE artifact_content (
   PRIMARY KEY ("tenant", "id")
 );
 
-CREATE TABLE evidence_bundle (
-  "tenant" TEXT COLLATE "C" NOT NULL,
-  "id" TEXT COLLATE "C" NOT NULL,
-  "key_" TEXT COLLATE "C" NOT NULL,
-  "label" TEXT COLLATE "C" NOT NULL,
-  "created_at" TEXT COLLATE "C" NOT NULL,
-  "updated_at" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id")
-);
-
 CREATE TABLE evidence_source (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -171,6 +161,18 @@ CREATE TABLE artifact_revision (
   FOREIGN KEY ("tenant", "components") REFERENCES artifact_component ("tenant", "id")
 );
 
+CREATE TABLE evidence_bundle (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "key_" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  "predecessor" TEXT COLLATE "C",
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "predecessor") REFERENCES evidence_seal ("tenant", "id")
+);
+
 CREATE TABLE evidence_item (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -190,6 +192,32 @@ CREATE TABLE evidence_item (
   FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id")
 );
 
+CREATE TABLE evidence_member (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "bundle" TEXT COLLATE "C" NOT NULL,
+  "item" TEXT COLLATE "C" NOT NULL,
+  "next" TEXT COLLATE "C",
+  "depth" BIGINT NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "bundle") REFERENCES evidence_bundle ("tenant", "id"),
+  FOREIGN KEY ("tenant", "item") REFERENCES evidence_item ("tenant", "id"),
+  FOREIGN KEY ("tenant", "next") REFERENCES evidence_member ("tenant", "id")
+);
+
+CREATE TABLE evidence_seal (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "bundle" TEXT COLLATE "C" NOT NULL,
+  "head" TEXT COLLATE "C",
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "bundle") REFERENCES evidence_bundle ("tenant", "id"),
+  FOREIGN KEY ("tenant", "head") REFERENCES evidence_member ("tenant", "id")
+);
+
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);
 CREATE UNIQUE INDEX artifact_uq_key ON artifact ("tenant", "key_");
 CREATE UNIQUE INDEX artifact_revision_uq_content ON artifact_revision ("tenant", "content");
@@ -198,6 +226,7 @@ CREATE UNIQUE INDEX evidence_bundle_uq_key ON evidence_bundle ("tenant", "key_")
 CREATE UNIQUE INDEX evidence_item_uq_bundle_source_sourceRecord ON evidence_item ("tenant", "bundle", "source", "source_record");
 CREATE INDEX evidence_item_ix_by_bundle ON evidence_item ("tenant", "bundle", "id");
 CREATE INDEX evidence_item_ix_by_source ON evidence_item ("tenant", "source", "id");
+CREATE UNIQUE INDEX evidence_seal_uq_bundle ON evidence_seal ("tenant", "bundle");
 CREATE UNIQUE INDEX evidence_source_uq_key ON evidence_source ("tenant", "key_");
 CREATE UNIQUE INDEX realization_uq_pin_buildHash_manifestDigest ON realization ("tenant", "pin", "build_hash", "manifest_digest");
 CREATE INDEX realization_ix_by_pin ON realization ("tenant", "pin", "id");

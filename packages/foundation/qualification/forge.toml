@@ -1,0 +1,16 @@
+[package]
+name = "@forgegraph/foundation/qualification"
+version = "0.1.0"
+edition = "2027"
+[source]
+root = "src"
+entry = "src/model.forge"
+[dependencies.party]
+path = "../party"
+deploy = true
+[dependencies.specification]
+path = "../specification"
+deploy = true
+[dependencies.evidence]
+path = "../evidence"
+deploy = true

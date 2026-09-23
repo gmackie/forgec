@@ -125,6 +125,7 @@ structure EvidenceBundleRecord {
     key: String
     @required
     label: String
+    predecessor: String
 }
 
 structure EvidenceBundleCreateInput {
@@ -132,6 +133,7 @@ structure EvidenceBundleCreateInput {
     key: String
     @required
     label: String
+    predecessor: String
 }
 
 structure EvidenceBundlePatchInput {
@@ -178,6 +180,56 @@ structure EvidenceItemCreateInput {
 }
 
 structure EvidenceItemPatchInput {
+}
+
+structure EvidenceMemberRecord {
+    @required
+    id: String
+    @required
+    bundle: String
+    @required
+    item: String
+    next: String
+    @required
+    depth: Long
+}
+
+structure EvidenceMemberCreateInput {
+    @required
+    bundle: String
+    @required
+    item: String
+    next: String
+    @required
+    depth: Long
+}
+
+structure EvidenceMemberPatchInput {
+}
+
+structure EvidenceSealRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    bundle: String
+    head: String
+    @required
+    recordedBy: String
+}
+
+structure EvidenceSealCreateInput {
+    @required
+    bundle: String
+    head: String
+    @required
+    recordedBy: String
+}
+
+structure EvidenceSealPatchInput {
 }
 
 structure EvidenceSourceRecord {

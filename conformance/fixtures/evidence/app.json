@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "6baada9d17216f39ef4b872b3f4d9615b2dbcb6a6b68bcfddcf9af802f53f0e8",
+  "buildHash": "8a3ee89f459c5ca0d2c1515cf0dc49d5183d74033a7b1d6de0c4a55889627a51",
   "digests": {
-    "source": "e2b578a6900ebb95e57db08fc11815048774b2ebda1e56a75f7ca7f3d720d519",
-    "wire": "c57801623ed36b8b74e482286d5e1a53e9cfcbcbff310c531d25e0ee9ce68caf",
+    "source": "11e57530db69a9f9c33717df741849d5e9dc2fe8313b4648fa815121d060a5e0",
+    "wire": "85ed844a0fdd14abfbaa614494b35c52efccdfac43d8feeb55f6d47ee0789352",
     "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
-    "security": "c07154cfa47f1818d15b8a56d3c47e628a12f6e88bfb3a2af0e20505fd70982e"
+    "security": "f1aec2ab98c0d276d9ce619d52232039abbdb9d6147894b0bd22882d1a24517f"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -1015,7 +1015,31 @@
       {
         "id": "@forgegraph/foundation/evidence/_",
         "enums": [],
-        "types": [],
+        "types": [
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceProvenance",
+            "name": "EvidenceProvenance",
+            "exported": true,
+            "type": {
+              "base": {
+                "kind": "scalar",
+                "name": "text",
+                "args": []
+              },
+              "optional": false,
+              "normalizers": [],
+              "constraints": [
+                {
+                  "kind": "length",
+                  "min": 1,
+                  "max": 1000
+                }
+              ],
+              "dataClass": "@forgegraph/foundation/evidence/_/EvidenceNarrative"
+            },
+            "dataClass": "@forgegraph/foundation/evidence/_/EvidenceNarrative"
+          }
+        ],
         "shapes": [],
         "resources": [
           {
@@ -1089,6 +1113,21 @@
                       "max": 200
                     }
                   ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "predecessor",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
                 },
                 "immutable": true,
                 "serverOwned": false,
@@ -1360,7 +1399,8 @@
                       "min": 1,
                       "max": 1000
                     }
-                  ]
+                  ],
+                  "dataClass": "@forgegraph/foundation/evidence/_/EvidenceNarrative"
                 },
                 "immutable": true,
                 "serverOwned": false,
@@ -1535,6 +1575,476 @@
             "purposeBindings": []
           },
           {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceMember",
+            "name": "EvidenceMember",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "bundle",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "item",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/evidence/_/EvidenceItem"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "next",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/evidence/_/EvidenceMember"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "depth",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "op": "<=",
+                      "value": {
+                        "type": "int",
+                        "value": "128"
+                      }
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "==",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "item",
+                    "bundle"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "bundle"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "next"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "depth"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "&&",
+                    "lhs": {
+                      "kind": "binary",
+                      "op": "!=",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "next"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "literal",
+                        "literal": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    "rhs": {
+                      "kind": "binary",
+                      "op": "==",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "next",
+                          "bundle"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "name",
+                        "path": [
+                          "bundle"
+                        ]
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": ">",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "depth"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "next",
+                        "depth"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/evidence/_/EvidenceMember.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/evidence/_/EvidenceMember.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/evidence/_/EvidenceMember.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+            "name": "EvidenceSeal",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "bundle",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "head",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/evidence/_/EvidenceMember"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "recordedBy",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [
+              {
+                "name": "bundle",
+                "fields": [
+                  "bundle"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byBundle",
+                "fields": [
+                  "bundle"
+                ],
+                "coveredBy": "bundle"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "head"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "head",
+                      "bundle"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "bundle"
+                    ]
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.find.byBundle",
+                "kind": "find",
+                "query": "byBundle"
+              },
+              {
+                "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
             "id": "@forgegraph/foundation/evidence/_/EvidenceSource",
             "name": "EvidenceSource",
             "kind": "resource",
@@ -1675,7 +2185,14 @@
         "caches": [],
         "workflows": [],
         "purposes": [],
-        "dataClasses": []
+        "dataClasses": [
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceNarrative",
+            "name": "EvidenceNarrative",
+            "exported": true,
+            "extends": "data.communication.content"
+          }
+        ]
       },
       {
         "id": "@forgegraph/foundation/specification/_",
@@ -2354,6 +2871,7 @@
     ],
     "requires": [
       "append-only/1",
+      "governance/1",
       "sealed-content/1"
     ]
   },
@@ -2973,6 +3491,13 @@
               "x-forge-type": "text",
               "minLength": 1,
               "maxLength": 200
+            },
+            "predecessor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
             }
           },
           "required": [
@@ -2980,7 +3505,8 @@
             "createdAt",
             "updatedAt",
             "key",
-            "label"
+            "label",
+            "predecessor"
           ],
           "additionalProperties": false
         },
@@ -2998,6 +3524,13 @@
               "x-forge-type": "text",
               "minLength": 1,
               "maxLength": 200
+            },
+            "predecessor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
             }
           },
           "required": [
@@ -3281,6 +3814,255 @@
             "id": "@forgegraph/foundation/evidence/_/EvidenceItem.list.bySource",
             "kind": "list",
             "query": "bySource"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "name": "EvidenceMember",
+        "wireName": "evidence_member",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "item": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceItem"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "depth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "bundle",
+            "item",
+            "next",
+            "depth"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "item": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceItem"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "depth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128,
+              "x-forge-type": "integer"
+            }
+          },
+          "required": [
+            "bundle",
+            "item",
+            "depth"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceMember.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceMember.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceMember.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "name": "EvidenceSeal",
+        "wireName": "evidence_seal",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "head": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "bundle",
+            "head",
+            "recordedBy"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "head": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "bundle",
+            "recordedBy"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byBundle",
+            "kind": "find",
+            "params": [
+              "bundle"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.find.byBundle",
+            "kind": "find",
+            "query": "byBundle"
+          },
+          {
+            "id": "@forgegraph/foundation/evidence/_/EvidenceSeal.list.all",
+            "kind": "list",
+            "query": "all"
           }
         ]
       },
@@ -4280,6 +5062,13 @@
             "storage": "text"
           },
           {
+            "name": "predecessor",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "predecessor",
+            "storage": "text"
+          },
+          {
             "name": "created_at",
             "sqlType": "TEXT",
             "nullable": false,
@@ -4298,7 +5087,19 @@
           "tenant",
           "id"
         ],
-        "foreignKeys": [],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "predecessor"
+            ],
+            "references": "evidence_seal",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
         "checks": []
       },
       {
@@ -4422,6 +5223,176 @@
               "revision"
             ],
             "references": "artifact_revision",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "evidence_member",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "bundle",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "bundle",
+            "storage": "text"
+          },
+          {
+            "name": "item",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "item",
+            "storage": "text"
+          },
+          {
+            "name": "next",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "next",
+            "storage": "text"
+          },
+          {
+            "name": "depth",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "depth",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "bundle"
+            ],
+            "references": "evidence_bundle",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "item"
+            ],
+            "references": "evidence_item",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "next"
+            ],
+            "references": "evidence_member",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "evidence_seal",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "bundle",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "bundle",
+            "storage": "text"
+          },
+          {
+            "name": "head",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "head",
+            "storage": "text"
+          },
+          {
+            "name": "recorded_by",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "recordedBy",
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "bundle"
+            ],
+            "references": "evidence_bundle",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "head"
+            ],
+            "references": "evidence_member",
             "referencedColumns": [
               "tenant",
               "id"
@@ -4714,6 +5685,16 @@
         ],
         "unique": false,
         "query": "bySource"
+      },
+      {
+        "name": "evidence_seal_uq_bundle",
+        "table": "evidence_seal",
+        "columns": [
+          "tenant",
+          "bundle"
+        ],
+        "unique": true,
+        "constraint": "bundle"
       },
       {
         "name": "evidence_source_uq_key",
@@ -5298,8 +6279,13 @@
             ]
           }
         ],
-        "references": [],
-        "createActions": 5
+        "references": [
+          {
+            "field": "predecessor",
+            "target": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+          }
+        ],
+        "createActions": 6
       },
       {
         "id": "@forgegraph/foundation/evidence/_/EvidenceItem",
@@ -5381,6 +6367,85 @@
           }
         ],
         "createActions": 10
+      },
+      {
+        "id": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "name": "EvidenceMember",
+        "wireName": "evidence_member",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "bundle",
+            "target": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+          },
+          {
+            "field": "item",
+            "target": "@forgegraph/foundation/evidence/_/EvidenceItem"
+          },
+          {
+            "field": "next",
+            "target": "@forgegraph/foundation/evidence/_/EvidenceMember"
+          }
+        ],
+        "createActions": 7
+      },
+      {
+        "id": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "name": "EvidenceSeal",
+        "wireName": "evidence_seal",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "bundle",
+            "keyFields": [
+              "bundle"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "bundle",
+            "target": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+          },
+          {
+            "field": "head",
+            "target": "@forgegraph/foundation/evidence/_/EvidenceMember"
+          }
+        ],
+        "createActions": 7
       },
       {
         "id": "@forgegraph/foundation/evidence/_/EvidenceSource",
@@ -6056,6 +7121,23 @@
             "maxLength": 200
           },
           {
+            "name": "predecessor",
+            "label": "Predecessor",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+              "route": "evidence-seal",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/evidence/_/EvidenceSeal.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/evidence/_/EvidenceSeal.find.byBundle"
+            }
+          },
+          {
             "name": "createdAt",
             "label": "Created At",
             "widget": "readonly",
@@ -6076,7 +7158,8 @@
         ],
         "tableColumns": [
           "label",
-          "key"
+          "key",
+          "predecessor"
         ],
         "lists": [
           {
@@ -6274,6 +7357,211 @@
           }
         ],
         "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "name": "EvidenceMember",
+        "kind": "resource",
+        "label": "Evidence Member",
+        "plural": "Evidence Members",
+        "route": "evidence-members",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "bundle",
+            "label": "Bundle",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/evidence/_/EvidenceBundle",
+              "route": "evidence-bundle",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/evidence/_/EvidenceBundle.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/evidence/_/EvidenceBundle.find.byKey"
+            }
+          },
+          {
+            "name": "item",
+            "label": "Item",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/evidence/_/EvidenceItem",
+              "route": "evidence-item",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/evidence/_/EvidenceItem.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "next",
+            "label": "Next",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+              "route": "evidence-member",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/evidence/_/EvidenceMember.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "depth",
+            "label": "Depth",
+            "widget": "integer",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "bundle",
+          "item",
+          "next",
+          "depth"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/evidence/_/EvidenceMember.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "name": "EvidenceSeal",
+        "kind": "resource",
+        "label": "Evidence Seal",
+        "plural": "Evidence Seals",
+        "route": "evidence-seals",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "bundle",
+            "label": "Bundle",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/evidence/_/EvidenceBundle",
+              "route": "evidence-bundle",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/evidence/_/EvidenceBundle.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/evidence/_/EvidenceBundle.find.byKey"
+            }
+          },
+          {
+            "name": "head",
+            "label": "Head",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+              "route": "evidence-member",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/evidence/_/EvidenceMember.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "recordedBy",
+            "label": "Recorded By",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "bundle",
+          "head",
+          "recordedBy"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/evidence/_/EvidenceSeal.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byBundle",
+            "op": "@forgegraph/foundation/evidence/_/EvidenceSeal.find.byBundle",
+            "params": [
+              "bundle"
+            ]
+          }
+        ],
         "actions": [],
         "softDelete": false,
         "versioned": false
@@ -7351,6 +8639,188 @@
         "operation": "@forgegraph/foundation/evidence/_/EvidenceItem.list.bySource",
         "kind": "list",
         "resource": "@forgegraph/foundation/evidence/_/EvidenceItem",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceMember.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceMember.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceMember.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.find.byBundle",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
         "class": "crud-read",
         "slo": {
           "availability": "99.9%",
@@ -8453,6 +9923,23 @@
       },
       {
         "resource": "@forgegraph/foundation/evidence/_/EvidenceBundle",
+        "field": "predecessor",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceBundle",
         "field": "createdAt",
         "class": "data.structural",
         "ancestors": [
@@ -8624,19 +10111,21 @@
       {
         "resource": "@forgegraph/foundation/evidence/_/EvidenceItem",
         "field": "provenance",
-        "class": "data.unknown",
+        "class": "@forgegraph/foundation/evidence/_/EvidenceNarrative",
         "ancestors": [
-          "data.unknown",
+          "@forgegraph/foundation/evidence/_/EvidenceNarrative",
+          "data.communication.content",
+          "data.communication",
           "data"
         ],
         "kinds": [
-          "unknown"
+          "communication"
         ],
         "identifiability": "unknown",
-        "handling": "restricted",
+        "handling": "confidential",
         "personal": "unknown",
-        "evidence": "none",
-        "completeness": "unclassified"
+        "evidence": "declared",
+        "completeness": "classified"
       },
       {
         "resource": "@forgegraph/foundation/evidence/_/EvidenceItem",
@@ -8657,6 +10146,193 @@
       },
       {
         "resource": "@forgegraph/foundation/evidence/_/EvidenceItem",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "field": "bundle",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "field": "item",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "field": "next",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "field": "depth",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "field": "bundle",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "field": "head",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "field": "recordedBy",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
         "field": "updatedAt",
         "class": "data.structural",
         "ancestors": [
@@ -8947,7 +10623,8 @@
     ],
     "subjects": [],
     "summary": {
-      "structural": 38,
+      "classified": 1,
+      "structural": 49,
       "unclassified": 25
     }
   },
@@ -9394,12 +11071,14 @@
           "id",
           "key",
           "label",
+          "predecessor",
           "createdAt",
           "updatedAt"
         ],
         "writes": [
           "key",
-          "label"
+          "label",
+          "predecessor"
         ],
         "filters": [],
         "orders": [],
@@ -9416,6 +11095,7 @@
           "id",
           "key",
           "label",
+          "predecessor",
           "createdAt",
           "updatedAt"
         ],
@@ -9437,6 +11117,7 @@
           "id",
           "key",
           "label",
+          "predecessor",
           "createdAt",
           "updatedAt"
         ],
@@ -9458,6 +11139,7 @@
           "id",
           "key",
           "label",
+          "predecessor",
           "createdAt",
           "updatedAt"
         ],
@@ -9612,6 +11294,170 @@
         "filters": [
           "source"
         ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceMember.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "outputs": [
+          "id",
+          "bundle",
+          "item",
+          "next",
+          "depth"
+        ],
+        "writes": [
+          "bundle",
+          "item",
+          "next",
+          "depth"
+        ],
+        "filters": [
+          "item",
+          "bundle",
+          "next",
+          "depth"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceMember.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "outputs": [
+          "id",
+          "bundle",
+          "item",
+          "next",
+          "depth"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceMember.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceMember",
+        "outputs": [
+          "id",
+          "bundle",
+          "item",
+          "next",
+          "depth"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "outputs": [
+          "id",
+          "bundle",
+          "head",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "bundle",
+          "head",
+          "recordedBy"
+        ],
+        "filters": [
+          "head",
+          "bundle"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "outputs": [
+          "id",
+          "bundle",
+          "head",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.find.byBundle",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "outputs": [
+          "id",
+          "bundle",
+          "head",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "bundle"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evidence/_/EvidenceSeal.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+        "outputs": [
+          "id",
+          "bundle",
+          "head",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
         "orders": [
           "id"
         ],
@@ -10492,6 +12338,13 @@
               "x-forge-type": "text",
               "minLength": 1,
               "maxLength": 200
+            },
+            "predecessor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
             }
           },
           "additionalProperties": false,
@@ -10500,7 +12353,8 @@
             "createdAt",
             "updatedAt",
             "key",
-            "label"
+            "label",
+            "predecessor"
           ]
         },
         "EvidenceBundleCreate": {
@@ -10517,6 +12371,13 @@
               "x-forge-type": "text",
               "minLength": 1,
               "maxLength": 200
+            },
+            "predecessor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
             }
           },
           "additionalProperties": false,
@@ -10683,6 +12544,168 @@
           ]
         },
         "EvidenceItemPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "EvidenceMemberRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "item": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceItem"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "depth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128,
+              "x-forge-type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "bundle",
+            "item",
+            "next",
+            "depth"
+          ]
+        },
+        "EvidenceMemberCreate": {
+          "type": "object",
+          "properties": {
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "item": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceItem"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "depth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128,
+              "x-forge-type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "bundle",
+            "item",
+            "depth"
+          ]
+        },
+        "EvidenceMemberPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "EvidenceSealRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "head": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "bundle",
+            "head",
+            "recordedBy"
+          ]
+        },
+        "EvidenceSealCreate": {
+          "type": "object",
+          "properties": {
+            "bundle": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+            },
+            "head": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceMember"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "bundle",
+            "recordedBy"
+          ]
+        },
+        "EvidenceSealPatch": {
           "type": "object",
           "properties": {},
           "additionalProperties": false
