@@ -699,8 +699,7 @@ export class Engine {
     return Effect.gen(function* () {
       const storage = yield* Storage;
       const requestHash = yield* Effect.promise(() => sha256(stableJson(body)));
-      const existing = yield* storage.getReceipt(ctx.tenant, operation, key);
-      if (existing) {
+      const replay = (existing: Receipt) => Effect.gen(function* () {
         if (existing.requestHash !== requestHash) return yield* Effect.fail(err("IdempotencyMismatch", "idempotency key reused with a different request"));
         // Reuse repeats no effect, but the stored response is disclosed only under current authority (PAR-112).
         const ref = self.model.operation(operation);
@@ -708,10 +707,18 @@ export class Engine {
         const d = yield* self.gatekeeper.decide(operation, "replay", ref?.resource ?? null, ctx, stored && typeof stored === "object" && "id" in stored ? stored : undefined);
         if (d.effect !== "allow") return yield* Effect.fail(err("NotPermitted", "the stored result of this request is no longer accessible under current authority"));
         return stored;
-      }
+      });
+      const existing = yield* storage.getReceipt(ctx.tenant, operation, key);
+      if (existing) return yield* replay(existing);
       const clock = yield* Clock;
       const receipt: Receipt = { tenant: ctx.tenant, operation, key, requestHash, status: 200, response: null, createdAt: clock.now() };
-      return yield* runWithReceipt(run, receipt);
+      return yield* runWithReceipt(run, receipt).pipe(Effect.catch((error) => Effect.gen(function* () {
+        if (error.code !== "VersionConflict") return yield* Effect.fail(error);
+        // Another caller may commit after our initial receipt miss but before we read
+        // the record. Its durable receipt distinguishes a replay from a stale request.
+        const committed = yield* storage.getReceipt(ctx.tenant, operation, key);
+        return committed ? yield* replay(committed) : yield* Effect.fail(error);
+      })));
     });
 
     function runWithReceipt(inner: Effect.Effect<Wire, ForgeError, RuntimeServices>, receipt: Receipt) {
