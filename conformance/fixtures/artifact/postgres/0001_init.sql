@@ -111,6 +111,27 @@ CREATE TABLE specification_pin (
   FOREIGN KEY ("tenant", "repository") REFERENCES repository ("tenant", "id")
 );
 
+CREATE TABLE realization (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "pin" TEXT COLLATE "C" NOT NULL,
+  "build_hash" TEXT COLLATE "C" NOT NULL,
+  "manifest_digest" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "pin") REFERENCES specification_pin ("tenant", "id")
+);
+
+CREATE TABLE artifact_component (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "name" TEXT COLLATE "C" NOT NULL,
+  "revision" TEXT COLLATE "C" NOT NULL,
+  "next" TEXT COLLATE "C",
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id"),
+  FOREIGN KEY ("tenant", "next") REFERENCES artifact_component ("tenant", "id")
+);
+
 CREATE TABLE artifact_revision (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -120,22 +141,16 @@ CREATE TABLE artifact_revision (
   "media_type" TEXT COLLATE "C" NOT NULL,
   "byte_count" BIGINT NOT NULL,
   "specification_pin" TEXT COLLATE "C",
+  "realization" TEXT COLLATE "C",
+  "components" TEXT COLLATE "C",
   "created_at" TEXT COLLATE "C" NOT NULL,
   "updated_at" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "artifact") REFERENCES artifact ("tenant", "id"),
   FOREIGN KEY ("tenant", "content") REFERENCES artifact_content ("tenant", "id"),
-  FOREIGN KEY ("tenant", "specification_pin") REFERENCES specification_pin ("tenant", "id")
-);
-
-CREATE TABLE realization (
-  "tenant" TEXT COLLATE "C" NOT NULL,
-  "id" TEXT COLLATE "C" NOT NULL,
-  "pin" TEXT COLLATE "C" NOT NULL,
-  "build_hash" TEXT COLLATE "C" NOT NULL,
-  "manifest_digest" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "pin") REFERENCES specification_pin ("tenant", "id")
+  FOREIGN KEY ("tenant", "specification_pin") REFERENCES specification_pin ("tenant", "id"),
+  FOREIGN KEY ("tenant", "realization") REFERENCES realization ("tenant", "id"),
+  FOREIGN KEY ("tenant", "components") REFERENCES artifact_component ("tenant", "id")
 );
 
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);

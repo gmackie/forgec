@@ -8378,10 +8378,15 @@
                   {
                     "Variable": "$.state.status",
                     "StringEquals": "running",
-                    "Next": "Advance"
+                    "Next": "RetryRunning"
                   }
                 ],
                 "Default": "Done"
+              },
+              "RetryRunning": {
+                "Type": "Wait",
+                "Seconds": 1,
+                "Next": "Advance"
               },
               "Sleep": {
                 "Type": "Wait",

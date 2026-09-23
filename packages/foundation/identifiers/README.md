@@ -25,7 +25,8 @@ fact retains the reason and replacement; prior-time lookups remain available.
 Run `node scripts/verify-foundation.mjs --suite local --package identifiers`.
 Tests use generated bundles on memory and SQLite, covering duplicate races, issuer
 scopes, normalization, half-open boundaries, preserved claims, supersession/revocation,
-idempotent replay, restart and tenant isolation. The consumer fixture compiles GitHub,
-serial-number and healthcare-style typed sidecars; it is synthetic, not evidence of
-production adoption. Live provider certification and custom namespace policies remain
-outstanding. Package acceptance entries remain planned until the full matrix is verified.
+idempotent replay, restart and tenant isolation. The consumer fixture exercises GitHub, serial-number and healthcare-style typed
+sidecars on both adapters. All six issue criteria have executable local evidence in
+`contract.json`. Fixtures are synthetic, not production adoption. Custom normalization
+profiles and hosted provider certification are separate extensions; this package has
+an explicit trim/case-sensitive value policy.

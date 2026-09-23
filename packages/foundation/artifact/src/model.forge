@@ -20,7 +20,10 @@ export resource ArtifactRevision @tenant @appendOnly @timestamps {
   mediaType : text length 1..128
   byteCount : integer >= 0
   specificationPin : specification.SpecificationPin?
+  realization : specification.Realization?
+  components : ArtifactComponent?
   rules {
+    realization == null || (specificationPin != null && realization.pin == specificationPin && realization.manifestDigest == digest)
     content.uploadState == "ready"
     digest == content.digest
     mediaType == content.mediaType
@@ -28,4 +31,11 @@ export resource ArtifactRevision @tenant @appendOnly @timestamps {
   }
   list by artifact
   find by content
+}
+
+export resource ArtifactComponent @tenant @appendOnly {
+  id : id
+  name : text length 1..128
+  revision : ArtifactRevision
+  next : ArtifactComponent?
 }

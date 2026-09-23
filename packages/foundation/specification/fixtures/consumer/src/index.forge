@@ -1,0 +1,43 @@
+import specification
+
+resource Deployment @tenant @appendOnly {
+  id : id
+  specification : specification.SpecificationPin
+  list by specification
+}
+
+resource LevelGeneration @tenant @appendOnly {
+  id : id
+  specification : specification.SpecificationPin
+  list by specification
+}
+
+resource ExperienceSession @tenant @appendOnly {
+  id : id
+  specification : specification.SpecificationPin
+  list by specification
+}
+
+resource BroadcastSession @tenant @appendOnly {
+  id : id
+  specification : specification.SpecificationPin
+  list by specification
+}
+
+resource EvaluationRun @tenant @appendOnly {
+  id : id
+  specification : specification.SpecificationPin
+  list by specification
+}
+
+resource ManufacturingBatch @tenant @appendOnly {
+  id : id
+  specification : specification.SpecificationPin
+  list by specification
+}
+
+resource LabExperiment @tenant @appendOnly {
+  id : id
+  specification : specification.SpecificationPin
+  list by specification
+}

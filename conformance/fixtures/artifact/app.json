@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "d676c44e9b4acbcf8312d9f3c684d0854941ca3b751506be8375fd3bcd3347d1",
+  "buildHash": "c8cea7c84f8bc47a464f7dec465001d6049b84cfb06b110301f53906453e14a9",
   "digests": {
-    "source": "53eb0f9def909efeb26832b4f1826f3308e5a8af2213d3a1dd65c7e6e1ed5ffa",
-    "wire": "56d954d9a0109d4854bbf99b0801de0ccc5bad93641b29710030dfee08ef1581",
+    "source": "559cba363e17317323ade855995b9cc0492ae8210b6f3f8de6e6fa9e4fe6a02d",
+    "wire": "44ed39ed904c1f9b43db33c0c7c0531ec4622895a745b91be0a98ca6f92e13c3",
     "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
-    "security": "2179cb18da4ebf9f872035bf3f6c8927ed575d1f9e99b9e23e3b3d5665088dfd"
+    "security": "f6cfddc28f719185a44e4c46fc22f5b3d2179ef385856fef55de5b4e8cb5b942"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -157,6 +157,124 @@
               },
               {
                 "id": "@forgegraph/foundation/artifact/_/Artifact.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+            "name": "ArtifactComponent",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "name",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "revision",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "next",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/artifact/_/ArtifactComponent.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/artifact/_/ArtifactComponent.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/artifact/_/ArtifactComponent.list.all",
                 "kind": "list",
                 "query": "all"
               }
@@ -601,6 +719,36 @@
                 "synthesized": false
               },
               {
+                "name": "realization",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/specification/_/Realization"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "components",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
                 "name": "createdAt",
                 "type": {
                   "base": {
@@ -676,6 +824,84 @@
               }
             ],
             "rules": [
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "realization"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "&&",
+                    "lhs": {
+                      "kind": "binary",
+                      "op": "!=",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "specificationPin"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "literal",
+                        "literal": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    "rhs": {
+                      "kind": "binary",
+                      "op": "==",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "realization",
+                          "pin"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "name",
+                        "path": [
+                          "specificationPin"
+                        ]
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "realization",
+                        "manifestDigest"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "digest"
+                      ]
+                    }
+                  }
+                }
+              },
               {
                 "kind": "binary",
                 "op": "==",
@@ -855,12 +1081,12 @@
               "constraints": [
                 {
                   "kind": "length",
-                  "min": 64,
-                  "max": 64
+                  "min": 71,
+                  "max": 71
                 },
                 {
                   "kind": "pattern",
-                  "value": "^[0-9a-f]{64}$"
+                  "value": "^sha256:[0-9a-f]{64}$"
                 }
               ]
             }
@@ -958,12 +1184,12 @@
                   "constraints": [
                     {
                       "kind": "length",
-                      "min": 64,
-                      "max": 64
+                      "min": 71,
+                      "max": 71
                     },
                     {
                       "kind": "pattern",
-                      "value": "^[0-9a-f]{64}$"
+                      "value": "^sha256:[0-9a-f]{64}$"
                     }
                   ]
                 },
@@ -1578,6 +1804,111 @@
         ]
       },
       {
+        "id": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "name": "ArtifactComponent",
+        "wireName": "artifact_component",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "revision": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "revision",
+            "next"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "revision": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+            }
+          },
+          "required": [
+            "name",
+            "revision"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/artifact/_/ArtifactComponent.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/artifact/_/ArtifactComponent.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/artifact/_/ArtifactComponent.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
         "id": "@forgegraph/foundation/artifact/_/ArtifactContent",
         "name": "ArtifactContent",
         "wireName": "artifact_content",
@@ -1777,6 +2108,20 @@
                 "null"
               ],
               "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+            },
+            "realization": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/specification/_/Realization"
+            },
+            "components": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
             }
           },
           "required": [
@@ -1788,7 +2133,9 @@
             "digest",
             "mediaType",
             "byteCount",
-            "specificationPin"
+            "specificationPin",
+            "realization",
+            "components"
           ],
           "additionalProperties": false
         },
@@ -1828,6 +2175,20 @@
                 "null"
               ],
               "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+            },
+            "realization": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/specification/_/Realization"
+            },
+            "components": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
             }
           },
           "required": [
@@ -1936,9 +2297,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "required": [
@@ -1966,9 +2327,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "required": [
@@ -2434,6 +2795,75 @@
         "checks": []
       },
       {
+        "name": "artifact_component",
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "name",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "name",
+            "storage": "text"
+          },
+          {
+            "name": "revision",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "revision",
+            "storage": "text"
+          },
+          {
+            "name": "next",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "next",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "revision"
+            ],
+            "references": "artifact_revision",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "next"
+            ],
+            "references": "artifact_component",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
         "name": "artifact_content",
         "resource": "@forgegraph/foundation/artifact/_/ArtifactContent",
         "columns": [
@@ -2602,6 +3032,20 @@
             "storage": "text"
           },
           {
+            "name": "realization",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "realization",
+            "storage": "text"
+          },
+          {
+            "name": "components",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "components",
+            "storage": "text"
+          },
+          {
             "name": "created_at",
             "sqlType": "TEXT",
             "nullable": false,
@@ -2649,6 +3093,28 @@
               "specification_pin"
             ],
             "references": "specification_pin",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "realization"
+            ],
+            "references": "realization",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "components"
+            ],
+            "references": "artifact_component",
             "referencedColumns": [
               "tenant",
               "id"
@@ -3274,6 +3740,40 @@
         "createActions": 5
       },
       {
+        "id": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "name": "ArtifactComponent",
+        "wireName": "artifact_component",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "revision",
+            "target": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          },
+          {
+            "field": "next",
+            "target": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+          }
+        ],
+        "createActions": 6
+      },
+      {
         "id": "@forgegraph/foundation/artifact/_/ArtifactContent",
         "name": "ArtifactContent",
         "wireName": "artifact_content",
@@ -3357,9 +3857,17 @@
           {
             "field": "specificationPin",
             "target": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          {
+            "field": "realization",
+            "target": "@forgegraph/foundation/specification/_/Realization"
+          },
+          {
+            "field": "components",
+            "target": "@forgegraph/foundation/artifact/_/ArtifactComponent"
           }
         ],
-        "createActions": 9
+        "createActions": 11
       },
       {
         "id": "@forgegraph/foundation/specification/_/Realization",
@@ -3581,6 +4089,87 @@
         "versioned": false
       },
       {
+        "id": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "name": "ArtifactComponent",
+        "kind": "resource",
+        "label": "Artifact Component",
+        "plural": "Artifact Components",
+        "route": "artifact-components",
+        "titleField": "name",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "name",
+            "label": "Name",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "revision",
+            "label": "Revision",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/artifact/_/ArtifactRevision",
+              "route": "artifact-revision",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/artifact/_/ArtifactRevision.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/artifact/_/ArtifactRevision.find.byContent"
+            }
+          },
+          {
+            "name": "next",
+            "label": "Next",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+              "route": "artifact-component",
+              "titleField": "name",
+              "lookup": "@forgegraph/foundation/artifact/_/ArtifactComponent.list.all",
+              "lookupParams": []
+            }
+          }
+        ],
+        "tableColumns": [
+          "name",
+          "revision",
+          "next"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/artifact/_/ArtifactComponent.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
         "id": "@forgegraph/foundation/artifact/_/ArtifactContent",
         "name": "ArtifactContent",
         "kind": "blob",
@@ -3793,6 +4382,38 @@
             }
           },
           {
+            "name": "realization",
+            "label": "Realization",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/specification/_/Realization",
+              "route": "realization",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/specification/_/Realization.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "components",
+            "label": "Components",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+              "route": "artifact-component",
+              "titleField": "name",
+              "lookup": "@forgegraph/foundation/artifact/_/ArtifactComponent.list.all",
+              "lookupParams": []
+            }
+          },
+          {
             "name": "createdAt",
             "label": "Created At",
             "widget": "readonly",
@@ -3903,8 +4524,8 @@
             "editableOnCreate": true,
             "editableOnUpdate": false,
             "sortable": true,
-            "minLength": 64,
-            "maxLength": 64
+            "minLength": 71,
+            "maxLength": 71
           }
         ],
         "tableColumns": [
@@ -4258,6 +4879,84 @@
         "operation": "@forgegraph/foundation/artifact/_/Artifact.list.all",
         "kind": "list",
         "resource": "@forgegraph/foundation/artifact/_/Artifact",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/artifact/_/ArtifactComponent.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/artifact/_/ArtifactComponent.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/artifact/_/ArtifactComponent.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
         "class": "crud-read",
         "slo": {
           "availability": "99.9%",
@@ -5014,6 +5713,74 @@
         "completeness": "unclassified"
       },
       {
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "field": "name",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "field": "revision",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "field": "next",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
         "resource": "@forgegraph/foundation/artifact/_/ArtifactContent",
         "field": "id",
         "class": "data.structural",
@@ -5355,6 +6122,40 @@
       },
       {
         "resource": "@forgegraph/foundation/artifact/_/ArtifactRevision",
+        "field": "realization",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactRevision",
+        "field": "components",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactRevision",
         "field": "createdAt",
         "class": "data.structural",
         "ancestors": [
@@ -5611,8 +6412,8 @@
     ],
     "subjects": [],
     "summary": {
-      "structural": 22,
-      "unclassified": 16
+      "structural": 27,
+      "unclassified": 17
     }
   },
   "lineage": {
@@ -5684,6 +6485,68 @@
           "id",
           "key",
           "label"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/artifact/_/ArtifactComponent.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "outputs": [
+          "id",
+          "name",
+          "revision",
+          "next"
+        ],
+        "writes": [
+          "name",
+          "revision",
+          "next"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/artifact/_/ArtifactComponent.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "outputs": [
+          "id",
+          "name",
+          "revision",
+          "next"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/artifact/_/ArtifactComponent.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+        "outputs": [
+          "id",
+          "name",
+          "revision",
+          "next"
         ],
         "writes": [],
         "filters": [],
@@ -5849,6 +6712,8 @@
           "mediaType",
           "byteCount",
           "specificationPin",
+          "realization",
+          "components",
           "createdAt",
           "updatedAt"
         ],
@@ -5858,11 +6723,15 @@
           "digest",
           "mediaType",
           "byteCount",
-          "specificationPin"
+          "specificationPin",
+          "realization",
+          "components"
         ],
         "filters": [
-          "content",
+          "realization",
+          "specificationPin",
           "digest",
+          "content",
           "mediaType",
           "byteCount"
         ],
@@ -5884,6 +6753,8 @@
           "mediaType",
           "byteCount",
           "specificationPin",
+          "realization",
+          "components",
           "createdAt",
           "updatedAt"
         ],
@@ -5909,6 +6780,8 @@
           "mediaType",
           "byteCount",
           "specificationPin",
+          "realization",
+          "components",
           "createdAt",
           "updatedAt"
         ],
@@ -5934,6 +6807,8 @@
           "mediaType",
           "byteCount",
           "specificationPin",
+          "realization",
+          "components",
           "createdAt",
           "updatedAt"
         ],
@@ -5959,6 +6834,8 @@
           "mediaType",
           "byteCount",
           "specificationPin",
+          "realization",
+          "components",
           "createdAt",
           "updatedAt"
         ],
@@ -6426,6 +7303,74 @@
           "properties": {},
           "additionalProperties": false
         },
+        "ArtifactComponentRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "revision": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "revision",
+            "next"
+          ]
+        },
+        "ArtifactComponentCreate": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "revision": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "revision"
+          ]
+        },
+        "ArtifactComponentPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
         "ArtifactContentRecord": {
           "type": "object",
           "properties": {
@@ -6569,6 +7514,20 @@
                 "null"
               ],
               "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+            },
+            "realization": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/specification/_/Realization"
+            },
+            "components": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
             }
           },
           "additionalProperties": false,
@@ -6581,7 +7540,9 @@
             "digest",
             "mediaType",
             "byteCount",
-            "specificationPin"
+            "specificationPin",
+            "realization",
+            "components"
           ]
         },
         "ArtifactRevisionCreate": {
@@ -6620,6 +7581,20 @@
                 "null"
               ],
               "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+            },
+            "realization": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/specification/_/Realization"
+            },
+            "components": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
             }
           },
           "additionalProperties": false,
@@ -6660,9 +7635,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "additionalProperties": false,
@@ -6690,9 +7665,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "additionalProperties": false,

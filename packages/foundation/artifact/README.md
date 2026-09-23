@@ -26,8 +26,16 @@ generated-asset and document consumers; memory/SQLite tests exercise verified
 publication, replay, empty content, immutable revisions/content, inspection and
 access denial. Blob tests cover staging replacement and concurrent finalizers.
 
-Manifest/component assembly and atomic publication of its frozen membership,
-relocation workflows, live R2/S3 certification and production domain adoption are
-outstanding. Acceptance entries remain planned; this slice does not claim a complete
-artifact package or provider certification. Signed content attestations are not part
-of the current provenance checks.
+ArtifactRevision optionally pins an immutable ArtifactComponent chain. Components
+reference exact child revisions and the next component; build the chain before
+publication, then atomically create the revision with its head. Extending a chain
+creates a different head and cannot change published membership. Traversal rejects
+cycles, duplicate names and more than 128 components, and authorizes child reads.
+Reference guards plus append-only records prevent application-created cycles.
+Optional Realization links enforce matching specification pins and SHA-256 manifest
+digests in schema rules, including direct revision creation.
+
+All seven issue acceptance criteria have local executable evidence in `contract.json`.
+Provider relocation workflows and hosted R2/S3 certification are separate deployment
+concerns; signed attestations belong to the source-map/signing workstream. No production
+domain adoption or hosted certification is claimed by the synthetic consumer tests.

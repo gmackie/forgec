@@ -15,3 +15,9 @@ foundation_out=$(mktemp -d)
 trap 'rm -rf "$foundation_out"' EXIT
 cargo run -q -p forgegraph-cli -- build conformance/foundation/fixtures/composition/app --out "$foundation_out" >/dev/null
 cp "$foundation_out/app.json" conformance/foundation/composition.app.json
+
+# Foundation acceptance fixtures and their typed consumers must track compiler output.
+for foundation_slug in specification artifact identifiers participation; do
+  cargo run -q -p forgegraph-cli -- build "packages/foundation/$foundation_slug" --out "conformance/fixtures/$foundation_slug"
+  cargo run -q -p forgegraph-cli -- build "packages/foundation/$foundation_slug/fixtures/consumer" --out "conformance/fixtures/$foundation_slug-consumer"
+done

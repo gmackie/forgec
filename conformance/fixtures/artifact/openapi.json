@@ -117,6 +117,74 @@
         "properties": {},
         "additionalProperties": false
       },
+      "ArtifactComponentRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "revision": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          },
+          "next": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "revision",
+          "next"
+        ]
+      },
+      "ArtifactComponentCreate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "revision": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          },
+          "next": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "revision"
+        ]
+      },
+      "ArtifactComponentPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
       "ArtifactContentRecord": {
         "type": "object",
         "properties": {
@@ -260,6 +328,20 @@
               "null"
             ],
             "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "realization": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/specification/_/Realization"
+          },
+          "components": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
           }
         },
         "additionalProperties": false,
@@ -272,7 +354,9 @@
           "digest",
           "mediaType",
           "byteCount",
-          "specificationPin"
+          "specificationPin",
+          "realization",
+          "components"
         ]
       },
       "ArtifactRevisionCreate": {
@@ -311,6 +395,20 @@
               "null"
             ],
             "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "realization": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/specification/_/Realization"
+          },
+          "components": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactComponent"
           }
         },
         "additionalProperties": false,
@@ -351,9 +449,9 @@
           "manifestDigest": {
             "type": "string",
             "x-forge-type": "text",
-            "minLength": 64,
-            "maxLength": 64,
-            "pattern": "^[0-9a-f]{64}$"
+            "minLength": 71,
+            "maxLength": 71,
+            "pattern": "^sha256:[0-9a-f]{64}$"
           }
         },
         "additionalProperties": false,
@@ -381,9 +479,9 @@
           "manifestDigest": {
             "type": "string",
             "x-forge-type": "text",
-            "minLength": 64,
-            "maxLength": 64,
-            "pattern": "^[0-9a-f]{64}$"
+            "minLength": 71,
+            "maxLength": 71,
+            "pattern": "^sha256:[0-9a-f]{64}$"
           }
         },
         "additionalProperties": false,

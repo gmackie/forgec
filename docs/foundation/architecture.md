@@ -15,7 +15,7 @@ Application resources point outward to sidecar aggregates. Domain-owned typed sa
 
 ## Package contracts
 
-`packages/foundation/<slug>/contract.json` is the machine-readable ownership and acceptance contract; `contract.md` explains its semantics. The contracts are design artifacts, **not implemented packages**. Every acceptance record starts `planned`. The catalog covers issues #26–50; `node scripts/verify-foundation.mjs --suite contracts --all` checks coverage, unique case IDs, dependency direction and cycles.
+`packages/foundation/<slug>/contract.json` is the machine-readable ownership and acceptance contract; `contract.md` explains its semantics. Contracts define ownership and acceptance. Specification, artifact, identifiers and participation now have executable implementations with local passing evidence; other acceptance records remain `planned`. The catalog covers issues #26–50; `node scripts/verify-foundation.mjs --suite contracts --all` checks coverage, unique case IDs, dependency direction and cycles.
 
 Logical Forge identities are `@forgegraph/foundation/<slug>`. They are not npm names. Optional npm distribution wrappers use `@forgegraph/foundation-<slug>`. Initial versions are experimental `0.1.0`; exact source/contract content and compiler versions must be locked. A version label is not an integrity check. Required-field and operation changes require consumer compatibility checks.
 

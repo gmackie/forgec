@@ -1,6 +1,6 @@
 # identifiers substrate contract
 
-Phase 0 contract; implementation and every acceptance case remain **planned**.
+Implemented experimental package; acceptance evidence is recorded per criterion in `contract.json`. Local verification covers generated memory/SQLite runtimes and typed consumers. It does not certify hosted providers.
 Logical Forge identity: `@forgegraph/foundation/identifiers`. Initial release target: experimental `0.1.0`.
 Source: [issue #28](https://github.com/gmackie/forgec/issues/28), under [epic #25](https://github.com/gmackie/forgec/issues/25).
 
@@ -36,31 +36,22 @@ These are required semantic operations, not a claim that callable implementation
 
 ## Acceptance traceability
 
-Every issue checkbox appears verbatim below and in `contract.json`; IDs are stable and statuses are planned. Verification kind names describe required evidence, not executed checks.
+Every issue checkbox appears verbatim below and in `contract.json`; IDs are stable and statuses record local verification. Verification kind names describe required evidence, not executed checks.
 
 | ID | Kind | Required evidence | Status |
 | --- | --- | --- | --- |
-| F28-01 | compile | qualified identifier model | planned |
-| F28-02 | concurrency | uniqueness/scoping semantics | planned |
-| F28-03 | runtime | validity/supersession semantics | planned |
-| F28-04 | runtime | typed lookup surfaces | planned |
-| F28-05 | compile | no collision with Forge semantic ids | planned |
-| F28-06 | fixture | fixtures for GitHub mapping, serial number and healthcare-style identifier | planned |
+| F28-01 | compile | qualified identifier model | passing (local) |
+| F28-02 | concurrency | uniqueness/scoping semantics | passing (local) |
+| F28-03 | runtime | validity/supersession semantics | passing (local) |
+| F28-04 | runtime | typed lookup surfaces | passing (local) |
+| F28-05 | compile | no collision with Forge semantic ids | passing (local) |
+| F28-06 | fixture | fixtures for GitHub mapping, serial number and healthcare-style identifier | passing (local) |
 
-## Independent verification contract
+## Executable verification
 
-Package worker owns this directory, typed consumer fixtures, negative cases and generated-runtime tests. Materialize dependencies at accepted commits/digests in an isolated workspace. A separate worker reviews the resulting immutable commit. No package passes against handwritten dependency stubs.
-
-Required fixture cases: `github-mapping`, `serial-number`, `healthcare-identifier`. These are required fixture identities, not existing files. App probes must record the actual source application revision; synthetic fixtures do not prove production adoption.
-
-After executable sources and the Phase 1 harness exist, run:
-
-```sh
-cargo run -p forgegraph-cli -- check packages/foundation/identifiers/fixtures/consumer
-cargo run -p forgegraph-cli -- fmt packages/foundation/identifiers/fixtures/consumer --check
-cargo run -p forgegraph-cli -- build packages/foundation/identifiers/fixtures/consumer --out /tmp/foundation-identifiers-build
-node scripts/verify-foundation.mjs --package identifiers --suite local
-node scripts/verify-foundation.mjs --package identifiers --suite providers --require d1,postgres,dynamodb
-```
-
-The fixture paths and verification runner above are planned interfaces; they do not exist merely because this contract names them. Phase 0 verification only checks contract structure, frozen DAG and checkbox coverage. Runtime acceptance must use generated bundles with real engine operations, deterministic clocks/IDs and provider fakes for external calls. Cover successful and rejected transitions, authorization, tenant isolation, immutable history, retries, concurrency and restart. Provider acceptance fails on missing required infrastructure; local/emulated results remain distinct from live certification. Record commands, versions, dependency digests and each case result, including blockers. A schema compile or snapshot is insufficient proof of behavioral invariants.
+`node scripts/verify-foundation.mjs --package identifiers --suite local` rebuilds both
+the package and its typed consumer fixture twice, checks deterministic artifacts,
+and runs the generated-bundle tests. `contract.json` links every criterion to its
+source test files. Fixtures are synthetic; no adoption in an external production
+application is implied. Live D1/PostgreSQL/DynamoDB certification is separate from
+the local memory/SQLite acceptance results and is not claimed.

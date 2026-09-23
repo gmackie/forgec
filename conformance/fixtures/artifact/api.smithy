@@ -30,6 +30,27 @@ structure ArtifactCreateInput {
 structure ArtifactPatchInput {
 }
 
+structure ArtifactComponentRecord {
+    @required
+    id: String
+    @required
+    name: String
+    @required
+    revision: String
+    next: String
+}
+
+structure ArtifactComponentCreateInput {
+    @required
+    name: String
+    @required
+    revision: String
+    next: String
+}
+
+structure ArtifactComponentPatchInput {
+}
+
 structure ArtifactContentRecord {
     @required
     id: String
@@ -70,6 +91,8 @@ structure ArtifactRevisionRecord {
     @required
     byteCount: Long
     specificationPin: String
+    realization: String
+    components: String
 }
 
 structure ArtifactRevisionCreateInput {
@@ -84,6 +107,8 @@ structure ArtifactRevisionCreateInput {
     @required
     byteCount: Long
     specificationPin: String
+    realization: String
+    components: String
 }
 
 structure ArtifactRevisionPatchInput {

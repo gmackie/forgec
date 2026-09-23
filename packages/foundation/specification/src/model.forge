@@ -1,6 +1,6 @@
 type GitCommit = text length 40..64 pattern "^([0-9a-f]{40}|[0-9a-f]{64})$"
 type BuildHash = text length 64..64 pattern "^[0-9a-f]{64}$"
-type ManifestDigest = text length 64..64 pattern "^[0-9a-f]{64}$"
+type ManifestDigest = text length 71..71 pattern "^sha256:[0-9a-f]{64}$"
 
 export resource Repository @tenant @versioned @crud("/v1/specification/repositories") {
   id : id

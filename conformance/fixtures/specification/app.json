@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "8f852db79aba23cf6844bf5f0e96cdb83d3d53a66cf453afbe6d4d8c7a51b5bc",
+  "buildHash": "9109f38e4ded0699b5b4ff0a5bce0fbf190fa393d5dad8b809e35fa2e8974d95",
   "digests": {
-    "source": "627a5ad823c09a45462dc623c7b6ae0568a9196c99e823db1daa69fdacfe088a",
-    "wire": "c65ebf874061ad5663f8b8176ed52c0157cd29f5b376c35027f5c4633e7280a6",
+    "source": "199142ce3110b8dfffb2f7b60465b182ee27c7a83395c3e71e6d9d4a7dffff39",
+    "wire": "2d52d0127aa2023a13f8dffa400a5ed7cc6f156a2911a7ef8e6a11f518756e1b",
     "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
-    "security": "305ecafbaf88c80c7de23c371f290f000eca05034f643458c8eeb479fda5f955"
+    "security": "e94d509836186583139c3afa4cfbbb1ad8e14b7f0780ae56ee2ba76b1614488d"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -91,12 +91,12 @@
               "constraints": [
                 {
                   "kind": "length",
-                  "min": 64,
-                  "max": 64
+                  "min": 71,
+                  "max": 71
                 },
                 {
                   "kind": "pattern",
-                  "value": "^[0-9a-f]{64}$"
+                  "value": "^sha256:[0-9a-f]{64}$"
                 }
               ]
             }
@@ -194,12 +194,12 @@
                   "constraints": [
                     {
                       "kind": "length",
-                      "min": 64,
-                      "max": 64
+                      "min": 71,
+                      "max": 71
                     },
                     {
                       "kind": "pattern",
-                      "value": "^[0-9a-f]{64}$"
+                      "value": "^sha256:[0-9a-f]{64}$"
                     }
                   ]
                 },
@@ -736,9 +736,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "required": [
@@ -766,9 +766,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "required": [
@@ -1954,8 +1954,8 @@
             "editableOnCreate": true,
             "editableOnUpdate": false,
             "sortable": true,
-            "minLength": 64,
-            "maxLength": 64
+            "minLength": 71,
+            "maxLength": 71
           }
         ],
         "tableColumns": [
@@ -3273,9 +3273,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "additionalProperties": false,
@@ -3303,9 +3303,9 @@
             "manifestDigest": {
               "type": "string",
               "x-forge-type": "text",
-              "minLength": 64,
-              "maxLength": 64,
-              "pattern": "^[0-9a-f]{64}$"
+              "minLength": 71,
+              "maxLength": 71,
+              "pattern": "^sha256:[0-9a-f]{64}$"
             }
           },
           "additionalProperties": false,

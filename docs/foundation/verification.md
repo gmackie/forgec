@@ -1,27 +1,30 @@
 # Current Foundation implementation verification
 
-The integrated `business-studio` workspace now includes executable experimental
-packages for specification (#26), artifact (#27), identifiers (#28) and participation
-(#29). Their READMEs describe implemented behavior and outstanding acceptance. The
-213 contract entries remain planned; local slices do not establish full acceptance.
+Issues #26–29 have executable evidence for all 26 acceptance criteria, recorded
+as `passing` with `verification: local` and test-file references in each contract.
+The remaining 187 criteria are still planned. The verifier validates evidence paths;
+a contract-only run does not execute the tests or certify hosted providers.
 
-Run `node scripts/verify-foundation.mjs --suite local --package <slug>` for any of
-those four slugs or `composition`. Package verifiers build twice, compare generated
-artifacts and run memory/SQLite tests against the fresh output. Live provider mode
-still fails explicitly; no skipped test is counted as certification.
+Run `node scripts/verify-foundation.mjs --suite local --package <slug>` for
+`specification`, `artifact`, `identifiers` or `participation`. Each suite rebuilds
+package and consumer fixtures twice, checks determinism and runs memory/SQLite tests.
+The specification suite also tests real local Git objects and artifact provenance.
+The artifact suite includes the blob race regressions. The participation suite
+includes a live policy/PIP example with uncached authorization and paginated facts.
 
-Latest integrated verification (2026-09-22): Rust workspace tests and strict Clippy
-passed; runtime TypeScript checking passed; runtime suite 278 passed / 104 skipped.
-Regressions cover append-only operation enforcement, exact source pins, retained
-identifier claims, participation history, unreadable terminal facts, sealed-copy
-hashing, finalizer races, write-once publication, empty content and governed downloads.
-Typed consumer fixtures compile against real co-deployed package dependencies.
+Validation on 2026-09-22: 287 runtime tests passed, 104 hosted-provider tests skipped;
+runtime build/typecheck and six verifier unit tests passed.
 
-The specification package still needs live Git adapters and authenticated map
-provenance. Artifact manifest membership freezing/relocation remains unimplemented.
-Identifiers currently have one normalization profile. Participation currently permits
-different-start overlaps and has no live PIP freshness/epoch integration. Kernel
-staged references and repeated-record transaction composition remain unresolved.
+The runtime suite exercises all four packages together. Consumer fixtures cover
+seven pinned-instance domains, four artifact roles, GitHub/serial/healthcare alternate
+identifiers, and team/classroom/review-board membership. Fixtures are synthetic;
+external production adoption and live hosted provider certification are not claimed.
+
+Manifest digests now use `sha256:<hex>` consistently across specification and artifact;
+existing experimental raw-hex realization values need an explicit migration. Artifact
+component membership uses immutable linked descriptors, avoiding any dependency on
+the still-unimplemented general transaction-local read overlay. Participation permits
+different-start overlapping memberships; domains may impose stricter policies.
 
 The historical baseline below records the first composition change, before these
 package slices and the Studio/runtime integration.

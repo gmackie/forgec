@@ -74,6 +74,17 @@ CREATE TABLE artifact (
   PRIMARY KEY (tenant, id)
 );
 
+CREATE TABLE artifact_component (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "name" TEXT NOT NULL,
+  "revision" TEXT NOT NULL,
+  "next" TEXT,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, revision) REFERENCES artifact_revision (tenant, id),
+  FOREIGN KEY (tenant, next) REFERENCES artifact_component (tenant, id)
+);
+
 CREATE TABLE artifact_content (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
@@ -101,12 +112,16 @@ CREATE TABLE artifact_revision (
   "media_type" TEXT NOT NULL,
   "byte_count" INTEGER NOT NULL,
   "specification_pin" TEXT,
+  "realization" TEXT,
+  "components" TEXT,
   "created_at" TEXT NOT NULL,
   "updated_at" TEXT NOT NULL,
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, artifact) REFERENCES artifact (tenant, id),
   FOREIGN KEY (tenant, content) REFERENCES artifact_content (tenant, id),
-  FOREIGN KEY (tenant, specification_pin) REFERENCES specification_pin (tenant, id)
+  FOREIGN KEY (tenant, specification_pin) REFERENCES specification_pin (tenant, id),
+  FOREIGN KEY (tenant, realization) REFERENCES realization (tenant, id),
+  FOREIGN KEY (tenant, components) REFERENCES artifact_component (tenant, id)
 );
 
 CREATE TABLE realization (

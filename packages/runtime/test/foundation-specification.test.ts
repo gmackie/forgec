@@ -41,8 +41,8 @@ for (const adapter of ["memory", "sqlite"]) it(`${adapter}: pins reject selector
   for (const op of ["update", "delete", "restore", "move"]) await expect(call(`SpecificationPin.${op}`, { id: pin.id, patch: { revision: "b".repeat(40) } })).rejects.toThrow();
   await call("SpecificationPin.create", { ...input, revision: "b".repeat(64) });
   expect(await call("SpecificationPin.get", { id: pin.id })).toMatchObject({ revision: "a".repeat(40) });
-  const realization = await call("Realization.create", { pin: pin.id, buildHash: "c".repeat(64), manifestDigest: "d".repeat(64) });
-  expect(realization).toMatchObject({ pin: pin.id, buildHash: "c".repeat(64), manifestDigest: "d".repeat(64) });
+  const realization = await call("Realization.create", { pin: pin.id, buildHash: "c".repeat(64), manifestDigest: "sha256:" + "d".repeat(64) });
+  expect(realization).toMatchObject({ pin: pin.id, buildHash: "c".repeat(64), manifestDigest: "sha256:" + "d".repeat(64) });
   await expect(call("Realization.delete", { id: realization.id })).rejects.toThrow();
   } finally { db.close(); }
 });

@@ -45,6 +45,8 @@ export interface Decision {
   reason?: string;
 }
 export interface Authorizer {
+  /** Attributes must be resolved per row rather than from a static PIP snapshot. */
+  readonly liveAttributes?: boolean;
   readonly epoch: number;
   readonly knownObligations: string[];
   /** Attribute providers the authorizer's policies draw from (the runtime gathers values with freshness). */
@@ -213,14 +215,14 @@ export class Gatekeeper {
     const cand = candidate ? JSON.stringify(candidate) : "";
     const key = `${a.epoch}|${ctx.tenant}|${ctx.actor}|${action}|${ctx.purpose ?? ""}|${rev}|${cand}|${attrs.map((x) => `${x.pip}.${x.attribute}=${String(x.value)}`).join(",")}`;
     const hit = self.cache.get(key);
-    if (hit && hit.until > Date.now() && hit.decision.epoch === a.epoch) {
+    if (!a.liveAttributes && hit && hit.until > Date.now() && hit.decision.epoch === a.epoch) {
       self.hits++;
       return Effect.succeed(hit.decision);
     }
     self.misses++;
     return a
       .decide({ principal: { tenant: ctx.tenant, actor: ctx.actor }, action, kind, ...(r ? { resource: r.id } : {}), ...(ctx.purpose ? { purpose: ctx.purpose } : {}), ...(current ? { current } : {}), ...(candidate ? { candidate } : {}), attributes: attrs, requestId: ctx.requestId })
-      .pipe(Effect.tap((d) => Effect.sync(() => { self.lastDecision = d; if (d.effect === "allow") self.cache.set(key, { decision: d, until: Math.min(Date.parse(d.expiresAt), Date.now() + 60_000) }); })));
+      .pipe(Effect.tap((d) => Effect.sync(() => { self.lastDecision = d; if (d.effect === "allow" && !a.liveAttributes) self.cache.set(key, { decision: d, until: Math.min(Date.parse(d.expiresAt), Date.now() + 60_000) }); })));
   }
 
   /** Read gate: a denied record reads as not found (no existence disclosure, plan §9.1). */
@@ -238,6 +240,7 @@ export class Gatekeeper {
   /** List plan: `exact` when the policy predicate is on fields the query can express, else bounded candidate filtering. */
   listPlan(action: string, r: Resource, ctx: CallContext, params: Wire): { kind: "exact" | "candidate" | "unsupported" | "none"; policy?: string; filter: RowFilter[]; reason?: string } {
     if (!this.authorizer) return { kind: "none", filter: [] };
+    if (this.authorizer.liveAttributes) return { kind: "candidate", filter: [] };
     const attrs = this.attributes(action, ctx.purpose, ctx.actor);
     const f = this.authorizer.rowFilterFor(action, ctx.purpose, attrs);
     if (f === null) return { kind: "none", filter: [] };

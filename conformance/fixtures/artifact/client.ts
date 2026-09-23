@@ -184,6 +184,22 @@ export interface ArtifactCreate {
 export interface ArtifactPatch {
 }
 
+export interface ArtifactComponentRecord {
+  id: string;
+  name: string;
+  revision: string;
+  next: string | null;
+}
+
+export interface ArtifactComponentCreate {
+  name: string;
+  revision: string;
+  next?: string | null;
+}
+
+export interface ArtifactComponentPatch {
+}
+
 export interface ArtifactContentRecord {
   id: string;
   version: number;
@@ -211,6 +227,8 @@ export interface ArtifactRevisionRecord {
   mediaType: string;
   byteCount: number;
   specificationPin: string | null;
+  realization: string | null;
+  components: string | null;
 }
 
 export interface ArtifactRevisionCreate {
@@ -220,6 +238,8 @@ export interface ArtifactRevisionCreate {
   mediaType: string;
   byteCount: number;
   specificationPin?: string | null;
+  realization?: string | null;
+  components?: string | null;
 }
 
 export interface ArtifactRevisionPatch {
@@ -279,6 +299,9 @@ export interface SpecificationPinPatch {
 export interface ArtifactApi {
 }
 
+export interface ArtifactComponentApi {
+}
+
 export interface ArtifactContentApi {
 }
 
@@ -319,6 +342,7 @@ export interface ForgeClient {
   imports: ImportsApi;
   admin: AdminApi;
   artifacts: ArtifactApi;
+  artifactComponents: ArtifactComponentApi;
   artifactContents: ArtifactContentApi;
   artifactRevisions: ArtifactRevisionApi;
   realizations: RealizationApi;
@@ -372,6 +396,8 @@ export function createClient(options: ClientOptions): ForgeClient {
     workflows: {
     },
     artifacts: {
+    },
+    artifactComponents: {
     },
     artifactContents: {
     },

@@ -31,7 +31,7 @@ export function validateContracts(contracts, { complete = true } = {}) {
       if (!a || typeof a.id !== 'string' || !a.id.trim() || cases.has(a.id)) fail(s, 'invalid or duplicate acceptance id');
       if (a) cases.add(a.id);
       if (!a || typeof a.description !== 'string' || !a.description.trim() || !kinds.has(a.kind) || !statuses.has(a.status)) fail(s, 'invalid acceptance case');
-      if (a?.status === 'passing') fail(s, `${a.id}: passing requires evidence verification, which is not implemented yet`);
+      if (a?.status === 'passing' && (a.verification !== 'local' || !['specification', 'artifact', 'identifiers', 'participation'].includes(s) || !Array.isArray(a.evidence) || !a.evidence.length || a.evidence.some(path => typeof path !== 'string' || !/^(packages\/runtime\/test\/foundation-[a-z-]+\.test\.ts|packages\/runtime\/test\/blobs\.test\.ts|crates\/forgegraph-semantic\/tests\/append_only\.rs)$/.test(path) || !existsSync(join(root, path))))) fail(s, `${a.id}: passing requires evidence and a supported local verification suite`);
     }
   }
   const visiting = new Set(), visited = new Set(), order = [];
@@ -100,20 +100,25 @@ function main() {
     const result = validateContracts(contracts);
     result.errors.push(...validateCatalogs(contracts, Object.fromEntries(['substrate', 'system'].map(layer => [layer, JSON.parse(readFileSync(join(root, `specs/foundation/${layer}s.json`), 'utf8'))]))));
     if (result.errors.length) throw new Error(result.errors.join('\n'));
-    console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract validation only; implementation acceptance remains planned.' }, null, 2));
+    console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract/evidence structure only; run local package suites to execute acceptance. Hosted provider certification is separate.' }, null, 2));
     return;
   }
   if (['specification', 'identifiers', 'participation', 'artifact'].includes(slug) && !all) {
     const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
     try {
       if (slug === 'specification') run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
-      if (slug !== 'specification') run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', `packages/foundation/${slug}/fixtures/consumer`]);
+      run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', `packages/foundation/${slug}/fixtures/consumer`]);
       for (const name of ['first', 'second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}`, '--out', join(out, name)]);
-      for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts']) {
-        if (!readFileSync(join(out, 'first', file)).equals(readFileSync(join(out, 'second', file)))) throw new Error(`nondeterministic artifact: ${file}`);
+      for (const name of ['consumer-first', 'consumer-second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}/fixtures/consumer`, '--out', join(out, name)]);
+      for (const [first, second] of [['first', 'second'], ['consumer-first', 'consumer-second']]) for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts']) {
+        if (!readFileSync(join(out, first, file)).equals(readFileSync(join(out, second, file)))) throw new Error(`nondeterministic artifact: ${file}`);
       }
-      run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', `test/foundation-${slug}.test.ts`], { FORGE_FOUNDATION_FIXTURE: join(out, 'first') });
-      console.log(JSON.stringify({ suite, package: slug, status: 'passing', deterministic: true, scope: 'local generated-bundle tests on memory/SQLite', providers: 'live certification not run' }));
+      run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', `test/foundation-${slug}`, ...(slug === 'artifact' ? ['test/blobs.test.ts'] : [])], { FORGE_FOUNDATION_FIXTURE: join(out, 'first'), FORGE_FOUNDATION_CONSUMER: join(out, 'consumer-first') });
+      if (slug === 'specification') {
+        run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', 'packages/foundation/artifact/fixtures/consumer', '--out', join(out, 'artifact-consumer')]);
+        run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-artifact-consumer.test.ts'], { FORGE_FOUNDATION_CONSUMER: join(out, 'artifact-consumer') });
+      }
+      console.log(JSON.stringify({ suite, package: slug, status: 'passing', deterministic: true, scope: 'local generated-bundle tests on memory/SQLite', acceptance: readContracts().find(c => c.slug === slug).acceptance.map(a => a.id), providers: 'live certification not run' }));
     } finally { rmSync(out, { recursive: true, force: true }); }
     return;
   }

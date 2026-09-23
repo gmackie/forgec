@@ -36,3 +36,14 @@ test('catalog drift fails even when contracts are valid', () => {
   catalogs.substrate.packages[0].dependencies.push('missing');
   assert.match(validateCatalogs([c], catalogs).join(), /catalog does not match/);
 });
+
+
+test('local passing acceptance names existing evidence and rejects missing or unsafe paths', () => {
+  const c = contract('specification');
+  Object.assign(c.acceptance[0], { status: 'passing', verification: 'local', evidence: ['packages/runtime/test/foundation-specification.test.ts'] });
+  assert.deepEqual(validate([c]).errors, []);
+  for (const path of ['packages/runtime/test/foundation-missing.test.ts', '../outside.test.ts']) {
+    c.acceptance[0].evidence = [path];
+    assert.match(validate([c]).errors.join(), /requires evidence/);
+  }
+});
