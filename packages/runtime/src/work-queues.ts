@@ -1,6 +1,6 @@
 /** Bounded portable work queues. One CAS document seals task and runner state;
  * wakeups are advisory. Callers authenticate/authorize before invoking this service. */
-import { deriveExecutionRequirements, executionDigest, type ExecutionRequirements } from "@forgegraph/capability-manifest";
+import { deriveWorkflowStepRequirements, deriveExecutionRequirements, executionDigest, type ExecutionRequirements } from "@forgegraph/capability-manifest";
 import { Cause,Effect } from "effect";
 import {err,type ForgeError} from "./errors.js";
 import type {StorageAdapter} from "./services.js";
@@ -69,6 +69,10 @@ export class WorkQueue {
  }
  enqueueDerived(tenant:string,id:string,input:Record<string,unknown>,provenance:Parameters<typeof deriveExecutionRequirements>[0],priority=0):Effect.Effect<QueueTask,ForgeError> {
   return Effect.try({try:()=>deriveExecutionRequirements(provenance),catch:error=>err("ValidationFailed",String(error))}).pipe(Effect.flatMap(requirements=>this.enqueue(tenant,id,input,requirements,priority)));
+ }
+ /** Enqueue the selected pinned workflow activity; branch decisions and map item IDs belong to the caller. */
+ enqueueWorkflowStep(tenant:string,id:string,input:Record<string,unknown>,provenance:Parameters<typeof deriveWorkflowStepRequirements>[0],priority=0):Effect.Effect<QueueTask,ForgeError> {
+  return Effect.try({try:()=>deriveWorkflowStepRequirements(provenance),catch:error=>err("ValidationFailed",String(error))}).pipe(Effect.flatMap(requirements=>this.enqueue(tenant,id,input,requirements,priority)));
  }
  enqueue(tenant:string,id:string,input:Record<string,unknown>,requirements:TaskRequirements,priority=0):Effect.Effect<QueueTask,ForgeError> {
   const self=this;

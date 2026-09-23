@@ -38,7 +38,20 @@ Explicit extra atoms require a reason. `runnerEligibility` uses all-of matching 
 `executionCompatibility` reports changed requirements and provenance; callers must
 persist the returned snapshot with a task and never re-derive already queued work.
 
-Current derivation handles function/resource dependencies in compiled IR. Workflow
-step selection, input-dependent branches, compiler/CLI integration and durable Task
-enqueue integration are still outstanding. Tests cover Bob-style agent work and
-Forge verification work, ordering, tampering, missing pins and binding changes.
+`deriveWorkflowStepRequirements` selects a named function call or mapped call in a
+compiled workflow, including calls nested in choice/parallel branches. It derives
+only that activity's transitive requirements and binds the workflow ID, step ID,
+version and graph hash into the snapshot and explanations. Duplicate step IDs,
+unknown steps, non-activity steps and artifact/pin tampering fail closed.
+
+The caller selects the activity being dispatched; this helper does not execute
+branch predicates or schedule work. `WorkQueue.enqueueWorkflowStep` materializes
+and persists that snapshot, verifies the target against the queue's execution
+function and keeps existing tasks unchanged across workflow revisions. Mapped
+items receive separate caller-supplied task identities and share the pinned
+activity contract.
+
+Automatic workflow-to-runner dispatch, input-dependent manifest requirements and
+compiler/CLI integration remain outstanding. Tests cover Bob-style agent work,
+Forge verification work, compiled map enqueue, restart, capability matching,
+ordering, tampering, missing pins and binding changes.

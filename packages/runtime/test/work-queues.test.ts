@@ -79,3 +79,33 @@ it("enqueue derives and stores an immutable snapshot from pinned execution manif
  expect(stored.requirements.explanations["tool.jj"]?.[0]).toContain("operation:Agent");
  await expect(Effect.runPromise(queue.enqueueDerived("t","tampered",{},source))).rejects.toThrow();
 });
+
+it("queues compiled map activities with immutable workflow provenance and capability matching",async()=>{
+ const {pinExecutionManifest}=await import("@forgegraph/capability-manifest");
+ const compiled=JSON.parse(readFileSync(resolve(import.meta.dirname,"../../../conformance/fixtures/workflow-map/app.json"),"utf8")) as AppBundle;
+ const workflow=compiled.ir.modules.flatMap(m=>m.workflows??[]).find(w=>w.name==="EvaluateCandidates")!;
+ const step=workflow.steps.find(s=>s.kind==="map")!;
+ if(step.kind!=="map" || step.call.target.kind!=="function") throw Error("expected fixture map");
+ const operation=step.call.target.function;
+ const pin=pinExecutionManifest({version:"execution-manifest/1",kind:"implementation",id:"evaluator",requires:["tool.evaluator"]});
+ const source={artifact:compiled.ir,artifactDigest:executionDigest(compiled.ir),workflow:workflow.id,step:step.id,profile:{id:"local",bindings:{[operation]:pin.digest},providers:[]},manifests:[pin]};
+ const storage=new MemoryStorage();
+ const definition={id:"EvaluationWork",execute:operation,leaseMs:90000,maxAttempts:3,maxTasks:16,maxRunners:8};
+ const queue=new WorkQueue(storage,definition);
+ await Effect.runPromise(queue.enqueueWorkflowStep("t","instance:map:0",{candidate:1},source));
+ await Effect.runPromise(queue.enqueueWorkflowStep("t","instance:map:1",{candidate:2},source));
+ const snapshot=(await Effect.runPromise(queue.get("t","instance:map:0"))).requirements;
+ expect(snapshot.workflowStep).toEqual({workflow:workflow.id,step:step.id,version:workflow.version,graphHash:workflow.graphHash});
+ expect(snapshot.requirements).toEqual(["tool.evaluator"]);
+ await Effect.runPromise(queue.register("t",{id:"unqualified",capabilities:[],presence:"online",lastSeen:0}));
+ expect(await Effect.runPromise(queue.claimNext("t","unqualified"))).toBeNull();
+ const restarted=new WorkQueue(storage,definition);
+ await Effect.runPromise(restarted.register("t",{id:"evaluator",capabilities:["tool.evaluator"],presence:"online",lastSeen:0}));
+ expect(await Effect.runPromise(restarted.claimNext("t","evaluator"))).toMatchObject({id:"instance:map:0",requirements:snapshot});
+ workflow.graphHash="b".repeat(64);
+ workflow.version++;
+ await expect(Effect.runPromise(queue.enqueueWorkflowStep("t","tampered",{},source))).rejects.toThrow();
+ expect((await Effect.runPromise(restarted.get("t","instance:map:1"))).requirements).toEqual(snapshot);
+ const wrong=new WorkQueue(storage,{...definition,id:"Wrong",execute:"Different"});
+ await expect(Effect.runPromise(wrong.enqueueWorkflowStep("t","mismatch",{},{...source,artifactDigest:executionDigest(compiled.ir)}))).rejects.toThrow();
+});
