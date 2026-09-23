@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "2e56925acd84581d0c76ef7219c5d0fadb64e085f4d69d061aaca996679bf8e1",
+  "buildHash": "40bc3c249cbb56f6450bc5bc357eacb611efbf580e697b035dd045234dcbbe33",
   "digests": {
-    "source": "75d2117bdaa0456662823725a85a7c2f5457e1f932ea9f73d83ac4330198e828",
-    "wire": "110f4ddb0bbf4a1fc3f026cf65878ff4073add3e38d84d7b597ad10c04a63f29",
+    "source": "98a4f1ac9e3de6f5c26bc2360f7cb759df41a3a6cc1891570ba254182ebc6f3b",
+    "wire": "b5d5c353d2702dd89ba0453ccaebe6354e42d40fe5bec6d5d4ddbb75eeac1682",
     "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
-    "security": "22c57f5b860fb1d004e66a15b4046e2113c768964bbd53ca53bc65907d19921c"
+    "security": "49e2c03a4387388f40fda3af1286cf1411875c0ff7f7393ffca0f7da50a05d79"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -20,23 +20,637 @@
         "slo": []
       }
     },
-    "imports": [],
+    "imports": [
+      {
+        "alias": "party",
+        "package": "@forgegraph/foundation/party"
+      }
+    ],
     "modules": [
       {
-        "id": "_",
+        "id": "@forgegraph/foundation/identifiers/_",
         "enums": [],
         "types": [],
         "shapes": [],
         "resources": [
           {
-            "id": "@forgegraph/foundation/participation/_/Participant",
-            "name": "Participant",
+            "id": "@forgegraph/foundation/identifiers/_/Identifier",
+            "name": "Identifier",
             "kind": "resource",
             "exported": true,
             "decorators": {
               "appendOnly": true,
               "tenant": true,
-              "timestamps": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "identifierSet",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "namespace",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim",
+                    "lowercase"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "issuer",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/identifiers/_/Issuer"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "issuerScope",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "value",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "validFrom",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "validUntil",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "namespace_issuerScope_value",
+                "fields": [
+                  "namespace",
+                  "issuerScope",
+                  "value"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byNamespaceIssuerScopeValue",
+                "fields": [
+                  "namespace",
+                  "issuerScope",
+                  "value"
+                ],
+                "coveredBy": "namespace_issuerScope_value"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byIdentifierSet",
+                "fields": [
+                  "identifierSet"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "validUntil"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": ">",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "validUntil"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "validFrom"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "issuer"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "issuerScope"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "string",
+                        "value": "namespace"
+                      }
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "!=",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "issuer"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "issuerScope"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "issuer"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Identifier.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Identifier.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Identifier.find.byNamespaceIssuerScopeValue",
+                "kind": "find",
+                "query": "byNamespaceIssuerScopeValue"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Identifier.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Identifier.list.byIdentifierSet",
+                "kind": "list",
+                "query": "byIdentifierSet"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+            "name": "IdentifierDisposition",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "identifier",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/identifiers/_/Identifier"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "replacement",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/identifiers/_/Identifier"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "effectiveAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reason",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 500
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "identifier",
+                "fields": [
+                  "identifier"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byIdentifier",
+                "fields": [
+                  "identifier"
+                ],
+                "coveredBy": "identifier"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": ">=",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "effectiveAt"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "identifier",
+                    "validFrom"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "replacement"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "&&",
+                    "lhs": {
+                      "kind": "binary",
+                      "op": "==",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "replacement",
+                          "identifierSet"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "name",
+                        "path": [
+                          "identifier",
+                          "identifierSet"
+                        ]
+                      }
+                    },
+                    "rhs": {
+                      "kind": "binary",
+                      "op": ">",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "replacement",
+                          "validFrom"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "name",
+                        "path": [
+                          "identifier",
+                          "validFrom"
+                        ]
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "effectiveAt"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "replacement",
+                        "validFrom"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.find.byIdentifier",
+                "kind": "find",
+                "query": "byIdentifier"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+            "name": "IdentifierSet",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
               "softDelete": false,
               "versioned": false,
               "audited": false,
@@ -81,38 +695,6 @@
                 "immutable": true,
                 "serverOwned": false,
                 "synthesized": false
-              },
-              {
-                "name": "createdAt",
-                "type": {
-                  "base": {
-                    "kind": "scalar",
-                    "name": "datetime",
-                    "args": []
-                  },
-                  "optional": false,
-                  "normalizers": [],
-                  "constraints": []
-                },
-                "immutable": true,
-                "serverOwned": true,
-                "synthesized": true
-              },
-              {
-                "name": "updatedAt",
-                "type": {
-                  "base": {
-                    "kind": "scalar",
-                    "name": "datetime",
-                    "args": []
-                  },
-                  "optional": false,
-                  "normalizers": [],
-                  "constraints": []
-                },
-                "immutable": true,
-                "serverOwned": true,
-                "synthesized": true
               }
             ],
             "uniques": [],
@@ -132,15 +714,15 @@
             "rules": [],
             "operations": [
               {
-                "id": "@forgegraph/foundation/participation/_/Participant.create",
+                "id": "@forgegraph/foundation/identifiers/_/IdentifierSet.create",
                 "kind": "create"
               },
               {
-                "id": "@forgegraph/foundation/participation/_/Participant.get",
+                "id": "@forgegraph/foundation/identifiers/_/IdentifierSet.get",
                 "kind": "get"
               },
               {
-                "id": "@forgegraph/foundation/participation/_/Participant.list.all",
+                "id": "@forgegraph/foundation/identifiers/_/IdentifierSet.list.all",
                 "kind": "list",
                 "query": "all"
               }
@@ -148,6 +730,133 @@
             "capabilities": [],
             "purposeBindings": []
           },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Issuer",
+            "name": "Issuer",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "key",
+                "fields": [
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byKey",
+                "fields": [
+                  "key"
+                ],
+                "coveredBy": "key"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Issuer.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Issuer.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Issuer.find.byKey",
+                "kind": "find",
+                "query": "byKey"
+              },
+              {
+                "id": "@forgegraph/foundation/identifiers/_/Issuer.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      },
+      {
+        "id": "@forgegraph/foundation/participation/_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
           {
             "id": "@forgegraph/foundation/participation/_/Participation",
             "name": "Participation",
@@ -200,7 +909,7 @@
                 "type": {
                   "base": {
                     "kind": "reference",
-                    "resource": "@forgegraph/foundation/participation/_/Participant"
+                    "resource": "@forgegraph/foundation/party/_/Party"
                   },
                   "optional": false,
                   "normalizers": [],
@@ -978,6 +1687,671 @@
         "workflows": [],
         "purposes": [],
         "dataClasses": []
+      },
+      {
+        "id": "@forgegraph/foundation/party/_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@forgegraph/foundation/party/_/Party",
+            "name": "Party",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 200
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "identifiers",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [
+              {
+                "name": "identifiers",
+                "fields": [
+                  "identifiers"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/party/_/Party.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/Party.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/Party.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+            "name": "PrincipalRepresentation",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "party",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/party/_/Party"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "principal",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "validFrom",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "validUntil",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "recordedBy",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reason",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 500
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [
+              {
+                "name": "principal_party_validFrom",
+                "fields": [
+                  "principal",
+                  "party",
+                  "validFrom"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byParty",
+                "fields": [
+                  "party"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byPrincipal",
+                "fields": [
+                  "principal"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "validUntil"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": ">",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "validUntil"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "validFrom"
+                    ]
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byParty",
+                "kind": "list",
+                "query": "byParty"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byPrincipal",
+                "kind": "list",
+                "query": "byPrincipal"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/RepresentationRevocation",
+            "name": "RepresentationRevocation",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "representation",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "effectiveAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "recordedBy",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reason",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 500
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [
+              {
+                "name": "representation",
+                "fields": [
+                  "representation"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byRepresentation",
+                "fields": [
+                  "representation"
+                ],
+                "coveredBy": "representation"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": ">=",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "effectiveAt"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "representation",
+                    "validFrom"
+                  ]
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/party/_/RepresentationRevocation.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/RepresentationRevocation.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/RepresentationRevocation.find.byRepresentation",
+                "kind": "find",
+                "query": "byRepresentation"
+              },
+              {
+                "id": "@forgegraph/foundation/party/_/RepresentationRevocation.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
       }
     ],
     "requires": [
@@ -989,9 +2363,9 @@
     "package": "@forgegraph/foundation/participation",
     "resources": [
       {
-        "id": "@forgegraph/foundation/participation/_/Participant",
-        "name": "Participant",
-        "wireName": "participant",
+        "id": "@forgegraph/foundation/identifiers/_/Identifier",
+        "name": "Identifier",
+        "wireName": "identifier",
         "tenantScoped": true,
         "softDelete": false,
         "versioned": false,
@@ -1005,18 +2379,349 @@
               "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
-            "createdAt": {
+            "identifierSet": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            },
+            "namespace": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "issuer": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+            },
+            "issuerScope": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "value": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "validFrom": {
               "type": "string",
               "format": "date-time",
               "x-forge-type": "datetime",
-              "x-forge-precision": "ms",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "id",
+            "identifierSet",
+            "namespace",
+            "issuer",
+            "issuerScope",
+            "value",
+            "validFrom",
+            "validUntil"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "identifierSet": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            },
+            "namespace": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "issuer": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+            },
+            "issuerScope": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "value": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "validFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "identifierSet",
+            "namespace",
+            "issuerScope",
+            "value",
+            "validFrom"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byNamespaceIssuerScopeValue",
+            "kind": "find",
+            "params": [
+              "namespace",
+              "issuerScope",
+              "value"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byIdentifierSet",
+            "kind": "list",
+            "params": [
+              "identifierSet"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Identifier.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Identifier.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Identifier.find.byNamespaceIssuerScopeValue",
+            "kind": "find",
+            "query": "byNamespaceIssuerScopeValue"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Identifier.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Identifier.list.byIdentifierSet",
+            "kind": "list",
+            "query": "byIdentifierSet"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "name": "IdentifierDisposition",
+        "wireName": "identifier_disposition",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
-            "updatedAt": {
+            "identifier": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "effectiveAt": {
               "type": "string",
               "format": "date-time",
               "x-forge-type": "datetime",
-              "x-forge-precision": "ms",
+              "x-forge-precision": "ms"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "id",
+            "identifier",
+            "replacement",
+            "effectiveAt",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "effectiveAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "identifier",
+            "effectiveAt",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byIdentifier",
+            "kind": "find",
+            "params": [
+              "identifier"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.find.byIdentifier",
+            "kind": "find",
+            "query": "byIdentifier"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "name": "IdentifierSet",
+        "wireName": "identifier_set",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
             "label": {
@@ -1028,8 +2733,6 @@
           },
           "required": [
             "id",
-            "createdAt",
-            "updatedAt",
             "label"
           ],
           "additionalProperties": false
@@ -1070,15 +2773,108 @@
         ],
         "operations": [
           {
-            "id": "@forgegraph/foundation/participation/_/Participant.create",
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierSet.create",
             "kind": "create"
           },
           {
-            "id": "@forgegraph/foundation/participation/_/Participant.get",
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierSet.get",
             "kind": "get"
           },
           {
-            "id": "@forgegraph/foundation/participation/_/Participant.list.all",
+            "id": "@forgegraph/foundation/identifiers/_/IdentifierSet.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/Issuer",
+        "name": "Issuer",
+        "wireName": "issuer",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "id",
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byKey",
+            "kind": "find",
+            "params": [
+              "key"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Issuer.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Issuer.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Issuer.find.byKey",
+            "kind": "find",
+            "query": "byKey"
+          },
+          {
+            "id": "@forgegraph/foundation/identifiers/_/Issuer.list.all",
             "kind": "list",
             "query": "all"
           }
@@ -1121,7 +2917,7 @@
             },
             "participant": {
               "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/participation/_/Participant"
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
             },
             "role": {
               "type": "string",
@@ -1178,7 +2974,7 @@
             },
             "participant": {
               "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/participation/_/Participant"
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
             },
             "role": {
               "type": "string",
@@ -1681,6 +3477,467 @@
             "query": "all"
           }
         ]
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/Party",
+        "name": "Party",
+        "wireName": "party",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "identifiers": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            }
+          },
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "label",
+            "identifiers"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "identifiers": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            }
+          },
+          "required": [
+            "label"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/party/_/Party.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/Party.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/Party.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "name": "PrincipalRepresentation",
+        "wireName": "principal_representation",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            },
+            "principal": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "validFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "party",
+            "principal",
+            "validFrom",
+            "validUntil",
+            "recordedBy",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            },
+            "principal": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "validFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "party",
+            "principal",
+            "validFrom",
+            "recordedBy",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byParty",
+            "kind": "list",
+            "params": [
+              "party"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byPrincipal",
+            "kind": "list",
+            "params": [
+              "principal"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byParty",
+            "kind": "list",
+            "query": "byParty"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byPrincipal",
+            "kind": "list",
+            "query": "byPrincipal"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "name": "RepresentationRevocation",
+        "wireName": "representation_revocation",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "representation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+            },
+            "effectiveAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "representation",
+            "effectiveAt",
+            "recordedBy",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "representation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+            },
+            "effectiveAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "representation",
+            "effectiveAt",
+            "recordedBy",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byRepresentation",
+            "kind": "find",
+            "params": [
+              "representation"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/party/_/RepresentationRevocation.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/RepresentationRevocation.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/RepresentationRevocation.find.byRepresentation",
+            "kind": "find",
+            "query": "byRepresentation"
+          },
+          {
+            "id": "@forgegraph/foundation/party/_/RepresentationRevocation.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
       }
     ],
     "functions": [],
@@ -1696,8 +3953,181 @@
     "dialect": "sqlite",
     "tables": [
       {
-        "name": "participant",
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "name": "identifier",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "identifier_set",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "identifierSet",
+            "storage": "text"
+          },
+          {
+            "name": "namespace",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "namespace",
+            "storage": "text"
+          },
+          {
+            "name": "issuer",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "issuer",
+            "storage": "text"
+          },
+          {
+            "name": "issuer_scope",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "issuerScope",
+            "storage": "text"
+          },
+          {
+            "name": "value_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "value",
+            "storage": "text"
+          },
+          {
+            "name": "valid_from",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "validFrom",
+            "storage": "text"
+          },
+          {
+            "name": "valid_until",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "validUntil",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "identifier_set"
+            ],
+            "references": "identifier_set",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "issuer"
+            ],
+            "references": "issuer",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "identifier_disposition",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "identifier",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "identifier",
+            "storage": "text"
+          },
+          {
+            "name": "replacement",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "replacement",
+            "storage": "text"
+          },
+          {
+            "name": "effective_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "effectiveAt",
+            "storage": "text"
+          },
+          {
+            "name": "reason",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "reason",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "identifier"
+            ],
+            "references": "identifier",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "replacement"
+            ],
+            "references": "identifier",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "identifier_set",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
         "columns": [
           {
             "name": "tenant",
@@ -1718,19 +4148,37 @@
             "nullable": false,
             "field": "label",
             "storage": "text"
-          },
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "issuer",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "columns": [
           {
-            "name": "created_at",
+            "name": "tenant",
             "sqlType": "TEXT",
             "nullable": false,
-            "field": "createdAt",
             "storage": "text"
           },
           {
-            "name": "updated_at",
+            "name": "id",
             "sqlType": "TEXT",
             "nullable": false,
-            "field": "updatedAt",
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
             "storage": "text"
           }
         ],
@@ -1843,7 +4291,7 @@
               "tenant",
               "participant"
             ],
-            "references": "participant",
+            "references": "party",
             "referencedColumns": [
               "tenant",
               "id"
@@ -2047,9 +4495,289 @@
         ],
         "foreignKeys": [],
         "checks": []
+      },
+      {
+        "name": "party",
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "label",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "label",
+            "storage": "text"
+          },
+          {
+            "name": "identifiers",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "identifiers",
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "identifiers"
+            ],
+            "references": "identifier_set",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "principal_representation",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "party",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "party",
+            "storage": "text"
+          },
+          {
+            "name": "principal",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "principal",
+            "storage": "text"
+          },
+          {
+            "name": "valid_from",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "validFrom",
+            "storage": "text"
+          },
+          {
+            "name": "valid_until",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "validUntil",
+            "storage": "text"
+          },
+          {
+            "name": "recorded_by",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "recordedBy",
+            "storage": "text"
+          },
+          {
+            "name": "reason",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "reason",
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "party"
+            ],
+            "references": "party",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "representation_revocation",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "representation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "representation",
+            "storage": "text"
+          },
+          {
+            "name": "effective_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "effectiveAt",
+            "storage": "text"
+          },
+          {
+            "name": "recorded_by",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "recordedBy",
+            "storage": "text"
+          },
+          {
+            "name": "reason",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "reason",
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "representation"
+            ],
+            "references": "principal_representation",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
       }
     ],
     "indexes": [
+      {
+        "name": "identifier_uq_namespace_issuerScope_value",
+        "table": "identifier",
+        "columns": [
+          "tenant",
+          "namespace",
+          "issuer_scope",
+          "value_"
+        ],
+        "unique": true,
+        "constraint": "namespace_issuerScope_value"
+      },
+      {
+        "name": "identifier_ix_by_identifier_set",
+        "table": "identifier",
+        "columns": [
+          "tenant",
+          "identifier_set",
+          "id"
+        ],
+        "unique": false,
+        "query": "byIdentifierSet"
+      },
+      {
+        "name": "identifier_disposition_uq_identifier",
+        "table": "identifier_disposition",
+        "columns": [
+          "tenant",
+          "identifier"
+        ],
+        "unique": true,
+        "constraint": "identifier"
+      },
+      {
+        "name": "issuer_uq_key",
+        "table": "issuer",
+        "columns": [
+          "tenant",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "key"
+      },
       {
         "name": "participation_uq_participationSet_participant_role_validFrom",
         "table": "participation",
@@ -2105,6 +4833,60 @@
         ],
         "unique": true,
         "constraint": "namespace_name"
+      },
+      {
+        "name": "party_uq_identifiers",
+        "table": "party",
+        "columns": [
+          "tenant",
+          "identifiers"
+        ],
+        "unique": true,
+        "constraint": "identifiers"
+      },
+      {
+        "name": "principal_representation_uq_principal_party_validFrom",
+        "table": "principal_representation",
+        "columns": [
+          "tenant",
+          "principal",
+          "party",
+          "valid_from"
+        ],
+        "unique": true,
+        "constraint": "principal_party_validFrom"
+      },
+      {
+        "name": "principal_representation_ix_by_party",
+        "table": "principal_representation",
+        "columns": [
+          "tenant",
+          "party",
+          "id"
+        ],
+        "unique": false,
+        "query": "byParty"
+      },
+      {
+        "name": "principal_representation_ix_by_principal",
+        "table": "principal_representation",
+        "columns": [
+          "tenant",
+          "principal",
+          "id"
+        ],
+        "unique": false,
+        "query": "byPrincipal"
+      },
+      {
+        "name": "representation_revocation_uq_representation",
+        "table": "representation_revocation",
+        "columns": [
+          "tenant",
+          "representation"
+        ],
+        "unique": true,
+        "constraint": "representation"
       }
     ],
     "systemTables": [
@@ -2432,9 +5214,110 @@
     "pendingIndex": "pending-index",
     "resources": [
       {
-        "id": "@forgegraph/foundation/participation/_/Participant",
-        "name": "Participant",
-        "wireName": "participant",
+        "id": "@forgegraph/foundation/identifiers/_/Identifier",
+        "name": "Identifier",
+        "wireName": "identifier",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "namespace_issuerScope_value",
+            "keyFields": [
+              "namespace",
+              "issuerScope",
+              "value"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          },
+          {
+            "name": "byIdentifierSet",
+            "kind": "list",
+            "partitionFields": [
+              "identifierSet"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "identifierSet"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "identifierSet",
+            "target": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          },
+          {
+            "field": "issuer",
+            "target": "@forgegraph/foundation/identifiers/_/Issuer"
+          }
+        ],
+        "createActions": 8
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "name": "IdentifierDisposition",
+        "wireName": "identifier_disposition",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "identifier",
+            "keyFields": [
+              "identifier"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "identifier",
+            "target": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          {
+            "field": "replacement",
+            "target": "@forgegraph/foundation/identifiers/_/Identifier"
+          }
+        ],
+        "createActions": 7
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "name": "IdentifierSet",
+        "wireName": "identifier_set",
         "tenantScoped": true,
         "claims": [],
         "access": [
@@ -2455,6 +5338,38 @@
         ],
         "references": [],
         "createActions": 4
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/Issuer",
+        "name": "Issuer",
+        "wireName": "issuer",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "key",
+            "keyFields": [
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
       },
       {
         "id": "@forgegraph/foundation/participation/_/Participation",
@@ -2529,7 +5444,7 @@
           },
           {
             "field": "participant",
-            "target": "@forgegraph/foundation/participation/_/Participant"
+            "target": "@forgegraph/foundation/party/_/Party"
           },
           {
             "field": "role",
@@ -2632,6 +5547,153 @@
         ],
         "references": [],
         "createActions": 4
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/Party",
+        "name": "Party",
+        "wireName": "party",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "identifiers",
+            "keyFields": [
+              "identifiers"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "identifiers",
+            "target": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          }
+        ],
+        "createActions": 6
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "name": "PrincipalRepresentation",
+        "wireName": "principal_representation",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "principal_party_validFrom",
+            "keyFields": [
+              "principal",
+              "party",
+              "validFrom"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          },
+          {
+            "name": "byParty",
+            "kind": "list",
+            "partitionFields": [
+              "party"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "party"
+            ]
+          },
+          {
+            "name": "byPrincipal",
+            "kind": "list",
+            "partitionFields": [
+              "principal"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "principal"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "party",
+            "target": "@forgegraph/foundation/party/_/Party"
+          }
+        ],
+        "createActions": 8
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "name": "RepresentationRevocation",
+        "wireName": "representation_revocation",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "representation",
+            "keyFields": [
+              "representation"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "representation",
+            "target": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+          }
+        ],
+        "createActions": 6
       }
     ]
   },
@@ -2640,12 +5702,256 @@
     "package": "@forgegraph/foundation/participation",
     "resources": [
       {
-        "id": "@forgegraph/foundation/participation/_/Participant",
-        "name": "Participant",
+        "id": "@forgegraph/foundation/identifiers/_/Identifier",
+        "name": "Identifier",
         "kind": "resource",
-        "label": "Participant",
-        "plural": "Participants",
-        "route": "participants",
+        "label": "Identifier",
+        "plural": "Identifiers",
+        "route": "identifiers",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "identifierSet",
+            "label": "Identifier Set",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+              "route": "identifier-set",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/identifiers/_/IdentifierSet.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "namespace",
+            "label": "Namespace",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "issuer",
+            "label": "Issuer",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+              "route": "issuer",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/identifiers/_/Issuer.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/identifiers/_/Issuer.find.byKey"
+            }
+          },
+          {
+            "name": "issuerScope",
+            "label": "Issuer Scope",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "value",
+            "label": "Value",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "validFrom",
+            "label": "Valid From",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "validUntil",
+            "label": "Valid Until",
+            "widget": "datetime",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/identifiers/_/Identifier.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byIdentifierSet",
+            "op": "@forgegraph/foundation/identifiers/_/Identifier.list.byIdentifierSet",
+            "params": [
+              "identifierSet"
+            ],
+            "label": "By Identifier Set"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byNamespaceIssuerScopeValue",
+            "op": "@forgegraph/foundation/identifiers/_/Identifier.find.byNamespaceIssuerScopeValue",
+            "params": [
+              "namespace",
+              "issuerScope",
+              "value"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "name": "IdentifierDisposition",
+        "kind": "resource",
+        "label": "Identifier Disposition",
+        "plural": "Identifier Dispositions",
+        "route": "identifier-dispositions",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "identifier",
+            "label": "Identifier",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+              "route": "identifier",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/identifiers/_/Identifier.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/identifiers/_/Identifier.find.byNamespaceIssuerScopeValue"
+            }
+          },
+          {
+            "name": "replacement",
+            "label": "Replacement",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+              "route": "identifier",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/identifiers/_/Identifier.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/identifiers/_/Identifier.find.byNamespaceIssuerScopeValue"
+            }
+          },
+          {
+            "name": "effectiveAt",
+            "label": "Effective At",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "reason",
+            "label": "Reason",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 500
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byIdentifier",
+            "op": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.find.byIdentifier",
+            "params": [
+              "identifier"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "name": "IdentifierSet",
+        "kind": "resource",
+        "label": "Identifier Set",
+        "plural": "Identifier Sets",
+        "route": "identifier-sets",
         "titleField": "label",
         "fields": [
           {
@@ -2667,24 +5973,6 @@
             "sortable": true,
             "minLength": 1,
             "maxLength": 200
-          },
-          {
-            "name": "createdAt",
-            "label": "Created At",
-            "widget": "readonly",
-            "required": false,
-            "editableOnCreate": false,
-            "editableOnUpdate": false,
-            "sortable": true
-          },
-          {
-            "name": "updatedAt",
-            "label": "Updated At",
-            "widget": "readonly",
-            "required": false,
-            "editableOnCreate": false,
-            "editableOnUpdate": false,
-            "sortable": true
           }
         ],
         "tableColumns": [
@@ -2693,12 +5981,67 @@
         "lists": [
           {
             "name": "all",
-            "op": "@forgegraph/foundation/participation/_/Participant.list.all",
+            "op": "@forgegraph/foundation/identifiers/_/IdentifierSet.list.all",
             "params": [],
             "label": "All"
           }
         ],
         "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/identifiers/_/Issuer",
+        "name": "Issuer",
+        "kind": "resource",
+        "label": "Issuer",
+        "plural": "Issuers",
+        "route": "issuers",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "key"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/identifiers/_/Issuer.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byKey",
+            "op": "@forgegraph/foundation/identifiers/_/Issuer.find.byKey",
+            "params": [
+              "key"
+            ]
+          }
+        ],
         "actions": [],
         "softDelete": false,
         "versioned": false
@@ -2746,10 +6089,10 @@
             "editableOnUpdate": false,
             "sortable": false,
             "reference": {
-              "resource": "@forgegraph/foundation/participation/_/Participant",
-              "route": "participant",
+              "resource": "@forgegraph/foundation/party/_/Party",
+              "route": "party",
               "titleField": "label",
-              "lookup": "@forgegraph/foundation/participation/_/Participant.list.all",
+              "lookup": "@forgegraph/foundation/party/_/Party.list.all",
               "lookupParams": []
             }
           },
@@ -3137,6 +6480,341 @@
         "actions": [],
         "softDelete": false,
         "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/Party",
+        "name": "Party",
+        "kind": "resource",
+        "label": "Party",
+        "plural": "Partys",
+        "route": "partys",
+        "titleField": "label",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "label",
+            "label": "Label",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "identifiers",
+            "label": "Identifiers",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+              "route": "identifier-set",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/identifiers/_/IdentifierSet.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "label",
+          "identifiers"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/party/_/Party.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "name": "PrincipalRepresentation",
+        "kind": "resource",
+        "label": "Principal Representation",
+        "plural": "Principal Representations",
+        "route": "principal-representations",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "party",
+            "label": "Party",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/party/_/Party",
+              "route": "party",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/party/_/Party.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "principal",
+            "label": "Principal",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "validFrom",
+            "label": "Valid From",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "validUntil",
+            "label": "Valid Until",
+            "widget": "datetime",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "recordedBy",
+            "label": "Recorded By",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "reason",
+            "label": "Reason",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 500
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byParty",
+            "op": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byParty",
+            "params": [
+              "party"
+            ],
+            "label": "By Party"
+          },
+          {
+            "name": "byPrincipal",
+            "op": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byPrincipal",
+            "params": [
+              "principal"
+            ],
+            "label": "By Principal"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "name": "RepresentationRevocation",
+        "kind": "resource",
+        "label": "Representation Revocation",
+        "plural": "Representation Revocations",
+        "route": "representation-revocations",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "representation",
+            "label": "Representation",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+              "route": "principal-representation",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "effectiveAt",
+            "label": "Effective At",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "recordedBy",
+            "label": "Recorded By",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "reason",
+            "label": "Reason",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 500
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/party/_/RepresentationRevocation.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byRepresentation",
+            "op": "@forgegraph/foundation/party/_/RepresentationRevocation.find.byRepresentation",
+            "params": [
+              "representation"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
       }
     ]
   },
@@ -3197,9 +6875,9 @@
     "window": "28d",
     "operations": [
       {
-        "operation": "@forgegraph/foundation/participation/_/Participant.create",
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.create",
         "kind": "create",
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
         "class": "crud-write",
         "slo": {
           "availability": "99.9%",
@@ -3223,9 +6901,9 @@
         "businessErrors": []
       },
       {
-        "operation": "@forgegraph/foundation/participation/_/Participant.get",
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.get",
         "kind": "get",
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
         "class": "crud-read",
         "slo": {
           "availability": "99.9%",
@@ -3249,9 +6927,347 @@
         "businessErrors": []
       },
       {
-        "operation": "@forgegraph/foundation/participation/_/Participant.list.all",
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.find.byNamespaceIssuerScopeValue",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.list.all",
         "kind": "list",
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.list.byIdentifierSet",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.find.byIdentifier",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierSet.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierSet.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierSet.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
         "class": "crud-read",
         "slo": {
           "availability": "99.9%",
@@ -3689,6 +7705,318 @@
           10000
         ],
         "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/Party.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/Party.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/Party.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byParty",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byPrincipal",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.find.byRepresentation",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
       }
     ]
   },
@@ -3697,7 +8025,7 @@
     "taxonomy": "data-taxonomy/1",
     "fields": [
       {
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
         "field": "id",
         "class": "data.structural",
         "ancestors": [
@@ -3714,7 +8042,228 @@
         "completeness": "structural"
       },
       {
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "field": "identifierSet",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "field": "namespace",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "field": "issuer",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "field": "issuerScope",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "field": "value",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "field": "validFrom",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "field": "validUntil",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "field": "identifier",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "field": "replacement",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "field": "effectiveAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "field": "reason",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
         "field": "label",
         "class": "data.unknown",
         "ancestors": [
@@ -3731,8 +8280,8 @@
         "completeness": "unclassified"
       },
       {
-        "resource": "@forgegraph/foundation/participation/_/Participant",
-        "field": "createdAt",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "field": "id",
         "class": "data.structural",
         "ancestors": [
           "data.structural",
@@ -3748,21 +8297,21 @@
         "completeness": "structural"
       },
       {
-        "resource": "@forgegraph/foundation/participation/_/Participant",
-        "field": "updatedAt",
-        "class": "data.structural",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "field": "key",
+        "class": "data.unknown",
         "ancestors": [
-          "data.structural",
+          "data.unknown",
           "data"
         ],
         "kinds": [
-          "structural"
+          "unknown"
         ],
-        "identifiability": "none",
-        "handling": "internal",
-        "personal": "no",
-        "evidence": "structural",
-        "completeness": "structural"
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
       },
       {
         "resource": "@forgegraph/foundation/participation/_/Participation",
@@ -4222,31 +8771,403 @@
         "personal": "no",
         "evidence": "structural",
         "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "field": "label",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "field": "identifiers",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "party",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "principal",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "validFrom",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "validUntil",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "recordedBy",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "reason",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "field": "representation",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "field": "effectiveAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "field": "recordedBy",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "field": "reason",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
       }
     ],
     "subjects": [],
     "summary": {
-      "structural": 23,
-      "unclassified": 8
+      "structural": 46,
+      "unclassified": 19
     }
   },
   "lineage": {
     "version": "lineage/1",
     "operations": [
       {
-        "operation": "@forgegraph/foundation/participation/_/Participant.create",
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.create",
         "kind": "create",
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
         "outputs": [
           "id",
-          "label",
-          "createdAt",
-          "updatedAt"
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
         ],
         "writes": [
-          "label"
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
         ],
-        "filters": [],
+        "filters": [
+          "validUntil",
+          "validFrom",
+          "issuer",
+          "issuerScope"
+        ],
         "orders": [],
         "groups": [],
         "externalSinks": [],
@@ -4254,14 +9175,18 @@
         "coverage": "modeled"
       },
       {
-        "operation": "@forgegraph/foundation/participation/_/Participant.get",
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.get",
         "kind": "get",
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
         "outputs": [
           "id",
-          "label",
-          "createdAt",
-          "updatedAt"
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
         ],
         "writes": [],
         "filters": [
@@ -4274,14 +9199,287 @@
         "coverage": "modeled"
       },
       {
-        "operation": "@forgegraph/foundation/participation/_/Participant.list.all",
-        "kind": "list",
-        "resource": "@forgegraph/foundation/participation/_/Participant",
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.find.byNamespaceIssuerScopeValue",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
         "outputs": [
           "id",
-          "label",
-          "createdAt",
-          "updatedAt"
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "namespace",
+          "issuerScope",
+          "value"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "outputs": [
+          "id",
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Identifier.list.byIdentifierSet",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/Identifier",
+        "outputs": [
+          "id",
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "identifierSet"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "outputs": [
+          "id",
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ],
+        "writes": [
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ],
+        "filters": [
+          "effectiveAt",
+          "identifier",
+          "replacement"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "outputs": [
+          "id",
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.find.byIdentifier",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "outputs": [
+          "id",
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ],
+        "writes": [],
+        "filters": [
+          "identifier"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierDisposition.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierDisposition",
+        "outputs": [
+          "id",
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierSet.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "outputs": [
+          "id",
+          "label"
+        ],
+        "writes": [
+          "label"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierSet.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "outputs": [
+          "id",
+          "label"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/IdentifierSet.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+        "outputs": [
+          "id",
+          "label"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [
+          "key"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [
+          "key"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/identifiers/_/Issuer.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/identifiers/_/Issuer",
+        "outputs": [
+          "id",
+          "key"
         ],
         "writes": [],
         "filters": [],
@@ -4684,6 +9882,305 @@
         "externalSinks": [],
         "publishes": [],
         "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/Party.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "outputs": [
+          "id",
+          "label",
+          "identifiers",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "label",
+          "identifiers"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/Party.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "outputs": [
+          "id",
+          "label",
+          "identifiers",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/Party.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/Party",
+        "outputs": [
+          "id",
+          "label",
+          "identifiers",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "outputs": [
+          "id",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason"
+        ],
+        "filters": [
+          "validUntil",
+          "validFrom"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "outputs": [
+          "id",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "outputs": [
+          "id",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byParty",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "outputs": [
+          "id",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "party"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/PrincipalRepresentation.list.byPrincipal",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+        "outputs": [
+          "id",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "principal"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "outputs": [
+          "id",
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason"
+        ],
+        "filters": [
+          "effectiveAt",
+          "representation"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "outputs": [
+          "id",
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.find.byRepresentation",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "outputs": [
+          "id",
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "representation"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/party/_/RepresentationRevocation.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/party/_/RepresentationRevocation",
+        "outputs": [
+          "id",
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
       }
     ]
   },
@@ -4753,7 +10250,7 @@
             }
           }
         },
-        "ParticipantRecord": {
+        "IdentifierRecord": {
           "type": "object",
           "properties": {
             "id": {
@@ -4763,18 +10260,229 @@
               "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
-            "createdAt": {
+            "identifierSet": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            },
+            "namespace": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "issuer": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+            },
+            "issuerScope": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "value": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "validFrom": {
               "type": "string",
               "format": "date-time",
               "x-forge-type": "datetime",
-              "x-forge-precision": "ms",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "identifierSet",
+            "namespace",
+            "issuer",
+            "issuerScope",
+            "value",
+            "validFrom",
+            "validUntil"
+          ]
+        },
+        "IdentifierCreate": {
+          "type": "object",
+          "properties": {
+            "identifierSet": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            },
+            "namespace": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "issuer": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+            },
+            "issuerScope": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "value": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "validFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "identifierSet",
+            "namespace",
+            "issuerScope",
+            "value",
+            "validFrom"
+          ]
+        },
+        "IdentifierPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "IdentifierDispositionRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
-            "updatedAt": {
+            "identifier": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "effectiveAt": {
               "type": "string",
               "format": "date-time",
               "x-forge-type": "datetime",
-              "x-forge-precision": "ms",
+              "x-forge-precision": "ms"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "identifier",
+            "replacement",
+            "effectiveAt",
+            "reason"
+          ]
+        },
+        "IdentifierDispositionCreate": {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+            },
+            "effectiveAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "identifier",
+            "effectiveAt",
+            "reason"
+          ]
+        },
+        "IdentifierDispositionPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "IdentifierSetRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
             "label": {
@@ -4787,12 +10495,10 @@
           "additionalProperties": false,
           "required": [
             "id",
-            "createdAt",
-            "updatedAt",
             "label"
           ]
         },
-        "ParticipantCreate": {
+        "IdentifierSetCreate": {
           "type": "object",
           "properties": {
             "label": {
@@ -4807,7 +10513,50 @@
             "label"
           ]
         },
-        "ParticipantPatch": {
+        "IdentifierSetPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "IssuerRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "key"
+          ]
+        },
+        "IssuerCreate": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "key"
+          ]
+        },
+        "IssuerPatch": {
           "type": "object",
           "properties": {},
           "additionalProperties": false
@@ -4842,7 +10591,7 @@
             },
             "participant": {
               "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/participation/_/Participant"
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
             },
             "role": {
               "type": "string",
@@ -4899,7 +10648,7 @@
             },
             "participant": {
               "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/participation/_/Participant"
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
             },
             "role": {
               "type": "string",
@@ -5199,6 +10948,307 @@
           "properties": {},
           "additionalProperties": false
         },
+        "PartyRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "identifiers": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "label",
+            "identifiers"
+          ]
+        },
+        "PartyCreate": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "identifiers": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "label"
+          ]
+        },
+        "PartyPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "PrincipalRepresentationRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            },
+            "principal": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "validFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "party",
+            "principal",
+            "validFrom",
+            "validUntil",
+            "recordedBy",
+            "reason"
+          ]
+        },
+        "PrincipalRepresentationCreate": {
+          "type": "object",
+          "properties": {
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            },
+            "principal": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "validFrom": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "validUntil": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "party",
+            "principal",
+            "validFrom",
+            "recordedBy",
+            "reason"
+          ]
+        },
+        "PrincipalRepresentationPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "RepresentationRevocationRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "representation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+            },
+            "effectiveAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "representation",
+            "effectiveAt",
+            "recordedBy",
+            "reason"
+          ]
+        },
+        "RepresentationRevocationCreate": {
+          "type": "object",
+          "properties": {
+            "representation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+            },
+            "effectiveAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "representation",
+            "effectiveAt",
+            "recordedBy",
+            "reason"
+          ]
+        },
+        "RepresentationRevocationPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
         "WorkflowInstance": {
           "type": "object",
           "required": [
@@ -5255,5 +11305,62 @@
       }
     ],
     "paths": {}
+  },
+  "deployment": {
+    "version": "package-assembly/1",
+    "packages": [
+      {
+        "package": {
+          "name": "@forgegraph/foundation/participation",
+          "version": "0.1.0",
+          "edition": "2027",
+          "profile": "",
+          "targets": [],
+          "observability": {
+            "window": "28d",
+            "slo": []
+          }
+        },
+        "imports": [
+          {
+            "alias": "party",
+            "package": "@forgegraph/foundation/party"
+          }
+        ]
+      },
+      {
+        "package": {
+          "name": "@forgegraph/foundation/identifiers",
+          "version": "0.1.0",
+          "edition": "2027",
+          "profile": "",
+          "targets": [],
+          "observability": {
+            "window": "28d",
+            "slo": []
+          }
+        },
+        "imports": []
+      },
+      {
+        "package": {
+          "name": "@forgegraph/foundation/party",
+          "version": "0.1.0",
+          "edition": "2027",
+          "profile": "",
+          "targets": [],
+          "observability": {
+            "window": "28d",
+            "slo": []
+          }
+        },
+        "imports": [
+          {
+            "alias": "identifiers",
+            "package": "@forgegraph/foundation/identifiers"
+          }
+        ]
+      }
+    ]
   }
 }

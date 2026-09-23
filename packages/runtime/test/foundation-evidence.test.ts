@@ -45,6 +45,72 @@ for(const adapter of ['memory','sqlite']) {
    expect(await Effect.runPromise(service.artifact(String(item.id),ctx))).toMatchObject({id:revision.id,digest:revision.digest});
    await expect(call(p+'EvidenceItem.create',{...input,sourceRecord:'invalid',observedAt:'yesterday'})).rejects.toThrow();
    await expect(call(a+'ArtifactRevision.delete',{id:revision.id})).rejects.toThrow();
+   engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'evidence-only',actions:[p+'EvidenceItem.*'],requires:[],where:[]}],pips:[],epoch:2,knownObligations:[]});
+   await expect(Effect.runPromise(service.artifact(String(item.id),ctx))).rejects.toThrow();
   } finally {f.close();}
+ });
+}
+
+for (const adapter of ['memory', 'sqlite']) {
+ it(`${adapter}: seals pin bounded typed membership and successors preserve old evidence`, async () => {
+  const f=foundation('evidence',adapter);const {call,ctx,engine}=f;
+  try {
+   const service=new Evidence(engine);
+   const bundle=await call(p+'EvidenceBundle.create',{key:'sealed',label:'Selected support'});
+   const other=await call(p+'EvidenceBundle.create',{key:'other',label:'Other support'});
+   const source=await call(p+'EvidenceSource.create',{key:'instrument',label:'Instrument'});
+   const input={bundle:String(bundle.id),source:String(source.id),sourceRecord:'one',kind:'measurement',observedAt:'2026-01-01T00:00:00Z',provenance:'Typed source instrument, recorded separately from observation time'};
+   const first=await Effect.runPromise(service.record(input,ctx));
+   const head=await Effect.runPromise(service.member(String(bundle.id),String(first.id),null,ctx));
+   await expect(Effect.runPromise(service.sealedItems(String(bundle.id),ctx))).rejects.toMatchObject({code:'InvalidTransition'});
+   await expect(call(p+'EvidenceMember.create',{bundle:other.id,item:first.id,next:null,depth:1})).rejects.toThrow();
+   await expect(call(p+'EvidenceMember.create',{bundle:bundle.id,item:first.id,next:head.id,depth:1})).rejects.toThrow();
+   await expect(call(p+'EvidenceMember.create',{bundle:bundle.id,item:first.id,next:null,depth:129})).rejects.toThrow();
+   await expect(call(p+'EvidenceSeal.create',{bundle:other.id,head:head.id,recordedBy:ctx.actor})).rejects.toThrow();
+   const seals=await Promise.allSettled(Array.from({length:6},()=>Effect.runPromise(service.seal(String(bundle.id),String(head.id),ctx))));
+   expect(seals.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+   const seal=(seals.find(x=>x.status==='fulfilled') as PromiseFulfilledResult<Record<string,unknown>>).value;
+   // Candidates and new chains after sealing cannot change authoritative support.
+   const later=await Effect.runPromise(service.record({...input,sourceRecord:'later'},ctx));
+   await Effect.runPromise(service.member(String(bundle.id),String(later.id),String(head.id),ctx));
+   expect((await Effect.runPromise(service.sealedItems(String(bundle.id),ctx))).map(x=>x.id)).toEqual([first.id]);
+   expect((await Effect.runPromise(service.items(String(bundle.id),ctx))).items).toHaveLength(2);
+   const next=await Effect.runPromise(service.successor(String(seal.id),'corrected','Corrected support',ctx));
+   expect(next.predecessor).toBe(seal.id);
+   const correction=await Effect.runPromise(service.record({...input,bundle:String(next.id),sourceRecord:'correction'},ctx));
+   const correctedHead=await Effect.runPromise(service.member(String(next.id),String(correction.id),null,ctx));
+   await Effect.runPromise(service.seal(String(next.id),String(correctedHead.id),ctx));
+   expect((await Effect.runPromise(service.sealedItems(String(next.id),ctx))).map(x=>x.id)).toEqual([correction.id]);
+   expect((await Effect.runPromise(service.sealedItems(String(bundle.id),ctx))).map(x=>x.id)).toEqual([first.id]);
+   for(const [resource,id] of [['EvidenceSeal',seal.id],['EvidenceMember',head.id],['EvidenceBundle',bundle.id]]) {
+    await expect(call(p+resource+'.update',{id,patch:{head:null}})).rejects.toThrow();
+    await expect(call(p+resource+'.delete',{id})).rejects.toThrow();
+   }
+   await expect(Effect.runPromise(service.seal(String(other.id),String(head.id),{...ctx,tenant:'foreign'}))).rejects.toThrow();
+   await Effect.runPromise(service.seal(String(other.id),null,ctx));
+   expect(await Effect.runPromise(service.sealedItems(String(other.id),ctx))).toEqual([]);
+  } finally {f.close();}
+ });
+ it(`${adapter}: classified provenance retains metadata while every sealed read enforces independent access policies`,async()=>{
+  const f=foundation('evidence',adapter);const {call,ctx,engine}=f;
+  try {
+   const service=new Evidence(engine);
+   expect(engine.model.dataClasses).toContainEqual(expect.objectContaining({id:p+'EvidenceNarrative',extends:'data.communication.content'}));
+   expect(engine.model.resource(p+'EvidenceItem').fields.find(field=>field.name==='provenance')?.type).toMatchObject({dataClass:p+'EvidenceNarrative'});
+   const bundle=await call(p+'EvidenceBundle.create',{key:'private',label:'Private support'});
+   const source=await call(p+'EvidenceSource.create',{key:'clinical',label:'Clinical source'});
+   const item=await Effect.runPromise(service.record({bundle:String(bundle.id),source:String(source.id),sourceRecord:'observation',kind:'measurement',observedAt:'2026-01-01T00:00:00Z',provenance:'Confidential source narrative'},ctx));
+   const member=await Effect.runPromise(service.member(String(bundle.id),String(item.id),null,ctx));
+   await Effect.runPromise(service.seal(String(bundle.id),String(member.id),ctx));
+   const resources=['EvidenceBundle','EvidenceSeal','EvidenceMember','EvidenceItem','EvidenceSource'];
+   for(const hidden of resources) {
+    engine.gatekeeper.authorizer=localAuthorizer({policies:resources.filter(name=>name!==hidden).map(name=>({id:name,actions:[p+name+'.*'],requires:[],where:[]})),pips:[],epoch:resources.indexOf(hidden)+1,knownObligations:[]});
+    await expect(Effect.runPromise(service.sealedItems(String(bundle.id),ctx))).rejects.toThrow();
+   }
+   // A classification annotates meaning; it is not itself an access grant.
+   engine.gatekeeper.authorizer=localAuthorizer({policies:[],pips:[],epoch:99,knownObligations:[]});
+   await expect(Effect.runPromise(service.items(String(bundle.id),ctx))).rejects.toThrow();
+   expect((await call(p+'EvidenceItem.list.byBundle',{params:{bundle:bundle.id}})).items).toEqual([]);
+  }finally{f.close();}
  });
 }

@@ -237,6 +237,8 @@ export function evalExpr(model: Model, r: Resource, e: import("./model.js").Expr
     }
     case "binary": {
       const l = evalExpr(model, r, e.lhs, rec, hint, refs);
+      if (e.op === "&&" && !l) return false;
+      if (e.op === "||" && l) return true;
       const rr = evalExpr(model, r, e.rhs, rec, hint, refs);
       switch (e.op) {
         case "==":

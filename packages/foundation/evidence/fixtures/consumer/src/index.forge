@@ -1,21 +1,33 @@
 import evidence
 
-resource DeploymentVerification @tenant @appendOnly {
+resource DeploymentVerification
+  @tenant
+  @appendOnly
+{
   id : id
   evidence : evidence.EvidenceBundle
   commit : text length 40..40
 }
-resource ManufacturingInspection @tenant @appendOnly {
+resource ManufacturingInspection
+  @tenant
+  @appendOnly
+{
   id : id
   evidence : evidence.EvidenceBundle
   lot : text length 1..100
 }
-resource AgentReview @tenant @appendOnly {
+resource AgentReview
+  @tenant
+  @appendOnly
+{
   id : id
   evidence : evidence.EvidenceBundle
   agent : text length 1..100
 }
-resource MeasurementEvidence @tenant @appendOnly {
+resource MeasurementEvidence
+  @tenant
+  @appendOnly
+{
   id : id
   item : evidence.EvidenceItem @unique
   measuredValue : decimal<3>

@@ -11,23 +11,94 @@ structure Problem {
     detail: String
 }
 
-structure ParticipantRecord {
+structure IdentifierRecord {
     @required
     id: String
     @required
-    createdAt: String
+    identifierSet: String
     @required
-    updatedAt: String
+    namespace: String
+    issuer: String
+    @required
+    issuerScope: String
+    @required
+    value: String
+    @required
+    validFrom: String
+    validUntil: String
+}
+
+structure IdentifierCreateInput {
+    @required
+    identifierSet: String
+    @required
+    namespace: String
+    issuer: String
+    @required
+    issuerScope: String
+    @required
+    value: String
+    @required
+    validFrom: String
+    validUntil: String
+}
+
+structure IdentifierPatchInput {
+}
+
+structure IdentifierDispositionRecord {
+    @required
+    id: String
+    @required
+    identifier: String
+    replacement: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+}
+
+structure IdentifierDispositionCreateInput {
+    @required
+    identifier: String
+    replacement: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+}
+
+structure IdentifierDispositionPatchInput {
+}
+
+structure IdentifierSetRecord {
+    @required
+    id: String
     @required
     label: String
 }
 
-structure ParticipantCreateInput {
+structure IdentifierSetCreateInput {
     @required
     label: String
 }
 
-structure ParticipantPatchInput {
+structure IdentifierSetPatchInput {
+}
+
+structure IssuerRecord {
+    @required
+    id: String
+    @required
+    key: String
+}
+
+structure IssuerCreateInput {
+    @required
+    key: String
+}
+
+structure IssuerPatchInput {
 }
 
 structure ParticipationRecord {
@@ -148,6 +219,95 @@ structure ParticipationSetCreateInput {
 structure ParticipationSetPatchInput {
 }
 
+structure PartyRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    label: String
+    identifiers: String
+}
+
+structure PartyCreateInput {
+    @required
+    label: String
+    identifiers: String
+}
+
+structure PartyPatchInput {
+}
+
+structure PrincipalRepresentationRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    party: String
+    @required
+    principal: String
+    @required
+    validFrom: String
+    validUntil: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure PrincipalRepresentationCreateInput {
+    @required
+    party: String
+    @required
+    principal: String
+    @required
+    validFrom: String
+    validUntil: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure PrincipalRepresentationPatchInput {
+}
+
+structure RepresentationRevocationRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    representation: String
+    @required
+    effectiveAt: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure RepresentationRevocationCreateInput {
+    @required
+    representation: String
+    @required
+    effectiveAt: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure RepresentationRevocationPatchInput {
+}
+
 structure ClassroomRecord {
     @required
     id: String
@@ -165,42 +325,23 @@ structure ClassroomCreateInput {
 structure ClassroomPatchInput {
 }
 
-structure OrganizationParticipantRecord {
+structure OrganizationPartyRecord {
     @required
     id: String
     @required
     organizationCode: String
     @required
-    participant: String
+    party: String
 }
 
-structure OrganizationParticipantCreateInput {
+structure OrganizationPartyCreateInput {
     @required
     organizationCode: String
     @required
-    participant: String
+    party: String
 }
 
-structure OrganizationParticipantPatchInput {
-}
-
-structure PrincipalParticipantRecord {
-    @required
-    id: String
-    @required
-    principal: String
-    @required
-    participant: String
-}
-
-structure PrincipalParticipantCreateInput {
-    @required
-    principal: String
-    @required
-    participant: String
-}
-
-structure PrincipalParticipantPatchInput {
+structure OrganizationPartyPatchInput {
 }
 
 structure ReviewBoardRecord {

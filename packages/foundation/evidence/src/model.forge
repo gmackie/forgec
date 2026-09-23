@@ -1,18 +1,33 @@
 import artifact
 
-export resource EvidenceBundle @tenant @timestamps @appendOnly {
+export dataClass EvidenceNarrative extends data.communication.content
+export type EvidenceProvenance = text length 1..1000 @data(EvidenceNarrative)
+
+export resource EvidenceBundle
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+  predecessor : EvidenceSeal?
+  find by key
+}
+export resource EvidenceSource
+  @tenant
+  @appendOnly
+{
   id : id
   key : text length 1..128 @unique
   label : text length 1..200
   find by key
 }
-export resource EvidenceSource @tenant @appendOnly {
-  id : id
-  key : text length 1..128 @unique
-  label : text length 1..200
-  find by key
-}
-export resource EvidenceItem @tenant @timestamps @appendOnly {
+export resource EvidenceItem
+  @tenant
+  @timestamps
+  @appendOnly
+{
   id : id
   bundle : EvidenceBundle
   source : EvidenceSource
@@ -21,11 +36,41 @@ export resource EvidenceItem @tenant @timestamps @appendOnly {
   observedAt : datetime
   revision : artifact.ArtifactRevision?
   digest : text? length 71..71 pattern "^sha256:[0-9a-f]{64}$"
-  provenance : text length 1..1000
+  provenance : EvidenceProvenance
   rules {
     revision == null || (digest != null && digest == revision.digest)
   }
   unique bundle, source, sourceRecord
   list by bundle
   list by source
+}
+
+// Items are candidates until selected into an immutable chain pinned by a seal.
+export resource EvidenceMember
+  @tenant
+  @appendOnly
+{
+  id : id
+  bundle : EvidenceBundle
+  item : EvidenceItem
+  next : EvidenceMember?
+  depth : integer >= 1 <= 128
+  rules {
+    item.bundle == bundle
+    (next == null && depth == 1) || (next != null && next.bundle == bundle && depth > next.depth)
+  }
+}
+export resource EvidenceSeal
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  bundle : EvidenceBundle @unique
+  head : EvidenceMember?
+  recordedBy : text length 1..128
+  rules {
+    head == null || head.bundle == bundle
+  }
+  find by bundle
 }

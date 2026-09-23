@@ -44,3 +44,4 @@ export * from "./foundation/participation-pip.js";
 export * from "./foundation/party.js";
 export * from "./foundation/evidence.js";
 export * from "./foundation/classification.js";
+export * from "./foundation/availability.js";
