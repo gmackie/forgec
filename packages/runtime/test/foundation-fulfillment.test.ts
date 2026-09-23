@@ -1,0 +1,124 @@
+import { DatabaseSync, type SQLInputValue } from "node:sqlite";
+import { D1Storage } from "../src/adapters/d1.js";
+import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { Effect } from "effect";
+import { expect, it } from "vitest";
+import { Engine } from "../src/engine.js";
+import { Model, type AppBundle } from "../src/model.js";
+import { MemoryStorage } from "../src/adapters/memory.js";
+import { testLayer } from "../src/testing.js";
+import { Fulfillments } from "../src/foundation/fulfillment.js";
+import { WorkQueue } from "../src/work-queues.js";
+import { executionDigest, pinExecutionManifest, deriveExecutionRequirements } from "@forgegraph/capability-manifest";
+import { localAuthorizer } from "../src/gatekeeper.js";
+import { defineFunction } from "../src/functions.js";
+const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.dirname, "../../../conformance/fixtures/fulfillment-consumer");
+const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
+const prefix = "@forgegraph/foundation/fulfillment/_/", consumer = "@foundation-probe/fulfillment-consumers/_/";
+const spec = "@forgegraph/foundation/specification/_/", evidencePrefix = "@forgegraph/foundation/evidence/_/";
+const ctx = { tenant: "acme", actor: "operator", requestId: "fulfillment" };
+for (const adapter of ["memory", "sqlite"]) it(`${adapter}: business fulfillments, typed partial outcomes and real workQueue retries`, async () => {
+  const model = new Model(bundle), db = new DatabaseSync(":memory:");
+  db.exec(readFileSync(resolve(fixture, "d1/0001_init.sql"), "utf8"));
+  const execute = (s: SqlStatement) => ({ changes: Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes) });
+  const executor: SqlExecutor = {
+    facade: "sqlite-test",
+    first: async <T>(s: SqlStatement) => (db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T | null,
+    all: async <T>(s: SqlStatement) => db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
+    run: async s => execute(s),
+    batch: async statements => { db.exec("BEGIN"); try { const results = statements.map(execute); db.exec("COMMIT"); return results; } catch (error) { db.exec("ROLLBACK"); throw error; } },
+  };
+  try {
+    const storage = adapter === "memory" ? new MemoryStorage() : new D1Storage(executor, model);
+    const implementation = defineFunction(consumer + "DevelopmentWork", deps => Effect.gen(function* () {
+      const input = deps.input as { request: string; fulfillment: string };
+      const request = yield* deps.resources["DevelopmentRequest"]!.get(input.request);
+      const work = yield* deps.resources["Fulfillment"]!.get(input.fulfillment);
+      if (work.fulfillmentSet !== request.runs) return yield* deps.fail("InvalidRequest", "Wrong business intent");
+      return { issueKey: request.issueKey };
+    }));
+    const engine = new Engine(model, testLayer(storage), { functions: [implementation] });
+    const call = (op: string, input: Record<string, unknown>, context = ctx) => Effect.runPromise(engine.call(op, input, context));
+    const service = new Fulfillments(engine), run = Effect.runPromise;
+    const repository = await call(spec + "Repository.create", { key: "source", provider: "git", locator: "https://example.test/repo" });
+    const pin = await call(spec + "SpecificationPin.create", { repository: repository.id, anchor: "implementation", revision: "a".repeat(40) });
+    const evidence = await call(evidencePrefix + "EvidenceBundle.create", { key: "run-evidence", label: "Run" });
+    const seal = await call(evidencePrefix + "EvidenceSeal.create", { bundle: evidence.id, recordedBy: ctx.actor });
+    const actor = await call(prefix + "FulfillmentExecutor.create", { key: "bob-runner" });
+    await call(consumer + "BobRunner.create", { executor: actor.id, runnerKey: "runner-1" });
+    const set = await call(prefix + "FulfillmentSet.create", { label: "Development issue" });
+    const request = await call(consumer + "DevelopmentRequest.create", { issueKey: "BOB-1", runs: set.id });
+    const start = "2026-01-01T00:00:00Z", end = "2026-01-01T01:00:00Z";
+    const create = (ordinal: number, fulfillmentSet: unknown = set.id) => call(prefix + "Fulfillment.create", { fulfillmentSet, ordinal, specificationPin: pin.id, executor: actor.id, requestedAt: start, evidence: seal.id });
+    const work = await create(1);
+    expect(await run(service.status(String(work.id), ctx))).toMatchObject({ phase: "pending" });
+    await expect(run(service.finish(String(work.id), "completed", "complete", end, "No start", ctx))).rejects.toThrow();
+    await run(service.start(String(work.id), start, { ...ctx, idempotencyKey: "business-start" }));
+    await run(service.start(String(work.id), start, { ...ctx, idempotencyKey: "business-start" }));
+    const definition = { id: "BobWork", execute: consumer + "DevelopmentWork", leaseMs: 1000, maxAttempts: 2, maxTasks: 32, maxRunners: 8 };
+    const queue = new WorkQueue(storage, definition, () => 1000);
+    const manifest = pinExecutionManifest({ version: "execution-manifest/1", kind: "implementation", id: "bob-work", requires: ["tool.jj"] });
+    const provider = pinExecutionManifest({ version: "execution-manifest/1", kind: "provider", id: adapter, requires: [] });
+    const requirements = deriveExecutionRequirements({ artifact: bundle.ir, artifactDigest: executionDigest(bundle.ir), operation: definition.execute, profile: { id: "local", bindings: { [definition.execute]: manifest.digest, [consumer + "DevelopmentRequest"]: provider.digest, [prefix + "Fulfillment"]: provider.digest }, providers: [provider.digest] }, manifests: [manifest, provider] });
+    const input = { fulfillment: String(work.id), request: String(request.id) };
+    await run(service.enqueueTask(queue, "develop-1", input, requirements, ctx));
+    await run(service.enqueueTask(queue, "develop-1", input, requirements, ctx));
+    await expect(run(service.enqueueTask(queue, "develop-1", { ...input, request: "different" }, requirements, ctx))).rejects.toMatchObject({ code: "IdempotencyMismatch" });
+    await run(queue.register(ctx.tenant, { id: "runner-1", capabilities: ["tool.jj"], presence: "online", lastSeen: 0 }));
+    const first = await run(queue.claimNext(ctx.tenant, "runner-1"));
+    await run(queue.start(ctx.tenant, "develop-1", "runner-1", first!.generation));
+    await run(queue.fail(ctx.tenant, "develop-1", "runner-1", first!.generation));
+    const second = await run(queue.claimNext(ctx.tenant, "runner-1"));
+    expect(second).toMatchObject({ id: "develop-1", attempts: 2, generation: 2 });
+    await expect(run(queue.complete(ctx.tenant, "develop-1", "runner-1", first!.generation, {}))).rejects.toThrow();
+    await run(queue.start(ctx.tenant, "develop-1", "runner-1", second!.generation));
+    const output = await call(definition.execute, second!.input);
+    expect(output).toEqual({ issueKey: "BOB-1" });
+    await run(queue.complete(ctx.tenant, "develop-1", "runner-1", second!.generation, output));
+    expect(await run(service.status(String(work.id), ctx))).toMatchObject({ phase: "running" });
+    await run(service.enqueueTask(queue, "develop-2", input, requirements, ctx));
+    await run(queue.cancel(ctx.tenant, "develop-2"));
+    expect((await call(prefix + "FulfillmentTaskLink.list.byFulfillment", { params: { fulfillment: work.id } })).items).toHaveLength(2);
+    expect(await run(service.status(String(work.id), ctx))).toMatchObject({ phase: "running" });
+    await expect(run(service.finish(String(work.id), "completed", "complete", "2025-12-31T00:00:00Z", "Invalid timing", ctx))).rejects.toThrow();
+    await call(consumer + "DevelopmentOutcome.create", { request: request.id, execution: work.id, commitSha: "b".repeat(40) });
+    await run(service.finish(String(work.id), "completed", "complete", end, "Verified", ctx, String(seal.id)));
+    expect(await run(service.status(String(work.id), ctx))).toMatchObject({ phase: "completed", coverage: "complete" });
+    await expect(run(service.start(String(work.id), end, ctx))).rejects.toThrow();
+    const labSet = await call(prefix + "FulfillmentSet.create", { label: "Lab order" });
+    const lab = await call(consumer + "LabRequest.create", { assay: "panel", requestedSamples: 10, runs: labSet.id });
+    const partial = await create(1, labSet.id), retry = await create(2, labSet.id);
+    await run(service.start(String(partial.id), start, ctx));
+    await call(consumer + "LabOutcome.create", { request: lab.id, execution: partial.id, processedSamples: 4, reportCode: "R1" });
+    const partialEnd = await run(service.finish(String(partial.id), "completed", "partial", end, "Four samples", ctx));
+    await call(prefix + "FulfillmentReplacement.create", { prior: partial.id, priorEnd: partialEnd.id, replacement: retry.id, reason: "Remaining work" });
+    await run(service.start(String(retry.id), start, ctx));
+    await call(consumer + "LabOutcome.create", { request: lab.id, execution: retry.id, processedSamples: 6, reportCode: "R2" });
+    const retryEnd = await run(service.finish(String(retry.id), "completed", "partial", end, "Remaining six", ctx));
+    await expect(call(prefix + "FulfillmentReplacement.create", { prior: retry.id, priorEnd: retryEnd.id, replacement: partial.id, reason: "Cycle" })).rejects.toThrow();
+    await expect(call(prefix + "FulfillmentReplacement.create", { prior: retry.id, priorEnd: retryEnd.id, replacement: work.id, reason: "Wrong intent" })).rejects.toThrow();
+    await expect(call(consumer + "LabOutcome.create", { request: lab.id, execution: work.id, processedSamples: 1, reportCode: "Wrong" })).rejects.toThrow();
+    const provisioningSet = await call(prefix + "FulfillmentSet.create", { label: "Provision workspace" });
+    const provisioning = await call(consumer + "ProvisioningRequest.create", { workspaceName: "Team", runs: provisioningSet.id });
+    const provisioned = await create(1, provisioningSet.id);
+    await run(service.start(String(provisioned.id), start, ctx));
+    await call(consumer + "ProvisioningOutcome.create", { request: provisioning.id, execution: provisioned.id, provisionedEndpoint: "https://workspace.test" });
+    const ends = await Promise.allSettled([run(service.finish(String(provisioned.id), "completed", "complete", end, "Ready", ctx)), run(service.finish(String(provisioned.id), "failed", "none", end, "Competing observation", ctx))]);
+    expect(ends.filter(x => x.status === "fulfilled")).toHaveLength(1);
+    const cancelled = await create(3, labSet.id);
+    await run(service.finish(String(cancelled.id), "cancelled", "none", start, "Withdrawn", ctx));
+    // A late execution observation is retained without reopening terminal business state.
+    await call(prefix + "FulfillmentStart.create", { fulfillment: cancelled.id, beganAt: end, recordedBy: "late-runner" });
+    expect(await run(service.status(String(cancelled.id), ctx))).toMatchObject({ phase: "cancelled" });
+    for (const resource of ["Fulfillment", "FulfillmentStart", "FulfillmentEnd", "FulfillmentReplacement"]) await expect(call(prefix + resource + ".delete", { id: work.id })).rejects.toThrow();
+    await expect(run(service.status(String(work.id), { ...ctx, tenant: "other" }))).rejects.toThrow();
+    await expect(call(prefix + "Fulfillment.create", { fulfillmentSet: set.id, ordinal: 4, executor: actor.id, requestedAt: start }, { ...ctx, tenant: "other" })).rejects.toThrow();
+    const guarded = new Engine(model, engine.layer);
+    guarded.gatekeeper.authorizer = localAuthorizer({ policies: ["Fulfillment", "FulfillmentStart"].map(name => ({ id: name, actions: [prefix + name + ".*"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
+    await expect(run(new Fulfillments(guarded).status(String(work.id), ctx))).rejects.toMatchObject({ code: "NotFound" });
+    expect(await run(new WorkQueue(storage, definition, () => 1000).get(ctx.tenant, "develop-1"))).toMatchObject({ status: "completed", attempts: 2 });
+    expect(await run(new Fulfillments(new Engine(model, engine.layer)).status(String(work.id), ctx))).toMatchObject({ phase: "completed" });
+  } finally { db.close(); }
+});

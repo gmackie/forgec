@@ -1,0 +1,22 @@
+import allocation
+resource RunnerGpu
+  @tenant
+  @appendOnly
+{
+  id : id
+  capacity : allocation.AllocationPool @unique
+}
+resource HospitalBed
+  @tenant
+  @appendOnly
+{
+  id : id
+  capacity : allocation.AllocationPool @unique
+}
+resource MachineCapacity
+  @tenant
+  @appendOnly
+{
+  id : id
+  capacity : allocation.AllocationPool @unique
+}

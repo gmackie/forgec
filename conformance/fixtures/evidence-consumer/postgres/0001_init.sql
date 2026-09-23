@@ -134,8 +134,7 @@ CREATE TABLE agent_review (
   "id" TEXT COLLATE "C" NOT NULL,
   "evidence" TEXT COLLATE "C" NOT NULL,
   "agent" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "evidence") REFERENCES evidence_bundle ("tenant", "id")
+  PRIMARY KEY ("tenant", "id")
 );
 
 CREATE TABLE deployment_verification (
@@ -143,8 +142,7 @@ CREATE TABLE deployment_verification (
   "id" TEXT COLLATE "C" NOT NULL,
   "evidence" TEXT COLLATE "C" NOT NULL,
   "commit" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "evidence") REFERENCES evidence_bundle ("tenant", "id")
+  PRIMARY KEY ("tenant", "id")
 );
 
 CREATE TABLE manufacturing_inspection (
@@ -152,8 +150,7 @@ CREATE TABLE manufacturing_inspection (
   "id" TEXT COLLATE "C" NOT NULL,
   "evidence" TEXT COLLATE "C" NOT NULL,
   "lot" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "evidence") REFERENCES evidence_bundle ("tenant", "id")
+  PRIMARY KEY ("tenant", "id")
 );
 
 CREATE TABLE measurement_evidence (
@@ -162,8 +159,7 @@ CREATE TABLE measurement_evidence (
   "item" TEXT COLLATE "C" NOT NULL,
   "measured_value" BIGINT NOT NULL,
   "unit" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "item") REFERENCES evidence_item ("tenant", "id")
+  PRIMARY KEY ("tenant", "id")
 );
 
 CREATE TABLE artifact_component (
@@ -173,7 +169,6 @@ CREATE TABLE artifact_component (
   "revision" TEXT COLLATE "C" NOT NULL,
   "next" TEXT COLLATE "C",
   PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id"),
   FOREIGN KEY ("tenant", "next") REFERENCES artifact_component ("tenant", "id")
 );
 
@@ -206,8 +201,7 @@ CREATE TABLE evidence_bundle (
   "predecessor" TEXT COLLATE "C",
   "created_at" TEXT COLLATE "C" NOT NULL,
   "updated_at" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "predecessor") REFERENCES evidence_seal ("tenant", "id")
+  PRIMARY KEY ("tenant", "id")
 );
 
 CREATE TABLE evidence_item (
@@ -254,6 +248,18 @@ CREATE TABLE evidence_seal (
   FOREIGN KEY ("tenant", "bundle") REFERENCES evidence_bundle ("tenant", "id"),
   FOREIGN KEY ("tenant", "head") REFERENCES evidence_member ("tenant", "id")
 );
+
+ALTER TABLE agent_review ADD FOREIGN KEY ("tenant", "evidence") REFERENCES evidence_bundle ("tenant", "id");
+
+ALTER TABLE deployment_verification ADD FOREIGN KEY ("tenant", "evidence") REFERENCES evidence_bundle ("tenant", "id");
+
+ALTER TABLE manufacturing_inspection ADD FOREIGN KEY ("tenant", "evidence") REFERENCES evidence_bundle ("tenant", "id");
+
+ALTER TABLE measurement_evidence ADD FOREIGN KEY ("tenant", "item") REFERENCES evidence_item ("tenant", "id");
+
+ALTER TABLE artifact_component ADD FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id");
+
+ALTER TABLE evidence_bundle ADD FOREIGN KEY ("tenant", "predecessor") REFERENCES evidence_seal ("tenant", "id");
 
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);
 CREATE UNIQUE INDEX measurement_evidence_uq_item ON measurement_evidence ("tenant", "item");

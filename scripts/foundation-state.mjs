@@ -61,6 +61,8 @@ export function validateGraph(graph, contracts) {
     for (const field of ['dependencies', 'requiresGates', 'acceptanceGates']) {
       if (!Array.isArray(p[field]) || p[field].some(v => typeof v !== 'string') || new Set(p[field]).size !== p[field].length) errors.push(`${p.slug}: invalid ${field}`);
     }
+    const deferred = p.deferredIntegrationAcceptance ?? [];
+    if (!Array.isArray(deferred) || new Set(deferred).size !== deferred.length || deferred.some(id => !c?.acceptance.some(a => a.id === id))) errors.push(`${p.slug}: invalid deferred integration acceptance`);
     if (!Array.isArray(p.dependencies) || !Array.isArray(p.requiresGates) || !Array.isArray(p.acceptanceGates)) continue;
     if (c && (p.issue !== c.issue || p.layer !== c.layer || JSON.stringify([...p.dependencies].sort()) !== JSON.stringify([...(c.dependencies ?? [])].sort()))) errors.push(`${p.slug}: graph differs from contract`);
     if (p.dependencies.some(d => !names.has(d))) errors.push(`${p.slug}: unknown dependency`);
@@ -93,7 +95,7 @@ export function schedule(graph, contracts, state, { slots = 3, fingerprintOf, ke
     validating.add(slug);
     const c = cs.get(slug);
     const why = evidenceErrors(state.packages?.[slug], slug, fingerprintOf(slug));
-    if (!c || c.acceptance.some(a => a.status !== 'passing')) why.push('package acceptance remains incomplete');
+    if (!c || c.acceptance.some(a => a.status !== 'passing' && !(node.deferredIntegrationAcceptance ?? []).includes(a.id))) why.push('package core acceptance remains incomplete');
     for (const gate of [...node.requiresGates, ...node.acceptanceGates]) {
       const proof = state.gates?.[gate];
       const owner = graph.gateOwnership[gate];
@@ -125,5 +127,6 @@ export function schedule(graph, contracts, state, { slots = 3, fingerprintOf, ke
     visit(name); return [...descendants].filter(s => !accepted.has(s)).length;
   }
   ready.sort((a,b) => fanout(b)-fanout(a) || nodes.get(a).issue-nodes.get(b).issue);
-  return { accepted: [...accepted].sort(), active: [...active].sort(), ready, dispatch: ready.slice(0, Math.max(0, slots-active.size)), blocked };
+  const integrationPending = [...nodes.values()].flatMap(n => (n.deferredIntegrationAcceptance ?? []).filter(id => cs.get(n.slug)?.acceptance.find(a => a.id === id)?.status !== 'passing').map(id => ({package:n.slug,acceptance:id})));
+  return { integrationPending, accepted: [...accepted].sort(), active: [...active].sort(), ready, dispatch: ready.slice(0, Math.max(0, slots-active.size)), blocked };
 }

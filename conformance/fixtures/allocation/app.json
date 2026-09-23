@@ -1,0 +1,4154 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "c37d16926c086a22afb192306c1f84e1eb1ee4f657ed11a39d22db8b36dfc2bd",
+  "digests": {
+    "source": "37affb423a151a8cec9c808caca31f97bf38632c556a32fba90fac60e0a00a6a",
+    "wire": "7e9604b170129e6a3d794256f92bcf2052971744da7fc83ab4b28d6e544de5f2",
+    "docs": "a7b0c4bbc807e06d12049ae172bc996783701de5187f717bcc9e24420d6cc0d6",
+    "security": "f42a8fd105ef16af06d960751e7686f6eb516deb3e400dce1fe0da0a32729776"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@forgegraph/foundation/allocation",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationAction",
+            "name": "AllocationAction",
+            "exported": true,
+            "synthesized": false,
+            "members": [
+              {
+                "name": "reserve",
+                "value": "reserve"
+              },
+              {
+                "name": "allocate",
+                "value": "allocate"
+              },
+              {
+                "name": "release",
+                "value": "release"
+              },
+              {
+                "name": "cancel",
+                "value": "cancel"
+              },
+              {
+                "name": "expire",
+                "value": "expire"
+              }
+            ]
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationMode",
+            "name": "AllocationMode",
+            "exported": true,
+            "synthesized": false,
+            "members": [
+              {
+                "name": "exclusive",
+                "value": "exclusive"
+              },
+              {
+                "name": "fungible",
+                "value": "fungible"
+              }
+            ]
+          }
+        ],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationJournal",
+            "name": "AllocationJournal",
+            "kind": "resource",
+            "exported": true,
+            "doc": "Unique ordinal seals one pool state transition. Raw rows are NOT authority\nuntil the bounded consuming interpreter validates the complete chain.",
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "pool",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/allocation/_/AllocationPool"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "ordinal",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "commandKey",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 500
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "previous",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/allocation/_/AllocationJournal"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reservation",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/allocation/_/AllocationReservation"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "action",
+                "type": {
+                  "base": {
+                    "kind": "enum",
+                    "id": "@forgegraph/foundation/allocation/_/AllocationAction"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "at",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "pool_commandKey",
+                "fields": [
+                  "pool",
+                  "commandKey"
+                ],
+                "within": []
+              },
+              {
+                "name": "pool_ordinal",
+                "fields": [
+                  "pool",
+                  "ordinal"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byPool",
+                "fields": [
+                  "pool"
+                ],
+                "order": [
+                  {
+                    "field": "ordinal",
+                    "direction": "asc"
+                  },
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "==",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "reservation",
+                    "pool"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "pool"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "previous"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "ordinal"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "&&",
+                    "lhs": {
+                      "kind": "binary",
+                      "op": "&&",
+                      "lhs": {
+                        "kind": "binary",
+                        "op": "!=",
+                        "lhs": {
+                          "kind": "name",
+                          "path": [
+                            "previous"
+                          ]
+                        },
+                        "rhs": {
+                          "kind": "literal",
+                          "literal": {
+                            "type": "null"
+                          }
+                        }
+                      },
+                      "rhs": {
+                        "kind": "binary",
+                        "op": "==",
+                        "lhs": {
+                          "kind": "name",
+                          "path": [
+                            "previous",
+                            "pool"
+                          ]
+                        },
+                        "rhs": {
+                          "kind": "name",
+                          "path": [
+                            "pool"
+                          ]
+                        }
+                      }
+                    },
+                    "rhs": {
+                      "kind": "binary",
+                      "op": ">",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "ordinal"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "name",
+                        "path": [
+                          "previous",
+                          "ordinal"
+                        ]
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": ">=",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "at"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "previous",
+                        "at"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationJournal.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationJournal.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationJournal.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationJournal.list.byPool",
+                "kind": "list",
+                "query": "byPool"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationPool",
+            "name": "AllocationPool",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "mode",
+                "type": {
+                  "base": {
+                    "kind": "enum",
+                    "id": "@forgegraph/foundation/allocation/_/AllocationMode"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "capacity",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "decimal",
+                    "args": [
+                      "6"
+                    ]
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">",
+                      "value": {
+                        "type": "int",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "unit",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "key",
+                "fields": [
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byKey",
+                "fields": [
+                  "key"
+                ],
+                "coveredBy": "key"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "!=",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "mode"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "AllocationMode",
+                      "exclusive"
+                    ]
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "capacity"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "decimal",
+                      "value": "1.000000"
+                    }
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationPool.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationPool.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationPool.find.byKey",
+                "kind": "find",
+                "query": "byKey"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationPool.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationReservation",
+            "name": "AllocationReservation",
+            "kind": "resource",
+            "exported": true,
+            "doc": "Inert candidate: only a valid committed pool journal authorizes ownership.",
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "pool",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/allocation/_/AllocationPool"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "quantity",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "decimal",
+                    "args": [
+                      "6"
+                    ]
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">",
+                      "value": {
+                        "type": "int",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "unit",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "from",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "until",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "holdUntil",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "pool_key",
+                "fields": [
+                  "pool",
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byPoolKey",
+                "fields": [
+                  "pool",
+                  "key"
+                ],
+                "coveredBy": "pool_key"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "==",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "unit"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "pool",
+                    "unit"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "<",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "from"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "until"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "<=",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "holdUntil"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "until"
+                  ]
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationReservation.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationReservation.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationReservation.find.byPoolKey",
+                "kind": "find",
+                "query": "byPoolKey"
+              },
+              {
+                "id": "@forgegraph/foundation/allocation/_/AllocationReservation.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "append-only/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@forgegraph/foundation/allocation",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "name": "AllocationJournal",
+        "wireName": "allocation_journal",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "commandKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationJournal"
+            },
+            "reservation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
+            "action": {
+              "type": "string",
+              "enum": [
+                "reserve",
+                "allocate",
+                "release",
+                "cancel",
+                "expire"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "id",
+            "pool",
+            "ordinal",
+            "commandKey",
+            "previous",
+            "reservation",
+            "action",
+            "at"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "commandKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationJournal"
+            },
+            "reservation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
+            "action": {
+              "type": "string",
+              "enum": [
+                "reserve",
+                "allocate",
+                "release",
+                "cancel",
+                "expire"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "pool",
+            "ordinal",
+            "commandKey",
+            "reservation",
+            "action",
+            "at"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byPool",
+            "kind": "list",
+            "params": [
+              "pool"
+            ],
+            "order": [
+              {
+                "field": "ordinal",
+                "direction": "asc"
+              },
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationJournal.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationJournal.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationJournal.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationJournal.list.byPool",
+            "kind": "list",
+            "query": "byPool"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "name": "AllocationPool",
+        "wireName": "allocation_pool",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "exclusive",
+                "fungible"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationMode"
+            },
+            "capacity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "id",
+            "key",
+            "mode",
+            "capacity",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "exclusive",
+                "fungible"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationMode"
+            },
+            "capacity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "key",
+            "mode",
+            "capacity",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byKey",
+            "kind": "find",
+            "params": [
+              "key"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationPool.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationPool.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationPool.find.byKey",
+            "kind": "find",
+            "query": "byKey"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationPool.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "name": "AllocationReservation",
+        "wireName": "allocation_reservation",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "from": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "until": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "holdUntil": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "id",
+            "pool",
+            "key",
+            "quantity",
+            "unit",
+            "from",
+            "until",
+            "holdUntil"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "from": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "until": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "holdUntil": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "required": [
+            "pool",
+            "key",
+            "quantity",
+            "unit",
+            "from",
+            "until",
+            "holdUntil"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byPoolKey",
+            "kind": "find",
+            "params": [
+              "pool",
+              "key"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationReservation.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationReservation.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationReservation.find.byPoolKey",
+            "kind": "find",
+            "query": "byPoolKey"
+          },
+          {
+            "id": "@forgegraph/foundation/allocation/_/AllocationReservation.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "allocation_journal",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "pool",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "pool",
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "ordinal",
+            "storage": "integer"
+          },
+          {
+            "name": "command_key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "commandKey",
+            "storage": "text"
+          },
+          {
+            "name": "previous",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "previous",
+            "storage": "text"
+          },
+          {
+            "name": "reservation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "reservation",
+            "storage": "text"
+          },
+          {
+            "name": "action",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "action",
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "at",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "pool"
+            ],
+            "references": "allocation_pool",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "previous"
+            ],
+            "references": "allocation_journal",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "reservation"
+            ],
+            "references": "allocation_reservation",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "allocation_pool",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          },
+          {
+            "name": "mode",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "mode",
+            "storage": "text"
+          },
+          {
+            "name": "capacity",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "capacity",
+            "storage": "minorUnits"
+          },
+          {
+            "name": "unit",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "unit",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "allocation_reservation",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "pool",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "pool",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          },
+          {
+            "name": "quantity",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "quantity",
+            "storage": "minorUnits"
+          },
+          {
+            "name": "unit",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "unit",
+            "storage": "text"
+          },
+          {
+            "name": "from_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "from",
+            "storage": "text"
+          },
+          {
+            "name": "until",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "until",
+            "storage": "text"
+          },
+          {
+            "name": "hold_until",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "holdUntil",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "pool"
+            ],
+            "references": "allocation_pool",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      }
+    ],
+    "indexes": [
+      {
+        "name": "allocation_journal_uq_pool_commandKey",
+        "table": "allocation_journal",
+        "columns": [
+          "tenant",
+          "pool",
+          "command_key"
+        ],
+        "unique": true,
+        "constraint": "pool_commandKey"
+      },
+      {
+        "name": "allocation_journal_uq_pool_ordinal",
+        "table": "allocation_journal",
+        "columns": [
+          "tenant",
+          "pool",
+          "ordinal"
+        ],
+        "unique": true,
+        "constraint": "pool_ordinal"
+      },
+      {
+        "name": "allocation_journal_ix_by_pool",
+        "table": "allocation_journal",
+        "columns": [
+          "tenant",
+          "pool",
+          "ordinal",
+          "id"
+        ],
+        "unique": false,
+        "query": "byPool"
+      },
+      {
+        "name": "allocation_pool_uq_key",
+        "table": "allocation_pool",
+        "columns": [
+          "tenant",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "key"
+      },
+      {
+        "name": "allocation_reservation_uq_pool_key",
+        "table": "allocation_reservation",
+        "columns": [
+          "tenant",
+          "pool",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "pool_key"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "name": "AllocationJournal",
+        "wireName": "allocation_journal",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "pool_commandKey",
+            "keyFields": [
+              "pool",
+              "commandKey"
+            ]
+          },
+          {
+            "name": "pool_ordinal",
+            "keyFields": [
+              "pool",
+              "ordinal"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          },
+          {
+            "name": "byPool",
+            "kind": "list",
+            "partitionFields": [
+              "pool"
+            ],
+            "sortFields": [
+              "ordinal",
+              "id"
+            ],
+            "sortDirections": [
+              "asc",
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "pool",
+              "ordinal"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "pool",
+            "target": "@forgegraph/foundation/allocation/_/AllocationPool"
+          },
+          {
+            "field": "previous",
+            "target": "@forgegraph/foundation/allocation/_/AllocationJournal"
+          },
+          {
+            "field": "reservation",
+            "target": "@forgegraph/foundation/allocation/_/AllocationReservation"
+          }
+        ],
+        "createActions": 10
+      },
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "name": "AllocationPool",
+        "wireName": "allocation_pool",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "key",
+            "keyFields": [
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      },
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "name": "AllocationReservation",
+        "wireName": "allocation_reservation",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "pool_key",
+            "keyFields": [
+              "pool",
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "pool",
+            "target": "@forgegraph/foundation/allocation/_/AllocationPool"
+          }
+        ],
+        "createActions": 6
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@forgegraph/foundation/allocation",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "name": "AllocationJournal",
+        "kind": "resource",
+        "label": "Allocation Journal",
+        "plural": "Allocation Journals",
+        "route": "allocation-journals",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "pool",
+            "label": "Pool",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+              "route": "allocation-pool",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/allocation/_/AllocationPool.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/allocation/_/AllocationPool.find.byKey"
+            }
+          },
+          {
+            "name": "ordinal",
+            "label": "Ordinal",
+            "widget": "integer",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "commandKey",
+            "label": "Command Key",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 500
+          },
+          {
+            "name": "previous",
+            "label": "Previous",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+              "route": "allocation-journal",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/allocation/_/AllocationJournal.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "reservation",
+            "label": "Reservation",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+              "route": "allocation-reservation",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/allocation/_/AllocationReservation.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/allocation/_/AllocationReservation.find.byPoolKey"
+            }
+          },
+          {
+            "name": "action",
+            "label": "Action",
+            "widget": "select",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "options": [
+              {
+                "value": "reserve",
+                "label": "Reserve"
+              },
+              {
+                "value": "allocate",
+                "label": "Allocate"
+              },
+              {
+                "value": "release",
+                "label": "Release"
+              },
+              {
+                "value": "cancel",
+                "label": "Cancel"
+              },
+              {
+                "value": "expire",
+                "label": "Expire"
+              }
+            ]
+          },
+          {
+            "name": "at",
+            "label": "At",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "pool",
+          "ordinal",
+          "commandKey",
+          "previous",
+          "reservation",
+          "action"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/allocation/_/AllocationJournal.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byPool",
+            "op": "@forgegraph/foundation/allocation/_/AllocationJournal.list.byPool",
+            "params": [
+              "pool"
+            ],
+            "label": "By Pool"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "name": "AllocationPool",
+        "kind": "resource",
+        "label": "Allocation Pool",
+        "plural": "Allocation Pools",
+        "route": "allocation-pools",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "mode",
+            "label": "Mode",
+            "widget": "select",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "options": [
+              {
+                "value": "exclusive",
+                "label": "Exclusive"
+              },
+              {
+                "value": "fungible",
+                "label": "Fungible"
+              }
+            ]
+          },
+          {
+            "name": "capacity",
+            "label": "Capacity",
+            "widget": "decimal",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "unit",
+            "label": "Unit",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "key",
+          "mode",
+          "capacity",
+          "unit"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/allocation/_/AllocationPool.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byKey",
+            "op": "@forgegraph/foundation/allocation/_/AllocationPool.find.byKey",
+            "params": [
+              "key"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "name": "AllocationReservation",
+        "kind": "resource",
+        "label": "Allocation Reservation",
+        "plural": "Allocation Reservations",
+        "route": "allocation-reservations",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "pool",
+            "label": "Pool",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+              "route": "allocation-pool",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/allocation/_/AllocationPool.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/allocation/_/AllocationPool.find.byKey"
+            }
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "quantity",
+            "label": "Quantity",
+            "widget": "decimal",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "unit",
+            "label": "Unit",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          },
+          {
+            "name": "from",
+            "label": "From",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "until",
+            "label": "Until",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "holdUntil",
+            "label": "Hold Until",
+            "widget": "datetime",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "pool",
+          "key",
+          "quantity",
+          "unit",
+          "from",
+          "until"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/allocation/_/AllocationReservation.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byPoolKey",
+            "op": "@forgegraph/foundation/allocation/_/AllocationReservation.find.byPoolKey",
+            "params": [
+              "pool",
+              "key"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-forgegraph-foundation-allocation-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.list.byPool",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.find.byPoolKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "pool",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "ordinal",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "commandKey",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "previous",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "reservation",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "action",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "at",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "field": "mode",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "field": "capacity",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "field": "unit",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "pool",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "quantity",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "unit",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "from",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "until",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "field": "holdUntil",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "inferred": 2,
+      "structural": 14,
+      "unclassified": 5
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "outputs": [
+          "id",
+          "pool",
+          "ordinal",
+          "commandKey",
+          "previous",
+          "reservation",
+          "action",
+          "at"
+        ],
+        "writes": [
+          "pool",
+          "ordinal",
+          "commandKey",
+          "previous",
+          "reservation",
+          "action",
+          "at"
+        ],
+        "filters": [
+          "reservation",
+          "pool",
+          "previous",
+          "ordinal",
+          "at"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "outputs": [
+          "id",
+          "pool",
+          "ordinal",
+          "commandKey",
+          "previous",
+          "reservation",
+          "action",
+          "at"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "outputs": [
+          "id",
+          "pool",
+          "ordinal",
+          "commandKey",
+          "previous",
+          "reservation",
+          "action",
+          "at"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationJournal.list.byPool",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "outputs": [
+          "id",
+          "pool",
+          "ordinal",
+          "commandKey",
+          "previous",
+          "reservation",
+          "action",
+          "at"
+        ],
+        "writes": [],
+        "filters": [
+          "pool"
+        ],
+        "orders": [
+          "ordinal",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "outputs": [
+          "id",
+          "key",
+          "mode",
+          "capacity",
+          "unit"
+        ],
+        "writes": [
+          "key",
+          "mode",
+          "capacity",
+          "unit"
+        ],
+        "filters": [
+          "mode",
+          "capacity"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "outputs": [
+          "id",
+          "key",
+          "mode",
+          "capacity",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "outputs": [
+          "id",
+          "key",
+          "mode",
+          "capacity",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [
+          "key"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationPool.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationPool",
+        "outputs": [
+          "id",
+          "key",
+          "mode",
+          "capacity",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "outputs": [
+          "id",
+          "pool",
+          "key",
+          "quantity",
+          "unit",
+          "from",
+          "until",
+          "holdUntil"
+        ],
+        "writes": [
+          "pool",
+          "key",
+          "quantity",
+          "unit",
+          "from",
+          "until",
+          "holdUntil"
+        ],
+        "filters": [
+          "unit",
+          "pool",
+          "from",
+          "until",
+          "holdUntil"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "outputs": [
+          "id",
+          "pool",
+          "key",
+          "quantity",
+          "unit",
+          "from",
+          "until",
+          "holdUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.find.byPoolKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "outputs": [
+          "id",
+          "pool",
+          "key",
+          "quantity",
+          "unit",
+          "from",
+          "until",
+          "holdUntil"
+        ],
+        "writes": [],
+        "filters": [
+          "pool",
+          "key"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/allocation/_/AllocationReservation.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+        "outputs": [
+          "id",
+          "pool",
+          "key",
+          "quantity",
+          "unit",
+          "from",
+          "until",
+          "holdUntil"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@forgegraph/foundation/allocation",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "AllocationJournalRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "commandKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationJournal"
+            },
+            "reservation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
+            "action": {
+              "type": "string",
+              "enum": [
+                "reserve",
+                "allocate",
+                "release",
+                "cancel",
+                "expire"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "pool",
+            "ordinal",
+            "commandKey",
+            "previous",
+            "reservation",
+            "action",
+            "at"
+          ]
+        },
+        "AllocationJournalCreate": {
+          "type": "object",
+          "properties": {
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "commandKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationJournal"
+            },
+            "reservation": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
+            "action": {
+              "type": "string",
+              "enum": [
+                "reserve",
+                "allocate",
+                "release",
+                "cancel",
+                "expire"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "pool",
+            "ordinal",
+            "commandKey",
+            "reservation",
+            "action",
+            "at"
+          ]
+        },
+        "AllocationJournalPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "AllocationPoolRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "exclusive",
+                "fungible"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationMode"
+            },
+            "capacity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "key",
+            "mode",
+            "capacity",
+            "unit"
+          ]
+        },
+        "AllocationPoolCreate": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "exclusive",
+                "fungible"
+              ],
+              "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationMode"
+            },
+            "capacity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "mode",
+            "capacity",
+            "unit"
+          ]
+        },
+        "AllocationPoolPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "AllocationReservationRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "from": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "until": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "holdUntil": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "pool",
+            "key",
+            "quantity",
+            "unit",
+            "from",
+            "until",
+            "holdUntil"
+          ]
+        },
+        "AllocationReservationCreate": {
+          "type": "object",
+          "properties": {
+            "pool": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationPool"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "exclusiveMinimum": 0
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "from": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "until": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "holdUntil": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "pool",
+            "key",
+            "quantity",
+            "unit",
+            "from",
+            "until",
+            "holdUntil"
+          ]
+        },
+        "AllocationReservationPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  }
+}

@@ -46,3 +46,12 @@ test('malformed graph and active workers cannot release tasks', () => {
   assert.throws(()=>schedule({...g,gateOwnership:{}},cs(ns),state(),options),/no owner/);
   assert.throws(()=>schedule(g,[{...cs(ns)[0],dependencies:['ghost']}],state(),options),/differs/);
 });
+
+test('upper integration checks do not create reverse dependency deadlocks', () => {
+ const ns=[{...node('calendar',55,[],['core'],['calendar-ready']),deferredIntegrationAcceptance:['bridge']},node('scheduling',58,['calendar'],['core','calendar-ready'])];
+ const contracts=cs(ns);contracts[0].acceptance.push({id:'bridge',status:'planned'});
+ const st=state();st.packages.calendar=proof('calendar');st.gates['calendar-ready']={status:'passing',fingerprint:'calendar'};
+ const result=schedule({packages:ns,gateOwnership:{core:'kernel','calendar-ready':'calendar'}},contracts,st,options);
+ assert.deepEqual(result.dispatch,['scheduling']);
+ assert.deepEqual(result.integrationPending,[{package:'calendar',acceptance:'bridge'}]);
+});

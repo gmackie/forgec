@@ -1,0 +1,69 @@
+export enum AllocationMode {
+  exclusive
+  fungible
+}
+export enum AllocationAction {
+  reserve
+  allocate
+  release
+  cancel
+  expire
+}
+export resource AllocationPool
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  mode : AllocationMode
+  capacity : decimal<6> > 0
+  unit : text length 1..64
+  rules {
+    mode != AllocationMode.exclusive || capacity == 1.000000
+  }
+  find by key
+}
+/// Inert candidate: only a valid committed pool journal authorizes ownership.
+export resource AllocationReservation
+  @tenant
+  @appendOnly
+{
+  id : id
+  pool : AllocationPool
+  key : text length 1..128
+  quantity : decimal<6> > 0
+  unit : text length 1..64
+  from : datetime
+  until : datetime
+  holdUntil : datetime
+  rules {
+    unit == pool.unit
+    from < until
+    holdUntil <= until
+  }
+  unique pool, key
+  find by pool, key
+}
+/// Unique ordinal seals one pool state transition. Raw rows are NOT authority
+/// until the bounded consuming interpreter validates the complete chain.
+export resource AllocationJournal
+  @tenant
+  @appendOnly
+{
+  id : id
+  pool : AllocationPool
+  ordinal : integer >= 1
+  commandKey : text length 1..500
+  previous : AllocationJournal?
+  reservation : AllocationReservation
+  action : AllocationAction
+  at : datetime
+  rules {
+    reservation.pool == pool
+    (previous == null && ordinal == 1) || (previous != null && previous.pool == pool && ordinal > previous.ordinal && at >= previous.at)
+  }
+  unique pool, ordinal
+  unique pool, commandKey
+  list by pool
+    order by ordinal asc
+}

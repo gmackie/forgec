@@ -3,11 +3,11 @@ import { it, expect } from "vitest";
 import { Evidence } from "../src/foundation/evidence.js";
 import { Artifacts } from "../src/foundation/artifact.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
-import { foundation } from "./helpers/foundation.js";
+import { foundation, foundationAdapters } from "./helpers/foundation.js";
 const p="@forgegraph/foundation/evidence/_/", a="@forgegraph/foundation/artifact/_/", d="@fixture/evidence-consumer/_/";
-for(const adapter of ['memory','sqlite']) {
+for(const adapter of foundationAdapters) {
  it(`${adapter}: immutable evidence, typed domain satellites, idempotency and confidentiality`,async()=>{
-  const f=foundation('evidence',adapter,true);const {call,ctx,engine}=f;
+  const f=await foundation('evidence',adapter,true);const {call,ctx,engine}=f;
   try {
    const bundle=await call(p+'EvidenceBundle.create',{key:'verification',label:'Private supporting evidence'});
    const source=await call(p+'EvidenceSource.create',{key:'lab',label:'Typed laboratory source'});
@@ -26,10 +26,10 @@ for(const adapter of ['memory','sqlite']) {
    expect(await Effect.runPromise(service.artifact(String(record.id),ctx))).toBeNull();
    engine.gatekeeper.authorizer=localAuthorizer({policies:[],pips:[],epoch:1,knownObligations:[]});
    await expect(Effect.runPromise(service.artifact(String(record.id),ctx))).rejects.toMatchObject({code:'NotFound'});
-  } finally {f.close();}
+  } finally {await f.close();}
  });
  it(`${adapter}: artifact revisions and provenance stay pinned and mismatched digests fail`,async()=>{
-  const f=foundation('evidence',adapter);const {call,ctx,engine,objects}=f;
+  const f=await foundation('evidence',adapter);const {call,ctx,engine,objects}=f;
   try {
    const bundle=await call(p+'EvidenceBundle.create',{key:'build',label:'Build evidence'});
    const source=await call(p+'EvidenceSource.create',{key:'build-server',label:'Build server'});
@@ -47,13 +47,13 @@ for(const adapter of ['memory','sqlite']) {
    await expect(call(a+'ArtifactRevision.delete',{id:revision.id})).rejects.toThrow();
    engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'evidence-only',actions:[p+'EvidenceItem.*'],requires:[],where:[]}],pips:[],epoch:2,knownObligations:[]});
    await expect(Effect.runPromise(service.artifact(String(item.id),ctx))).rejects.toThrow();
-  } finally {f.close();}
+  } finally {await f.close();}
  });
 }
 
-for (const adapter of ['memory', 'sqlite']) {
+for (const adapter of foundationAdapters) {
  it(`${adapter}: seals pin bounded typed membership and successors preserve old evidence`, async () => {
-  const f=foundation('evidence',adapter);const {call,ctx,engine}=f;
+  const f=await foundation('evidence',adapter);const {call,ctx,engine}=f;
   try {
    const service=new Evidence(engine);
    const bundle=await call(p+'EvidenceBundle.create',{key:'sealed',label:'Selected support'});
@@ -89,10 +89,10 @@ for (const adapter of ['memory', 'sqlite']) {
    await expect(Effect.runPromise(service.seal(String(other.id),String(head.id),{...ctx,tenant:'foreign'}))).rejects.toThrow();
    await Effect.runPromise(service.seal(String(other.id),null,ctx));
    expect(await Effect.runPromise(service.sealedItems(String(other.id),ctx))).toEqual([]);
-  } finally {f.close();}
+  } finally {await f.close();}
  });
  it(`${adapter}: classified provenance retains metadata while every sealed read enforces independent access policies`,async()=>{
-  const f=foundation('evidence',adapter);const {call,ctx,engine}=f;
+  const f=await foundation('evidence',adapter);const {call,ctx,engine}=f;
   try {
    const service=new Evidence(engine);
    expect(engine.model.dataClasses).toContainEqual(expect.objectContaining({id:p+'EvidenceNarrative',extends:'data.communication.content'}));
@@ -111,6 +111,6 @@ for (const adapter of ['memory', 'sqlite']) {
    engine.gatekeeper.authorizer=localAuthorizer({policies:[],pips:[],epoch:99,knownObligations:[]});
    await expect(Effect.runPromise(service.items(String(bundle.id),ctx))).rejects.toThrow();
    expect((await call(p+'EvidenceItem.list.byBundle',{params:{bundle:bundle.id}})).items).toEqual([]);
-  }finally{f.close();}
+  }finally{await f.close();}
  });
 }

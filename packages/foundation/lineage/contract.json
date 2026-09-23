@@ -6,63 +6,93 @@
     "specification"
   ],
   "facts": [
-    "LineageNode: substrate-specific handle owned by a typed domain resource",
-    "LineageRelation: derived, aggregated, transformed, copied or extracted semantics",
-    "Transformation: explicit input/output memberships and optional specification pin"
+    "LineageGraph and immutable ranked LineageNode handles",
+    "LineageRelation with explicit kind, immutable specification pin and successor chain",
+    "Transformation with ranked input/output candidates and immutable TransformationSeal"
   ],
   "operations": [
-    "CreateLineageNode; RecordDerivation; RecordAggregation",
-    "RecordTransformation(inputs, outputs, pin?); RecordCopy; RecordExtraction",
-    "TraverseAncestors; TraverseDescendants with explicit bounds"
+    "Lineage.member; Lineage.seal",
+    "Lineage.traverse (bounded ancestors or descendants retaining explicit transformations)",
+    "LineageRelation.create with optional same-endpoint supersedes relation"
   ],
   "invariants": [
-    "No generic relatedTo edge or polymorphic business resource pointer",
-    "Aggregation retains constituent identity; transformation has explicit input/output sets and does not infer Cartesian edges",
-    "Self-links and cycles are rejected with serialized graph guard; traversal and mutation have configured size/depth budgets",
-    "Committed provenance is immutable; correction creates explicit superseding record"
+    "Application resources point outward to typed lineage handles; no polymorphic entity references",
+    "Immutable increasing graph-local ranks prohibit relation and transformation cycles under raw concurrent insertion",
+    "TransformationSeal fixes exact immutable input/output chains; late candidate memberships never affect sealed provenance",
+    "No Cartesian pairwise transformation edges are inferred",
+    "Superseding relation retains graph/endpoints, increases bounded revision and cannot fork a predecessor",
+    "Complete bounded traversal fails closed on hidden links, seals or supporting records"
   ],
   "acceptance": [
     {
       "id": "F37-01",
       "description": "LineageNode/handle model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-lineage.test.ts"
+      ]
     },
     {
       "id": "F37-02",
       "description": "explicit edge/relation semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-lineage.test.ts"
+      ]
     },
     {
       "id": "F37-03",
       "description": "aggregation vs transformation distinction",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-lineage.test.ts"
+      ]
     },
     {
       "id": "F37-04",
       "description": "execution/specification provenance",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-lineage.test.ts"
+      ]
     },
     {
       "id": "F37-05",
       "description": "graph traversal/read models",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-lineage.test.ts"
+      ]
     },
     {
       "id": "F37-06",
       "description": "cycle/size safety",
       "kind": "concurrency",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-lineage.test.ts"
+      ]
     },
     {
       "id": "F37-07",
       "description": "fixtures for software build, manufacturing batch, dataset transform and LevelForge generation",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-lineage.test.ts"
+      ]
     }
   ],
   "fixtures": [

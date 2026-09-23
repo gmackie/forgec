@@ -1,0 +1,88 @@
+import { DatabaseSync, type SQLInputValue } from "node:sqlite";
+import { D1Storage } from "../src/adapters/d1.js";
+import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { Effect } from "effect";
+import { expect, it } from "vitest";
+import { Engine } from "../src/engine.js";
+import { Model, type AppBundle } from "../src/model.js";
+import { MemoryStorage } from "../src/adapters/memory.js";
+import { testLayer } from "../src/testing.js";
+import { Allocations } from "../src/foundation/allocation.js";
+import { localAuthorizer } from "../src/gatekeeper.js";
+const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.dirname, "../../../conformance/fixtures/allocation-consumer");
+const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
+const prefix = "@forgegraph/foundation/allocation/_/", consumer = "@foundation-probe/allocation-consumers/_/";
+const ctx = { tenant: "acme", actor: "operator", requestId: "allocation" };
+for (const adapter of ["memory", "sqlite"]) it(`${adapter}: single-row guarded capacity, release races and hostile candidates`, async () => {
+  const model = new Model(bundle), db = new DatabaseSync(":memory:");
+  db.exec(readFileSync(resolve(fixture, "d1/0001_init.sql"), "utf8"));
+  const execute = (s: SqlStatement) => ({ changes: Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes) });
+  const executor: SqlExecutor = {
+    facade: "sqlite-test",
+    first: async <T>(s: SqlStatement) => (db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T | null,
+    all: async <T>(s: SqlStatement) => db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
+    run: async s => execute(s),
+    batch: async statements => { db.exec("BEGIN"); try { const results = statements.map(execute); db.exec("COMMIT"); return results; } catch (error) { db.exec("ROLLBACK"); throw error; } },
+  };
+  try {
+    const storage = adapter === "memory" ? new MemoryStorage() : new D1Storage(executor, model);
+    const engine = new Engine(model, testLayer(storage));
+    const service = new Allocations(engine), run = Effect.runPromise;
+    const call = (op: string, input: Record<string, unknown>, context = ctx) => run(engine.call(prefix + op, input, context));
+    const pool = async (key: string, mode = "exclusive", capacity = "1") => call("AllocationPool.create", { key, mode, capacity, unit: "slot" });
+    const bed = await pool("bed"), gpu = await pool("gpu", "fungible", "2.5"), machine = await pool("machine");
+    for (const [name, id] of [["HospitalBed", bed.id], ["RunnerGpu", gpu.id], ["MachineCapacity", machine.id]]) await run(engine.call(consumer + name + ".create", { capacity: id }, ctx));
+    const from = "2026-01-02T00:00:00Z", until = "2026-01-03T00:00:00Z", holdUntil = "2026-01-01T12:00:00Z";
+    const reserve = (p: unknown, key: string, quantity = "1", start = from, end = until, expiry = holdUntil) => call("AllocationReservation.create", { pool: p, key, quantity, unit: "slot", from: start, until: end, holdUntil: expiry });
+    const a = await reserve(bed.id, "a"), b = await reserve(bed.id, "b");
+    // Before activation, even a valid raw candidate has no ownership effect.
+    expect((await run(service.inspect(String(bed.id), from, ctx))).available).toBe("1.000000");
+    const contenders = await Promise.allSettled([run(service.act(String(a.id), "reserve", ctx)), run(service.act(String(b.id), "reserve", ctx))]);
+    expect(contenders.filter(x => x.status === "fulfilled")).toHaveLength(1);
+    const winner = contenders[0]!.status === "fulfilled" ? a : b;
+    expect((await run(service.inspect(String(bed.id), from, ctx))).claims).toEqual([{ reservation: winner.id, phase: "reserved" }]);
+    expect((await call("AllocationJournal.list.byPool", { params: { pool: bed.id } })).items).toHaveLength(1);
+    await run(service.act(String(winner.id), "allocate", ctx));
+    const releases = await Promise.allSettled([run(service.act(String(winner.id), "release", ctx)), run(service.act(String(winner.id), "release", ctx))]);
+    expect(releases.filter(x => x.status === "fulfilled")).toHaveLength(2);
+    expect((await call("AllocationJournal.list.byPool", { params: { pool: bed.id } })).items).toHaveLength(3);
+    expect((await run(service.inspect(String(bed.id), from, ctx))).available).toBe("1.000000");
+    await expect(run(service.act(String(winner.id), "allocate", { ...ctx, idempotencyKey: "allocate-again" }))).rejects.toThrow();
+    const x = await reserve(gpu.id, "x", "1.500001"), y = await reserve(gpu.id, "y", "1.000000");
+    await run(service.act(String(x.id), "reserve", ctx));
+    await expect(run(service.act(String(y.id), "reserve", ctx))).rejects.toThrow();
+    const z = await reserve(gpu.id, "z", "0.999999");
+    await run(service.act(String(z.id), "reserve", ctx));
+    expect((await run(service.inspect(String(gpu.id), from, ctx))).available).toBe("0.000000");
+    const adjacent = await reserve(gpu.id, "adjacent", "2.5", until, "2026-01-04T00:00:00Z");
+    await run(service.act(String(adjacent.id), "reserve", ctx));
+    expect((await run(service.inspect(String(gpu.id), until, ctx))).claims).toEqual([{ reservation: adjacent.id, phase: "reserved" }]);
+    await expect(call("AllocationReservation.create", { pool: bed.id, key: "bad-unit", quantity: "1", unit: "hour", from, until, holdUntil })).rejects.toThrow();
+    await expect(pool("invalid-exclusive", "exclusive", "2")).rejects.toThrow();
+    const expiring = await reserve(machine.id, "expiring");
+    await run(service.act(String(expiring.id), "reserve", ctx));
+    await expect(run(service.act(String(expiring.id), "expire", ctx))).rejects.toThrow();
+    engine.testClockJump(13 * 3600 * 1000);
+    expect((await run(service.inspect(String(machine.id), from, ctx))).available).toBe("1.000000");
+    await expect(run(service.act(String(expiring.id), "allocate", ctx))).rejects.toThrow();
+    const expiryRace = await Promise.allSettled([run(service.act(String(expiring.id), "expire", ctx)), run(service.act(String(expiring.id), "cancel", ctx))]);
+    expect(expiryRace.filter(x => x.status === "fulfilled")).toHaveLength(1);
+    for (const name of ["AllocationPool", "AllocationReservation", "AllocationJournal"]) await expect(call(name + ".delete", { id: bed.id })).rejects.toThrow();
+    await expect(run(service.inspect(String(bed.id), from, { ...ctx, tenant: "other" }))).rejects.toThrow();
+    const guarded = new Engine(model, engine.layer);
+    guarded.gatekeeper.authorizer = localAuthorizer({ policies: ["AllocationPool", "AllocationReservation"].map(name => ({ id: name, actions: [prefix + name + ".*"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
+    await expect(run(new Allocations(guarded).inspect(String(bed.id), from, ctx))).rejects.toMatchObject({ code: "NotFound" });
+    // Bypass the command with a structurally legal but oversubscribed journal.
+    // No consuming API may interpret this as usable capacity or valid ownership.
+    const hostile = await pool("hostile");
+    const h1 = await reserve(hostile.id, "h1", "1", from, until, until), h2 = await reserve(hostile.id, "h2", "1", from, until, until);
+    const first = await run(service.act(String(h1.id), "reserve", ctx));
+    await call("AllocationJournal.create", { pool: hostile.id, ordinal: 2, commandKey: "hostile", previous: first.id, reservation: h2.id, action: "reserve", at: first.at });
+    await expect(run(service.inspect(String(hostile.id), from, ctx))).rejects.toMatchObject({ code: "ValidationFailed" });
+    await expect(run(service.act(String(h2.id), "allocate", ctx))).rejects.toThrow();
+    const restart = new Allocations(new Engine(model, engine.layer));
+    expect((await run(restart.inspect(String(bed.id), from, ctx))).available).toBe("1.000000");
+  } finally { db.close(); }
+});

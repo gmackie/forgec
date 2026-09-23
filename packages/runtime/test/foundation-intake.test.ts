@@ -4,10 +4,10 @@ import {Intake} from '../src/foundation/intake.js';
 import {Evaluations} from '../src/foundation/evaluation.js';
 import {Artifacts} from '../src/foundation/artifact.js';
 import {localAuthorizer} from '../src/gatekeeper.js';
-import {foundation} from './helpers/foundation.js';
+import {foundation, foundationAdapters} from './helpers/foundation.js';
 const p='@forgegraph/foundation/intake/_/',s='@forgegraph/foundation/specification/_/',e='@forgegraph/foundation/evaluation/_/',a='@forgegraph/foundation/artifact/_/',d='@fixture/intake-consumer/_/';
-for(const adapter of ['memory','sqlite']) it(`${adapter}: exact form/raw pins, validation and typed idempotent domain transforms`,async()=>{
- const f=foundation('intake',adapter,true),{call,ctx,engine,objects}=f;
+for(const adapter of foundationAdapters) it(`${adapter}: exact form/raw pins, validation and typed idempotent domain transforms`,async()=>{
+ const f=await foundation('intake',adapter,true),{call,ctx,engine,objects}=f;
  try {
   const repository=await call(s+'Repository.create',{key:'forms',provider:'git',locator:'https://example.test/forms'});
   const pin=await call(s+'SpecificationPin.create',{repository:repository.id,anchor:'form',revision:'a'.repeat(40)});
@@ -25,7 +25,7 @@ for(const adapter of ['memory','sqlite']) it(`${adapter}: exact form/raw pins, v
   expect(await Effect.runPromise(api.submit(input,{...ctx,idempotencyKey:'submit'}))).toEqual(submission);
   expect(submission).toMatchObject({definition:pin.id,raw:revision.id});
   await expect(call(p+'Submission.create',{...input,sourceKey:'wrong',definition:next.id})).rejects.toThrow();
-  await expect(Effect.runPromise(api.submit({...input,sourceKey:'anonymous',submitter:undefined},ctx))).rejects.toThrow();
+  await expect(Effect.runPromise(api.submit({form:input.form,sourceKey:'anonymous',submittedAt:input.submittedAt},ctx))).rejects.toThrow();
   const group=await call(e+'EvaluationSet.create',{label:'Validation'}),executor=await call(e+'EvaluationExecutor.create',{key:'validator',label:'Validator'});
   const evaluations=new Evaluations(engine);
   async function validation(submissionId:string,definition:string,verdict:'Accepted'|'Rejected') {
@@ -52,5 +52,5 @@ for(const adapter of ['memory','sqlite']) it(`${adapter}: exact form/raw pins, v
   await expect(Effect.runPromise(api.submit({...input,sourceKey:'cross-tenant'},{...ctx,tenant:'other'}))).rejects.toThrow();
   engine.gatekeeper.authorizer=localAuthorizer({policies:[],pips:[],epoch:1,knownObligations:[]});
   await expect(Effect.runPromise(api.submit({...input,sourceKey:'denied'},ctx))).rejects.toMatchObject({code:'NotFound'});
- }finally{f.close();}
+ }finally{await f.close();}
 });

@@ -3,12 +3,12 @@ import { expect, it } from "vitest";
 import { Qualifications } from "../src/foundation/qualification.js";
 import { Evidence } from "../src/foundation/evidence.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
-import { foundation } from "./helpers/foundation.js";
+import { foundation, foundationAdapters } from "./helpers/foundation.js";
 const p="@forgegraph/foundation/qualification/_/", party="@forgegraph/foundation/party/_/", spec="@forgegraph/foundation/specification/_/", e="@forgegraph/foundation/evidence/_/", d="@fixture/qualification-consumer/_/";
 const start="2026-01-01T00:00:00Z", end="2026-02-01T00:00:00Z";
-for(const adapter of ['memory','sqlite']) {
+for(const adapter of foundationAdapters) {
  it(`${adapter}: typed technician, vendor and Runner awards satisfy pinned domain levels without authorization grants`,async()=>{
-  const f=foundation('qualification',adapter,true);const {call,ctx,engine}=f;
+  const f=await foundation('qualification',adapter,true);const {call,ctx,engine}=f;
   try {
    const service=new Qualifications(engine);
    const repository=await call(spec+'Repository.create',{key:'requirements',provider:'git',locator:'https://example.test/requirements'});
@@ -42,10 +42,10 @@ for(const adapter of ['memory','sqlite']) {
    const subject=await call(p+'QualificationSubject.create',{label:'Private'});
    engine.gatekeeper.authorizer=localAuthorizer({policies:[],pips:[],epoch:1,knownObligations:[]});
    await expect(Effect.runPromise(service.satisfies(String(subject.id),String(requirement.id),start,ctx))).rejects.toThrow();
-  }finally{f.close();}
+  }finally{await f.close();}
  });
  it(`${adapter}: exact definition comparison, duplicate awards, concurrent revocations and hidden evidence fail safely`,async()=>{
-  const f=foundation('qualification',adapter,true);const {call,ctx,engine}=f;
+  const f=await foundation('qualification',adapter,true);const {call,ctx,engine}=f;
   try {
    const service=new Qualifications(engine);
    const repository=await call(spec+'Repository.create',{key:'requirements',provider:'git',locator:'https://example.test/requirements'});
@@ -82,6 +82,6 @@ for(const adapter of ['memory','sqlite']) {
     engine.gatekeeper.authorizer=localAuthorizer({policies:[...['QualificationSubject','QualificationDefinition','QualificationRequirement','QualificationLevel','Qualification','QualificationRevocation'].filter(n=>n!==hidden).map(n=>({id:n,actions:[p+n+'.*'],requires:[],where:[]})),...['EvidenceSeal','EvidenceBundle'].filter(n=>n!==hidden).map(n=>({id:n,actions:[e+n+'.*'],requires:[],where:[]})),{id:'issuer',actions:[party+'Party.*'],requires:[],where:[]}],pips:[],epoch:hidden==='EvidenceSeal'?2:1,knownObligations:[]});
     await expect(Effect.runPromise(service.satisfies(String(subject.id),String(requirement.id),start,ctx))).rejects.toThrow();
    }
-  }finally{f.close();}
+  }finally{await f.close();}
  });
 }

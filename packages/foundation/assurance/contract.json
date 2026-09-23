@@ -12,7 +12,12 @@
     "Finding",
     "Disposition",
     "Remediation",
-    "Attestation"
+    "Attestation",
+    "Reevaluation",
+    "RemediationFinish",
+    "FindingClosure",
+    "AssuranceIssuer",
+    "AttestationEnd"
   ],
   "operations": [
     "Record finding",
@@ -26,68 +31,112 @@
     "Finding lifecycle is independent of EvaluationRun phase",
     "Disposition records remediate, accepted, false-positive, waived or deferred with reasons",
     "Attestation fixes issuer, qualification, evidence pins and validity",
-    "Re-evaluation links to original finding and remediation without erasing earlier conclusions"
+    "Re-evaluation links to original finding and remediation without erasing earlier conclusions",
+    "One immutable disposition per finding; reconsideration creates a predecessor-linked finding",
+    "Completed remediation requires a different completed evaluation linked to the same finding",
+    "Raw reference witness rules tie evaluation/run/specification and attestation/support exactly",
+    "Current attestation lookup fails closed when terminal or supporting evidence is unreadable"
   ],
   "acceptance": [
     {
       "id": "F40-01",
       "description": "Finding resource/lifecycle",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-02",
       "description": "Disposition model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-03",
       "description": "Remediation resource/lifecycle",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-04",
       "description": "re-evaluation linkage",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-05",
       "description": "Attestation envelope",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-06",
       "description": "evidence/specification integration",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-07",
       "description": "fixtures for vulnerability, manufacturing CAPA, access review and model assurance",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-R01",
       "description": "Expired or superseded attestation does not appear current",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-R02",
       "description": "Conflicting disposition updates cannot overwrite history",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-AUTH",
       "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-assurance.test.ts"
+      ]
     },
     {
       "id": "F40-STORE",

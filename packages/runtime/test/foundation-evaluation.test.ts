@@ -2,11 +2,11 @@ import { Effect } from "effect";
 import { it, expect } from "vitest";
 import { Evaluations } from "../src/foundation/evaluation.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
-import { foundation } from "./helpers/foundation.js";
+import { foundation, foundationAdapters } from "./helpers/foundation.js";
 const p='@forgegraph/foundation/evaluation/_/',s='@forgegraph/foundation/specification/_/',e='@forgegraph/foundation/evidence/_/',d='@fixture/evaluation-consumer/_/';
-for(const adapter of ['memory','sqlite']) {
+for(const adapter of foundationAdapters) {
  it(`${adapter}: definition pins, operational phases and four independent domain verdicts`,async()=>{
-  const f=foundation('evaluation',adapter,true),{call,ctx,engine}=f;
+  const f=await foundation('evaluation',adapter,true),{call,ctx,engine}=f;
   try {
    const repository=await call(s+'Repository.create',{key:'eval-definitions',provider:'git',locator:'https://example.test/defs'});
    const pin=await call(s+'SpecificationPin.create',{repository:repository.id,anchor:'inspection',revision:'a'.repeat(40)});
@@ -40,10 +40,10 @@ for(const adapter of ['memory','sqlite']) {
    await expect(call(p+'EvaluationRun.get',{id:run.id},{...ctx,tenant:'other'})).rejects.toThrow();
    engine.gatekeeper.authorizer=localAuthorizer({policies:[],pips:[],epoch:1,knownObligations:[]});
    await expect(Effect.runPromise(api.phase(String(run.id),ctx))).rejects.toMatchObject({code:'NotFound'});
-  }finally{f.close();}
+  }finally{await f.close();}
  });
  it(`${adapter}: competing terminal outcomes, idempotent retries and cancellation dominate late starts`,async()=>{
-  const f=foundation('evaluation',adapter,true),{call,ctx,engine}=f;
+  const f=await foundation('evaluation',adapter,true),{call,ctx,engine}=f;
   try {
    const repository=await call(s+'Repository.create',{key:'defs',provider:'git',locator:'https://example.test/defs'});
    const pin=await call(s+'SpecificationPin.create',{repository:repository.id,anchor:'test',revision:'a'.repeat(40)});
@@ -62,6 +62,6 @@ for(const adapter of ['memory','sqlite']) {
    expect(await Effect.runPromise(api.phase(String(cancelled.id),ctx))).toBe('Cancelled');
    engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'except-terminal',actions:[p+'EvaluationRun.*',p+'EvaluationStart.*'],requires:[],where:[]}],pips:[],epoch:1,knownObligations:[]});
    await expect(Effect.runPromise(api.phase(String(cancelled.id),ctx))).rejects.toMatchObject({code:'NotFound'});
-  }finally{f.close();}
+  }finally{await f.close();}
  });
 }

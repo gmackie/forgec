@@ -50,3 +50,8 @@ export * from "./foundation/evaluation.js";
 export * from "./foundation/entitlement.js";
 export * from "./foundation/qualification.js";
 export * from "./foundation/intake.js";
+export * from "./foundation/fulfillment.js";
+export * from "./foundation/assurance.js";
+export * from "./foundation/allocation.js";
+export * from "./foundation/decision.js";
+export * from "./foundation/lineage.js";

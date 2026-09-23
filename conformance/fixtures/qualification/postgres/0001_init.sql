@@ -267,7 +267,6 @@ CREATE TABLE artifact_component (
   "revision" TEXT COLLATE "C" NOT NULL,
   "next" TEXT COLLATE "C",
   PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id"),
   FOREIGN KEY ("tenant", "next") REFERENCES artifact_component ("tenant", "id")
 );
 
@@ -300,8 +299,7 @@ CREATE TABLE evidence_bundle (
   "predecessor" TEXT COLLATE "C",
   "created_at" TEXT COLLATE "C" NOT NULL,
   "updated_at" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "predecessor") REFERENCES evidence_seal ("tenant", "id")
+  PRIMARY KEY ("tenant", "id")
 );
 
 CREATE TABLE evidence_item (
@@ -383,6 +381,10 @@ CREATE TABLE qualification_revocation (
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "qualification") REFERENCES qualification ("tenant", "id")
 );
+
+ALTER TABLE artifact_component ADD FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id");
+
+ALTER TABLE evidence_bundle ADD FOREIGN KEY ("tenant", "predecessor") REFERENCES evidence_seal ("tenant", "id");
 
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);
 CREATE UNIQUE INDEX artifact_uq_key ON artifact ("tenant", "key_");

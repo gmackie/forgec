@@ -1,68 +1,36 @@
-# lineage substrate contract
+# Lineage substrate contract
 
-Phase 0 contract; implementation and every acceptance case remain **planned**.
-Logical Forge identity: `@forgegraph/foundation/lineage`. Initial release target: experimental `0.1.0`.
-Source: [issue #37](https://github.com/gmackie/forgec/issues/37), under [epic #25](https://github.com/gmackie/forgec/issues/25).
+Experimental `@forgegraph/foundation/lineage` 0.1.0 implements #37. Direct dependency:
+Specification, explicitly co-deployed. Domain artifacts/execution records reference
+LineageNode/Transformation through typed satellites; no upward imports are added.
 
-## Ownership and identity
+## Contract refinement
 
-- LineageNode: substrate-specific handle owned by a typed domain resource
-- LineageRelation: derived, aggregated, transformed, copied or extracted semantics
-- Transformation: explicit input/output memberships and optional specification pin
+Immutable graph-local topological ranks replace the earlier serialized graph-guard
+proposal. Raw relation rules enforce source.rank < target.rank and same graph;
+transformation members enforce input.rank < transformation.rank < output.rank.
+A cycle therefore cannot emerge from concurrent insertions, without query-only
+cycle detection or a mutable graph revision. Rank reassignment is unsupported.
 
-Domain BuildArtifact/Dataset/Batch points to LineageNode. All relation kinds follow directed acyclic provenance in v0.1.0; physical recycling requires a new node identity. Relation Recorded -> Superseded through explicit correction facts; original remains readable. Optional SpecificationPin is direct; execution/artifact/fulfillment links use upper typed bridges to avoid cycles. Traversal returns typed nodes/relations with pagination and truncation metadata. Input/output amounts, yields and domain units belong to typed transformation satellites. Concurrent edge insertion must use a graph revision guard in the same atomic commit, not query-only cycle detection.
+TransformationSeal uniquely pins bounded immutable membership-chain heads.
+Input/output candidates outside those heads never become authoritative provenance.
+Superseding relations retain endpoints/graph, increase revision and uniquely identify
+a predecessor. Traversal returns historical records and explicit supersededBy links;
+there is no silent rewriting of old provenance or inferred pairwise transform edge.
 
-## Dependencies and composition
+## Acceptance
 
-Frozen direct substrate dependencies: `specification`.
-Normal Forge imports and `uses` reference accepted package-qualified contracts. The application explicitly co-deploys the selected durable package closure into one transaction domain. Import alone must not imply remote reference integrity. Domain wrappers own business payloads and any reverse provenance links. No universal EntityRef, arbitrary JSON payload, generic Task/Case/Result schema or additional import edge is authorized by this contract.
-
-## Commands and queries
-
-These are required semantic operations, not a claim that callable implementations exist:
-
-- CreateLineageNode; RecordDerivation; RecordAggregation
-- RecordTransformation(inputs, outputs, pin?); RecordCopy; RecordExtraction
-- TraverseAncestors; TraverseDescendants with explicit bounds
-
-## Invariants
-
-- No generic relatedTo edge or polymorphic business resource pointer
-- Aggregation retains constituent identity; transformation has explicit input/output sets and does not infer Cartesian edges
-- Self-links and cycles are rejected with serialized graph guard; traversal and mutation have configured size/depth budgets
-- Committed provenance is immutable; correction creates explicit superseding record
-- Tenant isolation, declared capabilities and normal governance apply to every operation, reference and read surface.
-- Commands retain idempotency identity and reject conflicting replay; terminal history cannot be erased by exposed CRUD.
-- Existing instances retain immutable references across compatible package evolution.
-
-## Acceptance traceability
-
-Every issue checkbox appears verbatim below and in `contract.json`; IDs are stable and statuses are planned. Verification kind names describe required evidence, not executed checks.
-
-| ID | Kind | Required evidence | Status |
-| --- | --- | --- | --- |
-| F37-01 | compile | LineageNode/handle model | planned |
-| F37-02 | runtime | explicit edge/relation semantics | planned |
-| F37-03 | runtime | aggregation vs transformation distinction | planned |
-| F37-04 | compile | execution/specification provenance | planned |
-| F37-05 | runtime | graph traversal/read models | planned |
-| F37-06 | concurrency | cycle/size safety | planned |
-| F37-07 | fixture | fixtures for software build, manufacturing batch, dataset transform and LevelForge generation | planned |
-
-## Independent verification contract
-
-Package worker owns this directory, typed consumer fixtures, negative cases and generated-runtime tests. Materialize dependencies at accepted commits/digests in an isolated workspace. A separate worker reviews the resulting immutable commit. No package passes against handwritten dependency stubs.
-
-Required fixture cases: `software-build`, `manufacturing-batch`, `dataset-transform`, `levelforge-generation`. These are required fixture identities, not existing files. App probes must record the actual source application revision; synthetic fixtures do not prove production adoption.
-
-After executable sources and the Phase 1 harness exist, run:
+Every #37 checkbox in contract.json has local evidence from four generated-consumer
+tests across memory and SQLite in `foundation-lineage.test.ts`. Tests cover software
+build, manufacturing batch, dataset transform and LevelForge-style generation, typed
+execution detail, exact specification pins, sealed membership, concurrent seal
+conflict, raw rank/graph/depth/revision rejection, true traversal-depth/fanout budgets
+and governed completeness. Hosted provider certification is not claimed.
 
 ```sh
-cargo run -p forgegraph-cli -- check packages/foundation/lineage/fixtures/consumer
-cargo run -p forgegraph-cli -- fmt packages/foundation/lineage/fixtures/consumer --check
-cargo run -p forgegraph-cli -- build packages/foundation/lineage/fixtures/consumer --out /tmp/foundation-lineage-build
-node scripts/verify-foundation.mjs --package lineage --suite local
-node scripts/verify-foundation.mjs --package lineage --suite providers --require d1,postgres,dynamodb
+target/debug/forgec build packages/foundation/lineage/fixtures/consumer --out /tmp/foundation-lineage-consumer
+FORGE_FOUNDATION_CONSUMER=/tmp/foundation-lineage-consumer pnpm --filter @forgegraph/runtime exec vitest run test/foundation-lineage.test.ts
 ```
 
-The fixture paths and verification runner above are planned interfaces; they do not exist merely because this contract names them. Phase 0 verification only checks contract structure, frozen DAG and checkbox coverage. Runtime acceptance must use generated bundles with real engine operations, deterministic clocks/IDs and provider fakes for external calls. Cover successful and rejected transitions, authorization, tenant isolation, immutable history, retries, concurrency and restart. Provider acceptance fails on missing required infrastructure; local/emulated results remain distinct from live certification. Record commands, versions, dependency digests and each case result, including blockers. A schema compile or snapshot is insufficient proof of behavioral invariants.
+See README.md for rank planning, correction semantics and conservative denial of
+hidden candidate links. Shared fixture/verifier registration is integrator-owned.

@@ -383,6 +383,8 @@ pub fn render_postgres(s: &SqlSchema) -> String {
             .unwrap_or(0);
         tables.push(remaining.remove(idx));
     }
+    let mut emitted = Vec::new();
+    let mut deferred = Vec::new();
     for t in &tables {
         out.push_str(&format!("\nCREATE TABLE {} (\n", t.name));
         let mut lines: Vec<String> = t
@@ -406,6 +408,10 @@ pub fn render_postgres(s: &SqlSchema) -> String {
                 .join(", ")
         ));
         for fk in &t.foreign_keys {
+            if fk.references != t.name && !emitted.contains(&fk.references) {
+                deferred.push((t.name.clone(), fk));
+                continue;
+            }
             lines.push(format!(
                 "  FOREIGN KEY ({}) REFERENCES {} ({})",
                 fk.columns
@@ -426,6 +432,26 @@ pub fn render_postgres(s: &SqlSchema) -> String {
         }
         out.push_str(&lines.join(",\n"));
         out.push_str("\n);\n");
+        emitted.push(t.name.clone());
+    }
+    // Cyclic resource references cannot be topologically sorted. Install only
+    // forward foreign keys after every table exists, preserving all constraints.
+    for (table, fk) in deferred {
+        out.push_str(&format!(
+            "\nALTER TABLE {} ADD FOREIGN KEY ({}) REFERENCES {} ({});\n",
+            table,
+            fk.columns
+                .iter()
+                .map(|c| q(c))
+                .collect::<Vec<_>>()
+                .join(", "),
+            fk.references,
+            fk.referenced_columns
+                .iter()
+                .map(|c| q(c))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
     }
     out.push('\n');
     out.push_str("CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);\n");
