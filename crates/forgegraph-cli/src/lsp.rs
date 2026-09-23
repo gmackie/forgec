@@ -5,6 +5,7 @@
 //! JSON-RPC keeps the compiler core free of server frameworks.
 use forgegraph_semantic::analysis::AnalysisCache;
 use forgegraph_semantic::load_package;
+use forgegraph_syntax::AstNode;
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
@@ -140,6 +141,54 @@ fn path_to_uri(path: &Path) -> String {
     uri
 }
 
+/// Use compiler scope snapshots, including recovery compilations, rather than guessing binding
+/// visibility from token order. Choice and parallel branches have independent snapshots.
+fn workflow_binding_completion(
+    analysis: &[Analysis],
+    current: &Analysis,
+    source: &forgegraph_semantic::package::SourceFile,
+    offset: usize,
+) -> Option<Vec<Value>> {
+    use forgegraph_semantic::ir::TypeBase;
+    let prefix = &source.text[..offset];
+    let fragment = prefix
+        .rsplit(|c: char| !(c.is_alphanumeric() || c == '_' || c == '.'))
+        .next()
+        .unwrap_or("");
+    let scope = current
+        .compiled
+        .workflow_scopes
+        .iter()
+        .filter(|s| s.span.file == source.path && s.span.start <= offset && offset <= s.span.end)
+        .min_by_key(|s| s.span.end - s.span.start)?;
+    let fields = |ty: &TypeBase| -> Vec<(String, forgegraph_semantic::ir::TypeSpec)> {
+        let key = serde_json::to_string(ty).unwrap();
+        analysis
+            .iter()
+            .find_map(|a| a.compiled.workflow_fields.get(&key))
+            .cloned()
+            .unwrap_or_default()
+    };
+    let segments: Vec<_> = fragment.split('.').collect();
+    if segments.len() > 1 {
+        let mut ty = scope.bindings.get(segments[0])?.clone();
+        for segment in &segments[1..segments.len() - 1] {
+            ty = fields(&ty.base)
+                .into_iter()
+                .find(|(name, _)| name == segment)?
+                .1;
+        }
+        return Some(fields(&ty.base).into_iter().map(|(name, ty)| json!({"label":name, "kind":5, "detail":serde_json::to_string(&ty).unwrap()})).collect());
+    }
+    // Bare bindings only at expression positions, never while selecting a callee or message.
+    let line = prefix.lines().last().unwrap_or("");
+    let expression = line.contains(": ")
+        || line.trim_start().starts_with("return ")
+        || line.trim_start().starts_with("if ")
+        || line.contains(" == ");
+    expression.then(|| scope.bindings.iter().map(|(name, ty)| json!({"label":name,"kind":6,"detail":serde_json::to_string(ty).unwrap()})).collect())
+}
+
 struct Analysis {
     root: PathBuf,
     package: forgegraph_semantic::Package,
@@ -226,7 +275,10 @@ impl Server {
                     .filter_map(|a| a.compiled.ir.as_ref())
                     .collect::<Vec<_>>(),
             );
-            let map = compiled.source_map("editor", env!("CARGO_PKG_VERSION"), None);
+            let map = server
+                .cache
+                .borrow()
+                .editor_source_map(&root.to_string_lossy(), &compiled);
             let anchors = serde_json::from_value(map["anchors"].clone()).unwrap_or_default();
             out.push(Analysis {
                 root,
@@ -396,14 +448,73 @@ impl Server {
                 .unwrap_or_else(|| "_".into())
         };
         let module = module_of(&parsed);
+        let workflow = parsed.root().declarations().find_map(|d| match d {
+            Declaration::Workflow(w)
+                if u32::from(w.syntax().text_range().start()) as usize <= offset
+                    && offset <= u32::from(w.syntax().text_range().end()) as usize =>
+            {
+                Some(w)
+            }
+            _ => None,
+        });
+        if workflow.is_some()
+            && let Some(result) = workflow_binding_completion(&analysis, current, source, offset)
+        {
+            return result;
+        }
         let in_uses = parsed.syntax().descendants().any(|n| {
             n.kind() == K::USES_BLOCK
                 && u32::from(n.text_range().start()) as usize <= offset
                 && offset <= u32::from(n.text_range().end()) as usize
         });
-        if !in_uses {
+        if !in_uses && workflow.is_none() {
             return vec![];
         }
+        let in_wait = parsed.syntax().descendants().any(|n| {
+            n.kind() == K::STEP_WAIT
+                && u32::from(n.text_range().start()) as usize <= offset
+                && offset <= u32::from(n.text_range().end()) as usize
+        });
+        let prefix = &source.text[..offset];
+        let fail_context = prefix.lines().last().is_some_and(|line| {
+            line.trim_start().starts_with("fail ") || line.contains("-> fail ")
+        });
+        if fail_context && let Some(workflow) = &workflow {
+            return workflow
+                .errors()
+                .iter()
+                .map(|e| json!({"label":e.text(), "kind":20, "detail":"declared workflow error"}))
+                .collect();
+        }
+        let catch_target = if prefix
+            .lines()
+            .last()
+            .is_some_and(|line| line.trim_start().starts_with("catch ") && !line.contains("->"))
+        {
+            parsed
+                .syntax()
+                .descendants()
+                .filter_map(forgegraph_syntax::ast::StepCall::cast)
+                .find(|call| {
+                    u32::from(call.syntax().text_range().start()) as usize <= offset
+                        && offset <= u32::from(call.syntax().text_range().end()) as usize
+                })
+                .and_then(|call| call.target())
+                .and_then(|target| {
+                    current
+                        .compiled
+                        .references
+                        .iter()
+                        .find(|r| {
+                            r.span.file == source.path
+                                && r.span.start
+                                    == u32::from(target.syntax().text_range().start()) as usize
+                        })
+                        .map(|r| r.target.clone())
+                })
+        } else {
+            None
+        };
         let imports: std::collections::BTreeSet<String> = current
             .package
             .files
@@ -455,6 +566,20 @@ impl Server {
                     if !local && !decl.is_exported() {
                         continue;
                     }
+                    if in_wait {
+                        if let Declaration::Channel(channel) = &decl
+                            && let Some(name) = channel.name()
+                        {
+                            for alias in &aliases {
+                                for message in channel.messages() {
+                                    if let Some(message) = message.name() {
+                                        result.push(json!({"label":format!("{alias}{}.{}", name.text(), message.text()), "kind":7, "detail":"workflow wait message"}));
+                                    }
+                                }
+                            }
+                        }
+                        continue;
+                    }
                     if !matches!(
                         decl,
                         Declaration::Resource(_) | Declaration::Blob(_) | Declaration::Function(_)
@@ -468,7 +593,17 @@ impl Server {
                         let label = format!("{alias}{}", name.text());
                         let anchor =
                             format!("{}/{}/{}", a.package.name, target_module, name.text());
-                        result.push(json!({"label":label,"kind":if matches!(decl,Declaration::Function(_)){3}else{7},"detail":anchor}));
+                        if let Some(target) = &catch_target {
+                            if &anchor == target
+                                && let Declaration::Function(function) = &decl
+                            {
+                                result.extend(function.errors().iter().map(|e| json!({"label":e.text(),"kind":20,"detail":format!("error declared by {anchor}")})));
+                            }
+                            continue;
+                        }
+                        if in_uses || matches!(decl, Declaration::Function(_)) {
+                            result.push(json!({"label":label,"kind":if matches!(decl,Declaration::Function(_)){3}else{7},"detail":anchor}));
+                        }
                         if let Declaration::Resource(resource) = &decl
                             && let Some(lifecycle) = resource.lifecycle()
                         {
@@ -779,6 +914,118 @@ mod tests {
         assert_eq!(server.references(&declarations, 2, 10, false).len(), 0);
         std::fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn workflow_completion_uses_real_scope_types_and_navigates_bindings() {
+        let root = std::env::temp_dir().join(format!("forge-workflow-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("forge.toml"),
+            "[package]\nname = \"@test/workflow-nav\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        let path = root.join("src/workflow.forge");
+        let source = "shape Payload { value : text }\nfunction Echo { input Payload\n output Payload }\nworkflow Flow {\n input Payload\n output Payload\n version 1\n step first = Echo(value: input.value)\n step second = Echo(value: first.value)\n return second\n}\n";
+        std::fs::write(&path, source).unwrap();
+        let mut server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
+        };
+        assert!(
+            server.diagnostics_for(&path).is_empty(),
+            "{:?}",
+            server.diagnostics_for(&path)
+        );
+        let complete = |server: &Server, text: &str, needle: &str| {
+            let offset = text.find(needle).unwrap() + needle.len();
+            let pos = position(text, offset);
+            server.completion(
+                &path,
+                pos["line"].as_u64().unwrap() as usize,
+                pos["character"].as_u64().unwrap() as usize,
+            )
+        };
+        assert!(
+            complete(&server, source, "value: first.")
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        let bindings = complete(&server, source, "value: first");
+        assert!(bindings.iter().any(|v| v["label"] == "first"));
+        assert!(!bindings.iter().any(|v| v["label"] == "second"));
+        let first_use = position(source, source.find("first.value").unwrap());
+        let definition = server.definition(
+            &path,
+            first_use["line"].as_u64().unwrap() as usize,
+            first_use["character"].as_u64().unwrap() as usize,
+        );
+        assert_eq!(definition[0]["range"]["start"]["line"], 7);
+        let incomplete = source.replace("first.value", "first.");
+        server.open.insert(path.clone(), incomplete.clone());
+        assert!(
+            complete(&server, &incomplete, "value: first.")
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        let errors_source = source
+            .replace(
+                "function Echo { input Payload\n output Payload }",
+                "function Echo { input Payload\n output Payload\n errors { Rejected } }",
+            )
+            .replace(
+                " step second = Echo(value: first.value)",
+                " step second = Echo(value: first.value)\n catch Rejected -> fail Stopped",
+            )
+            .replace(" return second", " return second\n errors { Stopped }");
+        server.open.insert(path.clone(), errors_source.clone());
+        let catches = complete(&server, &errors_source, "catch R");
+        assert!(
+            catches.iter().any(|v| v["label"] == "Rejected"),
+            "{catches:?}"
+        );
+        let failures = complete(&server, &errors_source, "fail S");
+        assert!(failures.iter().any(|v| v["label"] == "Stopped"));
+        let wait_source = source
+            .replace(
+                "workflow Flow",
+                "channel Events { message Arrived { value : text } }\nworkflow Flow",
+            )
+            .replace(
+                " step second = Echo(value: first.value)",
+                " step received = wait Events.Arrived\n step second = Echo(value: received.value)",
+            );
+        server.open.insert(path.clone(), wait_source.clone());
+        let messages = complete(&server, &wait_source, "wait Events.");
+        assert!(messages.iter().any(|v| v["label"] == "Events.Arrived"));
+        assert!(
+            complete(&server, &wait_source, "value: received.")
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        let branch_source = source.replace(" step second = Echo(value: first.value)", " if input.value == \"yes\" {\n step hidden = Echo(value: first.value)\n } else {\n step second = Echo(value: first.value)\n }");
+        server.open.insert(path.clone(), branch_source.clone());
+        let offset = branch_source.rfind("value: first").unwrap() + "value: first".len();
+        let pos = position(&branch_source, offset);
+        let suggestions = server.completion(
+            &path,
+            pos["line"].as_u64().unwrap() as usize,
+            pos["character"].as_u64().unwrap() as usize,
+        );
+        assert!(suggestions.iter().any(|v| v["label"] == "first"));
+        assert!(!suggestions.iter().any(|v| v["label"] == "hidden"));
+        let parallel = source.replace(" step second = Echo(value: first.value)", " parallel {\n step hidden = Echo(value: first.value)\n step second = Echo(value: first.value)\n }");
+        server.open.insert(path.clone(), parallel.clone());
+        let offset = parallel.rfind("value: first").unwrap() + "value: first".len();
+        let pos = position(&parallel, offset);
+        let suggestions = server.completion(
+            &path,
+            pos["line"].as_u64().unwrap() as usize,
+            pos["character"].as_u64().unwrap() as usize,
+        );
+        assert!(!suggestions.iter().any(|v| v["label"] == "hidden"));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn imported_symbols_resolve_and_completion_hides_private_declarations() {
         let root = std::env::temp_dir().join(format!("forge-import-lsp-{}", std::process::id()));

@@ -17,6 +17,7 @@ struct PackageEntry {
     package: Package,
     dependencies: BTreeMap<String, String>,
     compilation: Rc<Compilation>,
+    editor_map: std::cell::OnceCell<Rc<serde_json::Value>>,
     used: u64,
 }
 struct ParseEntry {
@@ -127,11 +128,29 @@ impl AnalysisCache {
                 package,
                 dependencies,
                 compilation: Rc::clone(&compilation),
+                editor_map: std::cell::OnceCell::new(),
                 used: self.tick,
             },
         );
         compilation
     }
+    /// Source-map indexes for the immutable compilation retained by this cache entry.
+    /// Rc sharing prevents callers from mutating the cached compilation in place. Eviction or
+    /// invalidation drops its derived map; a caller holding an old compilation gets a fresh map.
+    pub fn editor_source_map(
+        &self,
+        key: &str,
+        compilation: &Rc<Compilation>,
+    ) -> Rc<serde_json::Value> {
+        let create = || Rc::new(compilation.source_map("editor", env!("CARGO_PKG_VERSION"), None));
+        if let Some(entry) = self.packages.get(key)
+            && Rc::ptr_eq(&entry.compilation, compilation)
+        {
+            return Rc::clone(entry.editor_map.get_or_init(create));
+        }
+        create()
+    }
+
     /// Direct package dependency graph, suitable for profiling/debugging invalidations.
     pub fn dependencies(&self) -> BTreeMap<String, Vec<String>> {
         self.packages

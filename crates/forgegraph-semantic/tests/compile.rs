@@ -1262,3 +1262,25 @@ fn workflow_arguments_are_type_checked_against_the_callee_contract() {
             .any(|d| d.code == "E-WF-008")
     );
 }
+
+#[test]
+fn workflow_choice_bindings_do_not_escape_or_leak_to_other_branch() {
+    let prefix = "shape Payload { value : text }\nfunction Echo { input Payload\n output Payload }\nworkflow Flow { input Payload\n output Payload\n version 1\n";
+    for body in [
+        "if input.value == \"yes\" { step branch = Echo(value: input.value) } else { step other = Echo(value: branch.value) }\nreturn input\n}",
+        "if input.value == \"yes\" { step branch = Echo(value: input.value) }\nreturn branch\n}",
+    ] {
+        let result = compile(
+            &inline(
+                "@test/branch-scope",
+                &[("flow.forge", &format!("{prefix}{body}"))],
+            ),
+            &[],
+        );
+        assert!(
+            result.diagnostics.iter().any(|d| d.code == "E-SYM-001"),
+            "{}",
+            result.render()
+        );
+    }
+}
