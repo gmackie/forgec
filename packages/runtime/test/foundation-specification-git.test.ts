@@ -12,7 +12,9 @@ it("resolves real Git commits, moved anchors and pinned dependency closure witho
   // Build fixture Git objects directly; no checkout, shell, network or user Git configuration.
   const git = (args: string[], input = "") => new Promise<string>((resolve, reject) => {
     const child = execFile("git", ["-C", directory, ...args], { env: { ...process.env, GIT_AUTHOR_NAME: "Fixture", GIT_AUTHOR_EMAIL: "fixture@example.invalid", GIT_COMMITTER_NAME: "Fixture", GIT_COMMITTER_EMAIL: "fixture@example.invalid" } }, (error, stdout) => error ? reject(error) : resolve(stdout.trim()));
-    child.stdin!.end(input);
+    child.stdin!.on("error", reject);
+    if (input) child.stdin!.end(input);
+    else child.stdin!.destroy();
   });
   try {
     await git(["init", "--bare"]);

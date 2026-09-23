@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-experiment-invariants/1",
+  "coverageCriteria": [
+    "F42-STORE"
+  ],
+  "status": "passing",
+  "runId": "95d5ae95-52bc-408b-a88b-fb3c927881fe",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "524c2450d5af415f3df4c038ed8d73ddc07eb201fb37b780a46d8f7054ce3c79",
+  "sourceFingerprint": "225d3671d1a21d0319321b3bf32fad2fbfe11cc4c2d4f338a3a27d0f23f87f56",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "ba077a73f18d7301f8be813e1f924b339c32efa7bb90236b6a618a46a315c54e"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "b111a1327f183144315d6e89c64740108ee2be8ad126e2a38383c3e88b606764"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "4865f714f19baf8a9ed8ffe17e1aaff3e968e5a06eb2c2bf644b6fcb8ed88221"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: stable assignments, scarce capacity, typed evaluation and artifact lineage"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T15:08:33.400Z",
+  "passedTraces": [
+    "hosted: stable assignments, scarce capacity, typed evaluation and artifact lineage"
+  ],
+  "testReportSha256": "783d8a2bf06a062d0268c0a6909755629b9bb12944f25eec86f1556ad99fa8b2",
+  "identity": {
+    "provider": "d1",
+    "runId": "95d5ae95-52bc-408b-a88b-fb3c927881fe",
+    "tenantPrefix": "foundation-cert-95d5ae95-52bc-408b-a88b-fb3c927881fe",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "ba077a73f18d7301f8be813e1f924b339c32efa7bb90236b6a618a46a315c54e",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ATL"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

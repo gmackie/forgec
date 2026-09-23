@@ -17,7 +17,7 @@
   "invariants": [
     "Posted groups and entries reject update/delete through every exposed capability",
     "Balanced groups sum to zero per exact unit/currency; no binary floating-point arithmetic or implicit exchange",
-    "All entries, account guards and idempotency receipt commit atomically within provider budget",
+    "All candidate entries become posted together through one immutable unique publication seal; every balance consumer validates the entire bounded chain and per-unit balance; account balance limits are outside this profile",
     "Reversals are new linked postings, prevent repeated reversal of the same amount, and preserve originals"
   ],
   "acceptance": [
@@ -25,31 +25,51 @@
       "id": "F36-01",
       "description": "account/entry model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-ledger.test.ts"
+      ]
     },
     {
       "id": "F36-02",
       "description": "immutable posting semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-ledger.test.ts"
+      ]
     },
     {
       "id": "F36-03",
       "description": "reversal/correction semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-ledger.test.ts"
+      ]
     },
     {
       "id": "F36-04",
       "description": "balance projection",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-ledger.test.ts"
+      ]
     },
     {
       "id": "F36-05",
       "description": "atomic posting-group semantics",
       "kind": "concurrency",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-ledger.test.ts"
+      ]
     },
     {
       "id": "F36-06",
@@ -61,7 +81,11 @@
       "id": "F36-07",
       "description": "fixtures for money, inventory quantity and compute credits",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-ledger.test.ts"
+      ]
     }
   ],
   "fixtures": [

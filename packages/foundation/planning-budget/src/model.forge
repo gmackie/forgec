@@ -1,0 +1,144 @@
+import specification
+import allocation
+import evaluation
+import ledger
+import classification
+import usage
+import fulfillment
+export resource Plan
+  @tenant
+  @appendOnly
+{
+  id : id
+  definition : specification.SpecificationPin
+  label : text length 1..200
+  classification : classification.ConceptRevision?
+}
+export resource Goal
+  @tenant
+  @appendOnly
+{
+  id : id
+  plan : Plan
+  metric : text length 1..128
+  unit : text length 1..64
+  target : decimal<6>
+}
+export resource Milestone
+  @tenant
+  @appendOnly
+{
+  id : id
+  plan : Plan
+  goal : Goal
+  dueAt : datetime
+  fulfillmentSet : fulfillment.FulfillmentSet
+  rules {
+    goal.plan == plan
+  }
+}
+export resource MilestoneEvaluation
+  @tenant
+  @appendOnly
+{
+  id : id
+  milestone : Milestone
+  finish : evaluation.EvaluationFinish
+  rules {
+    finish.outcome == "Completed"
+  }
+}
+export resource ForecastScenario
+  @tenant
+  @appendOnly
+{
+  id : id
+  plan : Plan
+  revision : integer >= 1 <= 128
+  previous : ForecastScenario?
+  assumptions : specification.SpecificationPin
+  label : text length 1..200
+  rules {
+    (previous == null && revision == 1) || (previous != null && previous.plan == plan && revision == previous.revision + 1)
+  }
+  unique plan, revision
+}
+export resource ForecastValue
+  @tenant
+  @appendOnly
+{
+  id : id
+  scenario : ForecastScenario
+  goal : Goal
+  quantity : decimal<6>
+  rules {
+    scenario.plan == goal.plan
+  }
+  unique scenario, goal
+}
+export resource FundingEnvelope
+  @tenant
+  @appendOnly
+{
+  id : id
+  plan : Plan
+  account : ledger.Account
+  limit : decimal<6> > 0
+  unit : text length 1..64
+  rules {
+    account.unit == unit
+  }
+}
+export resource Encumbrance
+  @tenant
+  @appendOnly
+{
+  id : id
+  envelope : FundingEnvelope
+  key : text length 1..128
+  amount : decimal<6> > 0
+  reservation : allocation.AllocationReservation?
+  unique envelope, key
+}
+export resource BudgetActual
+  @tenant
+  @appendOnly
+{
+  id : id
+  encumbrance : Encumbrance
+  amount : decimal<6> > 0
+  posting : ledger.PostingGroup @unique
+  account : ledger.Account
+  usage : usage.UsageEvent?
+  fulfillment : fulfillment.Fulfillment?
+  rules {
+    posting.book == account.book
+  }
+}
+export enum BudgetAction {
+  Commit
+  Release
+  Spend
+  Reverse
+}
+export resource BudgetEvent
+  @tenant
+  @appendOnly
+{
+  id : id
+  envelope : FundingEnvelope
+  encumbrance : Encumbrance
+  ordinal : integer >= 1 <= 128
+  previous : BudgetEvent?
+  action : BudgetAction
+  actual : BudgetActual?
+  reversal : ledger.PostingGroup?
+  rules {
+    encumbrance.envelope == envelope
+    (previous == null && ordinal == 1) || (previous != null && previous.envelope == envelope && ordinal == previous.ordinal + 1)
+    (action == "Spend" && actual != null && actual.encumbrance == encumbrance && reversal == null) || (action == "Reverse" && actual != null && actual.encumbrance == encumbrance && reversal != null && reversal.reversalOf == actual.posting) || ( (action == "Commit" || action == "Release") && actual == null && reversal == null)
+  }
+  unique envelope, ordinal
+  list by envelope
+    order by ordinal asc
+}

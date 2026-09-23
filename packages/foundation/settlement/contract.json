@@ -1,0 +1,143 @@
+{
+  "slug": "settlement",
+  "layer": "system",
+  "issue": 80,
+  "dependencies": [
+    "party",
+    "entitlement",
+    "fulfillment",
+    "agreement-catalog",
+    "ledger"
+  ],
+  "facts": [
+    "Neutral quantified obligation position; immutable admitted source, allocation chain, event, commit and optional ledger association."
+  ],
+  "operations": [
+    "Open position; admit typed source; materialize; settle; reverse; inspect by effective/knowledge time; link independent ledger posting."
+  ],
+  "invariants": [
+    "One position per obligation, one source per FulfillmentEnd, one commit per source; no duplicated AR/AP facts.",
+    "Only serialized commit seals confer authority; every temporal prefix has 0 <= settled <= materialized <= quantified obligation.",
+    "Trusted typed domain admission is required and rechecked, including original publication knowledge time.",
+    "Exact decimal6; explicit unit; no floating point, implicit exchange, invoice authority or ledger-as-payment proof."
+  ],
+  "fixtures": [
+    "commerce-payment",
+    "reimbursement",
+    "service-credit"
+  ],
+  "acceptance": [
+    {
+      "id": "F80-01",
+      "description": "Outstanding reciprocal obligation can materialize into a settlement position.",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-02",
+      "description": "One position supports partial settlement by multiple events.",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-03",
+      "description": "One event can settle multiple positions where policy permits.",
+      "kind": "concurrency",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-04",
+      "description": "Remaining/open amount is derivable and temporally explainable.",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-05",
+      "description": "Reversal/correction preserves history.",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-06",
+      "description": "Invoice/document is representation/communication rather than the underlying authoritative position.",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-07",
+      "description": "Receivable/payable are derivable participant perspectives.",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-08",
+      "description": "Integration with #30, #31, #36 and #43 is explicit.",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-09",
+      "description": "Model is clearly distinguished from adjudication Claim in #44.",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-10",
+      "description": "Fixtures cover commerce payment, reimbursement, and one non-money credit example.",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-settlement.test.ts"
+      ]
+    },
+    {
+      "id": "F80-STORE",
+      "description": "Source-bound invariant and concurrency receipts on PostgreSQL, hosted D1 and hosted DynamoDB.",
+      "kind": "provider",
+      "status": "planned"
+    },
+    {
+      "id": "F80-SEMANTIC",
+      "description": "Semantic compiler / ConceptIR temporal bridge with #75; package-level temporal fields alone do not satisfy this integration.",
+      "kind": "compile",
+      "status": "planned"
+    }
+  ]
+}

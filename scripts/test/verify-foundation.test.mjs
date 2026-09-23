@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validateContracts, validateCatalogs } from '../verify-foundation.mjs';
 const contract = (slug, issue = 26, dependencies = [], layer = 'substrate') => ({ slug, issue, dependencies, layer, facts: ['fact'], operations: ['create'], invariants: ['invariant'], fixtures: ['fixture'], acceptance: [{ id: `${slug}-01`, description: 'verify', kind: 'runtime', status: 'planned' }] });
-const validate = cs => validateContracts(cs, { complete: false });
+const validate = cs => validateContracts(cs, { complete: false, expectedScope: cs.filter(Boolean).map(c => ({issue: c.issue, slug: c.slug, layer: c.layer})) });
 test('dependency order is deterministic and accepts a diamond', () => {
   const cs = [contract('root'), contract('left', 27, ['root']), contract('right', 28, ['root']), contract('top', 39, ['left', 'right'], 'system')];
   assert.deepEqual(validate(cs).errors, []);
@@ -45,5 +45,17 @@ test('local passing acceptance names existing evidence and rejects missing or un
   for (const path of ['packages/runtime/test/foundation-missing.test.ts', '../outside.test.ts']) {
     c.acceptance[0].evidence = [path];
     assert.match(validate([c]).errors.join(), /requires evidence/);
+  }
+});
+
+test('expanded scope includes new Foundation packages but excludes PR51 and does not infer layer from number', () => {
+  const party = contract('party', 52, [], 'substrate');
+  assert.deepEqual(validateContracts([party], {complete:false}).errors, []);
+  assert.match(validateContracts([contract('pull-request', 51)], {complete:false}).errors.join(), /invalid or duplicate issue/);
+  assert.match(validateContracts([{...party, layer:'system'}], {complete:false}).errors.join(), /issue\/slug\/layer/);
+  assert.match(validateContracts([], {}).errors.join(), /missing issue #67/);
+  for (const [slug, issue, layer] of [['resource-relations',79,'substrate'],['settlement',80,'system']]) {
+    assert.deepEqual(validateContracts([contract(slug, issue, [], layer)], {complete:false}).errors, []);
+    assert.match(validateContracts([], {}).errors.join(), new RegExp(`missing issue #${issue}`));
   }
 });

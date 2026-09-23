@@ -1,0 +1,60 @@
+import evaluation
+import evidence
+import fulfillment
+import decision
+export resource Risk @tenant @appendOnly {
+ id : id
+ scenario : text length 1..1000
+}
+export resource RiskScale @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ label : text length 1..200
+}
+export resource RiskLevel @tenant @appendOnly {
+ id : id
+ scale : RiskScale
+ code : text length 1..64
+ rank : integer >= 0 <= 1000000
+ unique scale, code
+ unique scale, rank
+}
+export resource RiskAssessment @tenant @appendOnly {
+ id : id
+ risk : Risk
+ revision : integer >= 1 <= 1000000
+ predecessor : RiskAssessment?
+ likelihood : RiskLevel
+ impact : RiskLevel
+ confidence : decimal<3> >= 0 <= 1
+ evaluation : evaluation.EvaluationFinish
+ support : evidence.EvidenceSeal
+ assessedAt : datetime
+ rules {
+  evaluation.outcome == "Completed"
+  (predecessor == null && revision == 1) || (predecessor != null && predecessor.risk == risk && revision == predecessor.revision + 1 && assessedAt >= predecessor.assessedAt)
+ }
+ unique risk, revision
+ list by risk order by revision asc
+}
+export resource RiskTreatment @tenant @appendOnly {
+ id : id
+ assessment : RiskAssessment
+ fulfillmentSet : fulfillment.FulfillmentSet
+ action : text length 1..1000
+}
+export resource ResidualRisk @tenant @appendOnly {
+ id : id
+ treatment : RiskTreatment @unique
+ baseline : RiskAssessment
+ residual : RiskAssessment
+ rules { treatment.assessment == baseline && residual.risk == baseline.risk && residual.revision > baseline.revision }
+}
+export resource RiskAcceptance @tenant @appendOnly {
+ id : id
+ assessment : RiskAssessment @unique
+ decisionCase : decision.DecisionCase
+ outcome : decision.DecisionOutcome
+ reason : text length 1..1000
+ rules { outcome.decisionCase == decisionCase }
+}

@@ -1,0 +1,13 @@
+[package]
+name = "@forgegraph/foundation/settlement"
+version = "0.1.0"
+edition = "2027"
+[source]
+root = "src"
+entry = "src/model.forge"
+[dependencies]
+party = { path = "../party", deploy = true }
+entitlement = { path = "../entitlement", deploy = true }
+fulfillment = { path = "../fulfillment", deploy = true }
+agreement = { path = "../agreement-catalog", deploy = true }
+ledger = { path = "../ledger", deploy = true }

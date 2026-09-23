@@ -1,0 +1,49 @@
+import masterdata
+export resource Customer
+  @tenant
+  @appendOnly
+{
+  id : id
+  canonical : masterdata.CanonicalRecord @unique
+  name : text length 1..200
+}
+export resource Supplier
+  @tenant
+  @appendOnly
+{
+  id : id
+  canonical : masterdata.CanonicalRecord @unique
+  name : text length 1..200
+}
+export resource Asset
+  @tenant
+  @appendOnly
+{
+  id : id
+  canonical : masterdata.CanonicalRecord @unique
+  serial : text length 1..200
+}
+export resource CustomerSource
+  @tenant
+  @appendOnly
+{
+  id : id
+  source : masterdata.SourceRecord @unique
+  customer : Customer
+}
+export resource SupplierSource
+  @tenant
+  @appendOnly
+{
+  id : id
+  source : masterdata.SourceRecord @unique
+  supplier : Supplier
+}
+export resource AssetSource
+  @tenant
+  @appendOnly
+{
+  id : id
+  source : masterdata.SourceRecord @unique
+  asset : Asset
+}

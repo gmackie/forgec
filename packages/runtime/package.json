@@ -15,7 +15,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=22.5"
+    "node": ">=24"
   },
   "sideEffects": false,
   "files": [
@@ -132,6 +132,42 @@
       "source": "./src/foundation/git-specification.ts",
       "import": "./dist/foundation/git-specification.js",
       "default": "./dist/foundation/git-specification.js"
+    },
+    "./foundation/apps/bob": {
+      "types": "./dist/foundation/apps/bob.d.ts",
+      "source": "./src/foundation/apps/bob.ts",
+      "import": "./dist/foundation/apps/bob.js",
+      "default": "./dist/foundation/apps/bob.js"
+    },
+    "./foundation/apps/forgegraph": {
+      "types": "./dist/foundation/apps/forgegraph.d.ts",
+      "source": "./src/foundation/apps/forgegraph.ts",
+      "import": "./dist/foundation/apps/forgegraph.js",
+      "default": "./dist/foundation/apps/forgegraph.js"
+    },
+    "./foundation/apps/kanbanger": {
+      "types": "./dist/foundation/apps/kanbanger.d.ts",
+      "source": "./src/foundation/apps/kanbanger.ts",
+      "import": "./dist/foundation/apps/kanbanger.js",
+      "default": "./dist/foundation/apps/kanbanger.js"
+    },
+    "./foundation/apps/latchflow": {
+      "types": "./dist/foundation/apps/latchflow.d.ts",
+      "source": "./src/foundation/apps/latchflow.ts",
+      "import": "./dist/foundation/apps/latchflow.js",
+      "default": "./dist/foundation/apps/latchflow.js"
+    },
+    "./foundation/apps/levelforge": {
+      "types": "./dist/foundation/apps/levelforge.d.ts",
+      "source": "./src/foundation/apps/levelforge.ts",
+      "import": "./dist/foundation/apps/levelforge.js",
+      "default": "./dist/foundation/apps/levelforge.js"
+    },
+    "./foundation/apps/stream-conductor": {
+      "types": "./dist/foundation/apps/stream-conductor.d.ts",
+      "source": "./src/foundation/apps/stream-conductor.ts",
+      "import": "./dist/foundation/apps/stream-conductor.js",
+      "default": "./dist/foundation/apps/stream-conductor.js"
     }
   },
   "scripts": {

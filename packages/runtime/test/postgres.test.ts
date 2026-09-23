@@ -24,6 +24,7 @@ import { drizzlePgExecutor, PostgresStorage, rawPgExecutor } from "../src/adapte
 import { internalSubscriptions, withProjections } from "../src/readmodels.js";
 import { testLayer } from "../src/testing.js";
 import type { SqlExecutor } from "../src/adapters/sql-executor.js";
+import type { CommitPlan } from "../src/services.js";
 
 const url = process.env["FORGE_PG_URL"];
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;
@@ -77,18 +78,33 @@ describe.skipIf(!url)("PostgreSQL adapter", () => {
   });
   afterAll(async () => { await pool?.end(); });
 
-  // Under SERIALIZABLE every commit touches `_forge_assert` and `forge_outbox`, so concurrent
-  // commits are pivot candidates even when they share no business state. 40001 is the documented,
-  // expected outcome there and the documented remedy is to retry — so writes that do not conflict
-  // logically must still all succeed. D1 sees this rarely (one writer); PostgreSQL sees it under
-  // any real concurrency, which is exactly the portability gap this asserts against.
-  it("concurrent commits that share no business state all succeed despite serialization conflicts", async () => {
+  // Independent creates must not acquire avoidable SERIALIZABLE predicate locks through an
+  // absence read or shared assertion row. Native PostgreSQL guards preserve real preconditions,
+  // while the primary key arbitrates record identity without reading unrelated business state.
+  it.each([0, 0.01])("concurrent commits that share no business state all succeed despite serialization conflicts (assertion delay %ss)", async (delay) => {
     const A = "@acme/commerce/_";
     // Its own pool: the shared one caps at 4 connections, which serializes the calls and hides
     // the conflict this is about.
     const hot = new pg.Pool({ connectionString: url, max: 16 });
     try {
-      const target = new PgTarget(rawPgExecutor(hot), `pg-contention-${Date.now().toString(36)}`);
+      const executor = rawPgExecutor(hot);
+      const batch = executor.batch;
+      const attempts = new Map<string, number>();
+      // Reproduce slow CI transactions at the real guarded-write seam, retaining SERIALIZABLE
+      // and every business precondition. The old narrow retry jitter exhausted 4–7 of 64
+      // requests in five consecutive runs with this delay; no application state is shared.
+      executor.batch = (statements) => {
+        if (statements.some((s) => s.sql.startsWith("INSERT INTO customer "))) {
+          const op = String(statements[0]!.params[0]);
+          attempts.set(op, (attempts.get(op) ?? 0) + 1);
+        }
+        return batch(delay === 0 ? statements : statements.flatMap((s) =>
+          s.sql.startsWith("INSERT INTO _forge_assert")
+            ? [s, { sql: "SELECT pg_sleep(?)", params: [delay] }]
+            : [s],
+        ));
+      };
+      const target = new PgTarget(executor, `pg-contention-${Date.now().toString(36)}`);
       const tenant = `pg-contention-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
       const N = 64;
       const results = await Promise.all(
@@ -102,11 +118,46 @@ describe.skipIf(!url)("PostgreSQL adapter", () => {
       const ids = results.map((r) => (r.ok ? (r.value as { id: string }).id : ""));
       const fetched = await Promise.all(ids.map((id) => target.call(`${A}/Customer.get`, { id }, { tenant, actor: "operator" })));
       expect(fetched.filter((r) => !r.ok)).toEqual([]);
+      // These creates have no business-state reads: PK/unique checks arbitrate collisions.
+      // They must not consume retries because of an absence read or shared assertion row.
+      expect(attempts.size).toBe(N);
+      expect([...attempts.values()]).toEqual(Array(N).fill(1));
     } finally {
       // a failed assertion must not leave 16 connections open: vitest would hang on teardown
       await hot.end();
     }
   }, 120_000);
+
+  it("a primary-key collision keeps the create precondition outcome", async () => {
+    const storage = new PostgresStorage(rawPgExecutor(pool), model);
+    const commit = storage.commitAll.bind(storage);
+    let captured: CommitPlan[] = [];
+    storage.commitAll = (plans) => { captured = plans; return commit(plans); };
+    const engine = new Engine(model, testLayer(storage, { runId: "collision" }), { functions, externals });
+    await Effect.runPromise(engine.call("@acme/commerce/_/Customer.create", { code: "COLLISION", name: "Original" }, { tenant: "collision", actor: "a", requestId: "collision" }));
+    storage.commitAll = commit;
+    expect(captured).toHaveLength(1);
+    const result = await Effect.runPromiseExit(storage.commitAll(captured));
+    expect(result._tag).toBe("Failure");
+    if (result._tag === "Failure") expect(Cause.squash(result.cause)).toMatchObject({ code: "TransientConflict", detail: "id collision" });
+  }, 15_000);
+
+  it("native guards abort the transaction and do not require a shared assertion table", async () => {
+    const ex = rawPgExecutor(pool);
+    await pool.query("ALTER TABLE _forge_assert RENAME TO _forge_assert_unused");
+    try {
+      await expect(ex.batch([
+        { sql: "INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, '{}')", params: ["guard", "probe", "rolled-back"] },
+        { sql: "INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, (? = ?)", params: ["guard-check", 1, 2] },
+        { sql: "DELETE FROM _forge_assert WHERE op_id = ?", params: ["guard-check"] },
+      ])).rejects.toThrow("CHECK constraint failed: forge_precondition");
+      expect((await pool.query("SELECT id FROM forge_document WHERE tenant = 'guard'")).rows).toEqual([]);
+      const t = new PgTarget(ex, "assertion-free");
+      expect(await t.call("@acme/commerce/_/Customer.create", { code: "NOASSERT", name: "Independent" }, { tenant: "assertion-free", actor: "a" })).toMatchObject({ ok: true });
+    } finally {
+      await pool.query("ALTER TABLE _forge_assert_unused RENAME TO _forge_assert");
+    }
+  });
 
   it("pooled connections never retain transaction-local tenant context (PAR-087)", async () => {
     const one = new pg.Pool({ connectionString: url, max: 1 });

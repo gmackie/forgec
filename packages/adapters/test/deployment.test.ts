@@ -31,7 +31,10 @@ describe("PAR-151: Terraform and native projections satisfy the same resolved pl
       // what the provider cannot express is named, and everything else matches the native projection exactly
       const gaps = new Set(pack.unsupported.map((u) => u.id));
       if (target === "cloudflare") expect(pack.unsupported.map((u) => u.kind)).toEqual(["cloudflare_workflow"]);
-      else expect(pack.unsupported).toEqual([]);
+      else {
+        expect(pack.unsupported).toEqual([]);
+        expect(plan.resources.find((r) => r.id === "api")?.properties["runtime"]).toBe("nodejs24.x");
+      }
       expect(tf.resources).toEqual(native.resources.filter((r) => !gaps.has(r.id)));
       const nativeBindings = Object.fromEntries(Object.entries(native.bindings).filter(([, v]) => !v.startsWith("workflow:")));
       expect(tf.bindings).toEqual(nativeBindings);
@@ -93,6 +96,8 @@ describe("PAR-152: secret-free Docker and Nix artifacts", () => {
     // the emitter has no parameter that could carry a value; simulate an operator's real secrets and scan
     const values = ["s3cr3t-cursor-value", "jwt-hmac-9f8e7d", "-----BEGIN PRIVATE KEY-----", "postgres://forge:hunter2@db/forge"];
     for (const text of Object.values(pack.files)) for (const v of values) expect(text).not.toContain(v);
+    expect(pack.files["Dockerfile"]).toContain("FROM docker.io/library/node:24-bookworm-slim");
+    expect(pack.files["flake.nix"]).toContain("pkgs.nodejs_24");
     expect(pack.files["Dockerfile"]).toMatch(/USER forge/);
     expect(pack.files["Dockerfile"]).toMatch(/FORGE_JWT_SECRET_FILE=\/run\/secrets\/FORGE_JWT_SECRET/);
     expect(pack.files["Dockerfile"]).not.toMatch(/ARG .*SECRET|ENV .*SECRET=(?!.*_FILE)/);

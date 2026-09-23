@@ -1,0 +1,47 @@
+import availability
+resource WorkerAvailability
+  @tenant
+  @appendOnly
+{
+  id : id
+  workerKey : text
+  calendar : availability.AvailabilityCalendar
+  revision : availability.AvailabilityCalendarRevision
+  rules {
+    revision.calendar == calendar
+  }
+}
+resource MachineAvailability
+  @tenant
+  @appendOnly
+{
+  id : id
+  machineKey : text
+  calendar : availability.AvailabilityCalendar
+  revision : availability.AvailabilityCalendarRevision
+  rules {
+    revision.calendar == calendar
+  }
+}
+resource FacilityAvailability
+  @tenant
+  @appendOnly
+{
+  id : id
+  facilityKey : text
+  calendar : availability.AvailabilityCalendar
+  revision : availability.AvailabilityCalendarRevision
+  rules {
+    revision.calendar == calendar
+  }
+}
+
+// Future Scheduling consumes these typed attachments and the bounded query result.
+// Capacity claims remain a separate Allocation operation; neither system is implemented here.
+shape AvailabilitySearchInput {
+  worker : WorkerAvailability
+  machine : MachineAvailability
+  facility : FacilityAvailability
+  from : datetime
+  until : datetime
+}

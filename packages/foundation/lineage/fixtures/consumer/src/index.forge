@@ -1,0 +1,43 @@
+import lineage
+resource SoftwareBuild
+  @tenant
+  @appendOnly
+{
+  id : id
+  provenance : lineage.LineageNode
+  commit : text length 40..40
+}
+resource ManufacturingBatch
+  @tenant
+  @appendOnly
+{
+  id : id
+  provenance : lineage.LineageNode
+  lot : text length 1..100
+}
+resource DatasetTransform
+  @tenant
+  @appendOnly
+{
+  id : id
+  transformation : lineage.Transformation
+  recipe : text length 1..200
+}
+resource LevelGeneration
+  @tenant
+  @appendOnly
+{
+  id : id
+  provenance : lineage.LineageNode
+  seed : integer >= 0
+}
+
+resource BuildExecution
+  @tenant
+  @appendOnly
+{
+  id : id
+  transformation : lineage.Transformation
+  build : SoftwareBuild
+  command : text length 1..200
+}

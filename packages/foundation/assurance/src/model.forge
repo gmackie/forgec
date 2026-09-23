@@ -1,0 +1,162 @@
+import specification
+import evaluation
+import evidence
+import artifact
+
+export enum DispositionKind {
+  Remediate
+  Accepted
+  FalsePositive
+  Waived
+  Deferred
+}
+export enum RemediationOutcome {
+  Completed
+  Cancelled
+}
+export resource Finding
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  finish : evaluation.EvaluationFinish
+  run : evaluation.EvaluationRun
+  specification : specification.SpecificationPin
+  summary : text length 1..1000
+  predecessor : Finding?
+  rules {
+    finish.run == run
+    run.definition == specification
+  }
+}
+export resource Disposition
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  finding : Finding @unique
+  kind : DispositionKind
+  reason : text length 1..1000
+  recordedBy : text length 1..128
+  find by finding
+}
+export resource Remediation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  disposition : Disposition
+  finding : Finding
+  intendedAction : text length 1..1000
+  rules {
+    disposition.kind == DispositionKind.Remediate
+    disposition.finding == finding
+  }
+}
+export resource Reevaluation
+  @tenant
+  @appendOnly
+{
+  id : id
+  remediation : Remediation
+  finding : Finding
+  finish : evaluation.EvaluationFinish
+  run : evaluation.EvaluationRun
+  rules {
+    remediation.finding == finding
+    run != finding.run
+    finish.run == run
+    run.definition == finding.specification
+    finish.outcome == "Completed"
+  }
+}
+export resource RemediationFinish
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  remediation : Remediation @unique
+  disposition : Disposition
+  outcome : RemediationOutcome
+  reevaluation : Reevaluation?
+  reason : text length 1..500
+  rules {
+    remediation.disposition == disposition
+    reevaluation == null || reevaluation.remediation == remediation
+    outcome == RemediationOutcome.Cancelled || reevaluation != null
+  }
+  find by remediation
+}
+export resource FindingClosure
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  finding : Finding @unique
+  disposition : Disposition
+  remediationFinish : RemediationFinish?
+  reason : text length 1..500
+  rules {
+    disposition.finding == finding
+    disposition.kind != DispositionKind.Deferred
+    remediationFinish == null || (remediationFinish.disposition == disposition && remediationFinish.outcome == RemediationOutcome.Completed)
+    disposition.kind != DispositionKind.Remediate || remediationFinish != null
+  }
+  find by finding
+}
+export resource AssuranceIssuer
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+}
+export resource Attestation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  finding : Finding
+  issuer : AssuranceIssuer
+  issuerRecord : text length 1..128
+  specification : specification.SpecificationPin
+  finish : evaluation.EvaluationFinish
+  run : evaluation.EvaluationRun
+  support : evidence.EvidenceSeal
+  artifact : artifact.ArtifactRevision?
+  conclusion : text length 1..1000
+  validFrom : datetime
+  validUntil : datetime?
+  rules {
+    specification == finding.specification
+    finish.run == run
+    run.definition == specification
+    finish.outcome == "Completed"
+    finish.support == support
+    validUntil == null || validUntil > validFrom
+  }
+  unique issuer, issuerRecord
+}
+export resource AttestationEnd
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  attestation : Attestation @unique
+  replacement : Attestation?
+  effectiveAt : datetime
+  reason : text length 1..500
+  rules {
+    effectiveAt >= attestation.validFrom
+    replacement == null || (replacement.finding == attestation.finding && replacement.issuer == attestation.issuer && replacement.validFrom > attestation.validFrom && effectiveAt == replacement.validFrom)
+  }
+  find by attestation
+}

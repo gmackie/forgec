@@ -1,13 +1,13 @@
 import { Effect } from "effect";
 import { createHash } from "node:crypto";
 import { it, expect } from "vitest";
-import { consumerFixture } from "./foundation-fixture.js";
+import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 import { Artifacts } from "../src/foundation/artifact.js";
 import { Objects } from "../src/services.js";
 import type { MemoryObjectStore } from "../src/adapters/memory-objects.js";
 const domain = "@foundation-probe/artifact-consumers/_/", base = "@forgegraph/foundation/artifact/_/", spec = "@forgegraph/foundation/specification/_/";
-for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: immutable component manifests, realized provenance and all typed artifact consumers`, async () => {
-  const { engine, close } = consumerFixture("artifact", adapter);
+for (const adapter of foundationAdapters) it(`${adapter}: immutable component manifests, realized provenance and all typed artifact consumers`, async () => {
+  const { engine, close } = await consumerFixture("artifact", adapter);
   const ctx = { tenant: "t", actor: "u", requestId: "artifact-fixtures" };
   const call = (op: string, input: Record<string, unknown>) => Effect.runPromise(engine.call(op, input, ctx));
   const run = Effect.runPromise;
@@ -48,5 +48,5 @@ for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: immutable c
       expect((await call(domain + name + ".get", { id: owner.id })).revision).toBe(manifest.id);
     }
     await expect(run(service.components(String(first.id), { ...ctx, tenant: "other" }))).rejects.toThrow();
-  } finally { close(); }
+  } finally { await close(); }
 });

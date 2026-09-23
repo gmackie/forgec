@@ -1,0 +1,22 @@
+import usage
+resource LlmSession
+  @tenant
+  @appendOnly
+{
+  id : id
+  tokenUsage : usage.UsageStream @unique
+}
+resource ComputeRun
+  @tenant
+  @appendOnly
+{
+  id : id
+  computeUsage : usage.UsageStream @unique
+}
+resource MachineRun
+  @tenant
+  @appendOnly
+{
+  id : id
+  machineUsage : usage.UsageStream @unique
+}

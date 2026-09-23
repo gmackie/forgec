@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "suite": "applications",
+  "application": "latchflow",
+  "status": "passing",
+  "runId": "eed04dd6-7e04-4147-84d8-b38e47bb8f64",
+  "sourceRevision": "a36ec961a025cf2a7ced1d1cb989f0f3d4e42545",
+  "sourceRevisionScope": "Pinned files verified against immutable revision; unrelated working-copy files are not certified",
+  "sourceFiles": [
+    {
+      "path": "packages/api/src/services/foundation-run.ts",
+      "sha256": "0e2f789c38466492bf61be9a0fb18160399cbfbaa8b0bbc6da90544fccf53621"
+    },
+    {
+      "path": "packages/api/src/routers/runtime.ts",
+      "sha256": "61c6592a01adb06ecb8b1ad4b904167a394ffb53675d5b1f66465166aae09de0"
+    },
+    {
+      "path": "packages/api/src/services/foundation-run.test.ts",
+      "sha256": "cfd060f590e6df17e8dca69248943c8f48533b7b7888501c69817a87cc0e0347"
+    },
+    {
+      "path": "packages/api/src/routers/runtime-foundation.test.ts",
+      "sha256": "2fa048c9facab6224ef938f88586fcf8f7371fb06ac8cdfcb6fd3bd260305d7e"
+    },
+    {
+      "path": "packages/db/src/tenant-schema.ts",
+      "sha256": "f63d2bcb45772f6c702d3d917ecb0ff184273e5afbb2fc9723e0718c6c381a0b"
+    }
+  ],
+  "sourceFingerprint": "859ff54ddd6861b4b0c01f0727d78cf9164ce3c6f717672a1c9b96d488d254c8",
+  "scope": "Local opt-in integration with pinned actual application source; not deployed adoption",
+  "artifacts": [
+    {
+      "path": "api.smithy",
+      "sha256": "4629b71721b54780492ac6bdd5501a318f6dcfa12284146fb8b151ee1157b567"
+    },
+    {
+      "path": "app.json",
+      "sha256": "9d5407ffe3a40c76460061c72ed092eb8ec67c444b6addfddc41916e2f5d247b"
+    },
+    {
+      "path": "client.ts",
+      "sha256": "f544d2a5ec828e84ad14df18aee1f3009e132999f04a80321d51d0d02c16017e"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "d257f2f4ecd465795ef4a9c749f0aca2b9efd0588be5edc4de65ba55abf274b7"
+    },
+    {
+      "path": "openapi.json",
+      "sha256": "73c46120cf0e7d76200127c71e95440cfd516198aaa5e93f59180fb41edff89c"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "dab8e65239a48791dbeaa7f57d62e88e0c3323f22b699cf73e71cd5cb6edbf4f"
+    },
+    {
+      "path": "README.md",
+      "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+    },
+    {
+      "path": "source-map.json",
+      "sha256": "031575b230c79f32b779f62907ea2f12e3946058dfff2ccc255c53a0d7fca5e6"
+    }
+  ],
+  "passedTests": [
+    "memory: actual LatchFlow Run projects exact compiled content and preserves runner acknowledgment boundary",
+    "memory: actual LatchFlow seam rejects foreign scope and keeps native Run on denied projection",
+    "sqlite: actual LatchFlow Run projects exact compiled content and preserves runner acknowledgment boundary",
+    "sqlite: actual LatchFlow seam rejects foreign scope and keeps native Run on denied projection"
+  ],
+  "verifiedAt": "2026-09-23T17:14:53.489Z",
+  "testReportSha256": "8783990701c8629631b21976844c487228806298cc4568178e1bacf4318545b6"
+}

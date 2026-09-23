@@ -1,9 +1,9 @@
 # Participation (experimental)
 
-Participant and ParticipationSet are typed substrate handles. Application resources
-own scope through outward references; PrincipalParticipant and OrganizationParticipant
-in the consumer fixture provide explicit identity mappings. A participant is not a
-universal entity reference or an authorization grant.
+Participation imports Party with `deploy = true`. Application resources own scope
+through outward ParticipationSet references; the `participant` field points to Party.
+Party owns Principal representation; typed Person/Organization satellites remain
+consumer-owned. Neither identity nor participation grants authorization.
 
 ParticipationRole registers an immutable, namespaced vocabulary. The generic
 `Participations<Role>` runtime wrapper validates the consuming application's declared
@@ -21,11 +21,10 @@ memberships; stricter per-set overlap policies are not implemented.
 `listAt` returns paged facts from the declared vocabulary. Follow `next` even when
 `items` is empty: expired, ended or out-of-vocabulary rows may consume a storage page.
 It preserves the engine's authorization checks and refuses to treat an unreadable
-terminal fact as absent. An application PIP can use the typed PrincipalParticipant
-mapping and exhaust these pages under an authorized service context to obtain facts.
+terminal fact as absent. An application PIP can use the Party representation reader, including representation revocation, and exhaust these pages under an authorized service context to obtain facts.
 The authorizer must independently decide what the facts permit. `participationPipAuthorizer` bridges a live, tenant-scoped fact reader to independent
 Gatekeeper policies. It disables allow caching and forces per-record list decisions
-so revocation/time boundaries are reread on each decision. The reader supplies fresh
+so revocation/time boundaries are reread on each decision. The reader exhausts representation and membership pages and supplies fresh
 attributes and uses a separate service engine with explicit read policies; failure
 propagates rather than granting authority.
 

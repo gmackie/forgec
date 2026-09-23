@@ -1,0 +1,4092 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "08e874932d0346b69762c6c7b94715b4d256fb1f5fe15b9a8bf44eaf7814a52a",
+  "digests": {
+    "source": "d5cc7f2490de13608e291294eddb88fabe6b6e28420f78949fd8990a8c9ddfdd",
+    "wire": "d782509ed03e7158478a17aa90fbdcb9426db42b12e46429faecc9bbfaae5d4f",
+    "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
+    "security": "dcc055c6d34c6354a62c7de555898ea63ad54bd6f9c450975094bda9e94e1ba2"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@forgegraph/foundation/ledger",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@forgegraph/foundation/ledger/_/Account",
+            "name": "Account",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "book",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/ledger/_/LedgerBook"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "unit",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "book_key",
+                "fields": [
+                  "book",
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/ledger/_/Account.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/Account.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/Account.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/Entry",
+            "name": "Entry",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "book",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/ledger/_/LedgerBook"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "account",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/ledger/_/Account"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "quantity",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "decimal",
+                    "args": [
+                      "6"
+                    ]
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "next",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/ledger/_/Entry"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "==",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "account",
+                    "book"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "book"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "next"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "next",
+                      "book"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "book"
+                    ]
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/ledger/_/Entry.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/Entry.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/Entry.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/LedgerBook",
+            "name": "LedgerBook",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "key",
+                "fields": [
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/ledger/_/LedgerBook.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/LedgerBook.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/PostingGroup",
+            "name": "PostingGroup",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "book",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/ledger/_/LedgerBook"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "claim",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 300
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "head",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/ledger/_/Entry"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "policy",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 16
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reversalOf",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/ledger/_/PostingGroup"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reason",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 1000
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [
+              {
+                "name": "book_claim",
+                "fields": [
+                  "book",
+                  "claim"
+                ],
+                "within": []
+              },
+              {
+                "name": "book_key",
+                "fields": [
+                  "book",
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byBook",
+                "fields": [
+                  "book"
+                ],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "==",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "head",
+                    "book"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "book"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "reversalOf"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "reversalOf",
+                      "book"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "book"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "policy"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "string",
+                      "value": "balanced"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "policy"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "string",
+                      "value": "unrestricted"
+                    }
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/ledger/_/PostingGroup.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/PostingGroup.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/PostingGroup.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@forgegraph/foundation/ledger/_/PostingGroup.list.byBook",
+                "kind": "list",
+                "query": "byBook"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "append-only/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@forgegraph/foundation/ledger",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/ledger/_/Account",
+        "name": "Account",
+        "wireName": "account",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "id",
+            "book",
+            "key",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "book",
+            "key",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/ledger/_/Account.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/Account.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/Account.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/Entry",
+        "name": "Entry",
+        "wireName": "entry",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "account": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Account"
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            }
+          },
+          "required": [
+            "id",
+            "book",
+            "account",
+            "quantity",
+            "next"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "account": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Account"
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            }
+          },
+          "required": [
+            "book",
+            "account",
+            "quantity"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/ledger/_/Entry.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/Entry.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/Entry.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "name": "LedgerBook",
+        "wireName": "ledger_book",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "id",
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/ledger/_/LedgerBook.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/LedgerBook.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "name": "PostingGroup",
+        "wireName": "posting_group",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "claim": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "head": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            },
+            "policy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 16
+            },
+            "reversalOf": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/PostingGroup"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "book",
+            "key",
+            "claim",
+            "head",
+            "policy",
+            "reversalOf",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "claim": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "head": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            },
+            "policy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 16
+            },
+            "reversalOf": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/PostingGroup"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "book",
+            "key",
+            "claim",
+            "head",
+            "policy",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byBook",
+            "kind": "list",
+            "params": [
+              "book"
+            ],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/ledger/_/PostingGroup.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/PostingGroup.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/PostingGroup.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@forgegraph/foundation/ledger/_/PostingGroup.list.byBook",
+            "kind": "list",
+            "query": "byBook"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "account",
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "book",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "book",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          },
+          {
+            "name": "unit",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "unit",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "book"
+            ],
+            "references": "ledger_book",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "entry",
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "book",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "book",
+            "storage": "text"
+          },
+          {
+            "name": "account",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "account",
+            "storage": "text"
+          },
+          {
+            "name": "quantity",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "quantity",
+            "storage": "minorUnits"
+          },
+          {
+            "name": "next",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "next",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "book"
+            ],
+            "references": "ledger_book",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "account"
+            ],
+            "references": "account",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "next"
+            ],
+            "references": "entry",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "ledger_book",
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "posting_group",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "book",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "book",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          },
+          {
+            "name": "claim",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "claim",
+            "storage": "text"
+          },
+          {
+            "name": "head",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "head",
+            "storage": "text"
+          },
+          {
+            "name": "policy",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "policy",
+            "storage": "text"
+          },
+          {
+            "name": "reversal_of",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "reversalOf",
+            "storage": "text"
+          },
+          {
+            "name": "reason",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "reason",
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "book"
+            ],
+            "references": "ledger_book",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "head"
+            ],
+            "references": "entry",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "reversal_of"
+            ],
+            "references": "posting_group",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      }
+    ],
+    "indexes": [
+      {
+        "name": "account_uq_book_key",
+        "table": "account",
+        "columns": [
+          "tenant",
+          "book",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "book_key"
+      },
+      {
+        "name": "ledger_book_uq_key",
+        "table": "ledger_book",
+        "columns": [
+          "tenant",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "key"
+      },
+      {
+        "name": "posting_group_uq_book_claim",
+        "table": "posting_group",
+        "columns": [
+          "tenant",
+          "book",
+          "claim"
+        ],
+        "unique": true,
+        "constraint": "book_claim"
+      },
+      {
+        "name": "posting_group_uq_book_key",
+        "table": "posting_group",
+        "columns": [
+          "tenant",
+          "book",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "book_key"
+      },
+      {
+        "name": "posting_group_ix_by_book",
+        "table": "posting_group",
+        "columns": [
+          "tenant",
+          "book",
+          "id"
+        ],
+        "unique": false,
+        "query": "byBook"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/ledger/_/Account",
+        "name": "Account",
+        "wireName": "account",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "book_key",
+            "keyFields": [
+              "book",
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "book",
+            "target": "@forgegraph/foundation/ledger/_/LedgerBook"
+          }
+        ],
+        "createActions": 6
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/Entry",
+        "name": "Entry",
+        "wireName": "entry",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "book",
+            "target": "@forgegraph/foundation/ledger/_/LedgerBook"
+          },
+          {
+            "field": "account",
+            "target": "@forgegraph/foundation/ledger/_/Account"
+          },
+          {
+            "field": "next",
+            "target": "@forgegraph/foundation/ledger/_/Entry"
+          }
+        ],
+        "createActions": 7
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "name": "LedgerBook",
+        "wireName": "ledger_book",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "key",
+            "keyFields": [
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "name": "PostingGroup",
+        "wireName": "posting_group",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "book_claim",
+            "keyFields": [
+              "book",
+              "claim"
+            ]
+          },
+          {
+            "name": "book_key",
+            "keyFields": [
+              "book",
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          },
+          {
+            "name": "byBook",
+            "kind": "list",
+            "partitionFields": [
+              "book"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "book"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "book",
+            "target": "@forgegraph/foundation/ledger/_/LedgerBook"
+          },
+          {
+            "field": "head",
+            "target": "@forgegraph/foundation/ledger/_/Entry"
+          },
+          {
+            "field": "reversalOf",
+            "target": "@forgegraph/foundation/ledger/_/PostingGroup"
+          }
+        ],
+        "createActions": 10
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@forgegraph/foundation/ledger",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/ledger/_/Account",
+        "name": "Account",
+        "kind": "resource",
+        "label": "Account",
+        "plural": "Accounts",
+        "route": "accounts",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "book",
+            "label": "Book",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+              "route": "ledger-book",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "unit",
+            "label": "Unit",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "book",
+          "key",
+          "unit"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/ledger/_/Account.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/Entry",
+        "name": "Entry",
+        "kind": "resource",
+        "label": "Entry",
+        "plural": "Entrys",
+        "route": "entrys",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "book",
+            "label": "Book",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+              "route": "ledger-book",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "account",
+            "label": "Account",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/ledger/_/Account",
+              "route": "account",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/ledger/_/Account.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "quantity",
+            "label": "Quantity",
+            "widget": "decimal",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "next",
+            "label": "Next",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/ledger/_/Entry",
+              "route": "entry",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/ledger/_/Entry.list.all",
+              "lookupParams": []
+            }
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "book",
+          "account",
+          "quantity",
+          "next"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/ledger/_/Entry.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "name": "LedgerBook",
+        "kind": "resource",
+        "label": "Ledger Book",
+        "plural": "Ledger Books",
+        "route": "ledger-books",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "key"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "name": "PostingGroup",
+        "kind": "resource",
+        "label": "Posting Group",
+        "plural": "Posting Groups",
+        "route": "posting-groups",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "book",
+            "label": "Book",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+              "route": "ledger-book",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "claim",
+            "label": "Claim",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 300
+          },
+          {
+            "name": "head",
+            "label": "Head",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/ledger/_/Entry",
+              "route": "entry",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/ledger/_/Entry.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "policy",
+            "label": "Policy",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 16
+          },
+          {
+            "name": "reversalOf",
+            "label": "Reversal Of",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+              "route": "posting-group",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/ledger/_/PostingGroup.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "reason",
+            "label": "Reason",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "book",
+          "key",
+          "claim",
+          "head",
+          "policy",
+          "reversalOf"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/ledger/_/PostingGroup.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byBook",
+            "op": "@forgegraph/foundation/ledger/_/PostingGroup.list.byBook",
+            "params": [
+              "book"
+            ],
+            "label": "By Book"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-forgegraph-foundation-ledger-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Account.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Account.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Account.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Entry.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Entry.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Entry.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/LedgerBook.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/LedgerBook.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.list.byBook",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "field": "book",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "field": "unit",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "field": "book",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "field": "account",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "field": "quantity",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "field": "next",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "book",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "claim",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "head",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "policy",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "reversalOf",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "reason",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "inferred": 1,
+      "structural": 13,
+      "unclassified": 7
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Account.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "outputs": [
+          "id",
+          "book",
+          "key",
+          "unit"
+        ],
+        "writes": [
+          "book",
+          "key",
+          "unit"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Account.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "outputs": [
+          "id",
+          "book",
+          "key",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Account.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/Account",
+        "outputs": [
+          "id",
+          "book",
+          "key",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Entry.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "outputs": [
+          "id",
+          "book",
+          "account",
+          "quantity",
+          "next"
+        ],
+        "writes": [
+          "book",
+          "account",
+          "quantity",
+          "next"
+        ],
+        "filters": [
+          "account",
+          "book",
+          "next"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Entry.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "outputs": [
+          "id",
+          "book",
+          "account",
+          "quantity",
+          "next"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/Entry.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/Entry",
+        "outputs": [
+          "id",
+          "book",
+          "account",
+          "quantity",
+          "next"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/LedgerBook.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [
+          "key"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/LedgerBook.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/LedgerBook.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/LedgerBook",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "outputs": [
+          "id",
+          "book",
+          "key",
+          "claim",
+          "head",
+          "policy",
+          "reversalOf",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "book",
+          "key",
+          "claim",
+          "head",
+          "policy",
+          "reversalOf",
+          "reason"
+        ],
+        "filters": [
+          "head",
+          "book",
+          "reversalOf",
+          "policy"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "outputs": [
+          "id",
+          "book",
+          "key",
+          "claim",
+          "head",
+          "policy",
+          "reversalOf",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "outputs": [
+          "id",
+          "book",
+          "key",
+          "claim",
+          "head",
+          "policy",
+          "reversalOf",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/ledger/_/PostingGroup.list.byBook",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/ledger/_/PostingGroup",
+        "outputs": [
+          "id",
+          "book",
+          "key",
+          "claim",
+          "head",
+          "policy",
+          "reversalOf",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "book"
+        ],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@forgegraph/foundation/ledger",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "AccountRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "book",
+            "key",
+            "unit"
+          ]
+        },
+        "AccountCreate": {
+          "type": "object",
+          "properties": {
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "book",
+            "key",
+            "unit"
+          ]
+        },
+        "AccountPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "EntryRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "account": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Account"
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "book",
+            "account",
+            "quantity",
+            "next"
+          ]
+        },
+        "EntryCreate": {
+          "type": "object",
+          "properties": {
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "account": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Account"
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "book",
+            "account",
+            "quantity"
+          ]
+        },
+        "EntryPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "LedgerBookRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "key"
+          ]
+        },
+        "LedgerBookCreate": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "key"
+          ]
+        },
+        "LedgerBookPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "PostingGroupRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "claim": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "head": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            },
+            "policy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 16
+            },
+            "reversalOf": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/PostingGroup"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "book",
+            "key",
+            "claim",
+            "head",
+            "policy",
+            "reversalOf",
+            "reason"
+          ]
+        },
+        "PostingGroupCreate": {
+          "type": "object",
+          "properties": {
+            "book": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/LedgerBook"
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "claim": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "head": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/Entry"
+            },
+            "policy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 16
+            },
+            "reversalOf": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/ledger/_/PostingGroup"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "book",
+            "key",
+            "claim",
+            "head",
+            "policy",
+            "reason"
+          ]
+        },
+        "PostingGroupPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  }
+}

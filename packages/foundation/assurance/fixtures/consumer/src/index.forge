@@ -1,0 +1,41 @@
+import assurance
+resource Vulnerability
+  @tenant
+  @appendOnly
+{
+  id : id
+  finding : assurance.Finding @unique
+  advisory : text length 1..128
+}
+resource ManufacturingCAPA
+  @tenant
+  @appendOnly
+{
+  id : id
+  finding : assurance.Finding @unique
+  lot : text length 1..128
+}
+resource AccessReview
+  @tenant
+  @appendOnly
+{
+  id : id
+  finding : assurance.Finding @unique
+  account : text length 1..128
+}
+resource ModelAssurance
+  @tenant
+  @appendOnly
+{
+  id : id
+  finding : assurance.Finding @unique
+  modelDigest : text length 1..128
+}
+resource CorrectiveWork
+  @tenant
+  @appendOnly
+{
+  id : id
+  remediation : assurance.Remediation
+  instruction : text length 1..500
+}

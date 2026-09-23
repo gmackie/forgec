@@ -17,7 +17,11 @@ cargo run -q -p forgegraph-cli -- build conformance/foundation/fixtures/composit
 cp "$foundation_out/app.json" conformance/foundation/composition.app.json
 
 # Foundation acceptance fixtures and their typed consumers must track compiler output.
-for foundation_slug in specification artifact identifiers participation; do
+for foundation_verifier in packages/foundation/*/verification.json; do
+  foundation_slug=$(basename "$(dirname "$foundation_verifier")")
   cargo run -q -p forgegraph-cli -- build "packages/foundation/$foundation_slug" --out "conformance/fixtures/$foundation_slug"
   cargo run -q -p forgegraph-cli -- build "packages/foundation/$foundation_slug/fixtures/consumer" --out "conformance/fixtures/$foundation_slug-consumer"
+  if [[ -f "packages/foundation/$foundation_slug/fixtures/controller/forge.toml" ]]; then
+    cargo run -q -p forgegraph-cli -- build "packages/foundation/$foundation_slug/fixtures/controller" --out "conformance/fixtures/$foundation_slug-controller"
+  fi
 done

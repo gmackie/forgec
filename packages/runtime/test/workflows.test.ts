@@ -174,3 +174,54 @@ describe("workflow execution", () => {
     expect((await fails(engine2.workflows.advance("acme", inst.id).pipe(Effect.provide(engine2.layer)))).code).toBe("WorkflowVersionMismatch");
   });
 });
+
+it("replays a concurrent activity after a stale receipt miss", async () => {
+  const inst = await start();
+  const original = storage.getReceipt.bind(storage);
+  let release!: () => void, reached!: () => void;
+  const paused = new Promise<void>(resolve => { release = resolve; });
+  const ready = new Promise<void>(resolve => { reached = resolve; });
+  let intercepted = false;
+  storage.getReceipt = (...args) => Effect.gen(function* () {
+    const receipt = yield* original(...args);
+    if (args[1].endsWith(".status.cancel") && !intercepted) {
+      intercepted = true;
+      reached();
+      yield* Effect.promise(() => paused);
+    }
+    return receipt;
+  });
+  const losing = signal(ids.order, "1.00");
+  await ready;
+
+  // The second driver commits the activity, but cannot yet save its workflow step.
+  const put = storage.putDocument.bind(storage);
+  let resumeWinner!: () => void, winnerReached!: () => void;
+  const holdWinner = new Promise<void>(resolve => { resumeWinner = resolve; });
+  const winnerReady = new Promise<void>(resolve => { winnerReached = resolve; });
+  storage.putDocument = (...args) => Effect.gen(function* () {
+    const history = args[3].history as { step: string; kind: string }[] | undefined;
+    if (args[1] === "workflow" && history?.some(h => h.step === "short" && h.kind === "call")) {
+      winnerReached();
+      yield* Effect.promise(() => holdWinner);
+    }
+    return yield* put(...args);
+  });
+  const winning = sweep();
+  await winnerReady;
+  storage.putDocument = put;
+  release();
+  try { await losing; } finally { resumeWinner(); await winning; }
+
+  expect(await get(inst.id)).toMatchObject({ status: "failed", error: { code: `${W}.ShortPayment` } });
+  expect(await order()).toMatchObject({ status: "Cancelled", version: 3 });
+});
+
+it("preserves genuine stale versions without a committed receipt", async () => {
+  await start();
+  const failure = await fails(engine.call("@acme/commerce/_/Order.status.cancel", {
+    id: ids.order, expectedVersion: 1, input: { reason: "stale" },
+  }, { ...ctx, idempotencyKey: "stale" }));
+  expect(failure.code).toBe("VersionConflict");
+  expect(await order()).toMatchObject({ status: "Submitted", version: 2 });
+});

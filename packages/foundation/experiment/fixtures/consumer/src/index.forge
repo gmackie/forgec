@@ -1,0 +1,45 @@
+import experiment
+export resource ABTest
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : experiment.Experiment
+  label : text length 1..128
+}
+export resource LLMComparison
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : experiment.Experiment
+  label : text length 1..128
+}
+export resource LevelForgeComparison
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : experiment.Experiment
+  label : text length 1..128
+}
+export resource ManufacturingDOE
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : experiment.Experiment
+  label : text length 1..128
+}
+export resource Accuracy
+  @tenant
+  @appendOnly
+{
+  id : id
+  evaluation : experiment.ExperimentEvaluationLink
+  correct : integer >= 0
+  total : integer >= 1
+  rules {
+    correct <= total
+  }
+}

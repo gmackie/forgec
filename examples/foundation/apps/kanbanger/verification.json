@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "sourceRootEnv": "FORGE_FOUNDATION_KANBANGER_ROOT",
+  "sourceRevision": "4e7b4ceae0af089f8bb51c5f1b31dcfcf728b2f3",
+  "test": "test/foundation-app-kanbanger.traces.ts",
+  "requiredTests": [
+    "memory: Kanbanger persisted issue reconciliation uses real Intake with safe replay",
+    "sqlite: Kanbanger persisted issue reconciliation uses real Intake with safe replay",
+    "postgres: Kanbanger persisted issue reconciliation uses real Intake with safe replay"
+  ],
+  "sourceFiles": [
+    {
+      "path": "packages/api/src/services/foundation-intake-service.ts",
+      "sha256": "3f6166cff70adc7b4a84a7033bb80b15790f0df68b81f81d013ec54b64449259"
+    },
+    {
+      "path": "packages/api/src/services/issue-service.ts",
+      "sha256": "4d4e14311cbc2d514ca9ce3bf2a781264e76f0a8d9d03be6153145cfc05dce91"
+    },
+    {
+      "path": "packages/api/tests/foundation-intake-service.test.ts",
+      "sha256": "965a0cd72394053af1a64cc29dd03df48113fce4c67e8c2da6453ad290db88d5"
+    },
+    {
+      "path": "packages/db/src/schema.ts",
+      "sha256": "10ecaae0c20a87838d2bf25072663d9e732cca9c8fda9d6245679b991c9ac79e"
+    }
+  ]
+}

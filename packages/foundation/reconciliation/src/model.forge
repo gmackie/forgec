@@ -1,0 +1,119 @@
+import specification
+import evaluation
+import fulfillment
+import evidence
+export enum ReconciliationEventKind {
+  Desired
+  Attempt
+  Result
+}
+export enum ReconciliationOutcome {
+  Converged
+  Failed
+  Uncertain
+}
+export resource ReconciliationScope
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+}
+export resource DesiredRevision
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  scope : ReconciliationScope
+  sequence : integer >= 1 <= 128
+  pin : specification.SpecificationPin
+  unique scope, sequence
+}
+export resource Observation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  desired : DesiredRevision
+  run : evaluation.EvaluationRun
+  finish : evaluation.EvaluationFinish
+  support : evidence.EvidenceSeal
+  observedAt : datetime
+  rules {
+    finish.run == run
+    run.definition == desired.pin
+    finish.support == support
+    finish.outcome == "Completed"
+  }
+}
+export resource Drift
+  @tenant
+  @appendOnly
+{
+  id : id
+  observation : Observation
+  desired : DesiredRevision
+  pin : specification.SpecificationPin
+  anchor : text length 1..128
+  field : text length 1..128
+  explanation : text length 1..1000
+  rules {
+    observation.desired == desired
+    desired.pin == pin
+    anchor == pin.anchor
+  }
+}
+export resource ReconciliationAttempt
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  desired : DesiredRevision
+  observation : Observation
+  fulfillment : fulfillment.Fulfillment
+  key : text length 1..128 @unique
+  rules {
+    observation.desired == desired
+    fulfillment.specificationPin == desired.pin
+  }
+}
+export resource ReconciliationResult
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  attempt : ReconciliationAttempt @unique
+  desired : DesiredRevision
+  outcome : ReconciliationOutcome
+  support : evidence.EvidenceSeal
+  detail : text length 1..1000
+  rules {
+    attempt.desired == desired
+  }
+}
+export resource ReconciliationEvent
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  scope : ReconciliationScope
+  ordinal : integer >= 1 <= 128
+  previous : ReconciliationEvent?
+  desired : DesiredRevision
+  desiredSequence : integer >= 1 <= 128
+  kind : ReconciliationEventKind
+  attempt : ReconciliationAttempt?
+  result : ReconciliationResult?
+  rules {
+    desired.scope == scope && desired.sequence == desiredSequence
+    (previous == null && ordinal == 1 && kind == ReconciliationEventKind.Desired) || (previous != null && previous.scope == scope && previous.ordinal == ordinal - 1)
+    (kind == ReconciliationEventKind.Desired && attempt == null && result == null && (previous == null || desiredSequence > previous.desiredSequence)) || (kind == ReconciliationEventKind.Attempt && previous != null && previous.kind != ReconciliationEventKind.Attempt && previous.desired == desired && attempt != null && attempt.desired == desired && result == null) || (kind == ReconciliationEventKind.Result && previous != null && previous.kind == ReconciliationEventKind.Attempt && previous.desired == desired && previous.attempt == attempt && attempt != null && result != null && result.attempt == attempt && result.desired == desired)
+  }
+  unique scope, ordinal
+  find by scope, ordinal
+}

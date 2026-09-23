@@ -352,3 +352,37 @@ fn postgres_dialect_preserves_portable_semantics() {
     assert!(!pg.contains("PRAGMA"));
     insta::assert_snapshot!("postgres", pg);
 }
+
+#[test]
+fn postgres_cycles_install_forward_foreign_keys_after_table_creation() {
+    use forgegraph_planner::sql::{ForeignKey, render_postgres};
+    let mut schema = acme().sql;
+    // Force a cycle between two existing valid table declarations. The renderer
+    // must retain both constraints without referencing a not-yet-created table.
+    let first = schema.tables[0].name.clone();
+    let second = schema.tables[1].name.clone();
+    schema.tables[0].foreign_keys.push(ForeignKey {
+        columns: vec!["id".into()],
+        references: second.clone(),
+        referenced_columns: vec!["id".into()],
+    });
+    schema.tables[1].foreign_keys.push(ForeignKey {
+        columns: vec!["id".into()],
+        references: first,
+        referenced_columns: vec!["id".into()],
+    });
+    let sql = render_postgres(&schema);
+    let last_create = sql.rfind("CREATE TABLE").unwrap();
+    let alter = sql
+        .find("ALTER TABLE")
+        .expect("cyclic references require a second DDL phase");
+    assert!(alter > last_create);
+    assert_eq!(
+        sql.matches("FOREIGN KEY").count(),
+        schema
+            .tables
+            .iter()
+            .map(|t| t.foreign_keys.len())
+            .sum::<usize>()
+    );
+}

@@ -1,0 +1,721 @@
+{
+  "version": 1,
+  "status": "implementation-in-progress",
+  "basePr": 51,
+  "baseCommit": "b461f1bf2540",
+  "packages": [
+    {
+      "issue": 26,
+      "slug": "specification",
+      "layer": "substrate",
+      "dependencies": [],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 0,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 27,
+      "slug": "artifact",
+      "layer": "substrate",
+      "dependencies": [
+        "specification"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 1,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 28,
+      "slug": "identifiers",
+      "layer": "substrate",
+      "dependencies": [],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 0,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 29,
+      "slug": "participation",
+      "layer": "substrate",
+      "dependencies": [
+        "party"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-identity"
+      ],
+      "wave": 2,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 30,
+      "slug": "entitlement",
+      "layer": "substrate",
+      "dependencies": [
+        "party"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-identity"
+      ],
+      "wave": 2,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 31,
+      "slug": "fulfillment",
+      "layer": "substrate",
+      "dependencies": [
+        "specification",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 3,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 32,
+      "slug": "evaluation",
+      "layer": "substrate",
+      "dependencies": [
+        "specification",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 3,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 33,
+      "slug": "evidence",
+      "layer": "substrate",
+      "dependencies": [
+        "artifact"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 2,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 34,
+      "slug": "allocation",
+      "layer": "substrate",
+      "dependencies": [],
+      "requiresGates": [
+        "G-core",
+        "K-atomic"
+      ],
+      "wave": 0,
+      "acceptanceGates": [
+        "G-capacity"
+      ]
+    },
+    {
+      "issue": 35,
+      "slug": "usage",
+      "layer": "substrate",
+      "dependencies": [],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 0,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 36,
+      "slug": "ledger",
+      "layer": "substrate",
+      "dependencies": [],
+      "requiresGates": [
+        "G-core",
+        "K-atomic"
+      ],
+      "wave": 0,
+      "acceptanceGates": [
+        "G-ledger"
+      ]
+    },
+    {
+      "issue": 37,
+      "slug": "lineage",
+      "layer": "substrate",
+      "dependencies": [
+        "specification"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 1,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 38,
+      "slug": "delivery",
+      "layer": "substrate",
+      "dependencies": [
+        "artifact",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 3,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 39,
+      "slug": "decision",
+      "layer": "system",
+      "dependencies": [
+        "participation",
+        "evidence",
+        "evaluation"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 40,
+      "slug": "assurance",
+      "layer": "system",
+      "dependencies": [
+        "specification",
+        "evaluation",
+        "evidence",
+        "artifact"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 41,
+      "slug": "change",
+      "layer": "system",
+      "dependencies": [
+        "decision",
+        "specification",
+        "evaluation",
+        "fulfillment",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 5,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 42,
+      "slug": "experiment",
+      "layer": "system",
+      "dependencies": [
+        "specification",
+        "participation",
+        "allocation",
+        "fulfillment",
+        "evaluation",
+        "evidence",
+        "artifact",
+        "lineage"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 43,
+      "slug": "agreement-catalog",
+      "layer": "system",
+      "dependencies": [
+        "decision",
+        "specification",
+        "participation",
+        "entitlement",
+        "evaluation",
+        "artifact",
+        "evidence",
+        "party"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 5,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 44,
+      "slug": "adjudication",
+      "layer": "system",
+      "dependencies": [
+        "decision",
+        "entitlement",
+        "evidence",
+        "evaluation",
+        "fulfillment",
+        "ledger",
+        "delivery"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 5,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 45,
+      "slug": "operations",
+      "layer": "system",
+      "dependencies": [
+        "specification",
+        "allocation",
+        "fulfillment",
+        "usage",
+        "lineage",
+        "evaluation",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 46,
+      "slug": "reconciliation",
+      "layer": "system",
+      "dependencies": [
+        "specification",
+        "evaluation",
+        "fulfillment",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 47,
+      "slug": "integration",
+      "layer": "system",
+      "dependencies": [
+        "reconciliation",
+        "identifiers",
+        "delivery",
+        "fulfillment",
+        "lineage",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 5,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 48,
+      "slug": "publication",
+      "layer": "system",
+      "dependencies": [
+        "decision",
+        "specification",
+        "artifact",
+        "evaluation",
+        "evidence",
+        "participation"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 5,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 49,
+      "slug": "collaboration",
+      "layer": "system",
+      "dependencies": [
+        "participation",
+        "artifact"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 3,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 50,
+      "slug": "notifications",
+      "layer": "system",
+      "dependencies": [
+        "participation",
+        "delivery",
+        "artifact"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 52,
+      "slug": "party",
+      "layer": "substrate",
+      "dependencies": [
+        "identifiers"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 1,
+      "acceptanceGates": [
+        "G-identity"
+      ]
+    },
+    {
+      "issue": 53,
+      "slug": "place",
+      "layer": "substrate",
+      "dependencies": [
+        "identifiers"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-hierarchy"
+      ],
+      "wave": 1,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 54,
+      "slug": "classification",
+      "layer": "substrate",
+      "dependencies": [
+        "identifiers"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-hierarchy"
+      ],
+      "wave": 1,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 55,
+      "slug": "availability",
+      "layer": "substrate",
+      "dependencies": [
+        "specification"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 1,
+      "acceptanceGates": [
+        "G-calendar"
+      ],
+      "deferredIntegrationAcceptance": [
+        "F55-05"
+      ]
+    },
+    {
+      "issue": 56,
+      "slug": "qualification",
+      "layer": "substrate",
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 3,
+      "acceptanceGates": [],
+      "deferredIntegrationAcceptance": [
+        "F56-05"
+      ]
+    },
+    {
+      "issue": 57,
+      "slug": "routing",
+      "layer": "system",
+      "dependencies": [
+        "fulfillment",
+        "qualification",
+        "availability",
+        "allocation",
+        "participation",
+        "party"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-calendar",
+        "G-capacity"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 58,
+      "slug": "scheduling",
+      "layer": "system",
+      "dependencies": [
+        "availability",
+        "allocation",
+        "participation",
+        "place",
+        "fulfillment"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-calendar",
+        "K-atomic",
+        "G-capacity"
+      ],
+      "wave": 4,
+      "acceptanceGates": [
+        "G-multi-pool"
+      ]
+    },
+    {
+      "issue": 59,
+      "slug": "selection",
+      "layer": "system",
+      "dependencies": [
+        "specification",
+        "participation",
+        "evaluation",
+        "decision",
+        "agreement-catalog"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 6,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 60,
+      "slug": "intake",
+      "layer": "system",
+      "dependencies": [
+        "specification",
+        "artifact",
+        "evaluation",
+        "party"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 61,
+      "slug": "risk",
+      "layer": "system",
+      "dependencies": [
+        "evaluation",
+        "evidence",
+        "fulfillment",
+        "decision"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 5,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 62,
+      "slug": "master-data",
+      "layer": "system",
+      "dependencies": [
+        "identifiers",
+        "lineage",
+        "evaluation",
+        "decision",
+        "reconciliation"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 5,
+      "acceptanceGates": [
+        "G-resolution"
+      ]
+    },
+    {
+      "issue": 63,
+      "slug": "service-level",
+      "layer": "system",
+      "dependencies": [
+        "agreement-catalog",
+        "entitlement",
+        "evaluation",
+        "fulfillment",
+        "availability",
+        "specification"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 6,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 64,
+      "slug": "knowledge",
+      "layer": "system",
+      "dependencies": [
+        "artifact",
+        "specification",
+        "classification",
+        "publication",
+        "entitlement",
+        "evaluation"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 6,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 65,
+      "slug": "quotation-pricing",
+      "layer": "system",
+      "dependencies": [
+        "agreement-catalog",
+        "specification",
+        "evaluation",
+        "ledger",
+        "party"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 6,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 66,
+      "slug": "organization-workforce",
+      "layer": "system",
+      "dependencies": [
+        "party",
+        "participation",
+        "specification",
+        "qualification",
+        "classification",
+        "place"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-identity",
+        "G-hierarchy"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 67,
+      "slug": "planning-budget",
+      "layer": "system",
+      "dependencies": [
+        "specification",
+        "allocation",
+        "evaluation",
+        "ledger",
+        "classification",
+        "usage",
+        "fulfillment"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-capacity",
+        "G-ledger"
+      ],
+      "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 79,
+      "slug": "resource-relations",
+      "layer": "substrate",
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-identity"
+      ],
+      "wave": 3,
+      "acceptanceGates": [],
+      "deferredIntegrationAcceptance": [
+        "F79-STORE",
+        "F79-SEMANTIC"
+      ]
+    },
+    {
+      "issue": 80,
+      "slug": "settlement",
+      "layer": "system",
+      "dependencies": [
+        "party",
+        "entitlement",
+        "fulfillment",
+        "agreement-catalog",
+        "ledger"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-identity"
+      ],
+      "wave": 6,
+      "acceptanceGates": [],
+      "deferredIntegrationAcceptance": [
+        "F80-STORE",
+        "F80-SEMANTIC"
+      ]
+    }
+  ],
+  "gateOwnership": {
+    "G-core": "integrator/compiler-harness",
+    "K-atomic": "kernel transactional primitives",
+    "G-hierarchy": "kernel bounded hierarchy primitives",
+    "G-identity": "party",
+    "G-calendar": "availability",
+    "G-capacity": "allocation",
+    "G-ledger": "ledger",
+    "G-multi-pool": "scheduling",
+    "G-resolution": "master-data"
+  }
+}

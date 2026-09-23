@@ -1,0 +1,90 @@
+import availability
+import allocation
+import participation
+import place
+import fulfillment
+
+// Requirements pin complete immutable calendar revisions and explicit pool units.
+export resource SchedulingNeed
+  @tenant
+  @appendOnly
+{
+  id : id
+  pool : allocation.AllocationPool
+  calendar : availability.AvailabilityCalendarRevision
+  quantity : decimal<6> > 0
+  participant : participation.Participation?
+  next : SchedulingNeed?
+}
+export resource SchedulingRequirement
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  durationMinutes : integer >= 1 <= 44640
+  participants : participation.ParticipationSet
+  place : place.Place
+  head : SchedulingNeed
+}
+export resource CandidateSlot
+  @tenant
+  @appendOnly
+{
+  id : id
+  requirement : SchedulingRequirement
+  from : datetime
+  until : datetime
+  rules {
+    from < until
+  }
+}
+// Durable inert intent: AppointmentCommit publishes it with all pool guards.
+export resource Appointment
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  slot : CandidateSlot
+  fulfillment : fulfillment.FulfillmentSet
+  predecessor : Appointment?
+  find by key
+}
+export resource AppointmentReservation
+  @tenant
+  @appendOnly
+{
+  id : id
+  appointment : Appointment
+  reservation : allocation.AllocationReservation
+  next : AppointmentReservation?
+  rules {
+    next == null || next.appointment == appointment
+  }
+}
+export resource AppointmentCommit
+  @tenant
+  @appendOnly
+{
+  id : id
+  appointment : Appointment @unique
+  head : AppointmentReservation
+  rules {
+    head.appointment == appointment
+  }
+  find by appointment
+}
+export resource AppointmentEnd
+  @tenant
+  @appendOnly
+{
+  id : id
+  appointment : Appointment @unique
+  replacement : Appointment?
+  reason : text length 1..500
+  rules {
+    replacement == null || replacement.predecessor == appointment
+  }
+  find by appointment
+}

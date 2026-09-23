@@ -96,18 +96,30 @@ export function decodeValue(model: Model, t: TypeSpec, input: unknown, depth = 0
         let s = decodeText(input, t.normalizers);
         const len = t.constraints.find((c) => c.kind === "length");
         if (len && len.kind === "length") s = checkLength(s, len.min, len.max);
+        if (b.name === "timezone") {
+          try {
+            if (/^[+-]/.test(s)) throw new RangeError("Expected named timezone");
+            new Intl.DateTimeFormat("en-US", { timeZone: s });
+          } catch { throw new CodecError("InvalidTimezone"); }
+        }
         if (b.name === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) throw new CodecError("InvalidEmail");
         if (b.name === "countryCode" && !/^[A-Z]{2}$/.test(s)) throw new CodecError("InvalidCountryCode");
         if (b.name === "id" && !/^[A-Za-z0-9_-]{1,64}$/.test(s)) throw new CodecError("InvalidId");
         for (const c of t.constraints) if (c.kind === "pattern" && !new RegExp(c.value, "u").test(s)) throw new CodecError("PatternMismatch");
         return s;
       }
-      case "integer":
-        return decodeInteger(input, { min: bounds.min as number | undefined, max: bounds.max as number | undefined });
+      case "integer": {
+        const value = decodeInteger(input, { min: bounds.min as number | undefined, max: bounds.max as number | undefined });
+        if (bounds.xmin !== undefined && value <= Number(bounds.xmin) || bounds.xmax !== undefined && value >= Number(bounds.xmax)) throw new CodecError("OutOfRange");
+        return value;
+      }
       case "decimal":
-        return decodeDecimal(input, { scale: scaleOf(t), min: bounds.min as string | undefined, max: bounds.max as string | undefined });
-      case "money":
-        return decodeDecimal(input, { currency: b.args[0] ?? "USD", min: bounds.min !== undefined ? String(bounds.min) : undefined, max: bounds.max !== undefined ? String(bounds.max) : undefined });
+      case "money": {
+        const value = decodeDecimal(input, { ...(b.name === "money" ? { currency: b.args[0] ?? "USD" } : { scale: scaleOf(t) }), min: bounds.min === undefined ? undefined : String(bounds.min), max: bounds.max === undefined ? undefined : String(bounds.max) });
+        const minor = toMinor(value, scaleOf(t));
+        if (bounds.xmin !== undefined && minor <= toMinor(String(bounds.xmin), scaleOf(t)) || bounds.xmax !== undefined && minor >= toMinor(String(bounds.xmax), scaleOf(t))) throw new CodecError("OutOfRange");
+        return value;
+      }
       case "boolean":
         if (typeof input !== "boolean") throw new CodecError("InvalidBoolean");
         return input;
@@ -209,6 +221,27 @@ export function canonicalize(model: Model, r: Resource, stored: Wire): Wire {
   return out;
 }
 
+/** Infer decimal scales from declared fields, never from numeric-looking text. */
+function expressionDecimalScale(model: Model, resource: Resource, expr: import("./model.js").Expr): number | null {
+  if (expr.kind === "literal") return expr.literal.type === "decimal" ? (expr.literal.value.split(".")[1]?.length ?? 0) : null;
+  if (expr.kind === "unary") return expr.op === "!" ? null : expressionDecimalScale(model, resource, expr.operand);
+  if (expr.kind === "binary") {
+    if (!["+", "-", "*", "/"].includes(expr.op)) return null;
+    const left = expressionDecimalScale(model, resource, expr.lhs), right = expressionDecimalScale(model, resource, expr.rhs);
+    return left === null ? right : right === null ? left : Math.max(left, right);
+  }
+  if (expr.kind !== "name") return null;
+  let current = resource;
+  for (let i = 0; i < expr.path.length; i++) {
+    const field = current.fields.find(f => f.name === expr.path[i]);
+    if (!field) return null;
+    if (i === expr.path.length - 1) return field.type.base.kind === "scalar" && ["decimal", "money"].includes(field.type.base.name) ? scaleOf(field.type) : null;
+    if (field.type.base.kind !== "reference") return null;
+    current = model.resource(field.type.base.resource);
+  }
+  return null;
+}
+
 /** Minimal expression evaluation for derived fields and rules. */
 export function evalExpr(model: Model, r: Resource, e: import("./model.js").Expr, rec: Wire, hint?: TypeSpec, refs: Record<string, Wire | null> = {}): unknown {
   switch (e.kind) {
@@ -231,7 +264,16 @@ export function evalExpr(model: Model, r: Resource, e: import("./model.js").Expr
     }
     case "binary": {
       const l = evalExpr(model, r, e.lhs, rec, hint, refs);
+      if (e.op === "&&" && !l) return false;
+      if (e.op === "||" && l) return true;
       const rr = evalExpr(model, r, e.rhs, rec, hint, refs);
+      if (["==", "!=", "<", "<=", ">", ">="].includes(e.op) && l != null && rr != null) {
+        const ls = expressionDecimalScale(model, r, e.lhs), rs = expressionDecimalScale(model, r, e.rhs);
+        if (ls !== null || rs !== null) {
+          const scale = Math.max(ls ?? 0, rs ?? 0), a = toMinor(String(l), scale), b = toMinor(String(rr), scale);
+          return e.op === "==" ? a === b : e.op === "!=" ? a !== b : e.op === "<" ? a < b : e.op === "<=" ? a <= b : e.op === ">" ? a > b : a >= b;
+        }
+      }
       switch (e.op) {
         case "==":
           return l === rr;

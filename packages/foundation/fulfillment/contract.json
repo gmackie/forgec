@@ -7,57 +7,87 @@
     "evidence"
   ],
   "facts": [
-    "FulfillmentSet: intent-side grouping handle",
-    "Fulfillment: phase, optional specification pin, evidence bundle, executor and timing",
-    "FulfillmentReplacement: explicit predecessor/successor relationship"
+    "FulfillmentSet: typed domain-owned intent grouping",
+    "FulfillmentExecutor: execution-specific identity handle",
+    "Fulfillment: immutable pin/executor/evidence/time envelope",
+    "FulfillmentStart and FulfillmentEnd: append-only unique phase observations",
+    "FulfillmentReplacement: same-set forward-ordinal terminal predecessor link",
+    "FulfillmentTaskLink: immutable kernel queue/task address"
   ],
   "operations": [
-    "CreateFulfillment(set, specificationPin?, evidenceBundle?)",
-    "StartFulfillment; CompleteFulfillment; FailFulfillment; CancelFulfillment",
-    "RecordReplacement; ListByIntentSet"
+    "Create immutable fulfillment and list by intent set",
+    "Fulfillments.start/finish/status through authorized Engine surfaces",
+    "Record same-set terminal replacement; preserve prior outcome",
+    "Fulfillments.enqueueTask: authorized durable link plus resumable real WorkQueue enqueue"
   ],
   "invariants": [
     "Domain owns request payload, partial quantities, business status and typed outcome satellites",
-    "Multiple fulfillments share a set; retries preserve intent identity and cannot erase earlier attempts",
-    "Replacement points within the same intent set and cannot form a cycle",
-    "Execution task failure/cancellation is not automatically business completion or cancellation"
+    "Terminal observation is unique and wins over late start reports; cancellation does not promise physical work has stopped",
+    "Completed/failed fulfillment requires matching start and valid timing; complete/partial coverage is explicit",
+    "Replacement stays within one intent set and moves forward by immutable ordinal, preventing cycles",
+    "Execution task retry/failure/cancellation/completion does not automatically mutate business phase",
+    "Queue link persistence and enqueue form a resumable two-step bridge, not a cross-service transaction"
   ],
   "acceptance": [
     {
       "id": "F31-01",
       "description": "fulfillment envelope",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-fulfillment.test.ts"
+      ]
     },
     {
       "id": "F31-02",
       "description": "relation to domain-owned request/intent",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-fulfillment.test.ts"
+      ]
     },
     {
       "id": "F31-03",
       "description": "multiple/partial/replacement fulfillment semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-fulfillment.test.ts"
+      ]
     },
     {
       "id": "F31-04",
       "description": "workQueue integration example",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-fulfillment.test.ts"
+      ]
     },
     {
       "id": "F31-05",
       "description": "typed outcome satellite example",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-fulfillment.test.ts"
+      ]
     },
     {
       "id": "F31-06",
       "description": "fixtures for Bob development run, lab service and provisioning",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-fulfillment.test.ts"
+      ]
     }
   ],
   "fixtures": [

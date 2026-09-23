@@ -60,7 +60,7 @@
           }
         }
       },
-      "ParticipantRecord": {
+      "IdentifierRecord": {
         "type": "object",
         "properties": {
           "id": {
@@ -70,18 +70,229 @@
             "pattern": "^[A-Za-z0-9_-]+$",
             "readOnly": true
           },
-          "createdAt": {
+          "identifierSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          },
+          "namespace": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "issuer": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+          },
+          "issuerScope": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "validFrom": {
             "type": "string",
             "format": "date-time",
             "x-forge-type": "datetime",
-            "x-forge-precision": "ms",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
+        ]
+      },
+      "IdentifierCreate": {
+        "type": "object",
+        "properties": {
+          "identifierSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          },
+          "namespace": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "issuer": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+          },
+          "issuerScope": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "identifierSet",
+          "namespace",
+          "issuerScope",
+          "value",
+          "validFrom"
+        ]
+      },
+      "IdentifierPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "IdentifierDispositionRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
             "readOnly": true
           },
-          "updatedAt": {
+          "identifier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "effectiveAt": {
             "type": "string",
             "format": "date-time",
             "x-forge-type": "datetime",
-            "x-forge-precision": "ms",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "IdentifierDispositionCreate": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "identifier",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "IdentifierDispositionPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "IdentifierSetRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
             "readOnly": true
           },
           "label": {
@@ -94,12 +305,10 @@
         "additionalProperties": false,
         "required": [
           "id",
-          "createdAt",
-          "updatedAt",
           "label"
         ]
       },
-      "ParticipantCreate": {
+      "IdentifierSetCreate": {
         "type": "object",
         "properties": {
           "label": {
@@ -114,7 +323,50 @@
           "label"
         ]
       },
-      "ParticipantPatch": {
+      "IdentifierSetPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "IssuerRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "key"
+        ]
+      },
+      "IssuerCreate": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "key"
+        ]
+      },
+      "IssuerPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false
@@ -149,7 +401,7 @@
           },
           "participant": {
             "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/participation/_/Participant"
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
           },
           "role": {
             "type": "string",
@@ -206,7 +458,7 @@
           },
           "participant": {
             "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/participation/_/Participant"
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
           },
           "role": {
             "type": "string",
@@ -502,6 +754,307 @@
         ]
       },
       "ParticipationSetPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "PartyRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "identifiers": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "label",
+          "identifiers"
+        ]
+      },
+      "PartyCreate": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "identifiers": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ]
+      },
+      "PartyPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "PrincipalRepresentationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "principal": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "PrincipalRepresentationCreate": {
+        "type": "object",
+        "properties": {
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "principal": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "party",
+          "principal",
+          "validFrom",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "PrincipalRepresentationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "RepresentationRevocationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "representation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "RepresentationRevocationCreate": {
+        "type": "object",
+        "properties": {
+          "representation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "RepresentationRevocationPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false

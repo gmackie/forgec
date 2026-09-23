@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-agreement-catalog-invariants/1",
+  "coverageCriteria": [
+    "F43-STORE"
+  ],
+  "status": "passing",
+  "runId": "4d4c0ab4-d95d-4d98-934b-5b447135a1c1",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "014d554b5a86bc6f375a3e2cfb3edda4dc0d4e52605e41e42c7ce142c43bbbc9",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "89780f9092dca15ca136db0c92b5a87d3946027163c9f79b2233d5242a6657f7"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "5f560c37267902ea47867a96222ea740501291a37c19b170497e456b2e4095c3"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "083e8d343a1bc1b715b3c932fa55130ae53d9e5fe1ce8eec7e48bb6054ce74b7"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: pinned acceptance, resumable exactly-once issuance and four typed domains",
+    "hosted: missing signers, expired offers and lifecycle history",
+    "hosted: independent successor agreements, denied issuance and hidden lifecycle",
+    "hosted: interrupted issuance resumes without duplicate grants",
+    "hosted: concurrent issuance receipt misses cannot duplicate raw entitlement grants"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T05:07:31.309Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: pinned acceptance, resumable exactly-once issuance and four typed domains",
+    "hosted: missing signers, expired offers and lifecycle history",
+    "hosted: independent successor agreements, denied issuance and hidden lifecycle",
+    "hosted: interrupted issuance resumes without duplicate grants",
+    "hosted: concurrent issuance receipt misses cannot duplicate raw entitlement grants"
+  ],
+  "testReportSha256": "edec72984410995ab365be82c11b615d95a6773e5603efae68907706547b8745",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "4d4c0ab4-d95d-4d98-934b-5b447135a1c1",
+    "tenantPrefix": "foundation-cert-4d4c0ab4-d95d-4d98-934b-5b447135a1c1",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

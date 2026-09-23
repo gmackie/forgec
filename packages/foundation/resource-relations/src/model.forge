@@ -1,0 +1,112 @@
+import party
+import specification
+import evidence
+/// A domain-owned resource satellite points to this identity, never a polymorphic target.
+export resource ResourceSubject
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+  find by key
+}
+/// Pinned domain vocabulary: ownership, control, custody, operator, host, payer, etc.
+export resource RelationKind
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  namespace : text trim lowercase length 1..128
+  name : text trim length 1..64
+  definition : specification.SpecificationPin
+  unique namespace, name
+  find by namespace, name
+}
+export resource RelationScope
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  subject : ResourceSubject
+  key : text length 1..128
+  label : text length 1..200
+  unique subject, key
+  find by subject, key
+}
+/// Domain events, agreements or attestations can attach typed satellites to this source.
+export resource RelationSource
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  source : evidence.EvidenceSource
+  sourceRecord : text length 1..200
+  occurredAt : datetime
+  evidence : evidence.EvidenceSeal
+  description : text length 1..500
+  find by key
+}
+/// Staging is not establishment. Only a validated RelationCommit admits a candidate.
+export resource PartyResourceRelation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  subject : ResourceSubject
+  party : party.Party
+  kind : RelationKind
+  scope : RelationScope
+  quantity : decimal<6>? > 0
+  unit : text? length 1..64
+  validFrom : datetime
+  validUntil : datetime?
+  previous : PartyResourceRelation?
+  depth : integer >= 1 <= 128
+  rules {
+    scope.subject == subject
+    validUntil == null || validUntil > validFrom
+    (quantity == null && unit == null) || (quantity != null && unit != null)
+    (previous == null && depth == 1) || (previous != null && depth == previous.depth + 1)
+    previous == null || (previous.subject == subject && previous.kind == kind && previous.scope == scope)
+    previous == null || (previous.quantity == quantity && previous.unit == unit)
+    previous == null || (validFrom >= previous.validFrom && validUntil == previous.validUntil)
+  }
+  find by key
+  list by subject
+}
+/// One atomic durable fact publishes current and ends prior at the same knowledge time.
+export resource RelationCommit
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  prior : PartyResourceRelation? @unique
+  priorCommit : RelationCommit?
+  current : PartyResourceRelation? @unique
+  effectiveAt : datetime
+  source : RelationSource
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    prior != null || current != null
+    (prior == null && priorCommit == null) || (prior != null && priorCommit != null && priorCommit.current == prior)
+    current == null || current.previous == prior
+    current == null || current.validFrom == effectiveAt
+    prior == null || effectiveAt >= prior.validFrom
+    prior == null || prior.validUntil == null || effectiveAt <= prior.validUntil
+    prior == null || current == null || prior != current
+  }
+  find by key
+  find by prior
+  find by current
+}

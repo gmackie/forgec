@@ -26,7 +26,7 @@ export interface SqliteProfile {
 
 export const PROFILES: Record<string, SqliteProfile> = {
   "cloudflare-d1": { id: "cloudflare-d1", engine: "cloudflare-d1", client: "workers binding", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
-  "sqlite-node": { id: "sqlite-node", engine: "sqlite (node:sqlite)", client: "node:sqlite (Node >= 22.5)", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
+  "sqlite-node": { id: "sqlite-node", engine: "sqlite (node:sqlite)", client: "node:sqlite (Node >= 24)", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
   "libsql-embedded": { id: "libsql-embedded", engine: "libsql (embedded, file: or :memory:)", client: "@libsql/client 0.18.0", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
   turso: { id: "turso", engine: "libsql (Turso cloud, libsql:// / https://)", client: "@libsql/client 0.18.0 (hrana)", dialect: "sqlite", requires: ["atomic-batch", "foreign-keys", "binary-order", "insert-or-ignore", "returning", "assertion-abort"] },
 };

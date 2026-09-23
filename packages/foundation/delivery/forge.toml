@@ -1,0 +1,13 @@
+[package]
+name = "@forgegraph/foundation/delivery"
+version = "0.1.0"
+edition = "2027"
+[source]
+root = "src"
+entry = "src/model.forge"
+[dependencies.artifact]
+path = "../artifact"
+deploy = true
+[dependencies.evidence]
+path = "../evidence"
+deploy = true

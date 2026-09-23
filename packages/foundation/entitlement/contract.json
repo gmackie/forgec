@@ -3,66 +3,97 @@
   "layer": "substrate",
   "issue": 30,
   "dependencies": [
-    "participation"
+    "party"
   ],
   "facts": [
-    "Entitlement: typed Participant holder, right, entitlement scope, quantity/unit and validity",
-    "Obligation: typed Participant obligated party, requirement, obligation scope, quantity/unit and due date",
-    "RightLifecycleEvent: issuance, revocation, expiry or renewal history"
+    "Entitlement: Party holder, typed right definition and scope, exact quantity/unit, half-open validity and optional predecessor",
+    "Obligation: Party obligated party, typed requirement and scope, exact quantity/unit and due time",
+    "Append-only EntitlementEnd and ObligationEnd: unique named terminal facts with effective time, reason and recording actor"
   ],
   "operations": [
-    "IssueEntitlement; RecordObligation; RevokeEntitlement; ExpireEntitlement",
-    "RenewEntitlement(old, newValidity); DischargeObligation; CancelObligation",
-    "ListEffectiveRights(holder, scope, instant); ReadPipFacts"
+    "Entitlements.issue; recordObligation; revoke; expire; renew (independent successor grant)",
+    "Entitlements.endObligation; obligationAt; listEffectiveRights (paginated)",
+    "entitlementPipAuthorizer delegates live facts to independent Gatekeeper policy"
   ],
   "invariants": [
-    "Entitlement and participation are separate facts and neither is an authorization decision",
-    "Rights, requirements and conditions use typed domain details, not policy language or arbitrary JSON",
-    "Quantities use exact decimals with explicit domain unit and nonnegative bounds; no implicit unit conversion",
-    "Renewal creates linked history; source agreement/decision/purchase associations are upper-layer typed satellites"
+    "Business Party identity, participation, entitlement and authorization are distinct",
+    "Append-only grants, duties and terminal facts retain history; one successor and one terminal event per named fact",
+    "Quantities are nonnegative exact decimal<6> strings with paired explicit unit; no conversion, balance or consumption accounting",
+    "Validity is half-open; expiry is authoritative without an expiry audit row; explicit expiry records exactly validUntil",
+    "Renewal is independent issuance for the same holder/right/scope/unit after a finite predecessor term; predecessor revocation does not cascade to successors",
+    "Source and condition semantics live in typed upper-layer satellites; no policy language or generic source pointer",
+    "PIP facts and representation are read with tenant-scoped explicit policy, paginated and refreshed on every decision"
   ],
   "acceptance": [
     {
       "id": "F30-01",
       "description": "entitlement model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-entitlement.test.ts"
+      ]
     },
     {
       "id": "F30-02",
       "description": "obligation model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-entitlement.test.ts"
+      ]
     },
     {
       "id": "F30-03",
       "description": "validity/revocation/expiry semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-entitlement.test.ts"
+      ]
     },
     {
       "id": "F30-04",
       "description": "quantity/scoped-right support without becoming a ledger",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-entitlement.test.ts"
+      ]
     },
     {
       "id": "F30-05",
       "description": "source/provenance relation",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-entitlement.test.ts"
+      ]
     },
     {
       "id": "F30-06",
       "description": "Gatekeeper PIP example",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-entitlement.test.ts"
+      ]
     },
     {
       "id": "F30-07",
       "description": "fixtures for software seat, warranty, course access and contractual obligation",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-entitlement.test.ts"
+      ]
     }
   ],
   "fixtures": [

@@ -1,0 +1,38 @@
+import evaluation
+import specification
+
+export resource ChangesetAssessment
+  @tenant
+  @appendOnly
+{
+  id : id
+  repositoryId : text length 1..128
+  changesetId : text length 1..128
+  buildId : text length 1..128
+  headSHA : text length 40..64
+  sourceDigest : text length 64..64
+  policyDigest : text length 64..64
+  definition : specification.SpecificationPin
+  run : evaluation.EvaluationRun @unique
+  rules {
+    headSHA == definition.revision
+    run.definition == definition
+  }
+  unique repositoryId, changesetId, buildId
+  find by repositoryId, changesetId, buildId
+}
+export resource ChangesetAssessmentResult
+  @tenant
+  @appendOnly
+{
+  id : id
+  assessment : ChangesetAssessment @unique
+  finish : evaluation.EvaluationFinish @unique
+  eligible : boolean
+  reason : text length 1..500
+  rules {
+    finish.run == assessment.run
+    (eligible && finish.outcome == "Completed") || (!eligible && finish.outcome == "Failed")
+  }
+  find by assessment
+}

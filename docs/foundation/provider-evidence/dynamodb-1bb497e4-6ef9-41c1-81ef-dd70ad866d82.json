@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-collaboration-invariants/1",
+  "coverageCriteria": [
+    "F49-STORE"
+  ],
+  "status": "passing",
+  "runId": "1bb497e4-6ef9-41c1-81ef-dd70ad866d82",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "81bf27ed161e72667ce04b1c1dd2d46572601060b6619449dfd8714623185bc4",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "821a2aa687b811e8288c2ec3d79abf43cc01d5282fb7b8cded62578f06ceed66"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "869d6ba9530d94995ee775f31aa0dc883c58741a5b918f68939ba822e02b9c74"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "159197ebd360f67a20af08ad3c4438e3245fb0f2853c3f7d9909fc257262102b"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: typed discussion sidecars, immutable corrections and activity rebuild"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T15:10:13.139Z",
+  "passedTraces": [
+    "hosted: typed discussion sidecars, immutable corrections and activity rebuild"
+  ],
+  "testReportSha256": "a911380f6e8cee55550a4dd6dfeed1cd4a04735752229f86f5ed905f1d75815b",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "1bb497e4-6ef9-41c1-81ef-dd70ad866d82",
+    "tenantPrefix": "foundation-cert-1bb497e4-6ef9-41c1-81ef-dd70ad866d82",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

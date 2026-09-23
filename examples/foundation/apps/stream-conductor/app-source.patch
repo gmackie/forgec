@@ -1,0 +1,136 @@
+diff --git a/apps/web/src/server/routers/production-foundation.test.ts b/apps/web/src/server/routers/production-foundation.test.ts
+new file mode 100644
+index 0000000000..68df6017d1
+--- /dev/null
++++ b/apps/web/src/server/routers/production-foundation.test.ts
+@@ -0,0 +1,25 @@
++import { expect, it, vi } from "vitest";
++vi.mock("../trpc", () => {
++  const procedure = { input: () => procedure, mutation: (handler: unknown) => handler, query: (handler: unknown) => handler };
++  return { router: (routes: unknown) => routes, teamProcedure: procedure, withPermission: () => procedure };
++});
++vi.mock("@/lib/grpc-client", () => ({ switchScene: vi.fn(), syncScenes: vi.fn() }));
++import { createProductionRouter } from "./production";
++it("real command handler invokes opt-in projection after acknowledgment and keeps ack on projection failure", async () => {
++  const writes: Record<string, unknown>[] = [];
++  const session = { id: "session", teamId: "team", broadcastId: null, sequence: 0, previewComposition: null, programComposition: null, needsReconciliation: false, updatedAt: new Date() };
++  const db = {
++    query: { productionSessions: { findFirst: async () => session } },
++    insert: () => ({ values: async (value: Record<string, unknown>) => { writes.push(value); } }),
++    update: () => ({ set: (value: Record<string, unknown>) => { writes.push(value); return { where: () => ({ returning: async () => [{ ...session, ...value }] }) }; } }),
++  };
++  const recordAcknowledgedCommand = vi.fn(async () => {
++    expect(writes.some(write => write.status === "acknowledged")).toBe(true);
++    throw new Error("Foundation unavailable");
++  });
++  const routes = createProductionRouter({ recordAcknowledgedCommand }) as unknown as { command(input: unknown): Promise<{ foundation: unknown; lastCommand: { status: string } }> };
++  const result = await routes.command({ ctx: { db, teamId: "team", userId: "operator" }, input: { command: { id: "native-command", type: "set_preview", composition: { kind: "scene", id: "wide", name: "Wide", requiredInputIds: [], overlayIds: [] } } } });
++  expect(result.foundation).toEqual({ status: "pending", commandId: "native-command" });
++  expect(result.lastCommand.status).toBe("acknowledged");
++  expect(writes.some(write => write.status === "failed" || write.status === "uncertain")).toBe(false);
++});
+diff --git a/apps/web/src/server/routers/production.ts b/apps/web/src/server/routers/production.ts
+index dbb059e5ba..d492c18ad8 100644
+--- a/apps/web/src/server/routers/production.ts
++++ b/apps/web/src/server/routers/production.ts
+@@ -5,6 +5,7 @@
+ import type { ProductionCommand, ProductionComposition, ProductionSessionState } from "@streamconductor/realtime";
+ import { switchScene, syncScenes, type SceneDefinition } from "@/lib/grpc-client";
+ import { router, teamProcedure, withPermission } from "../trpc";
++import { projectAcknowledgedProduction, type ProductionFoundationPort } from "../services/foundation-production";
+ 
+ const compositionInput = z.object({
+   kind: z.enum(["input", "scene"]),
+@@ -125,7 +126,8 @@
+   return concurrent as ProductionSessionRow;
+ }
+ 
+-export const productionRouter = router({
++export function createProductionRouter(foundation?: ProductionFoundationPort) {
++return router({
+   getState: teamProcedure
+     .input(z.object({ broadcastId: z.string().uuid().optional() }).optional())
+     .query(async ({ ctx, input }) => {
+@@ -193,7 +195,8 @@
+         }).where(eq(productionSessions.id, row.id)).returning();
+         await ctx.db.update(productionCommands).set({ status: "acknowledged", completedAt }).where(eq(productionCommands.id, input.command.id));
+         const acknowledgedCommand = { id: input.command.id, sessionId: row.id, operatorId: ctx.userId!, sequence: nextSequence, type: input.command.type, status: "acknowledged" as const, payload: input.command.type === "set_preview" ? input.command.composition : null, error: null, issuedAt, completedAt };
+-        return productionRowToState(updated, acknowledgedCommand);
++        const projection = await projectAcknowledgedProduction(foundation, ctx.teamId!, updated, acknowledgedCommand);
++        return foundation ? { ...productionRowToState(updated, acknowledgedCommand), foundation: projection } : productionRowToState(updated, acknowledgedCommand);
+       } catch (error) {
+         const message = error instanceof Error ? error.message : "Production command failed";
+         const uncertain = isUncertainEngineError(error);
+@@ -204,3 +207,7 @@
+       }
+     }),
+ });
++}
++
++// Deployment remains unchanged until a composition root explicitly injects a port.
++export const productionRouter = createProductionRouter();
+diff --git a/apps/web/src/server/services/foundation-production.test.ts b/apps/web/src/server/services/foundation-production.test.ts
+new file mode 100644
+index 0000000000..63d44344ed
+--- /dev/null
++++ b/apps/web/src/server/services/foundation-production.test.ts
+@@ -0,0 +1,22 @@
++import { expect, it, vi } from "vitest";
++import { projectAcknowledgedProduction } from "./foundation-production";
++const session = { id: "session", teamId: "team", broadcastId: "broadcast" };
++const command = { id: "command", sessionId: "session", operatorId: "operator", sequence: 1, type: "cut", status: "acknowledged", payload: null, issuedAt: new Date("2026-01-01T00:00:00Z"), completedAt: new Date("2026-01-01T00:00:01Z") };
++it("projects the durable acknowledged native command with its team and broadcast", async () => {
++  const recordAcknowledgedCommand = vi.fn(async () => ({ command: "foundation-command" }));
++  expect(await projectAcknowledgedProduction({ recordAcknowledgedCommand }, "team", session, command)).toEqual({ status: "recorded", command: "foundation-command" });
++  expect(recordAcknowledgedCommand).toHaveBeenCalledWith(expect.objectContaining({ teamId: "team", broadcastId: "broadcast", sessionId: "session", commandId: "command", type: "cut" }));
++});
++it("does not convert projection outage to an OBS failure or send another command", async () => {
++  const recordAcknowledgedCommand = vi.fn(async () => { throw new Error("Unavailable"); });
++  expect(await projectAcknowledgedProduction({ recordAcknowledgedCommand }, "team", session, command)).toEqual({ status: "pending", commandId: "command" });
++  expect(command.status).toBe("acknowledged");
++  expect(recordAcknowledgedCommand).toHaveBeenCalledTimes(1);
++});
++it("rejects uncertain commands and foreign sessions before invoking Foundation", async () => {
++  const recordAcknowledgedCommand = vi.fn(async () => ({ command: "never" }));
++  await expect(projectAcknowledgedProduction({ recordAcknowledgedCommand }, "foreign", session, command)).rejects.toThrow();
++  await expect(projectAcknowledgedProduction({ recordAcknowledgedCommand }, "team", session, { ...command, status: "uncertain" })).rejects.toThrow();
++  expect(recordAcknowledgedCommand).not.toHaveBeenCalled();
++  expect(await projectAcknowledgedProduction(undefined, "team", session, command)).toEqual({ status: "disabled" });
++});
+diff --git a/apps/web/src/server/services/foundation-production.ts b/apps/web/src/server/services/foundation-production.ts
+new file mode 100644
+index 0000000000..9b6dc8189a
+--- /dev/null
++++ b/apps/web/src/server/services/foundation-production.ts
+@@ -0,0 +1,31 @@
++/** An opt-in projection of durable acknowledgments; never a hardware command bus. */
++export interface ProductionFoundationPort {
++  recordAcknowledgedCommand(event: {
++    teamId: string; sessionId: string; broadcastId: string | null;
++    commandId: string; operatorId: string; sequence: number;
++    type: "set_preview" | "cut" | "auto";
++    payload: unknown; issuedAt: string; completedAt: string;
++  }): Promise<{ command: string }>;
++}
++export type ProductionFoundationResult =
++  | { status: "disabled" }
++  | { status: "recorded"; command: string }
++  | { status: "pending"; commandId: string };
++
++/** Runs after productionCommands is acknowledged. Failure cannot change the observed
++ * OBS result. Operators may replay this exact durable row into the port for recovery. */
++export async function projectAcknowledgedProduction(
++  port: ProductionFoundationPort | undefined,
++  teamId: string,
++  session: { id: string; teamId: string; broadcastId: string | null },
++  command: { id: string; sessionId: string; operatorId: string; sequence: number; type: string; status: string; payload: unknown; issuedAt: Date; completedAt: Date | null },
++): Promise<ProductionFoundationResult> {
++  if (!port) return { status: "disabled" };
++  if (session.teamId !== teamId || command.sessionId !== session.id || command.status !== "acknowledged" || !command.completedAt || !["set_preview", "cut", "auto"].includes(command.type)) throw new Error("Only acknowledged commands in the authorized production session can be projected");
++  try {
++    const result = await port.recordAcknowledgedCommand({ teamId, sessionId: session.id, broadcastId: session.broadcastId, commandId: command.id, operatorId: command.operatorId, sequence: command.sequence, type: command.type as "set_preview" | "cut" | "auto", payload: command.payload, issuedAt: command.issuedAt.toISOString(), completedAt: command.completedAt.toISOString() });
++    return { status: "recorded", command: result.command };
++  } catch {
++    return { status: "pending", commandId: command.id };
++  }
++}

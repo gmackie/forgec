@@ -1,0 +1,6900 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "9e7d6f54c2ed68eb893e4c6a66fb69328c74579d5953e441e1725e417806e6ec",
+  "digests": {
+    "source": "0a84cec17dc98ccbf4221f2d265ac6a44a9eeb8e14acd86e94b7c68df587242f",
+    "wire": "f62edc4c9cc7910a5adee1b8d0f75603d37f51083397b74676f23fd98edefa3e",
+    "docs": "c9fe6bcdc7132f8c9ca12907bb0b4e5443b6011d50e5db2089f8174e8c507459",
+    "security": "288930d21a2faab93d59697fca71c2b53d797a83eaae7cd5c9e17327a85afd17"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@foundation-probe/usage-consumers",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [
+      {
+        "alias": "usage",
+        "package": "@forgegraph/foundation/usage"
+      }
+    ],
+    "modules": [
+      {
+        "id": "@forgegraph/foundation/usage/_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageCorrection",
+            "name": "UsageCorrection",
+            "kind": "resource",
+            "exported": true,
+            "doc": "A staged replacement contributes only after this terminal link is committed.",
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "event",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageEvent"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "replacement",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageEvent"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reason",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 500
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "event",
+                "fields": [
+                  "event"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byEvent",
+                "fields": [
+                  "event"
+                ],
+                "coveredBy": "event"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "replacement"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "replacement",
+                      "replacementFor"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "event"
+                    ]
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageCorrection.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageCorrection.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageCorrection.find.byEvent",
+                "kind": "find",
+                "query": "byEvent"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageCorrection.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageDimension",
+            "name": "UsageDimension",
+            "kind": "resource",
+            "exported": true,
+            "doc": "Domain vocabulary fixes one exact unit per dimension; conversion is explicit above.",
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim",
+                    "lowercase"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "unit",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "key",
+                "fields": [
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byKey",
+                "fields": [
+                  "key"
+                ],
+                "coveredBy": "key"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageDimension.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageDimension.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageDimension.find.byKey",
+                "kind": "find",
+                "query": "byKey"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageDimension.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageEvent",
+            "name": "UsageEvent",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "stream",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageStream"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "dimension",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageDimension"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "unit",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "quantity",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "decimal",
+                    "args": [
+                      "6"
+                    ]
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "0"
+                      }
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "ordinal",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "value": {
+                        "type": "int",
+                        "value": "1"
+                      }
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "source",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageSource"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "eventKey",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 200
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "occurredAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "intervalStart",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "intervalEnd",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "replacementFor",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageEvent"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "source_eventKey",
+                "fields": [
+                  "source",
+                  "eventKey"
+                ],
+                "within": []
+              },
+              {
+                "name": "stream_ordinal",
+                "fields": [
+                  "stream",
+                  "ordinal"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "bySourceEventKey",
+                "fields": [
+                  "source",
+                  "eventKey"
+                ],
+                "coveredBy": "source_eventKey"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byStream",
+                "fields": [
+                  "stream"
+                ],
+                "order": [
+                  {
+                    "field": "ordinal",
+                    "direction": "asc"
+                  },
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [
+              {
+                "kind": "binary",
+                "op": "==",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "dimension"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "stream",
+                    "dimension"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "==",
+                "lhs": {
+                  "kind": "name",
+                  "path": [
+                    "unit"
+                  ]
+                },
+                "rhs": {
+                  "kind": "name",
+                  "path": [
+                    "dimension",
+                    "unit"
+                  ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "&&",
+                    "lhs": {
+                      "kind": "binary",
+                      "op": "!=",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "occurredAt"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "literal",
+                        "literal": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    "rhs": {
+                      "kind": "binary",
+                      "op": "==",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "intervalStart"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "literal",
+                        "literal": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "intervalEnd"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "&&",
+                    "lhs": {
+                      "kind": "binary",
+                      "op": "&&",
+                      "lhs": {
+                        "kind": "binary",
+                        "op": "==",
+                        "lhs": {
+                          "kind": "name",
+                          "path": [
+                            "occurredAt"
+                          ]
+                        },
+                        "rhs": {
+                          "kind": "literal",
+                          "literal": {
+                            "type": "null"
+                          }
+                        }
+                      },
+                      "rhs": {
+                        "kind": "binary",
+                        "op": "!=",
+                        "lhs": {
+                          "kind": "name",
+                          "path": [
+                            "intervalStart"
+                          ]
+                        },
+                        "rhs": {
+                          "kind": "literal",
+                          "literal": {
+                            "type": "null"
+                          }
+                        }
+                      }
+                    },
+                    "rhs": {
+                      "kind": "binary",
+                      "op": "!=",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "intervalEnd"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "literal",
+                        "literal": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "<",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "intervalStart"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "intervalEnd"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "replacementFor"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "&&",
+                    "lhs": {
+                      "kind": "binary",
+                      "op": "==",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "replacementFor",
+                          "stream"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "name",
+                        "path": [
+                          "stream"
+                        ]
+                      }
+                    },
+                    "rhs": {
+                      "kind": "binary",
+                      "op": "==",
+                      "lhs": {
+                        "kind": "name",
+                        "path": [
+                          "replacementFor",
+                          "dimension"
+                        ]
+                      },
+                      "rhs": {
+                        "kind": "name",
+                        "path": [
+                          "dimension"
+                        ]
+                      }
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": ">",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "ordinal"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "replacementFor",
+                        "ordinal"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageEvent.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageEvent.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey",
+                "kind": "find",
+                "query": "bySourceEventKey"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+                "kind": "list",
+                "query": "all"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageEvent.list.byStream",
+                "kind": "list",
+                "query": "byStream"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageSource",
+            "name": "UsageSource",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [
+                    "trim"
+                  ],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "key",
+                "fields": [
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byKey",
+                "fields": [
+                  "key"
+                ],
+                "coveredBy": "key"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageSource.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageSource.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageSource.find.byKey",
+                "kind": "find",
+                "query": "byKey"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageSource.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageStream",
+            "name": "UsageStream",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 200
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "dimension",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageDimension"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageStream.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageStream.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@foundation-probe/usage-consumers/_/ComputeRun",
+            "name": "ComputeRun",
+            "kind": "resource",
+            "exported": false,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "computeUsage",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageStream"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "computeUsage",
+                "fields": [
+                  "computeUsage"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@foundation-probe/usage-consumers/_/ComputeRun.create",
+                "kind": "create"
+              },
+              {
+                "id": "@foundation-probe/usage-consumers/_/ComputeRun.get",
+                "kind": "get"
+              },
+              {
+                "id": "@foundation-probe/usage-consumers/_/ComputeRun.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/LlmSession",
+            "name": "LlmSession",
+            "kind": "resource",
+            "exported": false,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "tokenUsage",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageStream"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "tokenUsage",
+                "fields": [
+                  "tokenUsage"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@foundation-probe/usage-consumers/_/LlmSession.create",
+                "kind": "create"
+              },
+              {
+                "id": "@foundation-probe/usage-consumers/_/LlmSession.get",
+                "kind": "get"
+              },
+              {
+                "id": "@foundation-probe/usage-consumers/_/LlmSession.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/MachineRun",
+            "name": "MachineRun",
+            "kind": "resource",
+            "exported": false,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "machineUsage",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/usage/_/UsageStream"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "machineUsage",
+                "fields": [
+                  "machineUsage"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@foundation-probe/usage-consumers/_/MachineRun.create",
+                "kind": "create"
+              },
+              {
+                "id": "@foundation-probe/usage-consumers/_/MachineRun.get",
+                "kind": "get"
+              },
+              {
+                "id": "@foundation-probe/usage-consumers/_/MachineRun.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "append-only/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@foundation-probe/usage-consumers",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "name": "UsageCorrection",
+        "wireName": "usage_correction",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "event": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "id",
+            "event",
+            "replacement",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "event": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "event",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byEvent",
+            "kind": "find",
+            "params": [
+              "event"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageCorrection.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageCorrection.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageCorrection.find.byEvent",
+            "kind": "find",
+            "query": "byEvent"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageCorrection.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageDimension",
+        "name": "UsageDimension",
+        "wireName": "usage_dimension",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "key",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "required": [
+            "key",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byKey",
+            "kind": "find",
+            "params": [
+              "key"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageDimension.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageDimension.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageDimension.find.byKey",
+            "kind": "find",
+            "query": "byKey"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageDimension.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageEvent",
+        "name": "UsageEvent",
+        "wireName": "usage_event",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "stream": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "minimum": 0
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "source": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageSource"
+            },
+            "eventKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "occurredAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalStart": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalEnd": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "replacementFor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            }
+          },
+          "required": [
+            "id",
+            "stream",
+            "dimension",
+            "unit",
+            "quantity",
+            "ordinal",
+            "source",
+            "eventKey",
+            "occurredAt",
+            "intervalStart",
+            "intervalEnd",
+            "replacementFor"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "stream": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "minimum": 0
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "source": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageSource"
+            },
+            "eventKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "occurredAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalStart": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalEnd": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "replacementFor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            }
+          },
+          "required": [
+            "stream",
+            "dimension",
+            "unit",
+            "quantity",
+            "ordinal",
+            "source",
+            "eventKey"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "bySourceEventKey",
+            "kind": "find",
+            "params": [
+              "source",
+              "eventKey"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byStream",
+            "kind": "list",
+            "params": [
+              "stream"
+            ],
+            "order": [
+              {
+                "field": "ordinal",
+                "direction": "asc"
+              },
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageEvent.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageEvent.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey",
+            "kind": "find",
+            "query": "bySourceEventKey"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+            "kind": "list",
+            "query": "all"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageEvent.list.byStream",
+            "kind": "list",
+            "query": "byStream"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageSource",
+        "name": "UsageSource",
+        "wireName": "usage_source",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "required": [
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byKey",
+            "kind": "find",
+            "params": [
+              "key"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageSource.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageSource.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageSource.find.byKey",
+            "kind": "find",
+            "query": "byKey"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageSource.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageStream",
+        "name": "UsageStream",
+        "wireName": "usage_stream",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            }
+          },
+          "required": [
+            "id",
+            "label",
+            "dimension"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            }
+          },
+          "required": [
+            "label",
+            "dimension"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageStream.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageStream.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "name": "ComputeRun",
+        "wireName": "compute_run",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "computeUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "required": [
+            "id",
+            "computeUsage"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "computeUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "required": [
+            "computeUsage"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@foundation-probe/usage-consumers/_/ComputeRun.create",
+            "kind": "create"
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/ComputeRun.get",
+            "kind": "get"
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/ComputeRun.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/LlmSession",
+        "name": "LlmSession",
+        "wireName": "llm_session",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "tokenUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "required": [
+            "id",
+            "tokenUsage"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "tokenUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "required": [
+            "tokenUsage"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@foundation-probe/usage-consumers/_/LlmSession.create",
+            "kind": "create"
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/LlmSession.get",
+            "kind": "get"
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/LlmSession.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/MachineRun",
+        "name": "MachineRun",
+        "wireName": "machine_run",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "machineUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "required": [
+            "id",
+            "machineUsage"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "machineUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "required": [
+            "machineUsage"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@foundation-probe/usage-consumers/_/MachineRun.create",
+            "kind": "create"
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/MachineRun.get",
+            "kind": "get"
+          },
+          {
+            "id": "@foundation-probe/usage-consumers/_/MachineRun.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "usage_correction",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "event",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "event",
+            "storage": "text"
+          },
+          {
+            "name": "replacement",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "replacement",
+            "storage": "text"
+          },
+          {
+            "name": "reason",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "reason",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "event"
+            ],
+            "references": "usage_event",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "replacement"
+            ],
+            "references": "usage_event",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "usage_dimension",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          },
+          {
+            "name": "unit",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "unit",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "usage_event",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "stream",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "stream",
+            "storage": "text"
+          },
+          {
+            "name": "dimension",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "dimension",
+            "storage": "text"
+          },
+          {
+            "name": "unit",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "unit",
+            "storage": "text"
+          },
+          {
+            "name": "quantity",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "quantity",
+            "storage": "minorUnits"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "ordinal",
+            "storage": "integer"
+          },
+          {
+            "name": "source",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "source",
+            "storage": "text"
+          },
+          {
+            "name": "event_key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "eventKey",
+            "storage": "text"
+          },
+          {
+            "name": "occurred_at",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "occurredAt",
+            "storage": "text"
+          },
+          {
+            "name": "interval_start",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "intervalStart",
+            "storage": "text"
+          },
+          {
+            "name": "interval_end",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "intervalEnd",
+            "storage": "text"
+          },
+          {
+            "name": "replacement_for",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "replacementFor",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "stream"
+            ],
+            "references": "usage_stream",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "dimension"
+            ],
+            "references": "usage_dimension",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "source"
+            ],
+            "references": "usage_source",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "replacement_for"
+            ],
+            "references": "usage_event",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "usage_source",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "usage_stream",
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "label",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "label",
+            "storage": "text"
+          },
+          {
+            "name": "dimension",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "dimension",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "dimension"
+            ],
+            "references": "usage_dimension",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "compute_run",
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "compute_usage",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "computeUsage",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "compute_usage"
+            ],
+            "references": "usage_stream",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "llm_session",
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "token_usage",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "tokenUsage",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "token_usage"
+            ],
+            "references": "usage_stream",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "machine_run",
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "machine_usage",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "machineUsage",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "machine_usage"
+            ],
+            "references": "usage_stream",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      }
+    ],
+    "indexes": [
+      {
+        "name": "usage_correction_uq_event",
+        "table": "usage_correction",
+        "columns": [
+          "tenant",
+          "event"
+        ],
+        "unique": true,
+        "constraint": "event"
+      },
+      {
+        "name": "usage_dimension_uq_key",
+        "table": "usage_dimension",
+        "columns": [
+          "tenant",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "key"
+      },
+      {
+        "name": "usage_event_uq_source_eventKey",
+        "table": "usage_event",
+        "columns": [
+          "tenant",
+          "source",
+          "event_key"
+        ],
+        "unique": true,
+        "constraint": "source_eventKey"
+      },
+      {
+        "name": "usage_event_uq_stream_ordinal",
+        "table": "usage_event",
+        "columns": [
+          "tenant",
+          "stream",
+          "ordinal"
+        ],
+        "unique": true,
+        "constraint": "stream_ordinal"
+      },
+      {
+        "name": "usage_event_ix_by_stream",
+        "table": "usage_event",
+        "columns": [
+          "tenant",
+          "stream",
+          "ordinal",
+          "id"
+        ],
+        "unique": false,
+        "query": "byStream"
+      },
+      {
+        "name": "usage_source_uq_key",
+        "table": "usage_source",
+        "columns": [
+          "tenant",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "key"
+      },
+      {
+        "name": "compute_run_uq_computeUsage",
+        "table": "compute_run",
+        "columns": [
+          "tenant",
+          "compute_usage"
+        ],
+        "unique": true,
+        "constraint": "computeUsage"
+      },
+      {
+        "name": "llm_session_uq_tokenUsage",
+        "table": "llm_session",
+        "columns": [
+          "tenant",
+          "token_usage"
+        ],
+        "unique": true,
+        "constraint": "tokenUsage"
+      },
+      {
+        "name": "machine_run_uq_machineUsage",
+        "table": "machine_run",
+        "columns": [
+          "tenant",
+          "machine_usage"
+        ],
+        "unique": true,
+        "constraint": "machineUsage"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "name": "UsageCorrection",
+        "wireName": "usage_correction",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "event",
+            "keyFields": [
+              "event"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "event",
+            "target": "@forgegraph/foundation/usage/_/UsageEvent"
+          },
+          {
+            "field": "replacement",
+            "target": "@forgegraph/foundation/usage/_/UsageEvent"
+          }
+        ],
+        "createActions": 7
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageDimension",
+        "name": "UsageDimension",
+        "wireName": "usage_dimension",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "key",
+            "keyFields": [
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageEvent",
+        "name": "UsageEvent",
+        "wireName": "usage_event",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "source_eventKey",
+            "keyFields": [
+              "source",
+              "eventKey"
+            ]
+          },
+          {
+            "name": "stream_ordinal",
+            "keyFields": [
+              "stream",
+              "ordinal"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          },
+          {
+            "name": "byStream",
+            "kind": "list",
+            "partitionFields": [
+              "stream"
+            ],
+            "sortFields": [
+              "ordinal",
+              "id"
+            ],
+            "sortDirections": [
+              "asc",
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "stream",
+              "ordinal"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "stream",
+            "target": "@forgegraph/foundation/usage/_/UsageStream"
+          },
+          {
+            "field": "dimension",
+            "target": "@forgegraph/foundation/usage/_/UsageDimension"
+          },
+          {
+            "field": "source",
+            "target": "@forgegraph/foundation/usage/_/UsageSource"
+          },
+          {
+            "field": "replacementFor",
+            "target": "@forgegraph/foundation/usage/_/UsageEvent"
+          }
+        ],
+        "createActions": 11
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageSource",
+        "name": "UsageSource",
+        "wireName": "usage_source",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "key",
+            "keyFields": [
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageStream",
+        "name": "UsageStream",
+        "wireName": "usage_stream",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "dimension",
+            "target": "@forgegraph/foundation/usage/_/UsageDimension"
+          }
+        ],
+        "createActions": 5
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "name": "ComputeRun",
+        "wireName": "compute_run",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "computeUsage",
+            "keyFields": [
+              "computeUsage"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "computeUsage",
+            "target": "@forgegraph/foundation/usage/_/UsageStream"
+          }
+        ],
+        "createActions": 6
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/LlmSession",
+        "name": "LlmSession",
+        "wireName": "llm_session",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "tokenUsage",
+            "keyFields": [
+              "tokenUsage"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "tokenUsage",
+            "target": "@forgegraph/foundation/usage/_/UsageStream"
+          }
+        ],
+        "createActions": 6
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/MachineRun",
+        "name": "MachineRun",
+        "wireName": "machine_run",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "machineUsage",
+            "keyFields": [
+              "machineUsage"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "machineUsage",
+            "target": "@forgegraph/foundation/usage/_/UsageStream"
+          }
+        ],
+        "createActions": 6
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@foundation-probe/usage-consumers",
+    "resources": [
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "name": "UsageCorrection",
+        "kind": "resource",
+        "label": "Usage Correction",
+        "plural": "Usage Corrections",
+        "route": "usage-corrections",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "event",
+            "label": "Event",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+              "route": "usage-event",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey"
+            }
+          },
+          {
+            "name": "replacement",
+            "label": "Replacement",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+              "route": "usage-event",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey"
+            }
+          },
+          {
+            "name": "reason",
+            "label": "Reason",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 500
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "event",
+          "replacement",
+          "reason"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/usage/_/UsageCorrection.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byEvent",
+            "op": "@forgegraph/foundation/usage/_/UsageCorrection.find.byEvent",
+            "params": [
+              "event"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageDimension",
+        "name": "UsageDimension",
+        "kind": "resource",
+        "label": "Usage Dimension",
+        "plural": "Usage Dimensions",
+        "route": "usage-dimensions",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "unit",
+            "label": "Unit",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "key",
+          "unit"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/usage/_/UsageDimension.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byKey",
+            "op": "@forgegraph/foundation/usage/_/UsageDimension.find.byKey",
+            "params": [
+              "key"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageEvent",
+        "name": "UsageEvent",
+        "kind": "resource",
+        "label": "Usage Event",
+        "plural": "Usage Events",
+        "route": "usage-events",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "stream",
+            "label": "Stream",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageStream",
+              "route": "usage-stream",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "dimension",
+            "label": "Dimension",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+              "route": "usage-dimension",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/usage/_/UsageDimension.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/usage/_/UsageDimension.find.byKey"
+            }
+          },
+          {
+            "name": "unit",
+            "label": "Unit",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 64
+          },
+          {
+            "name": "quantity",
+            "label": "Quantity",
+            "widget": "decimal",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "ordinal",
+            "label": "Ordinal",
+            "widget": "integer",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "source",
+            "label": "Source",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageSource",
+              "route": "usage-source",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/usage/_/UsageSource.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/usage/_/UsageSource.find.byKey"
+            }
+          },
+          {
+            "name": "eventKey",
+            "label": "Event Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "occurredAt",
+            "label": "Occurred At",
+            "widget": "datetime",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "intervalStart",
+            "label": "Interval Start",
+            "widget": "datetime",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "intervalEnd",
+            "label": "Interval End",
+            "widget": "datetime",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "replacementFor",
+            "label": "Replacement For",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+              "route": "usage-event",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey"
+            }
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "stream",
+          "dimension",
+          "unit",
+          "quantity",
+          "ordinal",
+          "source"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+            "params": [],
+            "label": "All"
+          },
+          {
+            "name": "byStream",
+            "op": "@forgegraph/foundation/usage/_/UsageEvent.list.byStream",
+            "params": [
+              "stream"
+            ],
+            "label": "By Stream"
+          }
+        ],
+        "finds": [
+          {
+            "name": "bySourceEventKey",
+            "op": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey",
+            "params": [
+              "source",
+              "eventKey"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageSource",
+        "name": "UsageSource",
+        "kind": "resource",
+        "label": "Usage Source",
+        "plural": "Usage Sources",
+        "route": "usage-sources",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "key"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/usage/_/UsageSource.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byKey",
+            "op": "@forgegraph/foundation/usage/_/UsageSource.find.byKey",
+            "params": [
+              "key"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/usage/_/UsageStream",
+        "name": "UsageStream",
+        "kind": "resource",
+        "label": "Usage Stream",
+        "plural": "Usage Streams",
+        "route": "usage-streams",
+        "titleField": "label",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "label",
+            "label": "Label",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "dimension",
+            "label": "Dimension",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+              "route": "usage-dimension",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/usage/_/UsageDimension.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/usage/_/UsageDimension.find.byKey"
+            }
+          }
+        ],
+        "tableColumns": [
+          "label",
+          "dimension"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "name": "ComputeRun",
+        "kind": "resource",
+        "label": "Compute Run",
+        "plural": "Compute Runs",
+        "route": "compute-runs",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "computeUsage",
+            "label": "Compute Usage",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageStream",
+              "route": "usage-stream",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+              "lookupParams": []
+            }
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "computeUsage"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@foundation-probe/usage-consumers/_/ComputeRun.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/LlmSession",
+        "name": "LlmSession",
+        "kind": "resource",
+        "label": "Llm Session",
+        "plural": "Llm Sessions",
+        "route": "llm-sessions",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "tokenUsage",
+            "label": "Token Usage",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageStream",
+              "route": "usage-stream",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+              "lookupParams": []
+            }
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "tokenUsage"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@foundation-probe/usage-consumers/_/LlmSession.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@foundation-probe/usage-consumers/_/MachineRun",
+        "name": "MachineRun",
+        "kind": "resource",
+        "label": "Machine Run",
+        "plural": "Machine Runs",
+        "route": "machine-runs",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "machineUsage",
+            "label": "Machine Usage",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/usage/_/UsageStream",
+              "route": "usage-stream",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+              "lookupParams": []
+            }
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "machineUsage"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@foundation-probe/usage-consumers/_/MachineRun.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-foundation-probe-usage-consumers-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.find.byEvent",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.list.byStream",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageStream.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageStream.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/ComputeRun.create",
+        "kind": "create",
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/ComputeRun.get",
+        "kind": "get",
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/ComputeRun.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/LlmSession.create",
+        "kind": "create",
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/LlmSession.get",
+        "kind": "get",
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/LlmSession.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/MachineRun.create",
+        "kind": "create",
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/MachineRun.get",
+        "kind": "get",
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/MachineRun.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "field": "event",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "field": "replacement",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "field": "reason",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "field": "unit",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "stream",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "dimension",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "unit",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "quantity",
+        "class": "data.finance.amount",
+        "ancestors": [
+          "data.finance.amount",
+          "data.finance",
+          "data"
+        ],
+        "kinds": [
+          "finance"
+        ],
+        "identifiability": "none",
+        "handling": "confidential",
+        "personal": "no",
+        "evidence": "inferred-from-type",
+        "completeness": "inferred"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "ordinal",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "source",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "eventKey",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "occurredAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "intervalStart",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "intervalEnd",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "field": "replacementFor",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "field": "label",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "field": "dimension",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "field": "computeUsage",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "field": "tokenUsage",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "field": "machineUsage",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "inferred": 1,
+      "structural": 22,
+      "unclassified": 7
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "outputs": [
+          "id",
+          "event",
+          "replacement",
+          "reason"
+        ],
+        "writes": [
+          "event",
+          "replacement",
+          "reason"
+        ],
+        "filters": [
+          "replacement",
+          "event"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "outputs": [
+          "id",
+          "event",
+          "replacement",
+          "reason"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.find.byEvent",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "outputs": [
+          "id",
+          "event",
+          "replacement",
+          "reason"
+        ],
+        "writes": [],
+        "filters": [
+          "event"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageCorrection.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageCorrection",
+        "outputs": [
+          "id",
+          "event",
+          "replacement",
+          "reason"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "outputs": [
+          "id",
+          "key",
+          "unit"
+        ],
+        "writes": [
+          "key",
+          "unit"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "outputs": [
+          "id",
+          "key",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "outputs": [
+          "id",
+          "key",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [
+          "key"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageDimension.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageDimension",
+        "outputs": [
+          "id",
+          "key",
+          "unit"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "outputs": [
+          "id",
+          "stream",
+          "dimension",
+          "unit",
+          "quantity",
+          "ordinal",
+          "source",
+          "eventKey",
+          "occurredAt",
+          "intervalStart",
+          "intervalEnd",
+          "replacementFor"
+        ],
+        "writes": [
+          "stream",
+          "dimension",
+          "unit",
+          "quantity",
+          "ordinal",
+          "source",
+          "eventKey",
+          "occurredAt",
+          "intervalStart",
+          "intervalEnd",
+          "replacementFor"
+        ],
+        "filters": [
+          "dimension",
+          "stream",
+          "unit",
+          "occurredAt",
+          "intervalStart",
+          "intervalEnd",
+          "replacementFor",
+          "ordinal"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "outputs": [
+          "id",
+          "stream",
+          "dimension",
+          "unit",
+          "quantity",
+          "ordinal",
+          "source",
+          "eventKey",
+          "occurredAt",
+          "intervalStart",
+          "intervalEnd",
+          "replacementFor"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.find.bySourceEventKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "outputs": [
+          "id",
+          "stream",
+          "dimension",
+          "unit",
+          "quantity",
+          "ordinal",
+          "source",
+          "eventKey",
+          "occurredAt",
+          "intervalStart",
+          "intervalEnd",
+          "replacementFor"
+        ],
+        "writes": [],
+        "filters": [
+          "source",
+          "eventKey"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "outputs": [
+          "id",
+          "stream",
+          "dimension",
+          "unit",
+          "quantity",
+          "ordinal",
+          "source",
+          "eventKey",
+          "occurredAt",
+          "intervalStart",
+          "intervalEnd",
+          "replacementFor"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageEvent.list.byStream",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageEvent",
+        "outputs": [
+          "id",
+          "stream",
+          "dimension",
+          "unit",
+          "quantity",
+          "ordinal",
+          "source",
+          "eventKey",
+          "occurredAt",
+          "intervalStart",
+          "intervalEnd",
+          "replacementFor"
+        ],
+        "writes": [],
+        "filters": [
+          "stream"
+        ],
+        "orders": [
+          "ordinal",
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [
+          "key"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.find.byKey",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [
+          "key"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageSource.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageSource",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageStream.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "outputs": [
+          "id",
+          "label",
+          "dimension"
+        ],
+        "writes": [
+          "label",
+          "dimension"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageStream.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "outputs": [
+          "id",
+          "label",
+          "dimension"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/usage/_/UsageStream.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/usage/_/UsageStream",
+        "outputs": [
+          "id",
+          "label",
+          "dimension"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/ComputeRun.create",
+        "kind": "create",
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "outputs": [
+          "id",
+          "computeUsage"
+        ],
+        "writes": [
+          "computeUsage"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/ComputeRun.get",
+        "kind": "get",
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "outputs": [
+          "id",
+          "computeUsage"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/ComputeRun.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/usage-consumers/_/ComputeRun",
+        "outputs": [
+          "id",
+          "computeUsage"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/LlmSession.create",
+        "kind": "create",
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "outputs": [
+          "id",
+          "tokenUsage"
+        ],
+        "writes": [
+          "tokenUsage"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/LlmSession.get",
+        "kind": "get",
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "outputs": [
+          "id",
+          "tokenUsage"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/LlmSession.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/usage-consumers/_/LlmSession",
+        "outputs": [
+          "id",
+          "tokenUsage"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/MachineRun.create",
+        "kind": "create",
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "outputs": [
+          "id",
+          "machineUsage"
+        ],
+        "writes": [
+          "machineUsage"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/MachineRun.get",
+        "kind": "get",
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "outputs": [
+          "id",
+          "machineUsage"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@foundation-probe/usage-consumers/_/MachineRun.list.all",
+        "kind": "list",
+        "resource": "@foundation-probe/usage-consumers/_/MachineRun",
+        "outputs": [
+          "id",
+          "machineUsage"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@foundation-probe/usage-consumers",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "UsageCorrectionRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "event": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "event",
+            "replacement",
+            "reason"
+          ]
+        },
+        "UsageCorrectionCreate": {
+          "type": "object",
+          "properties": {
+            "event": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "reason"
+          ]
+        },
+        "UsageCorrectionPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "UsageDimensionRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "key",
+            "unit"
+          ]
+        },
+        "UsageDimensionCreate": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim",
+                "lowercase"
+              ]
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "unit"
+          ]
+        },
+        "UsageDimensionPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "UsageEventRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "stream": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "minimum": 0
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "source": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageSource"
+            },
+            "eventKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "occurredAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalStart": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalEnd": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "replacementFor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "stream",
+            "dimension",
+            "unit",
+            "quantity",
+            "ordinal",
+            "source",
+            "eventKey",
+            "occurredAt",
+            "intervalStart",
+            "intervalEnd",
+            "replacementFor"
+          ]
+        },
+        "UsageEventCreate": {
+          "type": "object",
+          "properties": {
+            "stream": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            },
+            "unit": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 64,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            },
+            "quantity": {
+              "type": "string",
+              "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+              "x-forge-type": "decimal",
+              "x-forge-scale": 6,
+              "minimum": 0
+            },
+            "ordinal": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer"
+            },
+            "source": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageSource"
+            },
+            "eventKey": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "occurredAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalStart": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "intervalEnd": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms"
+            },
+            "replacementFor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageEvent"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "stream",
+            "dimension",
+            "unit",
+            "quantity",
+            "ordinal",
+            "source",
+            "eventKey"
+          ]
+        },
+        "UsageEventPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "UsageSourceRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "key"
+          ]
+        },
+        "UsageSourceCreate": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128,
+              "x-forge-normalizers": [
+                "trim"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "key"
+          ]
+        },
+        "UsageSourcePatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "UsageStreamRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "label",
+            "dimension"
+          ]
+        },
+        "UsageStreamCreate": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "dimension": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageDimension"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "dimension"
+          ]
+        },
+        "UsageStreamPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "ComputeRunRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "computeUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "computeUsage"
+          ]
+        },
+        "ComputeRunCreate": {
+          "type": "object",
+          "properties": {
+            "computeUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "computeUsage"
+          ]
+        },
+        "ComputeRunPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "LlmSessionRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "tokenUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "tokenUsage"
+          ]
+        },
+        "LlmSessionCreate": {
+          "type": "object",
+          "properties": {
+            "tokenUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "tokenUsage"
+          ]
+        },
+        "LlmSessionPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "MachineRunRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "machineUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "machineUsage"
+          ]
+        },
+        "MachineRunCreate": {
+          "type": "object",
+          "properties": {
+            "machineUsage": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/usage/_/UsageStream"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "machineUsage"
+          ]
+        },
+        "MachineRunPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  },
+  "deployment": {
+    "version": "package-assembly/1",
+    "packages": [
+      {
+        "package": {
+          "name": "@foundation-probe/usage-consumers",
+          "version": "0.1.0",
+          "edition": "2027",
+          "profile": "",
+          "targets": [],
+          "observability": {
+            "window": "28d",
+            "slo": []
+          }
+        },
+        "imports": [
+          {
+            "alias": "usage",
+            "package": "@forgegraph/foundation/usage"
+          }
+        ]
+      },
+      {
+        "package": {
+          "name": "@forgegraph/foundation/usage",
+          "version": "0.1.0",
+          "edition": "2027",
+          "profile": "",
+          "targets": [],
+          "observability": {
+            "window": "28d",
+            "slo": []
+          }
+        },
+        "imports": []
+      }
+    ]
+  }
+}

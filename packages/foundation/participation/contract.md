@@ -6,28 +6,28 @@ Source: [issue #29](https://github.com/gmackie/forgec/issues/29), under [epic #2
 
 ## Ownership and identity
 
-- Participant: participation-specific identity handle
+- Party: imported durable business identity owned by Party
 - ParticipationSet: application-owned scope sidecar
 - Participation: participant + role + set + validity + recorded provenance
 
-Participant handle is shared with Entitlement under an explicit dependency; it is not a universal Party model. Scope is ParticipationSet: app resources point outward to it. Participation begins Active and ends Ended or Revoked; validity can expire without deleting history. Duplicate active participant/role/window policy is explicit per set and must reject conflicting overlap where uniqueness is selected. Source attribution uses actor and recorded time; business source associations are domain satellites. No quantity units.
+Party owns business actor identity and Principal representation. Entitlement imports Party directly and does not require membership. Scope is ParticipationSet: app resources point outward to it. Participation begins Active and ends Ended or Revoked; validity can expire without deleting history. Duplicate active participant/role/window policy is explicit per set and must reject conflicting overlap where uniqueness is selected. Source attribution uses actor and recorded time; business source associations are domain satellites. No quantity units.
 
 ## Dependencies and composition
 
-Frozen direct substrate dependencies: none.
+Frozen direct substrate dependencies: `party`.
 Normal Forge imports and `uses` reference accepted package-qualified contracts. The application explicitly co-deploys the selected durable package closure into one transaction domain. Import alone must not imply remote reference integrity. Domain wrappers own business payloads and any reverse provenance links. No universal EntityRef, arbitrary JSON payload, generic Task/Case/Result schema or additional import edge is authorized by this contract.
 
 ## Commands and queries
 
 These are required semantic operations, not a claim that callable implementations exist:
 
-- RegisterParticipant; AddParticipation(set, participant, role, validity)
+- AddParticipation(set, participant, role, validity)
 - EndParticipation; RevokeParticipation; ListParticipantsAt(set, instant)
 - ReadParticipationFacts for Gatekeeper PIP
 
 ## Invariants
 
-- Participant is a typed handle, not resourceType plus id; Principal and organization/device mappings are typed satellites
+- participant is a typed Party reference; Party owns Principal representation while domain Person/Organization details are typed satellites
 - Role vocabulary is owned by the consuming package, namespaced and validated through its typed wrapper
 - Validity is half-open; ended/revoked history remains queryable
 - Participation alone never grants authority; tenant and governance checks apply to PIP reads

@@ -65,13 +65,45 @@ CREATE TABLE forge_receipt (
   PRIMARY KEY ("tenant", "operation", "key")
 );
 
-CREATE TABLE participant (
+CREATE TABLE identifier_set (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
   "label" TEXT COLLATE "C" NOT NULL,
-  "created_at" TEXT COLLATE "C" NOT NULL,
-  "updated_at" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE issuer (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "key_" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE identifier (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "identifier_set" TEXT COLLATE "C" NOT NULL,
+  "namespace" TEXT COLLATE "C" NOT NULL,
+  "issuer" TEXT COLLATE "C",
+  "issuer_scope" TEXT COLLATE "C" NOT NULL,
+  "value_" TEXT COLLATE "C" NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C",
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "identifier_set") REFERENCES identifier_set ("tenant", "id"),
+  FOREIGN KEY ("tenant", "issuer") REFERENCES issuer ("tenant", "id")
+);
+
+CREATE TABLE identifier_disposition (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "identifier" TEXT COLLATE "C" NOT NULL,
+  "replacement" TEXT COLLATE "C",
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "identifier") REFERENCES identifier ("tenant", "id"),
+  FOREIGN KEY ("tenant", "replacement") REFERENCES identifier ("tenant", "id")
 );
 
 CREATE TABLE participation_role (
@@ -93,6 +125,17 @@ CREATE TABLE participation_set (
   PRIMARY KEY ("tenant", "id")
 );
 
+CREATE TABLE party (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  "identifiers" TEXT COLLATE "C",
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "identifiers") REFERENCES identifier_set ("tenant", "id")
+);
+
 CREATE TABLE participation (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -107,7 +150,7 @@ CREATE TABLE participation (
   "updated_at" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "participation_set") REFERENCES participation_set ("tenant", "id"),
-  FOREIGN KEY ("tenant", "participant") REFERENCES participant ("tenant", "id"),
+  FOREIGN KEY ("tenant", "participant") REFERENCES party ("tenant", "id"),
   FOREIGN KEY ("tenant", "role") REFERENCES participation_role ("tenant", "id")
 );
 
@@ -125,6 +168,34 @@ CREATE TABLE participation_end (
   FOREIGN KEY ("tenant", "participation") REFERENCES participation ("tenant", "id")
 );
 
+CREATE TABLE principal_representation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "party" TEXT COLLATE "C" NOT NULL,
+  "principal" TEXT COLLATE "C" NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C",
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "party") REFERENCES party ("tenant", "id")
+);
+
+CREATE TABLE representation_revocation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "representation" TEXT COLLATE "C" NOT NULL,
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "representation") REFERENCES principal_representation ("tenant", "id")
+);
+
 CREATE TABLE classroom (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -134,22 +205,13 @@ CREATE TABLE classroom (
   FOREIGN KEY ("tenant", "enrollment") REFERENCES participation_set ("tenant", "id")
 );
 
-CREATE TABLE organization_participant (
+CREATE TABLE organization_party (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
   "organization_code" TEXT COLLATE "C" NOT NULL,
-  "participant" TEXT COLLATE "C" NOT NULL,
+  "party" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "participant") REFERENCES participant ("tenant", "id")
-);
-
-CREATE TABLE principal_participant (
-  "tenant" TEXT COLLATE "C" NOT NULL,
-  "id" TEXT COLLATE "C" NOT NULL,
-  "principal" TEXT COLLATE "C" NOT NULL,
-  "participant" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "participant") REFERENCES participant ("tenant", "id")
+  FOREIGN KEY ("tenant", "party") REFERENCES party ("tenant", "id")
 );
 
 CREATE TABLE review_board (
@@ -171,15 +233,22 @@ CREATE TABLE team (
 );
 
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);
+CREATE UNIQUE INDEX identifier_uq_namespace_issuerScope_value ON identifier ("tenant", "namespace", "issuer_scope", "value_");
+CREATE INDEX identifier_ix_by_identifier_set ON identifier ("tenant", "identifier_set", "id");
+CREATE UNIQUE INDEX identifier_disposition_uq_identifier ON identifier_disposition ("tenant", "identifier");
+CREATE UNIQUE INDEX issuer_uq_key ON issuer ("tenant", "key_");
 CREATE UNIQUE INDEX participation_uq_participationSet_participant_role_validFrom ON participation ("tenant", "participation_set", "participant", "role", "valid_from");
 CREATE INDEX participation_ix_by_participant ON participation ("tenant", "participant", "id");
 CREATE INDEX participation_ix_by_participation_set ON participation ("tenant", "participation_set", "id");
 CREATE UNIQUE INDEX participation_end_uq_participation ON participation_end ("tenant", "participation");
 CREATE UNIQUE INDEX participation_role_uq_namespace_name ON participation_role ("tenant", "namespace", "name");
+CREATE UNIQUE INDEX party_uq_identifiers ON party ("tenant", "identifiers");
+CREATE UNIQUE INDEX principal_representation_uq_principal_party_validFrom ON principal_representation ("tenant", "principal", "party", "valid_from");
+CREATE INDEX principal_representation_ix_by_party ON principal_representation ("tenant", "party", "id");
+CREATE INDEX principal_representation_ix_by_principal ON principal_representation ("tenant", "principal", "id");
+CREATE UNIQUE INDEX representation_revocation_uq_representation ON representation_revocation ("tenant", "representation");
 CREATE UNIQUE INDEX classroom_uq_enrollment ON classroom ("tenant", "enrollment");
-CREATE UNIQUE INDEX organization_participant_uq_organizationCode ON organization_participant ("tenant", "organization_code");
-CREATE UNIQUE INDEX organization_participant_uq_participant ON organization_participant ("tenant", "participant");
-CREATE UNIQUE INDEX principal_participant_uq_participant ON principal_participant ("tenant", "participant");
-CREATE UNIQUE INDEX principal_participant_uq_principal ON principal_participant ("tenant", "principal");
+CREATE UNIQUE INDEX organization_party_uq_organizationCode ON organization_party ("tenant", "organization_code");
+CREATE UNIQUE INDEX organization_party_uq_party ON organization_party ("tenant", "party");
 CREATE UNIQUE INDEX review_board_uq_reviewers ON review_board ("tenant", "reviewers");
 CREATE UNIQUE INDEX team_uq_members ON team ("tenant", "members");

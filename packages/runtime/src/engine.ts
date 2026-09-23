@@ -9,7 +9,7 @@ import { decodeCursor, encodeCursor } from "./cursor.js";
 import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
 import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Operation, type Resource, type Transition, type Unique } from "./model.js";
-import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
+import { Clock, CursorSecret, IdGen, Storage, type AtomicAbsenceGuard, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
 import { Changesets } from "./changeset.js";
 import { Blobs } from "./blobs.js";
 import { Imports } from "./imports.js";
@@ -25,7 +25,7 @@ import { Governance } from "./governance.js";
 import { Scope } from "./scope.js";
 import { Gatekeeper } from "./gatekeeper.js";
 import { Suppression } from "./suppression.js";
-import { testClocks } from "./testing.js";
+import { jumpTestClock } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
 
@@ -57,6 +57,14 @@ export function stableJson(v: unknown): string {
   if (Array.isArray(v)) return `[${v.map(stableJson).join(",")}]`;
   if (v && typeof v === "object") return `{${Object.keys(v as object).sort().map((k) => `${JSON.stringify(k)}:${stableJson((v as Wire)[k])}`).join(",")}}`;
   return JSON.stringify(v);
+}
+
+export interface AtomicMutation { operation: string; input: Wire }
+export interface AtomicOptions {
+  /** Unconditional unique keys on append-only resources. Absence is checked at commit,
+   * including facts the caller could not see through a row-filtered query. Requires
+   * read authorization for the finder without a current record (fails closed). */
+  absent?: readonly { resource: string; unique: string; values: Wire }[];
 }
 
 export interface EngineOptions {
@@ -258,18 +266,85 @@ export class Engine {
     return canonicalize(this.model, plan.resource, plan.hardDelete ? plan.before! : plan.after);
   }
 
-  private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  /** Authorized, bounded composition of independent mutations against durable references.
+   * No staged reads/references or repeated-record composition is implied. Callers
+   * use immutable unique publication facts for retries; receipt keys are rejected. */
+  atomic(mutations: readonly AtomicMutation[], ctx: CallContext, options: AtomicOptions = {}): Effect.Effect<Wire[], ForgeError> {
+    const self = this;
+    const started = performance.now();
+    return Effect.gen(function* () {
+      if (ctx.idempotencyKey) return yield* Effect.fail(err("ValidationFailed", "Atomic mutations require a durable application command key, not a per-operation receipt"));
+      if (!mutations.length || mutations.length > 32) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations require 1..32 operations"));
+      const storage = yield* Storage;
+      const absent: AtomicAbsenceGuard[] = [];
+      if ((options.absent?.length ?? 0) > 32) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations support at most 32 absence guards"));
+      if (options.absent?.length && !storage.atomicAbsenceGuards) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support atomic absence guards"));
+      for (const guard of options.absent ?? []) {
+        const resource = self.model.resources.find(r => r.id === guard.resource);
+        const unique = resource?.uniques.find(u => u.name === guard.unique);
+        const finder = resource?.finds.find(f => f.coveredBy === guard.unique);
+        if (!resource?.decorators.appendOnly || !unique || unique.condition || !finder) return yield* Effect.fail(err("ValidationFailed", "Absence guards require an unconditional unique finder on an append-only resource"));
+        const fields = [...unique.within, ...unique.fields];
+        if (Object.keys(guard.values).some(field => !fields.includes(field))) return yield* Effect.fail(err("ValidationFailed", "Absence guard contains fields outside its unique key"));
+        const values = yield* self.queryValues(resource, fields, guard.values);
+        const claimKey = self.claimKey(resource, unique, values);
+        if (!claimKey) return yield* Effect.fail(err("ValidationFailed", "Absence guards require a complete non-null unique key"));
+        const surface = yield* self.scope.resolve(resource, ctx);
+        if (surface) yield* self.scope.checkQuery(surface, resource, values, []);
+        // No synthetic record and no filtered pre-read: row-dependent authority cannot
+        // establish absence of every matching fact, so it must fail closed.
+        const decision = yield* self.gatekeeper.decide(`${resource.id}.find.${finder.name}`, "read", resource, ctx);
+        if (decision.effect !== "allow" || decision.rowFilter?.length) return yield* Effect.fail(err("NotPermitted", "Atomic absence guard requires unfiltered read authority"));
+        if (!absent.some(g => g.claimKey === claimKey)) absent.push({ tenant: ctx.tenant, resource, unique, claimKey, values });
+      }
+      const plans: CommitPlan[] = [], surfaces: (import("./scope.js").Surface | null)[] = [];
+      for (const mutation of mutations) {
+        const ref = self.model.operation(mutation.operation);
+        if (!ref) return yield* Effect.fail(err("MethodNotAllowed", "Atomic operation is not a resource mutation"));
+        if (ref.resource.fields.some(f => f.sequence || f.secret)) return yield* Effect.fail(err("ValidationFailed", "Atomic mutations do not support sequence allocation or credential sealing"));
+        const surface = yield* self.scope.resolve(ref.resource, ctx);
+        if (surface) {
+          switch (ref.op.kind) {
+            case "create": yield* self.scope.checkCreate(surface, ref.resource, mutation.input); break;
+            case "update": yield* self.scope.checkPatch(surface, ref.resource, (mutation.input["patch"] ?? {}) as Wire); break;
+            case "transition": yield* self.scope.checkAction(surface, ref.resource, ref.op.action!); break;
+            case "delete": case "restore": yield* self.scope.checkAction(surface, ref.resource, ref.op.kind); break;
+            default: return yield* Effect.fail(err("MethodNotAllowed", "Unsupported atomic mutation"));
+          }
+        }
+        const plan = yield* self.authorizedPlan(mutation.operation, mutation.input, ctx);
+        if (plans.some(p => p.resource.id === plan.resource.id && p.id === plan.id)) return yield* Effect.fail(err("ValidationFailed", "Atomic operations cannot mutate the same record twice"));
+        plans.push(plan); surfaces.push(surface);
+      }
+      if (plans.some(plan => absent.some(guard => plan.tenant === guard.tenant && plan.claims.some(claim => claim.after === guard.claimKey)))) return yield* Effect.fail(err("ValidationFailed", "Atomic mutation creates a fact required to be absent"));
+      const budget = storage.budget(plans, absent);
+      if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations exceed provider transaction budget"));
+      yield* storage.commitAll(plans, absent);
+      return plans.map((plan, i) => surfaces[i] ? self.scope.project(surfaces[i]!, self.resultOf(plan)) : self.resultOf(plan));
+    }).pipe(
+      Effect.provide(self.layer),
+      Effect.tap(() => Effect.sync(() => { for (const mutation of mutations) self.telemetry.emit(mutation.operation, ctx, started, self.successStatus(mutation.operation)); })),
+      Effect.tapError(error => Effect.sync(() => { for (const mutation of mutations) self.telemetry.emit(mutation.operation, ctx, started, error.status, error.code); })),
+    );
+  }
+
+  private authorizedPlan(opId: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       if (yield* self.portability.isFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
-      // A suppressed subject's data is never recreated or revived, whatever queued the write (PAR-158):
-      // creates are checked on the request body before any reference lookup can answer for the ledger.
       const ref = self.model.operation(opId);
       if (ref?.op.kind === "create") yield* self.suppression.guard(ref.resource, "create", body as StoredRecord, ctx);
       const plan = yield* self.planFor(opId, body, ctx);
-      // Authorize current AND candidate state (PAR-110): a permitted update cannot move the record out of scope.
       yield* self.gatekeeper.requireWrite(opId, plan.resource, ctx, plan.before ? canonicalize(self.model, plan.resource, plan.before) : null, canonicalize(self.model, plan.resource, plan.after));
       yield* self.suppression.guard(plan.resource, plan.kind, plan.after, ctx);
+      return plan;
+    });
+  }
+
+  private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+    const self = this;
+    return Effect.gen(function* () {
+      const plan = yield* self.authorizedPlan(opId, body, ctx);
       yield* (yield* Storage).commit(plan);
       return self.resultOf(plan);
     });
@@ -292,7 +367,7 @@ export class Engine {
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {
-    testClocks.at(-1)?.jump(ms);
+    jumpTestClock(this.layer, ms);
   }
 
   /** Every projection is one durable logical subscription on its source's change channel. */
@@ -571,7 +646,9 @@ export class Engine {
       if (plan.kind === "exact") {
         const denied = plan.filter.some((c) => (c.op === "in" && !c.values.includes(values[c.field])) || (c.op === "eq" && values[c.field] !== c.values[0]) || (c.op === "ne" && c.values.includes(values[c.field])));
         if (denied) items = [];
-      } else if (plan.kind === "candidate") {
+      }
+      // Query predicates are only a prefilter; freshness and obligations still require decisions.
+      if (self.gatekeeper.authorizer) {
         const kept: Wire[] = [];
         for (const it of items) {
           const d = yield* self.gatekeeper.decide(opId, "read", r, ctx, it);
@@ -699,8 +776,7 @@ export class Engine {
     return Effect.gen(function* () {
       const storage = yield* Storage;
       const requestHash = yield* Effect.promise(() => sha256(stableJson(body)));
-      const existing = yield* storage.getReceipt(ctx.tenant, operation, key);
-      if (existing) {
+      const replay = (existing: Receipt) => Effect.gen(function* () {
         if (existing.requestHash !== requestHash) return yield* Effect.fail(err("IdempotencyMismatch", "idempotency key reused with a different request"));
         // Reuse repeats no effect, but the stored response is disclosed only under current authority (PAR-112).
         const ref = self.model.operation(operation);
@@ -708,10 +784,18 @@ export class Engine {
         const d = yield* self.gatekeeper.decide(operation, "replay", ref?.resource ?? null, ctx, stored && typeof stored === "object" && "id" in stored ? stored : undefined);
         if (d.effect !== "allow") return yield* Effect.fail(err("NotPermitted", "the stored result of this request is no longer accessible under current authority"));
         return stored;
-      }
+      });
+      const existing = yield* storage.getReceipt(ctx.tenant, operation, key);
+      if (existing) return yield* replay(existing);
       const clock = yield* Clock;
       const receipt: Receipt = { tenant: ctx.tenant, operation, key, requestHash, status: 200, response: null, createdAt: clock.now() };
-      return yield* runWithReceipt(run, receipt);
+      return yield* runWithReceipt(run, receipt).pipe(Effect.catch((error) => Effect.gen(function* () {
+        if (error.code !== "VersionConflict") return yield* Effect.fail(error);
+        // Another caller may commit after our initial receipt miss but before we read
+        // the record. Its durable receipt distinguishes a replay from a stale request.
+        const committed = yield* storage.getReceipt(ctx.tenant, operation, key);
+        return committed ? yield* replay(committed) : yield* Effect.fail(error);
+      })));
     });
 
     function runWithReceipt(inner: Effect.Effect<Wire, ForgeError, RuntimeServices>, receipt: Receipt) {
@@ -721,6 +805,7 @@ export class Engine {
         // Explicit delegation: spreading a class instance would drop prototype methods.
         const wrapped: StorageAdapter = {
           name: storage.name,
+          ...(storage.atomicAbsenceGuards ? { atomicAbsenceGuards: true as const } : {}),
           get: (...a) => storage.get(...a),
           findUnique: (...a) => storage.findUnique(...a),
           list: (...a) => storage.list(...a),

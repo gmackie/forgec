@@ -1,0 +1,25 @@
+[package]
+name = "@forgegraph/foundation/integration"
+version = "0.1.0"
+edition = "2027"
+[source]
+root = "src"
+entry = "src/model.forge"
+[dependencies.reconciliation]
+path = "../reconciliation"
+deploy = true
+[dependencies.identifiers]
+path = "../identifiers"
+deploy = true
+[dependencies.delivery]
+path = "../delivery"
+deploy = true
+[dependencies.fulfillment]
+path = "../fulfillment"
+deploy = true
+[dependencies.lineage]
+path = "../lineage"
+deploy = true
+[dependencies.evidence]
+path = "../evidence"
+deploy = true

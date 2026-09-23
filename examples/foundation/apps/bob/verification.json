@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "sourceRootEnv": "FORGE_FOUNDATION_BOB_ROOT",
+  "sourceRevision": "f388e25f4a1e796ac9a9f07e8aa7478484d32b02",
+  "test": "test/foundation-app-bob.traces.ts",
+  "requiredTests": [
+    "memory: Bob persisted completion uses real Fulfillment without inventing start",
+    "sqlite: Bob persisted completion uses real Fulfillment without inventing start",
+    "postgres: Bob persisted completion uses real Fulfillment without inventing start"
+  ],
+  "sourceFiles": [
+    {
+      "path": "packages/bob/src/api/src/services/integrations/foundationFulfillmentService.ts",
+      "sha256": "988793e4a7fff193cf84109375b1d0b6be0579eb9ec868fc0a2ccb544512f6a4"
+    },
+    {
+      "path": "packages/bob/src/api/src/services/integrations/planningWriteService.ts",
+      "sha256": "8edae4c3e2fb36ca4df0a86392867cdd619874e8148895b25033e43a4421b4d8"
+    },
+    {
+      "path": "packages/bob/src/api/src/services/integrations/__tests__/foundationFulfillmentService.test.ts",
+      "sha256": "387050f7159338de76e787843d09d371bc6bb03840bb90ff9642dcc554df4099"
+    },
+    {
+      "path": "packages/bob/src/schema/src/work-items.ts",
+      "sha256": "9a7ebd602328270b0a385216f0be77311803a861ef27a87a4f85be4a7d7554f5"
+    }
+  ]
+}

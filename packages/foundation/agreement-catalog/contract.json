@@ -9,7 +9,8 @@
     "entitlement",
     "evaluation",
     "artifact",
-    "evidence"
+    "evidence",
+    "party"
   ],
   "facts": [
     "Catalog",
@@ -19,7 +20,9 @@
     "AgreementParticipant",
     "AgreementTermLink",
     "AgreementEntitlementLink",
-    "AgreementObligationLink"
+    "AgreementObligationLink",
+    "AgreementAcceptance",
+    "AgreementAcceptanceCommit"
   ],
   "operations": [
     "Publish offer",
@@ -34,62 +37,99 @@
     "Offer is distinct from its specification",
     "Agreement is distinct from its qualification Decision",
     "Terms retain exact specification and artifact pins",
-    "Accepting an agreement issues linked entitlements and obligations once"
+    "Accepted agreements issue linked entitlements and obligations once through resumable receipt-backed stages",
+    "Committed exact acceptance can resume issuance after validity windows close without caller historical timestamps"
   ],
   "acceptance": [
     {
       "id": "F43-01",
       "description": "Catalog/Entry/Offer model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-02",
       "description": "Agreement + participant integration",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-03",
       "description": "entitlements/obligations issued from agreement",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-04",
       "description": "validity/suspension/termination lifecycle",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-05",
       "description": "specification/artifact term pinning",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-06",
       "description": "fixtures for SaaS plan, course offering, lab service and vendor agreement",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-R01",
       "description": "Concurrent acceptance cannot duplicate rights or duties",
       "kind": "concurrency",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-R02",
       "description": "Expired offer cannot be accepted without a new valid offer",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-AUTH",
       "description": "Reject unauthorized and cross-tenant commands and references through generated runtime surfaces",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-agreement-catalog.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F43-STORE",

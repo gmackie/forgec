@@ -1,0 +1,13 @@
+# Stream Conductor production acknowledgment adapter
+
+This opt-in integration uses the actual `productionSessions`, `productionCommands` and `broadcasts` domain. `createProductionRouter(port)` retains the existing `scenes.switch` authorization, database writes and OBS behavior. Its default exported router has no port and preserves the existing response shape.
+
+After the application persists an acknowledged command, `projectAcknowledgedProduction` sends the durable row to `streamConductorFoundation`. Native team IDs become Foundation tenants; native session, broadcast and command IDs remain explicit app satellite fields. The generated model links a typed ProductionCommand to Fulfillment, its actual start and acknowledged completion. This claims completion of the individual application command, not broadcast completion or media quality certification. Uncertain/failed commands are not published as successful fulfillments.
+
+The projection runs after native persistence and does not provide a transaction spanning both databases. If it fails, the response carries `foundation.status = pending` and the command ID. Replay the original durable acknowledged row through the same seam; stable receipt keys resume partially completed stages and reject changed command content. It never sends or retries an OBS operation. There is no automated outbox/reconciliation worker in this opt-in profile.
+
+Inject the adapter only at a trusted server composition root, after configuring the generated schema and an Engine whose authorizer permits the intended Foundation resources. The context mapper must bind the authenticated team to the same tenant; business membership is not an authorization grant. No environment flag enables this automatically, and no application storage migration or deployment is performed.
+
+The trace suite imports the actual app module using `FORGE_FOUNDATION_STREAM_CONDUCTOR_ROOT`. `verification.json` pins source hashes and its local app commit. It tests generated Foundation behavior on memory/SQLite, and PostgreSQL when configured: typed linkage, lost-response replay, changed payload rejection, tenant isolation, uncertain-result rejection and denied projections. Native app tests additionally invoke the real router handler and prove a projection outage does not rewrite an OBS acknowledgment. Full web TypeScript check passes.
+
+Installable adapter: `@forgegraph/runtime/foundation/apps/stream-conductor`. The local `adapter.ts` reexports the same implementation used by the packaged runtime. Build the corresponding Forge schema for the selected deployment before wiring the port.

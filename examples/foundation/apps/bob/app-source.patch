@@ -1,0 +1,78 @@
+diff --git a/packages/bob/src/api/src/services/integrations/__tests__/foundationFulfillmentService.test.ts b/packages/bob/src/api/src/services/integrations/__tests__/foundationFulfillmentService.test.ts
+new file mode 100644
+index 0000000000..8da08dd58a
+--- /dev/null
++++ b/packages/bob/src/api/src/services/integrations/__tests__/foundationFulfillmentService.test.ts
+@@ -0,0 +1,18 @@
++import { expect, it, vi } from 'vitest';
++vi.mock('@bob/db',()=>({and:(...args:unknown[])=>args,eq:(...args:unknown[])=>args}));
++vi.mock('@bob/db/schema',()=>({taskRuns:{id:'id',userId:'userId',planningWorkspaceId:'workspace'}}));
++import { reconcileRunFoundationCompletion } from '../foundationFulfillmentService.js';
++it('reconciles an authorized terminal task run without executing it again',async()=>{
++ let row:any={id:'run',userId:'user',planningWorkspaceId:'workspace',planningItemId:'issue',sessionId:'session',status:'completed',completedAt:'2026-01-01T00:00:00Z'};
++ const findFirst=vi.fn(async()=>row),db:any={query:{taskRuns:{findFirst}}};
++ const recordCompletion=vi.fn().mockResolvedValue({fulfillmentEndId:'end',runLinkId:'link'});
++ const auth={userId:'user',workspaceId:'workspace'};
++ await reconcileRunFoundationCompletion(db,auth,'run',{recordCompletion});
++ expect(findFirst).toHaveBeenCalledWith({where:[['id','run'],['userId','user'],['workspace','workspace']]});
++ expect(recordCompletion).toHaveBeenCalledWith({taskRunId:'run',userId:'user',workspaceId:'workspace',planningItemId:'issue',sessionId:'session',completedAt:'2026-01-01T00:00:00.000Z'});
++ row={...row,status:'running'};
++ await expect(reconcileRunFoundationCompletion(db,auth,'run',{recordCompletion})).rejects.toThrow('persisted completed');
++ row={...row,userId:'foreign'};
++ await expect(reconcileRunFoundationCompletion(db,auth,'run',{recordCompletion})).rejects.toThrow('authorized workspace');
++ expect(recordCompletion).toHaveBeenCalledTimes(1);
++});
+diff --git a/packages/bob/src/api/src/services/integrations/foundationFulfillmentService.ts b/packages/bob/src/api/src/services/integrations/foundationFulfillmentService.ts
+new file mode 100644
+index 0000000000..2b48c4b691
+--- /dev/null
++++ b/packages/bob/src/api/src/services/integrations/foundationFulfillmentService.ts
+@@ -0,0 +1,37 @@
++import { and, eq } from "@bob/db";
++import type { Db } from "@bob/db/client";
++import { taskRuns } from "@bob/db/schema";
++
++export interface FoundationRunFact {
++  taskRunId: string;
++  sessionId: string;
++  userId: string;
++  workspaceId: string;
++  planningItemId: string;
++  completedAt: string;
++}
++export interface FoundationRunCompletion {
++  recordCompletion(fact: FoundationRunFact): Promise<{ fulfillmentEndId: string; runLinkId: string }>;
++}
++/** Explicit, opt-in reconciliation. Authenticated user/workspace must be server-derived.
++ * Only a persisted completed run is accepted. Retrying never repeats task execution.
++ * No startedAt exists on taskRuns: the adapter must use a separately recorded real start.
++ */
++export async function reconcileRunFoundationCompletion(
++  db: Db,
++  authorized: { userId: string; workspaceId: string },
++  taskRunId: string,
++  foundation: FoundationRunCompletion,
++) {
++  const run = await db.query.taskRuns.findFirst({where: and(eq(taskRuns.id, taskRunId),
++    eq(taskRuns.userId, authorized.userId), eq(taskRuns.planningWorkspaceId, authorized.workspaceId))});
++  if (!run || run.id !== taskRunId || run.userId !== authorized.userId || run.planningWorkspaceId !== authorized.workspaceId) {
++    throw new Error("Task run not found in authorized workspace");
++  }
++  if (run.status !== "completed" || !run.completedAt || !run.sessionId) {
++    throw new Error("Foundation completion requires a persisted completed run with session and timestamp");
++  }
++  return foundation.recordCompletion({taskRunId:run.id,sessionId:run.sessionId,userId:run.userId,
++    workspaceId:run.planningWorkspaceId,planningItemId:run.planningItemId,
++    completedAt:new Date(run.completedAt).toISOString()});
++}
+diff --git a/packages/bob/src/api/src/services/integrations/planningWriteService.ts b/packages/bob/src/api/src/services/integrations/planningWriteService.ts
+index 20dc016d61..4353d8dfb2 100644
+--- a/packages/bob/src/api/src/services/integrations/planningWriteService.ts
++++ b/packages/bob/src/api/src/services/integrations/planningWriteService.ts
+@@ -354,3 +354,6 @@
+     body: input.summary,
+   });
+ }
++
++// Opt-in replay of a persisted terminal run; task execution is never repeated.
++export { reconcileRunFoundationCompletion } from "./foundationFulfillmentService.js";

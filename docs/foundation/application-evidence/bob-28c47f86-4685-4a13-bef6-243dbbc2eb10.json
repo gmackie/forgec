@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "suite": "applications",
+  "application": "bob",
+  "status": "passing",
+  "runId": "28c47f86-4685-4a13-bef6-243dbbc2eb10",
+  "sourceRevision": "f388e25f4a1e796ac9a9f07e8aa7478484d32b02",
+  "sourceRevisionScope": "Pinned files verified against immutable revision; unrelated working-copy files are not certified",
+  "sourceFiles": [
+    {
+      "path": "packages/bob/src/api/src/services/integrations/foundationFulfillmentService.ts",
+      "sha256": "988793e4a7fff193cf84109375b1d0b6be0579eb9ec868fc0a2ccb544512f6a4"
+    },
+    {
+      "path": "packages/bob/src/api/src/services/integrations/planningWriteService.ts",
+      "sha256": "8edae4c3e2fb36ca4df0a86392867cdd619874e8148895b25033e43a4421b4d8"
+    },
+    {
+      "path": "packages/bob/src/api/src/services/integrations/__tests__/foundationFulfillmentService.test.ts",
+      "sha256": "387050f7159338de76e787843d09d371bc6bb03840bb90ff9642dcc554df4099"
+    },
+    {
+      "path": "packages/bob/src/schema/src/work-items.ts",
+      "sha256": "9a7ebd602328270b0a385216f0be77311803a861ef27a87a4f85be4a7d7554f5"
+    }
+  ],
+  "sourceFingerprint": "f7617bdeeb6a02df088ba0bf6090711bc0e9e783a250a102fb441c9ff9645101",
+  "scope": "Local opt-in integration with pinned actual application source; not deployed adoption",
+  "artifacts": [
+    {
+      "path": "api.smithy",
+      "sha256": "12d9fdc4ae9799c739dcfcaab466f34bfb372aaf69f37710e62f29a3bee71a23"
+    },
+    {
+      "path": "app.json",
+      "sha256": "5430513fb9074589e1daa52519a89cd51dbc2e566acdfadfa0f35553f76d7922"
+    },
+    {
+      "path": "client.ts",
+      "sha256": "daab60bed6cb10588aeb25b849d7e8f72daea8ae632cdad7782f31fbcfce84b2"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "5801b2f0bcaefc511c9aa806d22076e4f399636f716424afb0545224301948ed"
+    },
+    {
+      "path": "openapi.json",
+      "sha256": "323918c65e0d1071b3830522cef2adccfd179488c0939821e160ed794a6f94f5"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "3c2951662abbc9bafb7526a4da6ffc7cac25c785cc569dc8023c0eac0ac36fea"
+    },
+    {
+      "path": "README.md",
+      "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+    },
+    {
+      "path": "source-map.json",
+      "sha256": "e16e1ce2efb86f61bff387b093913b1f43617a27b45e21506e2ef061fa114124"
+    }
+  ],
+  "passedTests": [
+    "memory: Bob persisted completion uses real Fulfillment without inventing start",
+    "sqlite: Bob persisted completion uses real Fulfillment without inventing start",
+    "postgres: Bob persisted completion uses real Fulfillment without inventing start"
+  ],
+  "verifiedAt": "2026-09-23T15:07:02.179Z",
+  "testReportSha256": "c423e43e9e8dccda12b7803dba5504bd15c15f10ac365ca2471f9e57aa89e93d"
+}

@@ -1,4 +1,4 @@
-FROM node:22-slim
+FROM node:24-slim
 RUN npm install -g wrangler@4.135.0
 ENV WRANGLER_SEND_METRICS=false CI=true
 WORKDIR /app

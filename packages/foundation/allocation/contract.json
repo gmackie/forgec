@@ -4,45 +4,63 @@
   "issue": 34,
   "dependencies": [],
   "facts": [
-    "Pool: exclusive or fungible capacity with explicit unit and version guard",
-    "Reservation: held business capacity and validity window",
-    "Allocation: committed ownership claim linked to reservation; release/expiry history"
+    "AllocationPool: immutable exclusive/fungible capacity and exact unit",
+    "AllocationReservation: inert typed interval/quantity candidate and explicit hold expiry",
+    "AllocationJournal: unique pool ordinal and command identity, simultaneously guarded transition and capacity claim"
   ],
   "operations": [
-    "Reserve(pool, quantity, unit, window, idempotencyKey)",
-    "Allocate(reservation); Release; CancelReservation; ExpireReservation",
-    "ListClaimsAt(pool, instant); ReadAvailableCapacity"
+    "Create typed pool/reservation candidates through Engine",
+    "Allocations.act: reserve, allocate, release, cancel, expire via validated single-row guarded commit",
+    "Allocations.inspect: current authority projected to booking instant with observed journal head"
   ],
   "invariants": [
-    "Reserve mutates pool capacity guard and claim in one atomic commit; pre-write list alone is insufficient",
-    "For each instant, live reservations and allocations never exceed declared capacity; exclusive pool capacity is one",
-    "Release, cancellation and expiry compete conditionally and release capacity at most once",
-    "Exact positive quantity/unit required; provider budget overflow rejects before any mutation"
+    "Only validated journal interpretation grants ownership; raw candidate rows never constitute authority",
+    "Each transition atomically commits its unique pool ordinal as both guard and claim; concurrent stale ordinal loses and retries",
+    "Every validated prefix obeys exact time-overlap capacity; exclusive pool capacity is one",
+    "Release/cancel/expire are conditional terminal transitions; command keys replay without repeated release",
+    "Enumeration and every terminal/candidate read fail closed under authorization; malformed raw journals poison rather than authorize",
+    "Journal is bounded to 512 rows; no multi-pool atomicity, general read overlay or live-provider guarantee is implied"
   ],
   "acceptance": [
     {
       "id": "F34-01",
       "description": "pool/capacity model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-allocation.test.ts"
+      ]
     },
     {
       "id": "F34-02",
       "description": "atomic reservation semantics",
       "kind": "concurrency",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-allocation.test.ts"
+      ]
     },
     {
       "id": "F34-03",
       "description": "allocation/release/expiry lifecycle",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-allocation.test.ts"
+      ]
     },
     {
       "id": "F34-04",
       "description": "exclusive and quantity-based fixtures",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-allocation.test.ts"
+      ]
     },
     {
       "id": "F34-05",
@@ -54,7 +72,11 @@
       "id": "F34-06",
       "description": "fixtures for Runner/GPU, hospital bed and machine reservation",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-allocation.test.ts"
+      ]
     }
   ],
   "fixtures": [

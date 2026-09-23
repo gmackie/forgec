@@ -155,18 +155,70 @@ export const operations: Record<string, OperationSpec> = {
   "@forgegraph/foundation/participation/_/imports.stage": { method: "POST", path: "/v1/imports/stage", kind: "import.stage", resource: "imports" },
 };
 
-export interface ParticipantRecord {
+export interface IdentifierRecord {
   id: string;
-  createdAt: string;
-  updatedAt: string;
+  identifierSet: string;
+  namespace: string;
+  issuer: string | null;
+  issuerScope: string;
+  value: string;
+  validFrom: string;
+  validUntil: string | null;
+}
+
+export interface IdentifierCreate {
+  identifierSet: string;
+  namespace: string;
+  issuer?: string | null;
+  issuerScope: string;
+  value: string;
+  validFrom: string;
+  validUntil?: string | null;
+}
+
+export interface IdentifierPatch {
+}
+
+export interface IdentifierDispositionRecord {
+  id: string;
+  identifier: string;
+  replacement: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface IdentifierDispositionCreate {
+  identifier: string;
+  replacement?: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface IdentifierDispositionPatch {
+}
+
+export interface IdentifierSetRecord {
+  id: string;
   label: string;
 }
 
-export interface ParticipantCreate {
+export interface IdentifierSetCreate {
   label: string;
 }
 
-export interface ParticipantPatch {
+export interface IdentifierSetPatch {
+}
+
+export interface IssuerRecord {
+  id: string;
+  key: string;
+}
+
+export interface IssuerCreate {
+  key: string;
+}
+
+export interface IssuerPatch {
 }
 
 export interface ParticipationRecord {
@@ -247,7 +299,76 @@ export interface ParticipationSetCreate {
 export interface ParticipationSetPatch {
 }
 
-export interface ParticipantApi {
+export interface PartyRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  label: string;
+  identifiers: string | null;
+}
+
+export interface PartyCreate {
+  label: string;
+  identifiers?: string | null;
+}
+
+export interface PartyPatch {
+}
+
+export interface PrincipalRepresentationRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  party: string;
+  principal: string;
+  validFrom: string;
+  validUntil: string | null;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface PrincipalRepresentationCreate {
+  party: string;
+  principal: string;
+  validFrom: string;
+  validUntil?: string | null;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface PrincipalRepresentationPatch {
+}
+
+export interface RepresentationRevocationRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  representation: string;
+  effectiveAt: string;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface RepresentationRevocationCreate {
+  representation: string;
+  effectiveAt: string;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface RepresentationRevocationPatch {
+}
+
+export interface IdentifierApi {
+}
+
+export interface IdentifierDispositionApi {
+}
+
+export interface IdentifierSetApi {
+}
+
+export interface IssuerApi {
 }
 
 export interface ParticipationApi {
@@ -262,6 +383,15 @@ export interface ParticipationRoleApi {
 export interface ParticipationSetApi {
 }
 
+export interface PartyApi {
+}
+
+export interface PrincipalRepresentationApi {
+}
+
+export interface RepresentationRevocationApi {
+}
+
 export interface FunctionsApi {
 }
 
@@ -271,11 +401,17 @@ export interface ForgeClient {
   changesets: ChangesetsApi;
   imports: ImportsApi;
   admin: AdminApi;
-  participants: ParticipantApi;
+  identifiers: IdentifierApi;
+  identifierDispositions: IdentifierDispositionApi;
+  identifierSets: IdentifierSetApi;
+  issuers: IssuerApi;
   participations: ParticipationApi;
   participationEnds: ParticipationEndApi;
   participationRoles: ParticipationRoleApi;
   participationSets: ParticipationSetApi;
+  partys: PartyApi;
+  principalRepresentations: PrincipalRepresentationApi;
+  representationRevocations: RepresentationRevocationApi;
   views: {
   };
   projections: {
@@ -323,7 +459,13 @@ export function createClient(options: ClientOptions): ForgeClient {
     },
     workflows: {
     },
-    participants: {
+    identifiers: {
+    },
+    identifierDispositions: {
+    },
+    identifierSets: {
+    },
+    issuers: {
     },
     participations: {
     },
@@ -332,6 +474,12 @@ export function createClient(options: ClientOptions): ForgeClient {
     participationRoles: {
     },
     participationSets: {
+    },
+    partys: {
+    },
+    principalRepresentations: {
+    },
+    representationRevocations: {
     },
   };
 }

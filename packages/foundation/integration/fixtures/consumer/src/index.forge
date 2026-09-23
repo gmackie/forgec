@@ -1,0 +1,25 @@
+import integration
+export resource GitHubIssue
+  @tenant
+  @appendOnly
+{
+  id : id
+  mapping : integration.ExternalMapping
+  repository : text length 1..128
+}
+export resource LinearIssue
+  @tenant
+  @appendOnly
+{
+  id : id
+  mapping : integration.ExternalMapping
+  team : text length 1..128
+}
+export resource IndustrialDevice
+  @tenant
+  @appendOnly
+{
+  id : id
+  mapping : integration.ExternalMapping
+  serial : text length 1..128
+}

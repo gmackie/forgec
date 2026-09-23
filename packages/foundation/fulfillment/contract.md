@@ -65,3 +65,7 @@ node scripts/verify-foundation.mjs --package fulfillment --suite providers --req
 ```
 
 The fixture paths and verification runner above are planned interfaces; they do not exist merely because this contract names them. Phase 0 verification only checks contract structure, frozen DAG and checkbox coverage. Runtime acceptance must use generated bundles with real engine operations, deterministic clocks/IDs and provider fakes for external calls. Cover successful and rejected transitions, authorization, tenant isolation, immutable history, retries, concurrency and restart. Provider acceptance fails on missing required infrastructure; local/emulated results remain distinct from live certification. Record commands, versions, dependency digests and each case result, including blockers. A schema compile or snapshot is insufficient proof of behavioral invariants.
+
+## Executable profile
+
+See [README.md](README.md) for append-only phase observations, terminal-wins semantics, domain-owned partial accounting, immutable replacements and the actual WorkQueue bridge. Consumer tests build all imported dependencies and run on memory/SQLite; live provider evidence and real Bob adoption are not claimed.

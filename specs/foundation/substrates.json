@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "layer": "substrate",
-  "status": "contracts-only",
+  "status": "implementation-in-progress",
   "packages": [
     {
       "slug": "specification",
@@ -52,7 +52,9 @@
     {
       "slug": "participation",
       "issue": 29,
-      "dependencies": [],
+      "dependencies": [
+        "party"
+      ],
       "contract": "packages/foundation/participation/contract.json",
       "acceptanceIds": [
         "F29-01",
@@ -67,7 +69,7 @@
       "slug": "entitlement",
       "issue": 30,
       "dependencies": [
-        "participation"
+        "party"
       ],
       "contract": "packages/foundation/entitlement/contract.json",
       "acceptanceIds": [
@@ -207,6 +209,109 @@
         "F38-05",
         "F38-06",
         "F38-07"
+      ]
+    },
+    {
+      "slug": "party",
+      "issue": 52,
+      "dependencies": [
+        "identifiers"
+      ],
+      "contract": "packages/foundation/party/contract.json",
+      "acceptanceIds": [
+        "F52-01",
+        "F52-02",
+        "F52-03",
+        "F52-04",
+        "F52-05",
+        "F52-06"
+      ]
+    },
+    {
+      "slug": "place",
+      "issue": 53,
+      "dependencies": [
+        "identifiers"
+      ],
+      "contract": "packages/foundation/place/contract.json",
+      "acceptanceIds": [
+        "F53-01",
+        "F53-02",
+        "F53-03",
+        "F53-04",
+        "F53-05"
+      ]
+    },
+    {
+      "slug": "classification",
+      "issue": 54,
+      "dependencies": [
+        "identifiers"
+      ],
+      "contract": "packages/foundation/classification/contract.json",
+      "acceptanceIds": [
+        "F54-01",
+        "F54-02",
+        "F54-03",
+        "F54-04",
+        "F54-05",
+        "F54-06"
+      ]
+    },
+    {
+      "slug": "availability",
+      "issue": 55,
+      "dependencies": [
+        "specification"
+      ],
+      "contract": "packages/foundation/availability/contract.json",
+      "acceptanceIds": [
+        "F55-01",
+        "F55-02",
+        "F55-03",
+        "F55-04",
+        "F55-05",
+        "F55-06"
+      ]
+    },
+    {
+      "slug": "qualification",
+      "issue": 56,
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/qualification/contract.json",
+      "acceptanceIds": [
+        "F56-01",
+        "F56-02",
+        "F56-03",
+        "F56-04",
+        "F56-05",
+        "F56-06"
+      ]
+    },
+    {
+      "slug": "resource-relations",
+      "issue": 79,
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/resource-relations/contract.json",
+      "acceptanceIds": [
+        "F79-01",
+        "F79-02",
+        "F79-03",
+        "F79-04",
+        "F79-05",
+        "F79-06",
+        "F79-07",
+        "F79-08",
+        "F79-SEMANTIC",
+        "F79-STORE"
       ]
     }
   ]

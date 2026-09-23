@@ -1,0 +1,42 @@
+import reconciliation
+resource Deployment
+  @tenant
+  @appendOnly
+{
+  id : id
+  reconciliation : reconciliation.ReconciliationScope
+  environment : text length 1..100
+}
+resource DeviceConfiguration
+  @tenant
+  @appendOnly
+{
+  id : id
+  reconciliation : reconciliation.ReconciliationScope
+  deviceSerial : text length 1..100
+}
+resource RepositoryPolicy
+  @tenant
+  @appendOnly
+{
+  id : id
+  reconciliation : reconciliation.ReconciliationScope
+  repositoryName : text length 1..100
+}
+resource ObservedDeployment
+  @tenant
+  @appendOnly
+{
+  id : id
+  observation : reconciliation.Observation
+  replicas : integer >= 0
+}
+resource ReplicaDrift
+  @tenant
+  @appendOnly
+{
+  id : id
+  drift : reconciliation.Drift
+  actual : integer >= 0
+  desired : integer >= 0
+}

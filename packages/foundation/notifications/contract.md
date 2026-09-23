@@ -77,3 +77,7 @@ Fixtures:
 - Bob task/update notification: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
 
 Application-named fixtures must record the inspected application repository revision and map real types/operations before being described as dogfooding. Synthetic cases establish only contract usability. Tests build actual imported consumer schemas, then exercise generated runtime surfaces; helper mocks and schema snapshots alone do not prove durable behavior. The independent handoff includes accepted dependency digests, compiler/runtime versions, exact commands, case results and provider configuration. Missing provider infrastructure is explicitly blocked evidence, never a silently passing skip.
+
+## Implemented local profile
+
+The executable package and generated consumer now have local memory, SQLite and PostgreSQL evidence in `packages/runtime/test/foundation-notifications.test.ts`. See `README.md` for the implemented protocol and explicit limits; `contract.json` records per-case status. Earlier design prose above is the target boundary, not a claim of broader guarantees. Hosted provider certification and real-application dogfooding remain separate.

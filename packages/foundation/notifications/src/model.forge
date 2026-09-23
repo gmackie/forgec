@@ -1,0 +1,95 @@
+import participation
+import delivery
+import artifact
+export resource NotificationTopic
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+}
+export resource NotificationEndpointLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  recipient : participation.Participation
+  destination : delivery.DeliveryDestination
+  unique recipient, destination
+}
+export resource NotificationSubscription
+  @tenant
+  @appendOnly
+{
+  id : id
+  topic : NotificationTopic
+  recipient : participation.Participation
+  endpoint : NotificationEndpointLink
+  rules {
+    endpoint.recipient == recipient
+  }
+  unique topic, recipient, endpoint
+  list by topic
+}
+export resource NotificationPreference
+  @tenant
+  @appendOnly
+{
+  id : id
+  subscription : NotificationSubscription
+  revision : integer >= 1 <= 128
+  previous : NotificationPreference?
+  enabled : boolean
+  reason : text length 1..500
+  rules {
+    (previous == null && revision == 1) || (previous != null && previous.subscription == subscription && revision == previous.revision + 1)
+  }
+  unique subscription, revision
+  list by subscription
+    order by revision asc
+}
+export resource Notification
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  subscription : NotificationSubscription
+  preference : NotificationPreference
+  content : artifact.ArtifactRevision?
+  template : artifact.ArtifactRevision?
+  at : datetime
+  rules {
+    preference.subscription == subscription
+  }
+  find by key
+}
+export resource NotificationSuppression
+  @tenant
+  @appendOnly
+{
+  id : id
+  notification : Notification @unique
+  preference : NotificationPreference
+  reason : text length 1..500
+  rules {
+    notification.preference == preference && !preference.enabled
+  }
+}
+export resource NotificationDeliveryLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  notification : Notification @unique
+  preference : NotificationPreference
+  endpoint : NotificationEndpointLink
+  subscription : NotificationSubscription
+  intent : delivery.DeliveryIntent @unique
+  rules {
+    notification.preference == preference && preference.enabled
+    notification.subscription == subscription && subscription.endpoint == endpoint
+    intent.destination == endpoint.destination && intent.payload == notification.content
+  }
+}

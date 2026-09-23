@@ -65,3 +65,11 @@ node scripts/verify-foundation.mjs --package allocation --suite providers --requ
 ```
 
 The fixture paths and verification runner above are planned interfaces; they do not exist merely because this contract names them. Phase 0 verification only checks contract structure, frozen DAG and checkbox coverage. Runtime acceptance must use generated bundles with real engine operations, deterministic clocks/IDs and provider fakes for external calls. Cover successful and rejected transitions, authorization, tenant isolation, immutable history, retries, concurrency and restart. Provider acceptance fails on missing required infrastructure; local/emulated results remain distinct from live certification. Record commands, versions, dependency digests and each case result, including blockers. A schema compile or snapshot is insufficient proof of behavioral invariants.
+
+## Implemented single-row journal profile
+
+The original mutable-pool-plus-claim algorithm is replaced by a unique pool-ordinal journal entry that commits guard and transition together through Engine. [README.md](README.md) defines the mandatory validated-consumer boundary, raw candidate poison handling, bounded history, trusted-clock assumption and remaining kernel/provider gates. Acceptance statuses remain planned until evidence is registered.
+
+## Atomic multi-pool composition
+
+`Allocations.prepare` now accepts a bounded set of one command per distinct pool and returns operation descriptors for `Engine.atomic`; callers must commit the complete set with their publication facts. `book` directly accepts a durable reservation candidate as allocated, and `replace` atomically releases an allocated original and accepts a durable replacement in the same pool journal row. Whole-interval capacity is checked against the resulting state. `reservation` exposes validated lifecycle and immutable command evidence. Existing `act` commands remain one-pool operations; sequential `act` calls do not provide multi-pool atomicity.

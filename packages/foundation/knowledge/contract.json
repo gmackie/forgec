@@ -1,0 +1,88 @@
+{
+  "slug": "knowledge",
+  "layer": "system",
+  "issue": 64,
+  "dependencies": [
+    "artifact",
+    "specification",
+    "classification",
+    "publication",
+    "entitlement",
+    "evaluation"
+  ],
+  "facts": [
+    "Knowledge identity/revision, classified content, publication/audience links and feedback evaluation."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for knowledge"
+  ],
+  "invariants": [
+    "Collaboration, search and notifications are optional adapters; no CMS layout engine.",
+    "Article/SOP/training; exact content/spec/concept revision; qualified publication; entitlement denial; feedback targets correct version; historical retirement."
+  ],
+  "acceptance": [
+    {
+      "id": "F64-01",
+      "description": "knowledge item/revision model",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-knowledge.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F64-02",
+      "description": "artifact/specification integration",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-knowledge.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F64-03",
+      "description": "classification integration",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-knowledge.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F64-04",
+      "description": "publication/audience linkage",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-knowledge.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F64-05",
+      "description": "feedback/evaluation hooks",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-knowledge.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F64-06",
+      "description": "fixtures for support article, SOP and training material",
+      "kind": "fixture",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-knowledge.test.ts"
+      ],
+      "verification": "local"
+    }
+  ],
+  "fixtures": [
+    "fixtures for support article, SOP and training material"
+  ]
+}

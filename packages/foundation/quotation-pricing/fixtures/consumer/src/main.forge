@@ -1,0 +1,26 @@
+import quotation-pricing
+resource SaaSQuote
+  @tenant
+{
+  id : id
+  quote : quotation-pricing.Quote
+}
+resource ServiceQuote
+  @tenant
+{
+  id : id
+  quote : quotation-pricing.Quote
+}
+resource ProcurementQuote
+  @tenant
+{
+  id : id
+  quote : quotation-pricing.Quote
+}
+resource Order
+  @tenant
+{
+  id : id
+  acceptance : quotation-pricing.QuoteEnd
+  agreement : quotation-pricing.QuoteAgreement
+}

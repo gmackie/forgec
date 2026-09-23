@@ -1,76 +1,36 @@
-# adjudication contract
+# Adjudication
 
-Phase 0 design contract for [issue #44](https://github.com/gmackie/forgec/issues/44), under epic #25. This freezes the proposed package boundary for implementation; it does not provide executable schemas or claim any passing acceptance. `contract.json` is the machine-readable ownership/dependency/acceptance catalog. Every source issue checkbox has a corresponding `F44-NN` entry in source order.
+Implements issue #44 using real Decision, Entitlement, Evidence, Evaluation, Fulfillment, Ledger and Delivery contracts. Typed ExpenseRequest, WarrantyRequest and HealthcarePreauthorization fixtures retain domain-owned request payloads; AdjudicationCase is not a universal claim entity.
 
-## Ownership and dependencies
+## Context and determination
 
-Forge identity: `@forgegraph/foundation/adjudication`. Hard package dependencies: `decision`, `entitlement`, `evidence`, `evaluation`, `fulfillment`, `ledger`, `delivery`. Package-qualified identities remain stable when composed into a selected application storage closure. Required compiler, pattern and kernel contracts are prerequisites outside this slug-only dependency list.
+`Adjudications.open` pins an Entitlement, business coverage instant, known EntitlementEnd, requested decimal quantity/unit, 1–16 items, sealed Evidence, and a DecisionCase/approved option before Decision responses. Coverage is a historical knowledge snapshot: later backdated entitlement revocation does not rewrite the determination context. It does not consume entitlement quantity or implement cross-case aggregate limits. Business applications must authorize acting for the holder separately from eligibility.
 
-Owned facts:
+`item` records each ordinal's requested quantity, completed EvaluationFinish and sealed Evidence before voting. Interpretation requires all pinned items and exact sum equal to the case request. Each Evaluation is an explicit selected item assessment; completion is operational evidence, not an implicit approval. Domain satellites own findings and evaluation-to-real-world provenance. `determine(case, authorized, reason, support, context)` requires authoritative Decision replay, selected outcome, all item evidence and positive authorization iff the approved option won. One unique Determination per case prevents contradictory terminal determinations. Reduced authorization is permitted; exceeding the request/coverage is not.
 
-- AdjudicationCase.
-- AdjudicationItem.
-- Determination.
-- AdjustmentReasonLink.
-- AuthorizedOutcomeLink.
-- SettlementLink.
+Cross-resource decimal limits use exact six-place BigInt arithmetic in helper validation because current generic row-rule decimal comparisons can be lexical. Explicit numeric row rules also enforce positivity where scalar exclusive bounds are insufficient. **Consumers must use `determination` and the downstream helpers**, which revalidate raw rows; a raw Determination row alone is not proof of a valid award. A malformed authorized raw insert can make a case fail closed, never authorize settlement through these helpers. Restrict raw write authority.
 
-Commands:
+AdjustmentReasonLink associates a determination with its typed evaluated item and sealed source evidence. Reconsideration opens a separate case with new Decision history linked to an already determined predecessor. Old outcomes and settlements are never rewritten.
 
-- Open adjudication.
-- Associate entitlement.
-- Evaluate item.
-- Record determination.
-- Authorize fulfillment.
-- Link settlement.
-- Deliver explanation.
+## Fulfillment, settlement and explanation
 
-These are behavioral operation contracts, not claims that function names or Forge syntax are already implemented. Reads expose bounded, tenant-scoped typed lookups and history. Implementation must define exact input/output/error shapes before its code is accepted.
+`authorize` creates an AuthorizedOutcomeLink to an existing Fulfillment only for a positive authoritative determination. This is authorization linkage, not evidence of execution, complete coverage or delivery. Lower Fulfillment owns those facts. Applications enforce domain-specific requested-service/executor semantics.
 
-## Typed composition seams
+`planSettlement` freezes one SettlementIntent per determination with a LedgerBook, two distinct same-unit accounts and the **entire** authorized quantity. This bounded version supports one exact settlement, not incremental draws or multiple currencies. `settle` calls the authoritative Ledger.post with deterministic `adjudication:<intent>` identity and an exact balanced debit/credit pair, then adds SettlementLink. A failure after posting but before linking is explicitly resumable: Ledger's durable unique key reuses the posting and never posts twice. No side effect is claimed atomic with the link, and no posting is made before durable authorization/intent.
 
-Domain expense, warranty and preauthorization resources point to AdjudicationCase; typed requested-service details reference AdjudicationItem. Reasons reference specification/evidence through declared evaluation contracts rather than arbitrary JSON.
+`settlement` revalidates the whole bounded Ledger book and exact posting identity/accounts/amounts. Raw unrelated or oversized posting links fail closed. Ledger owns reversal and financial history; a settlement link records the authorized posting, not an assurance that it was never subsequently reversed or externally paid.
 
-Typed resource references must resolve within the explicit selected package closure; remote calls retain normal imported callable contracts. No targetType/targetId, generic EntityRef, tagged-union domain hierarchy or universal JSON business payload is admitted. Domain terminology may wrap these names freely. Lower packages never import this system.
+`explain` links a DeliveryIntent to the determination and exact sealed support. It does not send a message, fabricate a receipt or promise provider exactly-once delivery. Domain adapters render the explanation content and Deliveries records actual attempts/outcomes. Every helper mutation uses normal Engine.call authorization, purpose, suppression, tenant and fence handling.
 
-## Lifecycle and policy
+## Verification
 
-Open → evaluating → determined → authorized → fulfilled or settled, with rejected and cancelled alternatives. Nonfinancial preauthorization may finish at authorization. Reconsideration creates new decision/determination history; it does not mutate a completed settlement.
+Nine generated tests pass on memory, SQLite and local PostgreSQL 17: competing determinations, explicit rejection and oversized awards, partial positive award, source reasons, exact idempotent settlement with one group, invalid settlement quantity, all three domain wrappers, typed fulfillment and explanation intent links, retained coverage snapshot, tenant rejection, hidden determination read and denied reason mutation. Forge formatting, runtime typecheck and deterministic repeat consumer generation pass.
 
-The lifecycle above describes required semantic distinctions and explicit policy choices; field names and transition syntax remain implementation details. Stateless waiting, retries, deadlines and orchestration compose through std patterns; durable responses, attempts and outcomes remain owned resources. Immutable specification/artifact references use exact revisions, never floating branches or channel aliases.
+```sh
+cargo run -q -p forgegraph-cli -- build packages/foundation/adjudication/fixtures/consumer --out /tmp/forge-adjudication-consumer
+FORGE_FOUNDATION_CONSUMER=/tmp/forge-adjudication-consumer pnpm --filter @forgegraph/runtime exec vitest run test/foundation-adjudication.test.ts
+# FORGE_FOUNDATION_PG_URL adds isolated PostgreSQL traces.
+pnpm --filter @forgegraph/runtime typecheck
+```
 
-## Invariants, authorization and failure
-
-- Determination records entitlement-qualified context and source-backed reasons.
-- Decision owns decision facts and Ledger owns financial postings.
-- Settlement references authorization and cannot exceed its defined scope.
-- Typed claim or request payload remains domain owned.
-
-- Every mutation checks the caller's declared capability, tenant and resource authorization. Participation or entitlement membership alone does not grant kernel authorization; denied references must not leak foreign data.
-- A logical command carries a stable idempotency identity scoped to tenant, operation and aggregate. Reusing it with different inputs fails with a typed conflict; successful retry returns the existing outcome.
-- Validation and state transition commit under an aggregate/version guard. A stale version produces an explicit conflict; multi-resource invariants either commit atomically within provider bounds or use an explicit durable pending protocol. No read-then-write safety assumption.
-- Invalid transitions, unresolved references, expired validity, stale revisions and provider failures have typed errors. External uncertainty remains recorded as pending/unknown rather than asserted success. Retry does not delete failure history.
-- No generic CRUD mutation may bypass command invariants. History retention, redaction and correction policy must distinguish immutable business facts from mutable projections.
-
-## Acceptance and fixture design
-
-Each source checkbox is retained verbatim below. IDs are stable; implementation records evidence separately rather than changing planned status without a real run.
-
-- `F44-01` (compile, planned): adjudication case/determination model.
-- `F44-02` (compile, planned): entitlement/coverage integration.
-- `F44-03` (compile, planned): evidence/evaluation integration.
-- `F44-04` (compile, planned): decision/reason linkage.
-- `F44-05` (compile, planned): fulfillment/ledger settlement hooks.
-- `F44-06` (fixture, planned): fixtures for expense, warranty and healthcare preauthorization.
-- `F44-R01` (concurrency, planned): Retried settlement hook cannot create duplicate ledger postings.
-- `F44-R02` (concurrency, planned): Concurrent determination cannot authorize contradictory terminal outcomes.
-- `F44-AUTH` (runtime, planned): Reject unauthorized and cross-tenant commands and references through generated runtime surfaces.
-- `F44-STORE` (provider, planned): Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips.
-
-Fixtures:
-
-- expense reimbursement: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
-- warranty claim: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
-- healthcare preauthorization: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
-
-Application-named fixtures must record the inspected application repository revision and map real types/operations before being described as dogfooding. Synthetic cases establish only contract usability. Tests build actual imported consumer schemas, then exercise generated runtime surfaces; helper mocks and schema snapshots alone do not prove durable behavior. The independent handoff includes accepted dependency digests, compiler/runtime versions, exact commands, case results and provider configuration. Missing provider infrastructure is explicitly blocked evidence, never a silently passing skip.
+F44-STORE stays planned: live D1 and DynamoDB are unverified. Local SQL/PostgreSQL evidence supports development composition, not provider certification or external payment/delivery claims. Domain fixtures are synthetic examples, not application dogfooding.
