@@ -1,0 +1,300 @@
+{
+  "nodes": {
+    "@boundary/game-simulation/_/AdvanceWorld": "process",
+    "@boundary/game-simulation/_/BoundaryOperator": "principal",
+    "@boundary/game-simulation/_/ClientSnapshot": "reference",
+    "@boundary/game-simulation/_/GameClients": "external",
+    "@boundary/game-simulation/_/InputBatch": "fact",
+    "@boundary/game-simulation/_/MayAdvanceWorld": "policy",
+    "@boundary/game-simulation/_/MayProjectClients": "policy",
+    "@boundary/game-simulation/_/MaySealInputs": "policy",
+    "@boundary/game-simulation/_/MayVerifyReplay": "policy",
+    "@boundary/game-simulation/_/PhysicsEngine": "external",
+    "@boundary/game-simulation/_/PhysicsRequest": "reference",
+    "@boundary/game-simulation/_/PhysicsResult": "reference",
+    "@boundary/game-simulation/_/PlayerCommand": "reference",
+    "@boundary/game-simulation/_/ProjectClients": "process",
+    "@boundary/game-simulation/_/ReplayChecked": "fact",
+    "@boundary/game-simulation/_/ReplayExecutor": "external",
+    "@boundary/game-simulation/_/ReplayRequest": "reference",
+    "@boundary/game-simulation/_/ReplayVerdict": "reference",
+    "@boundary/game-simulation/_/SealInputs": "process",
+    "@boundary/game-simulation/_/TickCommitted": "fact",
+    "@boundary/game-simulation/_/TickDriver": "external",
+    "@boundary/game-simulation/_/TickRequest": "reference",
+    "@boundary/game-simulation/_/VerifyReplay": "process",
+    "@boundary/game-simulation/_/WorldState": "entity"
+  },
+  "edges": [
+    {
+      "from": "@boundary/game-simulation/_/AdvanceWorld",
+      "to": "@boundary/game-simulation/_/PhysicsEngine",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#output:physicsRequest",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/game-simulation/_/AdvanceWorld",
+      "to": "@boundary/game-simulation/_/PhysicsRequest",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#output:physicsRequest",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/game-simulation/_/AdvanceWorld",
+      "to": "@boundary/game-simulation/_/TickCommitted",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#output:committed",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/game-simulation/_/AdvanceWorld",
+      "to": "@boundary/game-simulation/_/WorldState",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#output:world",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/game-simulation/_/BoundaryOperator",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/BoundaryOperator",
+      "to": "@boundary/game-simulation/_/ProjectClients",
+      "port": "@boundary/game-simulation/_/ProjectClients",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/BoundaryOperator",
+      "to": "@boundary/game-simulation/_/SealInputs",
+      "port": "@boundary/game-simulation/_/SealInputs",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/BoundaryOperator",
+      "to": "@boundary/game-simulation/_/VerifyReplay",
+      "port": "@boundary/game-simulation/_/VerifyReplay",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/GameClients",
+      "to": "@boundary/game-simulation/_/SealInputs",
+      "port": "@boundary/game-simulation/_/SealInputs#input:commands",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/game-simulation/_/InputBatch",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/game-simulation/_/InputBatch",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#input:batch",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayAdvanceWorld",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayAdvanceWorld",
+      "to": "@boundary/game-simulation/_/BoundaryOperator",
+      "port": "@boundary/game-simulation/_/MayAdvanceWorld",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayAdvanceWorld",
+      "to": "@boundary/game-simulation/_/WorldState",
+      "port": "@boundary/game-simulation/_/MayAdvanceWorld",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayProjectClients",
+      "to": "@boundary/game-simulation/_/BoundaryOperator",
+      "port": "@boundary/game-simulation/_/MayProjectClients",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayProjectClients",
+      "to": "@boundary/game-simulation/_/ClientSnapshot",
+      "port": "@boundary/game-simulation/_/MayProjectClients",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayProjectClients",
+      "to": "@boundary/game-simulation/_/ProjectClients",
+      "port": "@boundary/game-simulation/_/ProjectClients",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MaySealInputs",
+      "to": "@boundary/game-simulation/_/BoundaryOperator",
+      "port": "@boundary/game-simulation/_/MaySealInputs",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MaySealInputs",
+      "to": "@boundary/game-simulation/_/InputBatch",
+      "port": "@boundary/game-simulation/_/MaySealInputs",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MaySealInputs",
+      "to": "@boundary/game-simulation/_/SealInputs",
+      "port": "@boundary/game-simulation/_/SealInputs",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayVerifyReplay",
+      "to": "@boundary/game-simulation/_/BoundaryOperator",
+      "port": "@boundary/game-simulation/_/MayVerifyReplay",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayVerifyReplay",
+      "to": "@boundary/game-simulation/_/ReplayChecked",
+      "port": "@boundary/game-simulation/_/MayVerifyReplay",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/game-simulation/_/MayVerifyReplay",
+      "to": "@boundary/game-simulation/_/VerifyReplay",
+      "port": "@boundary/game-simulation/_/VerifyReplay",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/game-simulation/_/PhysicsEngine",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#activation:response",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/game-simulation/_/PhysicsEngine",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#input:physics",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/game-simulation/_/PhysicsResult",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#input:physics",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/PlayerCommand",
+      "to": "@boundary/game-simulation/_/SealInputs",
+      "port": "@boundary/game-simulation/_/SealInputs#input:commands",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/ProjectClients",
+      "to": "@boundary/game-simulation/_/ClientSnapshot",
+      "port": "@boundary/game-simulation/_/ProjectClients#output:snapshot",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/game-simulation/_/ProjectClients",
+      "to": "@boundary/game-simulation/_/GameClients",
+      "port": "@boundary/game-simulation/_/ProjectClients#output:snapshot",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/game-simulation/_/ReplayExecutor",
+      "to": "@boundary/game-simulation/_/VerifyReplay",
+      "port": "@boundary/game-simulation/_/VerifyReplay#activation:response",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/game-simulation/_/ReplayExecutor",
+      "to": "@boundary/game-simulation/_/VerifyReplay",
+      "port": "@boundary/game-simulation/_/VerifyReplay#input:verdict",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/game-simulation/_/ReplayRequest",
+      "to": "@boundary/game-simulation/_/VerifyReplay",
+      "port": "@boundary/game-simulation/_/VerifyReplay#input:request",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/ReplayVerdict",
+      "to": "@boundary/game-simulation/_/VerifyReplay",
+      "port": "@boundary/game-simulation/_/VerifyReplay#input:verdict",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/SealInputs",
+      "to": "@boundary/game-simulation/_/InputBatch",
+      "port": "@boundary/game-simulation/_/SealInputs#output:batch",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/game-simulation/_/TickCommitted",
+      "to": "@boundary/game-simulation/_/ProjectClients",
+      "port": "@boundary/game-simulation/_/ProjectClients#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/game-simulation/_/TickCommitted",
+      "to": "@boundary/game-simulation/_/ProjectClients",
+      "port": "@boundary/game-simulation/_/ProjectClients#input:commit",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/TickCommitted",
+      "to": "@boundary/game-simulation/_/VerifyReplay",
+      "port": "@boundary/game-simulation/_/VerifyReplay#input:commits",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/TickDriver",
+      "to": "@boundary/game-simulation/_/SealInputs",
+      "port": "@boundary/game-simulation/_/SealInputs#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/game-simulation/_/TickDriver",
+      "to": "@boundary/game-simulation/_/SealInputs",
+      "port": "@boundary/game-simulation/_/SealInputs#input:tick",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/game-simulation/_/TickRequest",
+      "to": "@boundary/game-simulation/_/SealInputs",
+      "port": "@boundary/game-simulation/_/SealInputs#input:tick",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/VerifyReplay",
+      "to": "@boundary/game-simulation/_/ReplayChecked",
+      "port": "@boundary/game-simulation/_/VerifyReplay#output:checked",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/game-simulation/_/VerifyReplay",
+      "to": "@boundary/game-simulation/_/ReplayExecutor",
+      "port": "@boundary/game-simulation/_/VerifyReplay#output:replayRequest",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/game-simulation/_/VerifyReplay",
+      "to": "@boundary/game-simulation/_/ReplayRequest",
+      "port": "@boundary/game-simulation/_/VerifyReplay#output:replayRequest",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/game-simulation/_/WorldState",
+      "to": "@boundary/game-simulation/_/AdvanceWorld",
+      "port": "@boundary/game-simulation/_/AdvanceWorld#input:prior",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/game-simulation/_/WorldState",
+      "to": "@boundary/game-simulation/_/ProjectClients",
+      "port": "@boundary/game-simulation/_/ProjectClients#input:world",
+      "kind": "input"
+    }
+  ]
+}

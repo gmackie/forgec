@@ -1,0 +1,61 @@
+{
+  "nodes": {
+    "@boundary/digital-twin/_/RecordSimulation": "process",
+    "@boundary/digital-twin/_/RunPlantSimulation": "process",
+    "@boundary/digital-twin/_/SimulationMaster": "external",
+    "@boundary/digital-twin/_/SimulationReport": "reference",
+    "@boundary/digital-twin/_/SimulationRequest": "reference",
+    "@boundary/digital-twin/_/SimulationRun": "entity",
+    "@boundary/digital-twin/_/SimulationRunRecorded": "fact"
+  },
+  "edges": [
+    {
+      "from": "@boundary/digital-twin/_/RecordSimulation",
+      "to": "@boundary/digital-twin/_/SimulationRun",
+      "port": "@boundary/digital-twin/_/RecordSimulation#output:record",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/digital-twin/_/RecordSimulation",
+      "to": "@boundary/digital-twin/_/SimulationRunRecorded",
+      "port": "@boundary/digital-twin/_/RecordSimulation#output:recorded",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/digital-twin/_/RunPlantSimulation",
+      "to": "@boundary/digital-twin/_/SimulationMaster",
+      "port": "@boundary/digital-twin/_/RunPlantSimulation#output:request",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/digital-twin/_/RunPlantSimulation",
+      "to": "@boundary/digital-twin/_/SimulationRequest",
+      "port": "@boundary/digital-twin/_/RunPlantSimulation#output:request",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/digital-twin/_/SimulationMaster",
+      "to": "@boundary/digital-twin/_/RecordSimulation",
+      "port": "@boundary/digital-twin/_/RecordSimulation#activation:completed",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/digital-twin/_/SimulationMaster",
+      "to": "@boundary/digital-twin/_/RecordSimulation",
+      "port": "@boundary/digital-twin/_/RecordSimulation#input:report",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/digital-twin/_/SimulationReport",
+      "to": "@boundary/digital-twin/_/RecordSimulation",
+      "port": "@boundary/digital-twin/_/RecordSimulation#input:report",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/digital-twin/_/SimulationRequest",
+      "to": "@boundary/digital-twin/_/RunPlantSimulation",
+      "port": "@boundary/digital-twin/_/RunPlantSimulation#input:request",
+      "kind": "input"
+    }
+  ]
+}

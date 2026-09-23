@@ -1,0 +1,15 @@
+flowchart TB
+  c0["logical-replication: L0 (A)"]
+  ApplyCommitted -.-> c0
+  ReplicatedState -.-> c0
+  ProposeCommand -.-> c0
+  c1["verification-record: L0 (A)"]
+  CheckProtocol -.-> c1
+  RecordVerification -.-> c1
+  VerificationRun -.-> c1
+  c2["agreement: external (C)"]
+  TLC -.-> c2
+  c3["replica-execution: L1 (A)"]
+  CheckProtocol -.-> c3
+  c4["failure-domains: L2 (A)"]
+  TLC -.-> c4

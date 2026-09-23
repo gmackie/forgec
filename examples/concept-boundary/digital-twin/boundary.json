@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "slug": "digital-twin",
+  "outcomes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "simulation-orchestration",
+      "description": "Scenario, calibration and result provenance",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/digital-twin/_/RunPlantSimulation",
+        "@boundary/digital-twin/_/RecordSimulation",
+        "@boundary/digital-twin/_/SimulationRun"
+      ],
+      "pressures": [
+        "simulation-artifacts",
+        "traceability"
+      ],
+      "rationale": "A simulation job and its evidence are discrete records; measured and predicted values must remain distinguishable."
+    },
+    {
+      "id": "physical-dynamics",
+      "description": "Conservation equations and continuous integration",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/digital-twin/_/SimulationMaster"
+      ],
+      "pressures": [
+        "continuous-time",
+        "acausal-equations"
+      ],
+      "rationale": "Modelica solves equation systems; FMI/SSP carry executable model interfaces and composition, not ordinary durable-state transitions."
+    },
+    {
+      "id": "repeatability",
+      "description": "Pinned model, solver and calibration",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/digital-twin/_/RunPlantSimulation"
+      ],
+      "pressures": [
+        "replay",
+        "simulation-artifacts"
+      ],
+      "rationale": "Reproducing a result needs numerical and environment assumptions beyond content identity."
+    },
+    {
+      "id": "co-simulation-master",
+      "description": "Step selection, rollback and event synchronization",
+      "layer": "L1",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/digital-twin/_/SimulationMaster"
+      ],
+      "pressures": [
+        "discrete-event",
+        "platform-mapping"
+      ],
+      "rationale": "FMI master algorithm and capabilities stay in specialized realization; changing step can affect approximation quality."
+    },
+    {
+      "id": "simulation-placement",
+      "description": "Simulation workers and artifact store",
+      "layer": "L2",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/digital-twin/_/SimulationMaster"
+      ],
+      "pressures": [
+        "resource-budgets"
+      ],
+      "rationale": "CPU placement/caching is replaceable within declared numerical compatibility limits."
+    }
+  ],
+  "facets": [
+    {
+      "id": "simulation-repeatability",
+      "kind": "replay",
+      "status": "proposed",
+      "targets": [
+        "@boundary/digital-twin/_/RunPlantSimulation"
+      ],
+      "parameters": {
+        "identity": [
+          "modelDigest",
+          "assemblyDigest",
+          "calibrationDigest",
+          "scenarioDigest",
+          "solverIdentity"
+        ],
+        "comparison": "tolerance-defined trajectories"
+      },
+      "meaning": "A rerun must disclose solver/step/tolerance assumptions; byte identity alone does not promise identical floating-point output.",
+      "obligations": [
+        "Define observable tolerance and event alignment before comparing runs.",
+        "Capture FMU dependencies and tool/platform versions.",
+        "No runtime enforcement or numerical equivalence checker is implemented."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "Digest-bound request to external simulation master; admit correlated result and immutable trajectory identity.",
+    "placement": "Numerical simulator on compatible worker; durable evidence in application store.",
+    "limitations": [
+      "No FMU binary or packaged SSP archive is supplied.",
+      "SSD is an interface sketch referring to an absent generated FMU.",
+      "OpenModelica unavailable: no compilation or simulation claimed."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "thermal-model",
+      "path": "specialized-model/ThermalPlant.mo",
+      "format": "Modelica source",
+      "status": "sketch",
+      "process": "@boundary/digital-twin/_/RunPlantSimulation",
+      "inputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#output:request"
+      ],
+      "claim": "Representative lumped thermal conservation equation; not simulated."
+    },
+    {
+      "id": "plant-assembly",
+      "path": "specialized-model/SystemStructure.ssd",
+      "format": "SSP 2.0 SSD XML interface sketch",
+      "status": "sketch",
+      "process": "@boundary/digital-twin/_/RunPlantSimulation",
+      "inputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#output:request"
+      ],
+      "claim": "Well-formed XML, interface agreement checked; references intentionally absent FMU."
+    },
+    {
+      "id": "interface-evidence",
+      "path": "specialized-model/verification.json",
+      "format": "interface verification evidence",
+      "status": "checked",
+      "process": "@boundary/digital-twin/_/RecordSimulation",
+      "inputPorts": [
+        "@boundary/digital-twin/_/RecordSimulation#input:report"
+      ],
+      "outputPorts": [
+        "@boundary/digital-twin/_/RecordSimulation#output:record",
+        "@boundary/digital-twin/_/RecordSimulation#output:recorded"
+      ],
+      "claim": "Static XML/name/digest checks only; no numerical result."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Modelica 3.6 specification",
+      "url": "https://specification.modelica.org/maint/3.6/",
+      "supports": "Equation-based modeling, connectors and hybrid continuous/discrete semantics."
+    },
+    {
+      "title": "FMI 3.0.2 specification",
+      "url": "https://fmi-standard.org/docs/3.0.2/",
+      "supports": "Model Exchange, Co-Simulation and Scheduled Execution define different importer obligations."
+    },
+    {
+      "title": "SSP 2.0 specification",
+      "url": "https://ssp-standard.org/docs/2.0/",
+      "supports": "SSD describes system structure, connectors, connections and component sources; FMUs supply behavior."
+    }
+  ]
+}

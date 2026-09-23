@@ -1,0 +1,18 @@
+SKETCH ONLY — Embedded infusion-device supervisory boundary
+Process: @boundary/medical-device/_/ReactToTherapyTick
+Inputs:
+@boundary/medical-device/_/ReactToTherapyTick#input:sample
+@boundary/medical-device/_/ReactToTherapyTick#input:approval
+@boundary/medical-device/_/ReactToTherapyTick#input:previous
+Outputs:
+@boundary/medical-device/_/ReactToTherapyTick#output:state
+@boundary/medical-device/_/ReactToTherapyTick#output:decision
+@boundary/medical-device/_/ReactToTherapyTick#output:command
+
+states: idle, armed, delivering, inhibited
+startup -> idle
+armed -> delivering: approved revision + explicit start + all inhibits clear
+ANY -> inhibited: occlusion OR door_open OR watchdog_fault OR stale_sample
+inhibited -> armed: explicit acknowledgement + valid approval + inhibits clear
+output deliveryEnable is false outside delivering; alarmRequired follows validated hazard policy.
+Transition priorities, simultaneous-event semantics, actuator dynamics and clinical rules are NOT implemented or verified.

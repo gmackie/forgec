@@ -1,0 +1,628 @@
+{
+  "version": "concept-ir/2",
+  "package": "@boundary/packaging-line",
+  "entities": {
+    "@boundary/packaging-line/_/LineMode": {
+      "name": "LineMode",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "mode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "lastSequence": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "approvalRevision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@boundary/packaging-line/_/ApprovedRecipe": {
+      "name": "ApprovedRecipe",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "batchCode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "sealDwellUs": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/packaging-line/_/ScanDecision": {
+      "name": "ScanDecision",
+      "fields": {
+        "sequence": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "approvalRevision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "selectedMode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/packaging-line/_/LineIO": {
+      "name": "LineIO",
+      "data": {
+        "sample": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/packaging-line/_/ScanImage"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Tick"
+      ],
+      "accepts": {
+        "command": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/packaging-line/_/ActuatorIntent"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@boundary/packaging-line/_/ApproveRecipe": {
+      "name": "ApproveRecipe",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/packaging-line/_/ApproveRecipe#activation:approval": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/packaging-line/_/ApprovedRecipe",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@boundary/packaging-line/_/ApproveRecipe#output:approval": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/packaging-line/_/ApprovedRecipe",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/packaging-line/_/ReactToScan": {
+      "name": "ReactToScan",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/packaging-line/_/ReactToScan#activation:tick": {
+          "kind": "externalEvent",
+          "external": "@boundary/packaging-line/_/LineIO",
+          "event": "Tick"
+        }
+      },
+      "inputs": {
+        "@boundary/packaging-line/_/ReactToScan#input:sample": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/packaging-line/_/ScanImage"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/packaging-line/_/LineIO"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/packaging-line/_/ReactToScan#input:approval": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/packaging-line/_/ApprovedRecipe",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/packaging-line/_/ReactToScan#input:previous": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/packaging-line/_/LineMode",
+              "representation": "record"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/packaging-line/_/ReactToScan#output:state": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/packaging-line/_/LineMode",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@boundary/packaging-line/_/ReactToScan#output:decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/packaging-line/_/ScanDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/packaging-line/_/ReactToScan#output:command": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/packaging-line/_/ActuatorIntent"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/packaging-line/_/LineIO"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/packaging-line/_/ScanImage": {
+      "scanSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "capturedAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "guardClosed": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "cartonPresent": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "jamDetected": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/packaging-line/_/ActuatorIntent": {
+      "scanSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "conveyorEnable": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "sealRequest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {}
+}

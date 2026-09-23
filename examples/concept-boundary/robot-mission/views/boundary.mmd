@@ -1,0 +1,7 @@
+flowchart TB
+  mission_revision[mission-revision: L0 A] --> Mission
+  mode_lease[mode-lease: L0-facet B] -. obligation .-> AdvanceMission
+  planner_strategy[planner-strategy: L1 A] -. realizes .-> AssessPlan
+  onboard_placement[onboard-placement: L2 B] -. allocates .-> AdvanceMission
+  control_dynamics[control-dynamics: external C] --> LocalController
+  Mission --> AdvanceMission --> LocalController

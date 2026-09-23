@@ -120,7 +120,12 @@ enum Cmd {
 #[derive(Subcommand)]
 enum ConceptCmd {
     /// Validate an explicit ConceptIR file. This does not prove its implementation.
-    Check { path: PathBuf },
+    Check {
+        path: PathBuf,
+        /// Require all type and activation references and external port types to resolve.
+        #[arg(long)]
+        closed: bool,
+    },
     /// Inspect the semantic graph and invariant producer responsibilities.
     Inspect { path: PathBuf },
     /// Compare semantic declarations independently of implementation choices.
@@ -285,8 +290,14 @@ fn main() -> Result<()> {
     match cli.cmd {
         Cmd::Concept { command } => {
             let value = match command {
-                ConceptCmd::Check { path } => {
+                ConceptCmd::Check { path, closed } => {
                     let concept = load_concept(&path)?;
+                    if closed {
+                        let errors = concept.validate_closed();
+                        if !errors.is_empty() {
+                            return Err(anyhow!(serde_json::to_string(&errors)?));
+                        }
+                    }
                     serde_json::json!({"valid":true, "conceptHash":concept.content_hash(), "implementationProven":false})
                 }
                 ConceptCmd::Inspect { path } => {

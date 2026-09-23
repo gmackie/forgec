@@ -35,6 +35,8 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace --locked
+      - run: python3 examples/concept-boundary/generate_pressure_matrix.py --check
+      - run: python3 examples/concept-boundary/digital-twin/specialized-model/check_interface.py
 
   editor-grammar:
     name: Tree-sitter generation and Rowan drift

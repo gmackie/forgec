@@ -1028,3 +1028,37 @@ fn explicit_business_contract_cli_validates_inspects_and_diffs() {
         }
     }
 }
+
+#[test]
+fn concept_closed_check_is_opt_in() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept-boundary/flight-control/concept-ir.json");
+    let mut raw: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(fixture).unwrap()).unwrap();
+    let path = std::env::temp_dir().join(format!("forge-closed-check-{}.json", std::process::id()));
+    let check = |closed: bool| {
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_forgec"));
+        cmd.args(["concept", "check"]).arg(&path);
+        if closed {
+            cmd.arg("--closed");
+        }
+        cmd.output().unwrap()
+    };
+    std::fs::write(&path, serde_json::to_vec(&raw).unwrap()).unwrap();
+    assert!(check(true).status.success());
+    raw["processes"]
+        .as_object_mut()
+        .unwrap()
+        .values_mut()
+        .next()
+        .unwrap()["activations"]["missing"] =
+        serde_json::json!({"kind":"fact","fact":"undeclared"});
+    std::fs::write(&path, serde_json::to_vec(&raw).unwrap()).unwrap();
+    assert!(check(false).status.success());
+    let output = check(true);
+    assert!(!output.status.success());
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("unknown activation fact `undeclared`")
+    );
+    std::fs::remove_file(path).unwrap();
+}

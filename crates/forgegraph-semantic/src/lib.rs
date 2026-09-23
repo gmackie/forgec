@@ -6,6 +6,7 @@ pub mod capability;
 pub mod compiler;
 pub mod concept;
 pub mod concept_semantics;
+mod concept_validation;
 pub mod cron;
 pub mod diagnostics;
 pub mod diff;

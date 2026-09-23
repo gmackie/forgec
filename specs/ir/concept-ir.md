@@ -14,6 +14,8 @@ The result contains `conceptHash`, `projection` (`concept`, `realizations`, `cov
 
 The Rust/Serde schema is `forgegraph_semantic::concept`. `ConceptIR::load` rejects unsupported versions, unknown ConceptIR fields, producer conflicts, invalid durable output kinds and undeclared principal/policy/external references. It does not yet validate every type, selection binding or ABAC predicate. It is not a policy enforcement engine.
 
+For complete authored models, use `ConceptIR::load_closed`, `validate_closed`, or `forgec concept check --closed <path>`. These opt-in checks add recursive declaration closure for types (including collection elements, request payloads, principal attributes and stateful behavior), Fact/Change activations, workflow waits, purpose/data-class type facets, and external event names. External acquisition/export types must exactly match at least one declared data/accepts port, including optionality, constraints and facets. Diagnostics identify the declaration or port and use `E-L0-REFERENCE` or `E-L0-EXTERNAL-TYPE`. Existing `load`/`validate` and the default CLI check retain partial-model behavior; graph diagnostic reference nodes never establish closure. Closed validation does not prove policy predicates, selection expressions, runtime enforcement, or implementation conformance. Both executable ConceptIR corpora use this shared API; corpus-specific ownership and evidence requirements remain separate.
+
 The root has `version`, `package` (qualified name), and ID-keyed maps:
 
 | Map | Meaning |
