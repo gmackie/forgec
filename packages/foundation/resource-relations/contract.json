@@ -1,0 +1,136 @@
+{
+  "slug": "resource-relations",
+  "layer": "substrate",
+  "issue": 79,
+  "dependencies": [
+    "party",
+    "specification",
+    "evidence"
+  ],
+  "facts": [
+    "ResourceSubject: typed domain resource identity",
+    "RelationKind: namespaced pinned vocabulary",
+    "RelationScope: resource-owned extent",
+    "RelationSource: immutable typed evidence-backed occurrence",
+    "PartyResourceRelation: immutable inert candidate",
+    "RelationCommit: atomic admission and predecessor termination"
+  ],
+  "operations": [
+    "ResourceRelations.registerKind",
+    "ResourceRelations.establish",
+    "ResourceRelations.handoff",
+    "ResourceRelations.end",
+    "ResourceRelations.asOf"
+  ],
+  "invariants": [
+    "Candidate timestamps never confer knowledge",
+    "Single commit atomically claims prior and current",
+    "Half-open valid intervals and inclusive server-sealed knowledge",
+    "Typed endpoints and matching sealed provenance require independent authorization",
+    "No authority or global cardinality inferred",
+    "Bounded100 candidates and128 ancestry nodes fail closed"
+  ],
+  "acceptance": [
+    {
+      "id": "F79-01",
+      "description": "Separate typed ownership, control and custody",
+      "kind": "compile",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-02",
+      "description": "Bounded valid/known package semantics with future and retroactive ends",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-03",
+      "description": "Evidence-backed establishment and termination provenance",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-04",
+      "description": "Atomic event-driven custody handoff and idempotent replay",
+      "kind": "concurrency",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-05",
+      "description": "Leased equipment owner/operator/custodian fixture",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-06",
+      "description": "Consignment controller/custodian fixture",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-07",
+      "description": "Cloud host/operator/payer fixture",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-08",
+      "description": "Extensible pinned vocabulary without generic ownerId",
+      "kind": "compile",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-resource-relations.test.ts"
+      ]
+    },
+    {
+      "id": "F79-SEMANTIC",
+      "description": "Integration with ConceptIR temporal capabilities #75 and relationship facets #77",
+      "kind": "runtime",
+      "status": "planned",
+      "verification": "local",
+      "evidence": []
+    },
+    {
+      "id": "F79-STORE",
+      "description": "Hosted adapter matrix receipt for resource-relations",
+      "kind": "provider",
+      "status": "planned",
+      "verification": "hosted",
+      "evidence": []
+    }
+  ],
+  "fixtures": [
+    "leased-equipment",
+    "consigned-inventory",
+    "cloud-resource"
+  ]
+}

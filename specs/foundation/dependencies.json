@@ -663,6 +663,48 @@
       ],
       "wave": 4,
       "acceptanceGates": []
+    },
+    {
+      "issue": 79,
+      "slug": "resource-relations",
+      "layer": "substrate",
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-identity"
+      ],
+      "wave": 3,
+      "acceptanceGates": [],
+      "deferredIntegrationAcceptance": [
+        "F79-STORE",
+        "F79-SEMANTIC"
+      ]
+    },
+    {
+      "issue": 80,
+      "slug": "settlement",
+      "layer": "system",
+      "dependencies": [
+        "party",
+        "entitlement",
+        "fulfillment",
+        "agreement-catalog",
+        "ledger"
+      ],
+      "requiresGates": [
+        "G-core",
+        "G-identity"
+      ],
+      "wave": 6,
+      "acceptanceGates": [],
+      "deferredIntegrationAcceptance": [
+        "F80-STORE",
+        "F80-SEMANTIC"
+      ]
     }
   ],
   "gateOwnership": {

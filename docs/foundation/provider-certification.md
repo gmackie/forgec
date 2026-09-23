@@ -178,3 +178,7 @@ Contract files retain their original package-local status (`294/308` passing, 14
 The earlier checkpoint aggregate is retained as `provider-evidence/certification-834dd37c.json`; it is historical evidence, not the current-source gate.
 
 The previous implementation aggregate is retained as `provider-evidence/certification-f64c1b81.json`. The current refresh had one D1 Operations transport failure, followed by a passing full-profile run in a fresh tenant. Its failed receipt/raw report and `retry-notes-9c92db7b.md` are retained; the aggregate selects the passing retry and validates all 42 cells.
+
+## Expansion in progress
+
+Resource relations (#79) and settlement (#80) add provider profiles in the current implementation wave. The retained 42-cell aggregate above belongs to `9c92db7b`; it does not certify changed source or these new packages. New concurrency profiles and a complete matching-source refresh are required after integration.

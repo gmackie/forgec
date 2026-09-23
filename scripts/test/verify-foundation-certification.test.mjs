@@ -12,9 +12,9 @@ function fixture(slug='allocation',provider='postgres') {
  const receipt={version:1,suite:'providers',status:'passing',profile:`foundation-${slug}-invariants/1`,provider,sourceFingerprint:fingerprint,artifacts,coverageCriteria:profiles[slug].criteria,requestedTraces:profiles[slug].requiredTraces,passedTraces:profiles[slug].requiredTraces,testReportSha256:hash(report),runId,verifiedAt:new Date().toISOString(),targetHash:hash('target'),topology:{postgres:'native-postgres-local',d1:'cloudflare-d1-hosted',dynamodb:'aws-dynamodb-hosted'}[provider],identity:{provider,runId,tenantPrefix:`foundation-cert-${runId}`,objectStore:'memory object-store test double; database durability only',observed}};
  return {receipt,report,expected:{slug,provider,fingerprint,artifacts,harnessSha256}};
 }
-test('all 42 exact current provider cells are required',()=>{
+test('all exact current provider cells are required',()=>{
  const cells=Object.keys(profiles).flatMap(slug=>['postgres','d1','dynamodb'].map(provider=>{const f=fixture(slug,provider);return validateCertificationReceipt(f.receipt,f.report,f.expected);}));
- assert.equal(validateCertificationMatrix(cells).length,42);
+ assert.equal(validateCertificationMatrix(cells).length,Object.keys(profiles).length*3);
  assert.throws(()=>validateCertificationMatrix(cells.slice(1)),/exactly every/);
  assert.throws(()=>validateCertificationMatrix([...cells.slice(1),cells[1]]),/exactly every/);
  assert.throws(()=>validateCertificationMatrix(cells.map((c,i)=>i===0?{...c,sourceFingerprint:hash('different')}:c)),/identical source/);

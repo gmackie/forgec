@@ -41,3 +41,7 @@ The composed legacy migration rehearsal passes actual Engine export → reviewed
 All CI jobs pass in [run 35879253526](https://github.com/gmackie/forgec/actions/runs/35879253526), including Node22/24, compiler, packaging, differential and console acceptance. The pre-existing workflow idempotency race (#72 / draft #73) remains fixed. Earlier source receipts remain historical evidence.
 
 Hosted database certification passes all 42 cells at the current implementation checkpoint. `provider-evidence/certification.json` retains the validated source/artifact/identity/raw-report index. One initial D1 Operations transport failure is retained alongside the successful full-profile retry; see the retry notes.
+
+## New issue wave
+
+Foundation #79 (resource relations) and #80 (settlement) extend the registered scope to 43 packages. Their implementation and fresh integrated evidence are in progress. The 41-package/42-provider-cell checkpoint above remains historical evidence for `9c92db7b`, not certification of this new wave. Application integration/staging enablement is deferred by user request. The ConceptIR semantic dependencies are recorded in `resource-settlement-semantics.md` and remain distinct acceptance gates.

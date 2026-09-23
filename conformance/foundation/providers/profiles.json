@@ -156,5 +156,38 @@
     "criteria": [
       "F50-STORE"
     ]
+  },
+  "resource-relations": {
+    "fixture": "packages/foundation/resource-relations/fixtures/consumer",
+    "test": "test/foundation-resource-relations.test.ts",
+    "requiredTraces": [
+      "hosted: typed leased equipment, consignment and cloud relations remain distinct with extensible exact extent",
+      "hosted: atomic custody handoff has one winner, inert loser, historical knowledge and restart replay",
+      "hosted: future ends and backdated termination preserve half-open valid time and inclusive knowledge boundaries",
+      "hosted: denied successor Party cannot partially end custody and empty evidence cannot publish",
+      "hosted: equal knowledge timestamps are inclusive and staged successors stay inert",
+      "hosted: denied dependency reads and mismatched or future provenance cannot publish a relation"
+    ],
+    "criteria": [
+      "F79-STORE"
+    ]
+  },
+  "settlement": {
+    "fixture": "packages/foundation/settlement/fixtures/consumer",
+    "test": "test/foundation-settlement.test.ts",
+    "requiredTraces": [
+      "hosted: CommerceReceivable partial materialization and settlement retain neutral temporal positions",
+      "hosted: ExpenseReimbursement partial materialization and settlement retain neutral temporal positions",
+      "hosted: ServiceCredit partial materialization and settlement retain neutral temporal positions",
+      "hosted: one source atomically settles multiple positions and cannot be overspent or reused",
+      "hosted: immutable reversals corrections and effective-time prefixes preserve explainable history",
+      "hosted: trusted source admission authorization isolation and failed publication never mint balances",
+      "hosted: issued Agreement authority and independent exact Ledger association remain explicit",
+      "hosted: obligation terminal races and unadmitted raw publications fail closed",
+      "hosted: late domain proof cannot confer authority on an earlier raw publication"
+    ],
+    "criteria": [
+      "F80-STORE"
+    ]
   }
 }

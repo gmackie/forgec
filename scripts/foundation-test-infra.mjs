@@ -17,13 +17,15 @@ export function configuration(args){
 }
 export function dynamoDefinition(name){return {TableName:name,BillingMode:'PAY_PER_REQUEST',AttributeDefinitions:[{AttributeName:'PK',AttributeType:'S'},{AttributeName:'SK',AttributeType:'S'},{AttributeName:'pendingShard',AttributeType:'S'},{AttributeName:'pendingAt',AttributeType:'N'}],KeySchema:[{AttributeName:'PK',KeyType:'HASH'},{AttributeName:'SK',KeyType:'RANGE'}],GlobalSecondaryIndexes:[{IndexName:'pending-index',KeySchema:[{AttributeName:'pendingShard',KeyType:'HASH'},{AttributeName:'pendingAt',KeyType:'RANGE'}],Projection:{ProjectionType:'ALL'}}],Tags:[{Key:'purpose',Value:'foundation-certification'}]};}
 function command(bin,args,{input,env}={}){const r=spawnSync(bin,args,{cwd:root,encoding:'utf8',input,env:{...process.env,...env},maxBuffer:16*1024*1024});if(r.error||r.status!==0)throw new Error(`${bin} ${args.slice(0,3).join(' ')} failed: ${r.stderr||r.error||r.stdout}`);return r.stdout;}
+// Cloudflare preview hostnames allow at most 54 characters, including the suffix.
+export function testWorkerName(name){return name.slice(0,37)+'-'+randomBytes(8).toString('hex');}
 export function provision(config){
  const state=resolve(config['state-dir']);mkdirSync(state,{recursive:true,mode:0o700});
  const info=lstatSync(state);
  if(!info.isDirectory()||info.isSymbolicLink()||(info.mode&0o077)!==0||(process.getuid&&info.uid!==process.getuid()))throw new Error('State directory must be owned by this user, private mode0700, and not a symlink');
  const stateFile=join(state,'infrastructure.json');
  if(existsSync(stateFile))throw new Error('State already exists; use recorded resources or choose a fresh state directory');
- const receipt={version:1,provider:config.provider,name:config.name,profile:config.profile,createdAt:new Date().toISOString(),status:'provisioning',production:false,workerName:config.provider==='d1'?config.name.slice(0,45)+'-'+randomBytes(8).toString('hex'):undefined};
+ const receipt={version:1,provider:config.provider,name:config.name,profile:config.profile,createdAt:new Date().toISOString(),status:'provisioning',production:false,workerName:config.provider==='d1'?testWorkerName(config.name):undefined};
  const save=()=>writeFileSync(stateFile,JSON.stringify(receipt,null,2)+'\n',{mode:0o600});
  writeFileSync(stateFile,JSON.stringify(receipt,null,2)+'\n',{mode:0o600,flag:'wx'});
  if(config.provider==='dynamodb'){

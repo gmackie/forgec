@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {configuration,dynamoDefinition,provision} from '../foundation-test-infra.mjs';
+import {configuration,dynamoDefinition,provision,testWorkerName} from '../foundation-test-infra.mjs';
 import {mkdtempSync,mkdirSync,chmodSync,symlinkSync,writeFileSync,readFileSync,existsSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -40,4 +40,12 @@ test('table definition matches runtime keys and sparse pending index',()=>{
  assert.equal(validDynamoTable({...d,TableStatus:'ACTIVE',TableArn:'arn:aws:dynamodb:test'}),true);
  assert.deepEqual(d.GlobalSecondaryIndexes[0].KeySchema,[{AttributeName:'pendingShard',KeyType:'HASH'},{AttributeName:'pendingAt',KeyType:'RANGE'}]);
  assert.equal(d.BillingMode,'PAY_PER_REQUEST');
+});
+
+test('long dedicated names fit Cloudflare preview hostnames and keep unique suffixes',()=>{
+ const name='forge-foundation-test-'+ 'a'.repeat(35);
+ configuration(['--provider','d1','--name',name,'--state-dir','/tmp/unused-foundation-state']);
+ const workers=Array.from({length:20},()=>testWorkerName(name));
+ assert.equal(new Set(workers).size,workers.length);
+ for(const worker of workers){assert.ok(worker.length<=54);assert.match(worker,/^forge-foundation-test-[a-z0-9-]+-[a-f0-9]{16}$/);}
 });

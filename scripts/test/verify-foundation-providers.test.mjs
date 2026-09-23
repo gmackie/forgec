@@ -36,7 +36,8 @@ test('Dynamo preflight matches uppercase string PK/SK used by DynamoStorage', as
 });
 test('expanded profiles require every exact hosted title with no omitted or local-only assertions', async () => {
   const { profiles } = await import('../verify-foundation-providers.mjs');
-  assert.equal(Object.keys(profiles).length, 14);
+  assert.equal(Object.keys(profiles).length, 16);
+  for (const slug of ['resource-relations', 'settlement']) assert.ok(profiles[slug], `${slug} needs hosted certification`);
   for (const profile of Object.values(profiles)) {
     assert.ok(profile.requiredTraces.length > 0);
     assert.ok(profile.requiredTraces.every(title => title.startsWith('hosted: ')));

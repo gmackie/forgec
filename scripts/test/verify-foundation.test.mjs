@@ -48,10 +48,14 @@ test('local passing acceptance names existing evidence and rejects missing or un
   }
 });
 
-test('expanded scope includes 41 packages but excludes PR51 and does not infer layer from number', () => {
+test('expanded scope includes new Foundation packages but excludes PR51 and does not infer layer from number', () => {
   const party = contract('party', 52, [], 'substrate');
   assert.deepEqual(validateContracts([party], {complete:false}).errors, []);
   assert.match(validateContracts([contract('pull-request', 51)], {complete:false}).errors.join(), /invalid or duplicate issue/);
   assert.match(validateContracts([{...party, layer:'system'}], {complete:false}).errors.join(), /issue\/slug\/layer/);
   assert.match(validateContracts([], {}).errors.join(), /missing issue #67/);
+  for (const [slug, issue, layer] of [['resource-relations',79,'substrate'],['settlement',80,'system']]) {
+    assert.deepEqual(validateContracts([contract(slug, issue, [], layer)], {complete:false}).errors, []);
+    assert.match(validateContracts([], {}).errors.join(), new RegExp(`missing issue #${issue}`));
+  }
 });
