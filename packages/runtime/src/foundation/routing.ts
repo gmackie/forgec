@@ -70,12 +70,23 @@ export class Routing {
       const at=yield* self.now();
       if(String(offered.expiresAt)<=at)return yield* bad("Offer expired");
       if((yield* self.eligible(facts.request,facts.resource,facts.candidate.participant,at,ctx))!==facts.candidate.qualification)return yield* bad("Eligibility snapshot changed");
+      // Terminal facts are append-only. Existing future-effective facts cannot
+      // change; absent facts need commit-time guards against concurrent insertion.
+      const qualificationResource="@forgegraph/foundation/qualification/_/QualificationRevocation";
+      const revoked=yield* findTerminalFact(self.engine,qualificationResource,"qualification",facts.candidate.qualification,ctx);
+      if(revoked&&(String(revoked.effectiveAt)<=at||String(revoked.effectiveAt)<String(facts.request.until)))return yield* bad("Qualification revoked during acceptance");
+      const absent: {resource:string;unique:string;values:Wire}[]=revoked?[]:[{resource:qualificationResource,unique:"qualification",values:{qualification:facts.candidate.qualification}}];
+      if(facts.candidate.participant!=null){
+        const ended=yield* findTerminalFact(self.engine,part+"ParticipationEnd","participation",facts.candidate.participant,ctx);
+        if(ended&&String(ended.effectiveAt)<String(facts.request.until))return yield* bad("Participation ended during acceptance");
+        if(!ended)absent.push({resource:part+"ParticipationEnd",unique:"participation",values:{participation:facts.candidate.participant}});
+      }
       const key="routing:"+offer;
       const reservation:Wire=yield* self.engine.call(a+"AllocationReservation.create",{pool:facts.resource.pool,key,quantity:facts.request.quantity,unit:facts.request.unit,from:facts.request.from,until:facts.request.until,holdUntil:facts.request.until},self.clean(ctx)).pipe(Effect.catch(error=>error.code==="UniqueConflict"?self.engine.call(a+"AllocationReservation.find.byPoolKey",{params:{pool:facts.resource.pool,key}},ctx):Effect.fail(error)));
       if(reservation.quantity!==facts.request.quantity||reservation.unit!==facts.request.unit||reservation.from!==facts.request.from||reservation.until!==facts.request.until)return yield* bad("Conflicting routing reservation");
       const batch=yield* self.allocation.prepare([{reservation:String(reservation.id),action:"book",commandKey:key}],ctx);
       if(batch.existing.length)continue;
-      const result=yield* self.engine.atomic([...batch.mutations,{operation:p+"AssignmentOfferEnd.create",input:{offer,outcome:"accepted",at,reason:"Accepted"}},{operation:p+"Assignment.create",input:{request:facts.request.id,offer,reservation:reservation.id,acceptedAt:at}}],self.clean(ctx)).pipe(Effect.map(rows=>rows.at(-1)!),Effect.catch(error=>error.code==="UniqueConflict"?Effect.succeed(null):Effect.fail(error)));
+      const result=yield* self.engine.atomic([...batch.mutations,{operation:p+"AssignmentOfferEnd.create",input:{offer,outcome:"accepted",at,reason:"Accepted"}},{operation:p+"Assignment.create",input:{request:facts.request.id,offer,reservation:reservation.id,acceptedAt:at}}],self.clean(ctx),{absent}).pipe(Effect.map(rows=>rows.at(-1)!),Effect.catch(error=>error.code==="UniqueConflict"?Effect.succeed(null):Effect.fail(error)));
       if(result){yield* self.consume(String(result.id),ctx);return result;}
     }
     return yield* Effect.fail(err("TransientConflict","Routing acceptance contention"));

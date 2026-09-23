@@ -9,7 +9,7 @@ import { decodeCursor, encodeCursor } from "./cursor.js";
 import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
 import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Operation, type Resource, type Transition, type Unique } from "./model.js";
-import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
+import { Clock, CursorSecret, IdGen, Storage, type AtomicAbsenceGuard, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
 import { Changesets } from "./changeset.js";
 import { Blobs } from "./blobs.js";
 import { Imports } from "./imports.js";
@@ -60,6 +60,12 @@ export function stableJson(v: unknown): string {
 }
 
 export interface AtomicMutation { operation: string; input: Wire }
+export interface AtomicOptions {
+  /** Unconditional unique keys on append-only resources. Absence is checked at commit,
+   * including facts the caller could not see through a row-filtered query. Requires
+   * read authorization for the finder without a current record (fails closed). */
+  absent?: readonly { resource: string; unique: string; values: Wire }[];
+}
 
 export interface EngineOptions {
   secrets?: import("./credentials.js").SecretAdapter;
@@ -263,12 +269,34 @@ export class Engine {
   /** Authorized, bounded composition of independent mutations against durable references.
    * No staged reads/references or repeated-record composition is implied. Callers
    * use immutable unique publication facts for retries; receipt keys are rejected. */
-  atomic(mutations: readonly AtomicMutation[], ctx: CallContext): Effect.Effect<Wire[], ForgeError> {
+  atomic(mutations: readonly AtomicMutation[], ctx: CallContext, options: AtomicOptions = {}): Effect.Effect<Wire[], ForgeError> {
     const self = this;
     const started = performance.now();
     return Effect.gen(function* () {
       if (ctx.idempotencyKey) return yield* Effect.fail(err("ValidationFailed", "Atomic mutations require a durable application command key, not a per-operation receipt"));
       if (!mutations.length || mutations.length > 32) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations require 1..32 operations"));
+      const storage = yield* Storage;
+      const absent: AtomicAbsenceGuard[] = [];
+      if ((options.absent?.length ?? 0) > 32) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations support at most 32 absence guards"));
+      if (options.absent?.length && !storage.atomicAbsenceGuards) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support atomic absence guards"));
+      for (const guard of options.absent ?? []) {
+        const resource = self.model.resources.find(r => r.id === guard.resource);
+        const unique = resource?.uniques.find(u => u.name === guard.unique);
+        const finder = resource?.finds.find(f => f.coveredBy === guard.unique);
+        if (!resource?.decorators.appendOnly || !unique || unique.condition || !finder) return yield* Effect.fail(err("ValidationFailed", "Absence guards require an unconditional unique finder on an append-only resource"));
+        const fields = [...unique.within, ...unique.fields];
+        if (Object.keys(guard.values).some(field => !fields.includes(field))) return yield* Effect.fail(err("ValidationFailed", "Absence guard contains fields outside its unique key"));
+        const values = yield* self.queryValues(resource, fields, guard.values);
+        const claimKey = self.claimKey(resource, unique, values);
+        if (!claimKey) return yield* Effect.fail(err("ValidationFailed", "Absence guards require a complete non-null unique key"));
+        const surface = yield* self.scope.resolve(resource, ctx);
+        if (surface) yield* self.scope.checkQuery(surface, resource, values, []);
+        // No synthetic record and no filtered pre-read: row-dependent authority cannot
+        // establish absence of every matching fact, so it must fail closed.
+        const decision = yield* self.gatekeeper.decide(`${resource.id}.find.${finder.name}`, "read", resource, ctx);
+        if (decision.effect !== "allow" || decision.rowFilter?.length) return yield* Effect.fail(err("NotPermitted", "Atomic absence guard requires unfiltered read authority"));
+        if (!absent.some(g => g.claimKey === claimKey)) absent.push({ tenant: ctx.tenant, resource, unique, claimKey, values });
+      }
       const plans: CommitPlan[] = [], surfaces: (import("./scope.js").Surface | null)[] = [];
       for (const mutation of mutations) {
         const ref = self.model.operation(mutation.operation);
@@ -288,9 +316,10 @@ export class Engine {
         if (plans.some(p => p.resource.id === plan.resource.id && p.id === plan.id)) return yield* Effect.fail(err("ValidationFailed", "Atomic operations cannot mutate the same record twice"));
         plans.push(plan); surfaces.push(surface);
       }
-      const storage = yield* Storage, budget = storage.budget(plans);
+      if (plans.some(plan => absent.some(guard => plan.tenant === guard.tenant && plan.claims.some(claim => claim.after === guard.claimKey)))) return yield* Effect.fail(err("ValidationFailed", "Atomic mutation creates a fact required to be absent"));
+      const budget = storage.budget(plans, absent);
       if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations exceed provider transaction budget"));
-      yield* storage.commitAll(plans);
+      yield* storage.commitAll(plans, absent);
       return plans.map((plan, i) => surfaces[i] ? self.scope.project(surfaces[i]!, self.resultOf(plan)) : self.resultOf(plan));
     }).pipe(
       Effect.provide(self.layer),
@@ -769,6 +798,7 @@ export class Engine {
         // Explicit delegation: spreading a class instance would drop prototype methods.
         const wrapped: StorageAdapter = {
           name: storage.name,
+          ...(storage.atomicAbsenceGuards ? { atomicAbsenceGuards: true as const } : {}),
           get: (...a) => storage.get(...a),
           findUnique: (...a) => storage.findUnique(...a),
           list: (...a) => storage.list(...a),

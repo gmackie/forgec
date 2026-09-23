@@ -8,7 +8,7 @@ import { Allocations } from "../src/foundation/allocation.js";
 import { Engine } from "../src/engine.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
 const p="@forgegraph/foundation/routing/_/",q="@forgegraph/foundation/qualification/_/",a="@forgegraph/foundation/allocation/_/",f="@forgegraph/foundation/fulfillment/_/",party="@forgegraph/foundation/party/_/",part="@forgegraph/foundation/participation/_/",spec="@forgegraph/foundation/specification/_/";
-for(const adapter of foundationAdapters)it(`${adapter}: explainable eligibility, atomic offers, revocation race and repair`,async()=>{
+for(const adapter of foundationAdapters)it(`${adapter}: explainable eligibility, atomic offers and serializable eligibility races`,async()=>{
  const h=await foundation("routing",adapter,true),run=Effect.runPromise;try{
   const {engine,ctx,call}=h,service=new Routing(engine),qualifications=new Qualifications(engine),availability=new Availability(engine),allocations=new Allocations(engine);
   const repository=await call(spec+"Repository.create",{key:"requirements",provider:"git",locator:"https://example.test/spec"});
@@ -55,28 +55,50 @@ for(const adapter of foundationAdapters)it(`${adapter}: explainable eligibility,
   const raced=await Promise.allSettled(offers.map(o=>run(service.accept(String(o.id),ctx))));expect(raced.filter(r=>r.status==="fulfilled")).toHaveLength(1);
   const winner=(raced.find(r=>r.status==="fulfilled") as PromiseFulfilledResult<Record<string,unknown>>).value;await run(service.release(String(winner.id),"Done",ctx));
   for(const resource of resources.slice(1,3))expect((await run(allocations.inspect(String(resource.pool.id),from,ctx))).available).toBe("1.000000");
-  // Revocation between validation and commit is not concealed: consumption fails,
-  // and a separate durable release repairs reserved capacity without eligibility.
+  // A revocation inserted after validation must abort the whole acceptance.
   const runner=resources[3]!,runnerRequest=await newRequest("runner"),runnerCandidate=await run(service.evaluate({request:String(runnerRequest.id),resource:String(runner.resource.id),rank:1,rationale:"Bob Runner capability evidence"},ctx));
   const runnerOffer=await run(service.offer(String(runnerCandidate.id),"2026-01-01T12:00:00Z",ctx));
   const atomic=engine.atomic.bind(engine);let revoked=false;
-  engine.atomic=(mutations,context)=>Effect.gen(function*(){if(!revoked){revoked=true;yield* qualifications.revoke(String(runner.award.id),"2026-01-01T00:00:00Z","Revoked during accept",ctx);}return yield* atomic(mutations,context);});
+  engine.atomic=(mutations,context,options)=>Effect.gen(function*(){if(!revoked){revoked=true;yield* qualifications.revoke(String(runner.award.id),"2026-01-01T00:00:00Z","Revoked during accept",ctx);}return yield* atomic(mutations,context,options);});
   await expect(run(service.accept(String(runnerOffer.id),ctx))).rejects.toThrow();engine.atomic=atomic;
-  const stale=await call(p+"Assignment.find.byOffer",{params:{offer:runnerOffer.id}});
-  await expect(run(service.consume(String(stale.id),ctx))).rejects.toThrow();
-  expect((await run(allocations.inspect(String(runner.pool.id),from,ctx))).available).toBe("0.000000");
-  await run(service.release(String(stale.id),"Eligibility invalidated",ctx));
+  await expect(call(p+"Assignment.find.byOffer",{params:{offer:runnerOffer.id}})).rejects.toThrow();
+  await expect(call(p+"AssignmentOfferEnd.find.byOffer",{params:{offer:runnerOffer.id}})).rejects.toThrow();
   expect((await run(allocations.inspect(String(runner.pool.id),from,ctx))).available).toBe("1.000000");
+  // Membership termination is guarded independently of qualification.
+  const memberResource=resources[1]!,memberRequest=await newRequest("membership-race"),memberCandidate=await run(service.evaluate({request:String(memberRequest.id),resource:String(memberResource.resource.id),participant:String(memberResource.member.id),rank:1,rationale:"Membership must remain eligible"},ctx));
+  const memberOffer=await run(service.offer(String(memberCandidate.id),"2026-01-01T12:00:00Z",ctx));let ended=false;
+  engine.atomic=(mutations,context,options)=>Effect.gen(function*(){if(!ended){ended=true;yield* engine.call(part+"ParticipationEnd.create",{participation:memberResource.member.id,effectiveAt:"2026-01-01T00:00:00Z",revoked:true,recordedBy:ctx.actor,reason:"Ended during accept"},ctx);}return yield* atomic(mutations,context,options);});
+  await expect(run(service.accept(String(memberOffer.id),ctx))).rejects.toThrow();engine.atomic=atomic;
+  await expect(call(p+"Assignment.find.byOffer",{params:{offer:memberOffer.id}})).rejects.toThrow();
+  expect((await run(allocations.inspect(String(memberResource.pool.id),from,ctx))).available).toBe("1.000000");
+  // A terminal already scheduled after the requested interval is immutable and
+  // does not prevent this earlier assignment.
+  const futureResource=resources[2]!;
+  await run(qualifications.revoke(String(futureResource.award.id),"2026-02-01T00:00:00Z","Future revocation",ctx));
+  await call(part+"ParticipationEnd.create",{participation:futureResource.member.id,effectiveAt:until,revoked:false,recordedBy:ctx.actor,reason:"Ends at interval boundary"});
+  const futureRequest=await newRequest("future-end"),futureCandidate=await run(service.evaluate({request:String(futureRequest.id),resource:String(futureResource.resource.id),participant:String(futureResource.member.id),rank:1,rationale:"Eligible until scheduled end"},ctx));
+  const futureOffer=await run(service.offer(String(futureCandidate.id),"2026-01-01T12:00:00Z",ctx));
+  const futureAssignment=await run(service.accept(String(futureOffer.id),ctx));
+  await run(service.release(String(futureAssignment.id),"Done before terminal",ctx));
   await expect(run(service.evaluate({request:String(runnerRequest.id),resource:String(runner.resource.id),rank:1,rationale:"Stale"},ctx))).rejects.toThrow();
   const expiryRequest=await newRequest("expiry"),expiryCandidate=await run(service.evaluate({request:String(expiryRequest.id),resource:String(first.resource.id),rank:1,rationale:"Fresh"},ctx));
   const expired=await run(service.offer(String(expiryCandidate.id),"2026-01-01T00:05:00Z",ctx));
   await expect(run(service.closeOffer(String(expired.id),"expired","Too soon",ctx))).rejects.toThrow();
-  engine.atomic=(mutations,context)=>Effect.gen(function*(){engine.testClockJump(10*60*1000);yield* service.closeOffer(String(expired.id),"expired","Expired during acceptance",ctx);return yield* atomic(mutations,context);});
+  engine.atomic=(mutations,context,options)=>Effect.gen(function*(){engine.testClockJump(10*60*1000);yield* service.closeOffer(String(expired.id),"expired","Expired during acceptance",ctx);return yield* atomic(mutations,context,options);});
   await expect(run(service.accept(String(expired.id),ctx))).rejects.toThrow();engine.atomic=atomic;
   expect((await run(allocations.inspect(String(first.pool.id),from,ctx))).available).toBe("1.000000");
   await expect(run(service.accept(String(expired.id),ctx))).rejects.toThrow();
   const hidden=new Engine(engine.model,engine.layer);hidden.gatekeeper.authorizer=localAuthorizer({policies:engine.model.resources.filter(r=>r.id!==q+"QualificationRevocation").map(r=>({id:r.id,actions:[r.id+".*"],requires:[],where:[]})),pips:[],epoch:1,knownObligations:[]});
   await expect(run(new Routing(hidden).evaluate({request:String(runnerRequest.id),resource:String(runner.resource.id),rank:1,rationale:"Hidden revocation"},ctx))).rejects.toThrow();
+  // A revocation ordered after acceptance remains a live eligibility change;
+  // release must remain possible even though consumption is now forbidden.
+  const laterRequest=await newRequest("later-invalidation"),laterCandidate=await run(service.evaluate({request:String(laterRequest.id),resource:String(first.resource.id),rank:1,rationale:"Eligible at acceptance"},ctx));
+  const laterOffer=await run(service.offer(String(laterCandidate.id),"2026-01-01T12:00:00Z",ctx));
+  const laterAssignment=await run(service.accept(String(laterOffer.id),ctx));
+  await run(qualifications.revoke(String(first.award.id),"2026-01-01T00:00:00Z","Invalidated after acceptance",ctx));
+  await expect(run(service.consume(String(laterAssignment.id),ctx))).rejects.toThrow();
+  await run(service.release(String(laterAssignment.id),"Eligibility invalidated",ctx));
+  expect((await run(allocations.inspect(String(first.pool.id),from,ctx))).available).toBe("1.000000");
   await expect(run(service.consume(String(assignment.id),{...ctx,tenant:"foreign"}))).rejects.toThrow();
  }finally{await h.close();}
 });

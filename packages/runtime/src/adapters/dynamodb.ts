@@ -8,10 +8,11 @@ import { CreateTableCommand, DescribeTableCommand, DynamoDBClient, ResourceNotFo
 import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, ScanCommand, TransactWriteCommand, UpdateCommand, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { Effect } from "effect";
+import { absenceWriteConflict } from "../atomic-guards.js";
 import { encodeIdentity, sortKey } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Unique } from "../model.js";
-import type { DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export const PENDING_INDEX = "pending-index";
 
@@ -31,7 +32,7 @@ export interface DynamoOptions {
 
 type Item = Record<string, unknown>;
 type TxItem = NonNullable<TransactWriteCommandInput["TransactItems"]>[number];
-type Role = "entity" | "claim" | "access" | "parent" | "audit" | "outbox" | "receipt";
+type Role = "entity" | "claim" | "access" | "parent" | "audit" | "outbox" | "receipt" | "absence";
 
 /** Merge only generated additive reference-counter updates, never entity writes,
  * hierarchy checks or effective-date revision SETs. All original guards survive. */
@@ -144,6 +145,7 @@ export async function ensureDynamoTable(table: string, region: string): Promise<
 }
 
 export class DynamoStorage implements StorageAdapter {
+  readonly atomicAbsenceGuards = true;
   readonly name = "dynamodb";
   private readonly doc: DynamoDBDocumentClient;
   private readonly table: string;
@@ -417,8 +419,8 @@ export class DynamoStorage implements StorageAdapter {
     }).pipe(Effect.asVoid);
   }
 
-  budget(plans: CommitPlan[]): { actions: number; limit: number } {
-    return { actions: this.transaction(plans).items.length, limit: DYNAMO_TX_LIMIT };
+  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
+    return { actions: this.transaction(plans, absent).items.length, limit: DYNAMO_TX_LIMIT };
   }
 
   // ------------------------------------------------------------ commit
@@ -429,7 +431,7 @@ export class DynamoStorage implements StorageAdapter {
   /** Assemble the physical transaction once for both budgeting and execution.
    * Shared reference counters commute; preserve every condition while combining
    * their deltas. Any other duplicate physical target is unsupported. */
-  private transaction(plans: CommitPlan[]): { items: TxItem[]; roles: Role[]; owners: CommitPlan[]; error?: ForgeError } {
+  private transaction(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { items: TxItem[]; roles: Role[]; owners: CommitPlan[]; error?: ForgeError } {
     const items: TxItem[] = [], roles: Role[] = [], owners: CommitPlan[] = [];
     const positions = new Map<string, number>();
     let error: ForgeError | undefined;
@@ -449,6 +451,13 @@ export class DynamoStorage implements StorageAdapter {
       const built = this.buildTransaction(plan);
       built.items.forEach((item, i) => add(item, built.roles[i]!, plan));
     }
+    for (const guard of absent) {
+      const fields = [...guard.unique.within, ...guard.unique.fields];
+      add({ ConditionCheck: { TableName: this.table,
+        Key: this.claimKey(guard.tenant, guard.resource, guard.unique, fields.map(f => String(guard.values[f]))),
+        ConditionExpression: "attribute_not_exists(PK)",
+      } }, "absence", plans[0]!);
+    }
     // One marker per tenant, included in exactly the same budget as the send.
     const marked = new Set<string>();
     for (const plan of plans) if (plan.outbox.length && !marked.has(plan.tenant)) {
@@ -458,11 +467,13 @@ export class DynamoStorage implements StorageAdapter {
     return { items, roles, owners, ...(error ? { error } : {}) };
   }
 
-  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
+  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
+      const conflict = absenceWriteConflict(plans, absent);
+      if (conflict) return yield* Effect.fail(conflict);
       if (!plans.length) return yield* Effect.fail(err("ValidationFailed", "Atomic DynamoDB mutations require at least one plan"));
-      const { items, roles, owners, error } = self.transaction(plans);
+      const { items, roles, owners, error } = self.transaction(plans, absent);
       if (error) return yield* Effect.fail(error);
       if (items.length > DYNAMO_TX_LIMIT) return yield* Effect.fail(err("BudgetExceeded", `${items.length} physical actions exceed the transaction limit of ${DYNAMO_TX_LIMIT}`));
       for (let attempt = 1; ; attempt++) {
@@ -689,6 +700,7 @@ export class DynamoStorage implements StorageAdapter {
     const failed = reasons.find((r) => r.code === "ConditionalCheckFailed");
     if (failed) plan = owners[reasons.indexOf(failed)] ?? first;
     switch (failed?.role) {
+      case "absence": return err("VersionConflict", "Atomic absence guard failed");
       case "entity": {
         if (plan.kind === "create") return err("TransientConflict", "id collision");
         const old = failed.item;

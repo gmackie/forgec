@@ -296,6 +296,13 @@
             "x-forge-precision": "ms",
             "readOnly": true
           },
+          "acceptance": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/AgreementAcceptanceCommit"
+          },
           "acceptanceKey": {
             "type": "string",
             "x-forge-type": "text",
@@ -399,6 +406,7 @@
           "id",
           "createdAt",
           "updatedAt",
+          "acceptance",
           "acceptanceKey",
           "offer",
           "supplier",
@@ -422,6 +430,13 @@
       "AgreementCreate": {
         "type": "object",
         "properties": {
+          "acceptance": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/AgreementAcceptanceCommit"
+          },
           "acceptanceKey": {
             "type": "string",
             "x-forge-type": "text",
@@ -539,6 +554,614 @@
         ]
       },
       "AgreementPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AgreementAcceptanceRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "acceptanceKey": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "offer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Offer"
+          },
+          "supplier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "supplierParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "customerParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "supplierEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "customerEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/OfferQualification"
+          },
+          "approvalOption": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOption"
+          },
+          "approval": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOutcome"
+          },
+          "terms": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "document": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          },
+          "offerValidFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "offerValidUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "predecessor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Agreement"
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "Original",
+              "Renewal",
+              "Amendment"
+            ],
+            "x-forge-enum": "@forgegraph/foundation/agreement-catalog/_/AgreementChange"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "acceptanceKey",
+          "offer",
+          "supplier",
+          "customer",
+          "supplierParticipation",
+          "customerParticipation",
+          "supplierEnd",
+          "customerEnd",
+          "qualification",
+          "approvalOption",
+          "approval",
+          "terms",
+          "document",
+          "offerValidFrom",
+          "offerValidUntil",
+          "validFrom",
+          "validUntil",
+          "predecessor",
+          "change",
+          "recordedBy"
+        ]
+      },
+      "AgreementAcceptanceCreate": {
+        "type": "object",
+        "properties": {
+          "acceptanceKey": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "offer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Offer"
+          },
+          "supplier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "supplierParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "customerParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "supplierEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "customerEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/OfferQualification"
+          },
+          "approvalOption": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOption"
+          },
+          "approval": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOutcome"
+          },
+          "terms": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "document": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          },
+          "offerValidFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "offerValidUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "predecessor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Agreement"
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "Original",
+              "Renewal",
+              "Amendment"
+            ],
+            "x-forge-enum": "@forgegraph/foundation/agreement-catalog/_/AgreementChange"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "acceptanceKey",
+          "offer",
+          "supplier",
+          "customer",
+          "supplierParticipation",
+          "customerParticipation",
+          "qualification",
+          "approvalOption",
+          "approval",
+          "terms",
+          "offerValidFrom",
+          "offerValidUntil",
+          "validFrom",
+          "validUntil",
+          "change",
+          "recordedBy"
+        ]
+      },
+      "AgreementAcceptancePatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AgreementAcceptanceCommitRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "acceptance": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/AgreementAcceptance"
+          },
+          "acceptanceKey": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "offer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Offer"
+          },
+          "supplier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "supplierParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "customerParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "supplierEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "customerEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/OfferQualification"
+          },
+          "approvalOption": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOption"
+          },
+          "approval": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOutcome"
+          },
+          "terms": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "document": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          },
+          "offerValidFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "offerValidUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "predecessor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Agreement"
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "Original",
+              "Renewal",
+              "Amendment"
+            ],
+            "x-forge-enum": "@forgegraph/foundation/agreement-catalog/_/AgreementChange"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "acceptance",
+          "acceptanceKey",
+          "offer",
+          "supplier",
+          "customer",
+          "supplierParticipation",
+          "customerParticipation",
+          "supplierEnd",
+          "customerEnd",
+          "qualification",
+          "approvalOption",
+          "approval",
+          "terms",
+          "document",
+          "offerValidFrom",
+          "offerValidUntil",
+          "validFrom",
+          "validUntil",
+          "predecessor",
+          "change",
+          "recordedBy"
+        ]
+      },
+      "AgreementAcceptanceCommitCreate": {
+        "type": "object",
+        "properties": {
+          "acceptance": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/AgreementAcceptance"
+          },
+          "acceptanceKey": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "offer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Offer"
+          },
+          "supplier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "customer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "supplierParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "customerParticipation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/participation/_/Participation"
+          },
+          "supplierEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "customerEnd": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/participation/_/ParticipationEnd"
+          },
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/OfferQualification"
+          },
+          "approvalOption": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOption"
+          },
+          "approval": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/decision/_/DecisionOutcome"
+          },
+          "terms": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "document": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          },
+          "offerValidFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "offerValidUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "predecessor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/agreement-catalog/_/Agreement"
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "Original",
+              "Renewal",
+              "Amendment"
+            ],
+            "x-forge-enum": "@forgegraph/foundation/agreement-catalog/_/AgreementChange"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "acceptance",
+          "acceptanceKey",
+          "offer",
+          "supplier",
+          "customer",
+          "supplierParticipation",
+          "customerParticipation",
+          "qualification",
+          "approvalOption",
+          "approval",
+          "terms",
+          "offerValidFrom",
+          "offerValidUntil",
+          "validFrom",
+          "validUntil",
+          "change",
+          "recordedBy"
+        ]
+      },
+      "AgreementAcceptanceCommitPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false

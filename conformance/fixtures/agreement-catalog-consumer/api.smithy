@@ -94,6 +94,7 @@ structure AgreementRecord {
     createdAt: String
     @required
     updatedAt: String
+    acceptance: String
     @required
     acceptanceKey: String
     @required
@@ -129,6 +130,7 @@ structure AgreementRecord {
 }
 
 structure AgreementCreateInput {
+    acceptance: String
     @required
     acceptanceKey: String
     @required
@@ -164,6 +166,184 @@ structure AgreementCreateInput {
 }
 
 structure AgreementPatchInput {
+}
+
+structure AgreementAcceptanceRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    acceptanceKey: String
+    @required
+    offer: String
+    @required
+    supplier: String
+    @required
+    customer: String
+    @required
+    supplierParticipation: String
+    @required
+    customerParticipation: String
+    supplierEnd: String
+    customerEnd: String
+    @required
+    qualification: String
+    @required
+    approvalOption: String
+    @required
+    approval: String
+    @required
+    terms: String
+    document: String
+    @required
+    offerValidFrom: String
+    @required
+    offerValidUntil: String
+    @required
+    validFrom: String
+    @required
+    validUntil: String
+    predecessor: String
+    @required
+    change: String
+    @required
+    recordedBy: String
+}
+
+structure AgreementAcceptanceCreateInput {
+    @required
+    acceptanceKey: String
+    @required
+    offer: String
+    @required
+    supplier: String
+    @required
+    customer: String
+    @required
+    supplierParticipation: String
+    @required
+    customerParticipation: String
+    supplierEnd: String
+    customerEnd: String
+    @required
+    qualification: String
+    @required
+    approvalOption: String
+    @required
+    approval: String
+    @required
+    terms: String
+    document: String
+    @required
+    offerValidFrom: String
+    @required
+    offerValidUntil: String
+    @required
+    validFrom: String
+    @required
+    validUntil: String
+    predecessor: String
+    @required
+    change: String
+    @required
+    recordedBy: String
+}
+
+structure AgreementAcceptancePatchInput {
+}
+
+structure AgreementAcceptanceCommitRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    acceptance: String
+    @required
+    acceptanceKey: String
+    @required
+    offer: String
+    @required
+    supplier: String
+    @required
+    customer: String
+    @required
+    supplierParticipation: String
+    @required
+    customerParticipation: String
+    supplierEnd: String
+    customerEnd: String
+    @required
+    qualification: String
+    @required
+    approvalOption: String
+    @required
+    approval: String
+    @required
+    terms: String
+    document: String
+    @required
+    offerValidFrom: String
+    @required
+    offerValidUntil: String
+    @required
+    validFrom: String
+    @required
+    validUntil: String
+    predecessor: String
+    @required
+    change: String
+    @required
+    recordedBy: String
+}
+
+structure AgreementAcceptanceCommitCreateInput {
+    @required
+    acceptance: String
+    @required
+    acceptanceKey: String
+    @required
+    offer: String
+    @required
+    supplier: String
+    @required
+    customer: String
+    @required
+    supplierParticipation: String
+    @required
+    customerParticipation: String
+    supplierEnd: String
+    customerEnd: String
+    @required
+    qualification: String
+    @required
+    approvalOption: String
+    @required
+    approval: String
+    @required
+    terms: String
+    document: String
+    @required
+    offerValidFrom: String
+    @required
+    offerValidUntil: String
+    @required
+    validFrom: String
+    @required
+    validUntil: String
+    predecessor: String
+    @required
+    change: String
+    @required
+    recordedBy: String
+}
+
+structure AgreementAcceptanceCommitPatchInput {
 }
 
 structure AgreementEntitlementLinkRecord {

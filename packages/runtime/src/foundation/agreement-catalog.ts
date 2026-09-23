@@ -89,8 +89,22 @@ export class AgreementCatalog {
     });
   }
   accept(input: AcceptAgreement, ctx: CallContext): Effect.Effect<Wire, ForgeError> {
+    return this.acceptRecord(input, ctx, "Agreement");
+  }
+  /** Durable candidate only; it grants no ability to issue until a commit exists. */
+  prepareAcceptance(input: AcceptAgreement, ctx: CallContext): Effect.Effect<Wire, ForgeError> {
+    return this.acceptRecord(input, ctx, "AgreementAcceptance");
+  }
+  /** Recover a server-timestamped committed command under current read/write authorization. */
+  acceptCommitted(input: AcceptAgreement, commitment: string, ctx: CallContext): Effect.Effect<Wire, ForgeError> {
+    return this.acceptRecord(input, ctx, "Agreement", commitment);
+  }
+  private acceptRecord(input: AcceptAgreement, ctx: CallContext, resource: "Agreement" | "AgreementAcceptance", commitment?: string): Effect.Effect<Wire, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
+      const dates = yield* Effect.try({try: () => ({validFrom: decodeDatetime(input.validFrom), validUntil: decodeDatetime(input.validUntil)}), catch: () => err("ValidationFailed", "Invalid agreement interval")});
+      const committed = commitment ? yield* self.call("AgreementAcceptanceCommit.get", {id: commitment}, ctx) : null;
+      const intent = committed ? yield* self.call("AgreementAcceptance.get", {id: committed.acceptance}, ctx) : null;
       const offer = yield* self.offer(input.offer, ctx), approval = yield* self.qualify(input.decisionCase, input.approvedOption, ctx);
       const qualification = yield* self.find("OfferQualification", { decisionCase: input.decisionCase }, ctx);
       yield* check(qualification?.offer === input.offer && qualification?.approvedOption === input.approvedOption, "Decision was not selected for this offer and approval option");
@@ -99,7 +113,15 @@ export class AgreementCatalog {
       const supplierEnd = yield* findTerminalFact(self.engine, pp + "ParticipationEnd", "participation", input.supplierParticipation, ctx);
       const customerEnd = yield* findTerminalFact(self.engine, pp + "ParticipationEnd", "participation", input.customerParticipation, ctx);
       if (input.predecessor) yield* self.state(input.predecessor, input.validFrom, ctx);
-      return yield* self.call("Agreement.create", { acceptanceKey: input.acceptanceKey, offer: input.offer, supplier: offer.supplier, customer: input.customer, supplierParticipation: input.supplierParticipation, customerParticipation: input.customerParticipation, qualification: qualification!.id, supplierEnd: supplierEnd?.id ?? null, customerEnd: customerEnd?.id ?? null, approvalOption: input.approvedOption, approval: approval.id, terms: offer.terms, document: offer.document, validFrom: input.validFrom, validUntil: input.validUntil, predecessor: input.predecessor ?? null, change: input.change ?? "Original", recordedBy: ctx.actor }, { ...ctx, idempotencyKey: `agreement:accept:${input.acceptanceKey}` });
+      const body: Wire = { acceptanceKey: input.acceptanceKey, offer: input.offer, supplier: offer.supplier, customer: input.customer, supplierParticipation: input.supplierParticipation, customerParticipation: input.customerParticipation, qualification: qualification!.id, supplierEnd: supplierEnd?.id ?? null, customerEnd: customerEnd?.id ?? null, approvalOption: input.approvedOption, approval: approval.id, terms: offer.terms, document: offer.document, validFrom: dates.validFrom, validUntil: dates.validUntil, predecessor: input.predecessor ?? null, change: input.change ?? "Original", recordedBy: intent?.recordedBy ?? ctx.actor };
+      if (intent) {
+        for (const end of [supplierEnd, customerEnd]) yield* check(!end || Date.parse(String(end.effectiveAt)) > Date.parse(String(committed!.createdAt)), "Signer authority ended before committed acceptance");
+        body.supplierEnd = intent.supplierEnd; body.customerEnd = intent.customerEnd;
+        yield* check(Object.entries(body).every(([key, value]) => intent[key] === value), "Committed acceptance differs from the exact agreement command");
+      }
+      if (resource === "Agreement") body.acceptance = commitment ?? null;
+      else { body.offerValidFrom = offer.validFrom; body.offerValidUntil = offer.validUntil; }
+      return yield* self.call(resource + ".create", body, { ...ctx, idempotencyKey: `agreement:${resource === "Agreement" ? "accept" : "prepare"}:${input.acceptanceKey}` });
     });
   }
   private signers(approval: Wire, supplier: unknown, customer: unknown, ctx: CallContext): Effect.Effect<void, ForgeError> {
@@ -117,6 +139,14 @@ export class AgreementCatalog {
     const self = this;
     return Effect.gen(function* () {
       const agreement = yield* self.call("Agreement.get", { id }, ctx), offer = yield* self.offer(String(agreement.offer), ctx);
+      if (agreement.acceptance != null) {
+        const commit = yield* self.call("AgreementAcceptanceCommit.get", {id: agreement.acceptance}, ctx);
+        yield* self.call("AgreementAcceptance.get", {id: commit.acceptance}, ctx);
+        for (const side of ["supplier", "customer"]) {
+          const end = yield* findTerminalFact(self.engine, pp + "ParticipationEnd", "participation", agreement[side + "Participation"], ctx);
+          yield* check(!end || Date.parse(String(end.effectiveAt)) > Date.parse(String(commit.createdAt)), "Signer authority ended before committed acceptance");
+        }
+      }
       yield* self.call("OfferQualification.get", { id: agreement.qualification }, ctx);
       const approval = yield* self.engine.call("@forgegraph/foundation/decision/_/DecisionOutcome.get", { id: agreement.approval }, ctx);
       yield* self.signers(approval, agreement.supplierParticipation, agreement.customerParticipation, ctx);

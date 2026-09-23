@@ -90,3 +90,25 @@ Exclusive integer/decimal/money field bounds now reject their endpoints. Rule co
 ## Adapter audit fixes
 
 MemoryStorage now rejects a duplicate idempotency receipt before mutating any records, audit or outbox state; the losing command retries against the winning receipt. A forced concurrent-miss regression proves one business effect. DynamoDB atomic assembly coalesces compatible shared-parent reference counters while preserving each guard, rejects incompatible duplicate physical targets before sending, and includes per-tenant outbox markers in the provider action budget. Request-shape tests do not substitute for live DynamoDB certification.
+
+## Bounded serializable absence guards
+
+`Engine.atomic(mutations, ctx, { absent: [{ resource, unique, values }] })`
+accepts at most 32 unique-key absence guards over append-only resources with
+unconditional unique finders. Values pass normal decoding, purpose filtering and
+unfiltered read authorization. Tenant comes from the call context. Row-filtered
+or denied read authority, null/incomplete keys, conditional uniqueness, unsupported
+adapters and a group that creates its own forbidden fact fail closed.
+
+Memory checks claim absence synchronously with commit; SQL checks `NOT EXISTS`
+inside the same assertion batch (PostgreSQL uses SERIALIZABLE transactions);
+DynamoDB adds claim-key ConditionChecks. Guard actions count toward provider
+budgets. Conflicts roll back all business effects. These are bounded unique-key
+guards, not arbitrary predicate reads or a staged-record overlay.
+
+The kernel suite and Routing tests pass with memory, SQLite and PostgreSQL17.
+Routing injects qualification revocation and membership termination between final
+validation and atomic commit and proves no assignment, accepted outcome or
+capacity debit survives. Existing future-effective terminal facts are immutable and
+can remain eligible for an earlier interval. Dynamo request-shape tests exercise
+guard lowering and budgeting; hosted certification remains separate.

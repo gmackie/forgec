@@ -5,13 +5,15 @@
  * delete retention, ordering) are the contract.
  */
 import { Effect } from "effect";
+import { absenceWriteConflict } from "../atomic-guards.js";
 import { compareBytes, encodeIdentity } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import type { List, Resource, Unique } from "../model.js";
-import type { DocumentWrite, AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { AtomicAbsenceGuard, DocumentWrite, AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export class MemoryStorage implements StorageAdapter {
   readonly name = "memory";
+  readonly atomicAbsenceGuards = true;
   private tables = new Map<string, Map<string, StoredRecord>>(); // key: tenant|resource
   private claims = new Map<string, string>(); // tenant|claimKey -> record id
   private audits: AuditEntry[] = [];
@@ -148,9 +150,9 @@ export class MemoryStorage implements StorageAdapter {
     return Effect.succeed(true);
   }
 
-  budget(plans: CommitPlan[]): { actions: number; limit: number } {
+  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
     // The reference model has no physical ceiling; report the portable default so previews are comparable.
-    return { actions: plans.reduce((n, p) => n + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
+    return { actions: absent.length + plans.reduce((n, p) => n + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
   }
 
   exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
@@ -188,20 +190,25 @@ export class MemoryStorage implements StorageAdapter {
   }
 
   /** Validate every plan against durable state first, then apply all: single-threaded, so atomic. */
-  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
-    const snapshot = { tables: structuredClone(this.tables), claims: new Map(this.claims), audits: [...this.audits], outbox: [...this.outbox], receipts: new Map(this.receipts) };
-    for (const p of plans) {
-      const r = this.commitSync(p);
-      if (r) {
-        this.tables = snapshot.tables;
-        this.claims = snapshot.claims;
-        this.audits = snapshot.audits;
-        this.outbox = snapshot.outbox;
-        this.receipts = snapshot.receipts;
-        return Effect.fail(r);
+  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): Effect.Effect<void, ForgeError> {
+    return Effect.suspend(() => {
+      const conflict = absenceWriteConflict(plans, absent);
+      if (conflict) return Effect.fail(conflict);
+      for (const guard of absent) if (this.claims.has(`${guard.tenant}|${guard.claimKey}`)) return Effect.fail(err("VersionConflict", "Atomic absence guard failed"));
+      const snapshot = { tables: structuredClone(this.tables), claims: new Map(this.claims), audits: [...this.audits], outbox: [...this.outbox], receipts: new Map(this.receipts) };
+      for (const p of plans) {
+        const r = this.commitSync(p);
+        if (r) {
+          this.tables = snapshot.tables;
+          this.claims = snapshot.claims;
+          this.audits = snapshot.audits;
+          this.outbox = snapshot.outbox;
+          this.receipts = snapshot.receipts;
+          return Effect.fail(r);
+        }
       }
-    }
-    return Effect.void;
+      return Effect.void;
+    });
   }
 
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError> {

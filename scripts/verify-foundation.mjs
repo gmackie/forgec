@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { runProviders } from './verify-foundation-providers.mjs';
 import { fingerprint, schedule, validateGraph } from './foundation-state.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -88,16 +89,19 @@ function run(cmd, args, env = {}) {
 function main() {
   const args = process.argv.slice(2);
   let suite = 'contracts', slug, all = false, statePath;
+  const providerArgs = [];
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--suite') suite = args[++i];
     else if (args[i] === '--package') slug = args[++i];
     else if (args[i] === '--all') all = true;
+    else if (args[i] === '--provider' || args[i] === '--receipt-dir') providerArgs.push(args[i], args[++i]);
     else if (args[i] === '--state') statePath = args[++i];
     else throw new Error(`unknown argument: ${args[i]}`);
   }
   if (!['contracts', 'local', 'providers', 'ready'].includes(suite)) throw new Error('suite must be contracts, local, providers or ready');
   if (all && slug) throw new Error('choose --all or --package, not both');
-  if (suite === 'providers') throw new Error('Foundation provider verification is not implemented yet; no certification claimed.');
+  if (suite === 'providers') { if (slug || all || statePath) throw new Error('Provider profile uses --provider, not package/all/state acceptance selectors'); runProviders(providerArgs); return; }
+  if (providerArgs.length) throw new Error('--provider/--receipt-dir require --suite providers');
   if (suite === 'contracts' || suite === 'ready') {
     const contracts = readContracts();
     if (slug && !contracts.some(c => c.slug === slug)) throw new Error(`unknown package: ${slug}`);

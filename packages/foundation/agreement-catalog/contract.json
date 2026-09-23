@@ -20,7 +20,9 @@
     "AgreementParticipant",
     "AgreementTermLink",
     "AgreementEntitlementLink",
-    "AgreementObligationLink"
+    "AgreementObligationLink",
+    "AgreementAcceptance",
+    "AgreementAcceptanceCommit"
   ],
   "operations": [
     "Publish offer",
@@ -35,7 +37,8 @@
     "Offer is distinct from its specification",
     "Agreement is distinct from its qualification Decision",
     "Terms retain exact specification and artifact pins",
-    "Accepted agreements issue linked entitlements and obligations once through resumable receipt-backed stages"
+    "Accepted agreements issue linked entitlements and obligations once through resumable receipt-backed stages",
+    "Committed exact acceptance can resume issuance after validity windows close without caller historical timestamps"
   ],
   "acceptance": [
     {

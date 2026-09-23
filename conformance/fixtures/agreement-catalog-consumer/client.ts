@@ -230,6 +230,7 @@ export interface AgreementRecord {
   id: string;
   createdAt: string;
   updatedAt: string;
+  acceptance: string | null;
   acceptanceKey: string;
   offer: string;
   supplier: string;
@@ -251,6 +252,7 @@ export interface AgreementRecord {
 }
 
 export interface AgreementCreate {
+  acceptance?: string | null;
   acceptanceKey: string;
   offer: string;
   supplier: string;
@@ -272,6 +274,112 @@ export interface AgreementCreate {
 }
 
 export interface AgreementPatch {
+}
+
+export interface AgreementAcceptanceRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  acceptanceKey: string;
+  offer: string;
+  supplier: string;
+  customer: string;
+  supplierParticipation: string;
+  customerParticipation: string;
+  supplierEnd: string | null;
+  customerEnd: string | null;
+  qualification: string;
+  approvalOption: string;
+  approval: string;
+  terms: string;
+  document: string | null;
+  offerValidFrom: string;
+  offerValidUntil: string;
+  validFrom: string;
+  validUntil: string;
+  predecessor: string | null;
+  change: "Original" | "Renewal" | "Amendment";
+  recordedBy: string;
+}
+
+export interface AgreementAcceptanceCreate {
+  acceptanceKey: string;
+  offer: string;
+  supplier: string;
+  customer: string;
+  supplierParticipation: string;
+  customerParticipation: string;
+  supplierEnd?: string | null;
+  customerEnd?: string | null;
+  qualification: string;
+  approvalOption: string;
+  approval: string;
+  terms: string;
+  document?: string | null;
+  offerValidFrom: string;
+  offerValidUntil: string;
+  validFrom: string;
+  validUntil: string;
+  predecessor?: string | null;
+  change: "Original" | "Renewal" | "Amendment";
+  recordedBy: string;
+}
+
+export interface AgreementAcceptancePatch {
+}
+
+export interface AgreementAcceptanceCommitRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  acceptance: string;
+  acceptanceKey: string;
+  offer: string;
+  supplier: string;
+  customer: string;
+  supplierParticipation: string;
+  customerParticipation: string;
+  supplierEnd: string | null;
+  customerEnd: string | null;
+  qualification: string;
+  approvalOption: string;
+  approval: string;
+  terms: string;
+  document: string | null;
+  offerValidFrom: string;
+  offerValidUntil: string;
+  validFrom: string;
+  validUntil: string;
+  predecessor: string | null;
+  change: "Original" | "Renewal" | "Amendment";
+  recordedBy: string;
+}
+
+export interface AgreementAcceptanceCommitCreate {
+  acceptance: string;
+  acceptanceKey: string;
+  offer: string;
+  supplier: string;
+  customer: string;
+  supplierParticipation: string;
+  customerParticipation: string;
+  supplierEnd?: string | null;
+  customerEnd?: string | null;
+  qualification: string;
+  approvalOption: string;
+  approval: string;
+  terms: string;
+  document?: string | null;
+  offerValidFrom: string;
+  offerValidUntil: string;
+  validFrom: string;
+  validUntil: string;
+  predecessor?: string | null;
+  change: "Original" | "Renewal" | "Amendment";
+  recordedBy: string;
+}
+
+export interface AgreementAcceptanceCommitPatch {
 }
 
 export interface AgreementEntitlementLinkRecord {
@@ -1299,6 +1407,12 @@ export interface VendorContractApi {
 export interface AgreementApi {
 }
 
+export interface AgreementAcceptanceApi {
+}
+
+export interface AgreementAcceptanceCommitApi {
+}
+
 export interface AgreementEntitlementLinkApi {
 }
 
@@ -1484,6 +1598,8 @@ export interface ForgeClient {
   saaSSubscriptions: SaaSSubscriptionApi;
   vendorContracts: VendorContractApi;
   agreements: AgreementApi;
+  agreementAcceptances: AgreementAcceptanceApi;
+  agreementAcceptanceCommits: AgreementAcceptanceCommitApi;
   agreementEntitlementLinks: AgreementEntitlementLinkApi;
   agreementEvents: AgreementEventApi;
   agreementIssueds: AgreementIssuedApi;
@@ -1592,6 +1708,10 @@ export function createClient(options: ClientOptions): ForgeClient {
     vendorContracts: {
     },
     agreements: {
+    },
+    agreementAcceptances: {
+    },
+    agreementAcceptanceCommits: {
     },
     agreementEntitlementLinks: {
     },

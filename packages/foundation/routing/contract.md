@@ -1,6 +1,6 @@
 # routing contract
 
-Issue #57; implementation acceptance remains planned.
+Issue #57; bounded local implementation. Hosted provider certification remains separate.
 
 ## Ownership
 
@@ -31,8 +31,19 @@ RoutingRequest pins one QualificationRequirement, an interval, an exact quantity
 
 `evaluate` and `offer` verify the subject's qualification now and through the full requested interval, calendar coverage, explicit units and any participant binding. `accept` revalidates the pinned qualification snapshot and offer expiry, then atomically commits the pool journal, unique offer outcome and unique request assignment through Engine.atomic. Competing request assignments and expiry/decline facts cannot leave a losing capacity claim. Repeated accept resolves the same durable assignment; `consume` revalidates current eligibility and publication evidence. `attachExecution` checks a real Fulfillment against the assigned executor and requested FulfillmentSet.
 
-A revocation can race between eligibility read and acceptance commit: the current kernel does not atomically guard absence of QualificationRevocation or ParticipationEnd. This profile intentionally does not claim serializable eligibility. An assignment that loses eligibility cannot be consumed; `release` remains available without qualification and atomically writes AssignmentEnd plus the pool release. This durable invalidation/release path is necessary because an eligibility race may leave allocated capacity even though accept reports failure after its post-commit revalidation. Stronger atomic eligibility guards remain pending. The assignment pins its calendar revision; discovering and replacing newer calendar versions is an upper-layer policy.
+Acceptance guards the absence of QualificationRevocation and ParticipationEnd by
+unconditional unique key in the same transaction as capacity and assignment. A
+terminal inserted after eligibility validation aborts the entire group; no Assignment,
+accepted offer outcome or capacity debit survives. Existing immutable terminal facts
+that take effect at or after the requested interval remain valid for that interval.
+The guard requires unfiltered read authority and provider support; hidden facts or
+unsupported adapters fail closed.
+
+A revocation committed after acceptance can still invalidate an assignment. `consume`
+rechecks eligibility, and `release` remains available without qualification to write
+AssignmentEnd and release capacity atomically. The assignment pins its calendar
+revision; discovering and replacing newer calendar versions is an upper-layer policy.
 
 Bounds and limits inherit Allocation's 512-entry journal and Availability/Qualification lookup budgets. One resource/pool is assigned per request; offers can compete across resources. Resources, offers, explanations and lifecycle facts are append-only; raw candidate or assignment records do not become consumption authority without validated offer and allocation evidence. Hidden terminal facts fail closed. Fulfillment execution is separately linked and does not implicitly release capacity. Offer expiry is checked at acceptance validation and terminal publication; this profile does not implement a provider-clock commit-time expiry predicate.
 
-Verification uses generated consumers with memory, SQLite and local PostgreSQL 17. Cases cover all four domain wrappers, actual Qualification→Routing and Availability→Routing composition, Participation, real Fulfillment linkage, same-key concurrent accept, capacity conflict, competing resources for one request, decline, expiry racing acceptance, raw stale eligibility, authorization/tenant isolation, restart, and a revocation injected exactly between validation and atomic commit followed by safe consumption rejection and durable capacity repair. Live D1/DynamoDB certification remains planned.
+Verification uses generated consumers with memory, SQLite and local PostgreSQL 17. Cases cover all four domain wrappers, actual Qualification→Routing and Availability→Routing composition, Participation, real Fulfillment linkage, same-key concurrent accept, capacity conflict, competing resources for one request, decline, expiry racing acceptance, raw stale eligibility, authorization/tenant isolation, restart, and qualification revocation/membership termination injected exactly between validation and atomic commit, proving rollback without capacity repair; future-effective terminal facts remain usable. Live D1/DynamoDB certification remains planned.

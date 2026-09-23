@@ -21,7 +21,7 @@
   "invariants": [
     "Place/priority, workforce positions and appointment integration are upper-layer joins; no dependency on Scheduling or Workforce.",
     "Support/technician/reviewer/Bob; reject stale or expired eligibility; revalidate snapshot on accept; atomic capacity claim; competing accepts and expiry.",
-    "Qualification/Participation revocation absence is not commit-guarded: concurrent invalidation fails closed on consumption and requires explicit atomic release",
+    "Qualification/Participation terminal absence is guarded by unique key in the assignment/capacity transaction; later invalidation fails closed on consumption and remains explicitly releasable",
     "Offer expiry is evaluated before publication; provider-clock commit-time expiry is not claimed"
   ],
   "acceptance": [
@@ -39,7 +39,11 @@
       "id": "F57-02",
       "description": "candidate eligibility from Qualification/Availability",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-routing.test.ts"
+      ]
     },
     {
       "id": "F57-03",

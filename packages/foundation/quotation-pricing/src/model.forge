@@ -75,11 +75,13 @@ export resource QuoteEnd
   quote : Quote @unique
   outcome : QuoteOutcome
   successor : Quote?
+  intent : agreement-catalog.AgreementAcceptance?
   acceptanceDigest : text? length 64..64
   reason : text length 1..500
   rules {
     (outcome == QuoteOutcome.Revised && successor != null && successor.previous == quote) || (outcome != QuoteOutcome.Revised && successor == null)
     (outcome == QuoteOutcome.Accepted && acceptanceDigest != null && createdAt < quote.expiresAt) || (outcome != QuoteOutcome.Accepted && acceptanceDigest == null)
+    intent == null || (outcome == QuoteOutcome.Accepted && intent.offer == quote.offer && intent.customer == quote.buyer && intent.terms == quote.terms && createdAt >= intent.createdAt && createdAt < intent.offerValidUntil && createdAt >= intent.offerValidFrom && createdAt <= intent.validFrom)
     outcome != QuoteOutcome.Expired || createdAt >= quote.expiresAt
   }
   find by quote

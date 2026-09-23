@@ -45,14 +45,14 @@ export class Quotations{
   if(!quote)quote=yield* self.call("Quote.create",body,self.clean(ctx)).pipe(Effect.catch(error=>error.code==="UniqueConflict"?findTerminalFact(self.engine,p+"Quote","key",input.key,ctx).pipe(Effect.flatMap(row=>row?Effect.succeed(row):Effect.fail(error))):Effect.fail(error)));
   const existing=yield* self.price(quote,ctx);
   if(Object.entries(body).some(([key,value])=>key!=="head"&&quote![key]!==value)||existing.lines.length!==input.lines.length||existing.lines.some((line,i)=>line.rate!==input.lines[i]!.rate||line.quantity!==decodeDecimal(input.lines[i]!.quantity,{scale:6})||(line.adjustment??null)!==(input.lines[i]!.adjustment??null)))return yield* Effect.fail(err("IdempotencyMismatch","Quote key reused for different snapshot"));
-  if(input.previous){const end=yield* findTerminalFact(self.engine,p+"QuoteEnd","quote",input.previous,ctx);if(end){if(end.outcome!=="Revised"||end.successor!==quote.id)return yield* bad("Prior quote already ended differently");}else yield* self.call("QuoteEnd.create",{quote:input.previous,outcome:"Revised",successor:quote.id,acceptanceDigest:null,reason:"Revised quote"},self.clean(ctx));}return quote;
+  if(input.previous){const end=yield* findTerminalFact(self.engine,p+"QuoteEnd","quote",input.previous,ctx);if(end){if(end.outcome!=="Revised"||end.successor!==quote.id)return yield* bad("Prior quote already ended differently");}else yield* self.call("QuoteEnd.create",{quote:input.previous,outcome:"Revised",successor:quote.id,acceptanceDigest:null,intent:null,reason:"Revised quote"},self.clean(ctx));}return quote;
  });}
  inspect(quote:string,ctx:CallContext){const self=this;return Effect.gen(function*(){
   const row=yield* self.call("Quote.get",{id:quote},ctx),priced=yield* self.price(row,ctx),end=yield* findTerminalFact(self.engine,p+"QuoteEnd","quote",quote,ctx);
   if(row.previous!=null){const prior=yield* self.call("Quote.get",{id:row.previous},ctx),closed=yield* findTerminalFact(self.engine,p+"QuoteEnd","quote",row.previous,ctx);if(!closed||closed.outcome!=="Revised"||closed.successor!==quote||prior.offer!==row.offer||prior.buyer!==row.buyer)return yield* bad("Unpublished quote revision");}
   return{quote:row,...priced,end};
  });}
- expire(quote:string,ctx:CallContext):Effect.Effect<Wire,ForgeError>{const self=this;return Effect.gen(function*(){const state=yield* self.inspect(quote,ctx);if((yield* self.now())<String(state.quote.expiresAt))return yield* bad("Quote is not expired");if(state.end)return state.end.outcome==="Expired"?state.end:yield* bad("Quote already accepted or revised");return yield* self.call("QuoteEnd.create",{quote,outcome:"Expired",successor:null,acceptanceDigest:null,reason:"Expired quote"},self.clean(ctx));});}
+ expire(quote:string,ctx:CallContext):Effect.Effect<Wire,ForgeError>{const self=this;return Effect.gen(function*(){const state=yield* self.inspect(quote,ctx);if((yield* self.now())<String(state.quote.expiresAt))return yield* bad("Quote is not expired");if(state.end)return state.end.outcome==="Expired"?state.end:yield* bad("Quote already accepted or revised");return yield* self.call("QuoteEnd.create",{quote,outcome:"Expired",successor:null,acceptanceDigest:null,intent:null,reason:"Expired quote"},self.clean(ctx));});}
  private preflight(quote:Wire,input:QuoteAgreementInput,ctx:CallContext){const self=this;return Effect.gen(function*(){
   if(Object.keys(input).some(key=>!["supplierParticipation","customerParticipation","decisionCase","approvedOption","expectedDocument","validFrom","validUntil"].includes(key)))return yield* bad("Quote agreement command has unsupported fields");
   const offer=yield* self.engine.call(a+"Offer.get",{id:quote.offer},ctx),now=yield* self.now();
@@ -60,7 +60,7 @@ export class Quotations{
   if(dates.from<now||dates.until<=dates.from||now<String(offer.validFrom)||now>=String(offer.validUntil)||(input.expectedDocument??null)!==(offer.document??null)||quote.buyer===offer.supplier)return yield* bad("Invalid quote agreement dates, parties or document pin");
   const decision=yield* new Decisions(self.engine).state(input.decisionCase,ctx),qualification=yield* findTerminalFact(self.engine,a+"OfferQualification","decisionCase",input.decisionCase,ctx);
   const selected=decision.options.find(option=>option.id===input.approvedOption);
-  if(!selected||!decision.outcome||decision.outcome.selected!==selected.id||!qualification||qualification.offer!==quote.offer||qualification.approvedOption!==selected.id||!decision.events[0]||String(qualification.createdAt)>String(decision.events[0].createdAt))return yield* bad("Decision was not prebound to quoted offer");
+  if(!selected||!decision.outcome||decision.outcome.selected!==selected.id||!qualification||qualification.offer!==quote.offer||qualification.approvedOption!==selected.id||!decision.events[0]||!(Date.parse(String(qualification.createdAt))<Date.parse(String(decision.events[0].createdAt))))return yield* bad("Decision was not prebound to quoted offer");
   if(input.supplierParticipation===input.customerParticipation)return yield* bad("Agreement requires distinct signers");
   let set:unknown=null;
   for(const [id,party] of [[input.supplierParticipation,offer.supplier],[input.customerParticipation,quote.buyer]]){
@@ -79,11 +79,21 @@ export class Quotations{
   if(!terminal){
    if((yield* self.now())>=String(state.quote.expiresAt))return yield* bad("Quote expired");
    yield* self.preflight(state.quote,input,ctx);
-   terminal=yield* self.call("QuoteEnd.create",{quote,outcome:"Accepted",successor:null,acceptanceDigest:digest,reason:"Accepted exact priced snapshot"},self.clean(ctx)).pipe(Effect.catch(error=>error.code==="UniqueConflict"?findTerminalFact(self.engine,p+"QuoteEnd","quote",quote,ctx).pipe(Effect.flatMap(row=>row&&row.outcome==="Accepted"&&row.acceptanceDigest===digest?Effect.succeed(row):Effect.fail(error))):Effect.fail(error)));
+   const intent=yield* catalog.prepareAcceptance(acceptance,self.clean(ctx));
+   const committedInput:Wire={acceptance:intent.id};
+   for(const field of ["acceptanceKey","offer","supplier","customer","supplierParticipation","customerParticipation","supplierEnd","customerEnd","qualification","approvalOption","approval","terms","document","offerValidFrom","offerValidUntil","validFrom","validUntil","predecessor","change","recordedBy"])committedInput[field]=intent[field];
+   terminal=yield* self.engine.atomic([
+    {operation:p+"QuoteEnd.create",input:{quote,outcome:"Accepted",successor:null,acceptanceDigest:digest,intent:intent.id,reason:"Accepted exact priced snapshot"}},
+    {operation:a+"AgreementAcceptanceCommit.create",input:committedInput}
+   ],self.clean(ctx),{absent:(["supplier","customer"] as const).filter(side=>intent[side+"End"]==null).map(side=>({resource:"@forgegraph/foundation/participation/_/ParticipationEnd",unique:"participation",values:{participation:intent[side+"Participation"]}}))}).pipe(Effect.map(rows=>rows[0]!),Effect.catch(error=>error.code==="UniqueConflict"?findTerminalFact(self.engine,p+"QuoteEnd","quote",quote,ctx).pipe(Effect.flatMap(row=>row&&row.outcome==="Accepted"&&row.acceptanceDigest===digest?Effect.succeed(row):Effect.fail(error))):Effect.fail(error)));
   }
   // Acceptance is durable before contract issuance. Failed stages safely resume
   // with the exact original command, never a new terms/party/interval choice.
-  const agreement=yield* catalog.accept(acceptance,self.clean(ctx));yield* catalog.issue(String(agreement.id),self.clean(ctx));
+  // Legacy terminals without a durable intent cannot establish historical authority.
+  if(terminal.intent==null)return yield* bad("Accepted quote lacks a recoverable committed intent");
+  const commitment=yield* findTerminalFact(self.engine,a+"AgreementAcceptanceCommit","acceptance",terminal.intent,ctx);
+  if(!commitment||!(Date.parse(String(terminal.createdAt))<=Date.parse(String(commitment.createdAt))))return yield* bad("Quote acceptance intent was not committed with its terminal");
+  const agreement=yield* catalog.acceptCommitted(acceptance,String(commitment.id),self.clean(ctx));yield* catalog.issue(String(agreement.id),self.clean(ctx));
   const linked=yield* findTerminalFact(self.engine,p+"QuoteAgreement","quote",quote,ctx);if(linked){if(linked.agreement!==agreement.id||linked.acceptance!==terminal.id)return yield* bad("Quote agreement linkage changed");return linked;}
   return yield* self.call("QuoteAgreement.create",{quote,acceptance:terminal.id,agreement:agreement.id},self.clean(ctx)).pipe(Effect.catch(error=>error.code==="UniqueConflict"?findTerminalFact(self.engine,p+"QuoteAgreement","quote",quote,ctx).pipe(Effect.flatMap(row=>row&&row.agreement===agreement.id&&row.acceptance===terminal.id?Effect.succeed(row):Effect.fail(error))):Effect.fail(error)));
  });}
@@ -93,6 +103,9 @@ export class Quotations{
   if(!link||state.end?.outcome!=="Accepted"||link.acceptance!==state.end.id)return yield* bad("Quote agreement issuance is incomplete");
   const issued=yield* new AgreementCatalog(self.engine).state(String(link.agreement),yield* self.now(),ctx),contract=issued.agreement;
   if(!issued.issuance||contract.acceptanceKey!=="quote:"+quote||contract.offer!==state.quote.offer||contract.customer!==state.quote.buyer||contract.terms!==state.quote.terms)return yield* bad("Quote points to unrelated agreement");
+  if(contract.acceptance==null||state.end.intent==null)return yield* bad("Quote agreement lacks committed acceptance");
+  const commitment=yield* self.engine.call(a+"AgreementAcceptanceCommit.get",{id:contract.acceptance},ctx);
+  if(commitment.acceptance!==state.end.intent||!(Date.parse(String(state.end.createdAt))<=Date.parse(String(commitment.createdAt))))return yield* bad("Quote agreement acceptance intent differs");
   const qualification=yield* self.engine.call(a+"OfferQualification.get",{id:contract.qualification},ctx);
   const acceptance:AcceptAgreement={acceptanceKey:String(contract.acceptanceKey),offer:String(contract.offer),customer:String(contract.customer),expectedTerms:String(contract.terms),supplierParticipation:String(contract.supplierParticipation),customerParticipation:String(contract.customerParticipation),decisionCase:String(qualification.decisionCase),approvedOption:String(contract.approvalOption),validFrom:String(contract.validFrom),validUntil:String(contract.validUntil),...(contract.document==null?{}:{expectedDocument:String(contract.document)})};
   const digest=yield* Effect.promise(()=>sha256(stableJson(acceptance)));if(digest!==state.end.acceptanceDigest)return yield* bad("Quote acceptance command does not match agreement");

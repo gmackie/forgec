@@ -490,6 +490,7 @@ CREATE TABLE procurement_bid (
 CREATE TABLE agreement (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
+  "acceptance" TEXT COLLATE "C",
   "acceptance_key" TEXT COLLATE "C" NOT NULL,
   "offer" TEXT COLLATE "C" NOT NULL,
   "supplier" TEXT COLLATE "C" NOT NULL,
@@ -546,6 +547,80 @@ CREATE TABLE agreement_participant (
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "agreement") REFERENCES agreement ("tenant", "id"),
   FOREIGN KEY ("tenant", "participant") REFERENCES participation ("tenant", "id")
+);
+
+CREATE TABLE agreement_acceptance (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "acceptance_key" TEXT COLLATE "C" NOT NULL,
+  "offer" TEXT COLLATE "C" NOT NULL,
+  "supplier" TEXT COLLATE "C" NOT NULL,
+  "customer" TEXT COLLATE "C" NOT NULL,
+  "supplier_participation" TEXT COLLATE "C" NOT NULL,
+  "customer_participation" TEXT COLLATE "C" NOT NULL,
+  "supplier_end" TEXT COLLATE "C",
+  "customer_end" TEXT COLLATE "C",
+  "qualification" TEXT COLLATE "C" NOT NULL,
+  "approval_option" TEXT COLLATE "C" NOT NULL,
+  "approval" TEXT COLLATE "C" NOT NULL,
+  "terms" TEXT COLLATE "C" NOT NULL,
+  "document" TEXT COLLATE "C",
+  "offer_valid_from" TEXT COLLATE "C" NOT NULL,
+  "offer_valid_until" TEXT COLLATE "C" NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C" NOT NULL,
+  "predecessor" TEXT COLLATE "C",
+  "change" TEXT COLLATE "C" NOT NULL,
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "supplier") REFERENCES party ("tenant", "id"),
+  FOREIGN KEY ("tenant", "customer") REFERENCES party ("tenant", "id"),
+  FOREIGN KEY ("tenant", "supplier_participation") REFERENCES participation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "customer_participation") REFERENCES participation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "supplier_end") REFERENCES participation_end ("tenant", "id"),
+  FOREIGN KEY ("tenant", "customer_end") REFERENCES participation_end ("tenant", "id"),
+  FOREIGN KEY ("tenant", "terms") REFERENCES specification_pin ("tenant", "id"),
+  FOREIGN KEY ("tenant", "predecessor") REFERENCES agreement ("tenant", "id")
+);
+
+CREATE TABLE agreement_acceptance_commit (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "acceptance" TEXT COLLATE "C" NOT NULL,
+  "acceptance_key" TEXT COLLATE "C" NOT NULL,
+  "offer" TEXT COLLATE "C" NOT NULL,
+  "supplier" TEXT COLLATE "C" NOT NULL,
+  "customer" TEXT COLLATE "C" NOT NULL,
+  "supplier_participation" TEXT COLLATE "C" NOT NULL,
+  "customer_participation" TEXT COLLATE "C" NOT NULL,
+  "supplier_end" TEXT COLLATE "C",
+  "customer_end" TEXT COLLATE "C",
+  "qualification" TEXT COLLATE "C" NOT NULL,
+  "approval_option" TEXT COLLATE "C" NOT NULL,
+  "approval" TEXT COLLATE "C" NOT NULL,
+  "terms" TEXT COLLATE "C" NOT NULL,
+  "document" TEXT COLLATE "C",
+  "offer_valid_from" TEXT COLLATE "C" NOT NULL,
+  "offer_valid_until" TEXT COLLATE "C" NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C" NOT NULL,
+  "predecessor" TEXT COLLATE "C",
+  "change" TEXT COLLATE "C" NOT NULL,
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "acceptance") REFERENCES agreement_acceptance ("tenant", "id"),
+  FOREIGN KEY ("tenant", "supplier") REFERENCES party ("tenant", "id"),
+  FOREIGN KEY ("tenant", "customer") REFERENCES party ("tenant", "id"),
+  FOREIGN KEY ("tenant", "supplier_participation") REFERENCES participation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "customer_participation") REFERENCES participation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "supplier_end") REFERENCES participation_end ("tenant", "id"),
+  FOREIGN KEY ("tenant", "customer_end") REFERENCES participation_end ("tenant", "id"),
+  FOREIGN KEY ("tenant", "terms") REFERENCES specification_pin ("tenant", "id"),
+  FOREIGN KEY ("tenant", "predecessor") REFERENCES agreement ("tenant", "id")
 );
 
 CREATE TABLE agreement_entitlement_link (
@@ -882,6 +957,8 @@ CREATE TABLE evidence_seal (
   FOREIGN KEY ("tenant", "head") REFERENCES evidence_member ("tenant", "id")
 );
 
+ALTER TABLE agreement ADD FOREIGN KEY ("tenant", "acceptance") REFERENCES agreement_acceptance_commit ("tenant", "id");
+
 ALTER TABLE agreement ADD FOREIGN KEY ("tenant", "offer") REFERENCES offer ("tenant", "id");
 
 ALTER TABLE agreement ADD FOREIGN KEY ("tenant", "qualification") REFERENCES offer_qualification ("tenant", "id");
@@ -891,6 +968,26 @@ ALTER TABLE agreement ADD FOREIGN KEY ("tenant", "approval_option") REFERENCES d
 ALTER TABLE agreement ADD FOREIGN KEY ("tenant", "approval") REFERENCES decision_outcome ("tenant", "id");
 
 ALTER TABLE agreement ADD FOREIGN KEY ("tenant", "document") REFERENCES artifact_revision ("tenant", "id");
+
+ALTER TABLE agreement_acceptance ADD FOREIGN KEY ("tenant", "offer") REFERENCES offer ("tenant", "id");
+
+ALTER TABLE agreement_acceptance ADD FOREIGN KEY ("tenant", "qualification") REFERENCES offer_qualification ("tenant", "id");
+
+ALTER TABLE agreement_acceptance ADD FOREIGN KEY ("tenant", "approval_option") REFERENCES decision_option ("tenant", "id");
+
+ALTER TABLE agreement_acceptance ADD FOREIGN KEY ("tenant", "approval") REFERENCES decision_outcome ("tenant", "id");
+
+ALTER TABLE agreement_acceptance ADD FOREIGN KEY ("tenant", "document") REFERENCES artifact_revision ("tenant", "id");
+
+ALTER TABLE agreement_acceptance_commit ADD FOREIGN KEY ("tenant", "offer") REFERENCES offer ("tenant", "id");
+
+ALTER TABLE agreement_acceptance_commit ADD FOREIGN KEY ("tenant", "qualification") REFERENCES offer_qualification ("tenant", "id");
+
+ALTER TABLE agreement_acceptance_commit ADD FOREIGN KEY ("tenant", "approval_option") REFERENCES decision_option ("tenant", "id");
+
+ALTER TABLE agreement_acceptance_commit ADD FOREIGN KEY ("tenant", "approval") REFERENCES decision_outcome ("tenant", "id");
+
+ALTER TABLE agreement_acceptance_commit ADD FOREIGN KEY ("tenant", "document") REFERENCES artifact_revision ("tenant", "id");
 
 ALTER TABLE agreement_entitlement_link ADD FOREIGN KEY ("tenant", "offer") REFERENCES offer ("tenant", "id");
 
@@ -937,6 +1034,9 @@ ALTER TABLE evidence_bundle ADD FOREIGN KEY ("tenant", "predecessor") REFERENCES
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);
 CREATE UNIQUE INDEX agreement_uq_acceptanceKey ON agreement ("tenant", "acceptance_key");
 CREATE UNIQUE INDEX agreement_uq_predecessor ON agreement ("tenant", "predecessor");
+CREATE UNIQUE INDEX agreement_acceptance_uq_acceptanceKey ON agreement_acceptance ("tenant", "acceptance_key");
+CREATE UNIQUE INDEX agreement_acceptance_commit_uq_acceptance ON agreement_acceptance_commit ("tenant", "acceptance");
+CREATE UNIQUE INDEX agreement_acceptance_commit_uq_acceptanceKey ON agreement_acceptance_commit ("tenant", "acceptance_key");
 CREATE UNIQUE INDEX agreement_entitlement_link_uq_agreement ON agreement_entitlement_link ("tenant", "agreement");
 CREATE UNIQUE INDEX agreement_entitlement_link_uq_entitlement ON agreement_entitlement_link ("tenant", "entitlement");
 CREATE UNIQUE INDEX agreement_event_uq_agreement_ordinal ON agreement_event ("tenant", "agreement", "ordinal");

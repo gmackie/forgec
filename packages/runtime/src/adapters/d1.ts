@@ -4,9 +4,10 @@
  * assertion table's named CHECK, as certified by the M0 spike.
  */
 import { Effect } from "effect";
+import { absenceWriteConflict } from "../atomic-guards.js";
 import { err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
-import type { DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 import { SqlMapping } from "./sql-mapping.js";
 import { rawD1Executor, type SqlExecutor, type SqlStatement } from "./sql-executor.js";
 
@@ -31,6 +32,7 @@ const D1_BATCH_STATEMENT_LIMIT = 100;
 
 export class D1Storage implements StorageAdapter {
   readonly name: string;
+  readonly atomicAbsenceGuards = true;
   private readonly map: SqlMapping;
   private readonly db: SqlExecutor;
 
@@ -236,8 +238,8 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
-  budget(plans: CommitPlan[]): { actions: number; limit: number } {
-    return { actions: plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
+  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
+    return { actions: absent.length * 2 + plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
   }
 
   exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
@@ -307,11 +309,13 @@ export class D1Storage implements StorageAdapter {
     return Math.floor(Math.random() * 25 * attempt);
   }
 
-  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
+  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
+      const conflict = absenceWriteConflict(plans, absent);
+      if (conflict) return yield* Effect.fail(conflict);
       for (let attempt = 1; ; attempt++) {
-        const outcome = yield* self.commitOnce(plans);
+        const outcome = yield* self.commitOnce(plans, absent);
         if (outcome === "ok") return;
         if (outcome.code !== "TransientConflict" || attempt >= self.retryAttempts) return yield* Effect.fail(outcome);
         yield* Effect.sleep(self.retryDelayMs(attempt));
@@ -319,13 +323,26 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
-  private commitOnce(plans: CommitPlan[]): Effect.Effect<"ok" | ForgeError, never> {
-    const stmts: SqlStatement[] = plans.flatMap((p) => this.statementsFor(p));
+  private commitOnce(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[]): Effect.Effect<"ok" | ForgeError, never> {
+    const stmts: SqlStatement[] = [];
+    const guardIds = absent.map(() => crypto.randomUUID());
+    for (const [index, guard] of absent.entries()) {
+      const query = this.absenceQuery(guard);
+      stmts.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, NOT EXISTS (${query.sql})`, guardIds[index], ...query.params));
+    }
+    stmts.push(...plans.flatMap(p => this.statementsFor(p)));
+    for (const id of guardIds) stmts.push(st("DELETE FROM _forge_assert WHERE op_id = ?", id));
     return Effect.promise(async () => {
       try {
         await this.db.batch(stmts);
         return "ok" as const;
       } catch (e) {
+        if (/CHECK constraint failed: forge_precondition/.test(String((e as Error)?.message ?? e))) {
+          for (const guard of absent) {
+            const found = await this.db.first(this.absenceQuery(guard)).catch(() => null);
+            if (found) return err("VersionConflict", "Atomic absence guard failed");
+          }
+        }
         // Find the plan whose precondition failed: diagnose each until one explains the failure.
         for (const plan of plans) {
           const outcome = await this.classify(e, plan);
@@ -334,6 +351,15 @@ export class D1Storage implements StorageAdapter {
         return err("TransientConflict", "batch failed");
       }
     });
+  }
+
+  private absenceQuery(guard: AtomicAbsenceGuard): SqlStatement {
+    const { resource, unique, tenant, values } = guard;
+    const fields = [...unique.within, ...unique.fields];
+    const where = [...(resource.decorators.tenant ? ["tenant = ?"] : []), ...fields.map(f => `${this.map.column(resource, f).name} = ?`)];
+    return st(`SELECT 1 FROM ${this.map.table(resource).name} WHERE ${where.join(" AND ")}`,
+      ...(resource.decorators.tenant ? [tenant] : []),
+      ...fields.map(f => this.map.toColumn(resource.fields.find(field => field.name === f)!, values[f])));
   }
 
   /** Statements for one logical command; several commands concatenate into one atomic batch. */
