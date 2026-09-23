@@ -53,7 +53,9 @@ fn acme_projection_is_stable_and_reports_partial_knowledge() {
             .any(|a| matches!(a, Activation::Schedule { .. }))
     }));
     let workflow = &projection.concept.processes["@acme/commerce/_/ProcessOrder"];
-    let Some(Behavior::Workflow { waits }) = &workflow.behavior else {
+    let Some(WorkflowBehavior { waits }) =
+        workflow.behavior.as_ref().and_then(|b| b.workflow.as_ref())
+    else {
         panic!("workflow semantics missing")
     };
     assert!(waits.keys().any(|id| id.ends_with("#step:captured")));
@@ -93,7 +95,11 @@ fn transport_provider_and_file_changes_preserve_business_hash() {
         expected.content_hash(),
         project(&changed).concept.content_hash()
     );
-    assert!(expected.check_realization(&changed).is_empty());
+    assert!(expected.realization_report(&changed).violations.is_empty());
+    assert_eq!(
+        expected.realization_report(&original),
+        expected.realization_report(&changed)
+    );
     changed
         .modules
         .iter_mut()
@@ -351,4 +357,180 @@ fn projection_order_and_version_validation_are_deterministic() {
     json["provider"] = serde_json::json!("accidental runtime metadata");
     assert!(ConceptIR::load(&json).is_err());
     assert!(original.graph().edges.iter().any(|e| e.kind == "wait"));
+}
+
+#[test]
+fn independent_behavior_facets_roundtrip_and_preserve_uncertainty() {
+    let ir = fixture("resource Customer { id : id }\nfunction Work { input Customer.Record }");
+    let mut concept = project(&ir).concept;
+    let process = concept.processes.values_mut().next().unwrap();
+    process.behavior = Some(Behavior {
+        workflow: Some(WorkflowBehavior {
+            waits: Default::default(),
+        }),
+        stateful: Some(process.inputs.values().next().unwrap().ty.clone()),
+        state_machine: None,
+    });
+    assert_eq!(
+        ConceptIR::load(&serde_json::to_value(&concept).unwrap()).unwrap(),
+        concept
+    );
+    let report = concept.realization_report(&ir);
+    assert!(!report.is_satisfied());
+    // A function signature alone cannot realize a declared workflow.
+    assert!(!report.violations.is_empty());
+}
+
+#[test]
+fn realization_checks_requirements_without_rejecting_unrelated_declarations() {
+    let small = fixture("resource Customer { id : id\n name : text }");
+    let larger = fixture("resource Customer { id : id\n name : text }\nresource Extra { id : id }");
+    assert!(
+        project(&small)
+            .concept
+            .realization_report(&larger)
+            .is_satisfied()
+    );
+    let broken = fixture("resource Customer { id : id\n name : boolean }");
+    let report = project(&small).concept.realization_report(&broken);
+    assert!(report.unproven.is_empty());
+    assert!(report.violations.iter().any(|v| {
+        v.subject
+            .starts_with("/entities/@test~1concept~1_~1Customer/fields/name/")
+    }));
+}
+
+#[test]
+fn ownership_and_temporal_selection_are_unproven_not_signature_proofs() {
+    let ir = fixture(
+        "resource Customer { id : id }\nfunction Work { input Customer.Record\noutput Customer.Record }",
+    );
+    let mut contract = project(&ir).concept;
+    assert!(contract.realization_report(&ir).is_satisfied());
+    let process = contract.processes.values_mut().next().unwrap();
+    process.inputs.values_mut().next().unwrap().selection.during = Some("90d".into());
+    process.outputs.values_mut().next().unwrap().disposition = OutputDisposition::ProduceEntity;
+    let report = contract.realization_report(&ir);
+    assert!(report.violations.is_empty());
+    assert_eq!(report.unproven.len(), 2);
+    assert!(
+        report
+            .unproven
+            .iter()
+            .any(|v| v.subject.ends_with("/selection/during"))
+    );
+    assert!(!contract.check_realization(&ir).is_empty());
+    assert!(!report.is_satisfied());
+}
+
+#[test]
+fn scoped_graphs_keep_only_connected_matching_relations() {
+    let ir = fixture(
+        "resource Customer { id : id }\nresource Extra { id : id }\nfunction Work { input Customer.Record\noutput Customer.Record }",
+    );
+    let mut contract = project(&ir).concept;
+    contract
+        .processes
+        .values_mut()
+        .next()
+        .unwrap()
+        .outputs
+        .values_mut()
+        .next()
+        .unwrap()
+        .disposition = OutputDisposition::ProduceEntity;
+    let graph = contract.graph();
+    let scope = graph.scoped("@test/concept/_/Customer", 1, &["produce".into()].into());
+    assert_eq!(scope.nodes.len(), 2);
+    assert_eq!(scope.edges.len(), 1);
+    assert!(scope.edges.iter().all(|e| e.kind == "produce"));
+    assert!(
+        graph
+            .scoped("missing", 2, &Default::default())
+            .nodes
+            .is_empty()
+    );
+    assert_eq!(
+        graph
+            .scoped("@test/concept/_/Customer", 0, &Default::default())
+            .nodes
+            .len(),
+        1
+    );
+}
+
+#[test]
+fn schedule_changes_are_business_mismatches() {
+    let ir = acme();
+    let mut contract = project(&ir).concept;
+    let schedule = contract
+        .processes
+        .values_mut()
+        .flat_map(|p| p.activations.values_mut())
+        .find(|a| matches!(a, Activation::Schedule { .. }))
+        .unwrap();
+    if let Activation::Schedule { expression, .. } = schedule {
+        *expression = "changed".into();
+    }
+    assert!(
+        contract
+            .realization_report(&ir)
+            .violations
+            .iter()
+            .any(|v| v.subject.ends_with("/expression"))
+    );
+}
+
+#[test]
+fn workflow_state_and_lifecycle_facets_compose_and_validate() {
+    let ir = acme();
+    let mut concept = project(&ir).concept;
+    let (entity, lifecycle) = concept
+        .entities
+        .iter()
+        .find_map(|(id, e)| e.lifecycle.clone().map(|l| (id.clone(), l)))
+        .unwrap();
+    let workflow = concept
+        .processes
+        .values_mut()
+        .find(|p| p.behavior.is_some())
+        .unwrap();
+    let state = workflow.inputs.values().next().unwrap().ty.clone();
+    let behavior = workflow.behavior.as_mut().unwrap();
+    behavior.stateful = Some(state);
+    behavior.state_machine = Some(StateMachineBehavior { entity, lifecycle });
+    assert!(concept.validate().is_empty());
+    assert_eq!(
+        ConceptIR::load(&serde_json::to_value(&concept).unwrap()).unwrap(),
+        concept
+    );
+    let report = concept.realization_report(&ir);
+    assert!(report.violations.is_empty());
+    assert!(
+        report
+            .unproven
+            .iter()
+            .any(|v| v.subject.ends_with("/stateful"))
+    );
+    assert!(
+        report
+            .unproven
+            .iter()
+            .any(|v| v.subject.ends_with("/stateMachine"))
+    );
+    let machine = concept
+        .processes
+        .values_mut()
+        .find_map(|p| p.behavior.as_mut())
+        .unwrap()
+        .state_machine
+        .as_mut()
+        .unwrap();
+    machine.entity = "missing".into();
+    assert!(
+        concept
+            .validate()
+            .iter()
+            .any(|v| v.code == "E-L0-REFERENCE")
+    );
 }

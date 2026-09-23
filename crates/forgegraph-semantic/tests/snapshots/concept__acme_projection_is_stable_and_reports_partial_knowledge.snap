@@ -4,7 +4,7 @@ expression: projection
 ---
 {
   "concept": {
-    "version": "concept-ir/1",
+    "version": "concept-ir/2",
     "package": "@acme/commerce",
     "entities": {
       "@acme/commerce/_/Customer": {
@@ -1057,10 +1057,13 @@ expression: projection
           }
         },
         "behavior": {
-          "kind": "workflow",
-          "waits": {
-            "@acme/commerce/_/ProcessOrder#step:captured": "@acme/commerce/_/PaymentEvents#fact:PaymentCaptured"
-          }
+          "workflow": {
+            "waits": {
+              "@acme/commerce/_/ProcessOrder#step:captured": "@acme/commerce/_/PaymentEvents#fact:PaymentCaptured"
+            }
+          },
+          "stateMachine": null,
+          "stateful": null
         }
       },
       "@acme/commerce/_/RebuildOrderSummary": {

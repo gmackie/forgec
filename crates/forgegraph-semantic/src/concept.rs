@@ -3,7 +3,7 @@ use crate::ir::{self, DomainIR, Expr};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
-pub const CONCEPT_IR_VERSION: &str = "concept-ir/1";
+pub const CONCEPT_IR_VERSION: &str = "concept-ir/2";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -221,20 +221,24 @@ pub enum OutputDisposition {
     Return,
     Export { external: String },
 }
+/// Orthogonal business facets. Named slots prevent duplicates and order-dependent hashes.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Behavior {
+    pub workflow: Option<WorkflowBehavior>,
+    pub state_machine: Option<StateMachineBehavior>,
+    pub stateful: Option<ConceptType>,
+}
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
-pub enum Behavior {
-    /// A partial set of business waits; ordering/control flow is explicitly unknown in projection.
-    Workflow {
-        waits: BTreeMap<String, String>,
-    },
-    StateMachine {
-        entity: String,
-        lifecycle: ir::Lifecycle,
-    },
-    Stateful {
-        state: ConceptType,
-    },
+#[serde(deny_unknown_fields)]
+pub struct WorkflowBehavior {
+    pub waits: BTreeMap<String, String>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StateMachineBehavior {
+    pub entity: String,
+    pub lifecycle: ir::Lifecycle,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -265,12 +269,57 @@ pub struct Edge {
     pub port: String,
     pub kind: String,
 }
+impl Graph {
+    /// Undirected neighborhood, optionally restricted to relation kinds, with bounded hops.
+    /// Empty kinds selects all relations. Unknown anchors yield an empty graph.
+    pub fn scoped(&self, anchor: &str, hops: usize, kinds: &BTreeSet<String>) -> Self {
+        let mut selected = BTreeSet::new();
+        if self.nodes.contains_key(anchor) {
+            selected.insert(anchor.to_owned());
+        }
+        for _ in 0..hops {
+            let mut next = selected.clone();
+            for edge in &self.edges {
+                if (kinds.is_empty() || kinds.contains(&edge.kind))
+                    && (selected.contains(&edge.from) || selected.contains(&edge.to))
+                {
+                    next.insert(edge.from.clone());
+                    next.insert(edge.to.clone());
+                }
+            }
+            if next == selected {
+                break;
+            }
+            selected = next;
+        }
+        Self {
+            nodes: self
+                .nodes
+                .iter()
+                .filter(|(id, _)| selected.contains(*id))
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect(),
+            edges: self
+                .edges
+                .iter()
+                .filter(|e| {
+                    selected.contains(&e.from)
+                        && selected.contains(&e.to)
+                        && (kinds.is_empty() || kinds.contains(&e.kind))
+                })
+                .cloned()
+                .collect(),
+        }
+    }
+}
+
 fn type_id(ty: &ConceptType) -> Option<&str> {
     match &ty.base {
         Type::Entity { id, .. } | Type::Fact { id } | Type::Shape { id } | Type::Enum { id } => {
             Some(id)
         }
-        Type::Scalar { .. } | Type::Collection { .. } => None,
+        Type::Collection { element, .. } => type_id(element),
+        Type::Scalar { .. } => None,
     }
 }
 impl ConceptIR {
@@ -302,12 +351,33 @@ impl ConceptIR {
                     kind: kind.into(),
                 });
             };
-            if let Some(Behavior::Workflow { waits }) = &process.behavior {
+            if let Some(WorkflowBehavior { waits }) =
+                process.behavior.as_ref().and_then(|b| b.workflow.as_ref())
+            {
                 for (port, fact) in waits {
                     edge(fact, id, port, "wait");
                 }
             }
+            if let Some(principal) = &process.principal {
+                edge(principal, id, id, "principal");
+            }
+            if let Some(purpose) = &process.purpose {
+                edge(id, purpose, id, "purpose");
+            }
+            for authorization in &process.authorizations {
+                edge(&authorization.policy, id, id, "authorize");
+            }
+            if let Some(machine) = process
+                .behavior
+                .as_ref()
+                .and_then(|b| b.state_machine.as_ref())
+            {
+                edge(id, &machine.entity, id, "transition");
+            }
             for (port, input) in &process.inputs {
+                if let Some(authorization) = &input.authorization {
+                    edge(&authorization.policy, id, port, "authorize");
+                }
                 if let Some(data) = type_id(&input.ty) {
                     edge(data, id, port, "input");
                 }
@@ -339,6 +409,29 @@ impl ConceptIR {
                     edge(id, external, port, "export");
                 }
             }
+        }
+        for (id, policy) in &self.policies {
+            for (target, kind) in [
+                (Some(policy.principal.as_str()), "principal"),
+                (type_id(&policy.resource), "resource"),
+                (policy.purpose.as_deref(), "purpose"),
+            ] {
+                if let Some(target) = target {
+                    graph
+                        .nodes
+                        .entry(target.into())
+                        .or_insert("reference".into());
+                    graph.edges.insert(Edge {
+                        from: id.clone(),
+                        to: target.into(),
+                        port: id.clone(),
+                        kind: kind.into(),
+                    });
+                }
+            }
+        }
+        for id in self.purposes.keys() {
+            graph.nodes.insert(id.clone(), "purpose".into());
         }
         graph
     }
@@ -408,6 +501,23 @@ impl ConceptIR {
                     missing(port, "external", external);
                 }
             }
+            if let Some(machine) = process
+                .behavior
+                .as_ref()
+                .and_then(|b| b.state_machine.as_ref())
+            {
+                match self.entities.get(&machine.entity) {
+                    None => missing(id, "entity", &machine.entity),
+                    Some(entity) if entity.lifecycle.as_ref() != Some(&machine.lifecycle) => {
+                        errors.push(Violation {
+                            code: "E-L0-LIFECYCLE".into(),
+                            subject: id.clone(),
+                            message: "state-machine facet must match the entity lifecycle".into(),
+                        });
+                    }
+                    _ => {}
+                }
+            }
             for (port, output) in &process.outputs {
                 let target = match (&output.disposition, &output.ty.base) {
                     (OutputDisposition::ProduceEntity, Type::Entity { id, .. })
@@ -457,23 +567,148 @@ impl ConceptIR {
         }
         errors
     }
-    /// Conservative checking of the supported projection: equality is required for claimed
-    /// contracts. This is not a proof about handwritten implementations or unknown semantics.
-    pub fn check_realization(&self, realization: &DomainIR) -> Vec<Violation> {
-        let actual = project(realization).concept;
+    /// Check declared requirements against compiler evidence, preserving unknowns.
+    /// Extra top-level declarations are allowed; nested business contracts remain exact.
+    pub fn realization_report(&self, realization: &DomainIR) -> RealizationReport {
+        let projection = project(realization);
+        let mut report = RealizationReport {
+            violations: self.validate(),
+            unproven: vec![],
+            coverage: projection.coverage,
+        };
         let expected = serde_json::to_value(self).unwrap();
-        let actual = serde_json::to_value(actual).unwrap();
-        expected
-            .as_object()
-            .unwrap()
-            .iter()
-            .filter(|(key, value)| actual.get(*key) != Some(*value))
-            .map(|(key, _)| Violation {
-                code: "E-L0-REALIZATION".into(),
-                subject: key.clone(),
-                message: "realization projection differs from the required concept contract".into(),
-            })
+        let actual = serde_json::to_value(projection.concept).unwrap();
+        compare_contract(&expected, Some(&actual), &mut vec![], &mut report);
+        report
+    }
+    /// Fail closed for callers that only consume diagnostics.
+    pub fn check_realization(&self, realization: &DomainIR) -> Vec<Violation> {
+        let report = self.realization_report(realization);
+        report
+            .violations
+            .into_iter()
+            .chain(report.unproven)
             .collect()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RealizationReport {
+    pub violations: Vec<Violation>,
+    pub unproven: Vec<Violation>,
+    pub coverage: BTreeMap<String, BTreeSet<String>>,
+}
+impl RealizationReport {
+    pub fn is_satisfied(&self) -> bool {
+        self.violations.is_empty() && self.unproven.is_empty()
+    }
+}
+
+fn compare_contract(
+    expected: &serde_json::Value,
+    actual: Option<&serde_json::Value>,
+    path: &mut Vec<String>,
+    report: &mut RealizationReport,
+) {
+    use serde_json::Value;
+    // A missing behavior object does not establish the absence of stateful semantics.
+    // Expand its orthogonal slots so each gets the appropriate evidence classification.
+    if path.len() == 3
+        && path[0] == "processes"
+        && path[2] == "behavior"
+        && expected.is_object()
+        && actual.is_some_and(Value::is_null)
+    {
+        let empty = serde_json::json!({"workflow": null, "stateMachine": null, "stateful": null});
+        compare_contract(expected, Some(&empty), path, report);
+        return;
+    }
+    let meaningful = !expected.is_null()
+        && expected.as_array().is_none_or(|v| !v.is_empty())
+        && expected.as_object().is_none_or(|v| !v.is_empty());
+    let family = path.first().map(String::as_str).unwrap_or("");
+    let field = path.get(2).map(String::as_str).unwrap_or("");
+    let unknown = (path.len() == 2 && matches!(family, "externals" | "principals" | "policies"))
+        || (family == "processes"
+            && ((path.len() == 3 && matches!(field, "principal" | "authorizations"))
+                || (field == "behavior"
+                    && path.len() == 4
+                    && matches!(path[3].as_str(), "stateMachine" | "stateful"))
+                || (field == "behavior" && path.len() == 5 && path[4] == "waits")
+                || (matches!(field, "inputs" | "outputs") && path.len() == 4 && actual.is_none())
+                || (field == "inputs" && path.len() == 5 && path[4] == "authorization")
+                || (field == "inputs"
+                    && path.len() == 5
+                    && path[4] == "origin"
+                    && expected.get("kind").and_then(Value::as_str) == Some("external"))
+                || (field == "inputs"
+                    && path.len() == 6
+                    && path[4] == "selection"
+                    && matches!(
+                        path[5].as_str(),
+                        "forBinding" | "predicate" | "during" | "asOf"
+                    ))
+                || (field == "inputs"
+                    && path.len() == 6
+                    && path[4] == "selection"
+                    && path[5] == "cardinality"
+                    && matches!(expected.as_str(), Some("many" | "latest")))
+                || (field == "outputs"
+                    && path.len() == 5
+                    && path[4] == "disposition"
+                    && expected.get("kind").and_then(Value::as_str) != Some("return"))
+                || (field == "activations"
+                    && path.len() == 4
+                    && matches!(
+                        expected.get("kind").and_then(Value::as_str),
+                        Some("externalEvent" | "change")
+                    ))));
+    let subject = || {
+        format!(
+            "/{}",
+            path.iter()
+                .map(|p| p.replace('~', "~0").replace('/', "~1"))
+                .collect::<Vec<_>>()
+                .join("/")
+        )
+    };
+    if unknown && meaningful {
+        report.unproven.push(Violation {
+            code: "E-L0-UNPROVEN".into(),
+            subject: subject(),
+            message: "legacy projection cannot prove this business requirement".into(),
+        });
+        return;
+    }
+    if let (Value::Object(expected), Some(Value::Object(actual))) = (expected, actual) {
+        // Only the root and declaration catalogs are open to unrelated additions.
+        let keys: BTreeSet<_> = if path.len() <= 1 {
+            expected.keys().collect()
+        } else {
+            expected.keys().chain(actual.keys()).collect()
+        };
+        for key in keys {
+            path.push(key.clone());
+            compare_contract(
+                expected.get(key).unwrap_or(&Value::Null),
+                actual.get(key),
+                path,
+                report,
+            );
+            path.pop();
+        }
+    } else if actual != Some(expected) {
+        report.violations.push(Violation {
+            code: "E-L0-REALIZATION".into(),
+            subject: subject(),
+            message: format!(
+                "expected {expected}; projected {}",
+                actual
+                    .map(Value::to_string)
+                    .unwrap_or_else(|| "<missing>".into())
+            ),
+        });
     }
 }
 
@@ -728,7 +963,10 @@ pub fn project(ir: &DomainIR) -> Projection {
             );
             let mut waits = BTreeMap::new();
             collect_waits(&w.steps, &w.id, &mut waits);
-            p.behavior = Some(Behavior::Workflow { waits });
+            p.behavior = Some(Behavior {
+                workflow: Some(WorkflowBehavior { waits }),
+                ..Behavior::default()
+            });
             out.concept.processes.insert(w.id.clone(), p);
             out.realizations.insert(w.id.clone(), w.id.clone());
             out.coverage.insert(w.id.clone(), ["workflow waits are candidates; business significance, ordering, conditions and correlation are not inferred".into()].into());
@@ -769,7 +1007,9 @@ pub fn project(ir: &DomainIR) -> Projection {
                 .entry(port.clone())
                 .or_insert_with(|| id.clone());
         }
-        if let Some(Behavior::Workflow { waits }) = &process.behavior {
+        if let Some(WorkflowBehavior { waits }) =
+            process.behavior.as_ref().and_then(|b| b.workflow.as_ref())
+        {
             for port in waits.keys() {
                 out.realizations.insert(port.clone(), port.clone());
             }

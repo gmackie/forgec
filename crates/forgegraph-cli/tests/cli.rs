@@ -896,7 +896,7 @@ fn inspect_concept_exports_a_partial_business_graph() {
         String::from_utf8_lossy(&out.stderr)
     );
     let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
-    assert_eq!(value["projection"]["concept"]["version"], "concept-ir/1");
+    assert_eq!(value["projection"]["concept"]["version"], "concept-ir/2");
     assert_eq!(value["conceptHash"].as_str().unwrap().len(), 64);
     assert!(value["projection"]["coverage"].is_object());
     assert_eq!(
@@ -904,4 +904,93 @@ fn inspect_concept_exports_a_partial_business_graph() {
         "entity"
     );
     assert!(value["projection"]["concept"].get("targets").is_none());
+}
+
+#[test]
+fn check_concept_contract_fails_closed_and_reports_paths() {
+    let dir = std::env::temp_dir().join(format!("forge-concept-contract-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("src")).unwrap();
+    std::fs::write(
+        dir.join("forge.toml"),
+        "[package]\nname = \"@test/contract\"\nversion = \"0.1.0\"\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("src/app.forge"),
+        "resource Customer { id : id }\nfunction Work { output Customer.Record }",
+    )
+    .unwrap();
+    let inspected = forgec()
+        .arg("inspect")
+        .arg(&dir)
+        .arg("--concept")
+        .output()
+        .unwrap();
+    assert!(
+        inspected.status.success(),
+        "{}",
+        String::from_utf8_lossy(&inspected.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&inspected.stdout).unwrap();
+    let mut contract = value["projection"]["concept"].clone();
+    let file = dir.join("concept.json");
+    std::fs::write(&file, serde_json::to_vec(&contract).unwrap()).unwrap();
+    let run = || {
+        forgec()
+            .arg("check")
+            .arg(&dir)
+            .arg("--concept-contract")
+            .arg(&file)
+            .output()
+            .unwrap()
+    };
+    let success = run();
+    assert!(
+        success.status.success(),
+        "{}",
+        String::from_utf8_lossy(&success.stderr)
+    );
+    let report: serde_json::Value = serde_json::from_slice(&success.stdout).unwrap();
+    assert_eq!(report["unproven"], serde_json::json!([]));
+    contract["processes"]["@test/contract/_/Work"]["outputs"]["@test/contract/_/Work#output:return"]
+        ["disposition"]["kind"] = "produceEntity".into();
+    std::fs::write(&file, serde_json::to_vec(&contract).unwrap()).unwrap();
+    let failure = run();
+    assert_eq!(failure.status.code(), Some(1));
+    let report: serde_json::Value = serde_json::from_slice(&failure.stdout).unwrap();
+    assert_eq!(report["unproven"][0]["code"], "E-L0-UNPROVEN");
+    assert_eq!(report["violations"], serde_json::json!([]));
+    contract["version"] = "concept-ir/1".into();
+    std::fs::write(&file, serde_json::to_vec(&contract).unwrap()).unwrap();
+    assert!(!run().status.success());
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn inspect_concept_supports_scoped_graphs() {
+    let run = |anchor: &str| {
+        forgec()
+            .arg("inspect")
+            .arg(examples().join("acme"))
+            .args(["--concept", "--focus", anchor, "--hops", "0"])
+            .output()
+            .unwrap()
+    };
+    let result = run("@acme/commerce/_/Customer");
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    assert_eq!(value["graph"]["nodes"].as_object().unwrap().len(), 1);
+    assert_eq!(value["graph"]["edges"], serde_json::json!([]));
+    assert!(
+        value["projection"]["concept"]["entities"]
+            .as_object()
+            .unwrap()
+            .len()
+            > 1
+    );
+    assert!(!run("missing").status.success());
 }

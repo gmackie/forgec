@@ -1,6 +1,6 @@
-# ConceptIR v1 foundation
+# ConceptIR v2 contracts
 
-`concept-ir/1` is the separate, partial L0 business-contract representation. DomainIR, planners, runtime bundles, editions 2026/2027, and their hashes are unchanged. No new source grammar is introduced.
+`concept-ir/2` is the separate, partial L0 business-contract representation. DomainIR, planners, runtime bundles, editions 2026/2027, and their hashes are unchanged. No new source grammar is introduced.
 
 Export an existing application:
 
@@ -29,7 +29,7 @@ The root has `version`, `package` (qualified name), and ID-keyed maps:
 
 Fields preserve types, optionality, normalizers, constraints, default/derived values, immutability and catalog identities. Hidden/synthesized runtime fields are omitted. Entity reference, record, identity and status forms remain distinct. Enum wire values are realization details; member names are retained.
 
-Process inputs have independent `origin`, `selection` and optional authorization. Selection contains `cardinality` (`one`, `optional`, `many`, `latest`, `unknown`), `forBinding`, predicate, `during`, and `asOf`. Activation variants are request, fact, change, external event and schedule. Outputs distinguish produceEntity, emitFact, return and export. Collection authorization distinguishes requireAll and filterVisible. Behavior can represent workflow waits, state machines and stateful contracts.
+Process inputs have independent `origin`, `selection` and optional authorization. Selection contains `cardinality` (`one`, `optional`, `many`, `latest`, `unknown`), `forBinding`, predicate, `during`, and `asOf`. Activation variants are request, fact, change, external event and schedule. Outputs distinguish produceEntity, emitFact, return and export. Collection authorization distinguishes requireAll and filterVisible. Behavior has independent nullable `workflow` (`waits`), `stateMachine` (`entity`, `lifecycle`), and `stateful` (a ConceptType) slots. These facets can coexist on one Process; their order cannot change semantic identity. State-machine facets must reference a declared entity and match its lifecycle.
 
 Only produceEntity and emitFact establish authoritative ownership. Two ports from one process do not constitute competing owners; two distinct processes do. Returning an entity record is not producing that entity.
 
@@ -49,7 +49,31 @@ Capabilities and `uses`/`sends` describe permitted behavior, not proven dataflow
 
 ## Checking and limits
 
-`check_realization` compares a required ConceptIR with the supported projection of a DomainIR and reports differing top-level contract families. It detects changes such as a missing entity field while ignoring HTTP path/provider/delivery changes. It is deliberately conservative equality checking, not general refinement, implementation verification, or proof about unknown projected semantics.
+`realization_report` checks a required ConceptIR against the supported projection of DomainIR. Unrelated top-level declarations are allowed; nested contracts are compared exactly. Diagnostics use escaped JSON Pointer paths. Known mismatches produce `E-L0-REALIZATION`; ownership, temporal selection, external acquisition, contextual authorization and other unsupported requirements produce `E-L0-UNPROVEN`. Workflow waits remain unproven even when candidate waits match. The report includes the projection coverage caveats. `is_satisfied()` requires both diagnostic lists to be empty, and the convenience `check_realization` combines both lists to fail closed.
+
+This verifies declared structure against compiler evidence, not handwritten implementation behavior. An empty requirement catalog does not assert that no additional declarations may exist. Within a declared process or entity, nested additions remain mismatches; this is deliberately not a general variance/refinement engine.
+
+Run an enforceable check using a standalone ConceptIR contract (the `projection.concept` portion of inspection output):
+
+```sh
+forgec inspect examples/acme --concept | jq '.projection.concept' > required-concept.json
+forgec check examples/acme --concept-contract required-concept.json
+```
+
+The command emits a JSON report and exits 1 for either violated or unproven requirements. A freshly projected Acme contract includes candidate workflow waits, so checking it reports uncertainty rather than claiming implementation proof. Plain `check` remains unchanged; contract enforcement is opt-in through this flag.
+
+Inspect a scoped graph without changing the contract or its hash:
+
+```sh
+forgec inspect examples/acme --concept --focus '@acme/commerce/_/Customer' --hops 2
+forgec inspect examples/acme --concept --focus '@acme/commerce/_/Customer' --relations produce,emit
+```
+
+`Graph::scoped` derives a bounded undirected neighborhood using optional relation kinds. Graphs include principal, policy authorization, purpose and lifecycle transition relationships. Collection types retain their referenced data edges. CLI focus IDs must exist; library callers receive an empty graph for unknown IDs.
+
+### Migration from v1
+
+Version 1 is rejected explicitly. Re-export projected artifacts. For authored contracts, replace a tagged single behavior with the corresponding slot in the v2 behavior object and set the other slots to null; update `version` to `concept-ir/2`. For example, `{"kind":"workflow","waits":{}}` becomes `{"workflow":{"waits":{}},"stateMachine":null,"stateful":null}`. Recompute ConceptIR hashes after migration. DomainIR and runtime bundle formats are unchanged.
 
 Tests include an Acme snapshot, governance catalog preservation, business waits, file-move stability, transport-only changes, producer conflicts, and a directly constructed ingestion contract with schedule/event activation, external acquisition, multiple inputs, contextual policy and authoritative output.
 

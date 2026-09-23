@@ -24,6 +24,9 @@ enum Cmd {
     Check {
         #[arg(default_value = ".")]
         path: PathBuf,
+        /// Require a ConceptIR JSON contract; unproven requirements also fail.
+        #[arg(long)]
+        concept_contract: Option<PathBuf>,
     },
     /// Format every `.forge` file in a package.
     Fmt {
@@ -40,6 +43,15 @@ enum Cmd {
         /// Project business semantics without runtime/provider details.
         #[arg(long)]
         concept: bool,
+        /// Limit the concept graph to a neighborhood of this semantic ID.
+        #[arg(long, requires = "concept")]
+        focus: Option<String>,
+        /// Maximum graph distance from --focus.
+        #[arg(long, requires = "focus", default_value_t = 1)]
+        hops: usize,
+        /// Relation kinds to include in the focused graph (comma separated).
+        #[arg(long, requires = "focus", value_delimiter = ',')]
+        relations: Vec<String>,
     },
     /// Compile and write generated artifacts (app bundle, D1 migration, TS client).
     Build {
@@ -251,7 +263,10 @@ fn load_tree(
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
-        Cmd::Check { path } => {
+        Cmd::Check {
+            path,
+            concept_contract,
+        } => {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             verify_lock(&path, &loaded.deps, &loaded.selected)?;
             verify_extensions(&loaded.package)?;
@@ -269,6 +284,22 @@ fn main() -> Result<()> {
                     loaded.package.name
                 );
                 std::process::exit(1);
+            }
+            if let Some(contract_path) = concept_contract {
+                let value = serde_json::from_slice(&std::fs::read(&contract_path)?)?;
+                let contract = forgegraph_semantic::concept::ConceptIR::load(&value)
+                    .map_err(|e| anyhow!("invalid ConceptIR contract: {e}"))?;
+                let ir = loaded
+                    .compilation
+                    .ir
+                    .as_ref()
+                    .ok_or_else(|| anyhow!("missing compiled IR"))?;
+                let report = contract.realization_report(ir);
+                println!("{}", serde_json::to_string_pretty(&report)?);
+                if !report.is_satisfied() {
+                    std::process::exit(1);
+                }
+                return Ok(());
             }
             println!(
                 "{}: ok ({} file(s), {} dependency(ies), {warnings} warning(s))",
@@ -607,7 +638,13 @@ fn main() -> Result<()> {
                 std::process::exit(1);
             }
         }
-        Cmd::Inspect { path, concept } => {
+        Cmd::Inspect {
+            path,
+            concept,
+            focus,
+            hops,
+            relations,
+        } => {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             eprint!("{}", loaded.compilation.render());
             let Some(ir) = loaded.compilation.ir else {
@@ -615,10 +652,20 @@ fn main() -> Result<()> {
             };
             if concept {
                 let projection = forgegraph_semantic::concept::project(&ir);
+                let graph = projection.concept.graph();
+                let graph = match focus {
+                    Some(anchor) => {
+                        if !graph.nodes.contains_key(&anchor) {
+                            return Err(anyhow!("unknown concept graph anchor `{anchor}`"));
+                        }
+                        graph.scoped(&anchor, hops, &relations.into_iter().collect())
+                    }
+                    None => graph,
+                };
                 println!(
                     "{}",
                     serde_json::to_string_pretty(
-                        &serde_json::json!({"conceptHash": projection.concept.content_hash(), "graph": projection.concept.graph(), "projection": projection})
+                        &serde_json::json!({"conceptHash": projection.concept.content_hash(), "graph": graph, "projection": projection})
                     )?
                 );
                 return Ok(());
