@@ -1,31 +1,31 @@
 {
   "version": 1,
-  "sourceCommit": "f64c1b811e88502040c9667928de267a86a9c0cb",
-  "verifiedAt": "2026-09-23T05:04:51.270Z",
+  "sourceCommit": "9c92db7bfa73dc1523bb1570f6ccd60c3ce684a0",
+  "verifiedAt": "2026-09-23T15:11:29.706Z",
   "profile": "memory, SQLite and native PostgreSQL17; includes native PostgreSQL and HTTP-host runtime suites",
   "runtime": {
-    "passed": 627,
+    "passed": 629,
     "skipped": 50
   },
   "rust": {
-    "passed": 155
+    "passed": 155,
+    "scope": "Compiler unchanged; CI verifies current implementation"
   },
   "harness": {
-    "passed": 50
+    "passed": 61
   },
   "applications": "docs/foundation/application-verification.json",
-  "hostedProviders": {
-    "status": "passing",
-    "profiles": 14,
+  "distribution": "docs/foundation/distribution-verification.json",
+  "migrationRehearsal": {
+    "test": "packages/runtime/test/foundation-migration-compose.test.ts",
     "providers": [
-      "postgres",
-      "d1",
-      "dynamodb"
+      "sqlite",
+      "postgres"
     ],
-    "cells": 42,
-    "receipt": "docs/foundation/provider-evidence/certification.json",
-    "scope": "Foundation database invariants; object storage is a disclosed test double"
+    "passed": 2,
+    "scope": "actual Engine export/import of explicitly synthetic legacy schema; no production cutover"
   },
+  "hostedProviders": "42/42 passing at matching source; docs/foundation/provider-evidence/certification.json",
   "remainingReleaseGates": "https://github.com/gmackie/forgec/issues/71",
   "reports": [
     {
@@ -33,8 +33,8 @@
       "package": "adjudication",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "3fa47644b5bff838aa9c5ffbe42e8c491a99cc8f1ef1e7fa632b549ee24d910c",
-      "verifiedAt": "2026-09-23T05:01:32.294Z",
+      "fingerprint": "6017fb62a5ab33f52f00aaf9f85d64ef377fc75ce2c034f5bf5ac77290fcf492",
+      "verifiedAt": "2026-09-23T15:07:52.230Z",
       "commands": [
         "cargo check/build adjudication and consumer; deterministic double build",
         "vitest run test/foundation-adjudication.test.ts"
@@ -112,8 +112,8 @@
       "package": "agreement-catalog",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "4f61dcab5d603c47ea63a08eb2e784253c3dc1a8b5f2b8f0da116d50ab537ec0",
-      "verifiedAt": "2026-09-23T05:01:40.885Z",
+      "fingerprint": "215862e6caa05e241b8eb938f1c73fccebbf0e18cf9543b6c6c34f7c7be93c49",
+      "verifiedAt": "2026-09-23T15:08:00.579Z",
       "commands": [
         "cargo check/build agreement-catalog and consumer; deterministic double build",
         "vitest run test/foundation-agreement-catalog.test.ts"
@@ -191,8 +191,8 @@
       "package": "allocation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "cc0eab1c44c2ed6051029b36968481e5cdf214449b405f133e3ff3aa2e7122cc",
-      "verifiedAt": "2026-09-23T05:01:44.555Z",
+      "fingerprint": "209b0b7c47f11c4aaa4eb88077153855df5e4b3f523b0e58504096d8c924cb11",
+      "verifiedAt": "2026-09-23T15:08:04.207Z",
       "commands": [
         "cargo check/build allocation and consumer; deterministic double build",
         "vitest run test/foundation-allocation.test.ts test/foundation-authorized-atomic.test.ts"
@@ -270,8 +270,8 @@
       "package": "artifact",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "a4f2b6f070f870371cc0401f58d9cb00712c12629a71693f61603762342201f3",
-      "verifiedAt": "2026-09-23T05:00:55.294Z",
+      "fingerprint": "849a92cbe6f34cb4649b1c4e186e9bb7267e69460dd31d3d9b5e441ccf62c275",
+      "verifiedAt": "2026-09-23T15:07:15.168Z",
       "commands": [
         "cargo check/build artifact and consumer; deterministic double build",
         "vitest run test/foundation-artifact-consumer.test.ts test/foundation-artifact.test.ts test/blobs.test.ts"
@@ -349,8 +349,8 @@
       "package": "assurance",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "aab790a6dbf34d64d468c2aa57a9c7e13cec810250f18afd9713997e6dae8805",
-      "verifiedAt": "2026-09-23T05:01:48.839Z",
+      "fingerprint": "0703eb4884ac2509762252cc8cabb8e22c5e43bb6fc91c449f787415f9f6d640",
+      "verifiedAt": "2026-09-23T15:08:12.216Z",
       "commands": [
         "cargo check/build assurance and consumer; deterministic double build",
         "vitest run test/foundation-assurance.test.ts"
@@ -428,8 +428,8 @@
       "package": "availability",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "9900181c4c85c4f050864bcff43ff327230eb26dfceb9f755e4752a7632f4ba1",
-      "verifiedAt": "2026-09-23T05:01:52.850Z",
+      "fingerprint": "56a7ef03af48356221828c94a0e61db2dd52002e0c37e8a8255a219a31c6aa40",
+      "verifiedAt": "2026-09-23T15:08:15.834Z",
       "commands": [
         "cargo check/build availability and consumer; deterministic double build",
         "vitest run test/foundation-availability.test.ts"
@@ -507,8 +507,8 @@
       "package": "change",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "f380885b68a44e8ae89df9ced652d5a3a039fca7a18190e4c26676be801de4ef",
-      "verifiedAt": "2026-09-23T05:01:57.976Z",
+      "fingerprint": "72ca536afdc44ff09bc62c68fb815fc01a8479f67ce1975388525ceffde8326a",
+      "verifiedAt": "2026-09-23T15:08:20.817Z",
       "commands": [
         "cargo check/build change and consumer; deterministic double build",
         "vitest run test/foundation-change.test.ts"
@@ -586,8 +586,8 @@
       "package": "classification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "40266fc709fb00c8060abb27fce67827d7520728988551aa1c40ef555899e71a",
-      "verifiedAt": "2026-09-23T05:02:01.812Z",
+      "fingerprint": "33525e08840acbc6ea569bbffb9c93fa6afdb70add312a6f3d5eedc7ef71c6d2",
+      "verifiedAt": "2026-09-23T15:08:24.717Z",
       "commands": [
         "cargo check/build classification and consumer; deterministic double build",
         "vitest run test/foundation-classification.test.ts"
@@ -665,8 +665,8 @@
       "package": "collaboration",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "6f548be69e5866254795d7401cbbc066f639212979db28d6219005171e371441",
-      "verifiedAt": "2026-09-23T05:02:06.223Z",
+      "fingerprint": "199e7b517e5096a7e964a82c0998bd7f3dd1e61c703a67038e9912d368bd9d27",
+      "verifiedAt": "2026-09-23T15:08:28.988Z",
       "commands": [
         "cargo check/build collaboration and consumer; deterministic double build",
         "vitest run test/foundation-collaboration.test.ts"
@@ -744,8 +744,8 @@
       "package": "decision",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "23614f5bae5bf0b489a6aae18aa70a0c04fadd356eb207d5f47408a9620abf35",
-      "verifiedAt": "2026-09-23T05:01:08.275Z",
+      "fingerprint": "94ec1fd7240eea8d930a98d512e2f4eb4538bcf7afbcc8c4833dc82f0ae13089",
+      "verifiedAt": "2026-09-23T15:07:28.885Z",
       "commands": [
         "cargo check/build decision and consumer; deterministic double build",
         "vitest run test/foundation-decision.test.ts"
@@ -823,8 +823,8 @@
       "package": "delivery",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "f6f12b94751afc5f4cdf8b9a1b40766703d508ccbd725ae1bcd7dabc408598c5",
-      "verifiedAt": "2026-09-23T05:01:24.751Z",
+      "fingerprint": "afedfe9efdcb8044917252b3829c01af978c3ef8039954a46a0473df3ac59710",
+      "verifiedAt": "2026-09-23T15:07:44.887Z",
       "commands": [
         "cargo check/build delivery and consumer; deterministic double build",
         "vitest run test/foundation-delivery.test.ts"
@@ -902,8 +902,8 @@
       "package": "entitlement",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "275cbdd68cd9ba74d1a0b3f8ff7df0d1cd0a221046fac1f2b53dcc30ce1c6536",
-      "verifiedAt": "2026-09-23T05:01:13.004Z",
+      "fingerprint": "b9f73bda1fd3fa5212045701c3dbc469cfbb547c9a366bf6fdc7154f8aecc587",
+      "verifiedAt": "2026-09-23T15:07:32.942Z",
       "commands": [
         "cargo check/build entitlement and consumer; deterministic double build",
         "vitest run test/foundation-entitlement.test.ts"
@@ -981,8 +981,8 @@
       "package": "evaluation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "1db933e75ad33ac2eefd5f56cc59d029fc0a058134748701465d9f1e82fa1fbe",
-      "verifiedAt": "2026-09-23T05:01:03.068Z",
+      "fingerprint": "d3f4db2e1d7e0d0b2f6a42289d32fb6b0b3ddb3b963bf63d5986b33eac7ed7a6",
+      "verifiedAt": "2026-09-23T15:07:23.330Z",
       "commands": [
         "cargo check/build evaluation and consumer; deterministic double build",
         "vitest run test/foundation-evaluation.test.ts"
@@ -1060,8 +1060,8 @@
       "package": "evidence",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "89ed280ac8b9f501bb3b39ed5c7403736cae6c3b10e8ef93cb8f629f6a369c0e",
-      "verifiedAt": "2026-09-23T05:00:59.103Z",
+      "fingerprint": "ab9281bb97541221a4ca550ff2e5248f523b971712b51c88dfb20b5a95a9c92b",
+      "verifiedAt": "2026-09-23T15:07:18.998Z",
       "commands": [
         "cargo check/build evidence and consumer; deterministic double build",
         "vitest run test/foundation-evidence.test.ts"
@@ -1139,8 +1139,8 @@
       "package": "experiment",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "8a9a508c1875bef010590be9c22ac8097fa930382cd747e3832df10caaab920f",
-      "verifiedAt": "2026-09-23T05:02:15.370Z",
+      "fingerprint": "25cf88cf9522fc60431c774c46d2bb3b1cd829ae2ba22cbd0be818d4688de7bd",
+      "verifiedAt": "2026-09-23T15:08:38.026Z",
       "commands": [
         "cargo check/build experiment and consumer; deterministic double build",
         "vitest run test/foundation-experiment.test.ts"
@@ -1218,8 +1218,8 @@
       "package": "fulfillment",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "fa2522966b4a0416cced30a7942dd1f20ac89492cb101e8d726cc8b4479eac8b",
-      "verifiedAt": "2026-09-23T05:01:16.863Z",
+      "fingerprint": "bd674c39200142584a5862e9ef76ec1c759bec08d761a1bf2796d9ad89e674bd",
+      "verifiedAt": "2026-09-23T15:07:36.814Z",
       "commands": [
         "cargo check/build fulfillment and consumer; deterministic double build",
         "vitest run test/foundation-fulfillment.test.ts"
@@ -1297,8 +1297,8 @@
       "package": "identifiers",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "1c9ba1d83f2224dacb312ca39214ea4a8fcac398ac1ca745d182a0e14c9a65e1",
-      "verifiedAt": "2026-09-23T05:00:34.073Z",
+      "fingerprint": "30164dbdfb99aa3bbd357f8073f391835ddada22998a89abc7cf1c492d347d80",
+      "verifiedAt": "2026-09-23T15:06:58.166Z",
       "commands": [
         "cargo check/build identifiers and consumer; deterministic double build",
         "vitest run test/foundation-identifiers-consumer.test.ts test/foundation-identifiers.test.ts"
@@ -1376,8 +1376,8 @@
       "package": "intake",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "5ec3d8348c71d764ccf6d527216efaee3097c7ca47c1a103765892d5392319a7",
-      "verifiedAt": "2026-09-23T05:02:19.627Z",
+      "fingerprint": "ebb3dd51bc47fc199530c94038f5b7411f4fdf5bda2df9e5aa84527f3f52101c",
+      "verifiedAt": "2026-09-23T15:08:42.207Z",
       "commands": [
         "cargo check/build intake and consumer; deterministic double build",
         "vitest run test/foundation-intake.test.ts"
@@ -1455,8 +1455,8 @@
       "package": "integration",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "48390442fa5282218d726d075db609af6daca56c0b89aa8a10b6896fe47a7e4e",
-      "verifiedAt": "2026-09-23T05:02:30.257Z",
+      "fingerprint": "5c6638cb4e7664aaa25296c36cbd1216cdc75e9e08b2aefac65074e0537fbf08",
+      "verifiedAt": "2026-09-23T15:08:52.778Z",
       "commands": [
         "cargo check/build integration and consumer; deterministic double build",
         "vitest run test/foundation-integration.test.ts"
@@ -1534,8 +1534,8 @@
       "package": "knowledge",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "920c73cbe7d66100e0ae72273f6c70250e0861643e8dfd74f40b9a4fc534950b",
-      "verifiedAt": "2026-09-23T05:02:43.996Z",
+      "fingerprint": "47737e47ea18da3d753d5f5c6ef2daff24c5fe2d8d31ee0afd72971d535b3f02",
+      "verifiedAt": "2026-09-23T15:09:06.382Z",
       "commands": [
         "cargo check/build knowledge and consumer; deterministic double build",
         "vitest run test/foundation-knowledge.test.ts"
@@ -1613,8 +1613,8 @@
       "package": "ledger",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "5b97ad28bbed7119291e804b88866236445507fd72cfbade2def9c83036602b9",
-      "verifiedAt": "2026-09-23T05:01:20.485Z",
+      "fingerprint": "7cd4d280bed31fa500eda6e01f4bbe9883f31c45f3afef7df67147f7254bcb89",
+      "verifiedAt": "2026-09-23T15:07:40.610Z",
       "commands": [
         "cargo check/build ledger and consumer; deterministic double build",
         "vitest run test/foundation-ledger.test.ts"
@@ -1692,8 +1692,8 @@
       "package": "lineage",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "5dc49e8f0f70a71e1cc21a818ef4856b3fdf1e0484d722146cf1e01529812f86",
-      "verifiedAt": "2026-09-23T05:02:10.198Z",
+      "fingerprint": "3b1faba15e6cccbb89d4f45cd4a2d44483956dbe21de42381c91e70fd2b499e3",
+      "verifiedAt": "2026-09-23T15:08:32.799Z",
       "commands": [
         "cargo check/build lineage and consumer; deterministic double build",
         "vitest run test/foundation-lineage.test.ts"
@@ -1771,8 +1771,8 @@
       "package": "master-data",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "6950425c0f171105258806bdd5c9c9899209be756daa70edbfa583634989181e",
-      "verifiedAt": "2026-09-23T05:02:49.582Z",
+      "fingerprint": "2cadc087b037ebaec82bf1eceb45db2f672319fa390d10a39e66a75e52d2ffcb",
+      "verifiedAt": "2026-09-23T15:09:11.943Z",
       "commands": [
         "cargo check/build master-data and consumer; deterministic double build",
         "vitest run test/foundation-master-data.test.ts"
@@ -1850,8 +1850,8 @@
       "package": "notifications",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "ae777097c9a50584d3ec3220499294a4d19a8d17ba16c50958dc6806733f4460",
-      "verifiedAt": "2026-09-23T05:02:53.995Z",
+      "fingerprint": "0c1f7bcc2b85a3f5f96e5098276549c9bb9e99327a13d0931b1b9b0c2bf9350d",
+      "verifiedAt": "2026-09-23T15:09:16.346Z",
       "commands": [
         "cargo check/build notifications and consumer; deterministic double build",
         "vitest run test/foundation-notifications.test.ts"
@@ -1929,8 +1929,8 @@
       "package": "operations",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "4a4e692003bcec822519c4e9515a74cd972d5e90f5bfd2b92dab345c077281c4",
-      "verifiedAt": "2026-09-23T05:03:03.209Z",
+      "fingerprint": "44fdf9486da3ea52b0174258784b3b3e4912e4f161894fe3eca2c7abb42f312b",
+      "verifiedAt": "2026-09-23T15:09:25.868Z",
       "commands": [
         "cargo check/build operations and consumer; deterministic double build",
         "vitest run test/foundation-operations.test.ts"
@@ -2008,8 +2008,8 @@
       "package": "organization-workforce",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "bf2fceddb7c50b7ea236cecf055fe2a9395e7ab4787fec3f6531bd5f5d40727e",
-      "verifiedAt": "2026-09-23T05:03:15.986Z",
+      "fingerprint": "5f4f9413b9f7483006a205e7811f11e15805f904456a5e53f2c19e791ab4171b",
+      "verifiedAt": "2026-09-23T15:09:38.681Z",
       "commands": [
         "cargo check/build organization-workforce and consumer; deterministic double build",
         "vitest run test/foundation-organization-workforce.test.ts"
@@ -2087,8 +2087,8 @@
       "package": "participation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "51b2874d6f2121fc39771181524713aa4865d135c8927106fa98b479d882a8f6",
-      "verifiedAt": "2026-09-23T05:00:42.578Z",
+      "fingerprint": "2b33bc0bd31830d5f9082425bf2660af0c2d2e0394d7ffd400c67da463319ef5",
+      "verifiedAt": "2026-09-23T15:07:05.934Z",
       "commands": [
         "cargo check/build participation and consumer; deterministic double build",
         "vitest run test/foundation-participation-consumer.test.ts test/foundation-participation.test.ts"
@@ -2166,8 +2166,8 @@
       "package": "party",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "0ae4f7339f0b5441ae2a1fce5817157f221fdce0e16883ca6f39e2221f75415a",
-      "verifiedAt": "2026-09-23T05:00:37.781Z",
+      "fingerprint": "d9dd089422a58ff5e32eee98c73a5b76666d990a1f95b7dd8be5a4433c057aa7",
+      "verifiedAt": "2026-09-23T15:07:02.024Z",
       "commands": [
         "cargo check/build party and consumer; deterministic double build",
         "vitest run test/foundation-party.test.ts"
@@ -2245,8 +2245,8 @@
       "package": "place",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "ae12fc59324e6f3ec42efab12f5ab1ddf126f3494920a30b0948ed734d15ffa2",
-      "verifiedAt": "2026-09-23T05:03:11.360Z",
+      "fingerprint": "12b095c398c4083934ef94683dbc3dc944244bbcdd511141a286e43dd9877a35",
+      "verifiedAt": "2026-09-23T15:09:33.852Z",
       "commands": [
         "cargo check/build place and consumer; deterministic double build",
         "vitest run test/foundation-place.test.ts"
@@ -2324,8 +2324,8 @@
       "package": "planning-budget",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "2382e16a59d44b2d11e065a048d9184e1b2e0bf98cd54852bd009127a48cd1be",
-      "verifiedAt": "2026-09-23T05:03:20.692Z",
+      "fingerprint": "2ca0f3c91fd28b18d200cdf1c612dc6120647603474120158420b593763529fa",
+      "verifiedAt": "2026-09-23T15:09:43.717Z",
       "commands": [
         "cargo check/build planning-budget and consumer; deterministic double build",
         "vitest run test/foundation-planning-budget.test.ts"
@@ -2403,8 +2403,8 @@
       "package": "publication",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "79c704fb1077f0d44b48b85aec8e6e8c5d376a6ef6103bbd9e6318fcedcc1fb4",
-      "verifiedAt": "2026-09-23T05:02:36.807Z",
+      "fingerprint": "8897b184ab98ae9f0ab01b9f1bf11c12a2c31708bccfbd213a93efa0f79765ed",
+      "verifiedAt": "2026-09-23T15:08:59.458Z",
       "commands": [
         "cargo check/build publication and consumer; deterministic double build",
         "vitest run test/foundation-publication.test.ts"
@@ -2482,8 +2482,8 @@
       "package": "qualification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "3423f8cfa9a5b151c7e3ec265e7d2a1b8d89164306ddeee41eb8a78322c2b8f2",
-      "verifiedAt": "2026-09-23T05:03:07.772Z",
+      "fingerprint": "a957a1c0dce72b06926b1cfdefa02cd6bfbb3c203aace31e95f985f2ddeab7e9",
+      "verifiedAt": "2026-09-23T15:09:30.323Z",
       "commands": [
         "cargo check/build qualification and consumer; deterministic double build",
         "vitest run test/foundation-qualification.test.ts"
@@ -2561,8 +2561,8 @@
       "package": "quotation-pricing",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "e14ebca454a1704039427c5c8766682e8a6b13566317e47f7137597085029f25",
-      "verifiedAt": "2026-09-23T05:03:29.303Z",
+      "fingerprint": "31483586441d049128259c03317d5285637ed14dd214f08db99e3046b4841a89",
+      "verifiedAt": "2026-09-23T15:09:52.253Z",
       "commands": [
         "cargo check/build quotation-pricing and consumer; deterministic double build",
         "vitest run test/foundation-quotation-pricing.test.ts"
@@ -2640,8 +2640,8 @@
       "package": "reconciliation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "38d8c3cdafdacf79e713bca06ae418a72185f514dbb5380a8e8cd10c5d36fb9a",
-      "verifiedAt": "2026-09-23T05:02:25.092Z",
+      "fingerprint": "1b474c8e5890cc8fe8ac15b5c29a177a8be3b445aa1422669ba66868ae0f457b",
+      "verifiedAt": "2026-09-23T15:08:47.413Z",
       "commands": [
         "cargo check/build reconciliation and consumer; deterministic double build",
         "vitest run test/foundation-reconciliation.test.ts"
@@ -2751,8 +2751,8 @@
       "package": "risk",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "48c4a7549041cf1e5e2164baa31fe3ec632d6e7ac8416f92cc30014022842876",
-      "verifiedAt": "2026-09-23T05:03:34.124Z",
+      "fingerprint": "64e36ae7b1c07f67e327fa17404109c899b5174e79ec0068f01cb7ed6e0a3878",
+      "verifiedAt": "2026-09-23T15:09:57.078Z",
       "commands": [
         "cargo check/build risk and consumer; deterministic double build",
         "vitest run test/foundation-risk.test.ts"
@@ -2830,8 +2830,8 @@
       "package": "routing",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "9ed44a69eadcd37af0b6fcc5b28ec9d03862e654a3786f976bdbc0fd64dfdb85",
-      "verifiedAt": "2026-09-23T05:03:39.638Z",
+      "fingerprint": "d423e69957419d32a3da5d146af7f3fa6014a451d12068f23e65074b3ae0d0f9",
+      "verifiedAt": "2026-09-23T15:10:02.431Z",
       "commands": [
         "cargo check/build routing and consumer; deterministic double build",
         "vitest run test/foundation-routing.test.ts"
@@ -2909,8 +2909,8 @@
       "package": "scheduling",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "7f8e0bd4a8584e0dfbc9b92eff0c5db2c081afb171d9c9bebb7bdcdb3939504d",
-      "verifiedAt": "2026-09-23T05:03:45.063Z",
+      "fingerprint": "88585d7e5aab08dc02d0033a800a476428af2ff842d3e2ce8418426855ec190c",
+      "verifiedAt": "2026-09-23T15:10:07.919Z",
       "commands": [
         "cargo check/build scheduling and consumer; deterministic double build",
         "vitest run test/foundation-scheduling.test.ts"
@@ -2988,8 +2988,8 @@
       "package": "selection",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "930b616cfa76752c09913c1905ff3873eb43c0cf61668bbcc38389a0e125cc6b",
-      "verifiedAt": "2026-09-23T05:03:51.304Z",
+      "fingerprint": "b411d27451640d903c8534419075a0c782c1ac38eedc8b6c3712f9ff9446c9c2",
+      "verifiedAt": "2026-09-23T15:10:14.166Z",
       "commands": [
         "cargo check/build selection and consumer; deterministic double build",
         "vitest run test/foundation-selection.test.ts"
@@ -3067,8 +3067,8 @@
       "package": "service-level",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "cb0624edfe90bab27dba4cc6dd382726d67c491dee5452a6efab691567ef381b",
-      "verifiedAt": "2026-09-23T05:03:59.260Z",
+      "fingerprint": "6f279b76e517dbfbe85ae89d0d2181712c66d6d596fc125674bd73f78b0d80cc",
+      "verifiedAt": "2026-09-23T15:10:21.767Z",
       "commands": [
         "cargo check/build service-level and consumer; deterministic double build",
         "vitest run test/foundation-service-level.test.ts"
@@ -3146,8 +3146,8 @@
       "package": "specification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "009777be73702cb9ba39a1df500819eb191a4d0e9105a165225fdde2fedf9c4f",
-      "verifiedAt": "2026-09-23T05:00:51.790Z",
+      "fingerprint": "8e7c5a898b3da5983a679f24d6a2a1c09e468829277f1b2e597709e1262c7869",
+      "verifiedAt": "2026-09-23T15:07:11.412Z",
       "commands": [
         "cargo check/build specification and consumer; deterministic double build",
         "vitest run test/foundation-specification-consumer.test.ts test/foundation-specification-git.test.ts test/foundation-specification.test.ts"
@@ -3225,8 +3225,8 @@
       "package": "usage",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "617dc76e47c196c95b9a7eaa51fcf7df4f1e9e6fd4878a28d2cb8be0a52387d6",
-      "verifiedAt": "2026-09-23T05:02:57.781Z",
+      "fingerprint": "3b9c787225dff361105ef1fc842d80b77c92b5f26838cbdcd63c17478fb0c95d",
+      "verifiedAt": "2026-09-23T15:09:20.270Z",
       "commands": [
         "cargo check/build usage and consumer; deterministic double build",
         "vitest run test/foundation-usage.test.ts"
@@ -3301,8 +3301,9 @@
     }
   ],
   "ci": {
-    "run": 35820682561,
-    "status": "passing",
-    "sourceCommit": "f64c1b811e88502040c9667928de267a86a9c0cb"
+    "runId": 35879253526,
+    "url": "https://github.com/gmackie/forgec/actions/runs/35879253526",
+    "status": "success",
+    "sourceCommit": "9c92db7bfa73dc1523bb1570f6ccd60c3ce684a0"
   }
 }

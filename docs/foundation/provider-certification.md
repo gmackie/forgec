@@ -103,8 +103,8 @@ retained. Credentials and database URLs are not included in receipts. Reports ar
 execution evidence, not signed certificates or evidence of untested package cases.
 
 Missing configuration fails before execution and creates no passing receipt. A
-source change requires rerunning the profile. Hosted D1 and DynamoDB runs remain
-pending until authorized test infrastructure and credentials are supplied.
+source change requires rerunning the profile. Dedicated hosted infrastructure is now provisioned; retained execution evidence is
+listed in the verified checkpoint below.
 
 ## Full package invariant profiles
 
@@ -144,10 +144,9 @@ identity before switching profiles. The runner never provisions or migrates D1.
 DynamoDB uses the same adapter key layout for all profiles, with a unique run and
 test tenant namespace, and performs no table schema mutation or remote cleanup.
 
-All fourteen profiles have passed native PostgreSQL during development. Full
-Ledger has also passed hosted DynamoDB. Additional DynamoDB and hosted D1 profile
-receipts must be collected against the final integrated source before claiming
-all fourteen provider criteria; core-only receipts are insufficient.
+All fourteen profiles have passed on all three providers at the checkpoints
+recorded below. Any source change requires fresh matching receipts; core-only
+receipts are insufficient.
 
 ## Aggregate acceptance evidence
 
@@ -172,8 +171,10 @@ Dedicated infrastructure provisioning is documented in `conformance/foundation/p
 
 ## Verified implementation checkpoint
 
-At `f64c1b811e88502040c9667928de267a86a9c0cb`, after integrating the independently reviewed workflow receipt-race fix, all 14 profiles passed on native PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every bundle and accepted all 42 cells. `provider-evidence/certification.json` indexes the retained receipts and raw reports; five core traces also passed independently on each provider. This satisfies the bounded database profiles for F34-05, F36-06 and F39–50 STORE. It does not certify hosted object bytes or deployed application adoption.
+At `9c92db7bfa73dc1523bb1570f6ccd60c3ce684a0`, after integrating installable app adapters and reviewed migration composition, all 14 profiles passed on native PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every bundle and accepted all 42 cells. `provider-evidence/certification.json` indexes the retained receipts and raw reports. The earlier checkpoint separately passed the five core traces on each provider. This satisfies the bounded database profiles for F34-05, F36-06 and F39–50 STORE. It does not certify hosted object bytes or deployed application adoption.
 
 Contract files retain their original package-local status (`294/308` passing, 14 provider IDs planned); provider acceptance is established separately by the source-bound aggregate receipt. This avoids treating a local verifier as proof of hosted behavior or rewriting its input contracts after certification.
 
 The earlier checkpoint aggregate is retained as `provider-evidence/certification-834dd37c.json`; it is historical evidence, not the current-source gate.
+
+The previous implementation aggregate is retained as `provider-evidence/certification-f64c1b81.json`. The current refresh had one D1 Operations transport failure, followed by a passing full-profile run in a fresh tenant. Its failed receipt/raw report and `retry-notes-9c92db7b.md` are retained; the aggregate selects the passing retry and validates all 42 cells.

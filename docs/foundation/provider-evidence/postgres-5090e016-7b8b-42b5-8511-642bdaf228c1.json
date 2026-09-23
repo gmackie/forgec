@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-decision-invariants/1",
+  "coverageCriteria": [
+    "F39-STORE"
+  ],
+  "status": "passing",
+  "runId": "5090e016-7b8b-42b5-8511-642bdaf228c1",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+  "sourceFingerprint": "6557b9f1aa44bf2c6dac9dc8348454232a5bcb2c3edbd8acb3c5138dd4fd0732",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "652db4978f45e85951991430da9b8412c424c766a56e56bae242ae9205aeed49"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "775a21f258023b45c29c610848abfb3324bbec648381573bacde0cf5a1dedc38"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "ee49c6f9403e82bc9bf8deab653c9add1b4eeba80f49db3947943e83d88e3395"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: six pinned rules and immutable outcomes",
+    "hosted: journal serializes finalize versus withdrawal and rejects raw forks",
+    "hosted: duplicates, eligibility snapshots and denied journal reads fail closed",
+    "hosted: expiry, reconsideration, support and typed applications",
+    "hosted: malformed raw terminal candidates fail closed and denied writes stay denied"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T15:06:46.275Z",
+  "passedTraces": [
+    "hosted: six pinned rules and immutable outcomes",
+    "hosted: journal serializes finalize versus withdrawal and rejects raw forks",
+    "hosted: duplicates, eligibility snapshots and denied journal reads fail closed",
+    "hosted: expiry, reconsideration, support and typed applications",
+    "hosted: malformed raw terminal candidates fail closed and denied writes stay denied"
+  ],
+  "testReportSha256": "eb2e85ad6fa8062d78699abcde0f63991edd9755a47c9d9683ee68a1837b8cf6",
+  "identity": {
+    "provider": "postgres",
+    "runId": "5090e016-7b8b-42b5-8511-642bdaf228c1",
+    "tenantPrefix": "foundation-cert-5090e016-7b8b-42b5-8511-642bdaf228c1",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

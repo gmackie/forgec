@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-operations-invariants/1",
+  "coverageCriteria": [
+    "F45-STORE"
+  ],
+  "status": "failed",
+  "runId": "60b983c8-02c9-4c4e-9644-24d91d594161",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "122fd2eeccbf66fe15807502eee9d045e11900ae7ae97f1ad2646083f770429d",
+  "sourceFingerprint": "62ea5f7d7c7311e2e0ddd624e5871e3d50dedbc9668cc22205d262eeebf60a1e",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "6ea2c71e2660e6401a6583dd13ef4a75cda7103197fa54379c34028f1739551f"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "467704fc4143bfaebce7ef70049ee31f0e54ccdc14642022e132f8c76a62d2b7"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "15794029172aa15995daea3841fec324617db356126a8cf4b5aeb3248bb2083a"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: operation usage replay, real task linkage, lineage and terminal cleanup races"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "failedAt": "2026-09-23T15:09:38.129Z",
+  "failure": "Required provider traces or source-bound evidence failed; inspect command output"
+}
