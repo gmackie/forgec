@@ -1,0 +1,59 @@
+{
+  "slug": "party",
+  "layer": "substrate",
+  "issue": 52,
+  "dependencies": [
+    "identifiers"
+  ],
+  "facts": [
+    "Stable business Party; Principal representation; typed Person/Organization satellites. Representation does not confer authority."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for party"
+  ],
+  "invariants": [
+    "Domain relationships and identity resolution are above Party; Party never imports Master Data.",
+    "Customer, worker and organization; revoked representation retains history; cross-tenant denial; business identity survives Principal removal."
+  ],
+  "acceptance": [
+    {
+      "id": "F52-01",
+      "description": "Party handle/resource model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F52-02",
+      "description": "Principal-to-Party representation relation",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F52-03",
+      "description": "typed Person/Organization satellite examples",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F52-04",
+      "description": "Identifiers integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F52-05",
+      "description": "no conflation with authorization identity",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F52-06",
+      "description": "fixtures for customer, worker and organization",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for customer, worker and organization"
+  ]
+}

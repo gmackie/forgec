@@ -1,0 +1,59 @@
+{
+  "slug": "availability",
+  "layer": "substrate",
+  "issue": 55,
+  "dependencies": [
+    "specification"
+  ],
+  "facts": [
+    "Calendar and immutable rule revisions; timezone-aware recurring windows, exceptions and overrides; optional authored specification pin."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for availability"
+  ],
+  "invariants": [
+    "Resource attachment is typed. Availability owns no capacity, reservation or appointment. Business clocks consume its query contract.",
+    "Worker/machine/facility; bounded query, overnight window, DST gap/fold, leap date and precedence; replay old revision; allocation/scheduling bridge."
+  ],
+  "acceptance": [
+    {
+      "id": "F55-01",
+      "description": "recurring availability rules",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F55-02",
+      "description": "exceptions/overrides",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F55-03",
+      "description": "timezone semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F55-04",
+      "description": "effective-window query",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F55-05",
+      "description": "Allocation/Scheduling integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F55-06",
+      "description": "fixtures for worker, machine and facility availability",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for worker, machine and facility availability"
+  ]
+}

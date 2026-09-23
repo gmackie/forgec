@@ -1,0 +1,53 @@
+{
+  "slug": "place",
+  "layer": "substrate",
+  "issue": 53,
+  "dependencies": [
+    "identifiers"
+  ],
+  "facts": [
+    "Place identity, bounded containment, identifier set and typed address/timezone extensions."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for place"
+  ],
+  "invariants": [
+    "PlaceAvailability bridge references Place and Availability; Place does not import Scheduling or Availability.",
+    "Facility/room, customer site, warehouse; moves preserve identity; concurrent opposing moves cannot create cycles; invalid zones rejected."
+  ],
+  "acceptance": [
+    {
+      "id": "F53-01",
+      "description": "stable Place identity",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F53-02",
+      "description": "containment/hierarchy semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F53-03",
+      "description": "identifiers integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F53-04",
+      "description": "address/timezone extensibility",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F53-05",
+      "description": "fixtures for facility/room, customer site and warehouse location",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for facility/room, customer site and warehouse location"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "slug": "routing",
+  "layer": "system",
+  "issue": 57,
+  "dependencies": [
+    "fulfillment",
+    "qualification",
+    "availability",
+    "allocation",
+    "participation",
+    "party"
+  ],
+  "facts": [
+    "Need/context, candidates, explainable assignment offer and accept/decline/expire history."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for routing"
+  ],
+  "invariants": [
+    "Place/priority, workforce positions and appointment integration are upper-layer joins; no dependency on Scheduling or Workforce.",
+    "Support/technician/reviewer/Bob; reject stale or expired eligibility; revalidate snapshot on accept; atomic capacity claim; competing accepts and expiry."
+  ],
+  "acceptance": [
+    {
+      "id": "F57-01",
+      "description": "routing request/context",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F57-02",
+      "description": "candidate eligibility from Qualification/Availability",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F57-03",
+      "description": "capacity/allocation integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F57-04",
+      "description": "explainable routing decision",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F57-05",
+      "description": "assignment offer/accept/decline lifecycle",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F57-06",
+      "description": "fixtures for support agent, technician, reviewer and Bob Runner/business assignment",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for support agent, technician, reviewer and Bob Runner/business assignment"
+  ]
+}

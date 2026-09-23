@@ -1,0 +1,59 @@
+{
+  "slug": "classification",
+  "layer": "substrate",
+  "issue": 54,
+  "dependencies": [
+    "identifiers"
+  ],
+  "facts": [
+    "Business Taxonomy/Concept/revision, aliases, supersession, ClassificationSet and assignments. Separate from governance dataClass."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for classification"
+  ],
+  "invariants": [
+    "Subjects point to classification sidecars. Classification never imports its classified subjects.",
+    "Knowledge/product/risk/job-family vocabularies; hierarchy/alias conflicts; historical assignment interpretation survives concept evolution."
+  ],
+  "acceptance": [
+    {
+      "id": "F54-01",
+      "description": "taxonomy/concept hierarchy",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F54-02",
+      "description": "concept lifecycle/supersession",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F54-03",
+      "description": "classification assignment aggregate",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F54-04",
+      "description": "aliases/external identifiers",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F54-05",
+      "description": "sidecar integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F54-06",
+      "description": "fixtures for knowledge, products, risk and job-family classification",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for knowledge, products, risk and job-family classification"
+  ]
+}

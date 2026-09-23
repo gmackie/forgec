@@ -1,0 +1,62 @@
+{
+  "slug": "service-level",
+  "layer": "system",
+  "issue": 63,
+  "dependencies": [
+    "agreement-catalog",
+    "entitlement",
+    "evaluation",
+    "fulfillment"
+  ],
+  "facts": [
+    "Policy/objective/milestone, clock rules, tracked breach and explicit remedy links."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for service-level"
+  ],
+  "invariants": [
+    "Availability business-clock adapter is required for business-hours fixtures; UTC baseline must not claim that coverage. Specification pins, notifications and credits use typed bridges.",
+    "Support/lab/deployment; pinned clock policy, pause/resume and late facts; one durable breach under races; remedy dedup; agreement/right linkage."
+  ],
+  "acceptance": [
+    {
+      "id": "F63-01",
+      "description": "policy/objective/milestone model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F63-02",
+      "description": "clock/deadline rules",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F63-03",
+      "description": "evaluation/breach tracking",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F63-04",
+      "description": "agreement/entitlement linkage",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F63-05",
+      "description": "remedy/escalation hooks",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F63-06",
+      "description": "fixtures for support first-response SLA, lab turnaround and deployment SLO",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for support first-response SLA, lab turnaround and deployment SLO"
+  ]
+}

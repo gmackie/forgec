@@ -1,0 +1,65 @@
+{
+  "slug": "planning-budget",
+  "layer": "system",
+  "issue": 67,
+  "dependencies": [
+    "specification",
+    "allocation",
+    "evaluation",
+    "ledger",
+    "classification",
+    "usage",
+    "fulfillment"
+  ],
+  "facts": [
+    "Goals/targets, milestones, immutable forecast scenarios, funding constraints, encumbrance and actuals links."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for planning-budget"
+  ],
+  "invariants": [
+    "Usage and Fulfillment are included to verify the actuals/execution portion of #67. Risk budgets and Service-level milestones use upper joins; Plan is not a workflow.",
+    "Project/procurement/capacity; forecast distinct from actual; no overspend under competing encumbrance; actual Usage/Ledger links; reversal/release history."
+  ],
+  "acceptance": [
+    {
+      "id": "F67-01",
+      "description": "goal/target model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F67-02",
+      "description": "plan + milestone model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F67-03",
+      "description": "forecast/scenario representation",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F67-04",
+      "description": "budget/funding envelope",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F67-05",
+      "description": "allocation/ledger actuals integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F67-06",
+      "description": "fixtures for project plan, procurement budget and capacity plan",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for project plan, procurement budget and capacity plan"
+  ]
+}

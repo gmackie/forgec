@@ -1,0 +1,63 @@
+{
+  "slug": "scheduling",
+  "layer": "system",
+  "issue": 58,
+  "dependencies": [
+    "availability",
+    "allocation",
+    "participation",
+    "place",
+    "fulfillment"
+  ],
+  "facts": [
+    "Requirements, intersected candidate slots, appointment and rescheduling history. Allocation owns reservations."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for scheduling"
+  ],
+  "invariants": [
+    "Routing selects assignees; Scheduling does not import Routing. Qualification-constrained booking is a separately gated bridge.",
+    "Field visit/instrument/classroom; cross-zone intersection; two bookings sharing one resource; all-or-none reservation; release once; failed reschedule preserves prior booking."
+  ],
+  "acceptance": [
+    {
+      "id": "F58-01",
+      "description": "requirement + candidate-slot model",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F58-02",
+      "description": "multi-resource availability intersection",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F58-03",
+      "description": "reservation/appointment lifecycle",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F58-04",
+      "description": "participant/place integration",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F58-05",
+      "description": "reschedule/cancel semantics",
+      "kind": "runtime",
+      "status": "planned"
+    },
+    {
+      "id": "F58-06",
+      "description": "fixtures for field-service visit, lab instrument booking and classroom/meeting booking",
+      "kind": "fixture",
+      "status": "planned"
+    }
+  ],
+  "fixtures": [
+    "fixtures for field-service visit, lab instrument booking and classroom/meeting booking"
+  ]
+}
