@@ -7,7 +7,7 @@ await build({
   entryPoints: ["deploy/aws/handler.ts"],
   bundle: true,
   platform: "node",
-  target: "node22",
+  target: "node24",
   format: "esm",
   conditions: ["source"],
   outfile: "deploy/aws/dist/index.mjs",

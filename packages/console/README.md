@@ -91,7 +91,7 @@ central login, automatic federation, or required upstream authority. Each instan
 its own authority string, administrator token, Ed25519 signing key and OCI connection.
 `forge.gmac.io` is one deployment configuration, with no special status in the application.
 
-The shared Effect API runs on Workers with D1, or Node 22 with SQLite. Both use the same
+The shared Effect API runs on Workers with D1, or Node 24 with SQLite. Both use the same
 OCI adapter over HTTP. Docker Compose includes an independent Distribution registry;
 Workers connects to a reachable OCI registry chosen by its operator.
 

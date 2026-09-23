@@ -2,6 +2,9 @@
   "name": "forgegraph-workspace",
   "private": true,
   "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build": "cargo build --release -p forgegraph-cli && pnpm -r run build",
     "test": "cargo test --workspace && pnpm -r test",
