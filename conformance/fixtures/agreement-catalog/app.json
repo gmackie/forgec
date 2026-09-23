@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "c5cf7c419b37f4daa83e94aec81b37408f6c52c7959e2b0838f5592138d354b4",
+  "buildHash": "0c8ca185b57e4c2267e4fde89f4ed4503b9c885199b5347afcf8cb92e4bda6b1",
   "digests": {
-    "source": "5fd77de6d3c24ff3632c2ca7f667cb7c9e67a35a73a7cb2ce14103a2a4209bf2",
-    "wire": "bb5837e470dbe347253ad43ec1687d8ed5b7d559cb1f9af56193366884cbbfd9",
+    "source": "381b3deb0da6a4179e990df0b720fd9454281f858e3cdcd4ea9fccef9a8e2ddd",
+    "wire": "0795ad2e98f302122e493bd43134bc8790f8300d3105a5e867a67596dc52f5a1",
     "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
-    "security": "494eaec78817e3db97677292e016156c032bcc4ef13fda40a9b794ba29792cea"
+    "security": "767ece1e63b44fcaeb5332725b034946c90649e080affed43105176f7fa1f1f6"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -13083,6 +13083,206 @@
             "purposeBindings": []
           },
           {
+            "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+            "name": "EvaluationQuarantine",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": true,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "run",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "sourceDigest",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 64,
+                      "max": 64
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "reason",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 500
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "recordedBy",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [
+              {
+                "name": "run",
+                "fields": [
+                  "run"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byRun",
+                "fields": [
+                  "run"
+                ],
+                "coveredBy": "run"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.find.byRun",
+                "kind": "find",
+                "query": "byRun"
+              },
+              {
+                "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
             "id": "@forgegraph/foundation/evaluation/_/EvaluationRun",
             "name": "EvaluationRun",
             "kind": "resource",
@@ -23330,6 +23530,153 @@
         ]
       },
       {
+        "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "name": "EvaluationQuarantine",
+        "wireName": "evaluation_quarantine",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "run": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+            },
+            "sourceDigest": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "run",
+            "sourceDigest",
+            "reason",
+            "recordedBy"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "run": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+            },
+            "sourceDigest": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "run",
+            "sourceDigest",
+            "reason",
+            "recordedBy"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byRun",
+            "kind": "find",
+            "params": [
+              "run"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.find.byRun",
+            "kind": "find",
+            "query": "byRun"
+          },
+          {
+            "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
         "id": "@forgegraph/foundation/evaluation/_/EvaluationRun",
         "name": "EvaluationRun",
         "wireName": "evaluation_run",
@@ -30310,6 +30657,85 @@
         "checks": []
       },
       {
+        "name": "evaluation_quarantine",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "run",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "run",
+            "storage": "text"
+          },
+          {
+            "name": "source_digest",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "sourceDigest",
+            "storage": "text"
+          },
+          {
+            "name": "reason",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "reason",
+            "storage": "text"
+          },
+          {
+            "name": "recorded_by",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "recordedBy",
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "run"
+            ],
+            "references": "evaluation_run",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
         "name": "evaluation_run",
         "resource": "@forgegraph/foundation/evaluation/_/EvaluationRun",
         "columns": [
@@ -32262,6 +32688,16 @@
       {
         "name": "evaluation_finish_uq_run",
         "table": "evaluation_finish",
+        "columns": [
+          "tenant",
+          "run"
+        ],
+        "unique": true,
+        "constraint": "run"
+      },
+      {
+        "name": "evaluation_quarantine_uq_run",
+        "table": "evaluation_quarantine",
         "columns": [
           "tenant",
           "run"
@@ -34503,6 +34939,43 @@
           }
         ],
         "createActions": 8
+      },
+      {
+        "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "name": "EvaluationQuarantine",
+        "wireName": "evaluation_quarantine",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "run",
+            "keyFields": [
+              "run"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "run",
+            "target": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+          }
+        ],
+        "createActions": 6
       },
       {
         "id": "@forgegraph/foundation/evaluation/_/EvaluationRun",
@@ -40221,6 +40694,120 @@
         "versioned": false
       },
       {
+        "id": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "name": "EvaluationQuarantine",
+        "kind": "resource",
+        "label": "Evaluation Quarantine",
+        "plural": "Evaluation Quarantines",
+        "route": "evaluation-quarantines",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "run",
+            "label": "Run",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/evaluation/_/EvaluationRun",
+              "route": "evaluation-run",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/evaluation/_/EvaluationRun.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "sourceDigest",
+            "label": "Source Digest",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 64,
+            "maxLength": 64
+          },
+          {
+            "name": "reason",
+            "label": "Reason",
+            "widget": "textarea",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 500
+          },
+          {
+            "name": "recordedBy",
+            "label": "Recorded By",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 128
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byRun",
+            "op": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.find.byRun",
+            "params": [
+              "run"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
         "id": "@forgegraph/foundation/evaluation/_/EvaluationRun",
         "name": "EvaluationRun",
         "kind": "resource",
@@ -45788,6 +46375,110 @@
         "operation": "@forgegraph/foundation/evaluation/_/EvaluationFinish.list.all",
         "kind": "list",
         "resource": "@forgegraph/foundation/evaluation/_/EvaluationFinish",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.find.byRun",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
         "class": "crud-read",
         "slo": {
           "availability": "99.9%",
@@ -52826,6 +53517,125 @@
         "completeness": "unclassified"
       },
       {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "field": "run",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "field": "sourceDigest",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "field": "reason",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "field": "recordedBy",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
         "resource": "@forgegraph/foundation/evaluation/_/EvaluationRun",
         "field": "id",
         "class": "data.structural",
@@ -54957,8 +55767,8 @@
     "summary": {
       "classified": 1,
       "inferred": 2,
-      "structural": 313,
-      "unclassified": 82
+      "structural": 317,
+      "unclassified": 85
     }
   },
   "lineage": {
@@ -58384,6 +59194,101 @@
           "support",
           "reason",
           "recordedBy"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "outputs": [
+          "id",
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "outputs": [
+          "id",
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.find.byRun",
+        "kind": "find",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "outputs": [
+          "id",
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "writes": [],
+        "filters": [
+          "run"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationQuarantine",
+        "outputs": [
+          "id",
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
         ],
         "writes": [],
         "filters": [],
@@ -64457,6 +65362,103 @@
           ]
         },
         "EvaluationFinishPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "EvaluationQuarantineRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "run": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+            },
+            "sourceDigest": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "createdAt",
+            "updatedAt",
+            "run",
+            "sourceDigest",
+            "reason",
+            "recordedBy"
+          ]
+        },
+        "EvaluationQuarantineCreate": {
+          "type": "object",
+          "properties": {
+            "run": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+            },
+            "sourceDigest": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "reason": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "recordedBy": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "run",
+            "sourceDigest",
+            "reason",
+            "recordedBy"
+          ]
+        },
+        "EvaluationQuarantinePatch": {
           "type": "object",
           "properties": {},
           "additionalProperties": false

@@ -39,6 +39,12 @@ for(const adapter of foundationAdapters)it(`${adapter}: domain scales, immutable
   const accepted=await Effect.runPromise(service.accept(String(original.id),String(decision.id),option,'Domain accepts assessed residual exposure',ctx));
   expect(await Effect.runPromise(service.acceptance(String(accepted.id),option,ctx))).toMatchObject({assessment:original.id});
   await expect(Effect.runPromise(service.acceptance(String(accepted.id),String(before.options[1]!.id),ctx))).rejects.toThrow();
+  await call(e+'EvaluationQuarantine.create',{run:run.id,sourceDigest:'a'.repeat(64),reason:'Legacy chronology',recordedBy:ctx.actor});
+  const quarantined={code:'ValidationFailed',detail:'Evaluation is quarantined; execute a new run with fresh bindings'};
+  await expect(Effect.runPromise(service.accept(String(original.id),String(decision.id),option,'New acceptance',ctx))).rejects.toMatchObject(quarantined);
+  await expect(Effect.runPromise(service.acceptance(String(accepted.id),option,ctx))).rejects.toMatchObject(quarantined);
+  expect((await call(p+'RiskAcceptance.get',{id:accepted.id})).assessment).toBe(original.id);
+  expect(await Effect.runPromise(evals.phase(String(run.id),ctx))).toBe('Completed');
   await expect(call(p+'Risk.get',{id:risk.id},{...ctx,tenant:'other'})).rejects.toThrow();
  }finally{await f.close();}
 });

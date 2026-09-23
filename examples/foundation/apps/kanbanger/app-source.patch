@@ -1,0 +1,71 @@
+diff --git a/packages/api/src/services/foundation-intake-service.ts b/packages/api/src/services/foundation-intake-service.ts
+new file mode 100644
+index 0000000000..32b8208feb
+--- /dev/null
++++ b/packages/api/src/services/foundation-intake-service.ts
+@@ -0,0 +1,33 @@
++import { and, eq, issues, teams, type Database } from "@linear-clone/db";
++
++/** Immutable source identity only: mutable title/status are not intake authority. */
++export interface FoundationIssueFact {
++  workspaceId: string;
++  issueId: string;
++  teamId: string;
++  creatorId: string;
++  createdAt: string;
++}
++export interface FoundationIssueIntake {
++  recordIssue(fact: FoundationIssueFact): Promise<{ submissionId: string; issueLinkId: string }>;
++}
++
++/** Opt-in reconciliation of an existing issue, called after normal workspace authorization.
++ * No app writes: failure is retried with this same issue ID, never by repeating createIssue.
++ * workspaceId must come from the authenticated server context, not a request body.
++ */
++export async function reconcileIssueFoundationIntake(
++  db: Database,
++  workspaceId: string,
++  issueId: string,
++  foundation: FoundationIssueIntake,
++): Promise<{ submissionId: string; issueLinkId: string }> {
++  const [source] = await db.select({ issueId: issues.id, teamId: teams.id,
++    workspaceId: teams.workspaceId, creatorId: issues.creatorId, createdAt: issues.createdAt })
++    .from(issues).innerJoin(teams, eq(issues.teamId, teams.id))
++    .where(and(eq(issues.id, issueId), eq(teams.workspaceId, workspaceId))).limit(1);
++  if (!source || source.workspaceId !== workspaceId || source.issueId !== issueId) {
++    throw new Error("Issue not found in authorized workspace");
++  }
++  return foundation.recordIssue({ ...source, createdAt: source.createdAt.toISOString() });
++}
+diff --git a/packages/api/src/services/issue-service.ts b/packages/api/src/services/issue-service.ts
+index 7180067f64..5e3c435ac9 100644
+--- a/packages/api/src/services/issue-service.ts
++++ b/packages/api/src/services/issue-service.ts
+@@ -1043,3 +1043,6 @@
+ 
+   return issue;
+ }
++
++// Explicit replay-safe Foundation adoption; existing create/update API behavior is unchanged.
++export { reconcileIssueFoundationIntake } from "./foundation-intake-service";
+diff --git a/packages/api/tests/foundation-intake-service.test.ts b/packages/api/tests/foundation-intake-service.test.ts
+new file mode 100644
+index 0000000000..88ef6771e7
+--- /dev/null
++++ b/packages/api/tests/foundation-intake-service.test.ts
+@@ -0,0 +1,15 @@
++import { describe, expect, it, vi } from "vitest";
++vi.mock("@linear-clone/db", () => ({and: (...args: unknown[])=>args,eq:(...args:unknown[])=>args,issues:{id:'issue',teamId:'team',creatorId:'creator',createdAt:'created'},teams:{id:'team',workspaceId:'workspace'}}));
++import { reconcileIssueFoundationIntake } from "../src/services/foundation-intake-service";
++describe("Foundation issue reconciliation", () => {
++  it("reads only the authorized persisted issue and preserves source identity", async () => {
++    const source={issueId:'i',teamId:'t',workspaceId:'w',creatorId:'u',createdAt:new Date('2026-01-01T00:00:00Z')};
++    const where=vi.fn(); const q:any={from:()=>q,innerJoin:()=>q,where:(x:unknown)=>{where(x);return q;},limit:async()=>[source]};
++    const db:any={select:()=>q};const recordIssue=vi.fn().mockResolvedValue({submissionId:'s',issueLinkId:'l'});
++    await expect(reconcileIssueFoundationIntake(db,'w','i',{recordIssue})).resolves.toEqual({submissionId:'s',issueLinkId:'l'});
++    expect(where).toHaveBeenCalledWith([['issue','i'],['workspace','w']]);
++    expect(recordIssue).toHaveBeenCalledWith({...source,createdAt:source.createdAt.toISOString()});
++    await expect(reconcileIssueFoundationIntake(db,'other','i',{recordIssue})).rejects.toThrow('authorized workspace');
++    expect(recordIssue).toHaveBeenCalledTimes(1);
++  });
++});

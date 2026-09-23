@@ -1,3 +1,4 @@
+import {Evaluations} from "./evaluation.js";
 import {Effect} from 'effect';
 import type {Engine,CallContext} from '../engine.js';
 import type {Wire} from '../decode.js';
@@ -24,7 +25,7 @@ export class Changes {
  end(input:{change:string;outcome:'Completed'|'Failed'|'Cancelled'|'Rejected';reason:string;implementation?:string;fulfillment?:string;fulfillmentEnd?:string;verification?:string;decision?:string},ctx:CallContext):Effect.Effect<Wire,ForgeError>{const self=this;return Effect.gen(function*(){
   if(input.decision)yield* self.decision(input.decision,ctx);
   if(input.implementation){const implementation=yield* self.engine.call(p+'ChangeImplementationLink.get',{id:input.implementation},ctx);if(implementation.decision)yield* self.decision(String(implementation.decision),ctx);}
-  if(input.verification){const verification=yield* self.engine.call(p+'ChangeVerificationLink.get',{id:input.verification},ctx);const seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:verification.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);}
+  if(input.verification){const verification=yield* self.engine.call(p+'ChangeVerificationLink.get',{id:input.verification},ctx);const seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:verification.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);yield* new Evaluations(self.engine).result(String(verification.finish),ctx);}
   return yield* self.engine.call(p+'ChangeEnd.create',{...input,implementation:input.implementation??null,fulfillment:input.fulfillment??null,fulfillmentEnd:input.fulfillmentEnd??null,verification:input.verification??null,decision:input.decision??null},ctx);
  });}
  state(change:string,ctx:CallContext):Effect.Effect<{change:Wire;phase:string;implementation:Wire|null;ended:Wire|null;rollback:Wire|null;supersession:Wire|null},ForgeError>{const self=this;return Effect.gen(function*(){
@@ -33,10 +34,11 @@ export class Changes {
   if(implementation?.decision)yield* self.decision(String(implementation.decision),ctx);
   const ended=yield* findTerminalFact(self.engine,p+'ChangeEnd','change',change,ctx);
   if(ended?.decision)yield* self.decision(String(ended.decision),ctx);
-  if(ended?.verification){const verification=yield* self.engine.call(p+'ChangeVerificationLink.get',{id:ended.verification},ctx);const seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:verification.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);}
+  if(ended?.verification){const verification=yield* self.engine.call(p+'ChangeVerificationLink.get',{id:ended.verification},ctx);const seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:verification.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);yield* new Evaluations(self.engine).result(String(verification.finish),ctx);}
   const rollback=yield* findTerminalFact(self.engine,p+'ChangeRollback','change',change,ctx);
   const rollbackEnd=rollback?yield* findTerminalFact(self.engine,p+'ChangeEnd','change',String(rollback.rollback),ctx):null;
   if(rollbackEnd?.implementation){const impl=yield* self.engine.call(p+'ChangeImplementationLink.get',{id:rollbackEnd.implementation},ctx);if(impl.decision)yield* self.decision(String(impl.decision),ctx);}
+  if(rollbackEnd?.verification){const verification=yield* self.engine.call(p+'ChangeVerificationLink.get',{id:rollbackEnd.verification},ctx);yield* new Evaluations(self.engine).result(String(verification.finish),ctx);}
   const supersession=yield* findTerminalFact(self.engine,p+'ChangeSupersession','prior',change,ctx);
   return {change:record,phase:rollback?(rollbackEnd?.outcome==='Completed'?'RolledBack':'RollbackPlanned'):ended?String(ended.outcome):implementation?'Scheduled':'Proposed',implementation,ended,rollback,supersession};
  });}

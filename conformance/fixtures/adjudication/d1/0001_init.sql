@@ -553,6 +553,19 @@ CREATE TABLE evaluation_finish (
   FOREIGN KEY (tenant, support) REFERENCES evidence_seal (tenant, id)
 );
 
+CREATE TABLE evaluation_quarantine (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "run" TEXT NOT NULL,
+  "source_digest" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  "recorded_by" TEXT NOT NULL,
+  "created_at" TEXT NOT NULL,
+  "updated_at" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, run) REFERENCES evaluation_run (tenant, id)
+);
+
 CREATE TABLE evaluation_run (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
@@ -981,6 +994,7 @@ CREATE UNIQUE INDEX requirement_definition_uq_namespace_name ON requirement_defi
 CREATE UNIQUE INDEX right_definition_uq_namespace_name ON right_definition (tenant, namespace, name);
 CREATE UNIQUE INDEX evaluation_executor_uq_key ON evaluation_executor (tenant, key_);
 CREATE UNIQUE INDEX evaluation_finish_uq_run ON evaluation_finish (tenant, run);
+CREATE UNIQUE INDEX evaluation_quarantine_uq_run ON evaluation_quarantine (tenant, run);
 CREATE INDEX evaluation_run_ix_by_definition ON evaluation_run (tenant, definition, id);
 CREATE INDEX evaluation_run_ix_by_evaluation_set ON evaluation_run (tenant, evaluation_set, id);
 CREATE UNIQUE INDEX evaluation_start_uq_run ON evaluation_start (tenant, run);

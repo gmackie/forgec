@@ -82,3 +82,27 @@ its timestamp alone lacks the new exact-command and signer-window proof. Such a
 pending quote requires operator resolution or a new valid acceptance, not synthesized
 acceptance/commit rows. The export audit above is scoped to Party and Evaluation;
 it does not validate or execute this separate storage migration.
+
+## Enforced Evaluation quarantine and rehearsal
+
+EvaluationQuarantine is an append-only, tenant-scoped fact keyed by EvaluationRun.
+`Evaluations.result` and Foundation consumers reject quarantined outcomes, including
+historical outcomes whose timestamps look valid. Raw history and `phase` remain
+inspectable. Quarantine cannot be removed through application mutation operations;
+re-evaluation uses a new run with fresh bindings.
+
+`node scripts/prepare-evaluation-migration.mjs source-export.json target-app.json output.json actor recordedAt`
+prepares a separate candidate from a complete canonical **legacy** Evaluation export.
+It verifies source resource counts and hashes, rejects in-flight workflows and
+unmapped resources, preserves identities and outcomes, records every started legacy
+run in quarantine, and fills missing storage timestamps with explicitly migration-time
+values. Those values never count as historical execution proof. Existing quarantine
+facts remain intact. This command writes a new file and does not touch a database.
+
+Fence and drain source writes before export. Apply reviewed target DDL to an isolated
+empty database, import the prepared snapshot while fenced, verify the exact snapshot,
+and run rejection/re-evaluation traces before approving cutover. The target must stay
+fenced until every quarantine fact is imported and verified; import is resumable but
+not a single atomic transaction. Quarantine lookup is a migration boundary, not a
+claim of serializable live revocation during concurrent authority writes. Production
+migration still needs the actual deployed bundle and complete source snapshot.

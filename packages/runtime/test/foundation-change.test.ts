@@ -66,6 +66,13 @@ for(const adapter of foundationAdapters)it(`${adapter}: pinned gates, validated 
    await expect(call(p+'Change.update',{id:change.id,approvalRequired:false})).rejects.toThrow();
    await expect(run(changes.state(String(change.id),{...ctx,tenant:'foreign'}))).rejects.toThrow();
    await expect(call(p+'ChangeImpactLink.create',{change:change.id,run:evaluation.id,finish:finish.id},{...ctx,tenant:'foreign'})).rejects.toThrow();
+   if(index===1){
+    await call(e+'EvaluationQuarantine.create',{run:evaluation.id,sourceDigest:'a'.repeat(64),reason:'Legacy chronology',recordedBy:ctx.actor});
+    const quarantined={code:'ValidationFailed',detail:'Evaluation is quarantined; execute a new run with fresh bindings'};
+    await expect(run(changes.state(String(change.id),ctx))).rejects.toMatchObject(quarantined);
+    await expect(run(changes.end({...complete,verification:String(verification.id)},{...ctx,idempotencyKey:'complete-'+index}))).rejects.toMatchObject(quarantined);
+    expect((await call(p+'ChangeEnd.get',{id:completed.id})).outcome).toBe('Completed');
+   }
   }
   engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'read-change',actions:[p+'Change.get'],requires:[],where:[]}],pips:[],epoch:1,knownObligations:[]});
   await expect(call(p+'ChangeStream.create',{key:'denied'})).rejects.toThrow();

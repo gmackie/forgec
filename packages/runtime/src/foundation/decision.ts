@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import { decodeDatetime } from "../codecs.js";
 import type { Wire } from "../decode.js";
@@ -51,7 +52,7 @@ export class Decisions {
       if (input.reconsideration) yield* valid((yield* self.state(input.reconsideration, ctx)).terminal != null, "Reconsideration requires a terminal case");
       yield* self.support(input.support, ctx);
       if (input.evaluation) {
-        const finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: input.evaluation }, ctx);
+        const finish = yield* new Evaluations(self.engine).result(String(input.evaluation),ctx);
         yield* self.support(finish.support, ctx);
       }
       const members: { id: string; end: string | null }[] = [], parties = new Set<string>();
@@ -98,7 +99,7 @@ export class Decisions {
       yield* validateRule(record.rule as DecisionRule, Number(record.threshold), electors.size, Number(record.optionCount));
       yield* self.support(record.support, ctx);
       if (record.evaluation != null) {
-        const finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: record.evaluation }, ctx);
+        const finish = yield* new Evaluations(self.engine).result(String(record.evaluation),ctx);
         yield* self.support(finish.support, ctx);
       }
       const options: Wire[] = [];

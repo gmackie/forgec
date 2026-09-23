@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import type { Engine, CallContext } from "../engine.js";
 import type { Wire } from "../decode.js";
@@ -55,7 +56,7 @@ export class Publications {
       const needsEvaluation = candidate.policy === "EvaluationCompleted" || candidate.policy === "Both", needsDecision = candidate.policy === "DecisionApproved" || candidate.policy === "Both";
       yield* check(needsEvaluation === (evaluation != null) && needsDecision === (decision != null), "Selected qualification gates are incomplete");
       if (evaluation != null) {
-        const finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: evaluation }, ctx);
+        const finish = yield* new Evaluations(self.engine).result(String(evaluation),ctx);
         const run = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationRun.get", { id: finish.run }, ctx);
         const link = yield* self.find("CandidateEvaluation", { candidate: candidate.id }, ctx);
         const start = yield* findTerminalFact(self.engine, "@forgegraph/foundation/evaluation/_/EvaluationStart", "run", finish.run, ctx);

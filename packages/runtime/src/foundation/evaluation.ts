@@ -16,10 +16,27 @@ export class Evaluations {
       return yield* self.engine.call(p+'EvaluationRun.create',{...input,parent:input.parent??null,depth:parent?Number(parent.depth)+1:1},ctx);
     });
   }
-  start(run:string,startedAt:string,ctx:CallContext):Effect.Effect<Wire,ForgeError> {
+  /** History stays readable, but quarantined legacy results cannot confer authority. */
+  result(finish:string,ctx:CallContext):Effect.Effect<Wire,ForgeError> {
+    const self=this;
+    return Effect.gen(function*(){
+      const row=yield* self.engine.call(p+'EvaluationFinish.get',{id:finish},ctx);
+      yield* self.requireUnquarantined(String(row.run),ctx);
+      return row;
+    });
+  }
+  private requireUnquarantined(run:string,ctx:CallContext):Effect.Effect<void,ForgeError> {
     const self=this;
     return Effect.gen(function*(){
       yield* self.engine.call(p+'EvaluationRun.get',{id:run},ctx);
+      if(yield* findTerminalFact(self.engine,p+'EvaluationQuarantine','run',run,ctx))
+        return yield* Effect.fail(err('ValidationFailed','Evaluation is quarantined; execute a new run with fresh bindings'));
+    });
+  }
+  start(run:string,startedAt:string,ctx:CallContext):Effect.Effect<Wire,ForgeError> {
+    const self=this;
+    return Effect.gen(function*(){
+      yield* self.requireUnquarantined(run,ctx);
       const end=yield* findTerminalFact(self.engine,p+'EvaluationFinish','run',run,ctx);
       if(end)return yield* Effect.fail(err('InvalidTransition','Evaluation is already terminal'));
       return yield* self.engine.call(p+'EvaluationStart.create',{run,startedAt,recordedBy:ctx.actor},ctx);
@@ -28,7 +45,7 @@ export class Evaluations {
   finish(run:string,outcome:Exclude<EvaluationPhase,'Planned'|'Running'>,finishedAt:string,reason:string,ctx:CallContext,support?:string):Effect.Effect<Wire,ForgeError> {
     const self=this;
     return Effect.gen(function*(){
-      yield* self.engine.call(p+'EvaluationRun.get',{id:run},ctx);
+      yield* self.requireUnquarantined(run,ctx);
       const start=yield* findTerminalFact(self.engine,p+'EvaluationStart','run',run,ctx);
       if(support){
         const seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:support},ctx);

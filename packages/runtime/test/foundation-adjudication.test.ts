@@ -33,7 +33,7 @@ async function setup(adapter: string, approve = true) {
   const item = await run(api.item(String(record.id), 0, "80.000000", String(finish.id), String(seal.id), ctx));
   await run(decisions.respond(String(decision.id), String(voter.id), [approve ? 0 : 1], ctx)); await run(decisions.finalize(String(decision.id), ctx));
   const book = await call(lp + "LedgerBook.create", { key: "settlement" }), debit = await call(lp + "Account.create", { book: book.id, key: "fund", unit: "USD" }), credit = await call(lp + "Account.create", { book: book.id, key: "beneficiary", unit: "USD" });
-  return { ...f, api, record, item, seal, book, debit, credit, coverage, entitlements, pin };
+  return { ...f, api, record, item, seal, book, debit, credit, coverage, entitlements, pin, decisions, set, voter };
 }
 for (const adapter of foundationAdapters) {
   it(`${adapter}: ambiguous or legacy timestamps cannot establish authority ordering`, async () => {
@@ -81,6 +81,14 @@ for (const adapter of foundationAdapters) {
       await expect(call(p + "SettlementIntent.create", { determination: determination.id, book: f.book.id, debit: f.debit.id, credit: f.credit.id, quantity: "61.000000", unit: "USD" })).rejects.toThrow();
       for (const [name, field] of [["ExpenseRequest", "expenseCode"], ["WarrantyRequest", "serialNumber"], ["HealthcarePreauthorization", "serviceCode"]]) expect(await call(`@fixture/adjudication-consumer/_/${name}.create`, { [field!]: "example", adjudicationCase: f.record.id })).toMatchObject({ adjudicationCase: f.record.id });
       await expect(run(api.determination(String(f.record.id), { ...ctx, tenant: "other" }))).rejects.toThrow();
+      const finish = await call(ev + "EvaluationFinish.get", { id: f.item.evaluation });
+      await call(ev + "EvaluationQuarantine.create", { run: finish.run, sourceDigest: "a".repeat(64), reason: "Legacy execution", recordedBy: ctx.actor });
+      // A fresh undecided case isolates admission from existing terminal checks.
+      const decision = await run(f.decisions.open({ participationSet: String(f.set.id), electors: [String(f.voter.id)], eligibilityAt: "2026-01-01T00:00:00Z", rule: "Single", options: ["Approve", "Reject"], deadline: "2027-01-01T00:00:00Z" }, ctx));
+      const option = (await run(f.decisions.state(String(decision.id), ctx))).options[0]!;
+      const next = await run(api.open({ key: "post-migration", coverage: String(f.coverage.id), coverageAt: "2026-01-01T00:00:00Z", decisionCase: String(decision.id), approvedOption: String(option.id), requested: "80.000000", unit: "USD", itemCount: 1, support: String(f.seal.id) }, ctx));
+      await expect(run(api.item(String(next.id), 0, "80.000000", String(finish.id), String(f.seal.id), ctx))).rejects.toMatchObject({ detail: "Evaluation is quarantined; execute a new run with fresh bindings" });
+      expect(await call(p + "AdjudicationItem.get", { id: f.item.id })).toMatchObject({ evaluation: finish.id });
     } finally { await f.close(); }
   });
   it(`${adapter}: fulfillment and explanation intents remain distinct from execution`, async () => {

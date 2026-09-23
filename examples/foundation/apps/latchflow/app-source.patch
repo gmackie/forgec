@@ -1,0 +1,181 @@
+diff --git a/packages/api/src/routers/runtime-foundation.test.ts b/packages/api/src/routers/runtime-foundation.test.ts
+new file mode 100644
+index 0000000000..85c7e332f3
+--- /dev/null
++++ b/packages/api/src/routers/runtime-foundation.test.ts
+@@ -0,0 +1,41 @@
++import { expect, it, vi } from "vitest";
++import { buildingMemberships, compiledFlows, roomRunnerAssignments, roomRuns, rooms, runEvents } from "@latchflow/db";
++vi.mock("../services/experiments", () => ({ assignVariantForRun: vi.fn(async () => null), recordExperimentResult: vi.fn() }));
++vi.mock("../services/video-recording", () => ({ startRunRecording: vi.fn(async () => ({ started: 0 })), stopRunRecording: vi.fn() }));
++vi.mock("../services/product-analytics", () => ({ captureProductEvent: vi.fn(), PRODUCT_ANALYTICS_EVENTS: { runStarted: "run_started" } }));
++import { createRuntimeRouter } from "./runtime";
++function fixture(member = true) {
++  const writes: { table: unknown; value: Record<string, unknown> }[] = [];
++  const db = {
++    select: () => ({ from: (table: unknown) => ({ where: async () => {
++      if (table === rooms) return [{ id: "room", buildingId: "building" }];
++      if (table === buildingMemberships) return member ? [{ role: "operator" }] : [];
++      if (table === compiledFlows) return [{ id: "compiled", roomId: "room", flowId: "flow", compiledJson: '{"nodes":[]}' }];
++      if (table === roomRunnerAssignments) return [{ runnerId: "runner" }];
++      return [];
++    } }) }),
++    insert: (table: unknown) => ({ values: async (value: Record<string, unknown>) => { writes.push({ table, value }); } }),
++    update: () => ({ set: () => ({ where: async () => undefined }) }),
++  };
++  return { db, writes };
++}
++it("startRun calls the injected projection after native Run and event persistence", async () => {
++  const f = fixture();
++  const recordRun = vi.fn(async (event: {runId:string;status:string}) => {
++    expect(f.writes.some(row => row.table === roomRuns && row.value.id === event.runId)).toBe(true);
++    expect(f.writes.some(row => row.table === runEvents && row.value.kind === "run_started")).toBe(true);
++    expect(event.status).toBe("idle");
++    return { run: "foundation-run", phase: "Planned" as const };
++  });
++  const caller = createRuntimeRouter({ recordRun }).createCaller({ db: f.db, userId: "operator" } as never);
++  const result = await caller.startRun({ roomId: "room", compiledFlowId: "compiled" });
++  expect(result.foundation).toEqual({ status: "recorded", run: "foundation-run", phase: "Planned" });
++  expect(recordRun).toHaveBeenCalledTimes(1);
++});
++it("existing building authorization denies before native writes or Foundation projection", async () => {
++  const f = fixture(false), recordRun = vi.fn(async () => ({ run: "never", phase: "Planned" as const }));
++  const caller = createRuntimeRouter({ recordRun }).createCaller({ db: f.db, userId: "outsider" } as never);
++  await expect(caller.startRun({ roomId: "room", compiledFlowId: "compiled" })).rejects.toThrow();
++  expect(f.writes).toHaveLength(0);
++  expect(recordRun).not.toHaveBeenCalled();
++});
+diff --git a/packages/api/src/routers/runtime.ts b/packages/api/src/routers/runtime.ts
+index e770cb79d9..e0f6864158 100644
+--- a/packages/api/src/routers/runtime.ts
++++ b/packages/api/src/routers/runtime.ts
+@@ -1,4 +1,5 @@
+ import { z } from "zod";
++import { projectStartedRun, type RunFoundationPort } from "../services/foundation-run";
+ import { eq, and, gt, desc, asc, inArray, sql } from "drizzle-orm";
+ import {
+   type Database,
+@@ -669,7 +670,8 @@
+   await assertTemplateHintWriteAccess(ctx, hint.templateId);
+ }
+ 
+-export const runtimeRouter = createTRPCRouter({
++export function createRuntimeRouter(foundation?: RunFoundationPort) {
++return createTRPCRouter({
+   getActiveRun: scopedProcedure
+     .input(z.object({ roomId: z.string() }))
+     .query(async ({ ctx, input }) => {
+@@ -916,16 +918,25 @@
+         .from(rooms)
+         .where(eq(rooms.id, input.roomId));
+ 
+-      await ctx.db.insert(roomRuns).values({
++      const projectionSource = foundation ? z.object({
++        room: z.object({ buildingId: z.string().min(1) }),
++        compiled: z.object({ id: z.string(), flowId: z.string(), roomId: z.string().nullable().optional(), compiledJson: z.string() }),
++      }).parse({ room, compiled }) : undefined;
++      if (projectionSource && projectionSource.compiled.roomId != null && projectionSource.compiled.roomId !== input.roomId) {
++        throw new TRPCError({ code: "FORBIDDEN", message: "Foundation projection requires a compiled flow in the authorized room" });
++      }
++      const startedAt = new Date();
++      const runRow = {
+         id: runId,
+         roomId: input.roomId,
+         flowId: compiled.flowId,
+         compiledFlowId,
+         runnerId: runnerAssignment?.runnerId,
+-        status: runnerAssignment ? "idle" : "running",
++        status: runnerAssignment ? "idle" as const : "running" as const,
+         desiredStatus: "running",
+-        startedAt: new Date(),
+-      });
++        startedAt,
++      };
++      await ctx.db.insert(roomRuns).values(runRow);
+ 
+       const eventId = crypto.randomUUID();
+       await ctx.db.insert(runEvents).values({
+@@ -961,7 +972,14 @@
+         },
+       });
+ 
++      const projection = foundation && projectionSource
++        ? await projectStartedRun(foundation, projectionSource.room.buildingId, ctx.userId,
++          { id: input.roomId, buildingId: projectionSource.room.buildingId },
++          { ...runRow, flowId: projectionSource.compiled.flowId, runnerId: typeof runRow.runnerId === "string" ? runRow.runnerId : null },
++          projectionSource.compiled)
++        : undefined;
+       return {
++        ...(projection ? { foundation: projection } : {}),
+         id: runId,
+         experimentId: experimentAssignment?.experimentId ?? null,
+         variantId: experimentAssignment?.variantId ?? null,
+@@ -2404,3 +2422,7 @@
+       };
+     }),
+ });
++}
++
++// Existing callers remain unchanged; opt in at a trusted composition root.
++export const runtimeRouter = createRuntimeRouter();
+diff --git a/packages/api/src/services/foundation-run.test.ts b/packages/api/src/services/foundation-run.test.ts
+new file mode 100644
+index 0000000000..e6d3209ba5
+--- /dev/null
++++ b/packages/api/src/services/foundation-run.test.ts
+@@ -0,0 +1,23 @@
++import { expect, it, vi } from "vitest";
++import { projectStartedRun } from "./foundation-run";
++const room = { id: "room", buildingId: "building" };
++const run = { id: "run", roomId: "room", flowId: "flow", compiledFlowId: "compiled", runnerId: "runner", status: "idle", startedAt: new Date("2026-01-01T00:00:00Z") };
++const compiled = { id: "compiled", flowId: "flow", roomId: "room", compiledJson: '{"nodes":[]}' };
++it("projects the native Run and exact compiled flow without claiming runner acknowledgment", async () => {
++  const recordRun = vi.fn(async () => ({ run: "linked", phase: "Planned" as const }));
++  expect(await projectStartedRun({ recordRun }, "building", "operator", room, run, compiled)).toEqual({ status: "recorded", run: "linked", phase: "Planned" });
++  expect(recordRun).toHaveBeenCalledWith(expect.objectContaining({ runId: "run", runnerId: "runner", status: "idle", compiledJson: compiled.compiledJson, buildingId: "building" }));
++});
++it("retains the durable Run for replay when the projection fails", async () => {
++  const recordRun = vi.fn(async () => { throw new Error("Unavailable"); });
++  expect(await projectStartedRun({ recordRun }, "building", "operator", room, run, compiled)).toEqual({ status: "pending", runId: "run" });
++  expect(recordRun).toHaveBeenCalledTimes(1);
++  expect(await projectStartedRun(undefined, "building", "operator", room, run, compiled)).toEqual({ status: "disabled" });
++});
++it("rejects cross-building, cross-room and substituted compiled flows before projection", async () => {
++  const recordRun = vi.fn(async () => ({ run: "never", phase: "Planned" as const }));
++  await expect(projectStartedRun({ recordRun }, "foreign", "operator", room, run, compiled)).rejects.toThrow();
++  await expect(projectStartedRun({ recordRun }, "building", "operator", room, run, { ...compiled, roomId: "foreign-room" })).rejects.toThrow();
++  await expect(projectStartedRun({ recordRun }, "building", "operator", room, run, { ...compiled, id: "substitute" })).rejects.toThrow();
++  expect(recordRun).not.toHaveBeenCalled();
++});
+diff --git a/packages/api/src/services/foundation-run.ts b/packages/api/src/services/foundation-run.ts
+new file mode 100644
+index 0000000000..9ed1799a83
+--- /dev/null
++++ b/packages/api/src/services/foundation-run.ts
+@@ -0,0 +1,26 @@
++/** Opt-in observation port. Runner assignment and execution remain owned by LatchFlow. */
++export interface RunFoundationPort {
++  recordRun(event: {
++    buildingId: string; roomId: string; runId: string; operatorId: string;
++    flowId: string; compiledFlowId: string; compiledJson: string;
++    runnerId: string | null; status: "idle" | "running"; startedAt: string;
++  }): Promise<{ run: string; phase: "Planned" | "Running" }>;
++}
++export async function projectStartedRun(
++  port: RunFoundationPort | undefined,
++  buildingId: string,
++  operatorId: string,
++  room: { id: string; buildingId: string },
++  run: { id: string; roomId: string; flowId: string; compiledFlowId: string; runnerId?: string | null; status: string; startedAt: Date },
++  compiled: { id: string; flowId: string; roomId?: string | null; compiledJson: string },
++) {
++  if (!port) return { status: "disabled" as const };
++  if (!buildingId || room.buildingId !== buildingId || run.roomId !== room.id || run.compiledFlowId !== compiled.id || run.flowId !== compiled.flowId || (compiled.roomId != null && compiled.roomId !== room.id) || !["idle", "running"].includes(run.status)) throw new Error("Run projection must match its authorized building, room and compiled flow");
++  try {
++    const linked = await port.recordRun({ buildingId, roomId: room.id, runId: run.id, operatorId, flowId: run.flowId, compiledFlowId: compiled.id, compiledJson: compiled.compiledJson, runnerId: run.runnerId ?? null, status: run.status as "idle" | "running", startedAt: run.startedAt.toISOString() });
++    return { status: "recorded" as const, ...linked };
++  } catch {
++    // Original roomRuns/runEvents remain the replay source. Never start another run.
++    return { status: "pending" as const, runId: run.id };
++  }
++}

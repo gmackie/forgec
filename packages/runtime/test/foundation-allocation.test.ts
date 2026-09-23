@@ -15,9 +15,9 @@ import { localAuthorizer } from "../src/gatekeeper.js";
 const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.dirname, "../../../conformance/fixtures/allocation-consumer");
 const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
 const prefix = "@forgegraph/foundation/allocation/_/", consumer = "@foundation-probe/allocation-consumers/_/";
-const ctx = { tenant: "acme", actor: "operator", requestId: "allocation" };
 for (const adapter of foundationAdapters) it(`${adapter}: single-row guarded capacity, release races and hostile candidates`, async () => {
   const f = await foundation("allocation", adapter, true);
+  const ctx = { ...f.ctx, actor: "user" };
   const engine = f.engine, model = engine.model;
   try {
     const service = new Allocations(engine), run = Effect.runPromise;

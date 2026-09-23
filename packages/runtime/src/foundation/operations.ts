@@ -1,3 +1,4 @@
+import {Evaluations} from "./evaluation.js";
 import {Effect} from 'effect';
 import type {Engine,CallContext} from '../engine.js';
 import type {Wire} from '../decode.js';
@@ -20,7 +21,7 @@ export class Operations {
  end(run:string,outcome:'Completed'|'Failed'|'Cancelled',reason:string,ctx:CallContext,evaluation?:string):Effect.Effect<Wire,ForgeError>{const self=this;return Effect.gen(function*(){
   yield* self.state(run,ctx);
   const start=yield* findTerminalFact(self.engine,p+'OperationStart','run',run,ctx);if(!start)return yield* Effect.fail(err('InvalidTransition','Run must start before ending'));
-  if(evaluation){const link=yield* self.engine.call(p+'OperationEvaluationLink.get',{id:evaluation},ctx),seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:link.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);}
+  if(evaluation){const link=yield* self.engine.call(p+'OperationEvaluationLink.get',{id:evaluation},ctx),seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:link.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);yield* new Evaluations(self.engine).result(String(link.finish),ctx);}
   const ended=yield* self.engine.call(p+'OperationEnd.create',{run,start:start.id,outcome,evaluation:evaluation??null,reason},ctx);
   yield* self.cleanup(String(ended.id),ctx);return ended;
  });}
@@ -38,7 +39,7 @@ export class Operations {
    for(const plan of plans){const owner=yield* findTerminalFact(self.engine,p+'OperationReservationClaim','planned',plan.id,ctx);if(owner?.run!==run)return yield* Effect.fail(err('ValidationFailed','Run lacks exclusive plan ownership'));const reservation=yield* self.engine.call('@forgegraph/foundation/allocation/_/AllocationReservation.get',{id:plan.reservation},ctx),snapshot=yield* new Allocations(self.engine).inspect(String(reservation.pool),String(reservation.from),ctx);active ||= snapshot.claims.some(c=>c.reservation===plan.reservation);}
    for(const actual of yield* self.chain('ActualAllocationLink',start.actual,ctx)){if(!plans.some(p=>p.id===actual.planned))return yield* Effect.fail(err('ValidationFailed','Actual grant outside sealed plan'));yield* self.engine.call('@forgegraph/foundation/allocation/_/AllocationJournal.get',{id:actual.grant},ctx);}
   }
-  if(ended){if(ended.evaluation){const evaluation=yield* self.engine.call(p+'OperationEvaluationLink.get',{id:ended.evaluation},ctx),seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:evaluation.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);}return {phase:String(ended.outcome),cleanupPending:active||!(yield* findTerminalFact(self.engine,p+'OperationCleanup','ended',ended.id,ctx))};}
+  if(ended){if(ended.evaluation){const evaluation=yield* self.engine.call(p+'OperationEvaluationLink.get',{id:ended.evaluation},ctx),seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:evaluation.support},ctx);yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);yield* new Evaluations(self.engine).result(String(evaluation.finish),ctx);}return {phase:String(ended.outcome),cleanupPending:active||!(yield* findTerminalFact(self.engine,p+'OperationCleanup','ended',ended.id,ctx))};}
   return {phase:start?'Running':'Planned',cleanupPending:false};
  });}
 }

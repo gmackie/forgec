@@ -34,3 +34,15 @@ test('Dynamo preflight matches uppercase string PK/SK used by DynamoStorage', as
   assert.equal(validDynamoTable({ ...table, AttributeDefinitions: [{ AttributeName: 'PK', AttributeType: 'N' }, table.AttributeDefinitions[1]] }), false);
   assert.equal(validDynamoTable({ ...table, TableStatus: 'CREATING' }), false);
 });
+test('expanded profiles require every exact hosted title with no omitted or local-only assertions', async () => {
+  const { profiles } = await import('../verify-foundation-providers.mjs');
+  assert.equal(Object.keys(profiles).length, 14);
+  for (const profile of Object.values(profiles)) {
+    assert.ok(profile.requiredTraces.length > 0);
+    assert.ok(profile.requiredTraces.every(title => title.startsWith('hosted: ')));
+    const report = {success:true,numFailedTests:0,numPendingTests:0,numTodoTests:0,testResults:[{assertionResults:profile.requiredTraces.map(title=>({title,status:'passed'}))}]};
+    assert.deepEqual(validateResult(report,profile.requiredTraces),profile.requiredTraces);
+    assert.throws(()=>validateResult(report,[]));
+    assert.throws(()=>validateResult({...report,testResults:[{assertionResults:report.testResults[0].assertionResults.slice(1)}]},profile.requiredTraces));
+  }
+});

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "sourceRootEnv": "FORGE_FOUNDATION_LATCHFLOW_ROOT",
+  "test": "test/foundation-app-latchflow.traces.ts",
+  "requiredTests": [
+    "memory: actual LatchFlow Run projects exact compiled content and preserves runner acknowledgment boundary",
+    "memory: actual LatchFlow seam rejects foreign scope and keeps native Run on denied projection",
+    "sqlite: actual LatchFlow Run projects exact compiled content and preserves runner acknowledgment boundary",
+    "sqlite: actual LatchFlow seam rejects foreign scope and keeps native Run on denied projection"
+  ],
+  "sourceFiles": [
+    {
+      "path": "packages/api/src/services/foundation-run.ts",
+      "sha256": "0e2f789c38466492bf61be9a0fb18160399cbfbaa8b0bbc6da90544fccf53621"
+    },
+    {
+      "path": "packages/api/src/routers/runtime.ts",
+      "sha256": "19cc830e90d770187fea64684fd3e3179aafd0cad39fd78c0b250b745f1b3102"
+    },
+    {
+      "path": "packages/api/src/services/foundation-run.test.ts",
+      "sha256": "cfd060f590e6df17e8dca69248943c8f48533b7b7888501c69817a87cc0e0347"
+    },
+    {
+      "path": "packages/api/src/routers/runtime-foundation.test.ts",
+      "sha256": "2fa048c9facab6224ef938f88586fcf8f7371fb06ac8cdfcb6fd3bd260305d7e"
+    },
+    {
+      "path": "packages/db/src/tenant-schema.ts",
+      "sha256": "f63d2bcb45772f6c702d3d917ecb0ff184273e5afbb2fc9723e0718c6c381a0b"
+    }
+  ],
+  "sourceRevision": "0771f0118e41cba80e7c4d3330b7cf151733d82a"
+}

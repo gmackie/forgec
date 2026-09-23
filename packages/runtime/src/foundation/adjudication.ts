@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import { decodeDecimal, formatMinor, toMinor } from "../codecs.js";
 import type { Engine, CallContext } from "../engine.js";
@@ -45,6 +46,7 @@ export class Adjudications {
       const record = yield* self.call("AdjudicationCase.get", { id: adjudicationCase }, ctx);
       yield* check((yield* new Decisions(self.engine).state(String(record.decisionCase), ctx)).events.length === 0, "Items must be pinned before Decision responses");
       yield* self.evidence(support, ctx);
+      yield* new Evaluations(self.engine).result(evaluation, ctx);
       return yield* self.call("AdjudicationItem.create", { adjudicationCase, ordinal, requested, evaluation, support }, ctx);
     });
   }
@@ -68,7 +70,7 @@ export class Adjudications {
         yield* check(item, "Adjudication item snapshot is incomplete");
         yield* check(Date.parse(String(item!.createdAt)) < first, "Item was added after Decision responses");
         yield* self.evidence(item!.support, ctx);
-        const finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: item!.evaluation }, ctx);
+        const finish = yield* new Evaluations(self.engine).result(String(item!.evaluation),ctx);
         yield* check(finish.outcome === "Completed", "Item evaluation did not complete");
         yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationRun.get", { id: finish.run }, ctx);
         if (finish.support != null) yield* self.evidence(finish.support, ctx);

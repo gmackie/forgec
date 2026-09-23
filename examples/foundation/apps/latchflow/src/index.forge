@@ -1,0 +1,47 @@
+import operations
+import specification
+
+export resource Room
+  @tenant
+  @appendOnly
+{
+  id : id
+  nativeId : text length 1..128 @unique
+  find by nativeId
+}
+export resource CompiledFlow
+  @tenant
+  @appendOnly
+{
+  id : id
+  nativeId : text length 1..128 @unique
+  flowId : text length 1..128
+  contentDigest : text length 64..64
+  definition : specification.SpecificationPin
+  find by nativeId
+}
+export enum InitialRunStatus {
+  idle
+  running
+}
+export resource Run
+  @tenant
+  @appendOnly
+{
+  id : id
+  nativeId : text length 1..128 @unique
+  room : Room
+  compiledFlow : CompiledFlow
+  runnerId : text? length 1..128
+  operatorId : text length 1..128
+  initialStatus : InitialRunStatus
+  startedAt : datetime
+  operation : operations.Operation @unique
+  execution : operations.OperationRun @unique
+  rules {
+    operation.definition == compiledFlow.definition
+    execution.operation == operation
+  }
+  find by nativeId
+  list by room
+}

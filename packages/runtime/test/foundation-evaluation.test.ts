@@ -65,3 +65,28 @@ for(const adapter of foundationAdapters) {
   }finally{await f.close();}
  });
 }
+
+for(const adapter of foundationAdapters)it(`${adapter}: quarantined migration history stays inspectable but never authorizes new results`,async()=>{
+ const f=await foundation('evaluation',adapter,true),{call,ctx,engine}=f,run=Effect.runPromise;
+ try{
+  const repository=await call(s+'Repository.create',{key:'legacy',provider:'git',locator:'https://example.test/legacy'});
+  const pin=await call(s+'SpecificationPin.create',{repository:repository.id,anchor:'assessment',revision:'a'.repeat(40)});
+  const group=await call(p+'EvaluationSet.create',{label:'Migration history'}),executor=await call(p+'EvaluationExecutor.create',{key:'assessor',label:'Assessor'}),api=new Evaluations(engine);
+  const input={evaluationSet:String(group.id),definition:String(pin.id),executor:String(executor.id)};
+  const legacy=await run(api.create(input,ctx));
+  await run(api.start(String(legacy.id),'2026-01-01T00:00:00Z',ctx));
+  const finish=await run(api.finish(String(legacy.id),'Completed','2026-01-01T01:00:00Z','Historical outcome',ctx));
+  expect((await run(api.result(String(finish.id),ctx))).id).toBe(finish.id);
+  const quarantine=await call(p+'EvaluationQuarantine.create',{run:legacy.id,sourceDigest:'a'.repeat(64),reason:'Legacy export cannot prove binding before execution',recordedBy:ctx.actor});
+  expect(await run(api.phase(String(legacy.id),ctx))).toBe('Completed');
+  expect((await call(p+'EvaluationFinish.get',{id:finish.id})).id).toBe(finish.id);
+  await expect(run(api.result(String(finish.id),ctx))).rejects.toMatchObject({code:'ValidationFailed'});
+  await expect(run(api.start(String(legacy.id),'2026-01-02T00:00:00Z',ctx))).rejects.toThrow();
+  await expect(call(p+'EvaluationQuarantine.delete',{id:quarantine.id})).rejects.toThrow();
+  const fresh=await run(api.create(input,ctx));await run(api.start(String(fresh.id),'2026-01-01T00:00:00Z',ctx));
+  const freshFinish=await run(api.finish(String(fresh.id),'Completed','2026-01-01T01:00:00Z','Fresh execution',ctx));
+  expect((await run(api.result(String(freshFinish.id),ctx))).id).toBe(freshFinish.id);
+  engine.gatekeeper.authorizer=localAuthorizer({policies:engine.model.resources.filter(r=>r.id!==p+'EvaluationQuarantine').map(r=>({id:r.id,actions:[r.id+'.*'],requires:[],where:[]})),pips:[],epoch:1,knownObligations:[]});
+  await expect(run(api.result(String(finish.id),ctx))).rejects.toThrow();
+ }finally{await f.close();}
+});

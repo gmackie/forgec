@@ -90,6 +90,16 @@ for (const adapter of foundationAdapters) {
       await expect(run(api.accept({ ...f.input, expectedTerms: "drift" }, ctx))).rejects.toThrow();
       await expect(run(api.accept({ ...f.input, validUntil: "2026-11-01T00:00:00Z" }, ctx))).rejects.toMatchObject({ code: "IdempotencyMismatch" });
       await expect(run(api.state(id, "2026-03-01T00:00:00Z", { ...ctx, tenant: "other" }))).rejects.toThrow();
+      const evaluationPrefix = "@forgegraph/foundation/evaluation/_/";
+      const finish = await call(evaluationPrefix + "EvaluationFinish.get", { id: f.offerInput.evaluation });
+      await call(evaluationPrefix + "EvaluationQuarantine.create", { run: finish.run, sourceDigest: "a".repeat(64), reason: "Legacy execution", recordedBy: ctx.actor });
+      // Use a fresh entry so neither predecessor validation nor revision conflict
+      // can mask a missing prospective-evaluation check.
+      const catalog = await call(p + "Catalog.create", { key: "post-migration", label: "Post migration" });
+      const entry = await call(p + "CatalogEntry.create", { catalog: catalog.id, key: "fresh", specification: f.pin.id });
+      await expect(run(api.publish({ ...f.offerInput, entry: String(entry.id) }, ctx))).rejects.toMatchObject({ detail: "Evaluation is quarantined; execute a new run with fresh bindings" });
+      expect(await call(p + "Offer.get", { id: f.offer.id })).toMatchObject({ evaluation: finish.id });
+      expect(await run(new Evaluations(f.engine).phase(String(finish.run), ctx))).toBe("Completed");
     } finally { await f.close(); }
   });
   it(`${adapter}: missing signers, expired offers and lifecycle history`, async () => {
@@ -157,8 +167,8 @@ for (const adapter of foundationAdapters) {
 
 }
 
-it("memory: concurrent issuance receipt misses cannot duplicate raw entitlement grants",async()=>{
- const f=await setup("memory");try{
+for (const adapter of foundationAdapters) it(`${adapter}: concurrent issuance receipt misses cannot duplicate raw entitlement grants`,async()=>{
+ const f=await setup(adapter);try{
   const agreement=await run(f.api.accept(f.input,f.ctx));
   const guarded=new Engine(f.engine.model,f.engine.layer);
   guarded.gatekeeper.authorizer=localAuthorizer({policies:f.engine.model.resources.map(r=>({id:r.id,actions:[r.id+(r.id===ep+"Entitlement"?".get":".*")],requires:[],where:[]})),pips:[],epoch:1,knownObligations:[]});

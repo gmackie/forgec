@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import type { Engine, CallContext } from "../engine.js";
 import type { Wire } from "../decode.js";
@@ -36,7 +37,7 @@ export class Selection{
  });}
  private score(id:string,ctx:CallContext){return this.call("SubmissionScore.get",{id},ctx).pipe(Effect.flatMap(row=>this.validateScore(row,ctx)));}
  private validateScore(row:Wire,ctx:CallContext){const self=this;return Effect.gen(function*(){
-  const submission=yield* self.submission(String(row.submission),ctx),finish=yield* self.engine.call(e+"EvaluationFinish.get",{id:row.finish},ctx),run=yield* self.engine.call(e+"EvaluationRun.get",{id:finish.run},ctx);
+  const submission=yield* self.submission(String(row.submission),ctx),finish=yield* new Evaluations(self.engine).result(String(row.finish),ctx),run=yield* self.engine.call(e+"EvaluationRun.get",{id:finish.run},ctx);
   if(run.evaluationSet!==submission.row.evaluationSet||run.definition!==submission.solicitation.criteria||finish.outcome!=="Completed"||finish.start==null)return yield* bad("Scoring requires completed evaluation against pinned criteria");
   const start=yield* self.engine.call(e+"EvaluationStart.get",{id:finish.start},ctx);
   if(start.run!==run.id||String(finish.finishedAt)<String(start.startedAt))return yield* bad("Invalid evaluation chronology");

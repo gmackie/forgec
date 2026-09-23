@@ -94,7 +94,7 @@ function main() {
     if (args[i] === '--suite') suite = args[++i];
     else if (args[i] === '--package') slug = args[++i];
     else if (args[i] === '--all') all = true;
-    else if (args[i] === '--provider' || args[i] === '--receipt-dir') providerArgs.push(args[i], args[++i]);
+    else if (args[i] === '--provider' || args[i] === '--receipt-dir' || args[i] === '--profile') providerArgs.push(args[i], args[++i]);
     else if (args[i] === '--state') statePath = args[++i];
     else throw new Error(`unknown argument: ${args[i]}`);
   }

@@ -15,9 +15,9 @@ import { localAuthorizer } from "../src/gatekeeper.js";
 const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.dirname, "../../../conformance/fixtures/ledger-consumer");
 const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
 const prefix = "@forgegraph/foundation/ledger/_/", consumer = "@foundation-probe/ledger-consumers/_/";
-const ctx = { tenant: "acme", actor: "user", requestId: "usage" };
 for (const adapter of foundationAdapters) it(`${adapter}: exact ledger, atomic groups, concurrent reversals and rebuilds`, async () => {
   const f = await foundation("ledger", adapter, true);
+  const ctx = { ...f.ctx, actor: "user" };
   const engine = f.engine, model = engine.model;
   try {
     const call = (op: string, input: Record<string, unknown>, context = ctx) => Effect.runPromise(engine.call(prefix + op, input, context));

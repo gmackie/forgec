@@ -515,6 +515,26 @@ export interface EvaluationFinishCreate {
 export interface EvaluationFinishPatch {
 }
 
+export interface EvaluationQuarantineRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  run: string;
+  sourceDigest: string;
+  reason: string;
+  recordedBy: string;
+}
+
+export interface EvaluationQuarantineCreate {
+  run: string;
+  sourceDigest: string;
+  reason: string;
+  recordedBy: string;
+}
+
+export interface EvaluationQuarantinePatch {
+}
+
 export interface EvaluationRunRecord {
   id: string;
   createdAt: string;
@@ -1513,6 +1533,9 @@ export interface EvaluationExecutorApi {
 export interface EvaluationFinishApi {
 }
 
+export interface EvaluationQuarantineApi {
+}
+
 export interface EvaluationRunApi {
 }
 
@@ -1706,6 +1729,7 @@ export interface ForgeClient {
   decisionResponses: DecisionResponseApi;
   evaluationExecutors: EvaluationExecutorApi;
   evaluationFinishs: EvaluationFinishApi;
+  evaluationQuarantines: EvaluationQuarantineApi;
   evaluationRuns: EvaluationRunApi;
   evaluationSets: EvaluationSetApi;
   evaluationStarts: EvaluationStartApi;
@@ -1840,6 +1864,8 @@ export function createClient(options: ClientOptions): ForgeClient {
     evaluationExecutors: {
     },
     evaluationFinishs: {
+    },
+    evaluationQuarantines: {
     },
     evaluationRuns: {
     },

@@ -2886,6 +2886,103 @@
         "properties": {},
         "additionalProperties": false
       },
+      "EvaluationQuarantineRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "run": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+          },
+          "sourceDigest": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy"
+        ]
+      },
+      "EvaluationQuarantineCreate": {
+        "type": "object",
+        "properties": {
+          "run": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+          },
+          "sourceDigest": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "run",
+          "sourceDigest",
+          "reason",
+          "recordedBy"
+        ]
+      },
+      "EvaluationQuarantinePatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
       "EvaluationRunRecord": {
         "type": "object",
         "properties": {

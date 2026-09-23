@@ -314,6 +314,19 @@ CREATE TABLE evaluation_run (
   FOREIGN KEY ("tenant", "parent") REFERENCES evaluation_run ("tenant", "id")
 );
 
+CREATE TABLE evaluation_quarantine (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "run" TEXT COLLATE "C" NOT NULL,
+  "source_digest" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "run") REFERENCES evaluation_run ("tenant", "id")
+);
+
 CREATE TABLE evaluation_start (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -698,6 +711,7 @@ CREATE UNIQUE INDEX decision_option_uq_decisionCase_ordinal ON decision_option (
 CREATE UNIQUE INDEX decision_response_uq_decisionCase_voter ON decision_response ("tenant", "decision_case", "voter");
 CREATE UNIQUE INDEX evaluation_executor_uq_key ON evaluation_executor ("tenant", "key_");
 CREATE UNIQUE INDEX evaluation_finish_uq_run ON evaluation_finish ("tenant", "run");
+CREATE UNIQUE INDEX evaluation_quarantine_uq_run ON evaluation_quarantine ("tenant", "run");
 CREATE INDEX evaluation_run_ix_by_definition ON evaluation_run ("tenant", "definition", "id");
 CREATE INDEX evaluation_run_ix_by_evaluation_set ON evaluation_run ("tenant", "evaluation_set", "id");
 CREATE UNIQUE INDEX evaluation_start_uq_run ON evaluation_start ("tenant", "run");

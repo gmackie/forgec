@@ -105,3 +105,67 @@ execution evidence, not signed certificates or evidence of untested package case
 Missing configuration fails before execution and creates no passing receipt. A
 source change requires rerunning the profile. Hosted D1 and DynamoDB runs remain
 pending until authorized test infrastructure and credentials are supplied.
+
+## Full package invariant profiles
+
+`--profile <slug>` runs the existing package invariant suite through the real
+provider environment, with exact assertion titles declared in
+`conformance/foundation/providers/profiles.json`. The default `core` remains the
+five-trace probe. Expanded profiles cover Allocation (F34-05), Ledger (F36-06),
+and Decision, Assurance, Change, Experiment, Agreement/Catalog, Adjudication,
+Operations, Reconciliation, Integration, Publication, Collaboration and
+Notifications (F39–F50 STORE). Each profile uses its actual consumer fixture.
+
+```sh
+node scripts/verify-foundation.mjs --suite providers --provider postgres \
+  --profile integration --receipt-dir /tmp/foundation-provider-receipts
+```
+
+The provider Vitest configuration replaces only the local fixture helper. It
+never substitutes memory/SQLite for database persistence and never skips tests.
+Multiple test cases get unique tenants and provider transaction-token prefixes;
+reconstructed engines retain the same clock and durable adapter. Artifact bytes
+use a disclosed memory object store: these receipts certify database invariants,
+not hosted object-storage durability. The agreement receipt-miss race runs on the
+selected adapter as well. Reconciliation additionally builds its real controller
+fixture; work queues and actor state use the selected database storage adapter.
+
+A profile receipt identifies its criterion and every executed assertion, generated
+bundle/migration hashes, source fingerprint and observed provider identity.
+Fingerprinting includes runtime source, helpers, all runtime tests, package
+closure, compiler, runner and profile manifest. It does not change acceptance
+statuses. A criterion requires passing receipts for matching code on PostgreSQL,
+hosted D1 and hosted DynamoDB; one profile does not certify other profiles.
+
+D1 needs the selected profile's SQL schema and an authenticated worker advertising
+that exact bundle hash. The existing core worker cannot certify another profile.
+Provision a dedicated DB/Worker per profile, or review migrations and update the
+identity before switching profiles. The runner never provisions or migrates D1.
+DynamoDB uses the same adapter key layout for all profiles, with a unique run and
+test tenant namespace, and performs no table schema mutation or remote cleanup.
+
+All fourteen profiles have passed native PostgreSQL during development. Full
+Ledger has also passed hosted DynamoDB. Additional DynamoDB and hosted D1 profile
+receipts must be collected against the final integrated source before claiming
+all fourteen provider criteria; core-only receipts are insufficient.
+
+## Aggregate acceptance evidence
+
+After collecting final-source receipts for all profiles on all three providers:
+
+```sh
+node scripts/verify-foundation-certification.mjs \
+  --receipt-dir /tmp/foundation-provider-receipts \
+  --out /tmp/foundation-provider-certification.json
+```
+
+This gate rebuilds all consumer artifacts and requires all 42 cells. It validates
+current source fingerprints, exact profile criteria/assertions, raw Vitest report
+digests and skip/todo counts, observed provider identities, and D1 deployment
+bundle/harness identity. Missing/stale evidence produces a failed aggregate and
+nonzero exit. Passing evidence records the receipt/report hashes and source for
+each cell; contracts remain unchanged. The aggregate is database-durability
+acceptance evidence, not cryptographic provider attestation or object-storage
+certification. Re-run it after code changes rather than reusing an old index.
+
+Dedicated infrastructure provisioning is documented in `conformance/foundation/providers/README.md`; recorded test resource identifiers are in `docs/foundation/test-infrastructure.json`. The PostgreSQL Compose configuration validates, but this workstation has no running Docker daemon; executed PostgreSQL evidence uses the native PostgreSQL17 service.

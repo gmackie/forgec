@@ -85,6 +85,19 @@ for(const adapter of foundationAdapters)it(`${adapter}: desired journal fences a
   await expect(Effect.runPromise(recovered.command(ctx.tenant,String(scope.id),'old-sequence','Desired',{sequence:1,scope:scope.id,desired:desired.id},generation))).rejects.toThrow();
   await expect(Effect.runPromise(service.state(String(scope.id),{...ctx,tenant:'foreign'}))).rejects.toThrow();
   await expect(Effect.runPromise(engine.call(p+'DesiredRevision.create',{scope:scope.id,sequence:3,pin:pin.id},{...ctx,tenant:'foreign'}))).rejects.toThrow();
+  const quarantined={code:'ValidationFailed',detail:'Evaluation is quarantined; execute a new run with fresh bindings'};
+  await call(v+'EvaluationQuarantine.create',{run:run.id,sourceDigest:'a'.repeat(64),reason:'Legacy observation',recordedBy:ctx.actor});
+  expect((await Effect.runPromise(service.state(String(scope.id),ctx))).latest!.id).toBe(completed.id); // obsolete history is inspectable
+  await expect(Effect.runPromise(service.recordResult(String(attempt.id),'Converged',String(seal.id),'Reused legacy observation',ctx))).rejects.toMatchObject(quarantined);
+  await expect(Effect.runPromise(service.publish(String(scope.id),String(desired.id),'Attempt',String(completed.id),ctx,String(attempt.id)))).rejects.toMatchObject(quarantined);
+  await call(v+'EvaluationQuarantine.create',{run:run2.id,sourceDigest:'b'.repeat(64),reason:'Current legacy observation',recordedBy:ctx.actor});
+  await expect(Effect.runPromise(service.state(String(scope.id),ctx))).rejects.toMatchObject(quarantined);
+  await expect(Effect.runPromise(service.assertCurrent(String(scope.id),String(newer.id),String(completed.id),ctx))).rejects.toMatchObject(quarantined);
+  await expect(Effect.runPromise(service.publish(String(scope.id),String(newer.id),'Result',String(selected.id),ctx,String(attempt2.id),String(result2.id)))).rejects.toMatchObject(quarantined);
+  expect((await call(p+'ReconciliationResult.get',{id:result2.id})).outcome).toBe('Converged');
+  const newest=await call(p+'DesiredRevision.create',{scope:scope.id,sequence:3,pin:pin2.id});
+  await Effect.runPromise(service.publish(String(scope.id),String(newest.id),'Desired',String(completed.id),ctx));
+  expect((await Effect.runPromise(service.state(String(scope.id),ctx))).latest!.desired).toBe(newest.id);
   engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'scope',actions:[p+'ReconciliationScope.*'],requires:[],where:[]}],pips:[],epoch:1,knownObligations:[]});
   await expect(Effect.runPromise(service.state(String(scope.id),ctx))).rejects.toThrow();
   await expect(Effect.runPromise(service.publish(String(scope.id),String(newer.id),'Desired',null,ctx))).rejects.toThrow();

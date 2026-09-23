@@ -1310,6 +1310,37 @@ structure EvaluationFinishCreateInput {
 structure EvaluationFinishPatchInput {
 }
 
+structure EvaluationQuarantineRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    run: String
+    @required
+    sourceDigest: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure EvaluationQuarantineCreateInput {
+    @required
+    run: String
+    @required
+    sourceDigest: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure EvaluationQuarantinePatchInput {
+}
+
 structure EvaluationRunRecord {
     @required
     id: String

@@ -10,9 +10,11 @@ import { D1Storage } from '../../src/adapters/d1.js';
 import { DynamoStorage } from '../../src/adapters/dynamodb.js';
 import type { SqlExecutor, SqlStatement } from '../../src/adapters/sql-executor.js';
 import type { StorageAdapter } from '../../src/services.js';
+import { MemoryObjectStore } from '../../src/adapters/memory-objects.js';
 import { testLayer } from '../../src/testing.js';
 import { validDynamoTable } from '../../../../conformance/foundation/providers/dynamo-schema.mjs';
 const required = (name: string) => { const value = process.env[name]; if (!value) throw new Error(`Missing ${name}; provider traces cannot skip or use local substitution`); return value; };
+let fixtureSequence = 0;
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 export async function providerEnvironment() {
   const provider = required('FORGE_PROVIDER'), runId = required('FORGE_PROVIDER_RUN_ID');
@@ -64,8 +66,9 @@ export async function providerEnvironment() {
     storage = new DynamoStorage({ table, region, client }, model);
     close = async () => { client.destroy(); };
   } else throw new Error('Explicit postgres, d1 or dynamodb provider required');
-  const engine = new Engine(model, testLayer(storage, { runId: runId.slice(0, 8) }));
+  const objects = new MemoryObjectStore();
+  const engine = new Engine(model, testLayer(storage, { objects, runId: runId.slice(0, 16) + '-' + (++fixtureSequence) + '-' }));
   const tenantPrefix = 'foundation-cert-' + runId;
-  writeFileSync(required('FORGE_PROVIDER_IDENTITY'), JSON.stringify({ provider, runId, tenantPrefix, observed, objectStore: 'not exercised', retainedData: provider === 'postgres' ? 'isolated test schema removed on close' : 'unique test tenants retained; no cleanup or provisioning performed' }, null, 2));
-  return { engine, storage, model, tenantPrefix, close };
+  writeFileSync(required('FORGE_PROVIDER_IDENTITY'), JSON.stringify({ provider, runId, tenantPrefix, observed, objectStore: process.env['FORGE_PROVIDER_PROFILE'] === 'core' ? 'not exercised' : 'memory object-store test double; database durability only', retainedData: provider === 'postgres' ? 'isolated test schema removed on close' : 'unique test tenants retained; no cleanup or provisioning performed' }, null, 2));
+  return { engine, storage, model, tenantPrefix, objects, close };
 }

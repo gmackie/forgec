@@ -1,0 +1,160 @@
+{
+  "allocation": {
+    "fixture": "packages/foundation/allocation/fixtures/consumer",
+    "test": "test/foundation-allocation.test.ts",
+    "requiredTraces": [
+      "hosted: single-row guarded capacity, release races and hostile candidates"
+    ],
+    "criteria": [
+      "F34-05"
+    ]
+  },
+  "ledger": {
+    "fixture": "packages/foundation/ledger/fixtures/consumer",
+    "test": "test/foundation-ledger.test.ts",
+    "requiredTraces": [
+      "hosted: exact ledger, atomic groups, concurrent reversals and rebuilds"
+    ],
+    "criteria": [
+      "F36-06"
+    ]
+  },
+  "decision": {
+    "fixture": "packages/foundation/decision/fixtures/consumer",
+    "test": "test/foundation-decision.test.ts",
+    "requiredTraces": [
+      "hosted: six pinned rules and immutable outcomes",
+      "hosted: journal serializes finalize versus withdrawal and rejects raw forks",
+      "hosted: duplicates, eligibility snapshots and denied journal reads fail closed",
+      "hosted: expiry, reconsideration, support and typed applications",
+      "hosted: malformed raw terminal candidates fail closed and denied writes stay denied"
+    ],
+    "criteria": [
+      "F39-STORE"
+    ]
+  },
+  "assurance": {
+    "fixture": "packages/foundation/assurance/fixtures/consumer",
+    "test": "test/foundation-assurance.test.ts",
+    "requiredTraces": [
+      "hosted: findings, dispositions, corrective work and pinned attestations retain separate history"
+    ],
+    "criteria": [
+      "F40-STORE"
+    ]
+  },
+  "change": {
+    "fixture": "packages/foundation/change/fixtures/consumer",
+    "test": "test/foundation-change.test.ts",
+    "requiredTraces": [
+      "hosted: pinned gates, validated approval, verification, rollback and supersession"
+    ],
+    "criteria": [
+      "F41-STORE"
+    ]
+  },
+  "experiment": {
+    "fixture": "packages/foundation/experiment/fixtures/consumer",
+    "test": "test/foundation-experiment.test.ts",
+    "requiredTraces": [
+      "hosted: stable assignments, scarce capacity, typed evaluation and artifact lineage"
+    ],
+    "criteria": [
+      "F42-STORE"
+    ]
+  },
+  "agreement-catalog": {
+    "fixture": "packages/foundation/agreement-catalog/fixtures/consumer",
+    "test": "test/foundation-agreement-catalog.test.ts",
+    "requiredTraces": [
+      "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+      "hosted: pinned acceptance, resumable exactly-once issuance and four typed domains",
+      "hosted: missing signers, expired offers and lifecycle history",
+      "hosted: independent successor agreements, denied issuance and hidden lifecycle",
+      "hosted: interrupted issuance resumes without duplicate grants",
+      "hosted: concurrent issuance receipt misses cannot duplicate raw entitlement grants"
+    ],
+    "criteria": [
+      "F43-STORE"
+    ]
+  },
+  "adjudication": {
+    "fixture": "packages/foundation/adjudication/fixtures/consumer",
+    "test": "test/foundation-adjudication.test.ts",
+    "requiredTraces": [
+      "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+      "hosted: ambiguous item timestamps cannot prove prior Decision binding",
+      "hosted: determination, source reasons, exact idempotent settlement and three domains",
+      "hosted: fulfillment and explanation intents remain distinct from execution",
+      "hosted: rejected Decision cannot authorize a positive award or settlement"
+    ],
+    "criteria": [
+      "F44-STORE"
+    ]
+  },
+  "operations": {
+    "fixture": "packages/foundation/operations/fixtures/consumer",
+    "test": "test/foundation-operations.test.ts",
+    "requiredTraces": [
+      "hosted: operation usage replay, real task linkage, lineage and terminal cleanup races"
+    ],
+    "criteria": [
+      "F45-STORE"
+    ]
+  },
+  "reconciliation": {
+    "fixture": "packages/foundation/reconciliation/fixtures/consumer",
+    "test": "test/foundation-reconciliation.test.ts",
+    "requiredTraces": [
+      "hosted: desired journal fences attempts/results and real keyed actor resumes effects without rewriting newer intent"
+    ],
+    "criteria": [
+      "F46-STORE"
+    ]
+  },
+  "integration": {
+    "fixture": "packages/foundation/integration/fixtures/consumer",
+    "test": "test/foundation-integration.test.ts",
+    "requiredTraces": [
+      "hosted: accepted-prefix checkpoints, webhook dedup, cursor races and real bridges"
+    ],
+    "criteria": [
+      "F47-STORE"
+    ]
+  },
+  "publication": {
+    "fixture": "packages/foundation/publication/fixtures/consumer",
+    "test": "test/foundation-publication.test.ts",
+    "requiredTraces": [
+      "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+      "hosted: ambiguous Decision timestamps cannot prove prior candidate binding",
+      "hosted: post-hoc evaluation binding cannot be laundered through future business timestamps",
+      "hosted: all qualification policies, exact release pins and four domain satellites",
+      "hosted: failed gates reject publication and promotion races preserve the journal",
+      "hosted: deprecation history, hidden journal and denied writes fail closed"
+    ],
+    "criteria": [
+      "F48-STORE"
+    ]
+  },
+  "collaboration": {
+    "fixture": "packages/foundation/collaboration/fixtures/consumer",
+    "test": "test/foundation-collaboration.test.ts",
+    "requiredTraces": [
+      "hosted: typed discussion sidecars, immutable corrections and activity rebuild"
+    ],
+    "criteria": [
+      "F49-STORE"
+    ]
+  },
+  "notifications": {
+    "fixture": "packages/foundation/notifications/fixtures/consumer",
+    "test": "test/foundation-notifications.test.ts",
+    "requiredTraces": [
+      "hosted: stable logical notices snapshot preferences, resume delivery and preserve suppression"
+    ],
+    "criteria": [
+      "F50-STORE"
+    ]
+  }
+}

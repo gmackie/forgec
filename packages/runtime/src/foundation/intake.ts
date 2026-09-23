@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import type { Engine, CallContext } from "../engine.js";
 import type { Wire } from "../decode.js";
@@ -19,7 +20,7 @@ export class Intake {
     const self=this;
     return Effect.gen(function*(){
       yield* self.engine.call(p+'Submission.get',{id:submission},ctx);
-      const terminal=yield* self.engine.call('@forgegraph/foundation/evaluation/_/EvaluationFinish.get',{id:finish},ctx);
+      const terminal=yield* new Evaluations(self.engine).result(String(finish),ctx);
       yield* self.engine.call('@forgegraph/foundation/evaluation/_/EvaluationRun.get',{id:terminal.run},ctx);
       return yield* self.engine.call(p+'SubmissionValidation.create',{submission,run:terminal.run,finish,verdict,reason},ctx);
     });

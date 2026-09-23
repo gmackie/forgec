@@ -1,0 +1,49 @@
+import fulfillment
+
+export resource Broadcast
+  @tenant
+  @appendOnly
+{
+  id : id
+  nativeId : text length 1..128 @unique
+  find by nativeId
+}
+export resource ProductionSession
+  @tenant
+  @appendOnly
+{
+  id : id
+  nativeId : text length 1..128 @unique
+  broadcast : Broadcast?
+  commands : fulfillment.FulfillmentSet
+  find by nativeId
+}
+export enum CommandType {
+  set_preview
+  cut
+  auto
+}
+export resource ProductionCommand
+  @tenant
+  @appendOnly
+{
+  id : id
+  nativeId : text length 1..128 @unique
+  session : ProductionSession
+  sequence : integer >= 1
+  kind : CommandType
+  operatorId : text length 1..128
+  payloadDigest : text length 64..64
+  fulfillment : fulfillment.Fulfillment @unique
+  acknowledged : fulfillment.FulfillmentEnd @unique
+  rules {
+    fulfillment.fulfillmentSet == session.commands
+    fulfillment.ordinal == sequence
+    acknowledged.fulfillment == fulfillment
+    acknowledged.outcome == "completed"
+    acknowledged.coverage == "complete"
+  }
+  unique session, sequence
+  find by nativeId
+  list by session
+}

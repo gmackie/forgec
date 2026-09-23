@@ -73,6 +73,14 @@ for(const adapter of foundationAdapters)it(`${adapter}: operation usage replay, 
    const journal=await call(a+'AllocationJournal.list.byPool',{params:{pool:pool.id}});expect((journal.items as {action:string}[]).filter(x=>x.action==='release')).toHaveLength(1);expect((journal.items as {action:string}[]).filter(x=>x.action==='cancel')).toHaveLength(1);
    expect((await run(usage.aggregate(String(stream.id),'2025-12-31T00:00:00Z','2026-01-02T00:00:00Z',ctx))).quantity).toBe('12.500000');
    await expect(run(operations.state(String(operationRun.id),{...ctx,tenant:'foreign'}))).rejects.toThrow();await expect(call(p+'OperationRun.create',{operation:operation.id,ordinal:3,plans:null,usageStream:stream.id,usageSource:source.id},{...ctx,tenant:'foreign'})).rejects.toThrow();
+   if(index===0){
+    await call(e+'EvaluationQuarantine.create',{run:evaluation.id,sourceDigest:'a'.repeat(64),reason:'Legacy chronology',recordedBy:ctx.actor});
+    const quarantined={code:'ValidationFailed',detail:'Evaluation is quarantined; execute a new run with fresh bindings'};
+    await expect(run(operations.state(String(operationRun.id),ctx))).rejects.toMatchObject(quarantined);
+    await expect(run(operations.end(String(operationRun.id),'Completed','New interpretation',ctx,String(evalLink.id)))).rejects.toMatchObject(quarantined);
+    expect((await call(p+'OperationEnd.get',{id:terminalId})).outcome).toBe('Completed');
+    await run(operations.cleanup(terminalId,ctx)); // historical resource release remains safe
+   }
    if(index===3){engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'run',actions:[p+'OperationRun.get'],requires:[],where:[]}],pips:[],epoch:1,knownObligations:[]});await expect(run(operations.state(String(operationRun.id),ctx))).rejects.toThrow();await expect(run(operations.cleanup(terminalId,ctx))).rejects.toThrow();}
   }
  }finally{await f.close();}

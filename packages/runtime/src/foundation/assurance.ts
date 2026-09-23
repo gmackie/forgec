@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import type { Engine, CallContext } from "../engine.js";
 import type { Wire } from "../decode.js";
@@ -41,7 +42,7 @@ export class Assurance {
   yield* self.engine.call(p+'AssuranceIssuer.get',{id:record.issuer},ctx);
   yield* self.engine.call('@forgegraph/foundation/specification/_/SpecificationPin.get',{id:record.specification},ctx);
   yield* self.engine.call(evaluation+'EvaluationRun.get',{id:record.run},ctx);
-  yield* self.engine.call(evaluation+'EvaluationFinish.get',{id:record.finish},ctx);
+  yield* new Evaluations(self.engine).result(String(record.finish),ctx);
   const seal=yield* self.engine.call('@forgegraph/foundation/evidence/_/EvidenceSeal.get',{id:record.support},ctx);
   yield* new Evidence(self.engine).sealedItems(String(seal.bundle),ctx);
   if(record.artifact!=null)yield* self.engine.call('@forgegraph/foundation/artifact/_/ArtifactRevision.get',{id:record.artifact},ctx);

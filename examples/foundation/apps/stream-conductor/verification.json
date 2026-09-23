@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "sourceRootEnv": "FORGE_FOUNDATION_STREAM_CONDUCTOR_ROOT",
+  "test": "test/foundation-app-stream-conductor.traces.ts",
+  "requiredTests": [
+    "memory: actual Stream Conductor acknowledgment projects typed fulfillment and replays",
+    "memory: actual Stream Conductor seam rejects foreign or uncertain commands and reports denied projection",
+    "sqlite: actual Stream Conductor acknowledgment projects typed fulfillment and replays",
+    "sqlite: actual Stream Conductor seam rejects foreign or uncertain commands and reports denied projection"
+  ],
+  "sourceFiles": [
+    {
+      "path": "apps/web/src/server/services/foundation-production.ts",
+      "sha256": "5a6df15a23b562b3a72aca0453aa384f2b6bcdfb126d61c2a746a1bf48a5d37d"
+    },
+    {
+      "path": "apps/web/src/server/routers/production.ts",
+      "sha256": "d7c5a516cb5bfbd92ba608853bcdc2b3e3db40522aaca53425108defe40cdb00"
+    },
+    {
+      "path": "apps/web/src/server/services/foundation-production.test.ts",
+      "sha256": "9a0cceeec169e1a5777ac0b11638db5e75e033c2f2ab2ae78d40cea72642df3b"
+    },
+    {
+      "path": "apps/web/src/server/routers/production-foundation.test.ts",
+      "sha256": "bebbc35cd576b89600425c6a4da7bf08efaaf830f1dde93f1220fe7499abe1fd"
+    },
+    {
+      "path": "packages/db/src/schema/production.ts",
+      "sha256": "4eeb62340c0ba6d9f3d0fb7c209277e2a6c2f64772a99cd8232c5c07e9c8ac8f"
+    },
+    {
+      "path": "packages/db/src/schema/organizations.ts",
+      "sha256": "bcd21954d9432cbde193451305b1bd9a40f0c2c1c95992704755393ba42ee4b1"
+    }
+  ],
+  "sourceRevision": "6783448b79460ad15050b588c92a3cbff31c59bf"
+}

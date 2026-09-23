@@ -6,10 +6,10 @@ import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 import { Engine } from "../src/engine.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
 const p = "@forgegraph/foundation/decision/_/", pp = "@forgegraph/foundation/participation/_/";
-const ctx = { tenant: "acme", actor: "chair", requestId: "decision" };
 const run = Effect.runPromise;
 async function fixture(adapter: string) {
   const f = await consumerFixture("decision", adapter), engine = f.engine;
+  const ctx = { ...f.ctx, actor: "chair" };
   const memberships = new Participations(engine, { namespace: "review", roles: ["voter"] });
   const set = await run(engine.call(pp + "ParticipationSet.create", { label: "Board" }, ctx));
   await run(memberships.registerRole("voter", ctx));
@@ -21,11 +21,11 @@ async function fixture(adapter: string) {
   }
   const decisions = new Decisions(engine);
   const open = (rule: DecisionRule, count = 3, threshold = 1) => run(decisions.open({ participationSet: String(set.id), electors: voters.slice(0, count), eligibilityAt: "2026-01-01T00:00:00Z", deadline: "2027-01-01T00:00:00Z", options: ["Accept", "Reject"], rule, threshold }, ctx));
-  return { ...f, decisions, voters, open, memberships, set };
+  return { ...f, ctx, decisions, voters, open, memberships, set };
 }
 for (const adapter of foundationAdapters) {
   it(`${adapter}: six pinned rules and immutable outcomes`, async () => {
-    const f = await fixture(adapter);
+    const f = await fixture(adapter), ctx = f.ctx;
     try {
       for (const rule of ["Single", "ChooseOne", "First", "Quorum", "Unanimous", "Ranked"] as const) {
         const count = rule === "Single" || rule === "ChooseOne" ? 1 : 3;
@@ -44,7 +44,7 @@ for (const adapter of foundationAdapters) {
     } finally { await f.close(); }
   });
   it(`${adapter}: journal serializes finalize versus withdrawal and rejects raw forks`, async () => {
-    const f = await fixture(adapter);
+    const f = await fixture(adapter), ctx = f.ctx;
     try {
       const record = await f.open("Quorum", 3, 2), id = String(record.id);
       await run(f.decisions.respond(id, f.voters[0]!, [0], ctx));
@@ -60,7 +60,7 @@ for (const adapter of foundationAdapters) {
     } finally { await f.close(); }
   });
   it(`${adapter}: duplicates, eligibility snapshots and denied journal reads fail closed`, async () => {
-    const f = await fixture(adapter);
+    const f = await fixture(adapter), ctx = f.ctx;
     try {
       const record = await f.open("First"), id = String(record.id);
       await run(f.memberships.revoke(f.voters[0]!, "2025-12-31T00:00:00Z", "Backdated", ctx));
@@ -77,7 +77,7 @@ for (const adapter of foundationAdapters) {
     } finally { await f.close(); }
   });
   it(`${adapter}: expiry, reconsideration, support and typed applications`, async () => {
-    const f = await fixture(adapter);
+    const f = await fixture(adapter), ctx = f.ctx;
     try {
       const bundle = await run(f.engine.call("@forgegraph/foundation/evidence/_/EvidenceBundle.create", { key: "reasons", label: "Reasons" }, ctx));
       const { Evidence } = await import("../src/foundation/evidence.js");
@@ -102,7 +102,7 @@ for (const adapter of foundationAdapters) {
   });
 
   it(`${adapter}: malformed raw terminal candidates fail closed and denied writes stay denied`, async () => {
-    const f = await fixture(adapter);
+    const f = await fixture(adapter), ctx = f.ctx;
     try {
       const record = await f.open("Single", 1), id = String(record.id);
       const blocked = new Engine(f.engine.model, f.engine.layer);

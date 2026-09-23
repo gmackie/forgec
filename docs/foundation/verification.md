@@ -19,7 +19,7 @@ All 41 implementations are now integrated and independently tested in their supp
 
 Synthetic application/domain consumers establish typed composition usability, not real-application adoption. `application-provenance.md` maps inspected application revisions and actual types to those probes. Append-only candidate rows are often inert until a validated publication journal/seal; use the package helper's authoritative read API. Admission/authority facts must be protected by normal kernel policies. The runtime cannot infer application user identity or permissions from Participation membership.
 
-Known cross-package limits include general transaction-local references/read overlays, serializable absence checks for Routing eligibility, hosted-provider certification and application dogfood. See `kernel-gaps.md` and package documentation. The Party identity migration is documented separately.
+Known cross-package limits include general transaction-local references/read overlays, complete hosted-provider certification and deployed application adoption. Routing eligibility now uses serializable absence guards. See `kernel-gaps.md` and package documentation. The Party identity migration is documented separately.
 
 Plan: https://syhczsdoad8z.postplan.dev
 Draft: https://github.com/gmackie/forgec/pull/70
@@ -27,3 +27,9 @@ Draft: https://github.com/gmackie/forgec/pull/70
 EvaluationStart now records server-owned creation timestamps. Qualification/binding checks require finite, strictly earlier durable creation times, never caller-supplied startedAt. Equal or missing timestamps cannot establish order. Existing rows need an explicit migration; reconstructing or backfilling timestamps does not establish historical pre-execution binding, so ambiguous legacy evaluations require new evidence.
 
 Remaining release gates are tracked in https://github.com/gmackie/forgec/issues/71; existing package acceptance IDs stay open where those gates apply.
+
+## Real-application verification
+
+`pnpm foundation:apps` verifies six opt-in application adapters against pinned source files from real local application checkouts. Set the `FORGE_FOUNDATION_<APP>_ROOT` variables documented in each `examples/foundation/apps/<app>/verification.json`, plus `FORGE_FOUNDATION_PG_URL` for PostgreSQL coverage. The runner rejects missing source, stale digests, skipped required assertions and nondeterministic compiler artifacts. Receipts bind application source, generated artifacts and test results. These traces exercise actual application seams in an isolated harness; they do not establish production deployment or adoption.
+
+Evaluation quarantine is a fenced migration boundary. Read historical runs through `Evaluations.phase` and raw records; use `Evaluations.result` for authority. A legacy result with a quarantine fact must be reevaluated with fresh bindings. `scripts/prepare-evaluation-migration.mjs` prepares a verified canonical export for isolated import rehearsal, preserving historical facts and adding quarantine records. The target stays fenced until import and verification complete. This mechanism does not provide concurrent live revocation of already admitted work.

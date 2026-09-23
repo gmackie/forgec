@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import { Clock } from "../services.js";
 import type { Engine, CallContext } from "../engine.js";
@@ -106,7 +107,7 @@ export class Knowledge {
     return Effect.gen(function* () {
       const feedback = yield* self.call("KnowledgeFeedback.get", { id: feedbackId }, ctx);
       yield* self.history(String(feedback.edition), ctx);
-      const finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: finishId }, ctx);
+      const finish = yield* new Evaluations(self.engine).result(String(finishId),ctx);
       if (finish.start != null) {
         const start = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationStart.get", { id: finish.start }, ctx);
         yield* check(Number.isFinite(Date.parse(String(start.createdAt))) && Number.isFinite(Date.parse(String(feedback.createdAt))) && Date.parse(String(start.createdAt)) > Date.parse(String(feedback.createdAt)), "Feedback execution predates its edition binding");

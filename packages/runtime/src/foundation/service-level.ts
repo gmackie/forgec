@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import { decodeDatetime } from "../codecs.js";
 import type { Engine, CallContext } from "../engine.js";
@@ -57,7 +58,7 @@ export class ServiceLevels {
         if (event.kind === "Paused") { yield* check(pausedAt == null, "Clock is already paused"); pausedAt = when; }
         else if (event.kind === "Resumed") { yield* check(pausedAt != null, "Clock is not paused"); pauses.push([pausedAt!, when]); pausedAt = null; }
         else {
-          const evaluation = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: event.evaluation }, ctx);
+          const evaluation = yield* new Evaluations(self.engine).result(String(event.evaluation),ctx);
           const run = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationRun.get", { id: evaluation.run }, ctx);
           yield* check(evaluation.outcome === "Completed" && run.definition === policy.specification, "Assessment uses the wrong pinned evaluation definition");
           if (event.finished != null) finished = yield* self.engine.call("@forgegraph/foundation/fulfillment/_/FulfillmentEnd.get", { id: event.finished }, ctx);
@@ -84,7 +85,7 @@ export class ServiceLevels {
     const self = this;
     return Effect.gen(function* () {
       const state = yield* self.state(instance, at, ctx); yield* check(!state.finished, "Service-level tracking is terminal");
-      const policy = yield* self.call("ServiceLevelPolicy.get", { id: state.objective.policy }, ctx), finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: evaluation }, ctx), run = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationRun.get", { id: finish.run }, ctx);
+      const policy = yield* self.call("ServiceLevelPolicy.get", { id: state.objective.policy }, ctx), finish = yield* new Evaluations(self.engine).result(String(evaluation),ctx), run = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationRun.get", { id: finish.run }, ctx);
       yield* check(finish.outcome === "Completed" && run.definition === policy.specification, "Assessment uses the wrong pinned evaluation definition");
       const fulfillment = yield* new Fulfillments(self.engine).status(String(state.instance.fulfillment), ctx);
       const end = fulfillment.end && Date.parse(String(fulfillment.end.endedAt)) <= Date.parse(at) ? fulfillment.end : null;

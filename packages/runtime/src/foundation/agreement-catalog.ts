@@ -1,3 +1,4 @@
+import { Evaluations } from "./evaluation.js";
 import { Effect } from "effect";
 import { decodeDatetime } from "../codecs.js";
 import type { Engine, CallContext } from "../engine.js";
@@ -55,7 +56,7 @@ export class AgreementCatalog {
       }
       yield* self.evidence(offer.support, ctx);
       if (offer.evaluation != null) {
-        const evaluation = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: offer.evaluation }, ctx);
+        const evaluation = yield* new Evaluations(self.engine).result(String(offer.evaluation),ctx);
         yield* self.evidence(evaluation.support, ctx);
       }
       if (offer.right != null) yield* self.engine.call(ep + "RightDefinition.get", { id: offer.right }, ctx);
@@ -68,6 +69,10 @@ export class AgreementCatalog {
     return Effect.gen(function* () {
       const previous = input.previous ? yield* self.offer(input.previous, ctx) : null;
       yield* self.evidence(input.support, ctx);
+      if (input.evaluation != null) {
+        const evaluation = yield* new Evaluations(self.engine).result(input.evaluation, ctx);
+        yield* self.evidence(evaluation.support, ctx);
+      }
       return yield* self.call("Offer.create", { ...input, previous: input.previous ?? null, revision: previous ? Number(previous.revision) + 1 : 1, document: input.document ?? null, support: input.support ?? null, evaluation: input.evaluation ?? null, right: input.right ?? null, requirement: input.requirement ?? null }, ctx);
     });
   }
