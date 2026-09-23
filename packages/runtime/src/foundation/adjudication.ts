@@ -61,12 +61,12 @@ export class Adjudications {
       const state = yield* new Decisions(self.engine).state(String(record.decisionCase), ctx);
       yield* check(state.outcome, "Adjudication requires a validated terminal Decision outcome");
       const first = Date.parse(String(state.events[0]?.createdAt));
-      yield* check(Date.parse(String(record.createdAt)) <= first, "Decision predates the adjudication context");
+      yield* check(Date.parse(String(record.createdAt)) < first, "Decision predates the adjudication context");
       const items: Wire[] = []; let total = 0n;
       for (let ordinal = 0; ordinal < Number(record.itemCount); ordinal++) {
         const item = yield* self.find("AdjudicationItem", { adjudicationCase: id, ordinal }, ctx);
         yield* check(item, "Adjudication item snapshot is incomplete");
-        yield* check(Date.parse(String(item!.createdAt)) <= first, "Item was added after Decision responses");
+        yield* check(Date.parse(String(item!.createdAt)) < first, "Item was added after Decision responses");
         yield* self.evidence(item!.support, ctx);
         const finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: item!.evaluation }, ctx);
         yield* check(finish.outcome === "Completed", "Item evaluation did not complete");

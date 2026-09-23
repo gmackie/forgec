@@ -1,0 +1,103 @@
+import agreement-catalog
+import specification
+import evaluation
+import ledger
+import party
+
+export resource PricingRate
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  definition : specification.SpecificationPin
+  account : ledger.Account
+  unitPrice : decimal<6> >= 0
+  validFrom : datetime
+  validUntil : datetime
+  rules {
+    validFrom < validUntil
+  }
+}
+export resource PriceAdjustment
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  definition : specification.SpecificationPin
+  account : ledger.Account
+  amount : decimal<6>
+  reason : text length 1..500
+}
+export resource QuoteLine
+  @tenant
+  @appendOnly
+{
+  id : id
+  rate : PricingRate
+  quantity : decimal<6> > 0
+  adjustment : PriceAdjustment?
+  next : QuoteLine?
+}
+export resource Quote
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  offer : agreement-catalog.Offer
+  buyer : party.Party
+  terms : specification.SpecificationPin
+  evaluation : evaluation.EvaluationFinish?
+  pricedAt : datetime
+  expiresAt : datetime
+  head : QuoteLine
+  previous : Quote?
+  rules {
+    terms == offer.terms
+    pricedAt < expiresAt
+    previous == null || (previous.offer == offer && previous.buyer == buyer)
+  }
+  find by key
+}
+export enum QuoteOutcome {
+  Accepted
+  Expired
+  Revised
+}
+export resource QuoteEnd
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  quote : Quote @unique
+  outcome : QuoteOutcome
+  successor : Quote?
+  acceptanceDigest : text? length 64..64
+  reason : text length 1..500
+  rules {
+    (outcome == QuoteOutcome.Revised && successor != null && successor.previous == quote) || (outcome != QuoteOutcome.Revised && successor == null)
+    (outcome == QuoteOutcome.Accepted && acceptanceDigest != null && createdAt < quote.expiresAt) || (outcome != QuoteOutcome.Accepted && acceptanceDigest == null)
+    outcome != QuoteOutcome.Expired || createdAt >= quote.expiresAt
+  }
+  find by quote
+}
+export resource QuoteAgreement
+  @tenant
+  @appendOnly
+{
+  id : id
+  quote : Quote @unique
+  acceptance : QuoteEnd @unique
+  agreement : agreement-catalog.Agreement @unique
+  rules {
+    acceptance.quote == quote
+    acceptance.outcome == QuoteOutcome.Accepted
+    agreement.offer == quote.offer
+    agreement.customer == quote.buyer
+    agreement.terms == quote.terms
+  }
+  find by quote
+}

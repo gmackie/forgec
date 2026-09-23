@@ -6,7 +6,9 @@
     "agreement-catalog",
     "entitlement",
     "evaluation",
-    "fulfillment"
+    "fulfillment",
+    "availability",
+    "specification"
   ],
   "facts": [
     "Policy/objective/milestone, clock rules, tracked breach and explicit remedy links."
@@ -23,37 +25,61 @@
       "id": "F63-01",
       "description": "policy/objective/milestone model",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-service-level.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F63-02",
       "description": "clock/deadline rules",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-service-level.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F63-03",
       "description": "evaluation/breach tracking",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-service-level.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F63-04",
       "description": "agreement/entitlement linkage",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-service-level.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F63-05",
       "description": "remedy/escalation hooks",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-service-level.test.ts"
+      ],
+      "verification": "local"
     },
     {
       "id": "F63-06",
       "description": "fixtures for support first-response SLA, lab turnaround and deployment SLO",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-service-level.test.ts"
+      ],
+      "verification": "local"
     }
   ],
   "fixtures": [

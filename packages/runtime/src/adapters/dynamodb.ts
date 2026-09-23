@@ -33,6 +33,54 @@ type Item = Record<string, unknown>;
 type TxItem = NonNullable<TransactWriteCommandInput["TransactItems"]>[number];
 type Role = "entity" | "claim" | "access" | "parent" | "audit" | "outbox" | "receipt";
 
+/** Merge only generated additive reference-counter updates, never entity writes,
+ * hierarchy checks or effective-date revision SETs. All original guards survive. */
+function mergeReferenceCounters(first: TxItem, second: TxItem): TxItem | null {
+  if (!first.Update || !second.Update) return null;
+  const updates = [first.Update, second.Update];
+  const deltas = new Map<string, number>(), names: Record<string, string> = {}, values: Item = {}, conditions: string[] = [];
+  for (const update of updates) {
+    if (!update.UpdateExpression?.startsWith("ADD ")) return null;
+    for (const part of update.UpdateExpression.slice(4).split(",")) {
+      const match = /^\s*(#[A-Za-z0-9_]+)\s+(:[A-Za-z0-9_]+)\s*$/.exec(part);
+      if (!match) return null;
+      const field = update.ExpressionAttributeNames?.[match[1]!], delta = update.ExpressionAttributeValues?.[match[2]!];
+      if (!field?.startsWith("dep#") || !Number.isSafeInteger(delta)) return null;
+      const total = (deltas.get(field) ?? 0) + Number(delta);
+      if (!Number.isSafeInteger(total)) return null;
+      deltas.set(field, total);
+    }
+    const renamedTokens = new Map<string, string>();
+    const rename = (token: string) => {
+      let renamed = renamedTokens.get(token);
+      if (!renamed) {
+        renamed = token[0] + "g" + (Object.keys(names).length + Object.keys(values).length);
+        renamedTokens.set(token, renamed);
+      }
+      return renamed;
+    };
+    // Copy only condition placeholders; unused placeholders are invalid in DynamoDB.
+    if (update.ConditionExpression) conditions.push("(" + update.ConditionExpression.replace(/#[A-Za-z0-9_]+|:[A-Za-z0-9_]+/g, token => {
+      const renamed = rename(token);
+      if (token.startsWith("#")) names[renamed] = update.ExpressionAttributeNames![token]!;
+      else values[renamed] = update.ExpressionAttributeValues![token];
+      return renamed;
+    }) + ")");
+  }
+  const adds: string[] = [];
+  for (const [field, delta] of deltas) {
+    const index = adds.length;
+    names["#sum" + index] = field; values[":sum" + index] = delta;
+    adds.push("#sum" + index + " :sum" + index);
+  }
+  return { Update: { TableName: first.Update.TableName, Key: first.Update.Key,
+    UpdateExpression: "ADD " + adds.join(", "),
+    ...(conditions.length ? { ConditionExpression: conditions.join(" AND ") } : {}),
+    ExpressionAttributeNames: names, ExpressionAttributeValues: values,
+    ...(first.Update.ReturnValuesOnConditionCheckFailure || second.Update.ReturnValuesOnConditionCheckFailure ? { ReturnValuesOnConditionCheckFailure: "ALL_OLD" as const } : {}),
+  } };
+}
+
 /** Create the single data table + sparse pending index (idempotent). Deployment-time, never request-time. */
 export async function ensureDynamoTable(table: string, region: string): Promise<void> {
   const raw = new DynamoDBClient({ region });
@@ -370,7 +418,7 @@ export class DynamoStorage implements StorageAdapter {
   }
 
   budget(plans: CommitPlan[]): { actions: number; limit: number } {
-    return { actions: plans.reduce((n, p) => n + this.buildTransaction(p).items.length, 0), limit: DYNAMO_TX_LIMIT };
+    return { actions: this.transaction(plans).items.length, limit: DYNAMO_TX_LIMIT };
   }
 
   // ------------------------------------------------------------ commit
@@ -378,31 +426,44 @@ export class DynamoStorage implements StorageAdapter {
     return this.commitAll([plan]);
   }
 
-  /** Several logical commands in one TransactWriteItems. Actions on the same item are coalesced by the planner
-   *  only for parent counters; distinct commands touching the same entity are rejected up front. */
+  /** Assemble the physical transaction once for both budgeting and execution.
+   * Shared reference counters commute; preserve every condition while combining
+   * their deltas. Any other duplicate physical target is unsupported. */
+  private transaction(plans: CommitPlan[]): { items: TxItem[]; roles: Role[]; owners: CommitPlan[]; error?: ForgeError } {
+    const items: TxItem[] = [], roles: Role[] = [], owners: CommitPlan[] = [];
+    const positions = new Map<string, number>();
+    let error: ForgeError | undefined;
+    const add = (item: TxItem, role: Role, owner: CommitPlan) => {
+      const action = item.Put ?? item.Update ?? item.Delete ?? item.ConditionCheck;
+      const key = item.Put?.Item ?? item.Update?.Key ?? item.Delete?.Key ?? item.ConditionCheck?.Key;
+      const identity = JSON.stringify([action?.TableName, key?.PK, key?.SK]);
+      const prior = positions.get(identity);
+      if (prior !== undefined) {
+        const merged = roles[prior] === "parent" && role === "parent" ? mergeReferenceCounters(items[prior]!, item) : null;
+        if (merged) { items[prior] = merged; return; }
+        error ??= err("ValidationFailed", "Atomic DynamoDB mutations contain incompatible actions on the same item");
+      } else positions.set(identity, items.length);
+      items.push(item); roles.push(role); owners.push(owner);
+    };
+    for (const plan of plans) {
+      const built = this.buildTransaction(plan);
+      built.items.forEach((item, i) => add(item, built.roles[i]!, plan));
+    }
+    // One marker per tenant, included in exactly the same budget as the send.
+    const marked = new Set<string>();
+    for (const plan of plans) if (plan.outbox.length && !marked.has(plan.tenant)) {
+      marked.add(plan.tenant);
+      add(this.tenantMarker(plan.tenant, plan.outbox[0]!.createdAt), "outbox", plan);
+    }
+    return { items, roles, owners, ...(error ? { error } : {}) };
+  }
+
   commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
-      const items: TxItem[] = [];
-      const roles: Role[] = [];
-      const owners: CommitPlan[] = [];
-      const touched = new Set<string>();
-      for (const plan of plans) {
-        const key = `${plan.resource.id}|${plan.tenant}|${plan.id}`;
-        if (touched.has(key)) return yield* Effect.fail(err("BudgetExceeded", "an atomic changeset cannot contain two operations on the same record on DynamoDB"));
-        touched.add(key);
-        const built = self.buildTransaction(plan);
-        items.push(...built.items);
-        roles.push(...built.roles);
-        owners.push(...built.items.map(() => plan));
-      }
-      // One tenant marker per transaction (DynamoDB forbids two actions on one item).
-      const withOutbox = plans.filter((p) => p.outbox.length > 0);
-      if (withOutbox.length) {
-        items.push(self.tenantMarker(withOutbox[0]!.tenant, withOutbox[0]!.outbox[0]!.createdAt));
-        roles.push("outbox");
-        owners.push(withOutbox[0]!);
-      }
+      if (!plans.length) return yield* Effect.fail(err("ValidationFailed", "Atomic DynamoDB mutations require at least one plan"));
+      const { items, roles, owners, error } = self.transaction(plans);
+      if (error) return yield* Effect.fail(error);
       if (items.length > DYNAMO_TX_LIMIT) return yield* Effect.fail(err("BudgetExceeded", `${items.length} physical actions exceed the transaction limit of ${DYNAMO_TX_LIMIT}`));
       for (let attempt = 1; ; attempt++) {
         const outcome = yield* self.send(items, roles, owners, plans[0]!);

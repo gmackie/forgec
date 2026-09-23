@@ -108,7 +108,7 @@ export class AgreementCatalog {
       const state = yield* new Decisions(self.engine).state(String(approval.decisionCase), ctx);
       yield* check(state.outcome?.id === approval.id, "Agreement references an unselected or invalid Decision candidate");
       const qualification = yield* self.find("OfferQualification", { decisionCase: approval.decisionCase }, ctx);
-      yield* check(qualification && state.events[0] && Date.parse(String(qualification.createdAt)) <= Date.parse(String(state.events[0].createdAt)), "Offer selection must precede decision responses");
+      yield* check(qualification && state.events[0] && Date.parse(String(qualification.createdAt)) < Date.parse(String(state.events[0].createdAt)), "Offer selection must precede decision responses");
       const selected = state.options.find(option => option.id === approval.selected)!;
       yield* check(supplier !== customer && [supplier, customer].every(voter => state.responses.some(response => response.voter === voter && (response.ranking as number[])[0] === selected.ordinal)), "Both signers must approve the selected terms through Decision");
     });

@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { foundation, foundationAdapters } from "./helpers/foundation.js";
 import { Adjudications } from "../src/foundation/adjudication.js";
 import { Decisions } from "../src/foundation/decision.js";
@@ -36,6 +36,32 @@ async function setup(adapter: string, approve = true) {
   return { ...f, api, record, item, seal, book, debit, credit, coverage, entitlements, pin };
 }
 for (const adapter of foundationAdapters) {
+  it(`${adapter}: ambiguous or legacy timestamps cannot establish authority ordering`, async () => {
+    for (const timestamp of ["2026-01-01T00:00:00.000Z", undefined, "invalid"]) {
+      const f = await setup(adapter);
+      try {
+        
+        const original = f.engine.call.bind(f.engine);
+        const spy = vi.spyOn(f.engine, "call").mockImplementation((op, input, context) => original(op, input, context).pipe(Effect.map(row => op.endsWith(".get") && Object.hasOwn(row, "createdAt") ? {...row, createdAt: timestamp} : row)));
+        try { await expect(run(f.api.determine(String(f.record.id), "60.000000", "Approved", String(f.seal.id), f.ctx))).rejects.toMatchObject({detail: 'Decision predates the adjudication context'}); }
+        finally { spy.mockRestore(); }
+      } finally { await f.close(); }
+    }
+  });
+  it(`${adapter}: ambiguous item timestamps cannot prove prior Decision binding`, async () => {
+    for (const timestamp of ["2026-01-01T00:00:00.000Z", undefined, "invalid"]) {
+      const f = await setup(adapter);
+      try {
+        
+        const first = (await run(new Decisions(f.engine).state(String(f.record.decisionCase), f.ctx))).events[0]!.createdAt;
+        const original = f.engine.call.bind(f.engine);
+        const spy = vi.spyOn(f.engine, "call").mockImplementation((op, input, context) => original(op, input, context).pipe(Effect.map(row => op === p + "AdjudicationItem.get" ? {...row, createdAt: timestamp === "2026-01-01T00:00:00.000Z" ? first : timestamp} : row)));
+        try { await expect(run(f.api.determine(String(f.record.id), "60.000000", "Approved", String(f.seal.id), f.ctx))).rejects.toMatchObject({detail: 'Item was added after Decision responses'}); }
+        finally { spy.mockRestore(); }
+      } finally { await f.close(); }
+    }
+  });
+
   it(`${adapter}: determination, source reasons, exact idempotent settlement and three domains`, async () => {
     const f = await setup(adapter), { api, ctx, call } = f;
     try {

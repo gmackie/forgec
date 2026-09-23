@@ -117,6 +117,15 @@ function main() {
     console.log(JSON.stringify({ suite, status: 'passing', ...result, note: 'Contract/evidence structure only; run local package suites to execute acceptance. Hosted provider certification is separate.' }, null, 2));
     return;
   }
+  if (all) {
+    run(process.execPath, [fileURLToPath(import.meta.url), '--suite', 'contracts', '--all']);
+    const result = validateContracts(readContracts());
+    const missing = result.order.filter(name => !existsSync(join(root, `packages/foundation/${name}/verification.json`)));
+    if (missing.length) throw new Error(`Missing local verifiers: ${missing.join(', ')}`);
+    for (const name of result.order) run(process.execPath, [fileURLToPath(import.meta.url), '--suite', 'local', '--package', name]);
+    console.log(JSON.stringify({suite: 'local', status: 'passing', packages: result.order, providers: 'live certification not run'}));
+    return;
+  }
   const verifierPath = slug && /^[a-z]+(?:-[a-z]+)*$/.test(slug) ? join(root, `packages/foundation/${slug}/verification.json`) : '';
   if (verifierPath && existsSync(verifierPath) && !all) {
     const verifier = JSON.parse(readFileSync(verifierPath, 'utf8'));
@@ -142,7 +151,7 @@ function main() {
         run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', 'packages/foundation/artifact/fixtures/consumer', '--out', join(out, 'artifact-consumer')]);
         run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-artifact-consumer.test.ts'], { FORGE_FOUNDATION_CONSUMER: join(out, 'artifact-consumer') });
       }
-      const receipt = { version: 1, package: slug, suite: 'local', status: 'passing', fingerprint: fingerprint(root, slug, readContracts()), verifiedAt: new Date().toISOString(), commands: [`cargo check/build ${slug} and consumer; deterministic double build`, `vitest run ${verifier.tests.join(' ')}`], artifacts: ['first', 'consumer-first'].map(dir => ({path: `${dir}/app.json`, sha256: createHash('sha256').update(readFileSync(join(out, dir, 'app.json'))).digest('hex')})), providers: 'live certification not run' };
+      const receipt = { version: 1, package: slug, suite: 'local', status: 'passing', fingerprint: fingerprint(root, slug, readContracts()), verifiedAt: new Date().toISOString(), commands: [`cargo check/build ${slug} and consumer; deterministic double build`, `vitest run ${verifier.tests.join(' ')}`], artifacts: pairs.flatMap(([dir]) => ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts', 'openapi.json', 'api.smithy', 'source-map.json', 'README.md'].map(file => ({path: `${dir}/${file}`, sha256: createHash('sha256').update(readFileSync(join(out, dir, file))).digest('hex')}))), providers: 'live certification not run' };
       const reportDir = join(root, 'conformance/reports/foundation'); mkdirSync(reportDir, {recursive: true}); writeFileSync(join(reportDir, `${slug}.json`), JSON.stringify(receipt, null, 2)+'\n');
       console.log(JSON.stringify({...receipt, deterministic: true, scope: 'local generated-bundle tests; package requirement acceptance and provider evidence remain separate'}));
     } finally { rmSync(out, { recursive: true, force: true }); }

@@ -86,3 +86,7 @@ Engine.atomic accepts 1–32 independent operation/input descriptors against dur
 ## Decimal validation correction
 
 Exclusive integer/decimal/money field bounds now reject their endpoints. Rule comparison resolves decimal types through declared reference fields and uses exact common-scale BigInt ordering, including equality with numeric literals. Numeric-looking text retains lexical ordering. Regressions reproduced both original failures before correction.
+
+## Adapter audit fixes
+
+MemoryStorage now rejects a duplicate idempotency receipt before mutating any records, audit or outbox state; the losing command retries against the winning receipt. A forced concurrent-miss regression proves one business effect. DynamoDB atomic assembly coalesces compatible shared-parent reference counters while preserving each guard, rejects incompatible duplicate physical targets before sending, and includes per-tenant outbox markers in the provider action budget. Request-shape tests do not substitute for live DynamoDB certification.

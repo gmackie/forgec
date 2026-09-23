@@ -29,7 +29,7 @@ Selected packages share a storage and transaction domain. Assembly retains packa
 
 Remote callable dependencies stay outside the atomic transaction boundary. They require explicit implementation bindings; importing or co-deploying a function does not silently turn `external()` into an atomic nested call. All dependency function bodies are explicitly registered by stable ID. The initial executable gate invokes those functions directly and exercises explicit remote bindings. Nested local callable transactions need a separate verified dispatch contract before systems rely on them.
 
-Pure facet/pattern expansions must not load source libraries at runtime. Durable resources/contracts do remain runtime-owned model entries. The existing unmerged facet and semantic-source-map changes should be reused after review rather than reimplemented. Source paths and spans belong in build-bound provenance sidecars, not canonical semantic identity.
+Pure facet/pattern expansions must not load source libraries at runtime. Durable resources/contracts do remain runtime-owned model entries. Exported facets and source-map support are included in the compiler stack; Collaboration exercises a typed Discussable facet. Source paths and spans belong in build-bound provenance sidecars, not canonical semantic identity.
 
 ## Invariants and verification boundaries
 
@@ -37,7 +37,7 @@ Allocation needs a capacity guard mutated in the same atomic commit as the claim
 
 Participation is not entitlement, and neither grants authorization by itself. PIP examples expose facts to normal governance. WorkQueue Task is execution machinery, not a business fulfillment. External delivery deduplication does not guarantee exactly-once provider effects; uncertain acknowledgments retain explicit durable history.
 
-The shared runner distinguishes contract validation, an executable composition slice and future per-package behavioral/provider verification. Planned packages fail executable verification until they have a real implementation and verifier. Required provider coverage must fail when unavailable; no silent skips count as certification.
+The shared runner distinguishes contract validation, an executable composition slice and per-package behavioral verification and separate hosted-provider certification. Planned packages fail executable verification until they have a real implementation and verifier. Required provider coverage must fail when unavailable; no silent skips count as certification.
 
 ## Agent ownership
 

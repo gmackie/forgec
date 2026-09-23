@@ -1,63 +1,29 @@
-# Current Foundation implementation verification
+# Foundation implementation verification
 
-Issues #26–29 have executable evidence for all 26 acceptance criteria, recorded
-as `passing` with `verification: local` and test-file references in each contract.
-The remaining 187 criteria are still planned. The verifier validates evidence paths;
-a contract-only run does not execute the tests or certify hosted providers.
+The expanded scope contains41 packages and308 acceptance IDs. Each implemented package has a `verification.json` descriptor, typed generated consumer, runtime helper and focused behavior tests. Status is per criterion in `contract.json`; provider requirements remain pending. Package READMEs/contract implementation sections document bounded profiles and durable pending protocols.
 
-Run `node scripts/verify-foundation.mjs --suite local --package <slug>` for
-`specification`, `artifact`, `identifiers` or `participation`. Each suite rebuilds
-package and consumer fixtures twice, checks determinism and runs memory/SQLite tests.
-The specification suite also tests real local Git objects and artifact provenance.
-The artifact suite includes the blob race regressions. The participation suite
-includes a live policy/PIP example with uncached authorization and paginated facts.
+Run:
 
-Validation on 2026-09-22: 287 runtime tests passed, 104 hosted-provider tests skipped;
-runtime build/typecheck and six verifier unit tests passed.
+```sh
+pnpm foundation:contracts
+pnpm foundation:composition
+pnpm foundation:local
+node scripts/verify-foundation.mjs --suite local --package scheduling
+```
 
-The runtime suite exercises all four packages together. Consumer fixtures cover
-seven pinned-instance domains, four artifact roles, GitHub/serial/healthcare alternate
-identifiers, and team/classroom/review-board membership. Fixtures are synthetic;
-external production adoption and live hosted provider certification are not claimed.
+`foundation:local` runs every package in dependency order and fails if any descriptor is absent. Each package/consumer builds twice and all eight generated artifacts are compared. Reconciliation also builds its separate actor-preview controller twice. Tests consume those fresh bundles, not mocked helpers. Source-fingerprinted receipts are written under ignored `conformance/reports/foundation/`.
 
-Manifest digests now use `sha256:<hex>` consistently across specification and artifact;
-existing experimental raw-hex realization values need an explicit migration. Artifact
-component membership uses immutable linked descriptors, avoiding any dependency on
-the still-unimplemented general transaction-local read overlay. Participation permits
-different-start overlapping memberships; domains may impose stricter policies.
+Set `FORGE_FOUNDATION_PG_URL` to a test PostgreSQL database to add isolated UUID schemas per test. Memory and SQLite always run. CI supplies PostgreSQL17. Hosted D1 and DynamoDB require separate credentials/infrastructure; provider mode explicitly fails instead of returning a false pass. Existing unrelated infrastructure suites may skip and their skips do not count as Foundation acceptance.
 
-The historical baseline below records the first composition change, before these
-package slices and the Studio/runtime integration.
+All 41 implementations are now integrated and independently tested in their supported local profiles. Full-suite results and the exact pushed checkpoint are recorded in the PR; source-fingerprinted receipts remain the per-package execution evidence. The earlier 38-package checkpoint58bcc7c6086a passed480 runtime,155 Rust and13 harness tests.
 
-# First Foundation slice verification
+Synthetic application/domain consumers establish typed composition usability, not real-application adoption. `application-provenance.md` maps inspected application revisions and actual types to those probes. Append-only candidate rows are often inert until a validated publication journal/seal; use the package helper's authoritative read API. Admission/authority facts must be protected by normal kernel policies. The runtime cannot infer application user identity or permissions from Participation membership.
 
-Verified 2026-09-22 in the `foundation-integration` JJ workspace, based on GitHub main `36dccaa30d24ac4e70f8032b9f7bbca27f57dfe8`.
+Known cross-package limits include general transaction-local references/read overlays, serializable absence checks for Routing eligibility, hosted-provider certification and application dogfood. See `kernel-gaps.md` and package documentation. The Party identity migration is documented separately.
 
-This change implements explicit package co-deployment and its first runtime composition probe. It establishes contracts for all 25 Foundation packages; it does not implement their runtime schemas or mark package acceptance complete.
+Plan: https://syhczsdoad8z.postplan.dev
+Draft: https://github.com/gmackie/forgec/pull/70
 
-| Check | Result |
-| --- | --- |
-| `cargo fmt --all -- --check` | Passed |
-| `cargo clippy --workspace --all-targets -- -D warnings` | Passed |
-| `cargo test --workspace --locked` | 99 passed |
-| `node --test scripts/test/verify-foundation.test.mjs` | 5 passed |
-| `pnpm foundation:contracts` | 25 packages, 213 acceptance cases, zero graph/catalog errors |
-| `pnpm foundation:composition` | Two identical builds; 5 runtime cases passed |
-| `./scripts/refresh-fixtures.sh` | Generated new composition baseline; existing conformance fixtures unchanged |
-| `pnpm --filter @forgegraph/runtime typecheck` | Passed |
-| `pnpm --filter @forgegraph/runtime build` | Passed |
-| `pnpm --filter @forgegraph/runtime test` | 237 passed, 104 skipped; required external provider infrastructure was not configured |
-| `node scripts/check-workflows.mjs` | Passed |
+EvaluationStart now records server-owned creation timestamps. Qualification/binding checks require finite, strictly earlier durable creation times, never caller-supplied startedAt. Equal or missing timestamps cannot establish order. Existing rows need an explicit migration; reconstructing or backfilling timestamps does not establish historical pre-execution binding, so ambiguous legacy evaluations require new evidence.
 
-The composition probe was first run against the original compiler and failed all five cases: the dependency aggregate was absent from the model. It passes against the assembled bundle. Three additional memory regressions verify atomic rollback/conditional guard behavior; known staged-reference/read-your-writes failures remain explicit in `kernel-gaps.md`.
-
-An independent agent reviewed the merged compiler and harness. It verified extension rejection/verification, recursive workflow reference validation, target compatibility, observability ownership, catalog consistency and fixture freshness wiring; no blocking finding remained in this slice.
-
-## Limits
-
-No live D1, PostgreSQL or DynamoDB certification was performed. Standard runtime tests skip infrastructure-dependent cases; these skips are not Foundation acceptance evidence. The dedicated Foundation provider mode fails until a real verifier exists.
-
-Physical name collisions are rejected rather than namespaced. Assembled extension packages are rejected until extension pin assembly is implemented. Facets, patterns, signed provenance integration, nested atomic callable dispatch and full G1 acceptance remain open. The existing facet/source-map branches have not been merged into this change. All 25 package acceptance contracts remain `planned`.
-
-Execution plan: https://syhczsdoad8z.postplan.dev
-Tracking: https://github.com/gmackie/forgec/issues/25 and child issues #26–50.
+Remaining release gates are tracked in https://github.com/gmackie/forgec/issues/71; existing package acceptance IDs stay open where those gates apply.

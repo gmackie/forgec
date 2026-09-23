@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "4925f6d7e03259bdf061b8666a3887885955da2288da567196e6108ca3e02fb9",
+  "buildHash": "a7d26ca45625b5fedfdbff9348e311724c82bf063e71472832933bfa6ce39c96",
   "digests": {
-    "source": "c3d58db821af170aaa7ee521cfe99cab2a3b7ada50a52f55fa09addd85732433",
-    "wire": "18db7ff802197df72e1880a42d98fd8eafbc5be962621a8bf94ae216fd96a786",
+    "source": "aaa15e9e6230de5c17773539a3134e78952e2777fdf92e12e55262ea488cb7ca",
+    "wire": "1ed7046bb7a7409f50a91252d431454c7858a052aa6bec3140fedab040b79247",
     "docs": "56ab1e171a1fd3e131fbed6eeecd0676c556d748d6df0f8cf7ff96421f11b294",
-    "security": "24f2caed1454c4bba820ba65f80364c2784a4dda183bd5501919bdc8e421c1ca"
+    "security": "1e35b230f0742e14cf343d15a993af26a8a6ae20f46d364a00670bc887ad1c24"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -3512,7 +3512,7 @@
             "decorators": {
               "appendOnly": true,
               "tenant": true,
-              "timestamps": false,
+              "timestamps": true,
               "softDelete": false,
               "versioned": false,
               "audited": false,
@@ -3588,6 +3588,38 @@
                 "immutable": true,
                 "serverOwned": false,
                 "synthesized": false
+              },
+              {
+                "name": "createdAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
+              },
+              {
+                "name": "updatedAt",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "datetime",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": true
               }
             ],
             "uniques": [
@@ -15248,6 +15280,20 @@
               "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
             "run": {
               "type": "string",
               "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
@@ -15267,6 +15313,8 @@
           },
           "required": [
             "id",
+            "createdAt",
+            "updatedAt",
             "run",
             "startedAt",
             "recordedBy"
@@ -22225,6 +22273,20 @@
             "sqlType": "TEXT",
             "nullable": false,
             "field": "recordedBy",
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "createdAt",
+            "storage": "text"
+          },
+          {
+            "name": "updated_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "updatedAt",
             "storage": "text"
           }
         ],
@@ -30636,6 +30698,24 @@
             "sortable": true,
             "minLength": 1,
             "maxLength": 128
+          },
+          {
+            "name": "createdAt",
+            "label": "Created At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "updatedAt",
+            "label": "Updated At",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
           }
         ],
         "tableColumns": [
@@ -42389,6 +42469,40 @@
         "completeness": "unclassified"
       },
       {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationStart",
+        "field": "createdAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/evaluation/_/EvaluationStart",
+        "field": "updatedAt",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
         "resource": "@forgegraph/foundation/evidence/_/EvidenceBundle",
         "field": "id",
         "class": "data.structural",
@@ -46203,7 +46317,7 @@
     "summary": {
       "classified": 1,
       "inferred": 2,
-      "structural": 238,
+      "structural": 240,
       "unclassified": 77
     }
   },
@@ -47615,7 +47729,9 @@
           "id",
           "run",
           "startedAt",
-          "recordedBy"
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
         ],
         "writes": [
           "run",
@@ -47637,7 +47753,9 @@
           "id",
           "run",
           "startedAt",
-          "recordedBy"
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
         ],
         "writes": [],
         "filters": [
@@ -47657,7 +47775,9 @@
           "id",
           "run",
           "startedAt",
-          "recordedBy"
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
         ],
         "writes": [],
         "filters": [
@@ -47677,7 +47797,9 @@
           "id",
           "run",
           "startedAt",
-          "recordedBy"
+          "recordedBy",
+          "createdAt",
+          "updatedAt"
         ],
         "writes": [],
         "filters": [],
@@ -52845,6 +52967,20 @@
               "pattern": "^[A-Za-z0-9_-]+$",
               "readOnly": true
             },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-forge-type": "datetime",
+              "x-forge-precision": "ms",
+              "readOnly": true
+            },
             "run": {
               "type": "string",
               "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
@@ -52865,6 +53001,8 @@
           "additionalProperties": false,
           "required": [
             "id",
+            "createdAt",
+            "updatedAt",
             "run",
             "startedAt",
             "recordedBy"

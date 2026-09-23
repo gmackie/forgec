@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "79b9b637bc7863690bf73e1eae58ec0ed5a410c71d65ad7536bfa3d66fc8bee2",
+  "buildHash": "0b4a850b1905dcf468391b3129e58470ee5882aa215598a41ead530d8021c2d6",
   "digests": {
-    "source": "76c3d1d10fceba8ad95381f14cebdb33fa8f02daa820d413cf9985b0a6871588",
-    "wire": "f846797a696a7f3d6169ed4e1d7103b0c3b6cf566fbd2c113023bc09676a6570",
+    "source": "6d621ac73a183292f019319078d7b60b23cc23d1c7eb4a20026870cdcc1fd955",
+    "wire": "d44db2d572f4af69b43424b2c92baedb4450706b348e91dd380381023cf742f5",
     "docs": "e500b0f283ba0854932a250cf9b8a2505ea40e876db70eb9c7a175b7c87b0c07",
-    "security": "2323c639088266d09f732e31e015dee65263fc162ec4c117a6b0ff0f24ba7b5a"
+    "security": "6a2c2f79f309f0ea1edf54008de41d4eb64affe90549af34bdad26d8842c5bea"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -5662,6 +5662,44 @@
                     "path": [
                       "incumbency",
                       "until"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "!=",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "action"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "string",
+                      "value": "Appoint"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "at"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "incumbency",
+                      "from"
                     ]
                   }
                 }

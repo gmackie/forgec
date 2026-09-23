@@ -80,7 +80,13 @@ export class Budgets {
         const found = yield* storage.findUnique(ctx.tenant, resource, unique, self.engine.claimKey(resource, unique, values)!, values);
         if (!found) break;
         const event = yield* self.engine.call(resource.id + '.get', { id: found.id }, ctx);
-        yield* self.apply(state, event, ctx); state.events.push(event);
+        yield* self.apply(state, event, ctx);
+        const encumbrance = state.claims.get(String(event.encumbrance))!.row;
+        if (encumbrance.reservation != null && event.action !== 'Reverse') {
+          const publication = yield* new Allocations(self.engine).prepare([{ reservation: String(encumbrance.reservation), action: event.action === 'Commit' ? 'book' : 'release', commandKey: `budget:${event.encumbrance}:${event.action}` }], ctx);
+          if (publication.existing.length !== 1 || publication.mutations.length !== 0) return yield* invalid('Budget publication lacks its matching allocation transition');
+        }
+        state.events.push(event);
       }
       return state;
     }).pipe(Effect.provide(self.engine.layer));
@@ -90,6 +96,8 @@ export class Budgets {
     return Effect.gen(function* () {
       const row = yield* self.engine.call(p + 'Encumbrance.get', { id: input.encumbrance }, ctx);
       const state = yield* self.state(String(row.envelope), ctx);
+      const replay = state.events.find(event => (event.previous ?? null) === input.previous);
+      if (replay && replay.encumbrance === input.encumbrance && replay.action === input.action && (replay.actual ?? null) === (input.actual ?? null) && (replay.reversal ?? null) === (input.reversal ?? null)) return replay;
       if ((state.events.at(-1)?.id ?? null) !== input.previous) return yield* Effect.fail(err('VersionConflict', 'Funding journal changed'));
       const event = { ...input, envelope: row.envelope, ordinal: state.events.length + 1, actual: input.actual ?? null, reversal: input.reversal ?? null };
       yield* self.apply(state, event, ctx);

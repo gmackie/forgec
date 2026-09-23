@@ -1,0 +1,170 @@
+import specification
+import allocation
+import fulfillment
+import usage
+import lineage
+import evaluation
+import evidence
+export resource Operation
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  definition : specification.SpecificationPin
+}
+export resource PlannedAllocationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  operation : Operation
+  reservation : allocation.AllocationReservation @unique
+  previous : PlannedAllocationLink?
+  depth : integer >= 1 <= 16
+  rules {
+    (previous == null && depth == 1) || (previous != null && previous.operation == operation && previous.depth == depth - 1)
+  }
+}
+export resource OperationRun
+  @tenant
+  @appendOnly
+{
+  id : id
+  operation : Operation
+  ordinal : integer >= 1
+  plans : PlannedAllocationLink?
+  usageStream : usage.UsageStream
+  usageSource : usage.UsageSource
+  rules {
+    plans == null || plans.operation == operation
+  }
+  unique operation, ordinal
+}
+export resource ActualAllocationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun
+  operation : Operation
+  planned : PlannedAllocationLink @unique
+  reservation : allocation.AllocationReservation
+  grant : allocation.AllocationJournal
+  previous : ActualAllocationLink?
+  depth : integer >= 1 <= 16
+  rules {
+    run.operation == operation && planned.operation == operation
+    planned.reservation == reservation && grant.reservation == reservation && grant.action == "allocate"
+    (previous == null && depth == 1) || (previous != null && previous.run == run && previous.depth == depth - 1)
+  }
+}
+export resource OperationStart
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun @unique
+  actual : ActualAllocationLink?
+  rules {
+    actual == null || actual.run == run
+  }
+  find by run
+}
+export resource OperationFulfillmentLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun
+  operation : Operation
+  fulfillment : fulfillment.Fulfillment @unique
+  rules {
+    run.operation == operation && fulfillment.specificationPin == operation.definition
+  }
+  list by run
+}
+export resource OperationUsageLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun
+  event : usage.UsageEvent @unique
+  rules {
+    event.stream == run.usageStream && event.source == run.usageSource
+  }
+}
+export resource OperationLineageLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun
+  operation : Operation
+  transformation : lineage.Transformation
+  seal : lineage.TransformationSeal
+  rules {
+    run.operation == operation && transformation.definition == operation.definition && seal.transformation == transformation
+  }
+}
+export resource OperationEvaluationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun
+  operation : Operation
+  evaluation : evaluation.EvaluationRun
+  finish : evaluation.EvaluationFinish
+  support : evidence.EvidenceSeal
+  rules {
+    run.operation == operation && evaluation.definition == operation.definition
+    finish.run == evaluation && finish.outcome == "Completed" && finish.support == support
+  }
+}
+export enum OperationOutcome {
+  Completed
+  Failed
+  Cancelled
+}
+export resource OperationEnd
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun @unique
+  start : OperationStart
+  outcome : OperationOutcome
+  evaluation : OperationEvaluationLink?
+  reason : text length 1..500
+  rules {
+    start.run == run
+    evaluation == null || evaluation.run == run
+    outcome != OperationOutcome.Completed || evaluation != null
+  }
+  find by run
+}
+export resource OperationCleanup
+  @tenant
+  @appendOnly
+{
+  id : id
+  ended : OperationEnd @unique
+  reason : text length 1..500
+  find by ended
+}
+
+export resource OperationReservationClaim
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : OperationRun
+  operation : Operation
+  planned : PlannedAllocationLink @unique
+  rules {
+    run.operation == operation && planned.operation == operation
+  }
+  find by planned
+}

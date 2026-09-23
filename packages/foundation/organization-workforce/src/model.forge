@@ -72,6 +72,7 @@ export resource IncumbencyEvent
     incumbency.position == position
     (previous == null && ordinal == 1 && action == "Appoint") || (previous != null && previous.position == position && ordinal == previous.ordinal + 1 && at >= previous.at)
     at >= incumbency.from && at < incumbency.until
+    action != "Appoint" || at == incumbency.from
   }
   unique position, ordinal
   list by position

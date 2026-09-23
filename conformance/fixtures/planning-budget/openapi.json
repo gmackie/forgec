@@ -1742,6 +1742,20 @@
             "pattern": "^[A-Za-z0-9_-]+$",
             "readOnly": true
           },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
           "run": {
             "type": "string",
             "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
@@ -1762,6 +1776,8 @@
         "additionalProperties": false,
         "required": [
           "id",
+          "createdAt",
+          "updatedAt",
           "run",
           "startedAt",
           "recordedBy"

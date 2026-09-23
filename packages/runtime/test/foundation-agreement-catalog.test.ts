@@ -1,5 +1,6 @@
+import { Storage } from "../src/services.js";
 import { Effect } from "effect";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { foundation, foundationAdapters } from "./helpers/foundation.js";
 import { AgreementCatalog, type AcceptAgreement } from "../src/foundation/agreement-catalog.js";
 import { Evaluations } from "../src/foundation/evaluation.js";
@@ -53,6 +54,19 @@ async function setup(adapter: string) {
   return { ...f, api, decisions, members, pin, document, supplier, customer, signerIds, scope, offer, offerInput, approve, input };
 }
 for (const adapter of foundationAdapters) {
+  it(`${adapter}: ambiguous or legacy timestamps cannot establish authority ordering`, async () => {
+    for (const timestamp of ["2026-01-01T00:00:00.000Z", undefined, "invalid"]) {
+      const f = await setup(adapter);
+      try {
+        
+        const original = f.engine.call.bind(f.engine);
+        const spy = vi.spyOn(f.engine, "call").mockImplementation((op, input, context) => original(op, input, context).pipe(Effect.map(row => op.endsWith(".get") && Object.hasOwn(row, "createdAt") ? {...row, createdAt: timestamp} : row)));
+        try { await expect(run(f.api.accept(f.input, f.ctx))).rejects.toMatchObject({detail: 'Offer selection must precede decision responses'}); }
+        finally { spy.mockRestore(); }
+      } finally { await f.close(); }
+    }
+  });
+
   it(`${adapter}: pinned acceptance, resumable exactly-once issuance and four typed domains`, async () => {
     const f = await setup(adapter), { api, ctx, call } = f;
     try {
@@ -142,3 +156,17 @@ for (const adapter of foundationAdapters) {
   });
 
 }
+
+it("memory: concurrent issuance receipt misses cannot duplicate raw entitlement grants",async()=>{
+ const f=await setup("memory");try{
+  const agreement=await run(f.api.accept(f.input,f.ctx));
+  const guarded=new Engine(f.engine.model,f.engine.layer);
+  guarded.gatekeeper.authorizer=localAuthorizer({policies:f.engine.model.resources.map(r=>({id:r.id,actions:[r.id+(r.id===ep+"Entitlement"?".get":".*")],requires:[],where:[]})),pips:[],epoch:1,knownObligations:[]});
+  await expect(run(new AgreementCatalog(guarded).issue(String(agreement.id),f.ctx))).rejects.toThrow();
+  const storage=await run(Effect.gen(function*(){return yield* Storage;}).pipe(Effect.provide(f.engine.layer)));
+  const getReceipt=storage.getReceipt.bind(storage);let arrivals=0,release!:()=>void;const barrier=new Promise<void>(resolve=>{release=resolve;});
+  storage.getReceipt=(tenant,operation,key)=>operation===ep+"Entitlement.create"&&key.endsWith(":grant")?Effect.gen(function*(){const receipt=yield* getReceipt(tenant,operation,key);if(++arrivals===2)release();yield* Effect.promise(()=>barrier);return receipt;}):getReceipt(tenant,operation,key);
+  try{await Promise.allSettled([run(f.api.issue(String(agreement.id),f.ctx)),run(f.api.issue(String(agreement.id),f.ctx))]);}finally{storage.getReceipt=getReceipt;}
+  const grants=await f.call(ep+"Entitlement.list.byHolderScope",{params:{holder:f.customer.id,scope:f.scope.id}});expect(grants.items).toHaveLength(1);
+ }finally{await f.close();}
+});

@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { foundation, foundationAdapters } from "./helpers/foundation.js";
 import { Publications, type QualificationPolicy } from "../src/foundation/publication.js";
 import { Artifacts } from "../src/foundation/artifact.js";
@@ -52,6 +52,44 @@ async function setup(adapter: string) {
   return { ...f, api, series, channel, preview, pin, revision, candidate };
 }
 for (const adapter of foundationAdapters) {
+  it(`${adapter}: ambiguous or legacy timestamps cannot establish authority ordering`, async () => {
+    for (const timestamp of ["2026-01-01T00:00:00.000Z", undefined, "invalid"]) {
+      const f = await setup(adapter);
+      try {
+        const c = await f.candidate("EvaluationCompleted");
+        const original = f.engine.call.bind(f.engine);
+        const spy = vi.spyOn(f.engine, "call").mockImplementation((op, input, context) => original(op, input, context).pipe(Effect.map(row => op.endsWith(".get") && Object.hasOwn(row, "createdAt") ? {...row, createdAt: timestamp} : row)));
+        try { await expect(run(f.api.qualify(String(c.row.id), c.gates, f.ctx))).rejects.toMatchObject({detail: 'Evaluation was not bound to this candidate before execution'}); }
+        finally { spy.mockRestore(); }
+      } finally { await f.close(); }
+    }
+  });
+  it(`${adapter}: ambiguous Decision timestamps cannot prove prior candidate binding`, async () => {
+    for (const timestamp of ["2026-01-01T00:00:00.000Z", undefined, "invalid"]) {
+      const f = await setup(adapter);
+      try {
+        const c = await f.candidate("DecisionApproved");
+        const original = f.engine.call.bind(f.engine);
+        const spy = vi.spyOn(f.engine, "call").mockImplementation((op, input, context) => original(op, input, context).pipe(Effect.map(row => op.endsWith(".get") && Object.hasOwn(row, "createdAt") ? {...row, createdAt: timestamp} : row)));
+        try { await expect(run(f.api.qualify(String(c.row.id), c.gates, f.ctx))).rejects.toMatchObject({detail: 'Candidate was not pinned before Decision responses'}); }
+        finally { spy.mockRestore(); }
+      } finally { await f.close(); }
+    }
+  });
+
+  it(`${adapter}: post-hoc evaluation binding cannot be laundered through future business timestamps`, async()=>{
+    const f=await setup(adapter);try{
+      const {call,ctx,api}=f;
+      const candidate=await run(api.register({series:String(f.series.id),version:"posthoc",specification:String(f.pin.id),artifact:String(f.revision.id),policy:"EvaluationCompleted",evaluationDefinition:String(f.pin.id)},ctx));
+      const set=await call(ep+"EvaluationSet.create",{label:"Unbound"}),executor=await call(ep+"EvaluationExecutor.create",{key:"unbound",label:"Unbound"});
+      const evaluations=new Evaluations(f.engine),execution=await run(evaluations.create({evaluationSet:String(set.id),definition:String(f.pin.id),executor:String(executor.id)},ctx));
+      await run(evaluations.start(String(execution.id),"2026-12-01T00:00:00Z",ctx));
+      const finish=await run(evaluations.finish(String(execution.id),"Completed","2026-12-02T00:00:00Z","Pre-existing run",ctx));
+      await call(p+"CandidateEvaluation.create",{candidate:candidate.id,run:execution.id});
+      await expect(run(api.qualify(String(candidate.id),{evaluation:String(finish.id)},ctx))).rejects.toMatchObject({code:"ValidationFailed"});
+    }finally{await f.close();}
+  });
+
   it(`${adapter}: all qualification policies, exact release pins and four domain satellites`, async () => {
     const f = await setup(adapter), { api, ctx, call } = f;
     try {

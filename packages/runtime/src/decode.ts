@@ -115,7 +115,7 @@ export function decodeValue(model: Model, t: TypeSpec, input: unknown, depth = 0
       }
       case "decimal":
       case "money": {
-        const value = decodeDecimal(input, { scale: scaleOf(t), min: bounds.min === undefined ? undefined : String(bounds.min), max: bounds.max === undefined ? undefined : String(bounds.max) });
+        const value = decodeDecimal(input, { ...(b.name === "money" ? { currency: b.args[0] ?? "USD" } : { scale: scaleOf(t) }), min: bounds.min === undefined ? undefined : String(bounds.min), max: bounds.max === undefined ? undefined : String(bounds.max) });
         const minor = toMinor(value, scaleOf(t));
         if (bounds.xmin !== undefined && minor <= toMinor(String(bounds.xmin), scaleOf(t)) || bounds.xmax !== undefined && minor >= toMinor(String(bounds.xmax), scaleOf(t))) throw new CodecError("OutOfRange");
         return value;

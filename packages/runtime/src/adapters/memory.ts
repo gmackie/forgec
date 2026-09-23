@@ -210,6 +210,10 @@ export class MemoryStorage implements StorageAdapter {
   }
 
   private commitSync(plan: CommitPlan): ForgeError | null {
+    if (plan.receipt) {
+      const key = `${plan.tenant}|${plan.receipt.operation}|${plan.receipt.key}`;
+      if (this.receipts.has(key)) return err("UniqueConflict", "idempotency receipt already committed", { constraint: "forge_receipt" });
+    }
     if (plan.kind === "publish") {
       this.audits.push(plan.audit);
       this.outbox.push(...plan.outbox.map((o: OutboxEntry): OutboxRow => ({ ...o, status: "pending", attempts: 0, leaseOwner: null, leaseUntil: null, delivered: [] })));

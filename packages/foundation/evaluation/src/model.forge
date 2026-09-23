@@ -28,7 +28,7 @@ export resource EvaluationRun @tenant @timestamps @appendOnly {
   list by evaluationSet
   list by definition
 }
-export resource EvaluationStart @tenant @appendOnly {
+export resource EvaluationStart @tenant @timestamps @appendOnly {
   id : id
   run : EvaluationRun @unique
   startedAt : datetime

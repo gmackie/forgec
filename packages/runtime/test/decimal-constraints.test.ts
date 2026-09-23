@@ -28,3 +28,8 @@ it('comparisons of decimal predicates remain boolean expressions', () => {
  const predicate: Expr = { kind: 'binary', op: '>', lhs: {kind:'name',path:['quantity']}, rhs:{kind:'literal',literal:{type:'int',value:'0'}} };
  expect(evalExpr(model, resource, {kind:'binary',op:'==',lhs:predicate,rhs:{kind:'literal',literal:{type:'bool',value:true}}}, {quantity:'80.000000'})).toBe(true);
 });
+
+it('money bounds preserve currency validation', () => {
+ const type: TypeSpec = {base:{kind:'scalar',name:'money',args:['UNKNOWN']},optional:false,normalizers:[],constraints:[]};
+ expect(() => decodeValue(model,type,'1')).toThrow('UNKNOWN');
+});

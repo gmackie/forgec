@@ -59,6 +59,8 @@ export class Workforces {
     return Effect.gen(function* () {
       const candidate = yield* self.engine.call(p + 'Incumbency.get', { id: incumbency }, ctx);
       const state = yield* self.state(String(candidate.position), ctx);
+      const replay = state.events.find(event => (event.previous ?? null) === previous);
+      if (replay && replay.incumbency === incumbency && replay.action === action && Date.parse(String(replay.at)) === Date.parse(at)) return replay;
       if ((state.events.at(-1)?.id ?? null) !== previous) return yield* Effect.fail(err('VersionConflict', 'Incumbency journal changed'));
       if (action === 'Appoint') {
         yield* self.eligible(candidate, at, ctx);

@@ -237,6 +237,8 @@ CREATE TABLE evaluation_start (
   "run" TEXT COLLATE "C" NOT NULL,
   "started_at" TEXT COLLATE "C" NOT NULL,
   "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "run") REFERENCES evaluation_run ("tenant", "id")
 );

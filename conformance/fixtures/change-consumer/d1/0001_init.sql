@@ -433,6 +433,8 @@ CREATE TABLE evaluation_start (
   "run" TEXT NOT NULL,
   "started_at" TEXT NOT NULL,
   "recorded_by" TEXT NOT NULL,
+  "created_at" TEXT NOT NULL,
+  "updated_at" TEXT NOT NULL,
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, run) REFERENCES evaluation_run (tenant, id)
 );

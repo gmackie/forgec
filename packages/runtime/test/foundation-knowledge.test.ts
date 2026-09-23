@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { foundation, foundationAdapters } from "./helpers/foundation.js";
 import { Knowledge } from "../src/foundation/knowledge.js";
 import { Publications } from "../src/foundation/publication.js";
@@ -51,6 +51,28 @@ async function setup(adapter: string) {
   return { ...f, api, publications, entitlements, evaluations, memberships, access, revision, revisionInput, edition, meaning, concept, taxonomy, assignment, classifications, release, execution, audienceLink };
 }
 for (const adapter of foundationAdapters) {
+  it(`${adapter}: ambiguous or legacy timestamps cannot establish authority ordering`, async () => {
+    for (const timestamp of ["2026-01-01T00:00:00.000Z", undefined, "invalid"]) {
+      const f = await setup(adapter);
+      try {
+        const execution = await f.execution(); const feedback = await run(f.api.feedback(String(f.edition.id), String(execution.id), f.ctx)); await run(f.evaluations.start(String(execution.id), "2026-01-02T00:00:00Z", f.ctx)); const finish = await run(f.evaluations.finish(String(execution.id), "Completed", "2026-01-03T00:00:00Z", "Assessment", f.ctx));
+        const original = f.engine.call.bind(f.engine);
+        const spy = vi.spyOn(f.engine, "call").mockImplementation((op, input, context) => original(op, input, context).pipe(Effect.map(row => op.endsWith(".get") && Object.hasOwn(row, "createdAt") ? {...row, createdAt: timestamp} : row)));
+        try { await expect(run(f.api.finishFeedback(String(feedback.id), String(finish.id), f.ctx))).rejects.toMatchObject({detail: 'Feedback execution predates its edition binding'}); }
+        finally { spy.mockRestore(); }
+      } finally { await f.close(); }
+    }
+  });
+
+  it(`${adapter}: future execution dates cannot authorize post-hoc feedback binding`,async()=>{
+    const f=await setup(adapter);try{
+      const execution=await f.execution();await run(f.evaluations.start(String(execution.id),"2026-12-01T00:00:00Z",f.ctx));
+      const finish=await run(f.evaluations.finish(String(execution.id),"Completed","2026-12-02T00:00:00Z","Old execution",f.ctx));
+      const feedback=await f.call(p+"KnowledgeFeedback.create",{edition:f.edition.id,revision:f.revision.id,run:execution.id});
+      await expect(run(f.api.finishFeedback(String(feedback.id),String(finish.id),f.ctx))).rejects.toMatchObject({code:"ValidationFailed"});
+    }finally{await f.close();}
+  });
+
   it(`${adapter}: exact editions, taxonomy history, authorized download and three domain wrappers`, async () => {
     const f = await setup(adapter), { api, ctx, call } = f;
     try {

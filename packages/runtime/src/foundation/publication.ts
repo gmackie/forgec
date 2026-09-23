@@ -59,14 +59,14 @@ export class Publications {
         const run = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationRun.get", { id: finish.run }, ctx);
         const link = yield* self.find("CandidateEvaluation", { candidate: candidate.id }, ctx);
         const start = yield* findTerminalFact(self.engine, "@forgegraph/foundation/evaluation/_/EvaluationStart", "run", finish.run, ctx);
-        yield* check(link && link.run === finish.run && start && Date.parse(String(link.createdAt)) <= Date.parse(String(start.startedAt)), "Evaluation was not bound to this candidate before execution");
+        yield* check(link && link.run === finish.run && start && Number.isFinite(Date.parse(String(link.createdAt))) && Number.isFinite(Date.parse(String(start.createdAt))) && Date.parse(String(link.createdAt)) < Date.parse(String(start.createdAt)), "Evaluation was not bound to this candidate before execution");
         yield* check(finish.outcome === "Completed" && run.definition === candidate.evaluationDefinition, "Selected evaluation did not complete under the pinned definition");
         yield* self.evidence(finish.support, ctx);
       }
       if (decision != null) {
         const state = yield* new Decisions(self.engine).state(String(candidate.decisionCase), ctx);
         yield* check(state.outcome?.id === decision && state.outcome.selected === candidate.approvedOption, "Selected Decision did not approve publication");
-        yield* check(state.events[0] && Date.parse(String(candidate.createdAt)) <= Date.parse(String(state.events[0].createdAt)), "Candidate was not pinned before Decision responses");
+        yield* check(state.events[0] && Date.parse(String(candidate.createdAt)) < Date.parse(String(state.events[0].createdAt)), "Candidate was not pinned before Decision responses");
       }
     });
   }

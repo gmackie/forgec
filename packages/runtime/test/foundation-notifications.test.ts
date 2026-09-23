@@ -36,6 +36,9 @@ for (const adapter of foundationAdapters) it(`${adapter}: stable logical notices
     const attempt = await run(deliveries.start(String(step.id), at, 'test', 'notification-1', ctx));
     await run(deliveries.receipt({ step: String(step.id), attempt: String(attempt.id), outcome: 'Succeeded', completedAt: at, providerReference: 'ack', callbackKey: 'callback-1', detail: 'Delivered' }, ctx));
     expect((await run(api.outcome(String(notice.id), ctx))).status).toBe('Succeeded');
+    const concurrentNotice=await run(api.create({...input,key:'concurrent'},ctx));
+    const concurrentDispatch=await Promise.all([run(api.dispatch(String(concurrentNotice.id),ctx)),run(api.dispatch(String(concurrentNotice.id),ctx))]);
+    expect(concurrentDispatch[0]).toEqual(concurrentDispatch[1]);
     const suppressed = await run(api.create({ ...input, key: 'event-2-recipient-1', preference: String(muted.id) }, ctx));
     const suppression = await run(api.dispatch(String(suppressed.id), ctx));
     expect(suppression.reason).toBe('Muted');
@@ -51,6 +54,8 @@ for (const adapter of foundationAdapters) it(`${adapter}: stable logical notices
     const resumed = await run(new Notifications(engine).dispatch(String(crashNotice.id), ctx));
     expect(await run(api.dispatch(String(crashNotice.id), ctx))).toEqual(resumed);
     await expect(run(api.dispatch(String(notice.id), { ...ctx, tenant: 'foreign' }))).rejects.toThrow();
+    engine.gatekeeper.authorizer=localAuthorizer({policies:engine.model.resources.filter(r=>r.id!==p+'NotificationPreference').map(r=>({id:r.id,actions:[r.id+'.*'],requires:[],where:[]})),pips:[],epoch:3,knownObligations:[]});
+    await expect(run(api.outcome(String(notice.id),ctx))).rejects.toThrow();
     engine.gatekeeper.authorizer = localAuthorizer({ policies: engine.model.resources.filter(r => r.id !== p + 'NotificationSuppression').map(r => ({ id: r.id, actions: [r.id + '.*'], requires: [], where: [] })), pips: [], epoch: 3, knownObligations: [] });
     await expect(run(api.outcome(String(suppressed.id), ctx))).rejects.toThrow();
   } finally { await f.close(); }

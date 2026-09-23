@@ -13,48 +13,75 @@
     "Contextual quote/lines and immutable priced snapshot, revision/expiry/acceptance and agreement linkage."
   ],
   "operations": [
-    "Typed creation, query and lifecycle operations for quotation-pricing"
+    "publish bounded immutable quote with fixed exact rates/adjustments and optional predecessor; inspect per-unit totals",
+    "accept with immutable command digest then resumable Agreement issuance; expire; authoritative agreement trace"
   ],
   "invariants": [
     "Party owns pricing actor context. Ledger supplies quantitative/value contract, not quote computation or automatic settlement. If value types move lower, remove Ledger edge explicitly at freeze. Domain Order/Selection joins remain above.",
-    "SaaS/service/procurement; offer/spec pins; typed monetary and nonmonetary values; rate boundary and adjustment provenance; accept/expire race; issue agreement once."
+    "SaaS/service/procurement; offer/spec pins; typed monetary and nonmonetary values; rate boundary and adjustment provenance; accept/expire race; issue agreement once.",
+    "Exact quantity\u00d7rate must fit six decimal places without rounding; explicit units and signed fixed adjustments; no implicit settlement",
+    "Unique terminal serializes accept/expire/revise; Agreement issuance is staged, and retries before Agreement creation remain subject to catalog and start-date validity"
   ],
   "acceptance": [
     {
       "id": "F65-01",
       "description": "quote + quote-line/snapshot model",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quotation-pricing.test.ts"
+      ]
     },
     {
       "id": "F65-02",
       "description": "offer/specification pinning",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quotation-pricing.test.ts"
+      ]
     },
     {
       "id": "F65-03",
       "description": "pricing/rate/adjustment extensibility",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quotation-pricing.test.ts"
+      ]
     },
     {
       "id": "F65-04",
       "description": "revise/expire/accept lifecycle",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quotation-pricing.test.ts"
+      ]
     },
     {
       "id": "F65-05",
       "description": "agreement/order integration",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quotation-pricing.test.ts"
+      ]
     },
     {
       "id": "F65-06",
       "description": "fixtures for SaaS, service quote and procurement quote",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quotation-pricing.test.ts"
+      ]
     }
   ],
   "fixtures": [

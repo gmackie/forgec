@@ -898,6 +898,10 @@ structure EvaluationStartRecord {
     @required
     id: String
     @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
     run: String
     @required
     startedAt: String

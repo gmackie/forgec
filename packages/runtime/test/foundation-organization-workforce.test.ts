@@ -41,12 +41,15 @@ for (const adapter of foundationAdapters) it(`${adapter}: acyclic units, qualifi
     const position = positions[0]!;
     const candidate = await call(p + 'Incumbency.create', { position: position.id, membership: member.id, partySubject: partySubject.id, from, until });
     await expect(run(api.publish(String(candidate.id), 'Appoint', from, null, ctx))).rejects.toThrow();
+    const delayed=await call(p+'Incumbency.create',{position:positions[1]!.id,membership:member.id,partySubject:partySubject.id,from,until});
+    await expect(call(p+'IncumbencyEvent.create',{position:positions[1]!.id,ordinal:1,previous:null,incumbency:delayed.id,action:'Appoint',at:middle})).rejects.toThrow();
     const award = await run(qualifications.award({ subject: String(subject.id), definition: String(definition.id), issuer: String(organization.id), issuerRecord: 'credential', issuedAt: from }, ctx));
     const contender = await call(p + 'Incumbency.create', { position: position.id, membership: member.id, partySubject: partySubject.id, from, until });
     const race = await Promise.allSettled([candidate, contender].map(row => run(api.publish(String(row.id), 'Appoint', from, null, ctx))));
     expect(race.filter(r => r.status === 'fulfilled')).toHaveLength(1);
     const event = (race.find(r => r.status === 'fulfilled') as PromiseFulfilledResult<Record<string, unknown>>).value;
     const active = await run(api.at(String(position.id), from, ctx)); expect(active?.id).toBe(event.incumbency);
+    expect(await run(new Workforces(engine).publish(String(event.incumbency),'Appoint',from,null,ctx))).toEqual(event);
     const ended = await run(api.publish(String(active!.id), 'End', middle, String(event.id), ctx));
     expect(await run(api.at(String(position.id), middle, ctx))).toBeNull();
     expect((await run(api.at(String(position.id), from, ctx)))?.id).toBe(active!.id);

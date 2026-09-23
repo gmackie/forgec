@@ -1,4 +1,5 @@
 import { Effect } from 'effect';
+import type { Wire } from '../src/decode.js';
 import { expect, it } from 'vitest';
 import { foundation, foundationAdapters } from './helpers/foundation.js';
 import { Budgets } from '../src/foundation/planning-budget.js';
@@ -36,6 +37,7 @@ for (const adapter of foundationAdapters) it(`${adapter}: forecasts stay distinc
     let state = await run(api.state(String(envelope.id), ctx));
     expect(state.available).toBe('30.000000'); expect(state.spent).toBe('0.000000');
     const winning = [...state.claims.values()][0]!.row;
+    expect(await run(new Budgets(engine).publish({encumbrance:String(winning.id),action:'Commit',previous:null},ctx))).toEqual(state.events[0]);
     const loser = candidates.find(c => c.id !== winning.id)!;
     await expect(run(api.publish({ encumbrance: String(loser.id), action: 'Commit', previous: String(state.events.at(-1)!.id) }, ctx))).rejects.toThrow();
     const ledger = new Ledger(engine);
@@ -58,5 +60,17 @@ for (const adapter of foundationAdapters) it(`${adapter}: forecasts stay distinc
     expect((await run(api.state(String(envelope.id), ctx))).available).toBe('100.000000');
     expect((await call(p + 'ForecastValue.get', { id: (await call(p + 'ForecastValue.create', { scenario: updated.id, goal: (await call(p + 'Goal.create', { plan: plan.id, metric: 'Other', unit: 'unit', target: '1' })).id, quantity: '99' })).id })).quantity).toBe('99.000000');
     await expect(run(api.state(String(envelope.id), { ...ctx, tenant: 'foreign' }))).rejects.toThrow();
+    const hostileEnvelope=await call(p+'FundingEnvelope.create',{plan:plan.id,account:account.id,limit:'1.000001',unit:'USD'});
+    const hostileReservation=await call(a+'AllocationReservation.create',{pool:pool.id,key:'hostile',quantity:'1',unit:'slot',from:'2026-01-02T00:00:00Z',until:'2026-02-01T00:00:00Z',holdUntil:'2026-01-02T00:00:00Z'});
+    const hostile=await call(p+'Encumbrance.create',{envelope:hostileEnvelope.id,key:'raw',amount:'0.000001',reservation:hostileReservation.id});
+    await call(p+'BudgetEvent.create',{envelope:hostileEnvelope.id,encumbrance:hostile.id,ordinal:1,previous:null,action:'Commit',actual:null,reversal:null});
+    await expect(run(api.state(String(hostileEnvelope.id),ctx))).rejects.toThrow();
+    const exactEnvelope=await call(p+'FundingEnvelope.create',{plan:plan.id,account:account.id,limit:'0.300001',unit:'USD'});
+    let exactHead:string|null=null;
+    for(const [key,amount]of [['a','0.1'],['b','0.2'],['c','0.000001']]){const candidate=await call(p+'Encumbrance.create',{envelope:exactEnvelope.id,key,amount});const event:Wire=await run(api.publish({encumbrance:String(candidate.id),action:'Commit',previous:exactHead},ctx));exactHead=String(event.id);}
+    expect((await run(api.state(String(exactEnvelope.id),ctx))).available).toBe('0.000000');
+    const overflow=await call(p+'Encumbrance.create',{envelope:exactEnvelope.id,key:'overflow',amount:'0.000001'});
+    await expect(run(api.publish({encumbrance:String(overflow.id),action:'Commit',previous:exactHead},ctx))).rejects.toThrow();
+
   } finally { await f.close(); }
 });

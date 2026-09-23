@@ -109,7 +109,7 @@ export class Knowledge {
       const finish = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationFinish.get", { id: finishId }, ctx);
       if (finish.start != null) {
         const start = yield* self.engine.call("@forgegraph/foundation/evaluation/_/EvaluationStart.get", { id: finish.start }, ctx);
-        yield* check(Date.parse(String(start.startedAt)) >= Date.parse(String(feedback.createdAt)), "Feedback execution predates its edition binding");
+        yield* check(Number.isFinite(Date.parse(String(start.createdAt))) && Number.isFinite(Date.parse(String(feedback.createdAt))) && Date.parse(String(start.createdAt)) > Date.parse(String(feedback.createdAt)), "Feedback execution predates its edition binding");
       }
       return yield* self.call("KnowledgeFeedbackResult.create", { feedback: feedbackId, finish: finishId }, ctx);
     });

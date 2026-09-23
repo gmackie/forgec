@@ -387,6 +387,8 @@ export interface EvaluationSetPatch {
 
 export interface EvaluationStartRecord {
   id: string;
+  createdAt: string;
+  updatedAt: string;
   run: string;
   startedAt: string;
   recordedBy: string;

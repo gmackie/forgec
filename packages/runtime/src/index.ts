@@ -74,3 +74,6 @@ export * from "./foundation/integration.js";
 export * from "./foundation/planning-budget.js";
 export * from "./foundation/selection.js";
 export * from "./foundation/adjudication.js";
+export * from "./foundation/operations.js";
+export * from "./foundation/service-level.js";
+export * from "./foundation/quotation-pricing.js";
