@@ -1,0 +1,1352 @@
+{
+  "entities": {
+    "@boundary/network-control/_/NetworkIntent": {
+      "name": "NetworkIntent",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "config": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/DesiredConfig"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "admittedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@boundary/network-control/_/ObservedTopology": {
+      "name": "ObservedTopology",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "report": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/TelemetryReport"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "recordedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/network-control/_/ReconcileDecision": {
+      "name": "ReconcileDecision",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "intent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/network-control/_/NetworkIntent",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observed": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/network-control/_/ObservedTopology",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "route": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/RouteSolution"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "disposition": {
+          "ty": {
+            "base": {
+              "kind": "enum",
+              "id": "@boundary/network-control/_/PlanDisposition"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/network-control/_/ApplicationAttempt": {
+      "name": "ApplicationAttempt",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/network-control/_/ReconcileDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "command": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/DeviceCommand"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "receipt": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/DeviceReceipt"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/network-control/_/NetworkDevices": {
+      "name": "NetworkDevices",
+      "data": {
+        "@boundary/network-control/_/NetworkDevices#data:telemetry": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/network-control/_/TelemetryReport"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "@boundary/network-control/_/NetworkDevices#data:receipt": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/network-control/_/DeviceReceipt"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/network-control/_/NetworkDevices#accepts:command": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/network-control/_/DeviceCommand"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "TelemetryArrived",
+        "ReceiptArrived"
+      ]
+    },
+    "@boundary/network-control/_/RoutingEngine": {
+      "name": "RoutingEngine",
+      "data": {
+        "@boundary/network-control/_/RoutingEngine#data:solution": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/network-control/_/RouteSolution"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/network-control/_/RoutingEngine#accepts:intent": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/network-control/_/DesiredConfig"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "SolutionReady"
+      ]
+    }
+  },
+  "principals": {
+    "@boundary/network-control/_/BoundaryOperator": {
+      "name": "BoundaryOperator",
+      "attributes": {
+        "authorized": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@boundary/network-control/_/MayAdmitIntent": {
+      "name": "MayAdmitIntent",
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@boundary/network-control/_/NetworkIntent",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/network-control/_/MayObserveDevices": {
+      "name": "MayObserveDevices",
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@boundary/network-control/_/ObservedTopology",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/network-control/_/MayReconcileNetwork": {
+      "name": "MayReconcileNetwork",
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/network-control/_/ReconcileDecision"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/network-control/_/MayApplyNetworkPlan": {
+      "name": "MayApplyNetworkPlan",
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/network-control/_/ApplicationAttempt"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    }
+  },
+  "processes": {
+    "@boundary/network-control/_/AdmitIntent": {
+      "name": "AdmitIntent",
+      "purpose": null,
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/network-control/_/MayAdmitIntent",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/network-control/_/AdmitIntent#activation:trigger": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/DesiredConfig"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@boundary/network-control/_/AdmitIntent#input:current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/network-control/_/NetworkIntent",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/network-control/_/AdmitIntent#output:intent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/network-control/_/NetworkIntent",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/network-control/_/ObserveDevices": {
+      "name": "ObserveDevices",
+      "purpose": null,
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/network-control/_/MayObserveDevices",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/network-control/_/ObserveDevices#activation:trigger": {
+          "kind": "externalEvent",
+          "external": "@boundary/network-control/_/NetworkDevices",
+          "event": "TelemetryArrived"
+        }
+      },
+      "inputs": {
+        "@boundary/network-control/_/ObserveDevices#input:report": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/TelemetryReport"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/network-control/_/NetworkDevices"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/network-control/_/ObserveDevices#output:topology": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/network-control/_/ObservedTopology",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/network-control/_/ReconcileNetwork": {
+      "name": "ReconcileNetwork",
+      "purpose": null,
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/network-control/_/MayReconcileNetwork",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/network-control/_/ReconcileNetwork#activation:trigger": {
+          "kind": "change",
+          "entity": "@boundary/network-control/_/ObservedTopology"
+        },
+        "@boundary/network-control/_/ReconcileNetwork#activation:intentChanged": {
+          "kind": "change",
+          "entity": "@boundary/network-control/_/NetworkIntent"
+        },
+        "@boundary/network-control/_/ReconcileNetwork#activation:solution": {
+          "kind": "externalEvent",
+          "external": "@boundary/network-control/_/RoutingEngine",
+          "event": "SolutionReady"
+        }
+      },
+      "inputs": {
+        "@boundary/network-control/_/ReconcileNetwork#input:intent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/network-control/_/NetworkIntent",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/network-control/_/ReconcileNetwork#input:topology": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/network-control/_/ObservedTopology",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/network-control/_/ReconcileNetwork#input:solution": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/RouteSolution"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/network-control/_/RoutingEngine"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/network-control/_/ReconcileNetwork#output:decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/network-control/_/ReconcileDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/network-control/_/ReconcileNetwork#output:routeRequest": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/DesiredConfig"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/network-control/_/RoutingEngine"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/network-control/_/ApplyNetworkPlan": {
+      "name": "ApplyNetworkPlan",
+      "purpose": null,
+      "principal": "@boundary/network-control/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/network-control/_/MayApplyNetworkPlan",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/network-control/_/ApplyNetworkPlan#activation:trigger": {
+          "kind": "fact",
+          "fact": "@boundary/network-control/_/ReconcileDecision"
+        },
+        "@boundary/network-control/_/ApplyNetworkPlan#activation:receipt": {
+          "kind": "externalEvent",
+          "external": "@boundary/network-control/_/NetworkDevices",
+          "event": "ReceiptArrived"
+        }
+      },
+      "inputs": {
+        "@boundary/network-control/_/ApplyNetworkPlan#input:decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/network-control/_/ReconcileDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/network-control/_/ApplyNetworkPlan#input:receipt": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/DeviceReceipt"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/network-control/_/NetworkDevices"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/network-control/_/ApplyNetworkPlan#output:attempt": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/network-control/_/ApplicationAttempt"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/network-control/_/ApplyNetworkPlan#output:command": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/network-control/_/DeviceCommand"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/network-control/_/NetworkDevices"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/network-control/_/DesiredConfig": {
+      "serviceId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "revision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "topologyDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "routingPolicyDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/network-control/_/TelemetryReport": {
+      "deviceId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "generation": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "sampledAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "appliedRevision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "stateDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "reachable": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/network-control/_/DeviceCommand": {
+      "deviceId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "desiredRevision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "observedGeneration": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "controllerEpoch": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "operationDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "idempotencyKey": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/network-control/_/DeviceReceipt": {
+      "idempotencyKey": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "accepted": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "appliedRevision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "observedAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/network-control/_/RouteSolution": {
+      "topologyDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "policyDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "routeSetDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "feasible": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {
+    "@boundary/network-control/_/PlanDisposition": [
+      "Apply",
+      "NoChange",
+      "Wait",
+      "Reject"
+    ]
+  },
+  "version": "concept-ir/2",
+  "package": "@boundary/network-control"
+}

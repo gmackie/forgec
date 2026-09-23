@@ -1,0 +1,13 @@
+flowchart TB
+  c0["simulation-orchestration: L0 (A)"]
+  RunPlantSimulation -.-> c0
+  RecordSimulation -.-> c0
+  SimulationRun -.-> c0
+  c1["physical-dynamics: external (C)"]
+  SimulationMaster -.-> c1
+  c2["repeatability: L0-facet (B)"]
+  RunPlantSimulation -.-> c2
+  c3["co-simulation-master: L1 (C)"]
+  SimulationMaster -.-> c3
+  c4["simulation-placement: L2 (A)"]
+  SimulationMaster -.-> c4

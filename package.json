@@ -19,7 +19,8 @@
     "foundation:composition": "node scripts/verify-foundation.mjs --suite local --package composition",
     "foundation:local": "node scripts/verify-foundation.mjs --suite local --all",
     "foundation:apps": "node scripts/verify-foundation-apps.mjs --app all",
-    "foundation:distribution": "node scripts/verify-foundation-distribution.mjs"
+    "foundation:distribution": "node scripts/verify-foundation-distribution.mjs",
+    "concept:boundary": "cargo test -p forgegraph-semantic --test concept_boundary --locked"
   },
   "license": "Apache-2.0",
   "type": "module",

@@ -1,0 +1,7 @@
+flowchart TB
+  experiment_provenance[experiment-provenance: L0 A] --> RegisterExperiment
+  reproducibility[reproducibility: L0-facet B] -. obligation .-> CollectExperiment
+  scatter_realization[scatter-realization: L1 A] -. realizes .-> ExecuteMember
+  hpc_placement[hpc-placement: L2 B] -. allocates .-> HpcExecutor
+  executor_boundary[executor-boundary: L1 B] --> HpcExecutor
+  ExecuteMember <--> HpcExecutor

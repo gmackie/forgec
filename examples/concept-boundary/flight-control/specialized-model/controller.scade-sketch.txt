@@ -1,0 +1,19 @@
+SKETCH ONLY — Flight-control / autopilot supervisor
+Process: @boundary/flight-control/_/ReactToFlightTick
+Inputs:
+@boundary/flight-control/_/ReactToFlightTick#input:sample
+@boundary/flight-control/_/ReactToFlightTick#input:approval
+@boundary/flight-control/_/ReactToFlightTick#input:previous
+Outputs:
+@boundary/flight-control/_/ReactToFlightTick#output:state
+@boundary/flight-control/_/ReactToFlightTick#output:decision
+@boundary/flight-control/_/ReactToFlightTick#output:command
+
+on logical tick(frame, envelope, previousMode):
+  require coherent frame sequence and approved envelope revision
+  if invalid_or_stale(frame) or frame.channelDisagreement:
+    nextMode := disengaged; demand := request_disengagement
+  else:
+    nextMode, demand := EXTERNAL_VERIFIED_CONTROL_LAW(frame, envelope, previousMode)
+  record decision(sequence, envelope.revision, nextMode, reason)
+No equations, voting algorithm, executable SCADE syntax or stability proof supplied.
