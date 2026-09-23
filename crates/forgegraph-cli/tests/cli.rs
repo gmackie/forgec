@@ -1124,3 +1124,39 @@ fn explain_external_constraints_preserves_citations_and_applicability() {
         assert!(value["constraints"][0]["applicability"]["predicate"].is_object());
     }
 }
+
+#[test]
+fn check_trace_validates_finite_reconstruction_without_claiming_enforcement() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/traceability");
+    let model: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("food.json")).unwrap()).unwrap();
+    let c = forgegraph_semantic::concept::ConceptIR::load_closed(&model).unwrap();
+    let graph: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("food-graph.json")).unwrap()).unwrap();
+    let mut witness = serde_json::json!({"conceptHash":c.content_hash(),"requirement":"@trace/food/_/Reconstruction","at":100,"evidence":"illustrative:lineage","chain":["record-0","record-1","record-2"],"records":graph["records"],"links":graph["links"]});
+    let file = std::env::temp_dir().join(format!("forge-trace-{}.json", std::process::id()));
+    let check = || {
+        Command::new(env!("CARGO_BIN_EXE_forgec"))
+            .args(["concept", "check-trace"])
+            .arg(root.join("food.json"))
+            .arg(&file)
+            .output()
+            .unwrap()
+    };
+    std::fs::write(&file, serde_json::to_vec(&witness).unwrap()).unwrap();
+    let output = check();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["implementationProven"], false);
+    witness["links"][0]["roles"]["source"] = serde_json::json!("record-2");
+    std::fs::write(&file, serde_json::to_vec(&witness).unwrap()).unwrap();
+    let output = check();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("E-L0-TRACE-WITNESS"));
+    std::fs::remove_file(file).unwrap();
+}

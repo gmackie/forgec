@@ -10,6 +10,8 @@ pub struct BusinessSemantics {
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub temporal: BTreeMap<String, TemporalSemantics>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub traceability: BTreeMap<String, crate::concept_traceability::TraceabilityRequirement>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub external_constraints: BTreeMap<String, crate::concept_governance::ExternalConstraint>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub interactions: BTreeMap<String, Interaction>,
@@ -209,6 +211,7 @@ impl ConceptIR {
         errors.extend(self.validate_interactions());
         errors.extend(self.validate_subjects());
         errors.extend(self.validate_external_constraints());
+        errors.extend(self.validate_traceability());
         for (id, temporal) in &s.temporal {
             let Some(fs) = fields(self, id) else {
                 problem(
@@ -924,6 +927,17 @@ impl ConceptIR {
                 kind: kind.into(),
             });
         };
+        for (id, trace) in &self.semantics.traceability {
+            graph
+                .nodes
+                .insert(id.clone(), "traceabilityRequirement".into());
+            edge(&trace.source, id, id, "traceSource");
+            edge(id, &trace.destination, id, "traceDestination");
+            edge(&trace.required_by, id, id, "requiresTrace");
+            for (index, hop) in trace.path.iter().enumerate() {
+                edge(id, &hop.relationship, &index.to_string(), "traceHop");
+            }
+        }
         for (id, constraint) in &self.semantics.external_constraints {
             graph.nodes.insert(id.clone(), "externalConstraint".into());
             edge(&constraint.authority, id, id, "imposes");

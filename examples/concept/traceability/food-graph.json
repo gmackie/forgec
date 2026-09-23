@@ -1,0 +1,70 @@
+{
+  "records": {
+    "record-0": {
+      "declaration": "@trace/food/_/FinishedLot",
+      "attributes": {
+        "id": "record-0"
+      },
+      "recordedAt": 0,
+      "retainedUntil": 2592000000,
+      "validTime": {
+        "from": 0,
+        "to": null
+      },
+      "knowledgeTime": {
+        "from": 0,
+        "to": null
+      }
+    },
+    "record-1": {
+      "declaration": "@trace/food/_/IngredientLot",
+      "attributes": {
+        "id": "record-1"
+      },
+      "recordedAt": 0,
+      "retainedUntil": 2592000000,
+      "validTime": {
+        "from": 0,
+        "to": null
+      },
+      "knowledgeTime": {
+        "from": 0,
+        "to": null
+      }
+    },
+    "record-2": {
+      "declaration": "@trace/food/_/SupplierLot",
+      "attributes": {
+        "id": "record-2"
+      },
+      "recordedAt": 0,
+      "retainedUntil": 2592000000,
+      "validTime": {
+        "from": 0,
+        "to": null
+      },
+      "knowledgeTime": {
+        "from": 0,
+        "to": null
+      }
+    }
+  },
+  "links": [
+    {
+      "relationship": "@trace/food/_/TraceLink0",
+      "evidence": "illustrative:lineage/0",
+      "roles": {
+        "derived": "record-0",
+        "source": "record-1"
+      }
+    },
+    {
+      "relationship": "@trace/food/_/TraceLink1",
+      "evidence": "illustrative:lineage/1",
+      "roles": {
+        "derived": "record-1",
+        "source": "record-2"
+      }
+    }
+  ]
+}

@@ -135,6 +135,8 @@ enum ConceptCmd {
         #[arg(long, allow_hyphen_values = true)]
         at: i64,
     },
+    /// Check supplied trace reconstruction evidence against a ConceptIR requirement.
+    CheckTrace { path: PathBuf, witness: PathBuf },
     /// Inspect the semantic graph and invariant producer responsibilities.
     Inspect { path: PathBuf },
     /// Compare semantic declarations independently of implementation choices.
@@ -324,6 +326,15 @@ fn main() -> Result<()> {
                         return Err(anyhow!("unknown process {process}"));
                     }
                     serde_json::json!({"conceptHash":concept.content_hash(),"applicabilityEvaluated":false,"constraints":concept.external_constraints_for(&process, at)})
+                }
+                ConceptCmd::CheckTrace { path, witness } => {
+                    let concept = load_concept(&path)?;
+                    let witness = serde_json::from_slice(&std::fs::read(witness)?)?;
+                    let errors = concept.check_trace_witness(&witness);
+                    if !errors.is_empty() {
+                        return Err(anyhow!(serde_json::to_string(&errors)?));
+                    }
+                    serde_json::json!({"valid":true,"conceptHash":concept.content_hash(),"scope":"supplied-trace-witness","applicabilityEvaluated":false,"implementationProven":false})
                 }
                 ConceptCmd::Inspect { path } => {
                     let concept = load_concept(&path)?;
