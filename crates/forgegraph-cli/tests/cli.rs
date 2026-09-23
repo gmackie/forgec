@@ -1095,3 +1095,32 @@ fn check_engagements_accepts_observed_records_and_rejects_parent_cycles() {
     assert!(String::from_utf8_lossy(&output.stderr).contains("parent engagement cycle"));
     std::fs::remove_file(path).unwrap();
 }
+
+#[test]
+fn explain_external_constraints_preserves_citations_and_applicability() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/governance/privacy.json");
+    for (at, prohibited) in [("999", false), ("1000", true)] {
+        let output = Command::new(env!("CARGO_BIN_EXE_forgec"))
+            .args(["concept", "explain-constraints"])
+            .arg(&fixture)
+            .args(["@governance/privacy/_/Respond", "--at", at])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(value["applicabilityEvaluated"], false);
+        assert_eq!(value["constraints"][0]["prohibited"], prohibited);
+        assert!(
+            value["constraints"][0]["citations"][0]
+                .as_str()
+                .unwrap()
+                .starts_with("illustrative:")
+        );
+        assert!(value["constraints"][0]["applicability"]["predicate"].is_object());
+    }
+}

@@ -128,6 +128,13 @@ enum ConceptCmd {
     },
     /// Validate recorded engagement membership, bounds, and parent links.
     CheckEngagements { path: PathBuf, snapshot: PathBuf },
+    /// Explain effective external constraints; applicability predicates remain unevaluated.
+    ExplainConstraints {
+        path: PathBuf,
+        process: String,
+        #[arg(long, allow_hyphen_values = true)]
+        at: i64,
+    },
     /// Inspect the semantic graph and invariant producer responsibilities.
     Inspect { path: PathBuf },
     /// Compare semantic declarations independently of implementation choices.
@@ -310,6 +317,13 @@ fn main() -> Result<()> {
                         return Err(anyhow!(serde_json::to_string(&errors)?));
                     }
                     serde_json::json!({"valid":true,"conceptHash":concept.content_hash(),"scope":"supplied-engagement-snapshot","implementationProven":false})
+                }
+                ConceptCmd::ExplainConstraints { path, process, at } => {
+                    let concept = load_concept(&path)?;
+                    if !concept.processes.contains_key(&process) {
+                        return Err(anyhow!("unknown process {process}"));
+                    }
+                    serde_json::json!({"conceptHash":concept.content_hash(),"applicabilityEvaluated":false,"constraints":concept.external_constraints_for(&process, at)})
                 }
                 ConceptCmd::Inspect { path } => {
                     let concept = load_concept(&path)?;

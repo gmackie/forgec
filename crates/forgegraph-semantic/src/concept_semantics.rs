@@ -10,6 +10,8 @@ pub struct BusinessSemantics {
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub temporal: BTreeMap<String, TemporalSemantics>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub external_constraints: BTreeMap<String, crate::concept_governance::ExternalConstraint>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub interactions: BTreeMap<String, Interaction>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub subjects: BTreeMap<String, Subject>,
@@ -188,11 +190,25 @@ fn timestamp(field: &Field) -> bool {
 }
 
 impl ConceptIR {
+    pub(crate) fn valid_external_applicability(
+        &self,
+        applicability: &crate::concept_governance::Applicability,
+    ) -> bool {
+        self.processes.contains_key(&applicability.process)
+            && matches!(
+                self.expression_type(
+                    &applicability.predicate,
+                    &self.process_scope(&applicability.process, false)
+                ),
+                Ok(ValueType::Bool)
+            )
+    }
     pub(crate) fn validate_business_semantics(&self) -> Vec<Violation> {
         let mut errors = self.validate_expressions();
         let s = &self.semantics;
         errors.extend(self.validate_interactions());
         errors.extend(self.validate_subjects());
+        errors.extend(self.validate_external_constraints());
         for (id, temporal) in &s.temporal {
             let Some(fs) = fields(self, id) else {
                 problem(
@@ -908,6 +924,24 @@ impl ConceptIR {
                 kind: kind.into(),
             });
         };
+        for (id, constraint) in &self.semantics.external_constraints {
+            graph.nodes.insert(id.clone(), "externalConstraint".into());
+            edge(&constraint.authority, id, id, "imposes");
+            edge(id, &constraint.jurisdiction, id, "jurisdiction");
+            edge(&constraint.applicability.process, id, id, "applicability");
+            for required in &constraint.requirements {
+                edge(id, required, id, "requires");
+            }
+            for prohibited in &constraint.prohibitions {
+                edge(id, prohibited, id, "prohibits");
+            }
+            for previous in &constraint.supersedes {
+                edge(id, previous, id, "supersedes");
+            }
+            for evidence in &constraint.evidence {
+                edge(evidence, id, id, "supports");
+            }
+        }
         for (id, subject) in &self.semantics.subjects {
             graph.nodes.insert(id.clone(), "subject".into());
             edge(id, &subject.carrier, id, "carrier");
