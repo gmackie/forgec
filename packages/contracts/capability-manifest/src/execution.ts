@@ -76,8 +76,19 @@ export function deriveExecutionRequirements(input: {
     for(const atom of manifest.requires) add(atom,`${source} -> ${manifest.id}@${digest}`);
   };
   for(const digest of [...new Set(input.profile.providers)].sort()) useManifest(digest,`profile:${input.profile.id}`,"provider");
-  const functions=new Map(input.artifact.modules.flatMap(m=>m.functions).map(f=>[f.id,f]));
-  const resources=new Set(input.artifact.modules.flatMap(m=>m.resources).map(r=>r.id));
+  const functions=new Map<string,ExecutionArtifact["modules"][number]["functions"][number]>();
+  const resources=new Set<string>();
+  const identities=new Set<string>();
+  const register=(id:string)=>{
+    if(typeof id!=="string" || !id.trim()) throw Error("invalid execution identity");
+    if(identities.has(id)) throw Error(`ambiguous execution identity ${id}`);
+    identities.add(id);
+  };
+  for(const module of input.artifact.modules) {
+    for(const fn of module.functions) {register(fn.id);functions.set(fn.id,fn);}
+    for(const resource of module.resources) {register(resource.id);resources.add(resource.id);}
+    for(const workflow of module.workflows??[]) register(workflow.id);
+  }
   const visited=new Set<string>();
   const visit=(id:string)=>{
     if(visited.has(id)) return;
@@ -85,7 +96,7 @@ export function deriveExecutionRequirements(input: {
     visited.add(id);
     const fn=functions.get(id);
     if(!fn && !resources.has(id)) throw Error(`unknown execution dependency ${id}`);
-    const binding=input.profile.bindings[id];
+    const binding=Object.hasOwn(input.profile.bindings,id)?input.profile.bindings[id]:undefined;
     if(binding) useManifest(binding,`operation:${id}`,fn?"implementation":"provider");
     else if(!fn?.generated) throw Error(`missing pinned execution binding for ${id}`);
     for(const use of fn?.uses??[]) {

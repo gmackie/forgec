@@ -72,3 +72,28 @@ it("supports valid atoms that also name JavaScript object properties",()=>{
  expect(result.requirements).toContain("constructor");
  expect(result.explanations["constructor"]).toHaveLength(1);
 });
+
+it("rejects ambiguous execution identities instead of dropping required capabilities",()=>{
+ for(const declarations of [
+  [{resources:[],functions:[{id:"Verify",uses:[]}]}],
+  [{resources:[{id:"Verify"}],functions:[]}],
+  [{resources:[{id:"Store"},{id:"Store"}],functions:[]}],
+  [{resources:[],functions:[],workflows:[{id:"Verify",version:1,graphHash:"a".repeat(64),steps:[]}]}],
+ ]) {
+  const ambiguous={modules:[...artifact.modules,...declarations]};
+  for(const modules of [ambiguous.modules,[...ambiguous.modules].reverse()]) {
+   const candidate={modules};
+   expect(()=>deriveExecutionRequirements({...input,artifact:candidate,artifactDigest:executionDigest(candidate)})).toThrow("ambiguous execution identity");
+  }
+ }
+});
+
+it("requires own execution bindings even for object prototype property names",()=>{
+ const candidate:ExecutionArtifact={modules:[{resources:[],functions:[{id:"constructor",generated:true,uses:[]}]}]};
+ const source={...input,artifact:candidate,artifactDigest:executionDigest(candidate),operation:"constructor",profile:{id:"ci",bindings:{},providers:[]}};
+ expect(deriveExecutionRequirements(source).requirements).toEqual([]);
+ const inherited=Object.create({constructor:build.digest}) as Record<string,string>;
+ expect(deriveExecutionRequirements({...source,profile:{...source.profile,bindings:inherited}}).requirements).toEqual([]);
+ const explicit={constructor:build.digest};
+ expect(deriveExecutionRequirements({...source,profile:{...source.profile,bindings:explicit}}).requirements).toEqual(["tool.forgec"]);
+});

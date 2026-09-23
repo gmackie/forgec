@@ -28,7 +28,10 @@ support/evidence claims: matching an atom grants no data or operation authority.
 
 `pinExecutionManifest` validates and hashes a manifest. `deriveExecutionRequirements`
 walks a function's transitive `uses`, selected content-pinned implementation/provider
-bindings, and profile providers. Missing bindings or pins fail closed. Results carry
+bindings, and profile providers. Missing bindings or pins fail closed. Function,
+resource, and workflow identities must be unique across the supplied artifact;
+ambiguous identities are rejected before dependency traversal. Profile bindings
+use only own properties, never inherited JavaScript properties. Results carry
 sorted atoms, atom-to-source explanations, artifact/profile digests and a provenance
 digest. The artifact digest is `executionDigest` over the exact supplied compiled IR;
 it is an integrity check, not a trust signature. Requirements describe selected
