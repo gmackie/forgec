@@ -2,14 +2,14 @@ import { Effect } from "effect";
 import { expect, it } from "vitest";
 import { Decisions, type DecisionRule } from "../src/foundation/decision.js";
 import { Participations } from "../src/foundation/participation.js";
-import { consumerFixture } from "./foundation-fixture.js";
+import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 import { Engine } from "../src/engine.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
 const p = "@forgegraph/foundation/decision/_/", pp = "@forgegraph/foundation/participation/_/";
 const ctx = { tenant: "acme", actor: "chair", requestId: "decision" };
 const run = Effect.runPromise;
-async function fixture(adapter: "memory" | "sqlite") {
-  const f = consumerFixture("decision", adapter), engine = f.engine;
+async function fixture(adapter: string) {
+  const f = await consumerFixture("decision", adapter), engine = f.engine;
   const memberships = new Participations(engine, { namespace: "review", roles: ["voter"] });
   const set = await run(engine.call(pp + "ParticipationSet.create", { label: "Board" }, ctx));
   await run(memberships.registerRole("voter", ctx));
@@ -23,7 +23,7 @@ async function fixture(adapter: "memory" | "sqlite") {
   const open = (rule: DecisionRule, count = 3, threshold = 1) => run(decisions.open({ participationSet: String(set.id), electors: voters.slice(0, count), eligibilityAt: "2026-01-01T00:00:00Z", deadline: "2027-01-01T00:00:00Z", options: ["Accept", "Reject"], rule, threshold }, ctx));
   return { ...f, decisions, voters, open, memberships, set };
 }
-for (const adapter of ["memory", "sqlite"] as const) {
+for (const adapter of foundationAdapters) {
   it(`${adapter}: six pinned rules and immutable outcomes`, async () => {
     const f = await fixture(adapter);
     try {
@@ -41,7 +41,7 @@ for (const adapter of ["memory", "sqlite"] as const) {
         await expect(run(f.engine.call(p + "DecisionOutcome.delete", { id: outcome.id }, ctx))).rejects.toThrow();
         await expect(run(f.decisions.state(id, { ...ctx, tenant: "other" }))).rejects.toThrow();
       }
-    } finally { f.close(); }
+    } finally { await f.close(); }
   });
   it(`${adapter}: journal serializes finalize versus withdrawal and rejects raw forks`, async () => {
     const f = await fixture(adapter);
@@ -57,7 +57,7 @@ for (const adapter of ["memory", "sqlite"] as const) {
       if (!state.terminal) await expect(run(f.decisions.finalize(id, ctx))).rejects.toThrow();
       await expect(run(f.engine.call(p + "DecisionEvent.create", { decisionCase: id, ordinal: 2, previous: before.events[1]!.id, kind: "Withdrawn", response: before.responses[1]!.id, outcome: null, recordedBy: ctx.actor }, ctx))).rejects.toThrow();
       await expect(run(f.engine.call(p + "DecisionEvent.create", { decisionCase: id, ordinal: 9, previous: state.events.at(-1)!.id, kind: "Withdrawn", response: before.responses[1]!.id, outcome: null, recordedBy: ctx.actor }, ctx))).rejects.toThrow();
-    } finally { f.close(); }
+    } finally { await f.close(); }
   });
   it(`${adapter}: duplicates, eligibility snapshots and denied journal reads fail closed`, async () => {
     const f = await fixture(adapter);
@@ -74,7 +74,7 @@ for (const adapter of ["memory", "sqlite"] as const) {
       guarded.gatekeeper.authorizer = localAuthorizer({ policies: f.engine.model.resources.map(r => r.name).filter(name => name !== p + "DecisionEvent").map(name => ({ id: name, actions: [name + ".*"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
       await expect(run(new Decisions(guarded).state(id, ctx))).rejects.toThrow();
       await expect(run(f.decisions.expire(id, ctx))).rejects.toThrow();
-    } finally { f.close(); }
+    } finally { await f.close(); }
   });
   it(`${adapter}: expiry, reconsideration, support and typed applications`, async () => {
     const f = await fixture(adapter);
@@ -98,7 +98,7 @@ for (const adapter of ["memory", "sqlite"] as const) {
         const satellite = await run(f.engine.call(`@example/decision/_/${name}.create`, { [field!]: "Example", decisionCase: successor.id }, ctx));
         expect(satellite.decisionCase).toBe(successor.id);
       }
-    } finally { f.close(); }
+    } finally { await f.close(); }
   });
 
   it(`${adapter}: malformed raw terminal candidates fail closed and denied writes stay denied`, async () => {
@@ -117,7 +117,7 @@ for (const adapter of ["memory", "sqlite"] as const) {
       const terminal = await run(f.engine.call(p + "DecisionEvent.create", { decisionCase: id, ordinal: 1, previous: before.events[0]!.id, kind: "Finalized", response: null, outcome: outcome.id, recordedBy: ctx.actor }, ctx));
       await expect(run(f.decisions.state(id, ctx))).rejects.toMatchObject({ detail: "Outcome does not match rule result" });
       await expect(run(f.engine.call(p + "DecisionEvent.create", { decisionCase: id, ordinal: 2, previous: terminal.id, kind: "Withdrawn", response: before.responses[0]!.id, outcome: null, recordedBy: ctx.actor }, ctx))).rejects.toThrow();
-    } finally { f.close(); }
+    } finally { await f.close(); }
   });
 
 }

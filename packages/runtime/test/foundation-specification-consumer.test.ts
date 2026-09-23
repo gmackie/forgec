@@ -1,9 +1,9 @@
 import { Effect } from "effect";
 import { it, expect } from "vitest";
-import { consumerFixture } from "./foundation-fixture.js";
+import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 const domain = "@foundation-probe/specification-consumers/_/", spec = "@forgegraph/foundation/specification/_/";
-for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: all specification consumers retain old pins after evolution`, async () => {
-  const { engine, close } = consumerFixture("specification", adapter);
+for (const adapter of foundationAdapters) it(`${adapter}: all specification consumers retain old pins after evolution`, async () => {
+  const { engine, close } = await consumerFixture("specification", adapter);
   const ctx = { tenant: "t", actor: "u", requestId: "spec-fixtures" };
   const call = (op: string, input: Record<string, unknown>) => Effect.runPromise(engine.call(op, input, ctx));
   try {
@@ -18,5 +18,5 @@ for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: all specifi
       expect(newInstance.specification).toBe(next.id);
       await expect(call(domain + name + ".update", { id: oldInstance.id, patch: { specification: next.id } })).rejects.toThrow();
     }
-  } finally { close(); }
+  } finally { await close(); }
 });

@@ -9,7 +9,9 @@
   "facts": [
     "DeliveryIntent: logical send identity, typed destination handle and pinned payload association",
     "DeliveryAttempt: append-only numbered execution history and provider reference",
-    "DeliveryReceipt: acknowledgment/failure/uncertain outcome with evidence"
+    "DeliveryReceipt: acknowledgment/failure/uncertain outcome with evidence",
+    "DeliveryStep: immutable consecutive send/cancel claim unique per intent/number",
+    "DeliveryResolution: unique definitive reconciliation of an uncertain receipt"
   ],
   "operations": [
     "CreateDeliveryIntent(destination, payloadRevision?, idempotencyKey)",
@@ -20,50 +22,81 @@
     "Intent deduplication is separate from provider side-effect idempotency; no universal exactly-once promise",
     "Attempt numbering and claim are conditional; retry never overwrites attempt history",
     "Callbacks deduplicate by provider receipt identity; stale callbacks cannot downgrade a final acknowledgment",
-    "Artifact payload pins exact revision; typed content satellite may supply non-artifact payload without arbitrary JSON"
+    "Artifact payload pins exact revision; typed content satellite may supply non-artifact payload without arbitrary JSON",
+    "Raw step rules require explicit definitive predecessor failure before retry/cancellation",
+    "Retry and cancellation race on the same consecutive ordinal; successful or unresolved uncertain attempts cannot retry",
+    "Delivery maxAttempts is bounded; external effects remain outside local commit and require provider-specific idempotency"
   ],
   "acceptance": [
     {
       "id": "F38-01",
       "description": "DeliveryIntent model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delivery.test.ts"
+      ]
     },
     {
       "id": "F38-02",
       "description": "DeliveryAttempt model",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delivery.test.ts"
+      ]
     },
     {
       "id": "F38-03",
       "description": "DeliveryReceipt/result semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delivery.test.ts"
+      ]
     },
     {
       "id": "F38-04",
       "description": "idempotency and retry history",
       "kind": "concurrency",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delivery.test.ts"
+      ]
     },
     {
       "id": "F38-05",
       "description": "provider-reference/provenance support",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delivery.test.ts"
+      ]
     },
     {
       "id": "F38-06",
       "description": "evidence/artifact integration",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delivery.test.ts"
+      ]
     },
     {
       "id": "F38-07",
       "description": "fixtures for email, webhook and file export",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delivery.test.ts"
+      ]
     }
   ],
   "fixtures": [

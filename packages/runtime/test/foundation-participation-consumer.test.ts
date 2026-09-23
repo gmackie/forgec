@@ -5,10 +5,10 @@ import { localAuthorizer } from "../src/gatekeeper.js";
 import { Parties } from "../src/foundation/party.js";
 import { Participations } from "../src/foundation/participation.js";
 import { participationPipAuthorizer } from "../src/foundation/participation-pip.js";
-import { consumerFixture } from "./foundation-fixture.js";
+import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 const domain = "@foundation-probe/participation-consumers/_/", base = "@forgegraph/foundation/participation/_/";
-for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: typed membership facts feed an independent live policy, including immediate revocation`, async () => {
-  const { engine, close } = consumerFixture("participation", adapter);
+for (const adapter of foundationAdapters) it(`${adapter}: typed membership facts feed an independent live policy, including immediate revocation`, async () => {
+  const { engine, close } = await consumerFixture("participation", adapter);
   const ctx = { tenant: "t", actor: "alice", requestId: "participation-fixtures" };
   const call = (op: string, input: Record<string, unknown>) => Effect.runPromise(engine.call(op, input, ctx));
   try {
@@ -82,5 +82,5 @@ for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: typed membe
     }
     expect((await Effect.runPromise(parties.listRepresentedAt(ctx.actor, end, ctx))).items).toEqual([]);
     expect((await call("@forgegraph/foundation/party/_/Party.get", { id: person.id })).id).toBe(person.id);
-  } finally { close(); }
+  } finally { await close(); }
 });

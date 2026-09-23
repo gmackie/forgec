@@ -4,7 +4,7 @@ import { Engine } from "../src/engine.js";
 import { Entitlements, entitlementPipAuthorizer, type EffectiveRightsPage } from "../src/foundation/entitlement.js";
 import { Parties, type RepresentationPage } from "../src/foundation/party.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
-import { consumerFixture } from "./foundation-fixture.js";
+import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 const base = "@forgegraph/foundation/entitlement/_/", domain = "@example/entitlement/_/";
 const ctx = { tenant: "acme", actor: "alice", requestId: "entitlement" };
 const start = "2026-01-01T00:00:00Z", end = "2026-02-01T00:00:00Z", nextEnd = "2026-03-01T00:00:00Z";
@@ -19,9 +19,9 @@ async function seed(engine: Engine) {
   const input = { holder: String(party.id), scope: String(scope.id), right: String(right.id), validFrom: start, validUntil: end, reason: "Issued" };
   return { api, call, party, scope, right, requirement, input };
 }
-for (const adapter of ["memory", "sqlite"] as const) {
+for (const adapter of foundationAdapters) {
   it(`${adapter}: F30-01/03/04 rights preserve exact quantities, scoped validity, renewal and terminal history`, async () => {
-    const { engine, close } = consumerFixture("entitlement", adapter);
+    const { engine, close } = await consumerFixture("entitlement", adapter);
     try {
       const { api, call, input } = await seed(engine);
       const grant = await run(api.issue({ ...input, quantity: "1.000001", unit: "seat" }, { ...ctx, idempotencyKey: "issue" }));
@@ -49,10 +49,10 @@ for (const adapter of ["memory", "sqlite"] as const) {
       expect((await run(api.listEffectiveRights(input.holder, String(scope2.id), start, ctx))).items).toEqual([]);
       await expect(run(api.issue(input, { ...ctx, tenant: "other" }))).rejects.toThrow();
       await expect(run(api.listEffectiveRights(input.holder, input.scope, start, { ...ctx, tenant: "other" }))).rejects.toThrow();
-    } finally { close(); }
+    } finally { await close(); }
   });
   it(`${adapter}: F30-02/03 obligations have explicit overdue/discharge/cancel facts and revocation reads fail closed`, async () => {
-    const { engine, close } = consumerFixture("entitlement", adapter);
+    const { engine, close } = await consumerFixture("entitlement", adapter);
     try {
       const { api, call, input, requirement } = await seed(engine);
       const duty = await run(api.recordObligation({ obligatedParty: input.holder, requirement: String(requirement.id), scope: input.scope, quantity: "10.125000", unit: "hours", incurredAt: start, dueAt: end, reason: "Duty" }, ctx));
@@ -71,10 +71,10 @@ for (const adapter of ["memory", "sqlite"] as const) {
       guarded.gatekeeper.authorizer = localAuthorizer({ policies: ["Entitlement", "EntitlementScope", "RightDefinition"].map(name => ({ id: name, actions: [base + name + ".*"], requires: [], where: [] })).concat([{ id: "party", actions: ["@forgegraph/foundation/party/_/Party.*"], requires: [], where: [] }]), pips: [], epoch: 1, knownObligations: [] });
       await expect(run(new Entitlements(guarded).listEffectiveRights(input.holder, input.scope, start, ctx))).rejects.toMatchObject({ code: "NotFound" });
       await expect(call("Obligation.delete", { id: duty.id })).rejects.toThrow();
-    } finally { close(); }
+    } finally { await close(); }
   });
   it(`${adapter}: F30-05/06/07 typed source satellites and live PIP facts require independent policy`, async () => {
-    const { engine, close } = consumerFixture("entitlement", adapter);
+    const { engine, close } = await consumerFixture("entitlement", adapter);
     try {
       const { api, input, requirement } = await seed(engine);
       const call = (op: string, body: Record<string, unknown>) => run(engine.call(domain + op, body, ctx));
@@ -114,6 +114,6 @@ for (const adapter of ["memory", "sqlite"] as const) {
       expect((await run(protectedEngine.call(domain + "Purchase.get", { id: target.id }, ctx))).id).toBe(target.id);
       await run(parties.revoke(String(representation.id), start, "No longer represented", ctx));
       await expect(run(protectedEngine.call(domain + "Purchase.get", { id: target.id }, ctx))).rejects.toThrow();
-    } finally { close(); }
+    } finally { await close(); }
   });
 }

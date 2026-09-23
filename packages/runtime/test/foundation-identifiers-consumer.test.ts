@@ -1,10 +1,10 @@
 import { Effect } from "effect";
 import { it, expect } from "vitest";
-import { consumerFixture } from "./foundation-fixture.js";
+import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 import { Identifiers } from "../src/foundation/identifiers.js";
 const domain = "@foundation-probe/identifier-consumers/_/", base = "@forgegraph/foundation/identifiers/_/";
-for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: GitHub, serial and healthcare identifiers resolve typed owners without replacing canonical ids`, async () => {
-  const { engine, close } = consumerFixture("identifiers", adapter);
+for (const adapter of foundationAdapters) it(`${adapter}: GitHub, serial and healthcare identifiers resolve typed owners without replacing canonical ids`, async () => {
+  const { engine, close } = await consumerFixture("identifiers", adapter);
   const ctx = { tenant: "t", actor: "u", requestId: "identifier-fixtures" };
   const call = (op: string, input: Record<string, unknown>) => Effect.runPromise(engine.call(op, input, ctx));
   try {
@@ -21,5 +21,5 @@ for (const adapter of ["memory", "sqlite"] as const) it(`${adapter}: GitHub, ser
       expect(owner.id).not.toBe(qualified.value);
       expect((await call(domain + name + ".get", { id: owner.id })).id).toBe(owner.id);
     }
-  } finally { close(); }
+  } finally { await close(); }
 });

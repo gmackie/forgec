@@ -55,3 +55,4 @@ export * from "./foundation/assurance.js";
 export * from "./foundation/allocation.js";
 export * from "./foundation/decision.js";
 export * from "./foundation/lineage.js";
+export * from "./foundation/delivery.js";

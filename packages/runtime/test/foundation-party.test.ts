@@ -4,16 +4,16 @@ import { Engine } from "../src/engine.js";
 import { Parties } from "../src/foundation/party.js";
 import { Identifiers } from "../src/foundation/identifiers.js";
 import { localAuthorizer } from "../src/gatekeeper.js";
-import { consumerFixture } from "./foundation-fixture.js";
+import { consumerFixture, foundationAdapters } from "./foundation-fixture.js";
 
 const base = "@forgegraph/foundation/party/_/";
 const ids = "@forgegraph/foundation/identifiers/_/";
 const domain = "@foundation-probe/party-consumers/_/";
 const start = "2026-01-01T00:00:00Z", end = "2026-02-01T00:00:00Z";
 const ctx = { tenant: "acme", actor: "registrar", requestId: "party" };
-for (const adapter of ["memory", "sqlite"] as const) {
+for (const adapter of foundationAdapters) {
   it(`${adapter}: Party owns durable business identity with typed customer, worker and organization satellites`, async () => {
-    const { engine, close } = consumerFixture("party", adapter);
+    const { engine, close } = await consumerFixture("party", adapter);
     const call = (op: string, input: Record<string, unknown>, context = ctx) => Effect.runPromise(engine.call(op, input, context));
     const service = new Parties(engine);
     try {
@@ -42,11 +42,11 @@ for (const adapter of ["memory", "sqlite"] as const) {
       // Association alone grants neither access to the Party nor any domain fact.
       await expect(Effect.runPromise(denied.call(base + "Party.get", { id: person.id }, { ...ctx, actor: "alice" }))).rejects.toThrow();
       await expect(Effect.runPromise(denied.call(domain + "Person.get", { id: satellite.id }, { ...ctx, actor: "alice" }))).rejects.toThrow();
-    } finally { close(); }
+    } finally { await close(); }
   });
 
   it(`${adapter}: representation is temporal, paginated, revocable and fails closed on unreadable revocation`, async () => {
-    const { engine, close } = consumerFixture("party", adapter);
+    const { engine, close } = await consumerFixture("party", adapter);
     const service = new Parties(engine);
     const run = Effect.runPromise;
     try {
@@ -86,6 +86,6 @@ for (const adapter of ["memory", "sqlite"] as const) {
       for (const resource of ["PrincipalRepresentation", "RepresentationRevocation"]) {
         await expect(run(engine.call(base + resource + ".delete", { id: representation.id }, ctx))).rejects.toThrow();
       }
-    } finally { close(); }
+    } finally { await close(); }
   });
 }

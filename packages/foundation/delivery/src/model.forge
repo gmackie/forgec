@@ -1,0 +1,104 @@
+import artifact
+import evidence
+export enum DeliveryChoice {
+  Send
+  Cancel
+}
+export enum DeliveryOutcome {
+  Succeeded
+  Failed
+  Uncertain
+}
+export resource DeliveryDestination
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+}
+export resource DeliveryIntent
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  destination : DeliveryDestination
+  payload : artifact.ArtifactRevision?
+  maxAttempts : integer >= 1 <= 32
+  find by key
+}
+export resource DeliveryStep
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  intent : DeliveryIntent
+  number : integer >= 1 <= 33
+  choice : DeliveryChoice
+  previous : DeliveryStep?
+  receipt : DeliveryReceipt?
+  resolution : DeliveryResolution?
+  reason : text length 1..500
+  rules {
+    choice == DeliveryChoice.Cancel || number <= intent.maxAttempts
+    (previous == null && number == 1 && receipt == null && resolution == null) || (previous != null && previous.intent == intent && previous.number == number - 1 && receipt != null && receipt.step == previous && (receipt.outcome == DeliveryOutcome.Failed || (receipt.outcome == DeliveryOutcome.Uncertain && resolution != null && resolution.receipt == receipt && resolution.outcome == DeliveryOutcome.Failed)))
+  }
+  unique intent, number
+  find by intent, number
+}
+export resource DeliveryAttempt
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  step : DeliveryStep @unique
+  startedAt : datetime
+  provider : text length 1..128
+  providerKey : text length 1..200
+  rules {
+    step.choice == DeliveryChoice.Send
+  }
+  find by step
+}
+export resource DeliveryReceipt
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  step : DeliveryStep @unique
+  attempt : DeliveryAttempt @unique
+  outcome : DeliveryOutcome
+  completedAt : datetime
+  providerReference : text length 1..200
+  callbackKey : text length 1..200 @unique
+  detail : text length 1..1000
+  support : evidence.EvidenceSeal?
+  rules {
+    attempt.step == step
+    completedAt >= attempt.startedAt
+  }
+  find by step
+}
+export resource DeliveryResolution
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  receipt : DeliveryReceipt @unique
+  outcome : DeliveryOutcome
+  resolvedAt : datetime
+  detail : text length 1..1000
+  support : evidence.EvidenceSeal?
+  rules {
+    receipt.outcome == DeliveryOutcome.Uncertain
+    outcome != DeliveryOutcome.Uncertain
+    resolvedAt >= receipt.completedAt
+  }
+  find by receipt
+}

@@ -1,3 +1,4 @@
+import { foundation, foundationAdapters } from "./helpers/foundation.js";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { D1Storage } from "../src/adapters/d1.js";
 import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
@@ -15,19 +16,10 @@ const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.
 const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
 const prefix = "@forgegraph/foundation/usage/_/", consumer = "@foundation-probe/usage-consumers/_/";
 const ctx = { tenant: "acme", actor: "user", requestId: "usage" };
-for (const adapter of ["memory", "sqlite"]) it(`${adapter}: exact usage, source identity, correction history and reproducible projections`, async () => {
-  const model = new Model(bundle), db = new DatabaseSync(":memory:");
-  db.exec(readFileSync(resolve(fixture, "d1/0001_init.sql"), "utf8"));
-  const execute = (s: SqlStatement) => ({ changes: Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes) });
-  const executor: SqlExecutor = {
-    facade: "sqlite-test",
-    first: async <T>(s: SqlStatement) => (db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T | null,
-    all: async <T>(s: SqlStatement) => db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
-    run: async s => execute(s),
-    batch: async statements => { db.exec("BEGIN"); try { const results = statements.map(execute); db.exec("COMMIT"); return results; } catch (error) { db.exec("ROLLBACK"); throw error; } },
-  };
+for (const adapter of foundationAdapters) it(`${adapter}: exact usage, source identity, correction history and reproducible projections`, async () => {
+  const f = await foundation("usage", adapter, true);
+  const engine = f.engine, model = engine.model;
   try {
-    const engine = new Engine(model, testLayer(adapter === "memory" ? new MemoryStorage() : new D1Storage(executor, model)));
     const call = (op: string, input: Record<string, unknown>, context = ctx) => Effect.runPromise(engine.call(prefix + op, input, context));
     const service = new Usage(engine), run = Effect.runPromise;
     const source = await call("UsageSource.create", { key: "meter" });
@@ -91,5 +83,5 @@ for (const adapter of ["memory", "sqlite"]) it(`${adapter}: exact usage, source 
     await expect(run(new Usage(guarded).retract(String(boundary.id), "Denied mutation", ctx))).rejects.toThrow();
     const restarted = new Usage(new Engine(model, engine.layer));
     expect(await run(restarted.replay(before, ctx))).toBe(before.quantity);
-  } finally { db.close(); }
+  } finally { await f.close(); }
 });

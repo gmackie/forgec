@@ -1,3 +1,4 @@
+import { foundation, foundationAdapters } from "./helpers/foundation.js";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { D1Storage } from "../src/adapters/d1.js";
 import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
@@ -15,19 +16,10 @@ const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as
 const prefix = "@forgegraph/foundation/classification/_/", identifiers = "@forgegraph/foundation/identifiers/_/";
 const consumer = "@foundation-probe/classification-consumers/_/";
 const ctx = { tenant: "acme", actor: "user", requestId: "classification" };
-for (const adapter of ["memory", "sqlite"]) it(`${adapter}: business vocabulary hierarchy, immutable meaning and sidecars`, async () => {
-  const model = new Model(bundle), db = new DatabaseSync(":memory:");
-  db.exec(readFileSync(resolve(fixture, "d1/0001_init.sql"), "utf8"));
-  const execute = (s: SqlStatement) => ({ changes: Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes) });
-  const executor: SqlExecutor = {
-    facade: "sqlite-test",
-    first: async <T>(s: SqlStatement) => (db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T | null,
-    all: async <T>(s: SqlStatement) => db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
-    run: async s => execute(s),
-    batch: async statements => { db.exec("BEGIN"); try { const results = statements.map(execute); db.exec("COMMIT"); return results; } catch (error) { db.exec("ROLLBACK"); throw error; } },
-  };
+for (const adapter of foundationAdapters) it(`${adapter}: business vocabulary hierarchy, immutable meaning and sidecars`, async () => {
+  const f = await foundation("classification", adapter, true);
+  const engine = f.engine, model = engine.model;
   try {
-    const engine = new Engine(model, testLayer(adapter === "memory" ? new MemoryStorage() : new D1Storage(executor, model)));
     const call = (op: string, input: Record<string, unknown>, context = ctx) => Effect.runPromise(engine.call(op, input, context));
     const service = new Classification(engine);
     const set = async (label: string) => call(identifiers + "IdentifierSet.create", { label });
@@ -79,5 +71,5 @@ for (const adapter of ["memory", "sqlite"]) it(`${adapter}: business vocabulary 
     const a = await concept(4), b = await concept(5);
     const moves = await Promise.allSettled([call(prefix + "Concept.move", { id: a.id, expectedVersion: 1, parent: b.id }), call(prefix + "Concept.move", { id: b.id, expectedVersion: 1, parent: a.id })]);
     expect(moves.filter(r => r.status === "fulfilled")).toHaveLength(1);
-  } finally { db.close(); }
+  } finally { await f.close(); }
 });

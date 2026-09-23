@@ -1,3 +1,4 @@
+import { foundation, foundationAdapters } from "./helpers/foundation.js";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { D1Storage } from "../src/adapters/d1.js";
 import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
@@ -15,20 +16,10 @@ const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.
 const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
 const prefix = "@forgegraph/foundation/allocation/_/", consumer = "@foundation-probe/allocation-consumers/_/";
 const ctx = { tenant: "acme", actor: "operator", requestId: "allocation" };
-for (const adapter of ["memory", "sqlite"]) it(`${adapter}: single-row guarded capacity, release races and hostile candidates`, async () => {
-  const model = new Model(bundle), db = new DatabaseSync(":memory:");
-  db.exec(readFileSync(resolve(fixture, "d1/0001_init.sql"), "utf8"));
-  const execute = (s: SqlStatement) => ({ changes: Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes) });
-  const executor: SqlExecutor = {
-    facade: "sqlite-test",
-    first: async <T>(s: SqlStatement) => (db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T | null,
-    all: async <T>(s: SqlStatement) => db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
-    run: async s => execute(s),
-    batch: async statements => { db.exec("BEGIN"); try { const results = statements.map(execute); db.exec("COMMIT"); return results; } catch (error) { db.exec("ROLLBACK"); throw error; } },
-  };
+for (const adapter of foundationAdapters) it(`${adapter}: single-row guarded capacity, release races and hostile candidates`, async () => {
+  const f = await foundation("allocation", adapter, true);
+  const engine = f.engine, model = engine.model;
   try {
-    const storage = adapter === "memory" ? new MemoryStorage() : new D1Storage(executor, model);
-    const engine = new Engine(model, testLayer(storage));
     const service = new Allocations(engine), run = Effect.runPromise;
     const call = (op: string, input: Record<string, unknown>, context = ctx) => run(engine.call(prefix + op, input, context));
     const pool = async (key: string, mode = "exclusive", capacity = "1") => call("AllocationPool.create", { key, mode, capacity, unit: "slot" });
@@ -84,5 +75,5 @@ for (const adapter of ["memory", "sqlite"]) it(`${adapter}: single-row guarded c
     await expect(run(service.act(String(h2.id), "allocate", ctx))).rejects.toThrow();
     const restart = new Allocations(new Engine(model, engine.layer));
     expect((await run(restart.inspect(String(bed.id), from, ctx))).available).toBe("1.000000");
-  } finally { db.close(); }
+  } finally { await f.close(); }
 });
