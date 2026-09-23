@@ -42,3 +42,5 @@ are required explicitly. No application repository was changed, deployed or
 silently enabled; this is a runnable adapter at its existing opt-in seam. Foundation
 stores execution provenance, not the application's arbitrary output payload, and
 completion does not constitute asset review approval or production publication.
+
+Installable adapter: `@forgegraph/runtime/foundation/apps/levelforge`. The local `adapter.ts` reexports the same implementation used by the packaged runtime. Build the corresponding Forge schema for the selected deployment before wiring the port.

@@ -37,3 +37,5 @@ Foundation apps verifier with PostgreSQL configured. Ordinary runtime CI does no
 auto-discover the `.traces.ts` file. App unit test passes. Full app typecheck and
 lint/build are currently blocked by pre-existing missing @forgegraph/otel exports
 and ESLint configuration. No failures were reported in the new service itself.
+
+Installable adapter: `@forgegraph/runtime/foundation/apps/kanbanger`. The local `adapter.ts` reexports the same implementation used by the packaged runtime. Build the corresponding Forge schema for the selected deployment before wiring the port.

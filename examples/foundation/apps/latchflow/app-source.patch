@@ -46,7 +46,7 @@ index 0000000000..85c7e332f3
 +  expect(recordRun).not.toHaveBeenCalled();
 +});
 diff --git a/packages/api/src/routers/runtime.ts b/packages/api/src/routers/runtime.ts
-index e770cb79d9..e0f6864158 100644
+index e770cb79d9..e4b06c3c9d 100644
 --- a/packages/api/src/routers/runtime.ts
 +++ b/packages/api/src/routers/runtime.ts
 @@ -1,4 +1,5 @@
@@ -85,10 +85,11 @@ index e770cb79d9..e0f6864158 100644
          compiledFlowId,
          runnerId: runnerAssignment?.runnerId,
 -        status: runnerAssignment ? "idle" : "running",
-+        status: runnerAssignment ? "idle" as const : "running" as const,
-         desiredStatus: "running",
+-        desiredStatus: "running",
 -        startedAt: new Date(),
 -      });
++        status: runnerAssignment ? "idle" as const : "running" as const,
++        desiredStatus: "running" as const,
 +        startedAt,
 +      };
 +      await ctx.db.insert(roomRuns).values(runRow);

@@ -43,3 +43,5 @@ application functions and generated Foundation engine on memory, SQLite and loca
 PostgreSQL. It is not enabled in ForgeGraph production and does not replace the
 application's attestation pipeline. No external service or application database is
 required by the trace.
+
+Installable adapter: `@forgegraph/runtime/foundation/apps/forgegraph`. The local `adapter.ts` reexports the same implementation used by the packaged runtime. Build the corresponding Forge schema for the selected deployment before wiring the port.

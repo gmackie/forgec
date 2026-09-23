@@ -6,10 +6,11 @@ RunCompletion satellite. It is exported by the real planningWriteService.
 Existing completion handlers do not enable it automatically. No deployed service
 or database has been changed.
 
-Source worktree: `/Volumes/dev/.worktrees/bob/foundation-adoption`.
+Source worktree: `/Volumes/dev/.worktrees/bob/foundation-current`.
 verification.json pins the source revision and exact service/schema hashes.
-app-source.patch contains the three owned application changes for a separate app
-review. Source baseline is 7863b955 (local JJ repository).
+Bob main at f388e25f already contains the strengthened service (merged PR #210),
+including real PGlite-backed native tests. The former app-source.patch is retained
+as historical provenance only; do not apply it to current main.
 
 Call `reconcileRunFoundationCompletion(db, {userId, workspaceId}, taskRunId, port)`
 after normal server authorization; construct the port with
@@ -30,6 +31,7 @@ The explicit Foundation app trace imports the real source service, controls only
 the app DB read, and executes the generated Foundation runtime on memory, SQLite
 and native PostgreSQL. It checks missing-start rejection, partial-write recovery,
 exact terminal facts, replay mismatch, nonterminal source rejection and user/
-workspace isolation. The app unit test checks query scoping; app API typecheck
-passes. Set FORGE_FOUNDATION_BOB_ROOT to the prepared worktree when using the
+workspace isolation. Twelve native PGlite tests and the app API typecheck pass on Node24. Set FORGE_FOUNDATION_BOB_ROOT to the prepared worktree when using the
 shared apps verifier. Ordinary runtime CI does not discover this `.traces.ts` file.
+
+Installable adapter: `@forgegraph/runtime/foundation/apps/bob`. The local `adapter.ts` reexports the same implementation used by the packaged runtime. Build the corresponding Forge schema for the selected deployment before wiring the port.

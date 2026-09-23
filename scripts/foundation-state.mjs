@@ -26,7 +26,8 @@ export function fingerprint(root, slug, contracts) {
   }
   for (const name of closure) walk(join(root, 'packages/foundation', name));
   for (const name of ['syntax', 'semantic', 'planner', 'codegen', 'cli']) walk(join(root, `crates/forgegraph-${name}`));
-  walk(join(root, 'scripts/test'));
+  // Migration and packaging helpers are executable test dependencies as well.
+  walk(join(root, 'scripts'));
   walk(join(root, 'conformance/foundation/fixtures'));
   walk(join(root, 'packages/runtime/src'));
   // Tests are evidence-producing code, not merely a string attached to a status.
