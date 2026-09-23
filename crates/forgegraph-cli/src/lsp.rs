@@ -313,10 +313,41 @@ impl Server {
         character: usize,
         declaration: bool,
     ) -> Vec<Value> {
-        let analysis = self.analysis(file);
+        let mut analysis = self.analysis(file);
         let Some(target) = target_at(&analysis, file, line, character) else {
             return vec![];
         };
+        let owner = |analyses: &[Analysis]| {
+            analyses.iter().find_map(|a| {
+                a.anchors.get(&target).map(|span| {
+                    let path = a.root.join(&span.file);
+                    path.canonicalize().unwrap_or(path)
+                })
+            })
+        };
+        let target_owner = owner(&analysis);
+        // A declaration in a dependency must also find callers in workspace packages.
+        // Analyze each package with its own dependency context, then deduplicate locations.
+        let mut roots = std::collections::BTreeSet::new();
+        if let Some(root) = package_root(file) {
+            roots.insert(root.canonicalize().unwrap_or(root));
+        }
+        for path in self
+            .open
+            .keys()
+            .cloned()
+            .chain(self.roots.iter().map(|root| root.join("forge.toml")))
+        {
+            if let Some(root) = package_root(&path)
+                && roots.insert(root.canonicalize().unwrap_or_else(|_| root.clone()))
+            {
+                let candidates = self.analysis(&path);
+                // Semantic ids alone do not distinguish separate checkouts of one package.
+                if target_owner.is_some() && owner(&candidates) == target_owner {
+                    analysis.extend(candidates);
+                }
+            }
+        }
         let mut locations = vec![];
         for a in &analysis {
             if declaration
@@ -1207,9 +1238,9 @@ mod tests {
             "import dep\nfunction Caller {\n uses {\n dep.Public\n }\n}\n",
         )
         .unwrap();
-        let server = Server {
+        let mut server = Server {
             open: BTreeMap::new(),
-            roots: vec![],
+            roots: vec![root.clone()],
             cache: RefCell::new(AnalysisCache::default()),
         };
         assert!(
@@ -1223,9 +1254,45 @@ mod tests {
                 .unwrap()
                 .ends_with("dep/src/index.forge")
         );
+        let declaration = root.join("dep/src/index.forge");
+        let references = server.references(&declaration, 0, 18, false);
+        assert_eq!(
+            references.len(),
+            1,
+            "dependency declaration must find its workspace caller"
+        );
+        assert_eq!(references[0]["uri"], path_to_uri(&path));
         let completions = server.completion(&path, 3, 1);
         assert!(completions.iter().any(|v| v["label"] == "dep.Public"));
         assert!(!completions.iter().any(|v| v["label"] == "dep.Private"));
+        // Another checkout of the same package must not contribute its own callers.
+        let other = root.join("other");
+        std::fs::create_dir_all(other.join("src")).unwrap();
+        std::fs::write(
+            other.join("forge.toml"),
+            "[package]\nname = \"@test/dep\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        std::fs::write(
+            other.join("src/index.forge"),
+            "export function Public {}\nfunction Local { uses { Public } }\n",
+        )
+        .unwrap();
+        server.roots.push(other);
+        assert_eq!(server.references(&declaration, 0, 18, false).len(), 1);
+        // Open-buffer edits invalidate callers even when the request targets the dependency.
+        server
+            .open
+            .insert(path.clone(), "import dep\nfunction Caller {}\n".into());
+        assert!(server.references(&declaration, 0, 18, false).is_empty());
+        assert_eq!(server.references(&declaration, 0, 18, true).len(), 1);
+        // Open packages are searched even without a workspace-folder registration.
+        server.roots.clear();
+        server.open.insert(
+            path.clone(),
+            "import dep\nfunction Caller { uses { dep.Public } }\n".into(),
+        );
+        assert_eq!(server.references(&declaration, 0, 18, false).len(), 1);
         std::fs::remove_dir_all(root).unwrap();
     }
     #[test]
