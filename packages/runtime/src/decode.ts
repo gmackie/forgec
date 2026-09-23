@@ -96,6 +96,12 @@ export function decodeValue(model: Model, t: TypeSpec, input: unknown, depth = 0
         let s = decodeText(input, t.normalizers);
         const len = t.constraints.find((c) => c.kind === "length");
         if (len && len.kind === "length") s = checkLength(s, len.min, len.max);
+        if (b.name === "timezone") {
+          try {
+            if (/^[+-]/.test(s)) throw new RangeError("Expected named timezone");
+            new Intl.DateTimeFormat("en-US", { timeZone: s });
+          } catch { throw new CodecError("InvalidTimezone"); }
+        }
         if (b.name === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) throw new CodecError("InvalidEmail");
         if (b.name === "countryCode" && !/^[A-Z]{2}$/.test(s)) throw new CodecError("InvalidCountryCode");
         if (b.name === "id" && !/^[A-Za-z0-9_-]{1,64}$/.test(s)) throw new CodecError("InvalidId");

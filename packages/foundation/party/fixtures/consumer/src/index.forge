@@ -1,0 +1,34 @@
+import party
+
+resource Person
+  @tenant
+  @appendOnly
+{
+  id : id
+  party : party.Party @unique
+  displayName : text length 1..200
+}
+resource Organization
+  @tenant
+  @appendOnly
+{
+  id : id
+  party : party.Party @unique
+  legalName : text length 1..200
+}
+resource Customer
+  @tenant
+  @appendOnly
+{
+  id : id
+  party : party.Party @unique
+  customerCode : text length 1..64 @unique
+}
+resource Worker
+  @tenant
+  @appendOnly
+{
+  id : id
+  person : Person
+  workerCode : text length 1..64 @unique
+}

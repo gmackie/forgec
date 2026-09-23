@@ -37,7 +37,7 @@ for (const adapter of ["memory", "sqlite"]) it(`${adapter}: typed participation,
   const service = new Participations(engine, { namespace: "review-board", roles: ["reviewer", "chair"] as const });
   const run = Effect.runPromise;
   const set = await call("ParticipationSet.create", { label: "Board" });
-  const participant = await call("Participant.create", { label: "Member" });
+  const participant = await Effect.runPromise(engine.call("@forgegraph/foundation/party/_/Party.create", { label: "Member" }, ctx));
   await run(service.registerRole("reviewer", ctx));
   await run(service.registerRole("chair", ctx));
   const start = "2026-01-01T00:00:00Z", end = "2026-02-01T00:00:00Z";
@@ -69,7 +69,7 @@ for (const adapter of ["memory", "sqlite"]) it(`${adapter}: typed participation,
   await expect(run(guardedFacts.listAt(String(set.id), start, ctx))).rejects.toMatchObject({ code: "NotFound" });
   const classroom = new Participations(engine, { namespace: "classroom", roles: ["reviewer"] });
   expect((await run(classroom.listAt(String(set.id), start, ctx))).items).toHaveLength(0);
-  for (const resource of ["Participation", "ParticipationEnd", "Participant"]) await expect(call(resource + ".delete", { id: membership.id })).rejects.toThrow();
+  for (const resource of ["Participation", "ParticipationEnd"]) await expect(call(resource + ".delete", { id: membership.id })).rejects.toThrow();
   expect((await run(service.listAt(String(set.id), start, { ...ctx, tenant: "other" }))).items).toHaveLength(0);
   await expect(run(service.add(input, { ...ctx, tenant: "other" }))).rejects.toThrow();
   } finally { db.close(); }

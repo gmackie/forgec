@@ -41,3 +41,5 @@ export * from "./foundation/identifiers.js";
 export * from "./foundation/participation.js";
 export * from "./foundation/artifact.js";
 export * from "./foundation/participation-pip.js";
+export * from "./foundation/party.js";
+export * from "./foundation/evidence.js";

@@ -1,24 +1,31 @@
+import party
 import participation
-resource Team @tenant @versioned {
+resource Team
+  @tenant
+  @versioned
+{
   id : id
   members : participation.ParticipationSet @immutable @unique
 }
-resource Classroom @tenant @versioned {
+resource Classroom
+  @tenant
+  @versioned
+{
   id : id
   enrollment : participation.ParticipationSet @immutable @unique
 }
-resource ReviewBoard @tenant @versioned {
+resource ReviewBoard
+  @tenant
+  @versioned
+{
   id : id
   reviewers : participation.ParticipationSet @immutable @unique
 }
-resource PrincipalParticipant @tenant @appendOnly {
-  id : id
-  principal : text length 1..128 @unique
-  participant : participation.Participant @unique
-  find by principal
-}
-resource OrganizationParticipant @tenant @appendOnly {
+resource OrganizationParty
+  @tenant
+  @appendOnly
+{
   id : id
   organizationCode : text length 1..128 @unique
-  participant : participation.Participant @unique
+  party : party.Party @unique
 }

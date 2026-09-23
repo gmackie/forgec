@@ -6,6 +6,7 @@ import { err, type ForgeError } from "../errors.js";
 import type { Wire } from "../decode.js";
 const prefix = "@forgegraph/foundation/participation/_/";
 export interface RoleVocabulary<Role extends string> { readonly namespace: string; readonly roles: readonly Role[] }
+/** participant is a Party record ID; membership does not own business identity. */
 export interface ParticipationFact { participation: string; participant: string; role: string; participationSet: string }
 export interface ParticipationPage { items: ParticipationFact[]; next: string | null }
 /** Facts only: membership never implies authorization. Domain wrappers own the vocabulary. */
