@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-assurance-invariants/1",
+  "coverageCriteria": [
+    "F40-STORE"
+  ],
+  "status": "passing",
+  "runId": "eeb658ef-0234-42e7-abb3-2a8aff0d4967",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "c8e18ecb789a67af3beac4c1fe414c5a32eb3f0365f5df76d5b958fd5e121c19",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "a59b45ca8ac050e0890c888135c93cd348aad8549110f3fc417979c176d2a9f0"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "a514e515d9b73e5522226a3fdaa130a9f3da3ccb50a2267dfdd92c74619048d6"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "096699b8a17b89df4d2bdbda66b51887b7dfdfa33a3684f5b6011df2e93448fc"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: findings, dispositions, corrective work and pinned attestations retain separate history"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T05:03:33.488Z",
+  "passedTraces": [
+    "hosted: findings, dispositions, corrective work and pinned attestations retain separate history"
+  ],
+  "testReportSha256": "16e7b3c647fbc30806d223d5b35af1633586392f014b0f2e0874d3143af4f450",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "eeb658ef-0234-42e7-abb3-2a8aff0d4967",
+    "tenantPrefix": "foundation-cert-eeb658ef-0234-42e7-abb3-2a8aff0d4967",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

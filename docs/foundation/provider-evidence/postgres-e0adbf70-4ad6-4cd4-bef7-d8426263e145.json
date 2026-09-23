@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-core-invariants/1",
+  "coverageCriteria": [],
+  "status": "passing",
+  "runId": "e0adbf70-4ad6-4cd4-bef7-d8426263e145",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+  "sourceFingerprint": "958374796a982ba1c8470b591eee1fb8ef03a6156a91ff80c8bdd2589be87c3c",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "c8c677dcf170f6053865f6074bd6a0395f3c5cbee63f7c1306bb61085b440bd5"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "cbeda4517c123bf16276d0c197aa6011c0f2de80abb824d155abf7697c55f735"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "e904672a9ca8405f260673081f1fab33410e6125050b77d6075fcc80295b3945"
+    }
+  ],
+  "requestedTraces": [
+    "capacity-race-and-restart",
+    "authorized-atomic-rollback",
+    "exact-ledger-reversal",
+    "usage-retry-and-isolation",
+    "terminal-absence-guard-race"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T05:02:02.862Z",
+  "passedTraces": [
+    "capacity-race-and-restart",
+    "authorized-atomic-rollback",
+    "exact-ledger-reversal",
+    "usage-retry-and-isolation",
+    "terminal-absence-guard-race"
+  ],
+  "testReportSha256": "8df894a7c1f4394c45e540bb4584f9db30c7f9fe8f7d945c5e3865dee9a4a267",
+  "identity": {
+    "provider": "postgres",
+    "runId": "e0adbf70-4ad6-4cd4-bef7-d8426263e145",
+    "tenantPrefix": "foundation-cert-e0adbf70-4ad6-4cd4-bef7-d8426263e145",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "not exercised",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

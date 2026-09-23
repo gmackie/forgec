@@ -172,6 +172,8 @@ Dedicated infrastructure provisioning is documented in `conformance/foundation/p
 
 ## Verified implementation checkpoint
 
-At `834dd37cd758a4ad64d65a1e7185488a5dc5ec9e`, all 14 profiles passed on native PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every bundle and accepted all 42 cells. `provider-evidence/certification.json` indexes the retained receipts and raw reports; five core traces also passed independently on each provider. This satisfies the bounded database profiles for F34-05, F36-06 and F39–50 STORE. It does not certify hosted object bytes or deployed application adoption.
+At `f64c1b811e88502040c9667928de267a86a9c0cb`, after integrating the independently reviewed workflow receipt-race fix, all 14 profiles passed on native PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every bundle and accepted all 42 cells. `provider-evidence/certification.json` indexes the retained receipts and raw reports; five core traces also passed independently on each provider. This satisfies the bounded database profiles for F34-05, F36-06 and F39–50 STORE. It does not certify hosted object bytes or deployed application adoption.
 
 Contract files retain their original package-local status (`294/308` passing, 14 provider IDs planned); provider acceptance is established separately by the source-bound aggregate receipt. This avoids treating a local verifier as proof of hosted behavior or rewriting its input contracts after certification.
+
+The earlier checkpoint aggregate is retained as `provider-evidence/certification-834dd37c.json`; it is historical evidence, not the current-source gate.
