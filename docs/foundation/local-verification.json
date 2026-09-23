@@ -1,17 +1,24 @@
 {
   "version": 1,
-  "sourceCommit": "b0a9f27f376657b58a849287c31b75092c664d16",
-  "verifiedAt": "2026-09-23T03:29:43.549Z",
+  "sourceCommit": "8d402c848102096b3f1e94a4c3cf8fc2065150ae",
+  "verifiedAt": "2026-09-23T04:03:07.462Z",
   "profile": "memory, SQLite and local PostgreSQL17; individual legacy tests may cover fewer adapters",
   "runtime": {
-    "passed": 531,
+    "passed": 562,
     "skipped": 104
   },
   "rust": {
     "passed": 155
   },
   "harness": {
-    "passed": 13
+    "passed": 24
+  },
+  "providerProfile": {
+    "name": "foundation-core-invariants/1",
+    "provider": "native-postgres-local",
+    "passedTraces": 5,
+    "receipt": "docs/foundation/provider-evidence/postgres.json",
+    "scope": "bounded traces only; no hosted certification or blanket package STORE acceptance"
   },
   "hostedProviders": "not certified",
   "remainingReleaseGates": "https://github.com/gmackie/forgec/issues/71",
@@ -21,8 +28,8 @@
       "package": "adjudication",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "9138011e171e165ff6861454aca67f5e65b5fbc698429f4bcb231af609ee6108",
-      "verifiedAt": "2026-09-23T03:26:17.337Z",
+      "fingerprint": "8adf515574271f41193ce6fe3677959addc350af967b89db2d59a943387f156e",
+      "verifiedAt": "2026-09-23T04:00:13.776Z",
       "commands": [
         "cargo check/build adjudication and consumer; deterministic double build",
         "vitest run test/foundation-adjudication.test.ts"
@@ -100,8 +107,8 @@
       "package": "agreement-catalog",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "0a9230d0dc15471f76936d664b4904ec0a32d831073034d86a5740ef63e1dbb1",
-      "verifiedAt": "2026-09-23T03:26:25.093Z",
+      "fingerprint": "a7ec3b28fbe88f12ba28120edb1d99b29ff771c9a3c0cf14d29a9538ff32b23d",
+      "verifiedAt": "2026-09-23T04:00:22.128Z",
       "commands": [
         "cargo check/build agreement-catalog and consumer; deterministic double build",
         "vitest run test/foundation-agreement-catalog.test.ts"
@@ -109,31 +116,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "fe82fb5029434abd0c2bcb3260469ac6dac3b678c3172e93c6b8156857a9d85f"
+          "sha256": "69391c4f7922b4f3cfac3dfba0d5f0bfe8b998d1398b7883e674998e4fba2041"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "2ac10a4da37bdaba6f7ff3d10ae82bb05702fa368d621aa59eff64139a3438db"
+          "sha256": "f08b59a8ff6108e1aacf4aec67623afaf12547d170f8e6e8473ce2bcca853af6"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "bc751fa2a1484d5f3d8d3035de0c6ff39d02bb5faf0e7c932ad0e9837374b119"
+          "sha256": "7d46ff1404bc12e09a9f72165fd24512f3eb13a7fc7961d19a0ecf731d4ede30"
         },
         {
           "path": "first/client.ts",
-          "sha256": "04437e97a78d404ce4f16e9714f1c9aa58a130bc804ef61ef5b57277169547e3"
+          "sha256": "08409198629fd95f15d963f84afe90ec1dc8401b553e3d485f40749adbc6bce7"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "7fe9c94f1d4650b55db4852aed15ee261e7b688c64eb1ae946dabc8864235567"
+          "sha256": "b8a047e782cbcb72a79f53c988f3e96c37a444dd36af71648521dac9b8799228"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "eb7643ab1e5d09195660d399a308246ad9de2fc2753635d6c37557168901f81b"
+          "sha256": "f876ce615cecb4fc1a27fa68d6b483ebc8bbb7dd546c59b110a3d40bf25ababa"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "1b8aebb0cbde5e2855895bfda36e49e1df592113ee433e383b3032e4402b61fc"
+          "sha256": "269ed7f41b82f1fdba078fdafdf3e2ae73615cdda046e026f9f398d4a3111633"
         },
         {
           "path": "first/README.md",
@@ -141,31 +148,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "bb99d1eb28e42776b922dc1e7c45ab616cbc902632ced5c238dfe5f0ac064439"
+          "sha256": "4d65ebe3f4cc7abcc73208375e5c59d0ea2ca3bcca5e5e894e0e558ef664526c"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "71b0d518fd9aa3f4d466c3fdbef6f28c81e372b2c91cc2e6ac5c413a58140a40"
+          "sha256": "683204d5ffc891a3597eb622733e86b26871ce8307f2dce3e0f4f147feba70c4"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "fe6f927216e567998705cb30d945d5fe23304088f24742a10a1f53c910ce537f"
+          "sha256": "3202dd8f69fe948485d9f24d5bbac26bf278b6034560cb662aedfb6f056a1115"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "7fad82fc39d6c262fbaad525f5e9b64998c37fe7cf8efbb875d5d28536294eae"
+          "sha256": "def214151743aaeeab170c5ed9c5ca2bf50d3b9bd032325281a08281a939c336"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "f50833e0158fe2a27c65f6f9c0b13dc4171d3cc7a52894ccf555242700c66f91"
+          "sha256": "0cd5cc0fd5946d10ee9c129c48a1a3d86c4f269ae64dc22b9efbf4159637d67a"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "80dd9d7033a3141c7348e97a839e0611597733c0ddd94f01529c2abb78afe78a"
+          "sha256": "1cb4bc640b76cbfae18db5849f4f2dacfaff087afb5dc53be479d7afb60f4295"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "ce0c9d18a50d9ed72328ff665d8e7db0b234e03a2915872889ddf8df90e9c60f"
+          "sha256": "96f3f63004460ae93e14a9b62fbe88e7c49762b7e9301a46ac34fc3445a15ba6"
         },
         {
           "path": "consumer-first/README.md",
@@ -179,8 +186,8 @@
       "package": "allocation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "48487553098112e472cf09fa76f29326e28553c895ef32afe11cc286bc913cdc",
-      "verifiedAt": "2026-09-23T03:26:28.754Z",
+      "fingerprint": "56395489fa0327d3c88a2a0a36406110d1647fcd9518f90e9843ec085841cef0",
+      "verifiedAt": "2026-09-23T04:00:25.833Z",
       "commands": [
         "cargo check/build allocation and consumer; deterministic double build",
         "vitest run test/foundation-allocation.test.ts test/foundation-authorized-atomic.test.ts"
@@ -258,8 +265,8 @@
       "package": "artifact",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "fee9ad80e0b268516189ec479921ae38ec09f2b2d0020fe68bdbdc06cd2d3710",
-      "verifiedAt": "2026-09-23T03:25:30.133Z",
+      "fingerprint": "956fb21e6929a4e4c754e46f525a810962bc5aeaabf851247a5ef91e0f0e48a6",
+      "verifiedAt": "2026-09-23T03:59:36.490Z",
       "commands": [
         "cargo check/build artifact and consumer; deterministic double build",
         "vitest run test/foundation-artifact-consumer.test.ts test/foundation-artifact.test.ts test/blobs.test.ts"
@@ -337,8 +344,8 @@
       "package": "assurance",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "4965561f5ae10912b7b563e197225d63aba07cd7d39110453015cc8495fc67a8",
-      "verifiedAt": "2026-09-23T03:26:33.116Z",
+      "fingerprint": "d8fa6e7ec64233eb797aa55d582c2b1da77e35927da62008d8ce66f271ea0013",
+      "verifiedAt": "2026-09-23T04:00:30.369Z",
       "commands": [
         "cargo check/build assurance and consumer; deterministic double build",
         "vitest run test/foundation-assurance.test.ts"
@@ -416,8 +423,8 @@
       "package": "availability",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "91ae812b31ccb83d6a688f1c5e4ab5513022946da2fbbdd499caa93878627df4",
-      "verifiedAt": "2026-09-23T03:26:37.054Z",
+      "fingerprint": "75cef1cc673305c7b0a23282e3f64f43f7522a8bf8c4745b3b18da01352ee8ff",
+      "verifiedAt": "2026-09-23T04:00:34.325Z",
       "commands": [
         "cargo check/build availability and consumer; deterministic double build",
         "vitest run test/foundation-availability.test.ts"
@@ -495,8 +502,8 @@
       "package": "change",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "7a45ac0caee44ce29c7f6fb7dacc09ff30d655329521841e1aef81d780ae0404",
-      "verifiedAt": "2026-09-23T03:26:42.124Z",
+      "fingerprint": "aeb7bc78f8451f98cbeb37ab7599025c98164d9ba158b8993e13f5da39d75d7e",
+      "verifiedAt": "2026-09-23T04:00:39.499Z",
       "commands": [
         "cargo check/build change and consumer; deterministic double build",
         "vitest run test/foundation-change.test.ts"
@@ -574,8 +581,8 @@
       "package": "classification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "3b8efd8a5726ab8d8edb24162d09ded78b30da1690c328a42e51d9601931de6b",
-      "verifiedAt": "2026-09-23T03:26:46.131Z",
+      "fingerprint": "2bfe63df1e5d2ec0538fd9ff2e4737e2be2fe63c53a98d25a31131764cd5525c",
+      "verifiedAt": "2026-09-23T04:00:43.541Z",
       "commands": [
         "cargo check/build classification and consumer; deterministic double build",
         "vitest run test/foundation-classification.test.ts"
@@ -653,8 +660,8 @@
       "package": "collaboration",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "ca4e2624745bc27c4a9994ef8808cf92eb85a7661c77411a50ce7de8c47b8936",
-      "verifiedAt": "2026-09-23T03:26:50.434Z",
+      "fingerprint": "a7ef5be17d857ae38847bdac5f0dff7dbdbfeeab54c1a46f3fee6a14e80cacdc",
+      "verifiedAt": "2026-09-23T04:00:48.547Z",
       "commands": [
         "cargo check/build collaboration and consumer; deterministic double build",
         "vitest run test/foundation-collaboration.test.ts"
@@ -732,8 +739,8 @@
       "package": "decision",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "8688078b78535f368868d67c9932c8467e171328aa44fce3375e924412ee28ae",
-      "verifiedAt": "2026-09-23T03:25:47.697Z",
+      "fingerprint": "54556bd319a2c0fe0a558be0850e37c070a67473a0aa2e64ea3675b95930b25a",
+      "verifiedAt": "2026-09-23T03:59:49.494Z",
       "commands": [
         "cargo check/build decision and consumer; deterministic double build",
         "vitest run test/foundation-decision.test.ts"
@@ -811,8 +818,8 @@
       "package": "delivery",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "11a9ddac9bf147091156df10f3a15087126a0ebbb792ce1d0117ce4551849d57",
-      "verifiedAt": "2026-09-23T03:26:07.455Z",
+      "fingerprint": "ce024a2e4d8fd02e6c97c691463ea0b12dafadd0fb136b19dd877b079dc82690",
+      "verifiedAt": "2026-09-23T04:00:05.299Z",
       "commands": [
         "cargo check/build delivery and consumer; deterministic double build",
         "vitest run test/foundation-delivery.test.ts"
@@ -890,8 +897,8 @@
       "package": "entitlement",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "882778eeea39b8411847e58dffa59e2d46e5d65f60cd23b74b85642b10ade812",
-      "verifiedAt": "2026-09-23T03:25:52.400Z",
+      "fingerprint": "eb0816cd4be659b5ebfca9c8587e61404ff5e2689cac369ed42e513e04b769e2",
+      "verifiedAt": "2026-09-23T03:59:53.493Z",
       "commands": [
         "cargo check/build entitlement and consumer; deterministic double build",
         "vitest run test/foundation-entitlement.test.ts"
@@ -969,8 +976,8 @@
       "package": "evaluation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "7c6704ec40b93ef8d9bb4342e1f241e400d797a90881f1643b6c839464aa9dcb",
-      "verifiedAt": "2026-09-23T03:25:39.302Z",
+      "fingerprint": "6306b9075013662aedfcebc950ee328400173579c1c542aea71bc40db359dd55",
+      "verifiedAt": "2026-09-23T03:59:44.451Z",
       "commands": [
         "cargo check/build evaluation and consumer; deterministic double build",
         "vitest run test/foundation-evaluation.test.ts"
@@ -1048,8 +1055,8 @@
       "package": "evidence",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "f4d4414026b1887d127ef72e07ef5ebbe1a12527667b36a23e01c95112766fee",
-      "verifiedAt": "2026-09-23T03:25:34.297Z",
+      "fingerprint": "4d20d6b4e75632c855201b72aadf87cdc55fa292d83833cdda544e918d26e64e",
+      "verifiedAt": "2026-09-23T03:59:40.467Z",
       "commands": [
         "cargo check/build evidence and consumer; deterministic double build",
         "vitest run test/foundation-evidence.test.ts"
@@ -1127,8 +1134,8 @@
       "package": "experiment",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "bb13b6e8fc5e894490d537fb07dd3fc464cc711aeef0da2adfaac9b8c3e66542",
-      "verifiedAt": "2026-09-23T03:26:59.694Z",
+      "fingerprint": "8a72ca9d472c0f3b9cad8c8476c582545c2f35579c0a09dc668304e1b2d06fca",
+      "verifiedAt": "2026-09-23T04:00:58.176Z",
       "commands": [
         "cargo check/build experiment and consumer; deterministic double build",
         "vitest run test/foundation-experiment.test.ts"
@@ -1206,8 +1213,8 @@
       "package": "fulfillment",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "a1f036dbad86c491d5587187aeab9197a26aeaba640d76758a6449ab501f34d3",
-      "verifiedAt": "2026-09-23T03:25:56.600Z",
+      "fingerprint": "82db5b91e211d9281ee3ec6587c0aeb2a1021c91697e37ab16c0770505125e6c",
+      "verifiedAt": "2026-09-23T03:59:57.453Z",
       "commands": [
         "cargo check/build fulfillment and consumer; deterministic double build",
         "vitest run test/foundation-fulfillment.test.ts"
@@ -1285,8 +1292,8 @@
       "package": "identifiers",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "7706ff097dde0c1b1a5a11da8ee3b5ad6c9ccbd248667d5d64d33dcb1213944f",
-      "verifiedAt": "2026-09-23T03:25:12.723Z",
+      "fingerprint": "21b76346bea7eb237ad5017af9939f8183942c6eaed5e075b72e7cb1d22e0e02",
+      "verifiedAt": "2026-09-23T03:59:20.083Z",
       "commands": [
         "cargo check/build identifiers and consumer; deterministic double build",
         "vitest run test/foundation-identifiers-consumer.test.ts test/foundation-identifiers.test.ts"
@@ -1364,8 +1371,8 @@
       "package": "intake",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "6dfff2a4a0873c8f70b9838570f2ad650cfbd7e5ad09a704a2376e9b87ca913d",
-      "verifiedAt": "2026-09-23T03:27:03.984Z",
+      "fingerprint": "0a97247f8bae7079dbf678ff3d491ce6ebe9d8bd9af92f465a2af974a73d575b",
+      "verifiedAt": "2026-09-23T04:01:04.622Z",
       "commands": [
         "cargo check/build intake and consumer; deterministic double build",
         "vitest run test/foundation-intake.test.ts"
@@ -1443,8 +1450,8 @@
       "package": "integration",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "9023bc95ac3fdf993b2777c5351f2c16056dd37370010ebdd11312c1c18942e2",
-      "verifiedAt": "2026-09-23T03:27:14.933Z",
+      "fingerprint": "a98119f2386858cb9ed7c827e8262b871b143580413b3bccae8103633a79816e",
+      "verifiedAt": "2026-09-23T04:01:15.578Z",
       "commands": [
         "cargo check/build integration and consumer; deterministic double build",
         "vitest run test/foundation-integration.test.ts"
@@ -1522,8 +1529,8 @@
       "package": "knowledge",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "6d7ddd113e013ed87183792b89e504675679204a133bf6d07c3918d14e514b62",
-      "verifiedAt": "2026-09-23T03:27:28.771Z",
+      "fingerprint": "49a6185efaffdff30e36ecd605270840888e47ba955d22ae18625b7d63fe53f8",
+      "verifiedAt": "2026-09-23T04:01:29.142Z",
       "commands": [
         "cargo check/build knowledge and consumer; deterministic double build",
         "vitest run test/foundation-knowledge.test.ts"
@@ -1601,8 +1608,8 @@
       "package": "ledger",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "ba07b7b2abc2cedb6e65197d4463809bc8c55a3ea8c2989e1d82264b8748ba66",
-      "verifiedAt": "2026-09-23T03:26:01.752Z",
+      "fingerprint": "f59a3392748215e22fd4bc216216e7d782fd22df688b836b7a54a3a775882ef4",
+      "verifiedAt": "2026-09-23T04:00:01.097Z",
       "commands": [
         "cargo check/build ledger and consumer; deterministic double build",
         "vitest run test/foundation-ledger.test.ts"
@@ -1680,8 +1687,8 @@
       "package": "lineage",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "515ade6d953f87ddd4c4e66a8a4656a0a99ed1c0a4bb7d1b5311694eaa2ef3e9",
-      "verifiedAt": "2026-09-23T03:26:54.236Z",
+      "fingerprint": "d5d94d5f5bb7eb022b4b0846e769bba30ca50f9e6dcf56ad85eae629814d8fdd",
+      "verifiedAt": "2026-09-23T04:00:52.712Z",
       "commands": [
         "cargo check/build lineage and consumer; deterministic double build",
         "vitest run test/foundation-lineage.test.ts"
@@ -1759,8 +1766,8 @@
       "package": "master-data",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "96da495d460864fba5e53419e2b9c9ae1e6e459df627a7ecfd43893458ee8e09",
-      "verifiedAt": "2026-09-23T03:27:36.581Z",
+      "fingerprint": "5973272c92ca1d07e197557dd74ddaf747cb6f6409d6788beda33a4998f3a6fb",
+      "verifiedAt": "2026-09-23T04:01:34.735Z",
       "commands": [
         "cargo check/build master-data and consumer; deterministic double build",
         "vitest run test/foundation-master-data.test.ts"
@@ -1838,8 +1845,8 @@
       "package": "notifications",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "81678f3261b6f3151e74dc1996915e2762375031b688262191b7bfcdb8c5bbf2",
-      "verifiedAt": "2026-09-23T03:27:42.912Z",
+      "fingerprint": "c02314e82f10153478aad80e051c9603970c186281ab1d9dadf2a8e95d21d182",
+      "verifiedAt": "2026-09-23T04:01:39.404Z",
       "commands": [
         "cargo check/build notifications and consumer; deterministic double build",
         "vitest run test/foundation-notifications.test.ts"
@@ -1917,8 +1924,8 @@
       "package": "operations",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "43fbf29a2bb6c443d2728ad2566a45f0c04e8cbdcc8ee293588ef11693c8e408",
-      "verifiedAt": "2026-09-23T03:27:57.304Z",
+      "fingerprint": "101c763fa2bd551d9c872da054e7154523e715f3e5dff972f035101e52d403df",
+      "verifiedAt": "2026-09-23T04:01:48.670Z",
       "commands": [
         "cargo check/build operations and consumer; deterministic double build",
         "vitest run test/foundation-operations.test.ts"
@@ -1996,8 +2003,8 @@
       "package": "organization-workforce",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "0bdfe5cc47064f689a7a26464a61f63a757b37a3e56a681e9784f3a0508cc435",
-      "verifiedAt": "2026-09-23T03:28:10.882Z",
+      "fingerprint": "e52df2afb8c36fed28ae341b79585a681231ccd758afe9a3c60a7f9131749b20",
+      "verifiedAt": "2026-09-23T04:02:01.481Z",
       "commands": [
         "cargo check/build organization-workforce and consumer; deterministic double build",
         "vitest run test/foundation-organization-workforce.test.ts"
@@ -2075,8 +2082,8 @@
       "package": "participation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "0f46ec5c6b09df60627c46542f9b60f46026955803e24da9af7a9431a90ebc36",
-      "verifiedAt": "2026-09-23T03:25:20.505Z",
+      "fingerprint": "8b6ba209122ec1bd9dee2cdedb1e51fee34d94dff8f8264407b022ffdc11607e",
+      "verifiedAt": "2026-09-23T03:59:27.504Z",
       "commands": [
         "cargo check/build participation and consumer; deterministic double build",
         "vitest run test/foundation-participation-consumer.test.ts test/foundation-participation.test.ts"
@@ -2154,8 +2161,8 @@
       "package": "party",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "336f83ca4b8f3234fa52094f76254561912aad465f50ec99d33651586c86f243",
-      "verifiedAt": "2026-09-23T03:25:16.464Z",
+      "fingerprint": "22f4b8ca4f626bc92987e272a5450d07bed1a3e29375d0c9bf7b6a8fd39562c3",
+      "verifiedAt": "2026-09-23T03:59:23.716Z",
       "commands": [
         "cargo check/build party and consumer; deterministic double build",
         "vitest run test/foundation-party.test.ts"
@@ -2233,8 +2240,8 @@
       "package": "place",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "5c68750bbcfff5c0e93b089b38b7ead96a6b7991fc31e8282ad0813031abc471",
-      "verifiedAt": "2026-09-23T03:28:06.329Z",
+      "fingerprint": "accc1db95e5313a3604925e497df37a1fe325caec893c7f9c628a862d3172b5f",
+      "verifiedAt": "2026-09-23T04:01:56.858Z",
       "commands": [
         "cargo check/build place and consumer; deterministic double build",
         "vitest run test/foundation-place.test.ts"
@@ -2312,8 +2319,8 @@
       "package": "planning-budget",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "4c8f54ff425d9e663a3fbefd60339ba3c4cf569b5c13aaa8871e2e573031aa4c",
-      "verifiedAt": "2026-09-23T03:28:16.153Z",
+      "fingerprint": "7e3ee5b43829cab3cfcd46821473356d77d4cde4dd3505ecebb47cfd7b444a05",
+      "verifiedAt": "2026-09-23T04:02:06.627Z",
       "commands": [
         "cargo check/build planning-budget and consumer; deterministic double build",
         "vitest run test/foundation-planning-budget.test.ts"
@@ -2391,8 +2398,8 @@
       "package": "publication",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "09285c7b73b84bd1d53055baa5490d3b661132eedd742bb107bd2cb1a704365e",
-      "verifiedAt": "2026-09-23T03:27:21.614Z",
+      "fingerprint": "5c9c644880f2c7d204f59eead0d401ed38c622adb3d02df5b7aa8cf730c9e89c",
+      "verifiedAt": "2026-09-23T04:01:22.047Z",
       "commands": [
         "cargo check/build publication and consumer; deterministic double build",
         "vitest run test/foundation-publication.test.ts"
@@ -2470,8 +2477,8 @@
       "package": "qualification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "36b7121178ca3c9ef092e6dd68612dbface5355d6f136a2568fbba609faf4a90",
-      "verifiedAt": "2026-09-23T03:28:02.497Z",
+      "fingerprint": "731c65f806ebd0d22e7865ac806868f1243ef456e074430fe81086b2ccf1e5a5",
+      "verifiedAt": "2026-09-23T04:01:53.185Z",
       "commands": [
         "cargo check/build qualification and consumer; deterministic double build",
         "vitest run test/foundation-qualification.test.ts"
@@ -2549,8 +2556,8 @@
       "package": "quotation-pricing",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "8de911dadfe29a40d512f40fb3269065448f6add19cba8518ee4510c3e953a3f",
-      "verifiedAt": "2026-09-23T03:28:22.038Z",
+      "fingerprint": "a964c7ac8a30b69364baabe14ce4dfc8f2b3672f14930e8a521a93ce1d70824e",
+      "verifiedAt": "2026-09-23T04:02:15.081Z",
       "commands": [
         "cargo check/build quotation-pricing and consumer; deterministic double build",
         "vitest run test/foundation-quotation-pricing.test.ts"
@@ -2558,31 +2565,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "231cc2f968d2882c4dc67ece448e1806f07759d9f3862386258371d51e425d14"
+          "sha256": "f2f5e58bfa6d40df95e37036e407c48d6530d91171ad968159897b72d0f0d982"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "9a63e0a1dc101bdce3758a754c3f6e5743c4814058d20cbdce65a0415057cbf6"
+          "sha256": "924c3abc8969a528b3df09616f144357c8ac577f862f9ebc3bf0bc1dd25f50f9"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "2e2e345e759d57c620d47d53b6958e9b5c0507a59f6529feda727295e66e0e75"
+          "sha256": "abe20024a6ec3349b44194f99b7da2b73e3e28e5b3890f1f7573fcbd5081b4ee"
         },
         {
           "path": "first/client.ts",
-          "sha256": "91f1bcb6f2859108ff70df427f7ca540753f6ecc9e90cd6c7eda7a0c3dd0b5f2"
+          "sha256": "cd9f69b1844d9c18c834609b8c42eb5c17268687693892516426eee2d704f5aa"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "84f1b3e761d2dbdfd8dba84f0a310722856113e6063b7b24f375ab7cb714abf5"
+          "sha256": "a97f8fdecdee95f667808b4fbd237067f011eaf3908560e4228715040c809fac"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "c6cbcec5d40c3a18fca508139cd32ef2b00aa792ab4a0c28de9d8789aa0d1a7e"
+          "sha256": "a9a5978477b3caea856bafd196a010bb71a8b10ec41e13e7dfd1204cf9937628"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "9633737d4b68fe4674e5ac9e03b81744c5f0ce442e6cdf455e033d0b04ce80e6"
+          "sha256": "8f16098b01a88804ecf21c2b5f77689a1e197af070c26549dc8f872df40b5c95"
         },
         {
           "path": "first/README.md",
@@ -2590,31 +2597,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "e939fc6aadf4529673785ae1e622ed2fca118e9c9b296d2866ed4d7101d66ec3"
+          "sha256": "9b15df1cd1a18774b5ff92eba1d92738275f5af48f5072daaeca70773bb66698"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "2fcf41f02e8c5ada40d8b36149bd1f254da045814cfa5bdd4d4ead67744df80f"
+          "sha256": "79be4eb64ddcf815b7f475b546e7f0ce6111db0f7ed61c075f5fffeffc5bf2b0"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "ace6e455a0b510dc18ec8acd789c8db3616a1c9eac08c62cded8923d29ee08ae"
+          "sha256": "68bbab6b93f2fef82081e1c412be3512b1d9efcaff7e34c81e99ed0e63b3619d"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "b2331dfaef5b69ee0a1d47110308303e82eeda49beaf91f40ce27d6e21003542"
+          "sha256": "bc15f2c4a7c7d6966c069427c955381ad5562fcaec9d1d6c5b75f14635ff88af"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "92bbf308c96f57745e683bba36acec4698817882a3771d5be68aea9d2370fadd"
+          "sha256": "858a718dc51506f143d674f409f4a75ba14bd54757798fc3b2aef268424a5198"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "53a384a72bdf338ba4c9be8d902a9a7fc087d8c0170e4dbe1ccc5a5ac161ba16"
+          "sha256": "25cb5de34d34a3dc47eb1c88c352b271a0765bf7e246e79f57c1f39a97c0c51a"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "ec5007e04df996bf272ba9877b7f6075e761c4d4ff5a878b486ed5a77f9a699e"
+          "sha256": "25d8153feac9d099a79442c9bc018b3364f092431958f9a3db9c701e5f2144e9"
         },
         {
           "path": "consumer-first/README.md",
@@ -2628,8 +2635,8 @@
       "package": "reconciliation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "8af251c52add66314a8ee2889025fda982d8b6441454d751377b89e635511b40",
-      "verifiedAt": "2026-09-23T03:27:09.311Z",
+      "fingerprint": "0e4dba728ff86251ea9ab2c571846c9373ba5645260a414632df885ead69566c",
+      "verifiedAt": "2026-09-23T04:01:10.277Z",
       "commands": [
         "cargo check/build reconciliation and consumer; deterministic double build",
         "vitest run test/foundation-reconciliation.test.ts"
@@ -2739,8 +2746,8 @@
       "package": "risk",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "450582899f80dce2d27971a2d9fea5d26cc4585454624d5ed2d5f34d6ce0519f",
-      "verifiedAt": "2026-09-23T03:28:26.914Z",
+      "fingerprint": "46f71cfbbc755aac53083f567a2722de5e7ec198d16e9e3bcb99f3c7854e2270",
+      "verifiedAt": "2026-09-23T04:02:19.817Z",
       "commands": [
         "cargo check/build risk and consumer; deterministic double build",
         "vitest run test/foundation-risk.test.ts"
@@ -2818,8 +2825,8 @@
       "package": "routing",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "fb19be67764c7ae969c49ec51669a6fe4f141e661e07354c9d2657edf4197d07",
-      "verifiedAt": "2026-09-23T03:28:32.197Z",
+      "fingerprint": "7af3bdeb9b82c7bf2950a905336fedc738fa4ccea9dbeb97681f3a69d10cee23",
+      "verifiedAt": "2026-09-23T04:02:25.482Z",
       "commands": [
         "cargo check/build routing and consumer; deterministic double build",
         "vitest run test/foundation-routing.test.ts"
@@ -2897,8 +2904,8 @@
       "package": "scheduling",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "e927aa99b5a9402c5d0118e3ae508100f64bd653bcf6b8d7ce4b10ddbfcbdd2d",
-      "verifiedAt": "2026-09-23T03:28:37.543Z",
+      "fingerprint": "b2d54880a712e7eb353017b69400655c9b6760d4b0f72369a96062e84c6ab87d",
+      "verifiedAt": "2026-09-23T04:02:30.861Z",
       "commands": [
         "cargo check/build scheduling and consumer; deterministic double build",
         "vitest run test/foundation-scheduling.test.ts"
@@ -2976,8 +2983,8 @@
       "package": "selection",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "bc6307e2c025870ff417b6dfb2e3f2e95d1a2f4e0962f306ecc351ac3f9d3e71",
-      "verifiedAt": "2026-09-23T03:28:43.683Z",
+      "fingerprint": "7fd31b0a1d422d9095ccead5a6d7c843508d7d5d6ad5f8426f41d2004edab2c1",
+      "verifiedAt": "2026-09-23T04:02:37.199Z",
       "commands": [
         "cargo check/build selection and consumer; deterministic double build",
         "vitest run test/foundation-selection.test.ts"
@@ -2985,31 +2992,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "c9bf5fbbfd30ee3fd36585cf9e9bbdd5b9cca03d72c92fb69f4e1d872677583d"
+          "sha256": "9ea2d5b5d8c4212f60f9b824ccb320cbae5f0f00b9e925914bbc4cede0329dc0"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "d9e3c1a167e85acbbba3df9b36d308b612516f3b32ab6509cc76df240c7d723f"
+          "sha256": "2686e67aa446863c8f46f8655106c366c67d242255617002cd970d88c94bb12d"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "de2f142a3f549dc60ca9c9445b4029f865b777ebaeae9fe46e6020826f354982"
+          "sha256": "1ee522149aa87539254fe57c5e02d60d6cb4176836c54a7d6d58ef820c0f67ef"
         },
         {
           "path": "first/client.ts",
-          "sha256": "f7414ac0e2943baf10b96723c93592a174bd062ade71ae1457a7d1dc3b94e26e"
+          "sha256": "b95adcbb21f6cde7524a9b91b4e6c17a598fd72f73042daf45afff600c272694"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "852e80b2197ef98e920ceb05ae35bbb17af53ca2e64c555038fe74f1364ed1d4"
+          "sha256": "7a5945595426642d20c4356391acc0d1a0f99ee21df3cf306f7aa6be3769f647"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "50250bb6af4e120f028d6de7efbbb172790726386992cc9727b147672921330d"
+          "sha256": "a8880f4d75613722ffd7846115074db52b43207654e2059d368b0329ede5c23a"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "1323b6ecfed6a1e665691c3dba3e16e45855adbbff1f7823973fd211d8442c9c"
+          "sha256": "cd07e18d23b7e925ebd04635b2d7417ce9f2b9e1bce5e0c28c77d8766a0675d1"
         },
         {
           "path": "first/README.md",
@@ -3017,31 +3024,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "11a5df0da30ccfcdf25d1ed150ba53dc8e3e852f017cb8f14ba4fbb8e97b17cd"
+          "sha256": "546f530c477e6f3aa6ee3ea5b79b3f012a65d0aedfc973296d26c84f36281ad1"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "52ae3ce2eb54a5b43a45ec7fb269a91ede93e69b9664de88660fb01cb6d84fc5"
+          "sha256": "7ac4e4773968c7d31b025761310b885c9ceefd3c7120a3d6c82711b40c440776"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "580fc68cd1e0dd77cf91b402c72364e1fec89260c21e5e2e05dd65f636f775cf"
+          "sha256": "66095579663e8c910ac0cad6b01dea79d7601ea8de39b21e0d7768e7c8d6772d"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "e446551ce9d07112b6eb4dc1462378ce0b17458aeeb06ee829355f016d8a876c"
+          "sha256": "cef3e835cd1bb819e071a9a4c97d749a0f5ec2e4a5827c08d9dbbcc27e9b0cbe"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "a558246b5346699b8d1efce20b4aa6b256250e7c79f4684eac4afb3b698b4302"
+          "sha256": "c18c3c0feadf266f56d89298ccdde207c97f9ca0d8abeaca9fadb066877b4084"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "8afea63139f35fbd923743ed66db7a6cbe9cd950c122fac3ca0bfe9c7bcc99e7"
+          "sha256": "0544b9b5a0fe4f727aef8028b7c1238a8355b2b4b22dbf42e37eb135625be248"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "18f8dfa8ab96bb9015fe5a912b6c9ef72f2ad47f14b094cc96115942e64d6f29"
+          "sha256": "aa1e3527507c6c12d94611fcf2bdf15b1bedbd72c70174f16621c72d4f6e7820"
         },
         {
           "path": "consumer-first/README.md",
@@ -3055,8 +3062,8 @@
       "package": "service-level",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "c37794416a9e59e39fbfc915e9f8caf74a3468fe09e51ab5e3b304b57e19665e",
-      "verifiedAt": "2026-09-23T03:28:52.247Z",
+      "fingerprint": "46a4ef18376112dffd951343c6c417a28c26eab9b64c4b905380071ca70814fe",
+      "verifiedAt": "2026-09-23T04:02:45.072Z",
       "commands": [
         "cargo check/build service-level and consumer; deterministic double build",
         "vitest run test/foundation-service-level.test.ts"
@@ -3064,31 +3071,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "d974084ccebea2a0885dbef87b7e0850917412c2a6d8aad05c297e472ba8f142"
+          "sha256": "58ade16eb6bd72da1cd5598b19adacbbb6fa5bddf140639e084be0a78294998c"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "fb6c7b690bd0fcb0a7fa8664478ab486d8d6505118f54cc898ee26ab546dacd7"
+          "sha256": "3b656abdb11e6520041aa2d1c8e5e1df385b5b33053441b56efcc1720877b0cb"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "0bf5a78cee77032b3d191ce3429032ce5b367c0f24bd895169fa530879ab0a19"
+          "sha256": "b2fdcf98613b93c66213805be2b38d4275a2428040f6a178ac23ab7a4ead2eda"
         },
         {
           "path": "first/client.ts",
-          "sha256": "9bddefb0526a5684ba2cab2eb1fa75bdadf9db05a1674390d40c606d94f75fce"
+          "sha256": "bf54fbe781bde9ad7f5befcdd6dc055ee9c4a21e4a6a4b0e6507c5861f23ea67"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "88b7617c1d159ed995bef785f413ca2b80cdf0d462811ce2f426be9773d6d735"
+          "sha256": "fcf51debb039efc947f34fa3860634c9d97b752a7c45b21a72198cbe03b83736"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "a4192654d655c6ca51831b1e48e1931b6ec84d76e6783a160842c5c1698816ad"
+          "sha256": "25818b5796f94bf008e16792a5d4a936209b96bd0e19bd0a942cd7754e0ac152"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "51a198e5b75453fd06c721f2307b8929f5f0d4da3c51b65011ff64ffbfd01cd2"
+          "sha256": "f6377e1d60db7ea0548853ada6e6fab9897b3c7612a7fea16a68fd54d7a0bf1d"
         },
         {
           "path": "first/README.md",
@@ -3096,31 +3103,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "c672fd4f774ffa3e21af6700a28ea0462787287d45dd60a2b4a852397e1797e8"
+          "sha256": "d5bf35e559c0262381a15e7bc4b1f305333ef05754c53ab50e12dc37b8163327"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "0f0d14588c949ec2928a95889203df21f34879ca76461e8f9d543e8526f82aa8"
+          "sha256": "1b7a5f7317d859eeeb9711df596ace9cf02d8aec98b89a8a22c950835c61ec5d"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "d8e56163d462a486ecc63ae11ac01b86c04b212492d7fd67be0fdaf99eec1d9b"
+          "sha256": "d18520e7ccb669144f8718de8d17d8a775aae01ff019ca9aeb6206e90d08d2ca"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "5aa31e6888cd8ca01728855928a5fa4731b9c460e0e7c5e1df907117418c8315"
+          "sha256": "39223e351fd00ffc6a133857188fe3503103098bf91e7a12d5e2c1825f6cd1fd"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "a11675d63f3f65eaa2ddbbad7017a9f3b347ef15b8f2f6523bdbac82e98fc9bd"
+          "sha256": "6ba15c645e6c1525984a83bdb97854e5c900bd63d9bba4186c68884fca08db5a"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "8a48af8b216e62622f739cd4b09a5e21abd4b87e557c78390d7658b6160d7d75"
+          "sha256": "9dc1b90b3c2c040e6109955f792fe0f37ca77d288fd441f4601f432e4e910f2e"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "104494c0271d910bf12f43cc61fe4879a1b39075c3250ca3cfc6228ce820333a"
+          "sha256": "8484059233cebd341cca73a4f5dacca175a2a9c9c89af8288e578034e7422b53"
         },
         {
           "path": "consumer-first/README.md",
@@ -3134,8 +3141,8 @@
       "package": "specification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "cf774fa1ed58c99d7a7ee7ba38a6171c6821e1bfef55c717c4021665f1241ae0",
-      "verifiedAt": "2026-09-23T03:25:26.586Z",
+      "fingerprint": "721741a4f1636057a31bb634ec1ede7acae79a0243ff2b41217270ffdd5dada3",
+      "verifiedAt": "2026-09-23T03:59:32.854Z",
       "commands": [
         "cargo check/build specification and consumer; deterministic double build",
         "vitest run test/foundation-specification-consumer.test.ts test/foundation-specification-git.test.ts test/foundation-specification.test.ts"
@@ -3213,8 +3220,8 @@
       "package": "usage",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "4deea4899faf9bd39b7c73d6b250ef053f946c8e35aa44bc8f937725f6c3c563",
-      "verifiedAt": "2026-09-23T03:27:48.255Z",
+      "fingerprint": "333704bfb938abf76fe733870793a089efe0d714430a68d3006db445039e3333",
+      "verifiedAt": "2026-09-23T04:01:43.290Z",
       "commands": [
         "cargo check/build usage and consumer; deterministic double build",
         "vitest run test/foundation-usage.test.ts"
