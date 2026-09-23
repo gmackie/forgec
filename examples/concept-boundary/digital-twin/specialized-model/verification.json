@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "status": "static-interface-check-only",
+  "simulationExecuted": false,
+  "tool": {
+    "name": "Python standard library ElementTree",
+    "check": "XML parse, exact connector names/directions, matching Modelica declarations, three connections",
+    "version": "3.14.6"
+  },
+  "inputs": {
+    "ThermalPlant.mo": "d5f4fd591cef5519711673eb2f304223e382ab6bffe8bbdf30c64e4666702ab7",
+    "SystemStructure.ssd": "e6bd47984953230f8c252c38a897eab40712db51803431c23d538704951b388f",
+    "check_interface.py": "68b55c4380a8c75e6d8fa27b763ef6d9da9b2585419805adc410a2ac786e54b5"
+  },
+  "assertions": [
+    "XML is well formed and declares SSP 2.0",
+    "System/component connectors match expected names, directions and units",
+    "Modelica input/output declarations match names, directions and units",
+    "Connection endpoints match the exact three declared links"
+  ],
+  "modelicaCompiler": {
+    "available": false,
+    "probe": "command -v omc"
+  },
+  "limitations": [
+    "Not Modelica compilation.",
+    "Not SSP XSD validation.",
+    "No FMU supplied; no FMI interface conformance test.",
+    "No numerical simulation or physical validity result."
+  ],
+  "command": "python3 examples/concept-boundary/digital-twin/specialized-model/check_interface.py"
+}

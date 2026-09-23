@@ -1,0 +1,590 @@
+{
+  "version": "concept-ir/2",
+  "package": "@boundary/hardware-dataflow",
+  "entities": {
+    "@boundary/hardware-dataflow/_/PipelineValidation": {
+      "name": "PipelineValidation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "requestDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "artifactDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "status": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "reportDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/hardware-dataflow/_/PipelineValidationRecorded": {
+      "name": "PipelineValidationRecorded",
+      "fields": {
+        "runId": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reportDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/hardware-dataflow/_/HDLToolchain": {
+      "name": "HDLToolchain",
+      "data": {
+        "report": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/hardware-dataflow/_/PipelineReport"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Completed"
+      ],
+      "accepts": {
+        "request": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/hardware-dataflow/_/PipelineRequest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@boundary/hardware-dataflow/_/ValidatePipeline": {
+      "name": "ValidatePipeline",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/hardware-dataflow/_/ValidatePipeline#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/hardware-dataflow/_/PipelineRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@boundary/hardware-dataflow/_/ValidatePipeline#input:request": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/hardware-dataflow/_/PipelineRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/hardware-dataflow/_/ValidatePipeline#output:request": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/hardware-dataflow/_/PipelineRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/hardware-dataflow/_/HDLToolchain"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/hardware-dataflow/_/RecordPipelineValidation": {
+      "name": "RecordPipelineValidation",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#activation:completed": {
+          "kind": "externalEvent",
+          "external": "@boundary/hardware-dataflow/_/HDLToolchain",
+          "event": "Completed"
+        }
+      },
+      "inputs": {
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#input:report": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/hardware-dataflow/_/PipelineReport"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/hardware-dataflow/_/HDLToolchain"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:record": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/hardware-dataflow/_/PipelineValidation",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:recorded": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/hardware-dataflow/_/PipelineValidationRecorded"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/hardware-dataflow/_/PipelineRequest": {
+      "runId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "rtlDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "testbenchDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "constraintsDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "toolIdentity": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "inputVectorDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/hardware-dataflow/_/PipelineReport": {
+      "runId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "requestDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "rtlDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "status": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "traceDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "acceptedSamples": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "emittedSamples": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "maxOccupancy": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {}
+}

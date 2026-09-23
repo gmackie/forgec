@@ -1,0 +1,11 @@
+# Network control-plane reconciliation
+
+A managed network service has an admitted desired configuration and asynchronously observed device state. An operator changes a routing policy; controllers observe a topology generation, compute a compatible route set, and issue revision-conditioned commands. The service is converged only when observations confirm the intended revision and required reachability, not when an RPC returns success.
+
+AdmitIntent owns NetworkIntent. ObserveDevices owns ObservedTopology and records device generation/sample time separately from local knowledge time. ReconcileNetwork emits ReconcileDecision, while ApplyNetworkPlan owns immutable ApplicationAttempt records. Desired and observed state are different authorities; neither overwrites the other. Ten controller replicas are realizations of the same logical process owners, not ten semantic producers of one entity.
+
+Operations include admit a desired revision, accept/reject telemetry by generation, compute an Apply/NoChange/Wait/Reject decision, issue a command with expected observed generation and controller epoch, and reconcile its receipt. Lost acknowledgments retry a stable idempotency key and require readback; they do not imply device failure or success. A partition, topology flap, stale observation, unsupported device feature and superseded desired revision remain distinguishable explanations.
+
+The typed graph deliberately does not assert atomic multi-device updates, guaranteed eventual delivery, election correctness or convergence under permanently changing intent. Reconciliation may repeatedly produce Wait. The convergence proposal requires explicit environmental assumptions. Network ownership and scope authorization are realization obligations beyond the illustrative BoundaryOperator policy.
+
+Request/admit protocol: ReconcileNetwork's solution input is optional. Intent/topology changes export routeRequest; no Apply decision may be emitted without a solution matching current topologyDigest and routingPolicyDigest. SolutionReady reactivates admission and emits a decision without resubmitting the same request. Obsolete replies are discarded. The L1 adapter retains pending intent/observation correlation and bounds requests. These branch rules are documented requirements, not execution implemented by null behavior bodies.

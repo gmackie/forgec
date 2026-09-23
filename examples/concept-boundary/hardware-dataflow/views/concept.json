@@ -1,0 +1,61 @@
+{
+  "nodes": {
+    "@boundary/hardware-dataflow/_/HDLToolchain": "external",
+    "@boundary/hardware-dataflow/_/PipelineReport": "reference",
+    "@boundary/hardware-dataflow/_/PipelineRequest": "reference",
+    "@boundary/hardware-dataflow/_/PipelineValidation": "entity",
+    "@boundary/hardware-dataflow/_/PipelineValidationRecorded": "fact",
+    "@boundary/hardware-dataflow/_/RecordPipelineValidation": "process",
+    "@boundary/hardware-dataflow/_/ValidatePipeline": "process"
+  },
+  "edges": [
+    {
+      "from": "@boundary/hardware-dataflow/_/HDLToolchain",
+      "to": "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+      "port": "@boundary/hardware-dataflow/_/RecordPipelineValidation#activation:completed",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/hardware-dataflow/_/HDLToolchain",
+      "to": "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+      "port": "@boundary/hardware-dataflow/_/RecordPipelineValidation#input:report",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/hardware-dataflow/_/PipelineReport",
+      "to": "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+      "port": "@boundary/hardware-dataflow/_/RecordPipelineValidation#input:report",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/hardware-dataflow/_/PipelineRequest",
+      "to": "@boundary/hardware-dataflow/_/ValidatePipeline",
+      "port": "@boundary/hardware-dataflow/_/ValidatePipeline#input:request",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+      "to": "@boundary/hardware-dataflow/_/PipelineValidation",
+      "port": "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:record",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+      "to": "@boundary/hardware-dataflow/_/PipelineValidationRecorded",
+      "port": "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:recorded",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/hardware-dataflow/_/ValidatePipeline",
+      "to": "@boundary/hardware-dataflow/_/HDLToolchain",
+      "port": "@boundary/hardware-dataflow/_/ValidatePipeline#output:request",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/hardware-dataflow/_/ValidatePipeline",
+      "to": "@boundary/hardware-dataflow/_/PipelineRequest",
+      "port": "@boundary/hardware-dataflow/_/ValidatePipeline#output:request",
+      "kind": "export"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+flowchart LR
+  VerificationRequest --> CheckProtocol
+  CheckProtocol -->|request export| TLC
+  TLC -->|Completed report| RecordVerification
+  RecordVerification --> VerificationRun
+  RecordVerification --> VerificationRunRecorded
+  ClientCommand --> ProposeCommand --> ProtocolEngine
+  ProtocolEngine -->|CommitCertificate| ApplyCommitted
+  ApplyCommitted --> ReplicatedState
+  ApplyCommitted --> CommandCommitted

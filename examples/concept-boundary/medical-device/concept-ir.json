@@ -1,0 +1,628 @@
+{
+  "version": "concept-ir/2",
+  "package": "@boundary/medical-device",
+  "entities": {
+    "@boundary/medical-device/_/TherapyMode": {
+      "name": "TherapyMode",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "mode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "lastSequence": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "approvalRevision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@boundary/medical-device/_/ApprovedTherapy": {
+      "name": "ApprovedTherapy",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "prescriptionDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "limitProfileDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/medical-device/_/TherapyDecision": {
+      "name": "TherapyDecision",
+      "fields": {
+        "sequence": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "approvalRevision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "selectedMode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/medical-device/_/PumpIO": {
+      "name": "PumpIO",
+      "data": {
+        "sample": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/medical-device/_/PumpSample"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Tick"
+      ],
+      "accepts": {
+        "command": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/medical-device/_/PumpIntent"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@boundary/medical-device/_/ApproveTherapy": {
+      "name": "ApproveTherapy",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/medical-device/_/ApproveTherapy#activation:approval": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/medical-device/_/ApprovedTherapy",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@boundary/medical-device/_/ApproveTherapy#output:approval": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/medical-device/_/ApprovedTherapy",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/medical-device/_/ReactToTherapyTick": {
+      "name": "ReactToTherapyTick",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/medical-device/_/ReactToTherapyTick#activation:tick": {
+          "kind": "externalEvent",
+          "external": "@boundary/medical-device/_/PumpIO",
+          "event": "Tick"
+        }
+      },
+      "inputs": {
+        "@boundary/medical-device/_/ReactToTherapyTick#input:sample": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/medical-device/_/PumpSample"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/medical-device/_/PumpIO"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/medical-device/_/ReactToTherapyTick#input:approval": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/medical-device/_/ApprovedTherapy",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/medical-device/_/ReactToTherapyTick#input:previous": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/medical-device/_/TherapyMode",
+              "representation": "record"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/medical-device/_/ReactToTherapyTick#output:state": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/medical-device/_/TherapyMode",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@boundary/medical-device/_/ReactToTherapyTick#output:decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/medical-device/_/TherapyDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/medical-device/_/ReactToTherapyTick#output:command": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/medical-device/_/PumpIntent"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/medical-device/_/PumpIO"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/medical-device/_/PumpSample": {
+      "sampleSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "capturedAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "occlusionDetected": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "doorClosed": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "watchdogHealthy": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/medical-device/_/PumpIntent": {
+      "sequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "deliveryEnable": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "alarmRequired": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {}
+}

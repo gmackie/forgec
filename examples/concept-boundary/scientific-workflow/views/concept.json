@@ -1,0 +1,291 @@
+{
+  "nodes": {
+    "@boundary/scientific-workflow/_/ArtifactManifest": "reference",
+    "@boundary/scientific-workflow/_/ArtifactRegistered": "fact",
+    "@boundary/scientific-workflow/_/ArtifactStore": "external",
+    "@boundary/scientific-workflow/_/AttemptRecorded": "fact",
+    "@boundary/scientific-workflow/_/BoundaryOperator": "principal",
+    "@boundary/scientific-workflow/_/CollectExperiment": "process",
+    "@boundary/scientific-workflow/_/CollectionPublished": "fact",
+    "@boundary/scientific-workflow/_/ExecuteMember": "process",
+    "@boundary/scientific-workflow/_/ExpandSweep": "process",
+    "@boundary/scientific-workflow/_/Experiment": "entity",
+    "@boundary/scientific-workflow/_/HpcExecutor": "external",
+    "@boundary/scientific-workflow/_/JobRequest": "reference",
+    "@boundary/scientific-workflow/_/JobResult": "reference",
+    "@boundary/scientific-workflow/_/MayCollectExperiment": "policy",
+    "@boundary/scientific-workflow/_/MayExecuteMember": "policy",
+    "@boundary/scientific-workflow/_/MayExpandSweep": "policy",
+    "@boundary/scientific-workflow/_/MayRegisterArtifact": "policy",
+    "@boundary/scientific-workflow/_/MayRegisterExperiment": "policy",
+    "@boundary/scientific-workflow/_/RegisterArtifact": "process",
+    "@boundary/scientific-workflow/_/RegisterExperiment": "process",
+    "@boundary/scientific-workflow/_/SweepMember": "fact"
+  },
+  "edges": [
+    {
+      "from": "@boundary/scientific-workflow/_/ArtifactManifest",
+      "to": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "port": "@boundary/scientific-workflow/_/RegisterArtifact#input:manifest",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/ArtifactRegistered",
+      "to": "@boundary/scientific-workflow/_/CollectExperiment",
+      "port": "@boundary/scientific-workflow/_/CollectExperiment#input:artifacts",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/ArtifactStore",
+      "to": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "port": "@boundary/scientific-workflow/_/RegisterArtifact#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/ArtifactStore",
+      "to": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "port": "@boundary/scientific-workflow/_/RegisterArtifact#input:manifest",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/AttemptRecorded",
+      "to": "@boundary/scientific-workflow/_/CollectExperiment",
+      "port": "@boundary/scientific-workflow/_/CollectExperiment#input:attempts",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/AttemptRecorded",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#input:prior",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/AttemptRecorded",
+      "to": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "port": "@boundary/scientific-workflow/_/RegisterArtifact#input:attempt",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "to": "@boundary/scientific-workflow/_/CollectExperiment",
+      "port": "@boundary/scientific-workflow/_/CollectExperiment",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "to": "@boundary/scientific-workflow/_/ExpandSweep",
+      "port": "@boundary/scientific-workflow/_/ExpandSweep",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "to": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "port": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "to": "@boundary/scientific-workflow/_/RegisterExperiment",
+      "port": "@boundary/scientific-workflow/_/RegisterExperiment",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/CollectExperiment",
+      "to": "@boundary/scientific-workflow/_/CollectionPublished",
+      "port": "@boundary/scientific-workflow/_/CollectExperiment#output:collection",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/ExecuteMember",
+      "to": "@boundary/scientific-workflow/_/AttemptRecorded",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#output:attempt",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/ExecuteMember",
+      "to": "@boundary/scientific-workflow/_/HpcExecutor",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#output:job",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/ExecuteMember",
+      "to": "@boundary/scientific-workflow/_/JobRequest",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#output:job",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/ExpandSweep",
+      "to": "@boundary/scientific-workflow/_/SweepMember",
+      "port": "@boundary/scientific-workflow/_/ExpandSweep#output:member",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/Experiment",
+      "to": "@boundary/scientific-workflow/_/CollectExperiment",
+      "port": "@boundary/scientific-workflow/_/CollectExperiment#input:experiment",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/Experiment",
+      "to": "@boundary/scientific-workflow/_/ExpandSweep",
+      "port": "@boundary/scientific-workflow/_/ExpandSweep#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/Experiment",
+      "to": "@boundary/scientific-workflow/_/ExpandSweep",
+      "port": "@boundary/scientific-workflow/_/ExpandSweep#input:experiment",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/Experiment",
+      "to": "@boundary/scientific-workflow/_/RegisterExperiment",
+      "port": "@boundary/scientific-workflow/_/RegisterExperiment#input:current",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/HpcExecutor",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#activation:finished",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/HpcExecutor",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#input:result",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/JobResult",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#input:result",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayCollectExperiment",
+      "to": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "port": "@boundary/scientific-workflow/_/MayCollectExperiment",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayCollectExperiment",
+      "to": "@boundary/scientific-workflow/_/CollectExperiment",
+      "port": "@boundary/scientific-workflow/_/CollectExperiment",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayCollectExperiment",
+      "to": "@boundary/scientific-workflow/_/CollectionPublished",
+      "port": "@boundary/scientific-workflow/_/MayCollectExperiment",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayExecuteMember",
+      "to": "@boundary/scientific-workflow/_/AttemptRecorded",
+      "port": "@boundary/scientific-workflow/_/MayExecuteMember",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayExecuteMember",
+      "to": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "port": "@boundary/scientific-workflow/_/MayExecuteMember",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayExecuteMember",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayExpandSweep",
+      "to": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "port": "@boundary/scientific-workflow/_/MayExpandSweep",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayExpandSweep",
+      "to": "@boundary/scientific-workflow/_/ExpandSweep",
+      "port": "@boundary/scientific-workflow/_/ExpandSweep",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayExpandSweep",
+      "to": "@boundary/scientific-workflow/_/SweepMember",
+      "port": "@boundary/scientific-workflow/_/MayExpandSweep",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayRegisterArtifact",
+      "to": "@boundary/scientific-workflow/_/ArtifactRegistered",
+      "port": "@boundary/scientific-workflow/_/MayRegisterArtifact",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayRegisterArtifact",
+      "to": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "port": "@boundary/scientific-workflow/_/MayRegisterArtifact",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayRegisterArtifact",
+      "to": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "port": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayRegisterExperiment",
+      "to": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "port": "@boundary/scientific-workflow/_/MayRegisterExperiment",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayRegisterExperiment",
+      "to": "@boundary/scientific-workflow/_/Experiment",
+      "port": "@boundary/scientific-workflow/_/MayRegisterExperiment",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/MayRegisterExperiment",
+      "to": "@boundary/scientific-workflow/_/RegisterExperiment",
+      "port": "@boundary/scientific-workflow/_/RegisterExperiment",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/RegisterArtifact",
+      "to": "@boundary/scientific-workflow/_/ArtifactRegistered",
+      "port": "@boundary/scientific-workflow/_/RegisterArtifact#output:artifact",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/RegisterExperiment",
+      "to": "@boundary/scientific-workflow/_/Experiment",
+      "port": "@boundary/scientific-workflow/_/RegisterExperiment#output:experiment",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/SweepMember",
+      "to": "@boundary/scientific-workflow/_/CollectExperiment",
+      "port": "@boundary/scientific-workflow/_/CollectExperiment#input:members",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/SweepMember",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/scientific-workflow/_/SweepMember",
+      "to": "@boundary/scientific-workflow/_/ExecuteMember",
+      "port": "@boundary/scientific-workflow/_/ExecuteMember#input:member",
+      "kind": "input"
+    }
+  ]
+}

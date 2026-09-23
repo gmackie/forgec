@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Interface sketch: resources/ThermalPlant.fmu is intentionally not supplied. -->
+<ssd:SystemStructureDescription xmlns:ssd="http://ssp-standard.org/SSP1/SystemStructureDescription"
+ xmlns:ssc="http://ssp-standard.org/SSP1/SystemStructureCommon" name="ThermalTwin" version="2.0">
+ <ssd:System name="Plant">
+  <ssd:Connectors>
+   <ssd:Connector name="heatFlow" kind="input"><ssc:Real unit="W"/></ssd:Connector>
+   <ssd:Connector name="ambientTemperature" kind="input"><ssc:Real unit="K"/></ssd:Connector>
+   <ssd:Connector name="temperature" kind="output"><ssc:Real unit="K"/></ssd:Connector>
+  </ssd:Connectors>
+  <ssd:Elements>
+   <ssd:Component name="thermal" source="resources/ThermalPlant.fmu" type="application/x-fmu-sharedlibrary">
+    <ssd:Connectors>
+     <ssd:Connector name="heatFlow" kind="input"><ssc:Real unit="W"/></ssd:Connector>
+     <ssd:Connector name="ambientTemperature" kind="input"><ssc:Real unit="K"/></ssd:Connector>
+     <ssd:Connector name="temperature" kind="output"><ssc:Real unit="K"/></ssd:Connector>
+    </ssd:Connectors>
+   </ssd:Component>
+  </ssd:Elements>
+  <ssd:Connections>
+   <ssd:Connection startConnector="heatFlow" endElement="thermal" endConnector="heatFlow"/>
+   <ssd:Connection startConnector="ambientTemperature" endElement="thermal" endConnector="ambientTemperature"/>
+   <ssd:Connection startElement="thermal" startConnector="temperature" endConnector="temperature"/>
+  </ssd:Connections>
+ </ssd:System>
+ <ssd:DefaultExperiment startTime="0" stopTime="100"/>
+ <ssd:Units>
+  <ssc:Unit name="K"><ssc:BaseUnit K="1"/></ssc:Unit>
+  <ssc:Unit name="W"><ssc:BaseUnit kg="1" m="2" s="-3"/></ssc:Unit>
+ </ssd:Units>
+</ssd:SystemStructureDescription>

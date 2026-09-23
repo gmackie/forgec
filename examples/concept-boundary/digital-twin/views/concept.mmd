@@ -1,0 +1,6 @@
+flowchart LR
+  SimulationRequest --> RunPlantSimulation
+  RunPlantSimulation -->|request export| SimulationMaster
+  SimulationMaster -->|Completed report| RecordSimulation
+  RecordSimulation --> SimulationRun
+  RecordSimulation --> SimulationRunRecorded

@@ -1,0 +1,8 @@
+flowchart LR
+  ApproveTherapy --> ApprovedTherapy
+  PumpIO -->|Tick and PumpSample| ReactToTherapyTick
+  ApprovedTherapy --> ReactToTherapyTick
+  TherapyMode -->|previous| ReactToTherapyTick
+  ReactToTherapyTick --> TherapyMode
+  ReactToTherapyTick --> TherapyDecision
+  ReactToTherapyTick -->|PumpIntent| PumpIO
