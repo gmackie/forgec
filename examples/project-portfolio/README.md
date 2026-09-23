@@ -10,6 +10,6 @@ Group updates, contribution revision and projection progress commit atomically t
 
 Projection sources must be versioned. Event retries compare ledger versions and re-read current source state. Rebuild retains the existing generation-switch mechanism and refuses to publish after exceeding its source-page limit. Concurrent rebuild snapshot/cutover coordination and recovery of abandoned rebuild generations still need further work.
 
-Runtime regression fixtures exercise filtered counts, sums, boolean existence, extrema, latest, removal, duplicate events and rebuild. Atomic document rollback is tested against memory and SQLite. Live provider integration suites need their configured harnesses.
+Runtime regression fixtures exercise filtered counts, sums, boolean existence, extrema, latest, removal, duplicate events and rebuild against memory, SQLite and real PostgreSQL through raw-pg and Drizzle (when FORGE_PG_URL is configured). Atomic document rollback is tested against memory and SQLite. DynamoDB and live Cloudflare conformance remain outstanding.
 
 Bounded joins/reference traversal, top-N/ranking and full EnvironmentState composition remain outstanding in #10. The new aggregate semantics are marked `projection-aggregates/1`, so older runtimes reject affected artifacts rather than misinterpreting them.

@@ -29,3 +29,7 @@ require compatibility and existing-data review before rollout.
 
 Build: `cargo run -p forgegraph-cli --bin forgec -- build examples/collections`.
 Runtime tests use the tracked fixture in `conformance/fixtures/collections`.
+
+Storage conformance runs the same round-trip and record-size checks against memory,
+SQLite and real PostgreSQL through raw-pg and Drizzle. PostgreSQL runs when
+FORGE_PG_URL is configured, using an isolated schema per test.

@@ -1,6 +1,6 @@
+import { featureAdapters, featureStorage, unavailable } from "./helpers/feature-storage.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { Effect } from "effect";
 import { expect, it, vi } from "vitest";
 import { DynamoDBDocumentClient, type TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
@@ -8,8 +8,6 @@ import { DynamoStorage } from "../src/adapters/dynamodb.js";
 import { Engine } from "../src/engine.js";
 import { Model, type AppBundle } from "../src/model.js";
 import { MemoryStorage } from "../src/adapters/memory.js";
-import { D1Storage } from "../src/adapters/d1.js";
-import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
 import { testLayer } from "../src/testing.js";
 const root = resolve(import.meta.dirname,"../../../conformance/fixtures/deployment-lanes");
 const bundle = JSON.parse(readFileSync(resolve(root,"app.json"),"utf8")) as AppBundle;
@@ -18,23 +16,10 @@ const resource = "@dogfood/deployments/_/Deployment";
 const ctx = { tenant:"test",actor:"operator",requestId:"request" };
 const inputs = {application:"forge",stage:"production",target:"cloudflare"};
 
-for (const adapter of ["memory","sqlite"] as const) {
-  it(`${adapter}: atomically claims a lane and releases it on terminal transition`,async()=>{
-    const db = new DatabaseSync(":memory:");
-    db.exec(readFileSync(resolve(root,"d1/0001_init.sql"),"utf8"));
-    const runSql = (s:SqlStatement) => ({changes:Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes)});
-    const executor:SqlExecutor = {
-      facade:"sqlite-test",
-      first:async<T>(s:SqlStatement)=> (db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T|null,
-      all:async<T>(s:SqlStatement)=> db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
-      run:async(s)=>runSql(s),
-      batch:async(statements)=>{
-        db.exec("BEGIN");
-        try {const results=statements.map(runSql);db.exec("COMMIT");return results;}
-        catch(error){db.exec("ROLLBACK");throw error;}
-      },
-    };
-    const storage = adapter === "memory" ? new MemoryStorage() : new D1Storage(executor,model);
+for (const adapter of featureAdapters) {
+  it.skipIf(unavailable(adapter))(`${adapter}: atomically claims a lane and releases it on terminal transition`,async()=>{
+    const {storage,close}=await featureStorage("deployment-lanes",model,adapter);
+    try {
     // A stale version on the last document must roll back earlier writes too.
     await Effect.runPromise(storage.putDocument("test","atomic","existing",{value:1},null));
     await expect(Effect.runPromise(storage.putDocuments("test",[
@@ -45,7 +30,6 @@ for (const adapter of ["memory","sqlite"] as const) {
     expect(await Effect.runPromise(storage.getDocument("test","atomic","existing"))).toMatchObject({value:1});
     const engine = new Engine(model,testLayer(storage));
     const call = (op:string, input:Record<string,unknown>,tenant="test")=>Effect.runPromise(engine.call(`${resource}.${op}`,input,{...ctx,tenant}));
-    try {
       const attempts = await Promise.allSettled(Array.from({length:8},()=>call("create",inputs)));
       expect(attempts.filter(a=>a.status==="fulfilled")).toHaveLength(1);
       expect(attempts.filter(a=>a.status==="rejected")).toHaveLength(7);
@@ -62,7 +46,7 @@ for (const adapter of ["memory","sqlite"] as const) {
       await call("update",{id:second["id"],expectedVersion:2,patch:{stage:"staging"}});
       await call("create",inputs);
       await expect(call("create",{...inputs,stage:"staging"})).rejects.toThrow();
-    } finally {db.close();}
+    } finally {await close();}
   });
 }
 
