@@ -1,0 +1,3291 @@
+{
+  "version": 1,
+  "sourceCommit": "b0a9f27f376657b58a849287c31b75092c664d16",
+  "verifiedAt": "2026-09-23T03:29:43.549Z",
+  "profile": "memory, SQLite and local PostgreSQL17; individual legacy tests may cover fewer adapters",
+  "runtime": {
+    "passed": 531,
+    "skipped": 104
+  },
+  "rust": {
+    "passed": 155
+  },
+  "harness": {
+    "passed": 13
+  },
+  "hostedProviders": "not certified",
+  "remainingReleaseGates": "https://github.com/gmackie/forgec/issues/71",
+  "reports": [
+    {
+      "version": 1,
+      "package": "adjudication",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "9138011e171e165ff6861454aca67f5e65b5fbc698429f4bcb231af609ee6108",
+      "verifiedAt": "2026-09-23T03:26:17.337Z",
+      "commands": [
+        "cargo check/build adjudication and consumer; deterministic double build",
+        "vitest run test/foundation-adjudication.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "44234b56a28cdc62c462e1b8f513a103a5ef065fbaeb076c12683379853d0040"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "ddb3452c2eb37098c306e1b376dc832692229c07c916b915454e93ea8fc9f442"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "f018141b44e1b75a5cf3b816358e22da7d3b5487b517eae73a8a8a3e7d8e3249"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "17d463e5f5ae6c016101570ba6efaf6444cce25b1dab6407dc67112cb725809c"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "913db8a3935e8d917750159f040ec99e2ab6926642dcbc539424873cac205a85"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "4e9c740739b1186e09b35cee5efd51c427f5b35ec2e1786f21f00988b820271d"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "b239bdf2e8f13f2bb2ca1b444330150c7fcf75c2dde3aff1be0062b4169693f4"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "c8fad8f0f443c348898c798e03c6d2b930ea17157254d956d1517b8057882f51"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "c1c57c7c26a17967dac13558e9c7d73b4b1419a6e35fd6d9b3f58aba3fb48857"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "7d0fbb9d8d5f394593aa8c61b802f2b34d7d5d33639859f48485ea8f16fa2b10"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "f1531e5eceed551b424f9ae54219ab70326e8c34a2260521310326e64e510994"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "b1161ffea30d6791a19aa10a53726071da40f12d9f30cef5f89b2cc7907c114d"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "1e7e8c90678fc5ab3284958eeb2ce473ca80ae7b8651b197df4bd8926094aa0f"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "9cd2a779290cbb8b7a7c244e25aae0edd3b3cb77beebdf748777b8f5a8b98466"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "agreement-catalog",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "0a9230d0dc15471f76936d664b4904ec0a32d831073034d86a5740ef63e1dbb1",
+      "verifiedAt": "2026-09-23T03:26:25.093Z",
+      "commands": [
+        "cargo check/build agreement-catalog and consumer; deterministic double build",
+        "vitest run test/foundation-agreement-catalog.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "fe82fb5029434abd0c2bcb3260469ac6dac3b678c3172e93c6b8156857a9d85f"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "2ac10a4da37bdaba6f7ff3d10ae82bb05702fa368d621aa59eff64139a3438db"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "bc751fa2a1484d5f3d8d3035de0c6ff39d02bb5faf0e7c932ad0e9837374b119"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "04437e97a78d404ce4f16e9714f1c9aa58a130bc804ef61ef5b57277169547e3"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "7fe9c94f1d4650b55db4852aed15ee261e7b688c64eb1ae946dabc8864235567"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "eb7643ab1e5d09195660d399a308246ad9de2fc2753635d6c37557168901f81b"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "1b8aebb0cbde5e2855895bfda36e49e1df592113ee433e383b3032e4402b61fc"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "bb99d1eb28e42776b922dc1e7c45ab616cbc902632ced5c238dfe5f0ac064439"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "71b0d518fd9aa3f4d466c3fdbef6f28c81e372b2c91cc2e6ac5c413a58140a40"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "fe6f927216e567998705cb30d945d5fe23304088f24742a10a1f53c910ce537f"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "7fad82fc39d6c262fbaad525f5e9b64998c37fe7cf8efbb875d5d28536294eae"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "f50833e0158fe2a27c65f6f9c0b13dc4171d3cc7a52894ccf555242700c66f91"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "80dd9d7033a3141c7348e97a839e0611597733c0ddd94f01529c2abb78afe78a"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "ce0c9d18a50d9ed72328ff665d8e7db0b234e03a2915872889ddf8df90e9c60f"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "allocation",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "48487553098112e472cf09fa76f29326e28553c895ef32afe11cc286bc913cdc",
+      "verifiedAt": "2026-09-23T03:26:28.754Z",
+      "commands": [
+        "cargo check/build allocation and consumer; deterministic double build",
+        "vitest run test/foundation-allocation.test.ts test/foundation-authorized-atomic.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "3979d22d0084b131982ddb3d7228f0d73762137bab996ec4af2deab9991cebe8"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "49c052f6af1374e75270579db5b2186aaffa5a388f768db00c472ed422b9659b"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "cb1d00c3766ec8b1f3fa418290b272d6d8162e4e04c4589861cba07dca6e3580"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "0056b0bffc2db7c66efe0769d4a9e2511e9296601f98614468f97ab64b15cd5e"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "80516d048d4228a5202ef9633725b9c05f934fab0b77b2bddf93d9f7587f38a8"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "546384a70ef58bef2dcd6c6657ddbbe139beed17fbe8d62297c67107014702f8"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "a8c85fa201172570500fd187950aa6f518fd23bfbdd26491d6a70e757615dcaf"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "acbb7adaf8ac7e5f4cae8326e4271cf508732d76a04f2ac2358bc5639ca2dc35"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "061f009ec079b764daa329b5f5bd7be4afa60febe7494745e517443c7ae2fbca"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "7712ae532c11de6b0089f63a32e2a759c6cb769a4bbe77ce5363c11b853eac0e"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "5146125624d7814beedc908680ef136e579827ed7bbdc20787a4f559bb298ddd"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "4408549d40bcb7bf2cf131fe372a3c8abfafab2381b0c2574bb3beabb2be5083"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "073eb520c4fe9b0881b7f0ab282ef371d440c16ea2a3d76b252c9f625bfa5bc6"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "cbca5c46c910e2f9c0d239c6842df9bfbbd8280681e730d5e817aa297af80479"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "artifact",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "fee9ad80e0b268516189ec479921ae38ec09f2b2d0020fe68bdbdc06cd2d3710",
+      "verifiedAt": "2026-09-23T03:25:30.133Z",
+      "commands": [
+        "cargo check/build artifact and consumer; deterministic double build",
+        "vitest run test/foundation-artifact-consumer.test.ts test/foundation-artifact.test.ts test/blobs.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "df07218fcff96abc843b8b1cb644dd2292f54009070dd4075913b44c3fff26a1"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "a4b282aa76fb0dc522316e7335ab5ca14ec6355390b2bb6eef8c013ff8827c0f"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "7486249f8b2ef93753867fff007a1423489edab23ffa8811dad0b2bff3932cd3"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "85af7ff00851ad5b56a64b7b10916434669471bcce849fc70bafabca17489d56"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "407972b4b4e0ca7ba475ae4dc7a46508f1c3afde612c4f42f651cb53496ad62a"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "966bd08616035c0920bfc471e548d10081b0bd9e09d4686feec7b00e6143cade"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "0dd33232df4dc8d3f43645c94fd24dbac86ebc619f7145312a54d7cbe6a30776"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "d4a697dd24f49d6f4f7c5671f7e52d6b3d91cd3d6240c6f2d8dd9d6635d947ef"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "a117bdad5fe4665882f86ae64d077b525404a6a827f58e684df51023ce2ba3df"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "d0b131eb261ec58b01a777ae79127544e9ce8c7cf9608b2d3ff59f412adec5bc"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "0e3de5e88899e0c271748839893b80f6a2848b4a6a0363e622e4852615c02e7d"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "fb05fcfa5164af5f0b2facc3d3089172137dc77699d80547e50a14d612468a60"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "5a4348cbe4538c6db76eb5fdc04be42ceedb67cab96ffc15d33331b98a9501eb"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "a0dee4a00f4d1efc851cbe588ec70586cc1aa6feb5b2f64485e9eb22da5b922a"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "assurance",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "4965561f5ae10912b7b563e197225d63aba07cd7d39110453015cc8495fc67a8",
+      "verifiedAt": "2026-09-23T03:26:33.116Z",
+      "commands": [
+        "cargo check/build assurance and consumer; deterministic double build",
+        "vitest run test/foundation-assurance.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "6290dcd5f43d77ed2811bd1a6dec7ea28468997688ccfc64801ce16891b16ac6"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "097b1afa36bfc39dd8d6e3ab11c791f1d87fd0c9fb9c897e2412c22ced911f5b"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "0219796f3d7aaaf01121d0357d2eb93195233f706d7c912cde7d7b466231be60"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "71d188cf4de84801a04794789937777d34782f308e9dbb1734a5fae96a8c0c11"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "e7fecbe7dce821fa42676792e2d4c332b1e7034393010ec6e4f6c4f8d0dafe5b"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "1df7a497f4ec96cb3f80267d8daf91275a5b3c203b2f828d6a183951f49cf188"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "adf7a70ba1cf0936d1310c2fc081dba240646085d6be44646afac3d84a956820"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "a26461af357b471027e1e53938c5bee5eb67306e876f0b2eb9e5d2f82f20e7e5"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "5faeaf67a4304ff7aa97ad09fd478afc5c8248cf9115ce8f6dea3bc083b091ae"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "53ac5b30e6adf60c5454064cd3b9fb1e60aa157fb0dde65110a86488ac04bbfd"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "2a81f0add28bc99d78b61a8737a800f59e83f554ddc91b5bb9dad2dd88dadee5"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "62d439fe3805fdcde82ce077e85e5e54eb016a92f9a6058e62005d3f421bf39a"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "1642da78adb6ea7f11c837bf274fb11b7b62d376a1a4b69919926b645c64c845"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "2f046f61b0a95dd082aa1fa72900e6c7b2b9f08fa76ccaff7f81e905f1d27065"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "availability",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "91ae812b31ccb83d6a688f1c5e4ab5513022946da2fbbdd499caa93878627df4",
+      "verifiedAt": "2026-09-23T03:26:37.054Z",
+      "commands": [
+        "cargo check/build availability and consumer; deterministic double build",
+        "vitest run test/foundation-availability.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "519509690d39a7f8cd3e6a2e979b256876d5ab1291438fca3c3d6ce6b8f0b78b"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "308877f9d3fa6dca64c2b150b5e576b690e75109562525e8b393acb6c75b8083"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "8454a681e5194e619e97b28981e460f867b24bc606eeba27812bdcc8b3742242"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "fa34690b8e95f8540ff4a495755d99bcb66ea71a6535368d7d745d786ceddb71"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "0e3fa0f974c24b9f089582fbb5d752b4c230eba2056c715047916a050f4f3ef6"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "86c9536907dfb9909d28360d9a33da7911bf4edb1130849fb40bb9e6043c3203"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "1eebe7fb7d2e3639e3dd4ef38bbcab2ebb9c82b2c5f4117d510186b8c16b779a"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "ceb8593ceffd239df9117e6774824a9f803f7d3f4e3f9ebf57f17975dbd5ef2f"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "6bb81f17e3b608efbea205546f1ac720ea8cbb6dbb1aa96bd9f7bc86e09be952"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "8b374b5a15460e2f1712db79a79b3c42ef70f5142e80989e04c27321f57466e8"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "d0d56cc8d2519b5377dd526e3578b7fa58f3050eda9155ab1b86addf4d7d337a"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "80601871c5794d6ec5ea012d53e91299f713d60fd12d69feb79de0dcd82c0d14"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "d447930327dcc03f4ebb1e3f0405c991fd182e903c4d5a785452f124549f16b6"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "58bbb598fc0fc28df0e0cebd7e282f2458f9861c66ff6678bd6636f9d0f8a51b"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "change",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "7a45ac0caee44ce29c7f6fb7dacc09ff30d655329521841e1aef81d780ae0404",
+      "verifiedAt": "2026-09-23T03:26:42.124Z",
+      "commands": [
+        "cargo check/build change and consumer; deterministic double build",
+        "vitest run test/foundation-change.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "c353d15209c6d0ee5d61833c5d07771163f076345cc30ad568d159885f42aa89"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "c9ff84015255342b23ba3ad02d18c19449b245cfe933289cdf6e386f44fa81f5"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "9a73939addf90b4d9d48709ca316130e0cd5d7dfd0d2a65d2817b684eda0c4c1"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "2c39e3b0bf83142fa5338fabc3175c07857d79ea43571a224e4956a5be7ff35f"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "2131045bc2b211ac58dd268da47705a32eac1b630f47dcb0d1fee4fee08ce880"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "22b57c33e51f5d0caa8f214b072620cb690314827c9a4ecbf3a15fbea0b11844"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "d5408b5cb0ce0dcc88be260f2f70cc3067ae9e1980d09c5f12e26c0b0b4cfdf0"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "06393f7b1889c02496745b8eb8aac7508a0146a3bcf4e1e7afa36dc0cc0ce77f"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "166ed131363b54482a99b41692db23dc4158bb5bce3e2a3a80d164a0de1dfeee"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "6fe604bb7f4c83e65b01bb9b0432f17a6e9baf2e5c8f44cdd17e6e1285786166"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "c5afa289dc8c0af9325557c6f345873f1b10fb48b9ed0057dfe3bf16dab3d2ee"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "9fd673ceda109434907daf1f35a466795089c5b3c35bc6e1c90aa6d825859648"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "e37da473fed70367b1074cd6b5fd2bac6d64fe7dca059432dcdec398a995910d"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "9aebd38ff881ba97fa2d19b9b04df8994589d02d2e7f46e44ef9dfc863a1b33b"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "classification",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "3b8efd8a5726ab8d8edb24162d09ded78b30da1690c328a42e51d9601931de6b",
+      "verifiedAt": "2026-09-23T03:26:46.131Z",
+      "commands": [
+        "cargo check/build classification and consumer; deterministic double build",
+        "vitest run test/foundation-classification.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "8d5b9b7ff6b3044eaf635edf755d66d1cf143a9e0ec1bd416fbed98ad128273c"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "f0af2ebb1956dbd3f07320ce90af68007c8dc5fc4d2d9d7b038b6bf5b3756ad3"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "8eccdf92c6011c3c28836a1dfe9bce2f5f17a85081fd6058709c44ce4726ec84"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "1a9e96a01a649f24f80fcb25560eca4442fe8f2730b15de75e2d00725e43a8f2"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "568c4198dec137cfaef17cdb9764c863e492bd9d11a85045800d5978b489876b"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "d5029170c5a32a935828791be468af3df0bb9c01de79e919114e894a628ab364"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "b8f489643f118cccd47f3b2d2e099a75b9e2e1a2fe5a76c811bf4640c0191522"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "7f122e8d886504c3b1ae0a4df3cf9edb262871a70b19f12b80d95c1d40cf47c0"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "ccc69e9a94999851083e1b999a77a63101cd777a6c09d01164e0e68676d549ef"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "88e508521df53af3c365558e4df02c3b0376b1455a1046375fc3f112c1e148d5"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "88fe66ccd078c4d34a5c96b6689b4e490e4976b3de8cc4a898356374461e99c3"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "f7ce4c238b3a75c00ccb5c1494a8463acf9470dbb9c4c9a16a435f163db26715"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "b355674169af95f10a4403f88c1edc77995d6053dd5f6827bfd971a743488cf7"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "8aa06011da1e65652ac9d85f119cc95c6560f92a4c3773c519374cdcd86127ec"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "collaboration",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "ca4e2624745bc27c4a9994ef8808cf92eb85a7661c77411a50ce7de8c47b8936",
+      "verifiedAt": "2026-09-23T03:26:50.434Z",
+      "commands": [
+        "cargo check/build collaboration and consumer; deterministic double build",
+        "vitest run test/foundation-collaboration.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "53eaf1a6b769c87cb523612c51f52ce9458ccfbb6ffcbf420b203a6dcaa64edc"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "4c5579e96a421d0eb0c2ddf327f303b146db6c8b9dcb62a7e9cf1be03a35d4b1"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "3ec699f52c92bc5a697cee2fb79d38432e79d95d79bc6310cdd0b68bb5ec300d"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "a43737390aa978da51991ee798fd6669b9fefe3e07d03b050424d7cae2054ed8"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "fc140e0492adb40cd24a224c5cd80d649e162b35240a92536f1ef85d969b9332"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "cb13ce582f61ee776e047372414b4cd72c0afab157e9c0675ada2c478d008095"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "653e4ec8dcb4cd55a2d0f89c2e9c2c34783f47732bc367fbbce6065fdbf2148d"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "821a2aa687b811e8288c2ec3d79abf43cc01d5282fb7b8cded62578f06ceed66"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "869d6ba9530d94995ee775f31aa0dc883c58741a5b918f68939ba822e02b9c74"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "159197ebd360f67a20af08ad3c4438e3245fb0f2853c3f7d9909fc257262102b"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "7f906cae2035b398a1c93efdab777f122a56e8a75da8fc7f57c4f002d0838716"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "d2731e0a6229fd62d6c0870fc5da4e30840638477642d20ab9acd6d6905fcaf8"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "2f2b532029420f3a7c6fd70af0f4fa28fffd3b98d8bff129f3d6f5f4c36e9f41"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "1aaf8ce0974034495278ab2beb793f0e735baaf4fce961d167797edf7dcfb792"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "decision",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "8688078b78535f368868d67c9932c8467e171328aa44fce3375e924412ee28ae",
+      "verifiedAt": "2026-09-23T03:25:47.697Z",
+      "commands": [
+        "cargo check/build decision and consumer; deterministic double build",
+        "vitest run test/foundation-decision.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "ea4249f14737af4674841f83b1fcd44d535165c10e14897686028351408315d1"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "0e96c15233456d5aa28ac57a74f8fd0282a1690b885c82610c9e41357c0ab244"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "2fedaaf607e58fef7f5a8c6e477969928bbd9189bfe35de007f77a877ccf56d1"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "28dce0f2efca4f2f5b547170e129d1f7a23647302447b2466b7368e7d6d74d22"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "d35ec23aca30ae9d91ac2f4f0bb4c0954e5deb805934d81955b136eb07703162"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "a24a26a68c7002573410f58c729ee67581528f1160ceb2feed0f5e49e0e7ac20"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "48f6c2e47dde67ee894aad3a39a54c01f380634731eaf350639617011232c8de"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "ad6f5e52e55086eca5783c4e8ef8864628ec1bdd106ce708505dcff83e98d4e2"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "8afec6c1bb9631ac27106fc18423f6184bc3d365f8626ee1d7e4b4f36c124b88"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "e2bb708622714b8d4147a1bcfb957396be21ef8d5af9f617a24b5484d9f113fd"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "cbdbe3d79fe66cd902eae156f93e10a9323065687cc8f53b61a362705c230d7d"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "871153e89a2e47a4647cae8f15082ec09d0c6096c6782a3b731b7c98c4bf530a"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "b03fc4e8c8391978b002ced595c014e3435d57a2559da0b0a30d0f392a7f634f"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "37845c65b7830f67d55587bbf2121d232b5f84be3ea7d1d74d58466a29376ff6"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "delivery",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "11a9ddac9bf147091156df10f3a15087126a0ebbb792ce1d0117ce4551849d57",
+      "verifiedAt": "2026-09-23T03:26:07.455Z",
+      "commands": [
+        "cargo check/build delivery and consumer; deterministic double build",
+        "vitest run test/foundation-delivery.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "d1a86e6ea7244243ba939ad0b0fab580521ef4736a71e0a69de85e32a93f6882"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "b4bf9353ca80536f8119862d11b09bb9c6548a99bbf924a1a93c9e791818268e"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "f57f9929bf241cd26ef9d91551b1f2e7dbb5d4b690b49dafb5360a847cd5e961"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "6bc371bf848ae4f69323653b4c0874d2a35158fef7e9d86c402abfcc8c0e7c06"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "bed09abb246b5e96b6ea28fbe273c01e544a1560f8e121ce0fb4a45b8c5a6492"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "bc879ccb13ec9d038ad27a8444d9d5080c97e60b46f1cffa9dd8b0b6791e6ee1"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "29f8d40166ff7733ff2de78220f23edb683649eac7dfd19fd7c4556c4a436b10"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "248a57679ac30a02d20dffe0ffc78c781e4c0b85c18525fdd9b4e9b539649727"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "9f2839f97862fbad08423258a2cb4a1cc5860155679f10120329937c2dbbb582"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "dc4646225c5e7bff5afba74ef88434e2b72b88d9a85d763bde41a395a01c976c"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "9fc0f3592b3aa99b6439284c0d05d46d3b388c293cd50d1c0796a9c529536c55"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "dea9fa8443abbc9caeea00298b71adde15fc2ade8ebe2c8a4a54d7c10d49bb00"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "c670e5e639efd236cabb730bc1514b2445a7c41b5af19cb529fd3be2b8899dcf"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "cd4c510caeaa848944a9ac74095244568e2aa394e34b36e3cd23b70a4ff43dde"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "entitlement",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "882778eeea39b8411847e58dffa59e2d46e5d65f60cd23b74b85642b10ade812",
+      "verifiedAt": "2026-09-23T03:25:52.400Z",
+      "commands": [
+        "cargo check/build entitlement and consumer; deterministic double build",
+        "vitest run test/foundation-entitlement.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "87fff681e81ab8dd2d1eed7a9dc416a012e99ab6e2b66b5c9b7c946652c31c02"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "0b901ebfba4be9f00c3eea7d830813dc938aa3e88f3f20a141c7db31ff752693"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "a3c56986f08ddf3c0b562c88d1f76fceffc65e9da726eba75623856c28299151"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "30d75d124e399dd860f2c44be30a19d2e770d855f96a5168cc4685a4e6225a7f"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "71e7991d0802289b1cccf83baf47a0c4b58b30319c5cd8677b20d3f040684823"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "04a42312c8f7cca3361cd3575f42f9ebd61f442c19c28666e76e8e52a7b631aa"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "c0832541de2140099496a2b888566d8f006f1a0cab4585e28f1c82582e2524c3"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "dc382b6ab08fd7e6f44f13aebc420dbfe4d9414c9b68df4daffd455d2d9cf001"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "f5e6970d1d4dbfb6e3b9081cae0e1d5101e1eea769b7e910143c93698726e11e"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "4c83624489a30efd609b7160812f3b9b04a1548d157a262ee767a92b00068a9d"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "3d90a90fdd1574660ecb782533cea9e25b9c44154cc8986ebe225c16ec7fe2d9"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "5ad24b2fb7b2a6d922d745378e5e8928a1614578c70ae4d72ee10b639feb5a2a"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "e9d9c3f7fe59ac918fe5799ffd80bd9aad3d99fc2d814f2145ffbdcd5be36bcc"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "a5cfec0f458571305c31a2dc83183175209336b79254ee38c23a6ce9700fab8c"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "evaluation",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "7c6704ec40b93ef8d9bb4342e1f241e400d797a90881f1643b6c839464aa9dcb",
+      "verifiedAt": "2026-09-23T03:25:39.302Z",
+      "commands": [
+        "cargo check/build evaluation and consumer; deterministic double build",
+        "vitest run test/foundation-evaluation.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "58f88b5b84328433dcc6caec69fe09c34feef60547cbbb0b0cc8c9d39c7b477d"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "1634d62aedd9cc54de3b93de1885473c9442b69a8b071cc72ee6914f1444e3d8"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "c3b9dfb84d138f4458b6f3e1ae3069ead9ab04ad94bab192c33b7e393273e4c0"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "b3941b43411d46f618f9660690242e8595d452cafc925e04b6c8fa2f98878ee0"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "d88227b02b433d5692a0ede16f29007a5b5043337e1e99b894904daf18571274"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "0b856ebd5e4975ac2f8be94da3b87b3598db93e2734fc3e8d3184298574e1087"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "1bcea8d1c488774bc20bccdca61c1294b8f767824287cbd5df9c67e7f6710a54"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "77301f8da9924687c8e6bc06d0f53ab303be97083721343662b4bb07e86bbed8"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "83420db961097c85154a6666a2a72dedb111e0c15ca2a66dd7b53e72fefbdf7d"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "0aafedd889e7a230ec593a7221be56c2f373a11f3d0695e914fea6bc99cddf4e"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "17de36f3a521cf58ca9e50656140e7014b88c1d84ce8b24497ad5a8267d2b7a3"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "247156bab0a797aedab5ea98ed5ec56e90739665f08ddec75b658bf3f8b32be0"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "97e4ba4fbc5416772b08b3b9739eb41a84c6487f66545bbe1ed6fcc474cf2d82"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "29ae49ed9bd93f4c772fcabc8a9f32063c7066f7c8527a8631cfe4c7c7c3385a"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "evidence",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "f4d4414026b1887d127ef72e07ef5ebbe1a12527667b36a23e01c95112766fee",
+      "verifiedAt": "2026-09-23T03:25:34.297Z",
+      "commands": [
+        "cargo check/build evidence and consumer; deterministic double build",
+        "vitest run test/foundation-evidence.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "4a6da44c10244558f12bfb6475f2364ded5f4b59f60742172ed5dbbbebf6be97"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "90b0dbd3b40531eb40e69ebde3507db7b82356b0cd4de9694a5db3685ebd1760"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "a15dab79f8ccceead8eef933d8ea392d03919411a5f4b5c0f24d5398812d3406"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "c62c77f9c1100072124133f423bb0512ab11a123d9df21063a501c76a913e180"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "b750abbef04adee75c573455cb6b8d3174bbc8f57ff42b2b3d0ab0a7447c91ab"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "e984d9ffa77d561e029fe33956dba816003c8398b54c22cb9989be7f065cca3d"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "c361b228ce43114306ff3e0658a83259a29446545087ee9ad77e22eb410c9c39"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "b0d2cfa84da2f8a10dec02d31f1dd3fd5ea2d6977eed143b7a5cd2ce5d46566c"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "07dcef4192d43cc164116bcafcc53d51219bbf77f48c404892cdab1279cae677"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "d1be5a74dfad5d7074ac9c93128d45ae60a8a295a90b7ef8a7d1e2f45e1a82c6"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "c3da6d05c6dbe864a99ae24693cffb117543ded8e13884aaf3ca5e5e2b9ab8f7"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "ef0365f675bd814e4b7f87993b98f57f3e3b8fce0f0427ed9f47ff30d9b88fd3"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "6130659d88830c744b2ebcc39b5cdf54221b0058a51d1a86e86c6b26ef85117e"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "a00d58f6838776f72e4033df8d1407086c6d673e6ba2e71d097ff0423292b062"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "experiment",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "bb13b6e8fc5e894490d537fb07dd3fc464cc711aeef0da2adfaac9b8c3e66542",
+      "verifiedAt": "2026-09-23T03:26:59.694Z",
+      "commands": [
+        "cargo check/build experiment and consumer; deterministic double build",
+        "vitest run test/foundation-experiment.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "36b1286043f098f35e0e50318595044b802f1b7b948824e4cbdca489cd80f4dc"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "f47bbfd49d811806cf5736ce8368abcb4aca315c6d32e0e2ca7a454b3269f0ce"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "89c205d14f0c8bcf8b98cdd2183841529be3743931689919fa9b49b010be487c"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "1c9c3c32aac0c5742bce0f6997bab629b1cf06e870015b4a22749a90137e4df4"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "65524e778d80cccd964a6670139b3287e6775e0b12cca223160c0cff0f7da097"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "b2e892f5bdf1a08942740cbe48730b9d086fe894a0235c5c7ceae4695123cf6f"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "d8999b90fa0f15d4167741aa09a2fb58f6c85280f9a8a98620b06a7e1757ecbf"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "91e2c4129bcdb920a13b0d54ff1e21d33d44fc28c8dea8e6bb5f2f8b8228de42"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "934c1780ad90788b9c8b0c27d3afed28b715ad1b24c91ae44c73c334121569cd"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "aa10f02e3cc8b291904b75d13970cb751fe62d7c189ba64896cf30e28efdc32c"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "4904f1aad4f272f93a5bb6550c17f9b7d44f55e5cd8ec82e7fe41f1744af7e3a"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "a8f28341fe033a08c65d89d110867123ec885c73dbc1a6113f7f6b9799ab4a61"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "eabeaa33444e6ba721ac05f4a7187ca9f4d77c498c2a981fa3d099c4374cc4cc"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "3fa7c3c2a50539f69c24e249afd7abc2aa5dacca168b1db4a006d2b4b0df616d"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "fulfillment",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "a1f036dbad86c491d5587187aeab9197a26aeaba640d76758a6449ab501f34d3",
+      "verifiedAt": "2026-09-23T03:25:56.600Z",
+      "commands": [
+        "cargo check/build fulfillment and consumer; deterministic double build",
+        "vitest run test/foundation-fulfillment.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "428c6488c11b7616f5839a04720e6514e65e2c0a81f207e00ce430a85e844073"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "c06e7f4372702e145dd03aff21308e91c9f13c5c55f0114514f9a351609c2d5d"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "6e721a0b47c970ecdafdcfed749a219c2c446f618169d7d262d681c6a5eaf805"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "db94065c28438c3835cc8992d3ba7c6956662d6a5f5d865eba6d85a0d58f9a8b"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "93f30e944539981f603fdcee663e67df9e5c77eaa0319e83bf8382b65cfc5cc1"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "3a4983283ac07b96b0595a64dc7338a3286b2214458e7a700cf07c582abdf086"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "8b215030b1dc6532a6f20ae7df14e10d013db48bb0ae1b1175dbc57518c6b057"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "2cb442e19bcf09e9b41c3c05b00c07023afafe050bbc6a602f9b82058c2ad794"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "f091ae70b7ed1f0ccb4e5d4b6a0b999e67c9957de467b67fb76dbeec7f43f043"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "7fbb30c558c3f9c865090ba5a6e4ec1a0208fb02d04438d074c0eba9a19019c4"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "3cd6b3ce5f85dd0e16cf17175b1a5e72f5f3df2b424f81977e7995aeacaf5fe3"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "8eb25e8b4b8fde7dd273692c0c00c63738d9f441a1253c03dd8b4131364963f4"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "a8787d3d5b27bd67e3751cdd6e34c32353b5736a06bef77f5e165de289a284c8"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "1a6d252c1bb0b041db9fa2b75444aa3550ce4cb41e02e3e153fa06cd84a32c48"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "identifiers",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "7706ff097dde0c1b1a5a11da8ee3b5ad6c9ccbd248667d5d64d33dcb1213944f",
+      "verifiedAt": "2026-09-23T03:25:12.723Z",
+      "commands": [
+        "cargo check/build identifiers and consumer; deterministic double build",
+        "vitest run test/foundation-identifiers-consumer.test.ts test/foundation-identifiers.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "bcea174ca53247c67307ce06ffcaa054325238f5440f9a1a15d2982990df6e85"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "6402f900e5ef951d5b9e8f1e3add02d7124bb0a1cb4d28cbe3d2840ca30e2ee4"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "b9da6e1001a1f0a24de132028e72326676af8e3022c0afe9aa4c27f85b5c40b0"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "2c0e10a9287b2b59753619dbda38c4730f75cd9ffa6cab9b42abd200bf1a0c50"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "a482b8419da022c6784adc62cd46186517ee4aa65bb7983aefc19a570dca26f0"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "bf40b35d4388b6b04b0f7d6f564ac8140e1b4e95cbbd9bc398252fad66d2db98"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "5ab0bc9e0418450d9353be7f589d8545bb87865b4ab8ad2fb1f0640073ff6a7d"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "5897cda9b17a767c55c94d037cb40e0f8a0815add8ee50f42e8686c7a59b73e1"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "3a550d1edd2db607232d473bdd172f2398f7ae68afd7ba6b8018a3e29d25b00c"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "2bc48ddd50ae4ab3375539c1b9bb4aaffddff63c00706a96fd8c40093258f0de"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "2a1c6bc6461cf0ec342ac2a366fa464e636d2789e5b05847d4fea92060eb2585"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "ae164b73b6c44762c92202578c4e76009c3e09f37041a6843e8a045e333b07fa"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "678ed93602a1d965967b540f1c209b4b4915a6a00b3c90b3772353e943bae52d"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "54c7ae5b07c273693326a9c9f242431461a65f54c429eb722efbb4da63c9dcc9"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "intake",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "6dfff2a4a0873c8f70b9838570f2ad650cfbd7e5ad09a704a2376e9b87ca913d",
+      "verifiedAt": "2026-09-23T03:27:03.984Z",
+      "commands": [
+        "cargo check/build intake and consumer; deterministic double build",
+        "vitest run test/foundation-intake.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "96876d220a93c592f272b8818b0975f96402d9323c647fbdd9c45139b83a7db0"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "df92510f0ad6ac2e1056691669ce960579793ec07c029d5ceba5df24e72d508d"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "809df80c99626944d08e8ae03f4e85bbd0a3593d0ad07aa58646d784233fb53c"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "22445c9c49f5aef8d1c4aa753e1c893b2ac4829b03955b2ef6a180f7decd15cf"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "9e8de0fd379b08547fd5c471b4aecacbc7f46f8d37edd0c947707379123ab809"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "e61e44950ced5fdc71660a0e2d3f8a4003d16750b3ae754e52aa69599ea26765"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "46ed67d20d823553dab764048524fcf392d31fd297bba5b96bcccfc46295809f"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "b9bc28307f923ec374739f4bf8a1dabfabb1cb57496e6a615ba58337682b4f12"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "365f8154239699f7e2fd38b01208297e9bfad774f333e03625fefffa77dfd033"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "fadcc0adfb23584ec41ab7f753137f0eb37e4cb94f226301478c7b7e9cab9848"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "58484f0324e2afeb1f10bb1e3b02095581787ee63ecd63257ea8b4fbd2f5ac1f"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "1f3d0db34d9965fe86c793cd7a5921bff6c43232ef9c7ebbfa67fa2ea78e8be6"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "1f7dc64875526a4b7a7b9255e9332f87ef868f703b3e4f75dbfbe2b461d4fc17"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "b99b859adb4806bd54fc7f9d6008892e942be47c6d98f6ee0d81d1fb3506281f"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "integration",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "9023bc95ac3fdf993b2777c5351f2c16056dd37370010ebdd11312c1c18942e2",
+      "verifiedAt": "2026-09-23T03:27:14.933Z",
+      "commands": [
+        "cargo check/build integration and consumer; deterministic double build",
+        "vitest run test/foundation-integration.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "d2d273458c38aaf960244c720804d43be281eb28b647cd2c35895dd3d54b25af"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "f173faa50b3b4a8fc5c7a156874f1ddc1486e73e6b48827e9b4e2f719050c50b"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "908c3102c30348766f6e5888b74b5601b07ce4dc7dbbe42d2bd00480dbfc161a"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "007e186490ca1972d68533e10f85ecc9ae4338385912f93a446056989d4c7494"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "d9717ff046668bf5b1faeb9df601e297f1b279e189d7bce8acb399ea92a1e9f3"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "e0b8683092044706f8429d4474ff9fa933ea8945b077fb331ca1c6d903fd4455"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "6dd8bb2d06eaa1c189fe754195aac7fbf6de1668ce9e194f12142b9bb06eeb02"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "f5a315b3e0b07357180948e1eaaaed2ff046b23b94d5e6fbd932f6fa5d36aa2a"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "7649db07e4161bfa9b91f6c3aaebf9010bc295e4407541b369d51c1ac6b58769"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "8e52f01785524e7119ded1bd73d4aa49109f3de654a9d71d7df00e66685cbe92"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "edd384cb99df83b304a4587c880749773d2933a034c06b7aea86456a8a0ee6ef"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "230c05988a2ade639c5e0d922eca593137cd62077ced7d03592163ff32cc4978"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "48903cfe8446ad52ca7286206eb4da17d8b6ddb0c4520b77fc516f63b8821143"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "9e406d092aa90c20c1692b721eba61dd59c2dc47e16253f7f1a254a588ec9ce7"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "knowledge",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "6d7ddd113e013ed87183792b89e504675679204a133bf6d07c3918d14e514b62",
+      "verifiedAt": "2026-09-23T03:27:28.771Z",
+      "commands": [
+        "cargo check/build knowledge and consumer; deterministic double build",
+        "vitest run test/foundation-knowledge.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "22d51fcd7cb8feadf80346d97dd9568c5bac849c0018c52530a21d5fc29c75a1"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "2f8a766ebe7d6eaadade21b5344ea24bc2c56298c8c447f334e1c294d1e3317f"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "b9c603dfd4791b95d63e538d89433e426dfb848b65e4921a257f767def7f15fb"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "b7ed90a5bfd256b64b0a1fc59dbb8523ed60471f9c83e6a853259ca5ddd4294c"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "9ea78bdfc1626f1ab171ea95bf7079129e08fad6b3ab750e387e591df5d9f9e9"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "83c8bb63c5db97741c6d481d12fe48562483e06836f9d0af428d8e08ec0ecaca"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "81734d637f63b13309249720692c28dbde01c0577e56de763f2d1a76690ae850"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "6575440718319e52337436db8bf19a08f1a2e153975b895c95eb4d4d444b1855"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "11ef85342ea7b9aa2b47f9a0b557ec97d2fe551e46e1788e8e55f422d16cb62a"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "effa3cdc48e6a551ca8dec9fad200d1826f3c70d602e6a48c6932e6cd741a229"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "854b1becfc2c74d77588cb4622daaa7422383c8748735c727ca8c7693e5e84e0"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "f2f208cbfd5bd837d48f04ba64b9aea2ff7c6904394fd655fe12582c6bd1347c"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "f8a322f57622206960d603cde3cf88725e0266e847fd369f130fc431f600fe7d"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "8840ee1efce3ec3e20e9440b4b10cdfa46b79027b79fca43869092e9fad1dc68"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "ledger",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "ba07b7b2abc2cedb6e65197d4463809bc8c55a3ea8c2989e1d82264b8748ba66",
+      "verifiedAt": "2026-09-23T03:26:01.752Z",
+      "commands": [
+        "cargo check/build ledger and consumer; deterministic double build",
+        "vitest run test/foundation-ledger.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "1c2b0b966033115b49d995472fcdfd6ac97a0e023d7dfcdafb43c9ab2f24220f"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "3e2d3e288c29685b0a401f49200954fa984842293e4d9056932cdd2bea173a95"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "435d5f381ee4be1cd1f6a4beb8802473862467ec5b4700f5b208ea2f300613cc"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "77870a0453e3e157a14cdee91624e5d0e23bfaf70af7c139272b14261fb3ef4d"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "0d14a026aeb4dd173b50bc98983f66c230b92008a3bf09342f347c6a92d86522"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "f681ac01542bcb517c3c8f4fa37205272cc00c292c02717197b5f84280385f3e"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "be2034a81cd056d88c6a5fc16e0627e82649d77c6b5f41d3b545549a51ee4f84"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "37c070fffa1b03405cadcc84124a5d621ad0bb15b1de763f40efbcef579c59f8"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "e98c2683f7fc01f04e51e0e0ba0fed2b502137b746f258e49e46b527a2e8c217"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "1ee008ea95f4b52f2858d7b025a2b943419053416ef7e8d8b5b7b948f92ab7a2"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "69659ff71f1cc9b84622b8d0db8bbf116975781abecba6eb1cf053e86cb9450a"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "85021f2d00a4bc5c5de9f20a7e7cfc57347b1d9670b2f62df1c4523e7a0b5a0b"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "ce3b8b896d52914c47b9258f72b2f4079dee1fcfd0795988cd9f242712528fc0"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "2f80938c51f284c07f2a26b270f33f260937618ba341f6743baccda58578ef8e"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "lineage",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "515ade6d953f87ddd4c4e66a8a4656a0a99ed1c0a4bb7d1b5311694eaa2ef3e9",
+      "verifiedAt": "2026-09-23T03:26:54.236Z",
+      "commands": [
+        "cargo check/build lineage and consumer; deterministic double build",
+        "vitest run test/foundation-lineage.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "6215704ec68703e86a6eaaf70e07f40835159eac636166ab497601616af0376c"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "cc87ecccda97a8593da323973ed995b528a1139afddb39ce7f92231b14d8b06f"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "c0cbcb13cc56069806b31f4bca8e3ed19e45295a4d0a86e08d5458bc97b83443"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "05278461a0994684f12207f7aa3a90bdadbfed789e63763bbde10a6c61b96bfc"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "f381e14e9d14898014b745fc882b1f808b61d0469f2e65958e5cda30b8f49e89"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "3074c10727355de04a682bd4fad10398427eceb2f277b78d7c12bceaca45a242"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "0e5021666770a1783b33d3a99c8a9a95a3bdf84707433dfde29f97194b906c5c"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "a96b309d1bd4bb02cf540b3ef2e60204ff5d51c8bd2ad9c6dac1f69cdad23a3c"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "2c91f5ba207d6ae5e65f423cf46323c1c805f2b17875e2136024401ed53532c8"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "6d1d1698801fdb07889bddcec9c14bbe3c26befe953c5b221182d636a2eebb63"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "9ef56520dc9cbfbd75623b159e246b1dd3ced5c69a9f6558c7a7e2e389e714f5"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "0560a7ba2fcfbdde3d50b10572c9e2e5876dd39b038f29568533a7c9a0b204b6"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "a7deaf19bbf025624ba873bdb3112abd62bbf06c5ec30e00219ab1676b3788db"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "7ccc0f2ed6c65559240fcd9063e46e44b0ffa9ae1ea4f785b8aa59364f1ee316"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "master-data",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "96da495d460864fba5e53419e2b9c9ae1e6e459df627a7ecfd43893458ee8e09",
+      "verifiedAt": "2026-09-23T03:27:36.581Z",
+      "commands": [
+        "cargo check/build master-data and consumer; deterministic double build",
+        "vitest run test/foundation-master-data.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "530b7e8088f016b4590d641a5fd116f6dfc039238086ea764483a8f1e155673f"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "ac7087e95da8a4e113def0e046bd7649cf783dab9629771000c2c4064f179180"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "790c83594e4d97d5d1eabf6856c7a13f72866ff68b5ed2b40cc54cc8c30b95a5"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "85c2fed68b7b55eb36d5d6a7823e466e135bc1b6c815af7a7dab1ffaf5feb136"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "0788b80102e68a99e2e06e317798461542879240fa5e923e738041db8c9b8156"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "f472f65e2aa3c79f426e359ff8993cf9315d2ec0bcfafc33d3899a27d908e6d6"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "b7b811c9c99f0d074a02e1a33b772dd6e0de1206b20c1b87db6a68cdb604ff14"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "e7e10d3dbf33d849ef2cd65696a951a5d17d0bbd3c498dc01dafb498fc518ce3"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "65e95bf7c091764debca63de2102a555b400db6651d931f2ba54c13b83d3dbdf"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "12374e6dc17a5ad8f2b3c6e7df946f12cded49b22fc5149f5d4904c05a7c7e8e"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "ac922fbc9db6eb05b9924a9a54d1ffda2deb45ff8c8fc94625570557082bac2f"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "420a56dd6236379f2d1c33345405bfe2391ba360f93e99eedd12cf9a2051900b"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "15370e7bfd09ddeb12f7b7b406baad450d25f08a39e8b4802053a38a2367a95c"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "26ef06bcc9ea9a91427a9a3078935a37b805cd0497e52f15cd1ecbde794b4511"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "notifications",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "81678f3261b6f3151e74dc1996915e2762375031b688262191b7bfcdb8c5bbf2",
+      "verifiedAt": "2026-09-23T03:27:42.912Z",
+      "commands": [
+        "cargo check/build notifications and consumer; deterministic double build",
+        "vitest run test/foundation-notifications.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "5fabf4740e0408893ef474e63d3e7a75761270200f04b71ecb38d619b2643f68"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "929654a59a16b03659ed64f793c52cbbda5ce6ffc88e411dd5458659f88f5b5c"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "68b0a373d3e9820749e36b9f240363491d9da502f0a83fd0d85b1fd6018c5b3d"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "da0036d212407088cd773f382414ac13dd4e4af93e043c090c400d7618892e6b"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "0c25bc8fe5defe7f8fd0ae4df1aa3ba440f29e19edb0acb7789f0f02e7411c82"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "5486053558cbfbb740ae135eee71c31bf478680ca1dee64254026567ef53f575"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "e9f2f986d5cf9058a2afadefea1c363ca34bf9bb1a3349e7b5d3d690cbcb6416"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "592c1599ff1695e5427492fcaff0770437ca53f9a2b043defa5f90408e28cb7a"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "afb1ba6f047372a0539f13f63f1c67706a5e753ad0a633421f515cd154ff1b19"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "4237e76957a2d5c66c893a13a980d856bf075d0bdaf78e42536ad06e3d6be9e4"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "f4c87d52142e3a4fab9f97d7e85d39a51ab1855f5068b1ddcc6c346a409ea82b"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "3de9986a84a9fe1b325af072168baa56751579bcc91c7282d8177fa721fee1f3"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "e842fd835f8d3018c222f768948b5b73749d0ac21c86e27251f7822146f8a11d"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "9a8b56c172a93eefed74daaa524241374bb65765034d902267c860adc331c676"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "operations",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "43fbf29a2bb6c443d2728ad2566a45f0c04e8cbdcc8ee293588ef11693c8e408",
+      "verifiedAt": "2026-09-23T03:27:57.304Z",
+      "commands": [
+        "cargo check/build operations and consumer; deterministic double build",
+        "vitest run test/foundation-operations.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "ac9bdf385d5298abb7fe341d417138af4af7a00e313c63cf814aa75085b7d972"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "75ca953fb406a220de4fff4ef73718f6828605429d0e3cc164f478110ca3f0e2"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "886d261ada4a7f820bba55741be513f73d2cc82bd0a0703a350b90be248b6cd8"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "56fee18613cf7b167f52d7d264cdb68cb8a36d3ca5637836ed6919f39cecbb16"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "b0cbd9c5561d12b354ebb6a81b86b1af5f490700b6df95d3352f9eec477ea561"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "70fba6c7e01807c1163567a9de5496a53506889ee8545c1c0bd0be2b37a6e092"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "263048c1fdf88fa6afa6c5ba52f742c464b7153db54867fcafb2c0ecfdd14e66"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "9c43a3ad71163dd1e0e8c1e6cb4630a99dd2596a8d122e79d1ae9db51f233f3f"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "906684eaeb49665191f0eb1d97d7781332a8ae43b26b2f2b943d9f1b070e975e"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "68698aac4e62ea488b1ab5640ab619143e9a22f7ff310280d8c44724ea9f9dbf"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "7ad4d931b2b7e3dfddf34e6a5f9653bcb7a49d34e5b6f516a3f70522c0e934d0"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "52b729e2de1a79ac7a8bde7f531389caef27b31ea7e461d77bc4705567e7acaa"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "806b0784e6ff56d0889256cf11a5f3e0bc047a7630c2a51b1e7ae129e372aab0"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "c16474bbda2af6d33aeaac6391debd41df25aa9b476b53557ec493aca6b058a1"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "organization-workforce",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "0bdfe5cc47064f689a7a26464a61f63a757b37a3e56a681e9784f3a0508cc435",
+      "verifiedAt": "2026-09-23T03:28:10.882Z",
+      "commands": [
+        "cargo check/build organization-workforce and consumer; deterministic double build",
+        "vitest run test/foundation-organization-workforce.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "ad7d0988d7f4a47a94067e4146d702505049c0f842fb1ae576c2a58cbcaee8b0"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "4db6fca0628922637e103cc978d9a7f5ec36956f22a245d0d65895339ef80b4f"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "ae55be0d63acc1920e978eadce20759293e34d331ca950604757bbd4c9c416a9"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "4c1a2409e564f0eeac64439e46c6d5504eb9585ce18f4feda98cb3f95b910259"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "a10533a1ddb88a58cb2b06c22ad21d44a60f7c905529d85b70ecd2df5fa5df4a"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "67faabd7e4ef542be95bfc82824ba6fc279a13f3db7fc140bed5e3d0e29b0dee"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "aa914ce85e268de4f16d33dbfee7507e4c5997de11ad8dd50a3824be615626f6"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "559405c1dcb600932304877946457d03e8e485368d1999e8e211a5cc3efe1a38"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "1318ab0a3c29a043a2b50eff04413944a0a4dad2da9dc3c06aa810790088014f"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "04134f7740cecd2a357bc7af0f6a2a5b5e26a74278c524b65e74a89ab580b455"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "a0602d7261a79f8625827e299a4d9ad00fc7592676e2d8ce064e3e50663a8d9e"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "90846f9d6b9cc8ea7a20f7036dc8a1c2a82875bdd09182c8769b0054f6c1f4e1"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "5dcf9d4a81e5925ab720a3604e2a7adfef9f126958252ea449964586b71c1cd7"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "f369136706c4697f327e630eea594ef9eaddd6747a963a65890038ed3c30d354"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "participation",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "0f46ec5c6b09df60627c46542f9b60f46026955803e24da9af7a9431a90ebc36",
+      "verifiedAt": "2026-09-23T03:25:20.505Z",
+      "commands": [
+        "cargo check/build participation and consumer; deterministic double build",
+        "vitest run test/foundation-participation-consumer.test.ts test/foundation-participation.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "27d5f2a8f7442f0414b8a5eef5f08ca0ca5e1ba939e1331ea7b39c80971ccab1"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "1558ae752471e3ff0c8274eceb4cec875b1afabe3333d7deaa6367598003373f"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "219d3e18e847b845b31b8abdbee0ef5e416e2bc750d06cf55c5abdc82b8be07b"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "aac2313810ea5dae711f863ffdaeacc7a10080e0a445ddc7347435a0034a0dca"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "535b6b7f1a9100c930f986a55f8f32ad39b9259bdd402e36b722c1ce481f8763"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "0ec15612989a5732834afca7c96a79cc55347faace5a943b88d22ac99ece6c3e"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "7ac64095288bc04b5f0a13a271f338d8a17ad379bf27509dda87dc2f3bbb4695"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "f845431d242fa385ace76e8d9e57c87feaaf27bf9255171f27d960724a8e7c1d"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "9c4d6b3d7cccfcbe2ef57c15e9a58db3c678ed308cb753395bbda2ec5a2c47c0"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "645fd40b6d691be54014196fa3f5597e1f57ad429644ec4bf339aa90412067fd"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "aba3f840af7f24efe34012380f55d0559400193b0ca1bbc0cb8a2021d28f1914"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "6d18fd8239e4cc0bc51dbbd04083b706e0364c05d840552089697e8476a951ab"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "4b9c9a848476ba06bfb7d828fcf5213ceb6d4c98ea1e66c59c518032dc4fcff1"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "71388d1f02a06a72d696f08741a851c5c0a18a1e305a864c9515eb13728e3a58"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "party",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "336f83ca4b8f3234fa52094f76254561912aad465f50ec99d33651586c86f243",
+      "verifiedAt": "2026-09-23T03:25:16.464Z",
+      "commands": [
+        "cargo check/build party and consumer; deterministic double build",
+        "vitest run test/foundation-party.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "1926ee9dfc5dc2a2b26d647daeebf00fdcabcfb004f6ed483dd3b5d3dc42556d"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "e6ddf358d0c6fbd4b8e5b3189ead12289e65dec710c79d4293b31fdef73c9438"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "98ea2cef4fe7f2b3261a30f835967d06893400ca3060b67abe1ae012abd3c223"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "8bb1fcb7f448fc91db857361aadbf2aa80f1e79a6b0f939f2483525a7b52bfa2"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "61aa09b85883b5bcaef74200ef1868179213353740d50eaaf2f5680684c4d786"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "1a140bdb33d3103b632f7abff826a8dae382b633cc31c96ee830453becbe2dfa"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "db4f6c080871138a4ecd876e0c1aa2bb57f903109de5220fcfb2cbaa29408d49"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "0f91f45091f27cc3570937399ff5ed8f5c5a2d2579b4edf68bc38cd12dbdf7fb"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "8fcb62aa1145ca773a4f94e3b1d7cfc53f437fef11de7b8fcecf1f68d658e7f4"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "a98beaa0d10e081bafb35d0e96e53700461a1daea2f2f29e08c0e3da77f03a21"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "08393c746b6f5087bb78afde43eea8fabd38972c9c310f8f73f1f4df7e0ab332"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "c0d705f72e9474382826786ed79303c3632f0ccf8e689c1cdcec42b53d38b957"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "4e8d1bd87795c97dca9f93bcdacdca62cb66179a1e53d8291687ea2b126eddf2"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "41ab1a87e4279c583f24c9645dfde439331a84a3ea539eff55921513bd677a43"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "place",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "5c68750bbcfff5c0e93b089b38b7ead96a6b7991fc31e8282ad0813031abc471",
+      "verifiedAt": "2026-09-23T03:28:06.329Z",
+      "commands": [
+        "cargo check/build place and consumer; deterministic double build",
+        "vitest run test/foundation-place.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "6c8ea53f01f5320e4e78df0f3fa2e95adfd6cc439c26b232b52af64924a11c56"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "c73623c458eb75d2b6c12575f055e657e57a4f5a78aa591f5e0e53dec69e2fac"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "76f491191f8858e6a9c049911afd9f1b8beb32386f99cdb31679029ddf1c34e7"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "6a0cf2417d7d2ba6afc06ad8b570b7972b153d0b3ff82432e0db954efeed6849"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "fe6d061d84241a661293aec1c7d2210d5760a6660f3372362a874246fc4ae0e8"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "61e43a1eb68e3c1bdb58c20848e2bfdcc652af0c0c6671d2df223129a3e5387a"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "c2981c5bdd96f51b80afb7add29c32be534341621cb067dfc7b032a921e69cfd"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "0568fca3fcbfb7b8bb9d162a2220c3a5aee2ba090d7a7bffedb91caadd3c00d5"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "d29299bd3a29637dedeee4111d749b917ad4f8136ab6ebdee9b25b8f02de6763"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "45023529a02449c5a476d831e180d5c39e005ecd1468af205c9548ee0dac128a"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "ecce49640f115521e8db890998d2b86e99140dec6bb883c8769d4a28dc817627"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "47af7e83fdfafd7aa63cba421d3df37f227c3b13fc566c50204a32b53a91966f"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "289aa38e1a8f354ea27bc4b13da9bf93c2a414543fafcbe6288617088acca1d6"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "e9c77d62793034928f0596716655693d0382e8de9ce921b5034f02f1b768c769"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "planning-budget",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "4c8f54ff425d9e663a3fbefd60339ba3c4cf569b5c13aaa8871e2e573031aa4c",
+      "verifiedAt": "2026-09-23T03:28:16.153Z",
+      "commands": [
+        "cargo check/build planning-budget and consumer; deterministic double build",
+        "vitest run test/foundation-planning-budget.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "7095593b197fd913b389f58d172d89663f0ff7c4e6646cfd7c711470b16685ed"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "4a081708a81cb95bee8e5a85603dafc1f1d2bc8c83071574cb9b9fedd91b4d32"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "72aa95c9dcc9d00d1603730273bbdc547dec8766278c5758475b6e0e243b8169"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "3f0485ea1f0f9f1ec30229471f9e7acdff4426ebb2bfff078c1dc974e7457860"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "2aa515b7847f7c10fe4ffcc8434c23bc3746cfdcd89cab2b820951b083ea1454"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "689f5a5060b18c95f4a914f136e4255225db1a21db280beffbc896a46601f425"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "53cb12e6e3fcce82a4d1194630c0ace8c8f9b27c3ef4beb8581d65ab8fcf9eea"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "afe86fd77aa900f71636ceedd141610523d6e535f0fa4101b1c8d9fec52d9cd5"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "b4fe8b31ae7bab440e09937edf3d824f45f702b5f12cd151f11261c2c5a2ac28"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "c7e22d3791ff8ffa26cc5a804e58866369e514537d4dec0ebabf7e234c736d90"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "147eb219dece4aec462e20e74d329c78340c5a20c9ef05e1e19a6eceaffd9920"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "06d7189d5b6c9fcdcca4e55d7d00715ddb592eae793dc6aa86fa6325957cb500"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "5e0964a1b58013b60fb3e1addbb04f111f020a7dc9e6d45c7c3d7a694913716b"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "4a818e1148f5c294c34b41165c91518eec4c6821f8436ac3cee185793ed0f697"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "publication",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "09285c7b73b84bd1d53055baa5490d3b661132eedd742bb107bd2cb1a704365e",
+      "verifiedAt": "2026-09-23T03:27:21.614Z",
+      "commands": [
+        "cargo check/build publication and consumer; deterministic double build",
+        "vitest run test/foundation-publication.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "f564fabf29752577e824bc946c28a94dcfc4a1c86e6563b63be6329fd37f2fe6"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "6410a82258ff04aae214298234d46ea8e6c215959b8304ae646cfe6eabdb41e4"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "c992f6f4fcbb9dbf703ca6c56e9c60631d93bca41407948094a5c1997608ae62"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "ace39785c7b91430592f2698eda5f10094c38d5e937b7f67f7075b225a94bb99"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "0d6871f578065782a6ff0fd120176f8b1cdbd0f6838f0ced62b79341cc93266f"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "889132213208c50877b6cca7545228df1542d053e84bfcdf708e3c3bebd44ac1"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "db64ca90d733e96de9be3ae932fea530a71a4642b1047d20940faf309c622dd6"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "1d2de94f330c2d68b004d51ef53aabdcd8f311c3b49e9a3c49564d4686f8b4e2"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "9d95a0ce47c8a099cc68e1fa5bb5194f460d80a701acefe11668426f15903003"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "dc175f29275f05b2bd5c01f68755a01ea061e315c27d703ef39fc76f99529a8b"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "3ebefdce3cfd6e9458bb249433c17eb0ff75d3847b71609aad4c1bbdc667a0db"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "d82b82b5846f0e41cb34f794914221b8e5908612f09aa8cc9b61aa3f9263843b"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "6ddd01a8b388f7efd54aa3ad6eabdb9345862df06104290eee5dac98a662a7c5"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "9d505daac407a2eab043670e637783dabf3de047d97ea1d8882fcfc94f2e1467"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "qualification",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "36b7121178ca3c9ef092e6dd68612dbface5355d6f136a2568fbba609faf4a90",
+      "verifiedAt": "2026-09-23T03:28:02.497Z",
+      "commands": [
+        "cargo check/build qualification and consumer; deterministic double build",
+        "vitest run test/foundation-qualification.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "5693393dce788bcd1730f0d287c28776ea8300b6d991f0d49ad15e7356525a04"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "7582dca7e7909272ec467a18309dcf1c78cb71c84c95f272f3285c7c2de4b4bc"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "ac337ac67b3002e5168e391953553cb41964dbb25af130645352c56923d3ea74"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "10c423a9c69ab6ac6695cef69d3223c5d552172ed355c629864661d828884a5d"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "df2e02463e5802163211e31abd56c22cdaaf0f6756f0730acf7b19e8992c4947"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "bc8128365e0aa44c6f9bb855144960cc46e68b67e9aebaf4a5290f185b852ba6"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "c8c2ba9a64f7df553176438b8da9bbba859b1c42f4c1afcda5473aacab581e84"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "d112bc4369d377c46839a70874983a1f41ccb82c2203a2e9bc6a7b1b1d0dc5a7"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "ee7f929dad29879367c3a2c03c78de42e151c8a19cf31fdf2b7b28cdba821624"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "385593459100fc3e8ea18739e709d162e3e47e73a794f793498b45b472a4f96c"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "9a82c8b801a2f447d0a094d497ecf59e8372d359d90e8980bd96bbd96f9a26e2"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "b703812d6ded796c46be57207b8f579590eb89d18c9d74c82b3432d5ab2792ac"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "b72666ca5121a591d3886db16cd88bd0ed1ed457e1841cd0ebd5368b8ae4eee4"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "9c7550167f5668fe7ea91332ad463072c5ad51cfae41cfbcf456ca656ca41c1e"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "quotation-pricing",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "8de911dadfe29a40d512f40fb3269065448f6add19cba8518ee4510c3e953a3f",
+      "verifiedAt": "2026-09-23T03:28:22.038Z",
+      "commands": [
+        "cargo check/build quotation-pricing and consumer; deterministic double build",
+        "vitest run test/foundation-quotation-pricing.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "231cc2f968d2882c4dc67ece448e1806f07759d9f3862386258371d51e425d14"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "9a63e0a1dc101bdce3758a754c3f6e5743c4814058d20cbdce65a0415057cbf6"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "2e2e345e759d57c620d47d53b6958e9b5c0507a59f6529feda727295e66e0e75"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "91f1bcb6f2859108ff70df427f7ca540753f6ecc9e90cd6c7eda7a0c3dd0b5f2"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "84f1b3e761d2dbdfd8dba84f0a310722856113e6063b7b24f375ab7cb714abf5"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "c6cbcec5d40c3a18fca508139cd32ef2b00aa792ab4a0c28de9d8789aa0d1a7e"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "9633737d4b68fe4674e5ac9e03b81744c5f0ce442e6cdf455e033d0b04ce80e6"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "e939fc6aadf4529673785ae1e622ed2fca118e9c9b296d2866ed4d7101d66ec3"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "2fcf41f02e8c5ada40d8b36149bd1f254da045814cfa5bdd4d4ead67744df80f"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "ace6e455a0b510dc18ec8acd789c8db3616a1c9eac08c62cded8923d29ee08ae"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "b2331dfaef5b69ee0a1d47110308303e82eeda49beaf91f40ce27d6e21003542"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "92bbf308c96f57745e683bba36acec4698817882a3771d5be68aea9d2370fadd"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "53a384a72bdf338ba4c9be8d902a9a7fc087d8c0170e4dbe1ccc5a5ac161ba16"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "ec5007e04df996bf272ba9877b7f6075e761c4d4ff5a878b486ed5a77f9a699e"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "reconciliation",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "8af251c52add66314a8ee2889025fda982d8b6441454d751377b89e635511b40",
+      "verifiedAt": "2026-09-23T03:27:09.311Z",
+      "commands": [
+        "cargo check/build reconciliation and consumer; deterministic double build",
+        "vitest run test/foundation-reconciliation.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "afdf2ee1f5513fcf800269611b502353de7708d8942f019e5b70afc53c23a54f"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "2d80e0551747bb8013a0570fc0a3323e47a52c55afb427ae031a57071acb61f8"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "11da35ce71fb964911071417f020750992ef663630d0c2a052d45bc9389f4926"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "5ebdc0280d97587954b18c8a3f0cb45dd187eb347d91ad4f4f40829f00d24ab6"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "88eca899f587a959ee27caff6119320f8e595d3a7d0cd026a626dfcb79f5d1db"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "1fa2dad5fe581343378c64c4217433e620ee59ee9d6892f811b5a6503a15318d"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "76e496e3d92e04333c4a6f5d1a85b72430a262144cca58920f02f7fe1070f9b0"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "613bc8d2dd4938f083b48f9f8d3e3441631feeedfde31919e0df9df24bb28d4b"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "cd1b65d6e06f9241be01d0be173ee29a0ffa1f7949920d3a5252173ac5e2c88a"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "8299beda159b4f7cbf5c093c73fca4d1cc0d38a6913017d48a20668b4a429931"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "4c71bb2679259fb7b0c3b3fd6069659b86eb417e22876c5d1d103c5915eed88d"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "bf8be606299e233fd35c9aa3aaaaa74d6bc7297ce4c96c88b34aa920273fd7c2"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "369f2df41aadcac9ebea99da596c3769bc74a55552af943d6112f0947ae0b0dc"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "fc3034a689e922be174e3f1faa6a06462e3d6c21cab78f82e34125b09484f474"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "controller-first/app.json",
+          "sha256": "63c45cefe0c48083a37eba53953ccc6a876c6417057d6d8450b1d304d214d84c"
+        },
+        {
+          "path": "controller-first/d1/0001_init.sql",
+          "sha256": "0d4651ae0d24620eca9fd89d8590dafee27c55ccc3847fb543f85f0aeb53ddad"
+        },
+        {
+          "path": "controller-first/postgres/0001_init.sql",
+          "sha256": "8e7cfd4329b09205035a9bf8ccd3051e82f307e88870cb4b95fbc688b35add2d"
+        },
+        {
+          "path": "controller-first/client.ts",
+          "sha256": "e79347717406681e174c40584114927c3bfbf25018b2a6bd402b3440e84bd36f"
+        },
+        {
+          "path": "controller-first/openapi.json",
+          "sha256": "0595f8f5498a9a764c266b0eca3762e994ef9bd473398dd5bac2af2f72aec4a9"
+        },
+        {
+          "path": "controller-first/api.smithy",
+          "sha256": "33fbb64122d89c028ccb811dcb604a806baf1e97ada595465a0894a402db1702"
+        },
+        {
+          "path": "controller-first/source-map.json",
+          "sha256": "cf2dcd1fe05a8ac10cedc37dc1e2ff2d76a728c6d5455a6f849dd4cdd04308ce"
+        },
+        {
+          "path": "controller-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "risk",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "450582899f80dce2d27971a2d9fea5d26cc4585454624d5ed2d5f34d6ce0519f",
+      "verifiedAt": "2026-09-23T03:28:26.914Z",
+      "commands": [
+        "cargo check/build risk and consumer; deterministic double build",
+        "vitest run test/foundation-risk.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "af455a252b880deac81f70031e7ab54c8e3c11ac0d42cf94b0b1dcc42e3cf39d"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "63ae802795ce15de70059063471a3e27b6ad494f425e8387c14bb4bf269bf875"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "aba9e6c57d0a0dab7c5b605c1a54cd3d6c6dd4a72a4f635a4d35dba76d1d1c3f"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "acb1fc68ef43b2fc0f51b9b75161bd16fa514461a793c157b55eb0babf29c120"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "16862307f253b2c075e05c6e1da63c8cf8236e375a4a0d69ff761b602b1acaac"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "f56e971a1a2375fa8abc92a4d8fe09df46f8d2f2df86863b1ce5f7393eda2980"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "a575c0efbcde665894fcd49729c243b4d02db2eb74393e49aa74d8b25f76781d"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "a95cf11c346677faa61a2f4f9abdf243fd017b611c8e08a47e5c7b871f82f81f"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "a6d63b621f01c11f8c0f5382e8a157dd1e98002a93d2a95a2cd7e4d40d53dd76"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "0e74fc42a63d2cda57d9e051922f20b72b63b9769ea46431f4e47ff8c31e9c7c"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "2156671f21def8cf8e30c1bebf4705c3c0ff492fd29ec33bcbe6a797bea6378a"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "cbf511899c37f49b3bb7fb0d1ba3d40b805ac194dc05db1f23ac5ae2800b9b6f"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "b75765af0a1c4925a9dfda19816e418db0852829948f706ef5a1fe10ce703c7c"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "e6485089fe366c37a82dc2e6c76435a0a286bdd7e1de19e6cfc3c865addd09e0"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "routing",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "fb19be67764c7ae969c49ec51669a6fe4f141e661e07354c9d2657edf4197d07",
+      "verifiedAt": "2026-09-23T03:28:32.197Z",
+      "commands": [
+        "cargo check/build routing and consumer; deterministic double build",
+        "vitest run test/foundation-routing.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "e72c9546748a957122b70cd812080a84304f4b0bc425b5174e2150778d3615cf"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "a0fa3aa60bbf3da54ee4482e4aba63f1defe5134969e7e5a305d1bbf5c05e30c"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "0218c610008e0e93f4a1fc53aa2037adfcaa0429d0c51c84cd151c519c5b8239"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "c6a3dca288116cd8aae4327e23cdce77d54e11a20e788f60c11eeb2b28e98048"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "8299f258615848b2456937a49b9f3b9c18f2f6143f7932227ce754204c0a6d36"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "8523b8171a2a35dbba61c5c6c08c9936aade47df2ff2939d2f263fed39e7358d"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "7cd10028e0b49011958aca3385d614c71f3ad074421e464ef2bacf12f94bd481"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "bab31e46bd4bcb59a0d9b12bb81f9c75d8b5992e0cf2899ff908e1ae9e21cab5"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "cfd3be681500eca4789103d05569eeeeee0f4aac185792e0900f05e5eefb0c26"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "ba1838abf0ff295d628ee63683f77bc380ef18d32dcc84fe8088b35d4da7b6c2"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "09cd9e581811037802202b631f1cfc9c3342e995679d19b1a79f1f8e6010dace"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "80a5d37bcf07048fa1d353f0e6b18aeb945a7262277b4a3b47ae02a9facfdf8b"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "5786ef2fba5f07c6c8f46ee05f3921ec128aecae28e1e60cec795042c27d2f8f"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "09d9acf176a1947269b5a52d54470dcab584a03de44b0dff58db65690baa9ca9"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "scheduling",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "e927aa99b5a9402c5d0118e3ae508100f64bd653bcf6b8d7ce4b10ddbfcbdd2d",
+      "verifiedAt": "2026-09-23T03:28:37.543Z",
+      "commands": [
+        "cargo check/build scheduling and consumer; deterministic double build",
+        "vitest run test/foundation-scheduling.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "ec84a83dd6ff5265a1aa78951bfcb3042275e8701ef1ed770143ab8927a897dd"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "04233e1d00302b0c42c5e2321f683ec4c59142f73f6ca97c47ce08581e370533"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "85df18134217a0508dd1aa243110ecd708abd18780afb64392654e7876c4d81c"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "fdeada38816a5b818cd36609bd2fdea212eb7feff75e132cc0f76577dd176d53"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "1717af82b30870eeaac850dde1a58b8c0b865429ad049c2f072a1e3cf4dc858f"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "b26e29457bf10f6c19c3ae6a6bbba3f7495a2b28c0cb988548b4d5a3d8ceaf81"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "2680ad2ad4dec6b91fcb016deb0c6c48f634c887db3493650501edc80514eea8"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "7922db24f59e1a84688fc4fae0bb0633c9b6fbb03e04e7ccb8cbc1b7b5707fd2"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "c4fd0551fd6313fec85972ef3e79f4635dcc26ba96bc6d65a199f1ae6c7534ed"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "e90c22fa145053f621daa7f4cc8f8401f3e76155fc276f54d9652059d93c585d"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "daa3eb6be5255af2f36610942cfd10043d5bbad71d77ee0f84f7b39b88bd4e25"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "ca9bff685ef41e0283b870f3237d15429a4ba6cc741da85d5766dc328bec5903"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "e81a977d8e0381261e9d79462aa64bd3b1e8afd9528a00bd997f93bfb24079a0"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "d4aea6cfe265152eee76cb29dfb8af693ed8db61fd637f32400da1093a34294c"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "selection",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "bc6307e2c025870ff417b6dfb2e3f2e95d1a2f4e0962f306ecc351ac3f9d3e71",
+      "verifiedAt": "2026-09-23T03:28:43.683Z",
+      "commands": [
+        "cargo check/build selection and consumer; deterministic double build",
+        "vitest run test/foundation-selection.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "c9bf5fbbfd30ee3fd36585cf9e9bbdd5b9cca03d72c92fb69f4e1d872677583d"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "d9e3c1a167e85acbbba3df9b36d308b612516f3b32ab6509cc76df240c7d723f"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "de2f142a3f549dc60ca9c9445b4029f865b777ebaeae9fe46e6020826f354982"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "f7414ac0e2943baf10b96723c93592a174bd062ade71ae1457a7d1dc3b94e26e"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "852e80b2197ef98e920ceb05ae35bbb17af53ca2e64c555038fe74f1364ed1d4"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "50250bb6af4e120f028d6de7efbbb172790726386992cc9727b147672921330d"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "1323b6ecfed6a1e665691c3dba3e16e45855adbbff1f7823973fd211d8442c9c"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "11a5df0da30ccfcdf25d1ed150ba53dc8e3e852f017cb8f14ba4fbb8e97b17cd"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "52ae3ce2eb54a5b43a45ec7fb269a91ede93e69b9664de88660fb01cb6d84fc5"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "580fc68cd1e0dd77cf91b402c72364e1fec89260c21e5e2e05dd65f636f775cf"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "e446551ce9d07112b6eb4dc1462378ce0b17458aeeb06ee829355f016d8a876c"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "a558246b5346699b8d1efce20b4aa6b256250e7c79f4684eac4afb3b698b4302"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "8afea63139f35fbd923743ed66db7a6cbe9cd950c122fac3ca0bfe9c7bcc99e7"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "18f8dfa8ab96bb9015fe5a912b6c9ef72f2ad47f14b094cc96115942e64d6f29"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "service-level",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "c37794416a9e59e39fbfc915e9f8caf74a3468fe09e51ab5e3b304b57e19665e",
+      "verifiedAt": "2026-09-23T03:28:52.247Z",
+      "commands": [
+        "cargo check/build service-level and consumer; deterministic double build",
+        "vitest run test/foundation-service-level.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "d974084ccebea2a0885dbef87b7e0850917412c2a6d8aad05c297e472ba8f142"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "fb6c7b690bd0fcb0a7fa8664478ab486d8d6505118f54cc898ee26ab546dacd7"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "0bf5a78cee77032b3d191ce3429032ce5b367c0f24bd895169fa530879ab0a19"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "9bddefb0526a5684ba2cab2eb1fa75bdadf9db05a1674390d40c606d94f75fce"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "88b7617c1d159ed995bef785f413ca2b80cdf0d462811ce2f426be9773d6d735"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "a4192654d655c6ca51831b1e48e1931b6ec84d76e6783a160842c5c1698816ad"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "51a198e5b75453fd06c721f2307b8929f5f0d4da3c51b65011ff64ffbfd01cd2"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "c672fd4f774ffa3e21af6700a28ea0462787287d45dd60a2b4a852397e1797e8"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "0f0d14588c949ec2928a95889203df21f34879ca76461e8f9d543e8526f82aa8"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "d8e56163d462a486ecc63ae11ac01b86c04b212492d7fd67be0fdaf99eec1d9b"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "5aa31e6888cd8ca01728855928a5fa4731b9c460e0e7c5e1df907117418c8315"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "a11675d63f3f65eaa2ddbbad7017a9f3b347ef15b8f2f6523bdbac82e98fc9bd"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "8a48af8b216e62622f739cd4b09a5e21abd4b87e557c78390d7658b6160d7d75"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "104494c0271d910bf12f43cc61fe4879a1b39075c3250ca3cfc6228ce820333a"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "specification",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "cf774fa1ed58c99d7a7ee7ba38a6171c6821e1bfef55c717c4021665f1241ae0",
+      "verifiedAt": "2026-09-23T03:25:26.586Z",
+      "commands": [
+        "cargo check/build specification and consumer; deterministic double build",
+        "vitest run test/foundation-specification-consumer.test.ts test/foundation-specification-git.test.ts test/foundation-specification.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "c45cfa9df08d228ff7e31ff58e5d85e5863b4bd0eec508bade109a38c3594de1"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "4db181bf2010e64e1d1e04ea0bb9daadd99424e9b2d3369bc85d6a05e9b13959"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "83def9ca3a43568d0e2a67c900c11e1d770272f0a19f1b5ab2e0cd36eac88cb0"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "31ac07967483ab4924d035ebd825e2ba0d9df7336214677e35634ad3c4778079"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "909eb2d224ca58c11d0ef8dab47cc284cafd53b5c9fb06db4e73a970a7d1dca1"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "22a2365b3db278aea453ae38c0abb85c1d8bd8d6cb1f44c141c040f616380bf9"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "0c3ca46a0e8156567094c203364640d4ae7d6a05f21f7084ba6e169d4536480a"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "73583f2ffdce0f29be6d0cb61e37223a5bd49b12f230f646db832e400a6e7ec6"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "0cf95f72757114a336d55898681fc6497993a43b2f5f82080cb602ae42afd1ab"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "c305cf47de5bc8fa5b78e9dde3061a8a67374291f1b08a1b7266a9055f9f51e4"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "cb8e975a5206f9b0a6b04287c258463733c90cad65351012e4b40c939b2d5ddf"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "6f2d6dcf590f8b2b7a2cdbf010c5af0abae7ab23ac90672534985d7116aa2308"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "f272322057a4a9c6682aaeb8bc332224edabe963baef45690556b162bf961aec"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "25e2bbf902d5d1cf77cc176a9c34027734f52ca3c8f0708f436ff86be4b86474"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    },
+    {
+      "version": 1,
+      "package": "usage",
+      "suite": "local",
+      "status": "passing",
+      "fingerprint": "4deea4899faf9bd39b7c73d6b250ef053f946c8e35aa44bc8f937725f6c3c563",
+      "verifiedAt": "2026-09-23T03:27:48.255Z",
+      "commands": [
+        "cargo check/build usage and consumer; deterministic double build",
+        "vitest run test/foundation-usage.test.ts"
+      ],
+      "artifacts": [
+        {
+          "path": "first/app.json",
+          "sha256": "f12aa56410c5ba56f9e6ced3b42eaf998eb4f31ba624b2d168dc016c5d4c1a37"
+        },
+        {
+          "path": "first/d1/0001_init.sql",
+          "sha256": "7ee1c3f45d23bc4b8d6ed6681442152cac9c262b795b09341382a70124f99f2b"
+        },
+        {
+          "path": "first/postgres/0001_init.sql",
+          "sha256": "d026c4b2ce1aa4fb1d07f77ec34dd48b1a1943f1f2fbc56cfe5109e0d7be9858"
+        },
+        {
+          "path": "first/client.ts",
+          "sha256": "185062585d01ad89f0784f68e9eeab6dc3c7ea4c6b469058e32bb0e2a3ee5004"
+        },
+        {
+          "path": "first/openapi.json",
+          "sha256": "d0ec00c15c325932aff174a8f71f2e5b9d00cf8503b09e5b53d0f44539648c8a"
+        },
+        {
+          "path": "first/api.smithy",
+          "sha256": "d2be761c68fb8737ae1b5729230e66f5661569e74bc8eb6356bd0cd1df78ffbb"
+        },
+        {
+          "path": "first/source-map.json",
+          "sha256": "648dabe26e201b12f3c2263df8c4f9edf531c0c22e96f50603f5f90d2b85507a"
+        },
+        {
+          "path": "first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        },
+        {
+          "path": "consumer-first/app.json",
+          "sha256": "55c7976165d8b9fcfef636e9bf826ecff9be86105b7ba062fbfaf46515161b16"
+        },
+        {
+          "path": "consumer-first/d1/0001_init.sql",
+          "sha256": "da25ed326863b3cb0be0d81cac151a2c8020a40a0418a34bba30752822af2349"
+        },
+        {
+          "path": "consumer-first/postgres/0001_init.sql",
+          "sha256": "acc758565595f567cf2e8107011668b12f8a94242456ba1dd99954ed35bb0e53"
+        },
+        {
+          "path": "consumer-first/client.ts",
+          "sha256": "5547199a18906e583a8864867c8fbbf7df717313c1a1c347add6d58407df2bcc"
+        },
+        {
+          "path": "consumer-first/openapi.json",
+          "sha256": "911ec3ce7383d2af6d47a56f3b65f52356d1eca30a5e48c5cbcf4d828961e550"
+        },
+        {
+          "path": "consumer-first/api.smithy",
+          "sha256": "916bb2beac706002cc15ca9deb7610fa842a204bf86cc38756e577a2e3ab4b30"
+        },
+        {
+          "path": "consumer-first/source-map.json",
+          "sha256": "2858184fe5c4688cc38978fbcca99bdf533db508cfcdd90229eb0f6a9ff54ced"
+        },
+        {
+          "path": "consumer-first/README.md",
+          "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+        }
+      ],
+      "providers": "live certification not run"
+    }
+  ]
+}
