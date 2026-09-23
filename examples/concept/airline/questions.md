@@ -1,6 +1,6 @@
 # Modeling pressure
 
-1. Shape-typed outputs express non-durable feasibility results, but input origin cannot link directly to a producing result port. This is a relation gap, not evidence for a new Value primitive yet.
+1. Shape-typed outputs now connect to exact producing return ports through processResult origins. Reference/type checking is enforced; actual execution and temporal applicability remain unproven. This relation avoids adding a Value primitive.
 
 2. Constraint satisfaction, ranking and approval-before-application are not proved by the current graph. Compare marketplace matching and clinical human decisions.
 

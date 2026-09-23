@@ -186,7 +186,14 @@ pub struct ProcessInput {
 #[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
 pub enum InputOrigin {
     Internal,
-    External { external: String },
+    External {
+        external: String,
+    },
+    /// A non-durable result supplied by another process, not ownership of stored data.
+    ProcessResult {
+        process: String,
+        output: String,
+    },
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -375,6 +382,12 @@ impl ConceptIR {
                 edge(id, &machine.entity, id, "transition");
             }
             for (port, input) in &process.inputs {
+                if let InputOrigin::ProcessResult {
+                    process: source, ..
+                } = &input.origin
+                {
+                    edge(source, id, port, "result");
+                }
                 if let Some(authorization) = &input.authorization {
                     edge(&authorization.policy, id, port, "authorize");
                 }
@@ -518,6 +531,29 @@ impl ConceptIR {
                     _ => {}
                 }
             }
+            for (port, input) in &process.inputs {
+                if let InputOrigin::ProcessResult {
+                    process: source,
+                    output,
+                } = &input.origin
+                {
+                    let message = match self.processes.get(source).and_then(|p| p.outputs.get(output)) {
+                        None => Some(format!("unknown result output `{output}` on process `{source}`")),
+                        Some(result) if !matches!(result.disposition, OutputDisposition::Return) =>
+                            Some("process-result inputs must reference a return output, not a durable producer or external export".into()),
+                        Some(result) if result.ty != input.ty =>
+                            Some("process-result input type must exactly match the referenced output type".into()),
+                        _ => None,
+                    };
+                    if let Some(message) = message {
+                        errors.push(Violation {
+                            code: "E-L0-RESULT".into(),
+                            subject: port.clone(),
+                            message,
+                        });
+                    }
+                }
+            }
             for (port, output) in &process.outputs {
                 let target = match (&output.disposition, &output.ty.base) {
                     (OutputDisposition::ProduceEntity, Type::Entity { id, .. })
@@ -641,7 +677,10 @@ fn compare_contract(
                 || (field == "inputs"
                     && path.len() == 5
                     && path[4] == "origin"
-                    && expected.get("kind").and_then(Value::as_str) == Some("external"))
+                    && matches!(
+                        expected.get("kind").and_then(Value::as_str),
+                        Some("external" | "processResult")
+                    ))
                 || (field == "inputs"
                     && path.len() == 6
                     && path[4] == "selection"

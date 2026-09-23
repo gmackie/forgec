@@ -55,6 +55,12 @@
       "kind": "emit"
     },
     {
+      "from": "@corpus/marketplace/_/Candidate",
+      "to": "@corpus/marketplace/_/IssueOffer",
+      "port": "@corpus/marketplace/_/IssueOffer#input:candidate",
+      "kind": "input"
+    },
+    {
       "from": "@corpus/marketplace/_/DispatchJob",
       "to": "@corpus/marketplace/_/Dispatch",
       "port": "@corpus/marketplace/_/DispatchJob",
@@ -191,6 +197,12 @@
       "to": "@corpus/marketplace/_/Dispatch",
       "port": "@corpus/marketplace/_/MatchProviders",
       "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/MatchProviders",
+      "to": "@corpus/marketplace/_/IssueOffer",
+      "port": "@corpus/marketplace/_/IssueOffer#input:candidate",
+      "kind": "result"
     },
     {
       "from": "@corpus/marketplace/_/ObserveProvider",

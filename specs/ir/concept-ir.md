@@ -82,3 +82,11 @@ Remaining #24 work: explicit experimental source grammar, complete business data
 ## Cross-domain validation
 
 The [#69 corpus](../../examples/concept/README.md) contains ten explicit contracts with checked coverage evidence, ownership, graph snapshots, partial realization substitutions and adversarial mutations. Its [findings](../../docs/conceptir-validation-corpus.md) document pressures that remain unresolved before freezing the kernel or adding source grammar.
+
+### Typed intermediate result relationships
+
+An input may use `origin: {"kind":"processResult","process":"<semantic process ID>","output":"<full output port ID>"}` to consume another process's non-durable return. This additive v2 variant leaves existing artifacts and hashes unchanged. Older readers reject the new variant rather than treating it as internal acquisition.
+
+Validation requires the process and exact output port to exist, the output disposition to be `return`, and the complete input/output types to match (including optionality, classification, purpose and constraints). Failures report `E-L0-RESULT`. No variance or implicit conversion is inferred. The graph adds a `result` edge from supplier to consumer identified by the input port; the exact output remains on input origin. This relationship establishes neither durable ownership nor activation, execution order or invocation count. Recursive relationships are not treated as an execution plan.
+
+Legacy signature projection cannot establish this data flow and reports `E-L0-UNPROVEN`. Airline feasibility results and marketplace candidates exercise the relation in the corpus; missing outputs, type mismatches and unlinking are mutation cases. No Value primitive is introduced.

@@ -20,7 +20,7 @@ The corpus identifies recurring gaps rather than resolving them through unchecke
 - Banking, benefits and insurance need precise validity/correction semantics beyond stored dates.
 - Clinical, insurance and benefits decisions need evidence completeness and authorization/audit coupling.
 - Manufacturing and marketplace require explicit event-time, staleness and late-data semantics without a stream-processing language in L0.
-- Airline and marketplace typed results need producer-result port relationships; this is not yet sufficient evidence for a Value primitive.
+- Airline and marketplace now connect typed results through process-result origins with exact output/type validation. Actual execution remains unproven; no Value primitive was needed.
 - Stateful dispatch needs a key/isolation contract with an actual tooling consumer.
 - Collaboration retains one logical owner but still needs convergence and conflict-semantics evidence for CRDT/OT substitution.
 

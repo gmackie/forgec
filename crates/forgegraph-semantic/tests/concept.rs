@@ -534,3 +534,86 @@ fn workflow_state_and_lifecycle_facets_compose_and_validate() {
             .any(|v| v.code == "E-L0-REFERENCE")
     );
 }
+
+#[test]
+fn process_results_link_exact_ports_without_inventing_durable_owners() {
+    let ir = fixture(
+        "resource Customer { id : id }\nfunction Produce { output Customer.Record }\nfunction Consume { input Customer.Record }",
+    );
+    let mut concept = project(&ir).concept;
+    let source = "@test/concept/_/Produce";
+    let consumer = "@test/concept/_/Consume";
+    let output = format!("{source}#output:return");
+    let input = format!("{consumer}#input:input");
+    concept
+        .processes
+        .get_mut(consumer)
+        .unwrap()
+        .inputs
+        .get_mut(&input)
+        .unwrap()
+        .origin = InputOrigin::ProcessResult {
+        process: source.into(),
+        output: output.clone(),
+    };
+    assert!(concept.validate().is_empty());
+    assert_eq!(
+        ConceptIR::load(&serde_json::to_value(&concept).unwrap()).unwrap(),
+        concept
+    );
+    let graph = concept.graph();
+    assert!(
+        graph
+            .edges
+            .iter()
+            .any(|e| e.from == source && e.to == consumer && e.port == input && e.kind == "result")
+    );
+    assert!(!graph.edges.iter().any(|e| e.kind == "produce"));
+    let report = concept.realization_report(&ir);
+    assert!(report.violations.is_empty());
+    assert_eq!(report.unproven.len(), 1);
+    assert!(report.unproven[0].subject.ends_with("/origin"));
+    // Compatible signatures do not prove the consumer actually invokes the producer.
+    assert!(!report.is_satisfied());
+    let mut changed = concept.clone();
+    changed
+        .processes
+        .get_mut(consumer)
+        .unwrap()
+        .inputs
+        .get_mut(&input)
+        .unwrap()
+        .ty
+        .optional = true;
+    assert!(changed.validate().iter().any(|e| e.code == "E-L0-RESULT"));
+    changed = concept.clone();
+    changed
+        .processes
+        .get_mut(source)
+        .unwrap()
+        .outputs
+        .get_mut(&output)
+        .unwrap()
+        .disposition = OutputDisposition::ProduceEntity;
+    assert!(changed.validate().iter().any(|e| e.code == "E-L0-RESULT"));
+    changed = concept.clone();
+    changed.processes.get_mut(source).unwrap().outputs.clear();
+    assert!(changed.validate().iter().any(|e| e.code == "E-L0-RESULT"));
+    changed = concept.clone();
+    changed.processes.remove(source);
+    assert!(
+        ConceptIR::load(&serde_json::to_value(changed).unwrap())
+            .unwrap_err()
+            .contains("E-L0-RESULT")
+    );
+    changed = concept.clone();
+    changed
+        .processes
+        .get_mut(consumer)
+        .unwrap()
+        .inputs
+        .get_mut(&input)
+        .unwrap()
+        .origin = InputOrigin::Internal;
+    assert_ne!(concept.content_hash(), changed.content_hash());
+}

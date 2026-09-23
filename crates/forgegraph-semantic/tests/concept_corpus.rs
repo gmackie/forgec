@@ -93,6 +93,9 @@ fn check_integrity(c: &ConceptIR) {
     for (id, p) in &c.processes {
         for input in p.inputs.values() {
             type_references(&input.ty, c);
+            if let InputOrigin::ProcessResult { process, output } = &input.origin {
+                assert_eq!(c.processes[process].outputs[output].ty, input.ty);
+            }
         }
         for output in p.outputs.values() {
             type_references(&output.ty, c);

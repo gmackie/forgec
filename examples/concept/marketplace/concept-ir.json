@@ -2109,6 +2109,32 @@
             "policy": "@corpus/marketplace/_/ScopedAccess",
             "mode": "requireAll"
           }
+        },
+        "@corpus/marketplace/_/IssueOffer#input:candidate": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/marketplace/_/Candidate"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "processResult",
+            "process": "@corpus/marketplace/_/MatchProviders",
+            "output": "@corpus/marketplace/_/MatchProviders#output:result"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "job",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
         }
       },
       "outputs": {

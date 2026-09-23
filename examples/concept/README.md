@@ -28,7 +28,7 @@ Review the resulting diff. Normal tests never rewrite artifacts. `concept-ir.jso
 | Banking | Ledger facts, reconciliation and as-of balance | Balanced atomic posting and bitemporal correction |
 | Hospital | Treatment ABAC, care waits and emergency access | Break-glass audit coupling and information flow |
 | Manufacturing | Telemetry windows and batch quality | Event-time, late arrivals and retractions |
-| Airline | Fan-in, feasibility results and human approval | Result-port links and optimization constraints |
+| Airline | Fan-in, feasibility results and human approval | Result execution and optimization constraints |
 | Configurable SaaS | Runtime metadata and dynamic records | Dependent payload validation and safe interpretation |
 | Insurance | Loss-time coverage, evidence and reopen | Provenance completeness and validity intervals |
 | Benefits | Versioned rules, appeals and retroactive awards | Bitemporal selection and legally adequate notice |
@@ -37,7 +37,7 @@ Review the resulting diff. Normal tests never rewrite artifacts. `concept-ir.jso
 
 ## Findings across domains
 
-* Non-durable results fit Shape-typed process returns (airline, marketplace), but connecting a particular result port needs a relation. This is insufficient evidence to promote Value.
+* Non-durable results fit Shape-typed process returns (airline, marketplace). Process-result origins now connect exact return ports with reference/type validation; actual data flow remains unproven. No Value primitive is needed for this connection.
 * Unique invariants cannot express balanced journals, refund ceilings or exclusive assignments. Banking, commerce and marketplace supply cross-domain evidence for evaluating a composable invariant contract with an actual checker.
 * Digest/version references make provenance meaningful in insurance, hospital and benefits; completeness and audit obligations remain separate from identity.
 * AsOf/during plus validity fields preserve intent but do not prove bitemporal joins (banking, insurance, benefits) or event-time window policies (manufacturing, marketplace).

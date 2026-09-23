@@ -87,6 +87,12 @@
     },
     {
       "from": "@corpus/airline/_/AirspaceFeasibility",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:AirspaceFeasibility",
+      "kind": "result"
+    },
+    {
+      "from": "@corpus/airline/_/AirspaceFeasibility",
       "to": "@corpus/airline/_/RecoveryOperations",
       "port": "@corpus/airline/_/AirspaceFeasibility",
       "kind": "purpose"
@@ -171,6 +177,12 @@
     },
     {
       "from": "@corpus/airline/_/CrewFeasibility",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:CrewFeasibility",
+      "kind": "result"
+    },
+    {
+      "from": "@corpus/airline/_/CrewFeasibility",
       "to": "@corpus/airline/_/CrewFeasibilityResult",
       "port": "@corpus/airline/_/CrewFeasibility#output:result",
       "kind": "return"
@@ -198,6 +210,12 @@
       "to": "@corpus/airline/_/BuildRecoveryPlan",
       "port": "@corpus/airline/_/BuildRecoveryPlan#input:CrewUnavailable",
       "kind": "input"
+    },
+    {
+      "from": "@corpus/airline/_/FleetFeasibility",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:FleetFeasibility",
+      "kind": "result"
     },
     {
       "from": "@corpus/airline/_/FleetFeasibility",
