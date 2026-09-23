@@ -46,10 +46,40 @@ export function evidenceErrors(record, slug, expectedFingerprint) {
   return errors;
 }
 
+/** Reject graph drift before readiness can release work. */
+export function validateGraph(graph, contracts) {
+  const errors = [];
+  if (!graph || !Array.isArray(graph.packages) || !graph.gateOwnership || typeof graph.gateOwnership !== 'object') return ['invalid dependency graph'];
+  const names = new Set(graph.packages.map(p => p.slug));
+  const cs = new Map(contracts.map(c => [c.slug, c]));
+  if (names.size !== graph.packages.length || cs.size !== contracts.length) errors.push('duplicate package');
+  if (names.size !== cs.size || [...cs.keys()].some(s => !names.has(s))) errors.push('graph scope differs from contracts');
+  for (const p of graph.packages) {
+    const c = cs.get(p.slug);
+    for (const field of ['dependencies', 'requiresGates', 'acceptanceGates']) {
+      if (!Array.isArray(p[field]) || p[field].some(v => typeof v !== 'string') || new Set(p[field]).size !== p[field].length) errors.push(`${p.slug}: invalid ${field}`);
+    }
+    if (!Array.isArray(p.dependencies) || !Array.isArray(p.requiresGates) || !Array.isArray(p.acceptanceGates)) continue;
+    if (c && (p.issue !== c.issue || p.layer !== c.layer || JSON.stringify([...p.dependencies].sort()) !== JSON.stringify([...(c.dependencies ?? [])].sort()))) errors.push(`${p.slug}: graph differs from contract`);
+    if (p.dependencies.some(d => !names.has(d))) errors.push(`${p.slug}: unknown dependency`);
+    for (const gate of [...p.requiresGates, ...p.acceptanceGates]) {
+      const owner = graph.gateOwnership[gate];
+      if (typeof owner !== 'string' || !owner.trim()) errors.push(`${p.slug}: gate ${gate} has no owner`);
+      if (p.requiresGates.includes(gate) && (owner === p.slug || p.acceptanceGates.includes(gate))) errors.push(`${p.slug}: cannot require its own acceptance gate ${gate}`);
+      if (p.acceptanceGates.includes(gate) && owner !== p.slug) errors.push(`${p.slug}: does not own acceptance gate ${gate}`);
+      if (p.requiresGates.includes(gate) && names.has(owner) && !p.dependencies.includes(owner)) errors.push(`${p.slug}: gate owner ${owner} must be a direct dependency`);
+    }
+  }
+  return errors;
+}
+
 /** All dependencies mean accepted contracts + verified implementations. A producer
  * does not wait for the acceptance gate it will implement itself. */
 export function schedule(graph, contracts, state, { slots = 3, fingerprintOf, kernelFingerprint } = {}) {
   if (!Number.isInteger(slots) || slots < 1) throw new Error('slots must be a positive integer');
+  const graphErrors = validateGraph(graph, contracts);
+  if (graphErrors.length) throw new Error(graphErrors.join('\n'));
+  if (!Array.isArray(state.active ?? []) || new Set(state.active ?? []).size !== (state.active ?? []).length || (state.active ?? []).some(s => !graph.packages.some(p => p.slug === s))) throw new Error('invalid active package list');
   const nodes = new Map(graph.packages.map(p => [p.slug, p]));
   const cs = new Map(contracts.map(c => [c.slug, c]));
   const active = new Set(state.active ?? []);

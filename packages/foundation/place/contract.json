@@ -6,14 +6,20 @@
     "identifiers"
   ],
   "facts": [
-    "Place identity, bounded containment, identifier set and typed address/timezone extensions."
+    "Place: stable identifier-set-backed identity with audited containment",
+    "PlaceAddressRevision: append-only typed address snapshot",
+    "PlaceTimezoneRevision: append-only timezone snapshot"
   ],
   "operations": [
-    "Typed creation, query and lifecycle operations for place"
+    "Place.create/get/update/move/children/ancestors with tenant and version guards",
+    "PlaceAddressRevision.create/list.byPlace",
+    "PlaceTimezoneRevision.create/list.byPlace"
   ],
   "invariants": [
-    "PlaceAvailability bridge references Place and Availability; Place does not import Scheduling or Availability.",
-    "Facility/room, customer site, warehouse; moves preserve identity; concurrent opposing moves cannot create cycles; invalid zones rejected."
+    "Moves preserve stable Place and IdentifierSet identity; hierarchy cycle checks commit atomically",
+    "Address and timezone revisions preserve explicit earlier same-Place predecessors and unique revision numbers",
+    "Application fixtures attach typed location resources, never polymorphic targets",
+    "Timezone values require kernel IANA timezone validation; required tests must not pass against a string-only codec"
   ],
   "acceptance": [
     {
@@ -48,6 +54,8 @@
     }
   ],
   "fixtures": [
-    "fixtures for facility/room, customer site and warehouse location"
+    "Facility and Room containment",
+    "CustomerSite pinned address",
+    "WarehouseLocation typed aisle"
   ]
 }

@@ -1,0 +1,121 @@
+import identifiers
+
+/// Business vocabulary, independent of governance dataClass semantics.
+export resource Taxonomy
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..128 @unique
+  identifiers : identifiers.IdentifierSet
+  find by key
+}
+
+/// Ordinal is a stable taxonomy-local successor ordering, not display order.
+export resource Concept
+  @tenant
+  @versioned
+  @audited
+  @hierarchical
+{
+  id : id
+  taxonomy : Taxonomy @immutable
+  ordinal : integer >= 1 @immutable
+  identifiers : identifiers.IdentifierSet @immutable @unique
+  rules {
+    parent == null || parent.taxonomy == taxonomy
+  }
+  unique taxonomy, ordinal
+  list by taxonomy
+    order by ordinal asc
+}
+
+export resource ConceptRevision
+  @tenant
+  @appendOnly
+{
+  id : id
+  concept : Concept
+  taxonomy : Taxonomy
+  ordinal : integer >= 1
+  revision : integer >= 1
+  previous : ConceptRevision?
+  parentMeaning : ConceptRevision?
+  label : text trim length 1..200
+  definition : text length 1..4000
+  rules {
+    taxonomy == concept.taxonomy
+    ordinal == concept.ordinal
+    (concept.parent == null && parentMeaning == null) || (parentMeaning != null && parentMeaning.concept == concept.parent)
+    (revision == 1 && previous == null) || (previous != null && previous.concept == concept && revision > previous.revision)
+  }
+  unique concept, revision
+  list by concept
+    order by revision desc
+}
+
+/// One terminal fact retires a concept or points to an exact successor meaning.
+export resource ConceptDisposition
+  @tenant
+  @appendOnly
+{
+  id : id
+  concept : Concept @unique
+  replacement : ConceptRevision?
+  effectiveAt : datetime
+  reason : text length 1..500
+  rules {
+    replacement == null || (replacement.taxonomy == concept.taxonomy && replacement.ordinal > concept.ordinal)
+  }
+  find by concept
+}
+
+export resource ConceptAlias
+  @tenant
+  @appendOnly
+{
+  id : id
+  taxonomy : Taxonomy
+  alias : text trim lowercase length 1..128
+  meaning : ConceptRevision
+  rules {
+    meaning.taxonomy == taxonomy
+  }
+  unique taxonomy, alias
+  find by taxonomy, alias
+}
+
+export resource ClassificationSet
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+
+/// An assignment records exact historical meaning; no floating latest concept.
+export resource ClassificationAssignment
+  @tenant
+  @appendOnly
+{
+  id : id
+  classifications : ClassificationSet
+  meaning : ConceptRevision
+  recordedAt : datetime
+  unique classifications, meaning
+  list by classifications
+}
+
+export resource ClassificationRetraction
+  @tenant
+  @appendOnly
+{
+  id : id
+  assignment : ClassificationAssignment @unique
+  effectiveAt : datetime
+  reason : text length 1..500
+  rules {
+    effectiveAt >= assignment.recordedAt
+  }
+  find by assignment
+}

@@ -116,7 +116,7 @@ export function localAuthorizer(o: { policies: Policy[]; pips: PipProvider[]; ep
     requirements: (action, purpose) => applicable(action, purpose).flatMap((p) => p.requires),
     rowFilterFor: (action, purpose, attrs) => {
       const ps = applicable(action, purpose);
-      if (ps.length === 0) return null;
+      if (ps.length !== 1) return null;
       const p = ps[0]!;
       if (p.where.length === 0) return { policy: p.id, filter: [] };
       const filter: RowFilter[] = [];
@@ -243,7 +243,7 @@ export class Gatekeeper {
     if (this.authorizer.liveAttributes) return { kind: "candidate", filter: [] };
     const attrs = this.attributes(action, ctx.purpose, ctx.actor);
     const f = this.authorizer.rowFilterFor(action, ctx.purpose, attrs);
-    if (f === null) return { kind: "none", filter: [] };
+    if (f === null) return { kind: "candidate", filter: [] };
     if (f === "unsupported") return { kind: "unsupported", filter: [], reason: "policy predicate depends on attributes this runtime cannot resolve" };
     // Exact when every predicate field is a query parameter (the partition already restricts the working set)
     // or the predicate is on the record's own fields (checked per row within the bounded page: residual).

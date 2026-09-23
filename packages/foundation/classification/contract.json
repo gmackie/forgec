@@ -6,14 +6,28 @@
     "identifiers"
   ],
   "facts": [
-    "Business Taxonomy/Concept/revision, aliases, supersession, ClassificationSet and assignments. Separate from governance dataClass."
+    "Taxonomy and Concept: business vocabulary separate from governance dataClass",
+    "ConceptRevision: immutable definition, taxonomy/ordinal snapshot and historical parentMeaning",
+    "ConceptDisposition: unique terminal retirement or forward-ordinal supersession",
+    "ConceptAlias: taxonomy-scoped normalized alias to exact meaning",
+    "ClassificationSet, ClassificationAssignment and ClassificationRetraction: typed sidecar and retained correction history"
   ],
   "operations": [
-    "Typed creation, query and lifecycle operations for classification"
+    "Concept.create/get/move/children/ancestors",
+    "ConceptRevision.create/list.byConcept",
+    "ConceptDisposition.create/find.byConcept",
+    "ConceptAlias.create/find.byTaxonomyAlias",
+    "ClassificationAssignment.create/list.byClassifications",
+    "ClassificationRetraction.create/find.byAssignment",
+    "Classification.status and resolveAssignment through authorized Engine reads"
   ],
   "invariants": [
-    "Subjects point to classification sidecars. Classification never imports its classified subjects.",
-    "Knowledge/product/risk/job-family vocabularies; hierarchy/alias conflicts; historical assignment interpretation survives concept evolution."
+    "Same-taxonomy hierarchy has kernel commit-time cycle prevention",
+    "Assignments and aliases pin immutable meaning, never a floating latest concept",
+    "Supersession targets exact meaning in same taxonomy with higher immutable ordinal; cycles cannot form",
+    "Revision taxonomy/ordinal snapshots are checked against immutable concept fields; parentMeaning pins historical context",
+    "Historical assignment recording remains legal after retirement; no current eligibility claim is inferred",
+    "IdentifierSet owns external codes; no generic subject reference or governance authorization is introduced"
   ],
   "acceptance": [
     {
@@ -54,6 +68,9 @@
     }
   ],
   "fixtures": [
-    "fixtures for knowledge, products, risk and job-family classification"
+    "KnowledgeArticle classification sidecar",
+    "Product classification sidecar",
+    "RiskScenario classification sidecar",
+    "JobFamily classification sidecar"
   ]
 }

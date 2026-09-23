@@ -85,6 +85,25 @@ describe("authorizer decisions in the pipeline", () => {
     expect(other.plan).toEqual({ kind: "exact", policy: "contact-by-team" });
   });
 
+  it("lists deny absent policies and cannot bypass required attributes or obligations", async () => {
+    const list = () => run(engine.call(`${N}/Contact.list.byCustomer`, { params: { customer: ids.customerA } }, agent7));
+    for (const policy of [null,
+      { id: "missing", actions: [`${N}/Contact.*`], requires: [{pip:"absent",attribute:"team"}], where: [] },
+      { id: "obligation", actions: [`${N}/Contact.*`], requires: [], where: [], obligations: [{kind:"unknown"}] },
+    ]) {
+      engine.gatekeeper.authorizer = localAuthorizer({policies: policy ? [policy] : [],pips:[],epoch:Math.random(),knownObligations:[]});
+      expect((await list()).items).toEqual([]);
+    }
+  });
+
+  it("list policy alternatives are ORed rather than restricted to the first policy", async () => {
+    engine.gatekeeper.authorizer = localAuthorizer({policies:[ids.customerB,ids.customerA].map((id,i)=>({
+      id:`alternative-${i}`,actions:[`${N}/Contact.*`],requires:[],where:[{field:"customer",op:"eq",values:[id]}],
+    })),pips:[],epoch:2,knownObligations:[]});
+    const page=await run(engine.call(`${N}/Contact.list.byCustomer`,{params:{customer:ids.customerA}},agent7));
+    expect(page.items.map((row:any)=>row.name)).toEqual(["Ann"]);
+  });
+
   it("PAR-110: mutations authorize current and candidate state — reassigning to a scope the actor cannot reach is denied", async () => {
     engine.gatekeeper.authorizer = localAuthorizer({ policies: [{ id: "reassign", actions: [`${N}/Order.*`], purpose: `${G}/OrderFulfillment`, requires: [], where: [{ field: "customer", op: "in", values: [ids.customerA] }] }], pips: [], epoch: 1, knownObligations: [] });
     const site = await run(engine.call(`${N}/Site.create`, { customer: ids.customerA, code: "HQ", name: "HQ" }, seed));

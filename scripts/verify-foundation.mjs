@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { fingerprint, schedule } from './foundation-state.mjs';
+import { fingerprint, schedule, validateGraph } from './foundation-state.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const scope = JSON.parse(readFileSync(join(root, 'specs/foundation/scope.json'), 'utf8')).packages;
@@ -104,10 +104,11 @@ function main() {
     // Validate the entire graph even when reviewing one package: direction is a global invariant.
     const result = validateContracts(contracts);
     result.errors.push(...validateCatalogs(contracts, Object.fromEntries(['substrate', 'system'].map(layer => [layer, JSON.parse(readFileSync(join(root, `specs/foundation/${layer}s.json`), 'utf8'))]))));
+    const graph = JSON.parse(readFileSync(join(root, 'specs/foundation/dependencies.json'), 'utf8'));
+    result.errors.push(...validateGraph(graph, contracts));
     if (result.errors.length) throw new Error(result.errors.join('\n'));
     if (suite === 'ready') {
       if (!statePath) throw new Error('--suite ready requires --state <execution receipts JSON>; issue status alone cannot release work');
-      const graph = JSON.parse(readFileSync(join(root, 'specs/foundation/dependencies.json'), 'utf8'));
       const state = JSON.parse(readFileSync(resolve(statePath), 'utf8'));
       const digests = new Map();
       console.log(JSON.stringify(schedule(graph, contracts, state, {kernelFingerprint: fingerprint(root, 'specification', contracts), fingerprintOf: slug => { if (!digests.has(slug)) digests.set(slug, fingerprint(root, slug, contracts)); return digests.get(slug); }}), null, 2));

@@ -23,3 +23,7 @@ Facility/room, customer site, warehouse; moves preserve identity; concurrent opp
 - F53-05: fixtures for facility/room, customer site and warehouse location
 
 Compile typed consumer fixtures, execute generated-bundle behaviors and adversarial cases, and bind evidence to accepted dependency revisions. Provider certification is separate from local tests.
+
+## Executable implementation
+
+See [README.md](README.md) for the implemented resource/operation profile, explicit limitations, generated consumer fixture and focused memory/SQLite verification commands. Acceptance remains planned pending integration evidence; live provider certification is not claimed.

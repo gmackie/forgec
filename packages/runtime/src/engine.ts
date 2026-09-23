@@ -571,7 +571,9 @@ export class Engine {
       if (plan.kind === "exact") {
         const denied = plan.filter.some((c) => (c.op === "in" && !c.values.includes(values[c.field])) || (c.op === "eq" && values[c.field] !== c.values[0]) || (c.op === "ne" && c.values.includes(values[c.field])));
         if (denied) items = [];
-      } else if (plan.kind === "candidate") {
+      }
+      // Query predicates are only a prefilter; freshness and obligations still require decisions.
+      if (self.gatekeeper.authorizer) {
         const kept: Wire[] = [];
         for (const it of items) {
           const d = yield* self.gatekeeper.decide(opId, "read", r, ctx, it);

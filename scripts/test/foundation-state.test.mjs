@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { schedule, evidenceErrors } from '../foundation-state.mjs';
 const node = (slug, issue, dependencies=[], requiresGates=['core'], acceptanceGates=[]) => ({slug, issue, dependencies, requiresGates, acceptanceGates});
-const cs = ns => ns.map(n => ({slug:n.slug,acceptance:[{status:'passing'}]}));
+const cs = ns => ns.map(n => ({slug:n.slug,issue:n.issue,dependencies:n.dependencies,acceptance:[{status:'passing'}]}));
 const proof = slug => ({version:1,package:slug,suite:'local',status:'passing',fingerprint:slug,commands:['verify'],artifacts:[{path:'app.json',sha256:'a'.repeat(64)}],verifiedAt:'2026-09-22T00:00:00Z'});
 const options={slots:3,fingerprintOf:s=>s,kernelFingerprint:'kernel-v1'};
 const state=()=>({packages:{},gates:{core:{status:'passing',fingerprint:'kernel-v1'}}});
@@ -36,4 +36,13 @@ test('false or incomplete receipts cannot release dependency', () => {
   assert.ok(evidenceErrors({status:'passing'},'x','x').length);
   assert.deepEqual(evidenceErrors(proof('x'),'x','x'),[]);
   assert.ok(evidenceErrors({...proof('x'),artifacts:[]},'x','x').length);
+});
+
+test('malformed graph and active workers cannot release tasks', () => {
+  const ns=[node('a',26)],g={packages:ns,gateOwnership:{core:'kernel'}};
+  assert.throws(()=>schedule(g,cs(ns),{...state(),active:['ghost']},options),/invalid active/);
+  assert.throws(()=>schedule(g,cs(ns),{...state(),active:['a','a']},options),/invalid active/);
+  assert.throws(()=>schedule({...g,packages:[...ns,...ns]},cs(ns),state(),options),/duplicate/);
+  assert.throws(()=>schedule({...g,gateOwnership:{}},cs(ns),state(),options),/no owner/);
+  assert.throws(()=>schedule(g,[{...cs(ns)[0],dependencies:['ghost']}],state(),options),/differs/);
 });

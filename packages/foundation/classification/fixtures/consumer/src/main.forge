@@ -1,0 +1,29 @@
+import classification
+resource KnowledgeArticle
+  @tenant
+  @appendOnly
+{
+  id : id
+  classifications : classification.ClassificationSet @unique
+}
+resource Product
+  @tenant
+  @appendOnly
+{
+  id : id
+  classifications : classification.ClassificationSet @unique
+}
+resource RiskScenario
+  @tenant
+  @appendOnly
+{
+  id : id
+  classifications : classification.ClassificationSet @unique
+}
+resource JobFamily
+  @tenant
+  @appendOnly
+{
+  id : id
+  classifications : classification.ClassificationSet @unique
+}
