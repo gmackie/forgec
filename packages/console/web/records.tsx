@@ -110,6 +110,7 @@ export function RecordWorkspaceView({ api }: { api: StudioApi }) {
             </Button>
           </div>
           <GizmoWorkspace
+            operations={opened.contract.operations.map((op) => op.id)}
             gizmos={gizmos}
             descriptor={opened.contract.descriptor}
             call={call}

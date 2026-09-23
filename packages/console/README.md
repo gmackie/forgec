@@ -483,3 +483,11 @@ disables its workers.dev endpoint and previews, retaining the Worker for resumpt
 the last action health check; the console playground routes to the recorded active deployment.
 Build the included pure-function Worker with `node scripts/build-playground.mjs`; its output
 is `generated/playground/worker.mjs`. Stateful apps require retained storage bindings.
+
+### Business record workspace
+
+Use opens deployed data with create and update controls available directly. Delete appears only when the deployed workspace exposes the resource delete operation; deletion is staged, undoable before saving, and confirmed through the changeset review flow. Browse records switches to a read-only view. That view uses only descriptor-defined list queries, with bounded pages, page-local search/sort, and a record detail panel. Details display the fields returned in the list response; no additional read route or access grant is inferred. Collections are grouped by their source package. Edit records opens the existing changeset buffer and review flow; unsaved changes prevent mode/environment navigation.
+
+The Application foundations gizmo appears when deployed descriptors contain `@forgegraph/foundation/…` resources. It opens their generated collections, including specification pins, artifacts, identifiers, and participation records when available. It does not install packages, fabricate collections, or derive authorization from participation data. Runtime authorization remains authoritative.
+
+In Design, Try form accepts local sample values from the current field draft. It checks required values and native input formats, never calls a runtime, and can open field configuration directly. Cross-field rules, policy enforcement and calculated values still require the compiled application.

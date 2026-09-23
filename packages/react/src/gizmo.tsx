@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { Workspace, type ForgeCall } from "./workspace.js";
+import { RecordBrowser } from "./browser.js";
 import type { UiDescriptor } from "./descriptor.js";
 
 /** A purpose-built UI, supplied by the host application at build time. */
@@ -55,12 +56,17 @@ export function GizmoWorkspace({
   call,
   gizmos,
   onDirtyChange,
+  browseFirst = false,
+  operations,
 }: {
   descriptor: UiDescriptor;
   call: ForgeCall;
+  browseFirst?: boolean;
+  operations?: readonly string[];
   gizmos: readonly GizmoDefinition[];
   onDirtyChange?: (dirty: boolean) => void;
 }) {
+  const [editing, setEditing] = useState(!browseFirst);
   const [view, setView] = useState("forms");
   const [route, setRoute] = useState<string | undefined>();
   const [dirty, setDirty] = useState(false);
@@ -89,9 +95,10 @@ export function GizmoWorkspace({
       if (nextRoute && !descriptor.resources.some((r) => r.route === nextRoute))
         return;
       setRoute(nextRoute);
+      if (nextRoute && browseFirst) setEditing(false);
       setView("forms");
     },
-    [dirty, descriptor],
+    [dirty, descriptor, browseFirst],
   );
   const Custom = selected?.component;
   return (
@@ -128,12 +135,18 @@ export function GizmoWorkspace({
             Standard tables and forms for the application's records. These stay
             available alongside custom gizmos.
           </p>
-          <Workspace
+          <div className="gizmo-view-switch" aria-label="Record mode">
+            <button type="button" aria-pressed={!editing} disabled={dirty} onClick={() => setEditing(false)}>Browse records</button>
+            <button type="button" aria-pressed={editing} onClick={() => setEditing(true)}>Edit records</button>
+          </div>
+          {!editing ? <RecordBrowser descriptor={descriptor} call={call} onRouteChange={setRoute} {...(route ? { initialRoute: route } : {})} /> : <Workspace
             descriptor={descriptor}
             call={call}
             {...(route ? { initialRoute: route } : {})}
             onDirtyChange={reportDirty}
-          />
+            onRouteChange={setRoute}
+            {...(operations ? { operations } : {})}
+          />}
         </>
       ) : selected && Custom ? (
         <section aria-label={selected.title} className="gizmo-detail">

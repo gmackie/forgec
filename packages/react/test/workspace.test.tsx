@@ -101,3 +101,22 @@ describe("Workspace", () => {
     expect(screen.getByTestId("ref-new:1-customer")).toHaveTextContent(c.id);
   });
 });
+
+it("deletes through review and commit only when the workspace exposes deletion", async () => {
+  const customer = await run("@acme/commerce/_/Customer.create", {code:"DELETE",name:"Delete me"});
+  const descriptor=(bundle as any).ui;
+  const rendered=render(<Workspace descriptor={descriptor} call={call} initialRoute="customers" operations={[]}/>);
+  await waitFor(()=>expect(screen.getByRole("table")).toHaveTextContent("DELETE"));
+  expect(screen.queryByRole("button",{name:"Delete Delete me"})).toBeNull();
+  rendered.rerender(<Workspace descriptor={descriptor} call={call} initialRoute="customers" operations={["@acme/commerce/_/Customer.delete"]}/>);
+  fireEvent.click(screen.getByRole("button",{name:"Delete Delete me"}));
+  expect(await run("@acme/commerce/_/Customer.get",{id:customer.id})).toMatchObject({name:"Delete me"});
+  fireEvent.click(screen.getByRole("button",{name:"Undo delete"}));
+  expect(screen.getByRole("button",{name:"Preview changes"})).toBeDisabled();
+  fireEvent.click(screen.getByRole("button",{name:"Delete Delete me"}));
+  fireEvent.click(screen.getByRole("button",{name:"Preview changes"}));
+  await waitFor(()=>expect(screen.getByRole("dialog")).toHaveTextContent("delete Customer"));
+  expect(await run("@acme/commerce/_/Customer.get",{id:customer.id})).toMatchObject({name:"Delete me"});
+  fireEvent.click(screen.getByRole("button",{name:"Save changes"}));
+  await waitFor(()=>expect(screen.getByRole("table")).not.toHaveTextContent("DELETE"));
+});

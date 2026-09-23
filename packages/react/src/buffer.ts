@@ -13,10 +13,12 @@ export class EditBuffer {
   private edits = new Map<string, Row>();
   private order: string[] = [];
   private seq = 0;
+  private deleted = new Set<string>();
 
   constructor(readonly resource: UiResource) {}
 
   load(rows: Row[]): void {
+    this.deleted.clear();
     this.records.clear();
     this.edits.clear();
     this.order = [];
@@ -61,7 +63,7 @@ export class EditBuffer {
   }
 
   set(id: string, field: string, raw: unknown): void {
-    if (!this.editable(id, field)) return;
+    if (this.isDeleted(id) || !this.editable(id, field)) return;
     const value = this.coerce(field, raw);
     const e = this.edits.get(id) ?? {};
     const original = this.records.get(id)?.[field] ?? null;
@@ -83,16 +85,23 @@ export class EditBuffer {
       this.edits.delete(id);
     }
   }
+  isDeleted(id: string): boolean { return this.deleted.has(id); }
+  stageDelete(id: string): void {
+    if (this.isNew(id)) this.remove(id);
+    else if (this.records.has(id)) this.deleted.add(id);
+  }
+  restorePending(id: string): void { this.deleted.delete(id); }
   revert(id: string): void {
+    this.deleted.delete(id);
     if (this.isNew(id)) this.remove(id);
     else this.edits.delete(id);
   }
   revertAll(): void {
-    for (const id of [...this.edits.keys()]) this.revert(id);
+    for (const id of new Set([...this.edits.keys(), ...this.deleted])) this.revert(id);
   }
 
   dirty(): string[] {
-    return this.order.filter((id) => this.edits.has(id) && (this.isNew(id) || Object.keys(this.edits.get(id)!).length > 0));
+    return this.order.filter((id) => this.deleted.has(id) || (this.edits.has(id) && (this.isNew(id) || Object.keys(this.edits.get(id)!).length > 0)));
   }
   patchFor(id: string): Row {
     return { ...(this.edits.get(id) ?? {}) };
@@ -107,6 +116,7 @@ export class EditBuffer {
   validate(): RowIssue[] {
     const issues: RowIssue[] = [];
     for (const id of this.dirty()) {
+      if (this.isDeleted(id)) continue;
       for (const f of this.resource.fields) {
         if (!f.required) continue;
         if (!this.isNew(id) && !(f.name in (this.edits.get(id) ?? {}))) continue;
@@ -149,9 +159,9 @@ export function buildChangeset(b: EditBuffer, mode: "atomic" | "resumable" = "re
       operations.push({ op: `${b.resource.id}.create`, input: b.createFor(id) });
     } else {
       const rec = b.record(id)!;
-      const input: Row = { id, patch: b.patchFor(id) };
+      const input: Row = b.isDeleted(id) ? { id } : { id, patch: b.patchFor(id) };
       if (b.resource.versioned) input["expectedVersion"] = rec["version"];
-      operations.push({ op: `${b.resource.id}.update`, input });
+      operations.push({ op: `${b.resource.id}.${b.isDeleted(id) ? "delete" : "update"}`, input });
     }
   }
   return { mode, operations };

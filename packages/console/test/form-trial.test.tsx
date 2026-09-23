@@ -1,0 +1,32 @@
+// @vitest-environment jsdom
+import React from "react";
+import { readFileSync } from "node:fs";
+import { afterEach, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { FormTrial } from "../web/editor/form-trial.js";
+import { language } from "../web/editor/language.js";
+import { children } from "../web/editor/model.js";
+const inspect = await language(readFileSync("generated/editor.wasm"));
+afterEach(cleanup);
+it("tries typed sample values locally and opens the selected field configuration",()=>{
+ const source="resource Contact {\n id : id\n email : email\n active : boolean\n}\n";
+ const analysis=inspect({name:"@test/app",currentFile:"a.forge",files:[{path:"a.forge",text:source}]});
+ const fields=children(children(analysis.tree,"RESOURCE_DECL")[0]!,"FIELD_DECL");
+ const configure=vi.fn();
+ render(<FormTrial source={source} fields={fields} editing onConfigure={configure}/>);
+ const email=screen.getByLabelText("email *") as HTMLInputElement;
+ expect(email.type).toBe("email");
+ expect(email.required).toBe(true);
+ expect(email.checkValidity()).toBe(false);
+ fireEvent.change(email,{target:{value:"person@example.com"}});
+ fireEvent.change(screen.getByLabelText("active *"),{target:{value:"false"}});
+ expect((screen.getByRole("form",{name:"Try draft form"}) as HTMLFormElement).checkValidity()).toBe(true);
+ fireEvent.submit(screen.getByRole("form",{name:"Try draft form"}));
+ expect(screen.getByText(/Sample passes basic form checks/)).toBeVisible();
+ fireEvent.click(screen.getByRole("button",{name:"Configure email"}));
+ expect(configure).toHaveBeenCalledWith(fields[1]);
+ fireEvent.click(screen.getByRole("button",{name:"Clear sample"}));
+ expect(email.value).toBe("");
+ expect(screen.queryByText(/Sample passes basic form checks/)).toBeNull();
+});

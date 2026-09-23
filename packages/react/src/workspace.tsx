@@ -17,13 +17,15 @@ export type ForgeCall = (op: string, input: unknown, opts?: { idempotencyKey?: s
 export interface WorkspaceProps {
   descriptor: UiDescriptor;
   call: ForgeCall;
+  operations?: readonly string[];
   initialRoute?: string;
+  onRouteChange?: (route: string) => void;
   onDirtyChange?: (dirty: boolean) => void;
 }
 
 const pkgOf = (d: UiDescriptor) => d.package;
 
-export function Workspace({ descriptor, call, initialRoute, onDirtyChange }: WorkspaceProps) {
+export function Workspace({ descriptor, call, initialRoute, onDirtyChange, onRouteChange, operations }: WorkspaceProps) {
   const [dirty, setDirty] = useState(false);
   const reportDirty = useCallback((value: boolean) => { setDirty(value); onDirtyChange?.(value); }, [onDirtyChange]);
   const [route, setRoute] = useState(initialRoute ?? descriptor.resources[0]?.route ?? "");
@@ -35,14 +37,14 @@ export function Workspace({ descriptor, call, initialRoute, onDirtyChange }: Wor
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {descriptor.resources.map((r) => (
             <li key={r.id}>
-              <button disabled={dirty && r.route !== route} onClick={() => setRoute(r.route)} aria-current={r.route === route ? "page" : undefined} style={{ display: "block", width: "100%", textAlign: "left", background: r.route === route ? "#eef" : "transparent", border: 0, padding: "6px 8px", cursor: "pointer" }}>
+              <button disabled={dirty && r.route !== route} onClick={() => {setRoute(r.route);onRouteChange?.(r.route);}} aria-current={r.route === route ? "page" : undefined} style={{ display: "block", width: "100%", textAlign: "left", background: r.route === route ? "#eef" : "transparent", border: 0, padding: "6px 8px", cursor: "pointer" }}>
                 {r.plural}
               </button>
             </li>
           ))}
         </ul>
       </nav>
-      <main style={{ padding: 16 }}>{resource ? <ResourceView key={resource.id} resource={resource} descriptor={descriptor} call={call} onDirtyChange={reportDirty} /> : null}</main>
+      <main style={{ padding: 16 }}>{resource ? <ResourceView key={resource.id} resource={resource} descriptor={descriptor} call={call} onDirtyChange={reportDirty} canDelete={operations?.includes(`${resource.id}.delete`) ?? false} /> : null}</main>
     </div>
   );
 }
@@ -50,13 +52,14 @@ export function Workspace({ descriptor, call, initialRoute, onDirtyChange }: Wor
 // ------------------------------------------------------------------ resource view
 
 interface ViewProps {
+  canDelete: boolean;
   onDirtyChange: (dirty: boolean) => void;
   resource: UiResource;
   descriptor: UiDescriptor;
   call: ForgeCall;
 }
 
-function ResourceView({ resource, descriptor, call, onDirtyChange }: ViewProps) {
+function ResourceView({ resource, descriptor, call, onDirtyChange, canDelete }: ViewProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [tick, setTick] = useState(0);
   const buffer = useMemo(() => new EditBuffer(resource), [resource]);
@@ -183,7 +186,7 @@ function ResourceView({ resource, descriptor, call, onDirtyChange }: ViewProps) 
             {columns.map((f) => (
               <th key={f.name} style={{ textAlign: "left", borderBottom: "2px solid #ccc", padding: 4 }}>{f.label}</th>
             ))}
-            {resource.actions.length > 0 && <th>Actions</th>}
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -195,12 +198,13 @@ function ResourceView({ resource, descriptor, call, onDirtyChange }: ViewProps) 
               <tr key={id} data-testid={`row-${id}`} style={{ background: isNew ? "#efe" : dirty ? "#ffd" : undefined }}>
                 {columns.map((f) => (
                   <td key={f.name} style={{ padding: 2, borderBottom: "1px solid #eee" }}>
-                    <Cell rowId={id} field={f} buffer={buffer} call={call} onChange={bump} readOnly={isNew ? !f.editableOnCreate : !f.editableOnUpdate} />
+                    <Cell rowId={id} field={f} buffer={buffer} call={call} onChange={bump} readOnly={buffer.isDeleted(id) || (isNew ? !f.editableOnCreate : !f.editableOnUpdate)} />
                   </td>
                 ))}
-                {resource.actions.length > 0 && (
+                {(
                   <td>
-                    {rec && resource.actions.filter((a) => a.from.includes(String(rec["status"]))).map((a) => (
+                    {buffer.isDeleted(id) ? <><span role="status">Pending deletion</span><button onClick={() => { buffer.restorePending(id); bump(); }}>Undo delete</button></> : isNew ? <button onClick={() => { buffer.remove(id); bump(); }}>Discard row</button> : canDelete ? <button aria-label={`Delete ${String(rec?.[resource.titleField] ?? id)}`} onClick={() => { buffer.stageDelete(id); bump(); }}>Delete</button> : null}
+                    {rec && !buffer.isDeleted(id) && resource.actions.filter((a) => a.from.includes(String(rec["status"]))).map((a) => (
                       <button key={a.name} disabled={dirty} onClick={() => setAction({ row: rec, action: a })} style={{ marginRight: 4 }}>{a.label}</button>
                     ))}
                   </td>
@@ -218,6 +222,7 @@ function ResourceView({ resource, descriptor, call, onDirtyChange }: ViewProps) 
         <dialog open role="dialog" aria-label="Changeset preview" style={{ position: "fixed", inset: "10% 20%", padding: 16, border: "1px solid #999", background: "white", maxHeight: "80vh", overflow: "auto" }}>
           <h2>Review record changes</h2>
           <p>Review {preview.items.length} record change(s) before saving to this environment.</p>
+          {buffer.dirty().some((id) => buffer.isDeleted(id)) && <p>Deleted records will be removed when you save. {resource.softDelete ? "This collection uses soft deletion." : "This collection does not declare soft deletion."}</p>}
           <ol>
             {preview.items.map((it: any) => (
               <li key={it.index} style={{ marginBottom: 6 }}>

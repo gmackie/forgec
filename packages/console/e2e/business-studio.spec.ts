@@ -13,6 +13,9 @@ test("business design, developer details and live use are distinct and preserve 
   ).toHaveCount(0);
   await page.getByRole("button", { name: "Contact", exact: true }).click();
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
+  await page.getByRole("button", { name: "Try form", exact: true }).click();
+  await expect(page.getByRole("form", { name: "Try draft form" })).toBeVisible();
+  await expect(page.getByRole("form", { name: "Try draft form" }).locator('input[type="email"]')).toBeVisible();
   await page
     .getByRole("button", { name: "Configure email", exact: true })
     .click();
@@ -132,6 +135,7 @@ test("Use loads an explicit environment, reviews record edits and preserves inpu
   ).toBeDisabled();
   await page.getByLabel("Record environment").selectOption("demo");
   await page.getByRole("button", { name: "Open records" }).click();
+  await expect(page.getByRole("button", { name: "Add row" })).toBeVisible();
   await expect(page.getByText("Live data · Demo environment")).toBeVisible();
   await page.getByLabel("name of c1", { exact: true }).fill("Updated customer");
   await page.getByRole("button", { name: /^Design/ }).click();
@@ -183,6 +187,13 @@ test("Use loads an explicit environment, reviews record edits and preserves inpu
   ).toBe(true);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Manage customers in forms" }).click();
+  await expect(page.getByLabel("name of c1", { exact: true })).toHaveValue("Updated customer");
+  await page.getByRole("button", { name: "Browse records", exact: true }).click();
+  await expect(page.getByRole("button", { name: "View Updated customer" })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Edit records", exact: true }).click();
   await expect(page.getByLabel("name of c1", { exact: true })).toHaveValue(
     "Updated customer",
   );

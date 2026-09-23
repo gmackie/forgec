@@ -37,6 +37,7 @@ import {
   setClause,
   type FieldDraft,
 } from "./composer-model.js";
+import { FormTrial } from "./form-trial.js";
 import { Edit, VisualDocument } from "./document.js";
 interface Props {
   developer?: boolean;
@@ -371,6 +372,7 @@ export function ResourceWorkspace(props: Props) {
   const { entry, analysis, editing, onChange, onError } = props;
   const { source, node } = entry;
   const [section, setSection] = useState("Fields");
+  const [tryingForm, setTryingForm] = useState(false);
   const [selectedField, setSelectedField] = useState<
     SyntaxNode | null | undefined
   >();
@@ -446,7 +448,11 @@ export function ResourceWorkspace(props: Props) {
               This preview does not save records.
             </p>
           </div>
-          <div className="studio-preview-fields">
+          <div className="composer-tabs" aria-label="Preview mode">
+            <Button size="sm" aria-pressed={!tryingForm} onClick={() => setTryingForm(false)}>Configure form</Button>
+            <Button size="sm" aria-pressed={tryingForm} onClick={() => setTryingForm(true)}>Try form</Button>
+          </div>
+          {tryingForm ? <FormTrial key={fields.map((f) => textOf(source, f)).join("\n")} source={source} fields={fields} editing={editing} onConfigure={setSelectedField} /> : <div className="studio-preview-fields">
             {fields.map((f) => {
               const d = fieldDraft(source, f);
               return (
@@ -473,7 +479,7 @@ export function ResourceWorkspace(props: Props) {
                 </button>
               );
             })}
-          </div>
+          </div>}
         </section>
       )}
       {section === "Fields" && (
