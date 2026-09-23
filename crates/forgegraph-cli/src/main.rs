@@ -20,6 +20,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
+    /// Validate, inspect, or compare explicit business-semantic contracts.
+    Concept {
+        #[command(subcommand)]
+        command: ConceptCmd,
+    },
     /// Parse, resolve and check a package and its dependencies.
     Check {
         #[arg(default_value = ".")]
@@ -110,6 +115,21 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
+}
+
+#[derive(Subcommand)]
+enum ConceptCmd {
+    /// Validate an explicit ConceptIR file. This does not prove its implementation.
+    Check { path: PathBuf },
+    /// Inspect the semantic graph and invariant producer responsibilities.
+    Inspect { path: PathBuf },
+    /// Compare semantic declarations independently of implementation choices.
+    Diff { old: PathBuf, new: PathBuf },
+}
+fn load_concept(path: &Path) -> Result<forgegraph_semantic::concept::ConceptIR> {
+    let value = serde_json::from_slice(&std::fs::read(path)?)?;
+    forgegraph_semantic::concept::ConceptIR::load(&value)
+        .map_err(|e| anyhow!("invalid ConceptIR {}: {e}", path.display()))
 }
 
 mod lsp;
@@ -263,6 +283,24 @@ fn load_tree(
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
+        Cmd::Concept { command } => {
+            let value = match command {
+                ConceptCmd::Check { path } => {
+                    let concept = load_concept(&path)?;
+                    serde_json::json!({"valid":true, "conceptHash":concept.content_hash(), "implementationProven":false})
+                }
+                ConceptCmd::Inspect { path } => {
+                    let concept = load_concept(&path)?;
+                    serde_json::json!({"conceptHash":concept.content_hash(), "graph":concept.graph(), "invariantProducers":concept.invariant_producers()})
+                }
+                ConceptCmd::Diff { old, new } => {
+                    let old = load_concept(&old)?;
+                    let new = load_concept(&new)?;
+                    serde_json::json!({"before":old.content_hash(), "after":new.content_hash(), "changes":old.semantic_changes(&new)})
+                }
+            };
+            println!("{}", serde_json::to_string_pretty(&value)?);
+        }
         Cmd::Check {
             path,
             concept_contract,

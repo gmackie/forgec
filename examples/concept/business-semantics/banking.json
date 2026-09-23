@@ -1,0 +1,738 @@
+{
+  "version": "concept-ir/2",
+  "package": "@semantics/banking",
+  "entities": {
+    "@semantics/banking/_/Account": {
+      "name": "Account",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "credits": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "debits": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "sender": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/banking/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "receiver": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/banking/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@semantics/banking/_/Party": {
+      "name": "Party",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@semantics/banking/_/TransferPosted": {
+      "name": "TransferPosted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@semantics/banking/_/BalanceChange": {
+      "name": "BalanceChange",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "cause": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/banking/_/TransferPosted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "target": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/banking/_/Account",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@semantics/banking/_/Post": {
+      "name": "Post",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/banking/_/Account",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "occurrence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/banking/_/TransferPosted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "result": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/banking/_/Account",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "consequence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/banking/_/BalanceChange"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "debits": {
+          "ty": {
+            "base": {
+              "kind": "collection",
+              "collection": "list",
+              "element": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "decimal",
+                  "args": []
+                },
+                "optional": false,
+                "constraints": [],
+                "normalizers": [],
+                "dataClass": null,
+                "purpose": null
+              }
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "return"
+          }
+        },
+        "credits": {
+          "ty": {
+            "base": {
+              "kind": "collection",
+              "collection": "list",
+              "element": {
+                "base": {
+                  "kind": "scalar",
+                  "name": "decimal",
+                  "args": []
+                },
+                "optional": false,
+                "constraints": [],
+                "normalizers": [],
+                "dataClass": null,
+                "purpose": null
+              }
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "return"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@semantics/banking/_/Account": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      },
+      "@semantics/banking/_/TransferPosted": {
+        "occurrence": "occurredAt",
+        "valid": null,
+        "knowledge": {
+          "from": "knownAt",
+          "to": null
+        }
+      },
+      "@semantics/banking/_/BalanceChange": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      }
+    },
+    "selections": {
+      "@semantics/banking/_/validAtOccurrence": {
+        "context": "@semantics/banking/_/Post",
+        "target": "@semantics/banking/_/Account",
+        "axis": "valid",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "occurredAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      },
+      "@semantics/banking/_/knownAtDecision": {
+        "context": "@semantics/banking/_/Post",
+        "target": "@semantics/banking/_/Account",
+        "axis": "knowledge",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "knownAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      }
+    },
+    "contracts": {
+      "@semantics/banking/_/BoundedContribution": {
+        "owner": {
+          "kind": "entity",
+          "id": "@semantics/banking/_/Account"
+        },
+        "kind": "invariant",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "debits"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "credits"
+            ]
+          }
+        },
+        "selectors": []
+      },
+      "@semantics/banking/_/Available": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/banking/_/Post"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "debits"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "credits"
+            ]
+          }
+        },
+        "selectors": [
+          "@semantics/banking/_/validAtOccurrence",
+          "@semantics/banking/_/knownAtDecision"
+        ]
+      },
+      "@semantics/banking/_/Preserved": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/banking/_/Post"
+        },
+        "kind": "ensures",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "debits"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "credits"
+            ]
+          }
+        },
+        "selectors": []
+      },
+      "@semantics/banking/_/DoubleEntry": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/banking/_/Post"
+        },
+        "kind": "ensures",
+        "predicate": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "call",
+            "callee": [
+              "sum"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "debits"
+                ]
+              }
+            ]
+          },
+          "rhs": {
+            "kind": "call",
+            "callee": [
+              "sum"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "credits"
+                ]
+              }
+            ]
+          }
+        },
+        "selectors": []
+      }
+    },
+    "relationships": {
+      "@semantics/banking/_/PositionRoles": {
+        "carrier": "@semantics/banking/_/Account",
+        "endpoints": {
+          "sender": {
+            "target": "@semantics/banking/_/Party",
+            "field": "sender"
+          },
+          "receiver": {
+            "target": "@semantics/banking/_/Party",
+            "field": "receiver"
+          }
+        },
+        "evidence": [
+          "@semantics/banking/_/TransferPosted"
+        ]
+      }
+    },
+    "events": [
+      "@semantics/banking/_/TransferPosted"
+    ],
+    "effects": {
+      "@semantics/banking/_/BusinessConsequence": {
+        "fact": "@semantics/banking/_/BalanceChange",
+        "causes": {
+          "cause": "@semantics/banking/_/TransferPosted"
+        },
+        "targets": {
+          "target": "@semantics/banking/_/Account"
+        }
+      }
+    },
+    "views": {
+      "@semantics/banking/_/SenderView": {
+        "fact": "@semantics/banking/_/Account",
+        "observerRole": "sender",
+        "fields": [
+          "id",
+          "credits",
+          "debits"
+        ],
+        "authorizations": [],
+        "purpose": null
+      },
+      "@semantics/banking/_/ReceiverView": {
+        "fact": "@semantics/banking/_/Account",
+        "observerRole": "receiver",
+        "fields": [
+          "id",
+          "credits",
+          "debits"
+        ],
+        "authorizations": [],
+        "purpose": null
+      }
+    }
+  }
+}

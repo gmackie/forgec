@@ -1,0 +1,642 @@
+{
+  "version": "concept-ir/2",
+  "package": "@semantics/payroll",
+  "entities": {
+    "@semantics/payroll/_/Employment": {
+      "name": "Employment",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "earned": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "paid": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "employer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/payroll/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "employee": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/payroll/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@semantics/payroll/_/Party": {
+      "name": "Party",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@semantics/payroll/_/PayChangeApproved": {
+      "name": "PayChangeApproved",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@semantics/payroll/_/CompensationChange": {
+      "name": "CompensationChange",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "cause": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/payroll/_/PayChangeApproved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "target": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/payroll/_/Employment",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@semantics/payroll/_/Revise": {
+      "name": "Revise",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/payroll/_/Employment",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "occurrence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/payroll/_/PayChangeApproved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "result": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/payroll/_/Employment",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "consequence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/payroll/_/CompensationChange"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@semantics/payroll/_/Employment": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      },
+      "@semantics/payroll/_/PayChangeApproved": {
+        "occurrence": "occurredAt",
+        "valid": null,
+        "knowledge": {
+          "from": "knownAt",
+          "to": null
+        }
+      },
+      "@semantics/payroll/_/CompensationChange": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      }
+    },
+    "selections": {
+      "@semantics/payroll/_/validAtOccurrence": {
+        "context": "@semantics/payroll/_/Revise",
+        "target": "@semantics/payroll/_/Employment",
+        "axis": "valid",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "occurredAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      },
+      "@semantics/payroll/_/knownAtDecision": {
+        "context": "@semantics/payroll/_/Revise",
+        "target": "@semantics/payroll/_/Employment",
+        "axis": "knowledge",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "knownAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      }
+    },
+    "contracts": {
+      "@semantics/payroll/_/BoundedContribution": {
+        "owner": {
+          "kind": "entity",
+          "id": "@semantics/payroll/_/Employment"
+        },
+        "kind": "invariant",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "earned"
+            ]
+          }
+        },
+        "selectors": []
+      },
+      "@semantics/payroll/_/Available": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/payroll/_/Revise"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "earned"
+            ]
+          }
+        },
+        "selectors": [
+          "@semantics/payroll/_/validAtOccurrence",
+          "@semantics/payroll/_/knownAtDecision"
+        ]
+      },
+      "@semantics/payroll/_/Preserved": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/payroll/_/Revise"
+        },
+        "kind": "ensures",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "earned"
+            ]
+          }
+        },
+        "selectors": []
+      }
+    },
+    "relationships": {
+      "@semantics/payroll/_/PositionRoles": {
+        "carrier": "@semantics/payroll/_/Employment",
+        "endpoints": {
+          "employer": {
+            "target": "@semantics/payroll/_/Party",
+            "field": "employer"
+          },
+          "employee": {
+            "target": "@semantics/payroll/_/Party",
+            "field": "employee"
+          }
+        },
+        "evidence": [
+          "@semantics/payroll/_/PayChangeApproved"
+        ]
+      }
+    },
+    "events": [
+      "@semantics/payroll/_/PayChangeApproved"
+    ],
+    "effects": {
+      "@semantics/payroll/_/BusinessConsequence": {
+        "fact": "@semantics/payroll/_/CompensationChange",
+        "causes": {
+          "cause": "@semantics/payroll/_/PayChangeApproved"
+        },
+        "targets": {
+          "target": "@semantics/payroll/_/Employment"
+        }
+      }
+    },
+    "views": {
+      "@semantics/payroll/_/EmployerView": {
+        "fact": "@semantics/payroll/_/Employment",
+        "observerRole": "employer",
+        "fields": [
+          "id",
+          "earned",
+          "paid"
+        ],
+        "authorizations": [],
+        "purpose": null
+      },
+      "@semantics/payroll/_/EmployeeView": {
+        "fact": "@semantics/payroll/_/Employment",
+        "observerRole": "employee",
+        "fields": [
+          "id",
+          "earned",
+          "paid"
+        ],
+        "authorizations": [],
+        "purpose": null
+      }
+    }
+  }
+}

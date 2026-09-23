@@ -994,3 +994,37 @@ fn inspect_concept_supports_scoped_graphs() {
     );
     assert!(!run("missing").status.success());
 }
+
+#[test]
+fn explicit_business_contract_cli_validates_inspects_and_diffs() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/business-semantics/commerce.json");
+    for command in ["check", "inspect", "diff"] {
+        let mut cmd = std::process::Command::new(env!("CARGO_BIN_EXE_forgec"));
+        cmd.args(["concept", command]).arg(&fixture);
+        if command == "diff" {
+            cmd.arg(&fixture);
+        }
+        let out = cmd.output().unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+        match command {
+            "check" => {
+                assert_eq!(value["valid"], true);
+                assert_eq!(value["implementationProven"], false);
+            }
+            "inspect" => assert!(
+                value["graph"]["nodes"]
+                    .as_object()
+                    .unwrap()
+                    .values()
+                    .any(|v| v == "effect")
+            ),
+            _ => assert_eq!(value["changes"], serde_json::json!([])),
+        }
+    }
+}

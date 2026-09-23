@@ -56,6 +56,7 @@ fn compile_signature(folder: &Path, slug: &str, variant: &str) -> DomainIR {
 }
 fn type_references(ty: &ConceptType, c: &ConceptIR) {
     match &ty.base {
+        Type::Principal { id } => assert!(c.principals.contains_key(id)),
         Type::Entity { id, .. } => assert!(c.entities.contains_key(id), "unknown entity {id}"),
         Type::Fact { id } => assert!(c.facts.contains_key(id), "unknown fact {id}"),
         Type::Shape { id } => assert!(c.shapes.contains_key(id), "unknown shape {id}"),
