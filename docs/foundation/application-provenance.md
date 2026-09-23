@@ -48,3 +48,12 @@ App-local tests, typecheck limitations and opt-in call sites are described in ea
 adapter README. The six Foundation traces do not replace full application builds,
 authenticated request-to-provider end-to-end tests, deployment-specific migrations
 or application rollout. Keep those boundaries explicit when updating #25 and #71.
+
+## Published implementation handoffs
+
+- KanBanger: [draft PR #4](https://github.com/gmackie/linear-clone/pull/4), exact pinned source revision.
+- Stream Conductor: [draft PR #75](https://git.forgegraf.com/gmackie/streamConductor/pulls/75), exact pinned source revision.
+- Bob: [pinned integration branch](https://github.com/gmackie/bob/tree/foundation/fulfillment-reconciliation-pinned). No main PR: the remote advanced with unrelated changes after the inspected baseline.
+- LatchFlow: [pinned integration branch](https://git.forgegraf.com/gmackie/latchflow/src/branch/foundation/run-projection). No main PR: the integration baseline is not on a remote branch and targeting main includes unrelated migration files.
+
+No integration branch was merged or deployed. `application-verification.json` and `application-evidence/` retain final receipts and raw assertion reports at the Forge implementation checkpoint. All six execute memory, SQLite and PostgreSQL cases; descriptor-required assertions and total executed assertions are recorded separately.

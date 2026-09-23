@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-operations-invariants/1",
+  "coverageCriteria": [
+    "F45-STORE"
+  ],
+  "status": "passing",
+  "runId": "4e113cd8-72be-4e87-a6ca-f4bdd0b55dc4",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "122fd2eeccbf66fe15807502eee9d045e11900ae7ae97f1ad2646083f770429d",
+  "sourceFingerprint": "e2cf481030855e7219db938f94fab7d3185f36f5f53dc810264125484b80925a",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "6ea2c71e2660e6401a6583dd13ef4a75cda7103197fa54379c34028f1739551f"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "467704fc4143bfaebce7ef70049ee31f0e54ccdc14642022e132f8c76a62d2b7"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "15794029172aa15995daea3841fec324617db356126a8cf4b5aeb3248bb2083a"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: operation usage replay, real task linkage, lineage and terminal cleanup races"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T04:50:30.009Z",
+  "passedTraces": [
+    "hosted: operation usage replay, real task linkage, lineage and terminal cleanup races"
+  ],
+  "testReportSha256": "9a345d1c1f65497a46089083fc62e29d97a1cf98518eee402ba0dfe5f42a3ac0",
+  "identity": {
+    "provider": "d1",
+    "runId": "4e113cd8-72be-4e87-a6ca-f4bdd0b55dc4",
+    "tenantPrefix": "foundation-cert-4e113cd8-72be-4e87-a6ca-f4bdd0b55dc4",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "6ea2c71e2660e6401a6583dd13ef4a75cda7103197fa54379c34028f1739551f",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ORD"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

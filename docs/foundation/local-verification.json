@@ -1,26 +1,31 @@
 {
   "version": 1,
-  "sourceCommit": "8d402c848102096b3f1e94a4c3cf8fc2065150ae",
-  "verifiedAt": "2026-09-23T04:03:07.462Z",
-  "profile": "memory, SQLite and local PostgreSQL17; individual legacy tests may cover fewer adapters",
+  "sourceCommit": "834dd37cd758a4ad64d65a1e7185488a5dc5ec9e",
+  "verifiedAt": "2026-09-23T04:49:55.472Z",
+  "profile": "memory, SQLite and native PostgreSQL17; individual legacy assertions may cover fewer adapters",
   "runtime": {
-    "passed": 562,
+    "passed": 571,
     "skipped": 104
   },
   "rust": {
     "passed": 155
   },
   "harness": {
-    "passed": 24
+    "passed": 50
   },
-  "providerProfile": {
-    "name": "foundation-core-invariants/1",
-    "provider": "native-postgres-local",
-    "passedTraces": 5,
-    "receipt": "docs/foundation/provider-evidence/postgres.json",
-    "scope": "bounded traces only; no hosted certification or blanket package STORE acceptance"
+  "applications": "docs/foundation/application-verification.json",
+  "hostedProviders": {
+    "status": "passing",
+    "profiles": 14,
+    "providers": [
+      "postgres",
+      "d1",
+      "dynamodb"
+    ],
+    "cells": 42,
+    "receipt": "docs/foundation/provider-evidence/certification.json",
+    "scope": "Foundation database invariants; object storage is a disclosed test double"
   },
-  "hostedProviders": "not certified",
   "remainingReleaseGates": "https://github.com/gmackie/forgec/issues/71",
   "reports": [
     {
@@ -28,8 +33,8 @@
       "package": "adjudication",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "8adf515574271f41193ce6fe3677959addc350af967b89db2d59a943387f156e",
-      "verifiedAt": "2026-09-23T04:00:13.776Z",
+      "fingerprint": "57eb630279d8fe11481a0f4bf3631075c5ee4872878f7e16f557a50d31bc6645",
+      "verifiedAt": "2026-09-23T04:46:57.319Z",
       "commands": [
         "cargo check/build adjudication and consumer; deterministic double build",
         "vitest run test/foundation-adjudication.test.ts"
@@ -37,31 +42,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "44234b56a28cdc62c462e1b8f513a103a5ef065fbaeb076c12683379853d0040"
+          "sha256": "1ab4db30fd1dd3ad5b38df7a9a68adc71d70938bccaf10b621677a2d76407f21"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "ddb3452c2eb37098c306e1b376dc832692229c07c916b915454e93ea8fc9f442"
+          "sha256": "96498c4d1d17c490412ba264870115b3423853c8f0e433932a715edfdcc327bb"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "f018141b44e1b75a5cf3b816358e22da7d3b5487b517eae73a8a8a3e7d8e3249"
+          "sha256": "4f5e2c0f8075a240d724da9af1ac6d3b49550d74238bd90be13ae529e4603f31"
         },
         {
           "path": "first/client.ts",
-          "sha256": "17d463e5f5ae6c016101570ba6efaf6444cce25b1dab6407dc67112cb725809c"
+          "sha256": "057d5a6d8306571fd376efacfae7b699f5e6ff5afc65e74b7bda631febb9c8d4"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "913db8a3935e8d917750159f040ec99e2ab6926642dcbc539424873cac205a85"
+          "sha256": "028b1b429d8a5f908b5f4b3dd84188d842345e9427cb368d980d01a784054617"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "4e9c740739b1186e09b35cee5efd51c427f5b35ec2e1786f21f00988b820271d"
+          "sha256": "cdda94bf4bcede36fd8c3a2f7e9bf1948bdd575aa3d3cb252eb49ef4f336e69e"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "b239bdf2e8f13f2bb2ca1b444330150c7fcf75c2dde3aff1be0062b4169693f4"
+          "sha256": "08571a36170fc2a65b012d596a56de51a268edd90c726e9286936a48997b8e58"
         },
         {
           "path": "first/README.md",
@@ -69,31 +74,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "c8fad8f0f443c348898c798e03c6d2b930ea17157254d956d1517b8057882f51"
+          "sha256": "ddb30b8a0f9f7972fc521a0a27b35e5b0039ab53f241d6095a972a2d8af900ce"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "c1c57c7c26a17967dac13558e9c7d73b4b1419a6e35fd6d9b3f58aba3fb48857"
+          "sha256": "7f3aef4782ab091e1eb7cb5700a792a185539ac7784969561972f7208e53dc60"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "7d0fbb9d8d5f394593aa8c61b802f2b34d7d5d33639859f48485ea8f16fa2b10"
+          "sha256": "6364e7be653079521abd6896082c60e42be7870793470a5318c2f45e23e903c6"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "f1531e5eceed551b424f9ae54219ab70326e8c34a2260521310326e64e510994"
+          "sha256": "73eb11366019702c01a69b87149b4a8b07e9ed1f443762aedee0b036bcb5b4a3"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "b1161ffea30d6791a19aa10a53726071da40f12d9f30cef5f89b2cc7907c114d"
+          "sha256": "71463ff97b89f1dfe8dd0d179c8ce9ee68fc766babc008bcc6c99e1bc5c64451"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "1e7e8c90678fc5ab3284958eeb2ce473ca80ae7b8651b197df4bd8926094aa0f"
+          "sha256": "ee1d0cc66e9c67f859cd3d17b9f95b051d05820c8291f464c5a5d7514d8875e9"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "9cd2a779290cbb8b7a7c244e25aae0edd3b3cb77beebdf748777b8f5a8b98466"
+          "sha256": "58c08443787a4ab7879ed2c1916321072e3502161047e4b522475fdb2dc1e746"
         },
         {
           "path": "consumer-first/README.md",
@@ -107,8 +112,8 @@
       "package": "agreement-catalog",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "a7ec3b28fbe88f12ba28120edb1d99b29ff771c9a3c0cf14d29a9538ff32b23d",
-      "verifiedAt": "2026-09-23T04:00:22.128Z",
+      "fingerprint": "70120f6f93cb12fbf9f6bcf907a379e1cc808a3bb4c9c411b970dd4c1ca40fd0",
+      "verifiedAt": "2026-09-23T04:47:05.716Z",
       "commands": [
         "cargo check/build agreement-catalog and consumer; deterministic double build",
         "vitest run test/foundation-agreement-catalog.test.ts"
@@ -116,31 +121,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "69391c4f7922b4f3cfac3dfba0d5f0bfe8b998d1398b7883e674998e4fba2041"
+          "sha256": "7c7ee61982ef8f344bdf7c042a8482664ba183d9e838b00ffa9c4dfa4e492967"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "f08b59a8ff6108e1aacf4aec67623afaf12547d170f8e6e8473ce2bcca853af6"
+          "sha256": "671bd06912db85c641ef2eb45b3bc0181e0fcc030ba19575f04ff15c81629e40"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "7d46ff1404bc12e09a9f72165fd24512f3eb13a7fc7961d19a0ecf731d4ede30"
+          "sha256": "e8556c108cf74e087d078be2af1de8b4474780b972604cd20893a5414df5698b"
         },
         {
           "path": "first/client.ts",
-          "sha256": "08409198629fd95f15d963f84afe90ec1dc8401b553e3d485f40749adbc6bce7"
+          "sha256": "d240bb0f4532a0bbb8475914f1656f897aeea7bcf376bb1cba9a8c60a8cdcd91"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "b8a047e782cbcb72a79f53c988f3e96c37a444dd36af71648521dac9b8799228"
+          "sha256": "958cb6ca0c43dd3d1bab29ea1a847714431b446b1f418a8933964a7bbf6fe5e6"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "f876ce615cecb4fc1a27fa68d6b483ebc8bbb7dd546c59b110a3d40bf25ababa"
+          "sha256": "00eef7889f7e1709c26e7d83188682a827964cd85bcc3c2649a66376cb98bd6b"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "269ed7f41b82f1fdba078fdafdf3e2ae73615cdda046e026f9f398d4a3111633"
+          "sha256": "f224a8187786a4ac629a1c1d82f9df8b21fc58c16bdb3dc66815355abc120b2b"
         },
         {
           "path": "first/README.md",
@@ -148,31 +153,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "4d65ebe3f4cc7abcc73208375e5c59d0ea2ca3bcca5e5e894e0e558ef664526c"
+          "sha256": "89780f9092dca15ca136db0c92b5a87d3946027163c9f79b2233d5242a6657f7"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "683204d5ffc891a3597eb622733e86b26871ce8307f2dce3e0f4f147feba70c4"
+          "sha256": "5f560c37267902ea47867a96222ea740501291a37c19b170497e456b2e4095c3"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "3202dd8f69fe948485d9f24d5bbac26bf278b6034560cb662aedfb6f056a1115"
+          "sha256": "083e8d343a1bc1b715b3c932fa55130ae53d9e5fe1ce8eec7e48bb6054ce74b7"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "def214151743aaeeab170c5ed9c5ca2bf50d3b9bd032325281a08281a939c336"
+          "sha256": "a8db8b96cc266f3ed46ea2ac66d84eca0c834e35cbfef0a848da33d1b3b37dc6"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "0cd5cc0fd5946d10ee9c129c48a1a3d86c4f269ae64dc22b9efbf4159637d67a"
+          "sha256": "2b09a1fa79d317b489fc7407faccf32f88c5222900fdc85a2edae0c6d0fb8881"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "1cb4bc640b76cbfae18db5849f4f2dacfaff087afb5dc53be479d7afb60f4295"
+          "sha256": "5fdfc296228bee5c04bbc7a90cbd9ea308746c7b323bac1870c4cd49098cb08c"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "96f3f63004460ae93e14a9b62fbe88e7c49762b7e9301a46ac34fc3445a15ba6"
+          "sha256": "d24adab748431b5aed15e442cdc7f4a9fd6833480d580fb4d328c9fd4f22c723"
         },
         {
           "path": "consumer-first/README.md",
@@ -186,8 +191,8 @@
       "package": "allocation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "56395489fa0327d3c88a2a0a36406110d1647fcd9518f90e9843ec085841cef0",
-      "verifiedAt": "2026-09-23T04:00:25.833Z",
+      "fingerprint": "febbef6ec5c7d97011555dbfaefb00393219551a31cded7dd8fbdde6897c494b",
+      "verifiedAt": "2026-09-23T04:47:09.524Z",
       "commands": [
         "cargo check/build allocation and consumer; deterministic double build",
         "vitest run test/foundation-allocation.test.ts test/foundation-authorized-atomic.test.ts"
@@ -265,8 +270,8 @@
       "package": "artifact",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "956fb21e6929a4e4c754e46f525a810962bc5aeaabf851247a5ef91e0f0e48a6",
-      "verifiedAt": "2026-09-23T03:59:36.490Z",
+      "fingerprint": "e5314de753ba5fec99a57dd5c622727c0873a0fa037b9a5140d40ee12f85b4db",
+      "verifiedAt": "2026-09-23T04:46:18.878Z",
       "commands": [
         "cargo check/build artifact and consumer; deterministic double build",
         "vitest run test/foundation-artifact-consumer.test.ts test/foundation-artifact.test.ts test/blobs.test.ts"
@@ -344,8 +349,8 @@
       "package": "assurance",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "d8fa6e7ec64233eb797aa55d582c2b1da77e35927da62008d8ce66f271ea0013",
-      "verifiedAt": "2026-09-23T04:00:30.369Z",
+      "fingerprint": "65d0c9c7ce3e1dfbfca587e355cc1bb89ad403c504aea1421810749b8f0f4403",
+      "verifiedAt": "2026-09-23T04:47:13.479Z",
       "commands": [
         "cargo check/build assurance and consumer; deterministic double build",
         "vitest run test/foundation-assurance.test.ts"
@@ -353,31 +358,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "6290dcd5f43d77ed2811bd1a6dec7ea28468997688ccfc64801ce16891b16ac6"
+          "sha256": "12a21a0fc1e21170f5ba2a8c4fbb3d42091df4428c0bffe2ed535a6ee0c2e2ce"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "097b1afa36bfc39dd8d6e3ab11c791f1d87fd0c9fb9c897e2412c22ced911f5b"
+          "sha256": "fb08e5b32f3e30d9bae84316a6d00c8d7586694c5cfdb715f2ad6b76f5f5995e"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "0219796f3d7aaaf01121d0357d2eb93195233f706d7c912cde7d7b466231be60"
+          "sha256": "4ae0898e469cb8ec3975f9c9f81b9857dc88d8c5b8f311265260d0496935f42e"
         },
         {
           "path": "first/client.ts",
-          "sha256": "71d188cf4de84801a04794789937777d34782f308e9dbb1734a5fae96a8c0c11"
+          "sha256": "c18192fadb13b3916d89d019f10f009de8aeae4c1b91d9f725a13464738782e3"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "e7fecbe7dce821fa42676792e2d4c332b1e7034393010ec6e4f6c4f8d0dafe5b"
+          "sha256": "e6e3212d4be84b26043294631c8792ebc2627ccaeee43515cface03765ef2c9f"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "1df7a497f4ec96cb3f80267d8daf91275a5b3c203b2f828d6a183951f49cf188"
+          "sha256": "fe86fab84bccf22d21509987f4091f6aec3f338768b14f04fee387e4cb5c5133"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "adf7a70ba1cf0936d1310c2fc081dba240646085d6be44646afac3d84a956820"
+          "sha256": "80a3172887599e359493269d7ccdaf1f4fa5f070c273a744ebfc9a130a93a20f"
         },
         {
           "path": "first/README.md",
@@ -385,31 +390,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "a26461af357b471027e1e53938c5bee5eb67306e876f0b2eb9e5d2f82f20e7e5"
+          "sha256": "a59b45ca8ac050e0890c888135c93cd348aad8549110f3fc417979c176d2a9f0"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "5faeaf67a4304ff7aa97ad09fd478afc5c8248cf9115ce8f6dea3bc083b091ae"
+          "sha256": "a514e515d9b73e5522226a3fdaa130a9f3da3ccb50a2267dfdd92c74619048d6"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "53ac5b30e6adf60c5454064cd3b9fb1e60aa157fb0dde65110a86488ac04bbfd"
+          "sha256": "096699b8a17b89df4d2bdbda66b51887b7dfdfa33a3684f5b6011df2e93448fc"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "2a81f0add28bc99d78b61a8737a800f59e83f554ddc91b5bb9dad2dd88dadee5"
+          "sha256": "37740255ff9b0842ca75a8034ad897d80fdee88b01256db29b472efc816a7c52"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "62d439fe3805fdcde82ce077e85e5e54eb016a92f9a6058e62005d3f421bf39a"
+          "sha256": "929ebe320ca359ee934a0b50976e027348161099f0997439022a99e61362a1cd"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "1642da78adb6ea7f11c837bf274fb11b7b62d376a1a4b69919926b645c64c845"
+          "sha256": "ca85754ac4aa253daac8eb0488c9e6def45dee672583df9328bb7dda1a1ededb"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "2f046f61b0a95dd082aa1fa72900e6c7b2b9f08fa76ccaff7f81e905f1d27065"
+          "sha256": "d6ee4140cf82c0e1ec1340f1cbc843abd7578ca2f6fdb69a057ee3fbc615eeff"
         },
         {
           "path": "consumer-first/README.md",
@@ -423,8 +428,8 @@
       "package": "availability",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "75cef1cc673305c7b0a23282e3f64f43f7522a8bf8c4745b3b18da01352ee8ff",
-      "verifiedAt": "2026-09-23T04:00:34.325Z",
+      "fingerprint": "2cfcb2da342be2556388a579627f63b8d6614188b0bd2c1488f528efd9006b8f",
+      "verifiedAt": "2026-09-23T04:47:17.311Z",
       "commands": [
         "cargo check/build availability and consumer; deterministic double build",
         "vitest run test/foundation-availability.test.ts"
@@ -502,8 +507,8 @@
       "package": "change",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "aeb7bc78f8451f98cbeb37ab7599025c98164d9ba158b8993e13f5da39d75d7e",
-      "verifiedAt": "2026-09-23T04:00:39.499Z",
+      "fingerprint": "46f94c14c0832e94e38d614766c8df7b767799b3a67992b04c2e39a552c2977c",
+      "verifiedAt": "2026-09-23T04:47:22.577Z",
       "commands": [
         "cargo check/build change and consumer; deterministic double build",
         "vitest run test/foundation-change.test.ts"
@@ -511,31 +516,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "c353d15209c6d0ee5d61833c5d07771163f076345cc30ad568d159885f42aa89"
+          "sha256": "f8b080ecd399f746d73f082a5e7a9ebb474a1f4258c16ce6e8acbb6a615c4a2e"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "c9ff84015255342b23ba3ad02d18c19449b245cfe933289cdf6e386f44fa81f5"
+          "sha256": "76084e1b7e8a6c19ef3561a778924e8614aa5e13f97822156ff0f5823cbe8ecf"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "9a73939addf90b4d9d48709ca316130e0cd5d7dfd0d2a65d2817b684eda0c4c1"
+          "sha256": "b38b44d535f4f4a193a31d3b394593c0418f28de7dd811424e3a293c661972c3"
         },
         {
           "path": "first/client.ts",
-          "sha256": "2c39e3b0bf83142fa5338fabc3175c07857d79ea43571a224e4956a5be7ff35f"
+          "sha256": "e56df00cd8e0448a8dc630d4d7135b92ec47584929aa101bb044ff9fbb97c193"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "2131045bc2b211ac58dd268da47705a32eac1b630f47dcb0d1fee4fee08ce880"
+          "sha256": "e10dae5b0bf9566e822da671eadc45cea46c7d14a39a880affd9e29a1ecc55f1"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "22b57c33e51f5d0caa8f214b072620cb690314827c9a4ecbf3a15fbea0b11844"
+          "sha256": "3a9219930cd2d94830f079981a6bbc45e8ce38d9f17978bd37a7fe8fb4961aab"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "d5408b5cb0ce0dcc88be260f2f70cc3067ae9e1980d09c5f12e26c0b0b4cfdf0"
+          "sha256": "99611159fa2d76579efcdbf6b1f46ae580aa076500e404fca7a4abafbd1a17b5"
         },
         {
           "path": "first/README.md",
@@ -543,31 +548,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "06393f7b1889c02496745b8eb8aac7508a0146a3bcf4e1e7afa36dc0cc0ce77f"
+          "sha256": "d634cc493e07f690c9233ffe04cfeb396c6cd390817319cfb7236c000a509469"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "166ed131363b54482a99b41692db23dc4158bb5bce3e2a3a80d164a0de1dfeee"
+          "sha256": "a3178060fd213a9fe47197847a3fff878327a051361c2ee9b396ab537e91bcb1"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "6fe604bb7f4c83e65b01bb9b0432f17a6e9baf2e5c8f44cdd17e6e1285786166"
+          "sha256": "2b0ddd020d4ce88b55f06f4f060b13edca9283522708e3a101948440ac15be04"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "c5afa289dc8c0af9325557c6f345873f1b10fb48b9ed0057dfe3bf16dab3d2ee"
+          "sha256": "fe2ed90a9236a5b3b8b60e7dabab84e7aac1a9a9a1fb794d3e416ed899f38da3"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "9fd673ceda109434907daf1f35a466795089c5b3c35bc6e1c90aa6d825859648"
+          "sha256": "be3701205a4d5dd4945954e17d5b1ac005f3d37a20e2a254a0cfed4856ab324f"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "e37da473fed70367b1074cd6b5fd2bac6d64fe7dca059432dcdec398a995910d"
+          "sha256": "261b87e4770a8caee412aa80494120adb1b124fafbc34cd7d052179b36cdf0fa"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "9aebd38ff881ba97fa2d19b9b04df8994589d02d2e7f46e44ef9dfc863a1b33b"
+          "sha256": "c58da2747f7a61f78b6fbb0539b849a8f15c1e1803720ac59620ac85977417a4"
         },
         {
           "path": "consumer-first/README.md",
@@ -581,8 +586,8 @@
       "package": "classification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "2bfe63df1e5d2ec0538fd9ff2e4737e2be2fe63c53a98d25a31131764cd5525c",
-      "verifiedAt": "2026-09-23T04:00:43.541Z",
+      "fingerprint": "0e0773be2e712b72f5bb49abf63003bb38cc020f44fc1c877e7c30d27e83b1cf",
+      "verifiedAt": "2026-09-23T04:47:26.367Z",
       "commands": [
         "cargo check/build classification and consumer; deterministic double build",
         "vitest run test/foundation-classification.test.ts"
@@ -660,8 +665,8 @@
       "package": "collaboration",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "a7ef5be17d857ae38847bdac5f0dff7dbdbfeeab54c1a46f3fee6a14e80cacdc",
-      "verifiedAt": "2026-09-23T04:00:48.547Z",
+      "fingerprint": "3c12ef91de2a9734afa7edb64c519587189a4e5e4cdfe05b60bcce833246eb94",
+      "verifiedAt": "2026-09-23T04:47:30.701Z",
       "commands": [
         "cargo check/build collaboration and consumer; deterministic double build",
         "vitest run test/foundation-collaboration.test.ts"
@@ -739,8 +744,8 @@
       "package": "decision",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "54556bd319a2c0fe0a558be0850e37c070a67473a0aa2e64ea3675b95930b25a",
-      "verifiedAt": "2026-09-23T03:59:49.494Z",
+      "fingerprint": "910d8192c4d564762af57c18d32316b156aa8de7b033be115b6f023762d6d669",
+      "verifiedAt": "2026-09-23T04:46:32.976Z",
       "commands": [
         "cargo check/build decision and consumer; deterministic double build",
         "vitest run test/foundation-decision.test.ts"
@@ -748,31 +753,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "ea4249f14737af4674841f83b1fcd44d535165c10e14897686028351408315d1"
+          "sha256": "f4fe3cfb1f8ab8613e59be8011c9440bee75490f5692dccb73df76ed58c6382b"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "0e96c15233456d5aa28ac57a74f8fd0282a1690b885c82610c9e41357c0ab244"
+          "sha256": "fc4619d35f6684c4ff7d841a07e513f0410587cf1f215dfec425dcd2af9283ed"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "2fedaaf607e58fef7f5a8c6e477969928bbd9189bfe35de007f77a877ccf56d1"
+          "sha256": "da0ecfe3dc840eb0903b57ea29a5b90b7f474c059641a9dd9c71b0f9a7eec49c"
         },
         {
           "path": "first/client.ts",
-          "sha256": "28dce0f2efca4f2f5b547170e129d1f7a23647302447b2466b7368e7d6d74d22"
+          "sha256": "3315abab591d0990788e4d3697aa3d0f53d1b2f0e807985d82faf782e25441d3"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "d35ec23aca30ae9d91ac2f4f0bb4c0954e5deb805934d81955b136eb07703162"
+          "sha256": "f480cd33a02bd894bf7630e8733b1e77dce8259ba851b376d9eb56226574f845"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "a24a26a68c7002573410f58c729ee67581528f1160ceb2feed0f5e49e0e7ac20"
+          "sha256": "c4b4522bc7c61b51c823812b3c363c900de3d1b63c20c92f9594d5ac12ba3a5c"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "48f6c2e47dde67ee894aad3a39a54c01f380634731eaf350639617011232c8de"
+          "sha256": "f7bc50976804ff81ea3b88d77d80ee84a33e58640c12e4a3d8224907d4ecbb44"
         },
         {
           "path": "first/README.md",
@@ -780,31 +785,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "ad6f5e52e55086eca5783c4e8ef8864628ec1bdd106ce708505dcff83e98d4e2"
+          "sha256": "652db4978f45e85951991430da9b8412c424c766a56e56bae242ae9205aeed49"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "8afec6c1bb9631ac27106fc18423f6184bc3d365f8626ee1d7e4b4f36c124b88"
+          "sha256": "775a21f258023b45c29c610848abfb3324bbec648381573bacde0cf5a1dedc38"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "e2bb708622714b8d4147a1bcfb957396be21ef8d5af9f617a24b5484d9f113fd"
+          "sha256": "ee49c6f9403e82bc9bf8deab653c9add1b4eeba80f49db3947943e83d88e3395"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "cbdbe3d79fe66cd902eae156f93e10a9323065687cc8f53b61a362705c230d7d"
+          "sha256": "910ad514cdebb9696d923477e5aedbaa832f292efe177ac66b2c46f47a1419e9"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "871153e89a2e47a4647cae8f15082ec09d0c6096c6782a3b731b7c98c4bf530a"
+          "sha256": "aea5da62be2d2b15749b005d4e93a89edfd87341b43e397f300f6c12132e8ad9"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "b03fc4e8c8391978b002ced595c014e3435d57a2559da0b0a30d0f392a7f634f"
+          "sha256": "eeae6735867b73e13aed14179ad4384e9e41c718fb6a0fe148ff4f19de9522bf"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "37845c65b7830f67d55587bbf2121d232b5f84be3ea7d1d74d58466a29376ff6"
+          "sha256": "a03bde086390b7cd20111899e614d58e5f005454f4a2ab641fe3a1a33e7914f3"
         },
         {
           "path": "consumer-first/README.md",
@@ -818,8 +823,8 @@
       "package": "delivery",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "ce024a2e4d8fd02e6c97c691463ea0b12dafadd0fb136b19dd877b079dc82690",
-      "verifiedAt": "2026-09-23T04:00:05.299Z",
+      "fingerprint": "97a3a1c9edc535e010c2736c127e68f2c874825c40401a91e7b8bbad334117e6",
+      "verifiedAt": "2026-09-23T04:46:49.729Z",
       "commands": [
         "cargo check/build delivery and consumer; deterministic double build",
         "vitest run test/foundation-delivery.test.ts"
@@ -897,8 +902,8 @@
       "package": "entitlement",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "eb0816cd4be659b5ebfca9c8587e61404ff5e2689cac369ed42e513e04b769e2",
-      "verifiedAt": "2026-09-23T03:59:53.493Z",
+      "fingerprint": "7647df37db03ae71edd602aa925aa1bcfbfc913aad021019a82486f10b0301eb",
+      "verifiedAt": "2026-09-23T04:46:37.213Z",
       "commands": [
         "cargo check/build entitlement and consumer; deterministic double build",
         "vitest run test/foundation-entitlement.test.ts"
@@ -976,8 +981,8 @@
       "package": "evaluation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "6306b9075013662aedfcebc950ee328400173579c1c542aea71bc40db359dd55",
-      "verifiedAt": "2026-09-23T03:59:44.451Z",
+      "fingerprint": "32ed4bd519dae6c018e50393131acbcfe51bf811b3ab76ef6288f725164f0a57",
+      "verifiedAt": "2026-09-23T04:46:27.669Z",
       "commands": [
         "cargo check/build evaluation and consumer; deterministic double build",
         "vitest run test/foundation-evaluation.test.ts"
@@ -985,31 +990,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "58f88b5b84328433dcc6caec69fe09c34feef60547cbbb0b0cc8c9d39c7b477d"
+          "sha256": "ad5cb797ffc984b306d5c478c758a6c2436f24ae2ab9a152b04d63c558fe1aa3"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "1634d62aedd9cc54de3b93de1885473c9442b69a8b071cc72ee6914f1444e3d8"
+          "sha256": "b8a8f9cb20b69c22b1bae250b8b68a8c1f89fa8c69f8e60d2e2043a9142a1307"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "c3b9dfb84d138f4458b6f3e1ae3069ead9ab04ad94bab192c33b7e393273e4c0"
+          "sha256": "b2c145ddef88498d136a92f87fec9ed735c319c459959cd81cb3ff0224d03073"
         },
         {
           "path": "first/client.ts",
-          "sha256": "b3941b43411d46f618f9660690242e8595d452cafc925e04b6c8fa2f98878ee0"
+          "sha256": "87219c4db15310ec38d29ad818bf59eaed95e81f5c4b6d712ed3868af1ef8774"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "d88227b02b433d5692a0ede16f29007a5b5043337e1e99b894904daf18571274"
+          "sha256": "248881adca1539dedad7d5bf6287e524fa4b115ed2be5d6e631687677507bf1a"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "0b856ebd5e4975ac2f8be94da3b87b3598db93e2734fc3e8d3184298574e1087"
+          "sha256": "b9af8143675190e57bd2aa106e67eccad5e02ee8c558e636d19380c363b1330e"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "1bcea8d1c488774bc20bccdca61c1294b8f767824287cbd5df9c67e7f6710a54"
+          "sha256": "0e8c10f02028b21b5f3946a04d5afad4480fa5cd4c25629e0b41c7762198b34c"
         },
         {
           "path": "first/README.md",
@@ -1017,31 +1022,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "77301f8da9924687c8e6bc06d0f53ab303be97083721343662b4bb07e86bbed8"
+          "sha256": "b2e0e216b78f29dae652838f3fc3cf619577db2d790bd2c5883fcfc64aa71f47"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "83420db961097c85154a6666a2a72dedb111e0c15ca2a66dd7b53e72fefbdf7d"
+          "sha256": "836a6957d44110b66ffe76fdb0fb2f8e15484d57f595fe3326aea0e15a2c0fc2"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "0aafedd889e7a230ec593a7221be56c2f373a11f3d0695e914fea6bc99cddf4e"
+          "sha256": "5a95f6e3e4712e625541a73bb8962f5af579965ef2bce0d213be7a5fe3d614e6"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "17de36f3a521cf58ca9e50656140e7014b88c1d84ce8b24497ad5a8267d2b7a3"
+          "sha256": "76379def67fc67a5cfdb2b37d76226eb236a197ac376c6f665591c1f38ddc021"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "247156bab0a797aedab5ea98ed5ec56e90739665f08ddec75b658bf3f8b32be0"
+          "sha256": "a3bb6155b041ed44eeb5330fe131fbdebf0b3d23a86d4b341ddccdeb5d3d8eb5"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "97e4ba4fbc5416772b08b3b9739eb41a84c6487f66545bbe1ed6fcc474cf2d82"
+          "sha256": "8a0bc9545e8b9f5c74315e5cf30b2a12cbcfb72fdeeb7a7613ae54b421910729"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "29ae49ed9bd93f4c772fcabc8a9f32063c7066f7c8527a8631cfe4c7c7c3385a"
+          "sha256": "f4f2f3e19444b83299966ea5d238383c72ee9e976319ade15c1e8255ac2ccfba"
         },
         {
           "path": "consumer-first/README.md",
@@ -1055,8 +1060,8 @@
       "package": "evidence",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "4d20d6b4e75632c855201b72aadf87cdc55fa292d83833cdda544e918d26e64e",
-      "verifiedAt": "2026-09-23T03:59:40.467Z",
+      "fingerprint": "119ad55f5be028ebb0ffa077eb8e8f9bb933c43bbcc6b31e8e4945a5d95cae56",
+      "verifiedAt": "2026-09-23T04:46:23.301Z",
       "commands": [
         "cargo check/build evidence and consumer; deterministic double build",
         "vitest run test/foundation-evidence.test.ts"
@@ -1134,8 +1139,8 @@
       "package": "experiment",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "8a72ca9d472c0f3b9cad8c8476c582545c2f35579c0a09dc668304e1b2d06fca",
-      "verifiedAt": "2026-09-23T04:00:58.176Z",
+      "fingerprint": "3f750ea19b0dea7a36426c220d68d5ddb704ac7d3be80d2350b2bd42e1d3b99e",
+      "verifiedAt": "2026-09-23T04:47:39.654Z",
       "commands": [
         "cargo check/build experiment and consumer; deterministic double build",
         "vitest run test/foundation-experiment.test.ts"
@@ -1143,31 +1148,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "36b1286043f098f35e0e50318595044b802f1b7b948824e4cbdca489cd80f4dc"
+          "sha256": "6b009c695e774d7dc902218073b0c16648a0ddd1a34a8e5083b7dce2d598e84d"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "f47bbfd49d811806cf5736ce8368abcb4aca315c6d32e0e2ca7a454b3269f0ce"
+          "sha256": "5ff4f28bbef9e0d3f3235e2c87bb24b1b261a42f64214e6809d1f93dc1b8c414"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "89c205d14f0c8bcf8b98cdd2183841529be3743931689919fa9b49b010be487c"
+          "sha256": "5b52caf7ad86cd79143506bdddfbfcc285fce9c8ab4921aebcaf44f3ef397de4"
         },
         {
           "path": "first/client.ts",
-          "sha256": "1c9c3c32aac0c5742bce0f6997bab629b1cf06e870015b4a22749a90137e4df4"
+          "sha256": "8662be185445e02f1545f73c40b50f07723760cbd57fa33f01348fd41f245555"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "65524e778d80cccd964a6670139b3287e6775e0b12cca223160c0cff0f7da097"
+          "sha256": "0717dda6542104e080d482a76bad31b6274df72462d2c2efb95205cd58d159ba"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "b2e892f5bdf1a08942740cbe48730b9d086fe894a0235c5c7ceae4695123cf6f"
+          "sha256": "28a8e405fab017c42c11b79915984826da1cc445c28f69a6eaba148637d4832d"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "d8999b90fa0f15d4167741aa09a2fb58f6c85280f9a8a98620b06a7e1757ecbf"
+          "sha256": "3f418ac8408bb92158de5d8e540675f23dd795e3d11471cd11bc70054531aed3"
         },
         {
           "path": "first/README.md",
@@ -1175,31 +1180,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "91e2c4129bcdb920a13b0d54ff1e21d33d44fc28c8dea8e6bb5f2f8b8228de42"
+          "sha256": "ba077a73f18d7301f8be813e1f924b339c32efa7bb90236b6a618a46a315c54e"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "934c1780ad90788b9c8b0c27d3afed28b715ad1b24c91ae44c73c334121569cd"
+          "sha256": "b111a1327f183144315d6e89c64740108ee2be8ad126e2a38383c3e88b606764"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "aa10f02e3cc8b291904b75d13970cb751fe62d7c189ba64896cf30e28efdc32c"
+          "sha256": "4865f714f19baf8a9ed8ffe17e1aaff3e968e5a06eb2c2bf644b6fcb8ed88221"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "4904f1aad4f272f93a5bb6550c17f9b7d44f55e5cd8ec82e7fe41f1744af7e3a"
+          "sha256": "720fc93a643a9dd0da5c53aa0ef844bd5157adabc026920827a138b4fe54bc20"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "a8f28341fe033a08c65d89d110867123ec885c73dbc1a6113f7f6b9799ab4a61"
+          "sha256": "9cbcc2fdfdd14b1c6b6c1c54e605d012f66f195626c0600519abb67d40cb715c"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "eabeaa33444e6ba721ac05f4a7187ca9f4d77c498c2a981fa3d099c4374cc4cc"
+          "sha256": "0d7c9e319826deebd98e059a156651c9e2263aa5aae37bfc88bc485ff8a7ca27"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "3fa7c3c2a50539f69c24e249afd7abc2aa5dacca168b1db4a006d2b4b0df616d"
+          "sha256": "11aa22904562737f409fd53b7675dd85a090cc72f90f3fd7a2df4a7a6b58eb61"
         },
         {
           "path": "consumer-first/README.md",
@@ -1213,8 +1218,8 @@
       "package": "fulfillment",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "82db5b91e211d9281ee3ec6587c0aeb2a1021c91697e37ab16c0770505125e6c",
-      "verifiedAt": "2026-09-23T03:59:57.453Z",
+      "fingerprint": "d91c484e29d50796943dc7594630686159baac7a488134ccbbd2b95dd457cd2d",
+      "verifiedAt": "2026-09-23T04:46:41.139Z",
       "commands": [
         "cargo check/build fulfillment and consumer; deterministic double build",
         "vitest run test/foundation-fulfillment.test.ts"
@@ -1292,8 +1297,8 @@
       "package": "identifiers",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "21b76346bea7eb237ad5017af9939f8183942c6eaed5e075b72e7cb1d22e0e02",
-      "verifiedAt": "2026-09-23T03:59:20.083Z",
+      "fingerprint": "7d80ab270142634c9bd152868ce525d922a50704c79855e6a4d2863fcbb61315",
+      "verifiedAt": "2026-09-23T04:45:54.715Z",
       "commands": [
         "cargo check/build identifiers and consumer; deterministic double build",
         "vitest run test/foundation-identifiers-consumer.test.ts test/foundation-identifiers.test.ts"
@@ -1371,8 +1376,8 @@
       "package": "intake",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "0a97247f8bae7079dbf678ff3d491ce6ebe9d8bd9af92f465a2af974a73d575b",
-      "verifiedAt": "2026-09-23T04:01:04.622Z",
+      "fingerprint": "330d780dd36229f04518ebc68bcaa158ce978aff9347f95bf659a8182410dd27",
+      "verifiedAt": "2026-09-23T04:47:43.897Z",
       "commands": [
         "cargo check/build intake and consumer; deterministic double build",
         "vitest run test/foundation-intake.test.ts"
@@ -1380,31 +1385,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "96876d220a93c592f272b8818b0975f96402d9323c647fbdd9c45139b83a7db0"
+          "sha256": "af772682ef018cb9485ec4aec177664b30eff37163b1a835e99e5aec3189c51c"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "df92510f0ad6ac2e1056691669ce960579793ec07c029d5ceba5df24e72d508d"
+          "sha256": "bd3924460e76d1a10fa47a40c1f490a6a68482abf98dca168a55244ed28f9417"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "809df80c99626944d08e8ae03f4e85bbd0a3593d0ad07aa58646d784233fb53c"
+          "sha256": "697e178ad93af6677409f6b325c946512a571f28b0fd4df2b4612adfc5b947c6"
         },
         {
           "path": "first/client.ts",
-          "sha256": "22445c9c49f5aef8d1c4aa753e1c893b2ac4829b03955b2ef6a180f7decd15cf"
+          "sha256": "8dec1ccdd36b7b32870628eb0878815c4f59b8dbcc1e909bde9673bab8addd7d"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "9e8de0fd379b08547fd5c471b4aecacbc7f46f8d37edd0c947707379123ab809"
+          "sha256": "3468246d121e971c54e8f43544e272cf2ac125c15d820159cab83170c47b7324"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "e61e44950ced5fdc71660a0e2d3f8a4003d16750b3ae754e52aa69599ea26765"
+          "sha256": "e25c9b79935461137cd9d7f867d2e40a0b6762dce252365c1ec219f1745a8c62"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "46ed67d20d823553dab764048524fcf392d31fd297bba5b96bcccfc46295809f"
+          "sha256": "a5a5bc06faf7f64fa3bae092a7523e08ec28e9c52747da9d0923312775abdf6a"
         },
         {
           "path": "first/README.md",
@@ -1412,31 +1417,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "b9bc28307f923ec374739f4bf8a1dabfabb1cb57496e6a615ba58337682b4f12"
+          "sha256": "47e4f2c4f2636f140a1c89642ab5f1d4d258a37747dbc649b831adeeac2230f1"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "365f8154239699f7e2fd38b01208297e9bfad774f333e03625fefffa77dfd033"
+          "sha256": "15fb536ff8dab4ae1451a1b6d5630cad4bead5cafb13134a4e9fb3146362664f"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "fadcc0adfb23584ec41ab7f753137f0eb37e4cb94f226301478c7b7e9cab9848"
+          "sha256": "eb663feab3595c9c15fee0c6e2424937bb62c949e1bd18a3c286231eadf1829c"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "58484f0324e2afeb1f10bb1e3b02095581787ee63ecd63257ea8b4fbd2f5ac1f"
+          "sha256": "10a0c302165c980fbd06fdc999bc346b0588163997e94cddf09024bf1b0c6d71"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "1f3d0db34d9965fe86c793cd7a5921bff6c43232ef9c7ebbfa67fa2ea78e8be6"
+          "sha256": "d07015fd167a08b0e24405d798a82821affc9443b673a30f7e3bc84755ef7868"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "1f7dc64875526a4b7a7b9255e9332f87ef868f703b3e4f75dbfbe2b461d4fc17"
+          "sha256": "a89bc49d1d1c2a1a5204e219003c1cecf8eb3fa749f1dcaf873e46026bb989df"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "b99b859adb4806bd54fc7f9d6008892e942be47c6d98f6ee0d81d1fb3506281f"
+          "sha256": "bf10a3cc62f3a4323a553aab2ad2158d30ead4da810d5ad4e7b33d856646aa48"
         },
         {
           "path": "consumer-first/README.md",
@@ -1450,8 +1455,8 @@
       "package": "integration",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "a98119f2386858cb9ed7c827e8262b871b143580413b3bccae8103633a79816e",
-      "verifiedAt": "2026-09-23T04:01:15.578Z",
+      "fingerprint": "19b2be31942297aaf6aca5db6696ee9a1169ae66d86d9428cf8315dc70b1239a",
+      "verifiedAt": "2026-09-23T04:47:54.458Z",
       "commands": [
         "cargo check/build integration and consumer; deterministic double build",
         "vitest run test/foundation-integration.test.ts"
@@ -1459,31 +1464,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "d2d273458c38aaf960244c720804d43be281eb28b647cd2c35895dd3d54b25af"
+          "sha256": "fe82e75b70f3132952526f8642fc2f9ee2701321326450f7a56f928cfeb39c69"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "f173faa50b3b4a8fc5c7a156874f1ddc1486e73e6b48827e9b4e2f719050c50b"
+          "sha256": "385d30fa85cb244ee78eacc97021a99c6a00001d64d5f8061cb58f1c9cea0c0c"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "908c3102c30348766f6e5888b74b5601b07ce4dc7dbbe42d2bd00480dbfc161a"
+          "sha256": "b7097d2d2a8dfb685d856467f1c7483f889cdb9d6f8ef968db3da010abbc8fd3"
         },
         {
           "path": "first/client.ts",
-          "sha256": "007e186490ca1972d68533e10f85ecc9ae4338385912f93a446056989d4c7494"
+          "sha256": "6c2af2abf10bd6391aefee88ade330ad01d4ca2c91efd5f7ab0adaefed9e0f46"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "d9717ff046668bf5b1faeb9df601e297f1b279e189d7bce8acb399ea92a1e9f3"
+          "sha256": "c0305b03a1171b90959d01f05b69d80caef6f084e161165f53ab3a68c0ba1e72"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "e0b8683092044706f8429d4474ff9fa933ea8945b077fb331ca1c6d903fd4455"
+          "sha256": "00817bd3f53581ec0e3cd870e1fe35c0acb19cc4d5f23093d7f7b54843d19130"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "6dd8bb2d06eaa1c189fe754195aac7fbf6de1668ce9e194f12142b9bb06eeb02"
+          "sha256": "43f0932a049e0988a70d7987348e24ec8f7e003bb6e0ec3ed81c5484fb99b177"
         },
         {
           "path": "first/README.md",
@@ -1491,31 +1496,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "f5a315b3e0b07357180948e1eaaaed2ff046b23b94d5e6fbd932f6fa5d36aa2a"
+          "sha256": "f55297a42bbf4a22c2b2d43c9922effc0f05010f252cb073cec383ba74395a9c"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "7649db07e4161bfa9b91f6c3aaebf9010bc295e4407541b369d51c1ac6b58769"
+          "sha256": "01fdfccca846dc81aa8b314264d8a1c37c4771dab328afe8135a9edf33988e74"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "8e52f01785524e7119ded1bd73d4aa49109f3de654a9d71d7df00e66685cbe92"
+          "sha256": "6768aa677f2168d80aa5d80ccbb6279aef94651d3ad837fde21d422211a84806"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "edd384cb99df83b304a4587c880749773d2933a034c06b7aea86456a8a0ee6ef"
+          "sha256": "e5ed30444ae87daf9da8a4e9c755acee40b3c3d0e9e0184a745ffdf5236a2c5d"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "230c05988a2ade639c5e0d922eca593137cd62077ced7d03592163ff32cc4978"
+          "sha256": "31bb8865e43eebd0e67d048a107df8056f41bda2e140f0633d4d4be584df4c9b"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "48903cfe8446ad52ca7286206eb4da17d8b6ddb0c4520b77fc516f63b8821143"
+          "sha256": "50aa314786432df570c0808f6adea99ed8f291e34b34db1ebbd6acf9eb978f08"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "9e406d092aa90c20c1692b721eba61dd59c2dc47e16253f7f1a254a588ec9ce7"
+          "sha256": "bd8e31febf72cabbdeb9a3b3d89eb50accd4fd595e2b37bc8c5ab5fcd79da080"
         },
         {
           "path": "consumer-first/README.md",
@@ -1529,8 +1534,8 @@
       "package": "knowledge",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "49a6185efaffdff30e36ecd605270840888e47ba955d22ae18625b7d63fe53f8",
-      "verifiedAt": "2026-09-23T04:01:29.142Z",
+      "fingerprint": "c42b8aa7e4cc89f03d0bb7a9c867c0a87d473cd297fb5ec8ac2792bfd6ddcd14",
+      "verifiedAt": "2026-09-23T04:48:07.221Z",
       "commands": [
         "cargo check/build knowledge and consumer; deterministic double build",
         "vitest run test/foundation-knowledge.test.ts"
@@ -1538,31 +1543,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "22d51fcd7cb8feadf80346d97dd9568c5bac849c0018c52530a21d5fc29c75a1"
+          "sha256": "9fd22d686d52856cd7f8a0e35ab9538f3c1f80a82cc0d1f84e463b4ded034e53"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "2f8a766ebe7d6eaadade21b5344ea24bc2c56298c8c447f334e1c294d1e3317f"
+          "sha256": "87ce991d9809d97605d832da77defaf59d1a95af7270dec3b178d71d36b4d267"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "b9c603dfd4791b95d63e538d89433e426dfb848b65e4921a257f767def7f15fb"
+          "sha256": "8b0ead21bddc37d282e3a0b76f3af8e70cd3e5d47690cf08fa48d2b41a89f595"
         },
         {
           "path": "first/client.ts",
-          "sha256": "b7ed90a5bfd256b64b0a1fc59dbb8523ed60471f9c83e6a853259ca5ddd4294c"
+          "sha256": "f0904a6e6ba6e5b96e5876ab6cc6774e332bd4924be16b15adf2439805c3188f"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "9ea78bdfc1626f1ab171ea95bf7079129e08fad6b3ab750e387e591df5d9f9e9"
+          "sha256": "02d882cf1b3d3b694c7c7d6ef1e0ab62fb1b0d1f2d1030f84e81e985501fb4df"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "83c8bb63c5db97741c6d481d12fe48562483e06836f9d0af428d8e08ec0ecaca"
+          "sha256": "99de526e3cb3715caa7b628cffa7967f04430a324d18861f28b939964692e38d"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "81734d637f63b13309249720692c28dbde01c0577e56de763f2d1a76690ae850"
+          "sha256": "038f5e5ea166f2244c5aa553f42abdaa806a5422c785ba635d07cb0b7bf8816f"
         },
         {
           "path": "first/README.md",
@@ -1570,31 +1575,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "6575440718319e52337436db8bf19a08f1a2e153975b895c95eb4d4d444b1855"
+          "sha256": "c1006fbc66741d4a9562704818e2ed3b4dcebc6a9a345fb1c2d25dec4e852268"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "11ef85342ea7b9aa2b47f9a0b557ec97d2fe551e46e1788e8e55f422d16cb62a"
+          "sha256": "9f72f78ac744172cea5e373ddbdbb18dd1465c4e2a31d4870c8cd6cbfdb836ba"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "effa3cdc48e6a551ca8dec9fad200d1826f3c70d602e6a48c6932e6cd741a229"
+          "sha256": "b8a2db1350ac18344188d2cf26baea3336b70911492531e59df8d8095543a55f"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "854b1becfc2c74d77588cb4622daaa7422383c8748735c727ca8c7693e5e84e0"
+          "sha256": "2edec6854866516769ab150f28168f564582917747e75e41bb6afc491e5b439b"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "f2f208cbfd5bd837d48f04ba64b9aea2ff7c6904394fd655fe12582c6bd1347c"
+          "sha256": "0a896bf1fada5f29a2ca5ea74d4e19d63e9fe6e39a6642fc6777187c7661fa67"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "f8a322f57622206960d603cde3cf88725e0266e847fd369f130fc431f600fe7d"
+          "sha256": "33f047e2744d62d1cbe9a24caf173c7d16b0922b600a8054fb4371fa27d0a079"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "8840ee1efce3ec3e20e9440b4b10cdfa46b79027b79fca43869092e9fad1dc68"
+          "sha256": "1b584f0321f866e73573338f38a6ae04117b1474c41a332d34a3f5e07a901101"
         },
         {
           "path": "consumer-first/README.md",
@@ -1608,8 +1613,8 @@
       "package": "ledger",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "f59a3392748215e22fd4bc216216e7d782fd22df688b836b7a54a3a775882ef4",
-      "verifiedAt": "2026-09-23T04:00:01.097Z",
+      "fingerprint": "110b17ba1339a4b09d91fc1240cada9b52d2e11bdb5043908521952025292244",
+      "verifiedAt": "2026-09-23T04:46:45.167Z",
       "commands": [
         "cargo check/build ledger and consumer; deterministic double build",
         "vitest run test/foundation-ledger.test.ts"
@@ -1687,8 +1692,8 @@
       "package": "lineage",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "d5d94d5f5bb7eb022b4b0846e769bba30ca50f9e6dcf56ad85eae629814d8fdd",
-      "verifiedAt": "2026-09-23T04:00:52.712Z",
+      "fingerprint": "6a318817d93967d6b5dadece9d01d5566f28475ab5dc9f6eeae4c17fde2dc654",
+      "verifiedAt": "2026-09-23T04:47:34.273Z",
       "commands": [
         "cargo check/build lineage and consumer; deterministic double build",
         "vitest run test/foundation-lineage.test.ts"
@@ -1766,8 +1771,8 @@
       "package": "master-data",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "5973272c92ca1d07e197557dd74ddaf747cb6f6409d6788beda33a4998f3a6fb",
-      "verifiedAt": "2026-09-23T04:01:34.735Z",
+      "fingerprint": "049e7d188403d4a6874cf500a725cb019a03b25b396efea144b087b567ded914",
+      "verifiedAt": "2026-09-23T04:48:13.369Z",
       "commands": [
         "cargo check/build master-data and consumer; deterministic double build",
         "vitest run test/foundation-master-data.test.ts"
@@ -1775,31 +1780,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "530b7e8088f016b4590d641a5fd116f6dfc039238086ea764483a8f1e155673f"
+          "sha256": "0379738b1070d8aebe8ce314d1209c40c885dd74733d89bce90fb41df85d5361"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "ac7087e95da8a4e113def0e046bd7649cf783dab9629771000c2c4064f179180"
+          "sha256": "1cc047f827d299247150e617752601fd3552093478ffc31e84efd27de6674977"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "790c83594e4d97d5d1eabf6856c7a13f72866ff68b5ed2b40cc54cc8c30b95a5"
+          "sha256": "acf94364434d0f97edc8b5f8fad20bd4080577249786c8ea46e929536d4145c9"
         },
         {
           "path": "first/client.ts",
-          "sha256": "85c2fed68b7b55eb36d5d6a7823e466e135bc1b6c815af7a7dab1ffaf5feb136"
+          "sha256": "d77a32dacdae6461d9a556566ebac1889338a597206b950b381f8a9a4bbcd3a7"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "0788b80102e68a99e2e06e317798461542879240fa5e923e738041db8c9b8156"
+          "sha256": "db311bc19899cc7a939008743cd258dd80605370d910740f3a4bc5f2dd093f03"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "f472f65e2aa3c79f426e359ff8993cf9315d2ec0bcfafc33d3899a27d908e6d6"
+          "sha256": "dd223a3934bf6bbbfaf6b4ddf68074f07036d475354bb6236b64e2291b75dbdf"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "b7b811c9c99f0d074a02e1a33b772dd6e0de1206b20c1b87db6a68cdb604ff14"
+          "sha256": "4888f44176ecc30e7441702a2a8dcd8df2018072add3ed2d8eeb3e20c9c5d99f"
         },
         {
           "path": "first/README.md",
@@ -1807,31 +1812,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "e7e10d3dbf33d849ef2cd65696a951a5d17d0bbd3c498dc01dafb498fc518ce3"
+          "sha256": "5391b7c973e5cbf5a66702b5bfface2f216c85a35362ed35b9735bf644632b3b"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "65e95bf7c091764debca63de2102a555b400db6651d931f2ba54c13b83d3dbdf"
+          "sha256": "43fabb7c8af842a16acdc70b6316d491622e78bf61e78d5bcf11255f03784b2b"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "12374e6dc17a5ad8f2b3c6e7df946f12cded49b22fc5149f5d4904c05a7c7e8e"
+          "sha256": "7901cdff8c3ff8422712be6f7ca98713641237108436d9d864d87fd2ada69a7d"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "ac922fbc9db6eb05b9924a9a54d1ffda2deb45ff8c8fc94625570557082bac2f"
+          "sha256": "8216f511462742dfa102133e196d4ed1b8ca125c5e5866778aeb9ddbc391b812"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "420a56dd6236379f2d1c33345405bfe2391ba360f93e99eedd12cf9a2051900b"
+          "sha256": "9566eaba40defe794632a8c2ab7a79d8b2562488685fa781b1197248091d4c77"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "15370e7bfd09ddeb12f7b7b406baad450d25f08a39e8b4802053a38a2367a95c"
+          "sha256": "9dc071d7ec6cccc046e53e307a135e9651518d97a02797e72748de5c9d910eb6"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "26ef06bcc9ea9a91427a9a3078935a37b805cd0497e52f15cd1ecbde794b4511"
+          "sha256": "e502905e419de99bc8c33bc14ca5aaee0aa52f99acebd1764e982c084c2283a4"
         },
         {
           "path": "consumer-first/README.md",
@@ -1845,8 +1850,8 @@
       "package": "notifications",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "c02314e82f10153478aad80e051c9603970c186281ab1d9dadf2a8e95d21d182",
-      "verifiedAt": "2026-09-23T04:01:39.404Z",
+      "fingerprint": "ef2bebe079db8ac66531f887dfd99a7466c2f66f84ee7192a3b2fbe9fc0fcf68",
+      "verifiedAt": "2026-09-23T04:48:17.514Z",
       "commands": [
         "cargo check/build notifications and consumer; deterministic double build",
         "vitest run test/foundation-notifications.test.ts"
@@ -1924,8 +1929,8 @@
       "package": "operations",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "101c763fa2bd551d9c872da054e7154523e715f3e5dff972f035101e52d403df",
-      "verifiedAt": "2026-09-23T04:01:48.670Z",
+      "fingerprint": "cc2d6338b3d9a0263ad4608cf0646ee1f843a91e902b3cb2156654429f59436a",
+      "verifiedAt": "2026-09-23T04:48:26.740Z",
       "commands": [
         "cargo check/build operations and consumer; deterministic double build",
         "vitest run test/foundation-operations.test.ts"
@@ -1933,31 +1938,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "ac9bdf385d5298abb7fe341d417138af4af7a00e313c63cf814aa75085b7d972"
+          "sha256": "06dc1bf524cac5fe7b9d371c11454981e2b6fa2f793fe846291d33831ee69e4c"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "75ca953fb406a220de4fff4ef73718f6828605429d0e3cc164f478110ca3f0e2"
+          "sha256": "b66050bf9fd73114485fbac0f9274de259333574cca325819d89489f3c99ae37"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "886d261ada4a7f820bba55741be513f73d2cc82bd0a0703a350b90be248b6cd8"
+          "sha256": "e0bdb243fdfa2e5bef68bde85f45a01d5780289c8ac6af55f545477aca4a4d36"
         },
         {
           "path": "first/client.ts",
-          "sha256": "56fee18613cf7b167f52d7d264cdb68cb8a36d3ca5637836ed6919f39cecbb16"
+          "sha256": "bb0c8d308f31a449a89d7229f15afc8194de9dc705d8398cd9c352dc0090d19a"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "b0cbd9c5561d12b354ebb6a81b86b1af5f490700b6df95d3352f9eec477ea561"
+          "sha256": "1afab6ccab10ea9a91dca314dae4446ca4ab382eb66f6cc26bb6501a0efdf06d"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "70fba6c7e01807c1163567a9de5496a53506889ee8545c1c0bd0be2b37a6e092"
+          "sha256": "d4fcc52456d902e270e1790d40b68b52ef05091bf81d3f2762da862ed754d0f1"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "263048c1fdf88fa6afa6c5ba52f742c464b7153db54867fcafb2c0ecfdd14e66"
+          "sha256": "0020a8fa1a501434ba0872c8ca4df8f12df330b2b084c9b70b63cb1293e8205e"
         },
         {
           "path": "first/README.md",
@@ -1965,31 +1970,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "9c43a3ad71163dd1e0e8c1e6cb4630a99dd2596a8d122e79d1ae9db51f233f3f"
+          "sha256": "6ea2c71e2660e6401a6583dd13ef4a75cda7103197fa54379c34028f1739551f"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "906684eaeb49665191f0eb1d97d7781332a8ae43b26b2f2b943d9f1b070e975e"
+          "sha256": "467704fc4143bfaebce7ef70049ee31f0e54ccdc14642022e132f8c76a62d2b7"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "68698aac4e62ea488b1ab5640ab619143e9a22f7ff310280d8c44724ea9f9dbf"
+          "sha256": "15794029172aa15995daea3841fec324617db356126a8cf4b5aeb3248bb2083a"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "7ad4d931b2b7e3dfddf34e6a5f9653bcb7a49d34e5b6f516a3f70522c0e934d0"
+          "sha256": "790d1fd82d46b203982499ca97a80fcf1f956581443b14868376ad37bad6c0be"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "52b729e2de1a79ac7a8bde7f531389caef27b31ea7e461d77bc4705567e7acaa"
+          "sha256": "5aeb270217abfb11bc10ca1d9c19cc09627236105df267d8bbfd89b05fe01bde"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "806b0784e6ff56d0889256cf11a5f3e0bc047a7630c2a51b1e7ae129e372aab0"
+          "sha256": "7088bb836d37095d32eca3acc40e268272f352f6e6a3963acfec4a93e1f15516"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "c16474bbda2af6d33aeaac6391debd41df25aa9b476b53557ec493aca6b058a1"
+          "sha256": "97e5bc7856e0eda2d571f7c07e3bfac4a581fcdde57149e5c55c3994bd645bde"
         },
         {
           "path": "consumer-first/README.md",
@@ -2003,8 +2008,8 @@
       "package": "organization-workforce",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "e52df2afb8c36fed28ae341b79585a681231ccd758afe9a3c60a7f9131749b20",
-      "verifiedAt": "2026-09-23T04:02:01.481Z",
+      "fingerprint": "fb68fdc093fa35e4158c9f8fefe3d973925043422dc7883379141e7619dedf0f",
+      "verifiedAt": "2026-09-23T04:48:39.345Z",
       "commands": [
         "cargo check/build organization-workforce and consumer; deterministic double build",
         "vitest run test/foundation-organization-workforce.test.ts"
@@ -2082,8 +2087,8 @@
       "package": "participation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "8b6ba209122ec1bd9dee2cdedb1e51fee34d94dff8f8264407b022ffdc11607e",
-      "verifiedAt": "2026-09-23T03:59:27.504Z",
+      "fingerprint": "500013492ddf23a2996ab96c223daae9dbb4830bf9f768799d95cab2bd473b34",
+      "verifiedAt": "2026-09-23T04:46:06.514Z",
       "commands": [
         "cargo check/build participation and consumer; deterministic double build",
         "vitest run test/foundation-participation-consumer.test.ts test/foundation-participation.test.ts"
@@ -2161,8 +2166,8 @@
       "package": "party",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "22f4b8ca4f626bc92987e272a5450d07bed1a3e29375d0c9bf7b6a8fd39562c3",
-      "verifiedAt": "2026-09-23T03:59:23.716Z",
+      "fingerprint": "4505577906b3ceaf4142ec516b9e47e6075decb1fea4a77cffe459a8b04db5b0",
+      "verifiedAt": "2026-09-23T04:46:00.270Z",
       "commands": [
         "cargo check/build party and consumer; deterministic double build",
         "vitest run test/foundation-party.test.ts"
@@ -2240,8 +2245,8 @@
       "package": "place",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "accc1db95e5313a3604925e497df37a1fe325caec893c7f9c628a862d3172b5f",
-      "verifiedAt": "2026-09-23T04:01:56.858Z",
+      "fingerprint": "d385cffbf66b2e42105f1285f88d76414d3e26915cbec2f81cf185a7f8bd95e2",
+      "verifiedAt": "2026-09-23T04:48:34.651Z",
       "commands": [
         "cargo check/build place and consumer; deterministic double build",
         "vitest run test/foundation-place.test.ts"
@@ -2319,8 +2324,8 @@
       "package": "planning-budget",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "7e3ee5b43829cab3cfcd46821473356d77d4cde4dd3505ecebb47cfd7b444a05",
-      "verifiedAt": "2026-09-23T04:02:06.627Z",
+      "fingerprint": "7a3cbb8db9f3b9f625e7b7d425ef7f118cff3333ae757c8d52824a702996838d",
+      "verifiedAt": "2026-09-23T04:48:44.405Z",
       "commands": [
         "cargo check/build planning-budget and consumer; deterministic double build",
         "vitest run test/foundation-planning-budget.test.ts"
@@ -2328,31 +2333,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "7095593b197fd913b389f58d172d89663f0ff7c4e6646cfd7c711470b16685ed"
+          "sha256": "33ff0ff2e9e572c3dd655c599d6066898a4303e0aa2770c1925fa99d080a77ad"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "4a081708a81cb95bee8e5a85603dafc1f1d2bc8c83071574cb9b9fedd91b4d32"
+          "sha256": "d6682ae5e2f935f78be430b60017e5901369c1840c120cb7e82b2d6fd97b6aaf"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "72aa95c9dcc9d00d1603730273bbdc547dec8766278c5758475b6e0e243b8169"
+          "sha256": "7ca43e2debd6fb65634e2ad72cfe48fad5ea53f846ca9ec41fa03cb8b09ff8f1"
         },
         {
           "path": "first/client.ts",
-          "sha256": "3f0485ea1f0f9f1ec30229471f9e7acdff4426ebb2bfff078c1dc974e7457860"
+          "sha256": "c383e0f2ccce145932439271340badbf08db2487db0a03b1d2438a1b2fe2a91f"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "2aa515b7847f7c10fe4ffcc8434c23bc3746cfdcd89cab2b820951b083ea1454"
+          "sha256": "62644285bafd3dbb069c53001ca9d36026912f71b287ae977533d3e2a39a06bf"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "689f5a5060b18c95f4a914f136e4255225db1a21db280beffbc896a46601f425"
+          "sha256": "b0ab387c29003d38ac6f9c7be7d0fb7f603da71090042731a784122d4874b4c0"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "53cb12e6e3fcce82a4d1194630c0ace8c8f9b27c3ef4beb8581d65ab8fcf9eea"
+          "sha256": "d55a77a475feb0ccf44df2fbc43bdbc63fb23423193616c105b0a581484608c7"
         },
         {
           "path": "first/README.md",
@@ -2360,31 +2365,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "afe86fd77aa900f71636ceedd141610523d6e535f0fa4101b1c8d9fec52d9cd5"
+          "sha256": "2efc896b627b6552bb34a2881bc872224425f56df010d097cd9abe1c23366d78"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "b4fe8b31ae7bab440e09937edf3d824f45f702b5f12cd151f11261c2c5a2ac28"
+          "sha256": "3a3d64afb54d827b84e469f56c1c253b4a6a713dae03fed698ff1bce1d1fe935"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "c7e22d3791ff8ffa26cc5a804e58866369e514537d4dec0ebabf7e234c736d90"
+          "sha256": "72a0c9e4032dd7695ef708198f0b87b4dbb20347f4a4afc711b0272ce59872e9"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "147eb219dece4aec462e20e74d329c78340c5a20c9ef05e1e19a6eceaffd9920"
+          "sha256": "54aaa7e54d3cbb867bc5ae0ef7f19759bb9f1119a83761e0a248d5e209cef82f"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "06d7189d5b6c9fcdcca4e55d7d00715ddb592eae793dc6aa86fa6325957cb500"
+          "sha256": "c73e861dfbcd906667a5f6c48c2dfc4168b7b60ba4bda11386690cf1b73e4dff"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "5e0964a1b58013b60fb3e1addbb04f111f020a7dc9e6d45c7c3d7a694913716b"
+          "sha256": "2d8745d2beff4f53adae575d6a3f6be66455adf376719433d840b278e950bc76"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "4a818e1148f5c294c34b41165c91518eec4c6821f8436ac3cee185793ed0f697"
+          "sha256": "7f060eb251ba23a1d7ce1f0c26ac884d072afb94897b68c34d8b537ad1cef006"
         },
         {
           "path": "consumer-first/README.md",
@@ -2398,8 +2403,8 @@
       "package": "publication",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "5c9c644880f2c7d204f59eead0d401ed38c622adb3d02df5b7aa8cf730c9e89c",
-      "verifiedAt": "2026-09-23T04:01:22.047Z",
+      "fingerprint": "125c520150e2bafc3335e97ce43db4e0818c60ea276b76fc411446e50df4859c",
+      "verifiedAt": "2026-09-23T04:48:00.543Z",
       "commands": [
         "cargo check/build publication and consumer; deterministic double build",
         "vitest run test/foundation-publication.test.ts"
@@ -2407,31 +2412,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "f564fabf29752577e824bc946c28a94dcfc4a1c86e6563b63be6329fd37f2fe6"
+          "sha256": "3869a0d23417c79de1b77d0079fbd8536898383ce5078a12b750728c4025be6d"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "6410a82258ff04aae214298234d46ea8e6c215959b8304ae646cfe6eabdb41e4"
+          "sha256": "1acf4d0f61d76789549ee331c98440a9783d0912f14e740480c9a2d4fe6224f5"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "c992f6f4fcbb9dbf703ca6c56e9c60631d93bca41407948094a5c1997608ae62"
+          "sha256": "f7d131f1da79cd98036bb62cbf3936bee466802dcacd1e3c31c6ec9916b349a5"
         },
         {
           "path": "first/client.ts",
-          "sha256": "ace39785c7b91430592f2698eda5f10094c38d5e937b7f67f7075b225a94bb99"
+          "sha256": "13b1db697a73e3ec2025e957f082d51494a73a4413679de7b26dd273e5d51251"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "0d6871f578065782a6ff0fd120176f8b1cdbd0f6838f0ced62b79341cc93266f"
+          "sha256": "273af265661863ca24e72d22f967ebf88c7d95cf8d0dbabd308b2c46d8623caf"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "889132213208c50877b6cca7545228df1542d053e84bfcdf708e3c3bebd44ac1"
+          "sha256": "e8cd2d8a05df44760fa644f8efcc61badce7c92fe70de8242d75440f5f557fb0"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "db64ca90d733e96de9be3ae932fea530a71a4642b1047d20940faf309c622dd6"
+          "sha256": "dcbe6ae7694541d69857eeb808515973e6b827a044b39dddaba3f751e0516d2d"
         },
         {
           "path": "first/README.md",
@@ -2439,31 +2444,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "1d2de94f330c2d68b004d51ef53aabdcd8f311c3b49e9a3c49564d4686f8b4e2"
+          "sha256": "3f39fb1338ee2927506b289f9ee9bf4184087cc6a48f3281a11d56f60d123009"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "9d95a0ce47c8a099cc68e1fa5bb5194f460d80a701acefe11668426f15903003"
+          "sha256": "35537e104697527dd7b3ce8981b52db80a92d7bf89cc267cac5db2331febdeef"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "dc175f29275f05b2bd5c01f68755a01ea061e315c27d703ef39fc76f99529a8b"
+          "sha256": "b40a6106a4c033a8e52c4fdec93ca22981a04815daaa011795caeb12a77fc284"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "3ebefdce3cfd6e9458bb249433c17eb0ff75d3847b71609aad4c1bbdc667a0db"
+          "sha256": "9f100f60b2e1c8795f8940b376a9abe3683df285a4958523b5294e663eefee9e"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "d82b82b5846f0e41cb34f794914221b8e5908612f09aa8cc9b61aa3f9263843b"
+          "sha256": "0271c11d92edc56df47ad96321a243b8617418fc640929f2fd46709e6df61d57"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "6ddd01a8b388f7efd54aa3ad6eabdb9345862df06104290eee5dac98a662a7c5"
+          "sha256": "ea3ecad76568b7de32ee693b9554cef3037939f0ef2ba2cdaa286250a1ddac86"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "9d505daac407a2eab043670e637783dabf3de047d97ea1d8882fcfc94f2e1467"
+          "sha256": "a5d648e566eaf1cdf85cde20938a10886c6d36ee9894aa72af3ea807f74f6b0b"
         },
         {
           "path": "consumer-first/README.md",
@@ -2477,8 +2482,8 @@
       "package": "qualification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "731c65f806ebd0d22e7865ac806868f1243ef456e074430fe81086b2ccf1e5a5",
-      "verifiedAt": "2026-09-23T04:01:53.185Z",
+      "fingerprint": "5467d519f2bfcf122e5e4ebb48a4e396f96a8484aa6f9ff1e2892888b2b4bd16",
+      "verifiedAt": "2026-09-23T04:48:31.138Z",
       "commands": [
         "cargo check/build qualification and consumer; deterministic double build",
         "vitest run test/foundation-qualification.test.ts"
@@ -2556,8 +2561,8 @@
       "package": "quotation-pricing",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "a964c7ac8a30b69364baabe14ce4dfc8f2b3672f14930e8a521a93ce1d70824e",
-      "verifiedAt": "2026-09-23T04:02:15.081Z",
+      "fingerprint": "ae3b914aa34d5a50afff2cedf155ceef3f3ca0674468eff787e70398bd6f7f1f",
+      "verifiedAt": "2026-09-23T04:48:52.885Z",
       "commands": [
         "cargo check/build quotation-pricing and consumer; deterministic double build",
         "vitest run test/foundation-quotation-pricing.test.ts"
@@ -2565,31 +2570,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "f2f5e58bfa6d40df95e37036e407c48d6530d91171ad968159897b72d0f0d982"
+          "sha256": "2a401f5673012f81d7192b0c4057405bd7fb696e8147882e2c29dc1b9c605494"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "924c3abc8969a528b3df09616f144357c8ac577f862f9ebc3bf0bc1dd25f50f9"
+          "sha256": "80c2e87fde27f6a7e9c5c7505da0b4ab7c7707779d4992271da54ffc3e87e35c"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "abe20024a6ec3349b44194f99b7da2b73e3e28e5b3890f1f7573fcbd5081b4ee"
+          "sha256": "c5dd5f337dfd13a3e0f8116563cd5e509dc72350e725c34e0695336778334c8a"
         },
         {
           "path": "first/client.ts",
-          "sha256": "cd9f69b1844d9c18c834609b8c42eb5c17268687693892516426eee2d704f5aa"
+          "sha256": "4a2a51f189c8aea60ff223f90809aa47cf12654fdfaaf9c02f2a97ffb0255078"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "a97f8fdecdee95f667808b4fbd237067f011eaf3908560e4228715040c809fac"
+          "sha256": "67c6a483145e86860e321effcbf5f1a717b85417153d4bcc91afc9c4b03788a7"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "a9a5978477b3caea856bafd196a010bb71a8b10ec41e13e7dfd1204cf9937628"
+          "sha256": "7c7f25dcc90cbf57df988781e079d645af0c71a042e757646b12a0dc4e8076af"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "8f16098b01a88804ecf21c2b5f77689a1e197af070c26549dc8f872df40b5c95"
+          "sha256": "315c6ee7c3b6234e5ab32a57cf7981e30b76a356db546a9fae86215d34eb9117"
         },
         {
           "path": "first/README.md",
@@ -2597,31 +2602,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "9b15df1cd1a18774b5ff92eba1d92738275f5af48f5072daaeca70773bb66698"
+          "sha256": "392e1e16d87b383cfa1ee8d663f26b8fd8ff4d1e2a31036bfb5a30bd63293f56"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "79be4eb64ddcf815b7f475b546e7f0ce6111db0f7ed61c075f5fffeffc5bf2b0"
+          "sha256": "4d55da933ff62a918be453a62c08262c73749ba8c33ff0be7ed10bfa382a8b28"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "68bbab6b93f2fef82081e1c412be3512b1d9efcaff7e34c81e99ed0e63b3619d"
+          "sha256": "447bdf3e7b63ee99123708642019047196aea3effc2b8b923f18352bf86eb5f1"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "bc15f2c4a7c7d6966c069427c955381ad5562fcaec9d1d6c5b75f14635ff88af"
+          "sha256": "2aecffa565e71d15603d11f9b218e0e5bde05b5f4cc283b64cf0fb8135e260f8"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "858a718dc51506f143d674f409f4a75ba14bd54757798fc3b2aef268424a5198"
+          "sha256": "ea66d971c2dd366535bf31fe989242dec09c64c2dad25212394c99ab013d42f8"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "25cb5de34d34a3dc47eb1c88c352b271a0765bf7e246e79f57c1f39a97c0c51a"
+          "sha256": "bb3fccbab91b9731c41f3908f8102d547534b7781800ae41906ccfbc5acb154c"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "25d8153feac9d099a79442c9bc018b3364f092431958f9a3db9c701e5f2144e9"
+          "sha256": "8e9fe20fcb3b8ee6ef142c62e200230addaaff12cdf9cb036196fbce6bce8633"
         },
         {
           "path": "consumer-first/README.md",
@@ -2635,8 +2640,8 @@
       "package": "reconciliation",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "0e4dba728ff86251ea9ab2c571846c9373ba5645260a414632df885ead69566c",
-      "verifiedAt": "2026-09-23T04:01:10.277Z",
+      "fingerprint": "4b8d8dec83f8b653f59148a14b46c2ae9c7ec29fbd3732b865e499abdf0a4618",
+      "verifiedAt": "2026-09-23T04:47:49.175Z",
       "commands": [
         "cargo check/build reconciliation and consumer; deterministic double build",
         "vitest run test/foundation-reconciliation.test.ts"
@@ -2644,31 +2649,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "afdf2ee1f5513fcf800269611b502353de7708d8942f019e5b70afc53c23a54f"
+          "sha256": "2a36ccf740203ca9cdc2a50a39f70b32fafdf24cf41afd7bc034a5702bb6cf3f"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "2d80e0551747bb8013a0570fc0a3323e47a52c55afb427ae031a57071acb61f8"
+          "sha256": "fcc6e930307200e203addbd1c321ab6eef327d4b21d25e3afa35b2e63b938160"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "11da35ce71fb964911071417f020750992ef663630d0c2a052d45bc9389f4926"
+          "sha256": "d7edece76ab82683d6381f098bab89de6683a78b70d5c34e493b91c61b6177f6"
         },
         {
           "path": "first/client.ts",
-          "sha256": "5ebdc0280d97587954b18c8a3f0cb45dd187eb347d91ad4f4f40829f00d24ab6"
+          "sha256": "fdc0e9f8ee921b5174f69047787860a77760a40db85ab34ccd2af359050d62c4"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "88eca899f587a959ee27caff6119320f8e595d3a7d0cd026a626dfcb79f5d1db"
+          "sha256": "77255bc1ca3694e6a693e7d6dc6ee82e1558f157483235d09267c30d0b7008d1"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "1fa2dad5fe581343378c64c4217433e620ee59ee9d6892f811b5a6503a15318d"
+          "sha256": "2b4546743486b20400e4014a7a4d268942acb6212e218d5150e3053a4ab54817"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "76e496e3d92e04333c4a6f5d1a85b72430a262144cca58920f02f7fe1070f9b0"
+          "sha256": "4b696bc1215f3e1b7c34b50e21b47ed5fea1af05aad816f81296bd81a80a48f2"
         },
         {
           "path": "first/README.md",
@@ -2676,31 +2681,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "613bc8d2dd4938f083b48f9f8d3e3441631feeedfde31919e0df9df24bb28d4b"
+          "sha256": "196614f608373ee970f8b7555a40164dd824792c45c4f704309ed44803ba6fc7"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "cd1b65d6e06f9241be01d0be173ee29a0ffa1f7949920d3a5252173ac5e2c88a"
+          "sha256": "371e5a88bdebbfb4f660154dab54a1fcc3e36e9a5e2375b278d5dc6e0ef38d76"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "8299beda159b4f7cbf5c093c73fca4d1cc0d38a6913017d48a20668b4a429931"
+          "sha256": "9ec471efd789ded3944e5e1a139613a4b4b06acef2dc7f1425f0b8da0bb74d8e"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "4c71bb2679259fb7b0c3b3fd6069659b86eb417e22876c5d1d103c5915eed88d"
+          "sha256": "2d9e911b71163c733e10b09ff652b4d49a7555f716462e2062c8ba1bb1283ba6"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "bf8be606299e233fd35c9aa3aaaaa74d6bc7297ce4c96c88b34aa920273fd7c2"
+          "sha256": "ed1de9023b85350d36c2e08e7b900a818937c15f9cb09d318d2ecfb3721f249c"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "369f2df41aadcac9ebea99da596c3769bc74a55552af943d6112f0947ae0b0dc"
+          "sha256": "f98e8a5d8c6925be79688a0c52194a2220e27c0eacec4ee9493173b02eeaf4c1"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "fc3034a689e922be174e3f1faa6a06462e3d6c21cab78f82e34125b09484f474"
+          "sha256": "7c2a57745ca02e9d51b23fb3403b5c958a3de71a5bdc454e6056aabd45eaf0d3"
         },
         {
           "path": "consumer-first/README.md",
@@ -2746,8 +2751,8 @@
       "package": "risk",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "46f71cfbbc755aac53083f567a2722de5e7ec198d16e9e3bcb99f3c7854e2270",
-      "verifiedAt": "2026-09-23T04:02:19.817Z",
+      "fingerprint": "2673198aa671bcba620d9335aabff8f7fcb58f3e1cd676020b3f4e2818ee0a00",
+      "verifiedAt": "2026-09-23T04:48:57.666Z",
       "commands": [
         "cargo check/build risk and consumer; deterministic double build",
         "vitest run test/foundation-risk.test.ts"
@@ -2755,31 +2760,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "af455a252b880deac81f70031e7ab54c8e3c11ac0d42cf94b0b1dcc42e3cf39d"
+          "sha256": "67c2d9f503d55315236a8bd085d684b0f4a05d1b1c35aa06bc5f457d98f1def3"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "63ae802795ce15de70059063471a3e27b6ad494f425e8387c14bb4bf269bf875"
+          "sha256": "fbb0869779f94722235d522c190cd257b7338f4e57287694a71c989c219096a6"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "aba9e6c57d0a0dab7c5b605c1a54cd3d6c6dd4a72a4f635a4d35dba76d1d1c3f"
+          "sha256": "74af11e72c482083edda1ae55122bffb1011ef39872c41405539759f5f6be30d"
         },
         {
           "path": "first/client.ts",
-          "sha256": "acb1fc68ef43b2fc0f51b9b75161bd16fa514461a793c157b55eb0babf29c120"
+          "sha256": "fbb8595624a919acb9209aeba01108f125b0afeb90c5ac985a99511e78b51738"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "16862307f253b2c075e05c6e1da63c8cf8236e375a4a0d69ff761b602b1acaac"
+          "sha256": "5f191907252f19de67ee29259fcfaf763a6e50bc91ab314d58024437cc48ebfa"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "f56e971a1a2375fa8abc92a4d8fe09df46f8d2f2df86863b1ce5f7393eda2980"
+          "sha256": "1272c870759a2e99e053a0d46ea01ccae334798379d2dfbbea83982713ae446b"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "a575c0efbcde665894fcd49729c243b4d02db2eb74393e49aa74d8b25f76781d"
+          "sha256": "d8b3a55aaf20c2243a491042d210ee034d434d22e137c4d88d71e1a54d75dbfb"
         },
         {
           "path": "first/README.md",
@@ -2787,31 +2792,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "a95cf11c346677faa61a2f4f9abdf243fd017b611c8e08a47e5c7b871f82f81f"
+          "sha256": "9a5b6788c86ba63c67a680b3ffcd7ff5aba35e125da5dcf17e334b3ee92b9802"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "a6d63b621f01c11f8c0f5382e8a157dd1e98002a93d2a95a2cd7e4d40d53dd76"
+          "sha256": "95361a3ea829903cdcc2453ee2574e9e60b5176c9da62b5935cfd234e4c68d1b"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "0e74fc42a63d2cda57d9e051922f20b72b63b9769ea46431f4e47ff8c31e9c7c"
+          "sha256": "fe4fc834f5653123bfea9d926c5d16b0591be44a271d57620846e312ef01620c"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "2156671f21def8cf8e30c1bebf4705c3c0ff492fd29ec33bcbe6a797bea6378a"
+          "sha256": "1a96634d2b3117293ecc77718148ea3ed4d9b782b87c45edeba1c027ad4edb23"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "cbf511899c37f49b3bb7fb0d1ba3d40b805ac194dc05db1f23ac5ae2800b9b6f"
+          "sha256": "0d09156c20b698b89e3213ad2d9d3361c99a5d310f7c3818a33fc10cddbcb2bc"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "b75765af0a1c4925a9dfda19816e418db0852829948f706ef5a1fe10ce703c7c"
+          "sha256": "846c0757e422964bb476ac150cba205f9742aa06eab7b8751404b4ad328dda2d"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "e6485089fe366c37a82dc2e6c76435a0a286bdd7e1de19e6cfc3c865addd09e0"
+          "sha256": "68e34b189b44b5854fe65e26c7582045965aa2f68f80afbfb1d486388747d8de"
         },
         {
           "path": "consumer-first/README.md",
@@ -2825,8 +2830,8 @@
       "package": "routing",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "7af3bdeb9b82c7bf2950a905336fedc738fa4ccea9dbeb97681f3a69d10cee23",
-      "verifiedAt": "2026-09-23T04:02:25.482Z",
+      "fingerprint": "5c00a891e1aafb170abd96ff7dbeb8e2fa16641b2343f24d5d88333bbfdb983f",
+      "verifiedAt": "2026-09-23T04:49:02.985Z",
       "commands": [
         "cargo check/build routing and consumer; deterministic double build",
         "vitest run test/foundation-routing.test.ts"
@@ -2904,8 +2909,8 @@
       "package": "scheduling",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "b2d54880a712e7eb353017b69400655c9b6760d4b0f72369a96062e84c6ab87d",
-      "verifiedAt": "2026-09-23T04:02:30.861Z",
+      "fingerprint": "0788a8314902785cc37f006e8985a29333ac2e2ad060535504831a1019f30ab0",
+      "verifiedAt": "2026-09-23T04:49:08.583Z",
       "commands": [
         "cargo check/build scheduling and consumer; deterministic double build",
         "vitest run test/foundation-scheduling.test.ts"
@@ -2983,8 +2988,8 @@
       "package": "selection",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "7fd31b0a1d422d9095ccead5a6d7c843508d7d5d6ad5f8426f41d2004edab2c1",
-      "verifiedAt": "2026-09-23T04:02:37.199Z",
+      "fingerprint": "5221d56b22fccbbec717f3a6bfb70391b61d08503b208f654d74f79b69223ac1",
+      "verifiedAt": "2026-09-23T04:49:14.781Z",
       "commands": [
         "cargo check/build selection and consumer; deterministic double build",
         "vitest run test/foundation-selection.test.ts"
@@ -2992,31 +2997,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "9ea2d5b5d8c4212f60f9b824ccb320cbae5f0f00b9e925914bbc4cede0329dc0"
+          "sha256": "2eda1de0864138e3c1735779cdd18cff845a0a6d9a9a7957ff402de769465b4c"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "2686e67aa446863c8f46f8655106c366c67d242255617002cd970d88c94bb12d"
+          "sha256": "8aea4ed062046ce2dcc4d29f22d425c406b164c37cdaf67159101bde4f34aee0"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "1ee522149aa87539254fe57c5e02d60d6cb4176836c54a7d6d58ef820c0f67ef"
+          "sha256": "0aa569e3c6be26e82ca2efb1b2f65dade237008f5593a4cc84d9a371fbd4eca9"
         },
         {
           "path": "first/client.ts",
-          "sha256": "b95adcbb21f6cde7524a9b91b4e6c17a598fd72f73042daf45afff600c272694"
+          "sha256": "56eeea208e7a8f0355c172fef4c6805d6b702c0872358be226dd456ba2428857"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "7a5945595426642d20c4356391acc0d1a0f99ee21df3cf306f7aa6be3769f647"
+          "sha256": "022b56c791b475fc5c5f50b43ffb67c59027898fe2d1114fb4f02d01611a1bb2"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "a8880f4d75613722ffd7846115074db52b43207654e2059d368b0329ede5c23a"
+          "sha256": "f730e51a917623a811592a40130e3df7884175b31b3d59694a310bc6edcd05ca"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "cd07e18d23b7e925ebd04635b2d7417ce9f2b9e1bce5e0c28c77d8766a0675d1"
+          "sha256": "2318562fb71896b2d377fb4c50e464bf125fb85cba564d27f2610268745b5d49"
         },
         {
           "path": "first/README.md",
@@ -3024,31 +3029,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "546f530c477e6f3aa6ee3ea5b79b3f012a65d0aedfc973296d26c84f36281ad1"
+          "sha256": "0e1a3cae7a7ccd841238bcd911af643207131f4892fa51b313d11c0bf3911847"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "7ac4e4773968c7d31b025761310b885c9ceefd3c7120a3d6c82711b40c440776"
+          "sha256": "c825974d1f525f7a9bb9042ca0666b31adbe8bef9829a82188259f64c414104a"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "66095579663e8c910ac0cad6b01dea79d7601ea8de39b21e0d7768e7c8d6772d"
+          "sha256": "2783723426f6f23a2393696e0e7cf6b2a18ace56ce49cab32897e7064617b815"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "cef3e835cd1bb819e071a9a4c97d749a0f5ec2e4a5827c08d9dbbcc27e9b0cbe"
+          "sha256": "9ce51aaccffdb35e67f3748920c7c3371308cb7baca0e2aa0d1152cce47ec8fa"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "c18c3c0feadf266f56d89298ccdde207c97f9ca0d8abeaca9fadb066877b4084"
+          "sha256": "8d764bc554ca5f547eff12f88162c08caef4393569f031ed58f3882777357a0d"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "0544b9b5a0fe4f727aef8028b7c1238a8355b2b4b22dbf42e37eb135625be248"
+          "sha256": "c9543cc47fc3aab8b9753831d56699a8b2be10a0f85e601f63244115bac57dbe"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "aa1e3527507c6c12d94611fcf2bdf15b1bedbd72c70174f16621c72d4f6e7820"
+          "sha256": "0e848c99ec270f4687a1c1b92460126a5741fc41ef0c4417a75311f549e87bf8"
         },
         {
           "path": "consumer-first/README.md",
@@ -3062,8 +3067,8 @@
       "package": "service-level",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "46a4ef18376112dffd951343c6c417a28c26eab9b64c4b905380071ca70814fe",
-      "verifiedAt": "2026-09-23T04:02:45.072Z",
+      "fingerprint": "6998688655fd1fccedb9892b637e82db4730461a3a6fa6fb36200a441834c4ca",
+      "verifiedAt": "2026-09-23T04:49:22.697Z",
       "commands": [
         "cargo check/build service-level and consumer; deterministic double build",
         "vitest run test/foundation-service-level.test.ts"
@@ -3071,31 +3076,31 @@
       "artifacts": [
         {
           "path": "first/app.json",
-          "sha256": "58ade16eb6bd72da1cd5598b19adacbbb6fa5bddf140639e084be0a78294998c"
+          "sha256": "a9ebbfe24c4f5366e0f79c17629337c826c0b19d2c86441e20e8b6558e48b662"
         },
         {
           "path": "first/d1/0001_init.sql",
-          "sha256": "3b656abdb11e6520041aa2d1c8e5e1df385b5b33053441b56efcc1720877b0cb"
+          "sha256": "70404c0250521f5314d60ac1ddf8b6c4fb4e33cc0ac39ec4a4ed92030e2957c9"
         },
         {
           "path": "first/postgres/0001_init.sql",
-          "sha256": "b2fdcf98613b93c66213805be2b38d4275a2428040f6a178ac23ab7a4ead2eda"
+          "sha256": "39a5f6ccac7cab3bbc9ac7c46edb70c1073d0431be53a11777500dfde258b65a"
         },
         {
           "path": "first/client.ts",
-          "sha256": "bf54fbe781bde9ad7f5befcdd6dc055ee9c4a21e4a6a4b0e6507c5861f23ea67"
+          "sha256": "37ccf3e4c4b97a7e758cec26f685f74a962ad953c3f37f61d7598bc21213ae33"
         },
         {
           "path": "first/openapi.json",
-          "sha256": "fcf51debb039efc947f34fa3860634c9d97b752a7c45b21a72198cbe03b83736"
+          "sha256": "c11f75db57d1ec48229c5403a92fefd7ab7fd072ef82e86a5130604a4fb0c5f3"
         },
         {
           "path": "first/api.smithy",
-          "sha256": "25818b5796f94bf008e16792a5d4a936209b96bd0e19bd0a942cd7754e0ac152"
+          "sha256": "a1bdf550b33ebdd7adbc7412997a2f4c2c06a886306e29bc5d0c1345e3c19caf"
         },
         {
           "path": "first/source-map.json",
-          "sha256": "f6377e1d60db7ea0548853ada6e6fab9897b3c7612a7fea16a68fd54d7a0bf1d"
+          "sha256": "1e4ab645aea483096a503b3a03746a6c2d2800df96e890bf9546a354e2eea5c6"
         },
         {
           "path": "first/README.md",
@@ -3103,31 +3108,31 @@
         },
         {
           "path": "consumer-first/app.json",
-          "sha256": "d5bf35e559c0262381a15e7bc4b1f305333ef05754c53ab50e12dc37b8163327"
+          "sha256": "00674ccf98d19270e7f28a0f28ae7f2aba3a656fb780ab3ee5b28def00200867"
         },
         {
           "path": "consumer-first/d1/0001_init.sql",
-          "sha256": "1b7a5f7317d859eeeb9711df596ace9cf02d8aec98b89a8a22c950835c61ec5d"
+          "sha256": "b708b15ad303d37e3fa4f9f1c19d7df052c20a32197d7c77bbcc6f4a2ec43130"
         },
         {
           "path": "consumer-first/postgres/0001_init.sql",
-          "sha256": "d18520e7ccb669144f8718de8d17d8a775aae01ff019ca9aeb6206e90d08d2ca"
+          "sha256": "aef4005b3a7ae8eafa25f790c47410079bd45d4904d15fb6455dd5dd805733b9"
         },
         {
           "path": "consumer-first/client.ts",
-          "sha256": "39223e351fd00ffc6a133857188fe3503103098bf91e7a12d5e2c1825f6cd1fd"
+          "sha256": "696ae0e9bb6e518c1792a3a9dd0c7523ad1d2c9b0c1513c7047588e7e7322698"
         },
         {
           "path": "consumer-first/openapi.json",
-          "sha256": "6ba15c645e6c1525984a83bdb97854e5c900bd63d9bba4186c68884fca08db5a"
+          "sha256": "f877cdfe4c9721cf8c84ef5e075ca9d3a9b6fc4b3fbd64d751af6a73fb7c0212"
         },
         {
           "path": "consumer-first/api.smithy",
-          "sha256": "9dc1b90b3c2c040e6109955f792fe0f37ca77d288fd441f4601f432e4e910f2e"
+          "sha256": "726e1e13bcd3cd8f5d9b69bc29cbc82ec98a7f461e2a68e048c1da98e023f73f"
         },
         {
           "path": "consumer-first/source-map.json",
-          "sha256": "8484059233cebd341cca73a4f5dacca175a2a9c9c89af8288e578034e7422b53"
+          "sha256": "fc3980b5d819dc24c14c6a103466c645db2614987401be0306eeb6b3b1bc3c7f"
         },
         {
           "path": "consumer-first/README.md",
@@ -3141,8 +3146,8 @@
       "package": "specification",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "721741a4f1636057a31bb634ec1ede7acae79a0243ff2b41217270ffdd5dada3",
-      "verifiedAt": "2026-09-23T03:59:32.854Z",
+      "fingerprint": "a3bf99d4cf8ce67539d1b34095b5ba078c7d5858b94995311ca68b544caff0d1",
+      "verifiedAt": "2026-09-23T04:46:14.938Z",
       "commands": [
         "cargo check/build specification and consumer; deterministic double build",
         "vitest run test/foundation-specification-consumer.test.ts test/foundation-specification-git.test.ts test/foundation-specification.test.ts"
@@ -3220,8 +3225,8 @@
       "package": "usage",
       "suite": "local",
       "status": "passing",
-      "fingerprint": "333704bfb938abf76fe733870793a089efe0d714430a68d3006db445039e3333",
-      "verifiedAt": "2026-09-23T04:01:43.290Z",
+      "fingerprint": "94a0db5efae9c991820b32a127e1af12f545c9656a39041cc0d526fe12740bc5",
+      "verifiedAt": "2026-09-23T04:48:21.366Z",
       "commands": [
         "cargo check/build usage and consumer; deterministic double build",
         "vitest run test/foundation-usage.test.ts"

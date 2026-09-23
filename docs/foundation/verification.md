@@ -1,6 +1,6 @@
 # Foundation implementation verification
 
-The expanded scope contains41 packages and308 acceptance IDs. Each implemented package has a `verification.json` descriptor, typed generated consumer, runtime helper and focused behavior tests. Status is per criterion in `contract.json`; provider requirements remain pending. Package READMEs/contract implementation sections document bounded profiles and durable pending protocols.
+The expanded scope contains41 packages and308 acceptance IDs. Each implemented package has a `verification.json` descriptor, typed generated consumer, runtime helper and focused behavior tests. Status is per criterion in `contract.json`; provider requirements are recorded separately in the source-bound 42-cell certification receipt. Package READMEs/contract implementation sections document bounded profiles and durable pending protocols.
 
 Run:
 
@@ -33,3 +33,5 @@ Remaining release gates are tracked in https://github.com/gmackie/forgec/issues/
 `pnpm foundation:apps` verifies six opt-in application adapters against pinned source files from real local application checkouts. Set the `FORGE_FOUNDATION_<APP>_ROOT` variables documented in each `examples/foundation/apps/<app>/verification.json`, plus `FORGE_FOUNDATION_PG_URL` for PostgreSQL coverage. The runner rejects missing source, stale digests, skipped required assertions and nondeterministic compiler artifacts. Receipts bind application source, generated artifacts and test results. These traces exercise actual application seams in an isolated harness; they do not establish production deployment or adoption.
 
 Evaluation quarantine is a fenced migration boundary. Read historical runs through `Evaluations.phase` and raw records; use `Evaluations.result` for authority. A legacy result with a quarantine fact must be reevaluated with fresh bindings. `scripts/prepare-evaluation-migration.mjs` prepares a verified canonical export for isolated import rehearsal, preserving historical facts and adding quarantine records. The target stays fenced until import and verification complete. This mechanism does not provide concurrent live revocation of already admitted work.
+
+The implementation checkpoint `834dd37cd758` passes all 41 package verifiers, 571 runtime tests, 155 Rust tests, 50 harness tests and 24 actual app assertions. Hosted database certification passes all 42 cells; retained evidence is in `provider-evidence/certification.json`. The first Node24 CI attempt exposed a pre-existing workflow idempotency race, tracked separately; do not interpret a retry as proof that race is fixed.
