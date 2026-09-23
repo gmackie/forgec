@@ -134,3 +134,65 @@ fn query_captures_identify_fields_types_decorators_and_tags() {
         }
     }
 }
+
+#[test]
+fn runtime_construct_queries_cover_actors_queues_and_map_bindings() {
+    use tree_sitter::StreamingIterator;
+    let text = include_str!("../../../specs/language/fixtures/valid/runtime-constructs.forge");
+    let tree = parser().parse(text, None).unwrap();
+    assert!(!tree.root_node().has_error());
+    for (source, expected) in [
+        (
+            HIGHLIGHTS,
+            vec![
+                ("type", "EvaluationWork"),
+                ("type", "EvaluationSession"),
+                ("variable", "results"),
+                ("variable.parameter", "value"),
+                ("keyword", "concurrency"),
+                ("keyword", "workQueue"),
+                ("keyword", "actor"),
+            ],
+        ),
+        (
+            TAGS,
+            vec![
+                ("name", "EvaluationWork"),
+                ("name", "EvaluationSession"),
+                ("name", "results"),
+            ],
+        ),
+        (
+            LOCALS,
+            vec![
+                ("local.definition", "value"),
+                ("local.definition", "results"),
+            ],
+        ),
+    ] {
+        let query = tree_sitter::Query::new(&LANGUAGE.into(), source).unwrap();
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut captures = cursor.captures(&query, tree.root_node(), text.as_bytes());
+        let mut got = Vec::new();
+        while let Some((m, i)) = captures.next() {
+            let c = m.captures[*i];
+            got.push((
+                query.capture_names()[c.index as usize],
+                c.node.utf8_text(text.as_bytes()).unwrap(),
+            ));
+        }
+        for capture in expected {
+            assert!(got.contains(&capture), "missing {capture:?}: {got:?}");
+        }
+    }
+    let query = tree_sitter::Query::new(&LANGUAGE.into(), FOLDS).unwrap();
+    let mut cursor = tree_sitter::QueryCursor::new();
+    let mut captures = cursor.captures(&query, tree.root_node(), text.as_bytes());
+    let mut folded = Vec::new();
+    while let Some((m, i)) = captures.next() {
+        folded.push(m.captures[*i].node.kind());
+    }
+    for kind in ["actor_declaration", "work_queue_declaration", "step_map"] {
+        assert!(folded.contains(&kind));
+    }
+}

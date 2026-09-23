@@ -41,3 +41,9 @@
 
 (facet_declaration name: (identifier) @type)
 "facet" @keyword
+
+(actor_declaration name: (identifier) @type)
+(work_queue_declaration name: (identifier) @type)
+(step_declaration name: (identifier) @variable)
+(step_map . (identifier) @variable.parameter)
+["actor" "keyed" "state" "workQueue" "execute" "lease" "retry" "capacity" "runners" "map" "in" "concurrency" "search" "while" "latest" "exists" "notExists"] @keyword
