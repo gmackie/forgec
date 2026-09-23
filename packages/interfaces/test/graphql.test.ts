@@ -404,3 +404,49 @@ it("detects canonical root rebinding even when GraphQL types stay the same", () 
   doc.paths = Object.fromEntries(Object.entries(doc.paths).reverse());
   expect(projectGraphQL(reordered, mapping).sdl).toBe(before.sdl);
 });
+
+function collectionContract(schema: Record<string, unknown>): AppBundle {
+  const v = structuredClone(bundle);
+  v.openapi = {
+    paths: { "/batch": { post: {
+      operationId: "@test/collections/_/Batch", "x-forge-kind": "function",
+      requestBody: { required: true, content: { "application/json": { schema } } },
+      responses: { "200": { content: { "application/json": { schema } } } },
+    } } },
+  };
+  return v;
+}
+const batchSchema = {
+  type: "object", additionalProperties: false, required: ["items"],
+  properties: { items: { type: "array", maxItems: 8, items: {
+    type: "object", additionalProperties: false, required: ["score", "tags"],
+    properties: {
+      score: { type: "integer" },
+      tags: { type: "array", uniqueItems: true, maxItems: 8, items: { type: "string" } },
+      notes: { type: "array", maxItems: 8, items: { type: ["string", "null"] } },
+    },
+  } } },
+};
+it("preserves nested collection input types and nullable elements before invoking", async () => {
+  const projection = projectGraphQL(collectionContract(batchSchema), { operations: { "@test/collections/_/Batch": "batch" } });
+  let calls = 0;
+  const callable = { invoke: async (_id: string, value: unknown) => { calls++; return { kind: "ok" as const, value }; } };
+  const valid = await executeGraphQL(projection, callable, { query: 'mutation { batch(input:{items:[{score:9007199254740991,tags:["z","a"],notes:[null,"note"]}]}) {items{score tags notes}} }' });
+  expect(valid.errors).toBeUndefined();
+  expect(valid.data?.batch).toEqual({ items: [{ score: 9007199254740991, tags: ["z", "a"], notes: [null, "note"] }] });
+  expect(calls).toBe(1);
+  for (const items of ['[null]', '[{score:1,tags:[null]}]', '[{score:"1",tags:[]}]', '[{score:1,tags:[],extra:true}]']) {
+    const result = await executeGraphQL(projection, callable, { query: `mutation { batch(input:{items:${items}}) {items{score}} }` });
+    expect(result.errors?.length).toBeGreaterThan(0);
+    expect(calls).toBe(1);
+  }
+});
+it("rejects open collection maps and unsupported unions instead of silently dropping values", () => {
+  for (const schema of [
+    { type: "object", properties: { fixed: { type: "string" } }, additionalProperties: { type: "integer" } },
+    { type: "object", properties: { fixed: { type: "string" } }, additionalProperties: true },
+    { type: "object", properties: { mixed: { type: ["string", "integer"] } } },
+    { type: "object", properties: { mixed: { type: "string", oneOf: [{ const: "a" }, { const: "b" }] } } },
+    { type: "object", properties: { mixed: { type: "string", anyOf: [{ const: "a" }, { const: "b" }] } } },
+  ]) expect(() => projectGraphQL(collectionContract(schema))).toThrow(/Unsupported/);
+});
