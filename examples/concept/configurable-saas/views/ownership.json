@@ -1,0 +1,73 @@
+{
+  "nodes": {
+    "@corpus/configurable-saas/_/AutomationDefinition": "entity",
+    "@corpus/configurable-saas/_/AutomationRequested": "fact",
+    "@corpus/configurable-saas/_/DynamicRecord": "entity",
+    "@corpus/configurable-saas/_/FieldDefinition": "entity",
+    "@corpus/configurable-saas/_/MutateDynamicRecord": "process",
+    "@corpus/configurable-saas/_/ObjectDefinition": "entity",
+    "@corpus/configurable-saas/_/PublishSchema": "process",
+    "@corpus/configurable-saas/_/RecordChanged": "fact",
+    "@corpus/configurable-saas/_/RegisterTenant": "process",
+    "@corpus/configurable-saas/_/RelationshipDefinition": "entity",
+    "@corpus/configurable-saas/_/RunAutomation": "process",
+    "@corpus/configurable-saas/_/SchemaPublished": "fact",
+    "@corpus/configurable-saas/_/Tenant": "entity"
+  },
+  "edges": [
+    {
+      "from": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "to": "@corpus/configurable-saas/_/DynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#output:DynamicRecord",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "to": "@corpus/configurable-saas/_/RecordChanged",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#output:RecordChanged",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/PublishSchema",
+      "to": "@corpus/configurable-saas/_/AutomationDefinition",
+      "port": "@corpus/configurable-saas/_/PublishSchema#output:AutomationDefinition",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/PublishSchema",
+      "to": "@corpus/configurable-saas/_/FieldDefinition",
+      "port": "@corpus/configurable-saas/_/PublishSchema#output:FieldDefinition",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/PublishSchema",
+      "to": "@corpus/configurable-saas/_/ObjectDefinition",
+      "port": "@corpus/configurable-saas/_/PublishSchema#output:ObjectDefinition",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/PublishSchema",
+      "to": "@corpus/configurable-saas/_/RelationshipDefinition",
+      "port": "@corpus/configurable-saas/_/PublishSchema#output:RelationshipDefinition",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/PublishSchema",
+      "to": "@corpus/configurable-saas/_/SchemaPublished",
+      "port": "@corpus/configurable-saas/_/PublishSchema#output:SchemaPublished",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/RegisterTenant",
+      "to": "@corpus/configurable-saas/_/Tenant",
+      "port": "@corpus/configurable-saas/_/RegisterTenant#output:Tenant",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/RunAutomation",
+      "to": "@corpus/configurable-saas/_/AutomationRequested",
+      "port": "@corpus/configurable-saas/_/RunAutomation#output:AutomationRequested",
+      "kind": "emit"
+    }
+  ]
+}

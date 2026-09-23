@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Cloudflare Workflows + Durable Objects",
+    "storage": "D1 + R2",
+    "transport": "Queues",
+    "conflict": "CRDT",
+    "query": "H3",
+    "batchSize": 100,
+    "concurrency": 8,
+    "cacheTtl": 30
+  },
+  "obligations": [
+    "Shape-typed outputs express non-durable feasibility results, but input origin cannot link directly to a producing result port. This is a relation gap, not evidence for a new Value primitive yet.",
+    "Constraint satisfaction, ranking and approval-before-application are not proved by the current graph. Compare marketplace matching and clinical human decisions."
+  ]
+}

@@ -1,0 +1,20 @@
+resource Comment { id : id }
+resource Document { id : id }
+resource Membership { id : id }
+resource Share { id : id }
+resource Version { id : id }
+resource Workspace { id : id }
+function MaintainDocument @http(POST, "/realization-b/MaintainDocument") { input Comment.Record
+ output Document.Record }
+function ManageComment @http(POST, "/realization-b/ManageComment") { input Comment.Record
+ output Comment.Record }
+function ManageShare @http(POST, "/realization-b/ManageShare") { input Comment.Record
+ output Share.Record }
+function ManageWorkspace @http(POST, "/realization-b/ManageWorkspace") { input Comment.Record
+ output Membership.Record }
+function PublishVersion @http(POST, "/realization-b/PublishVersion") { input Comment.Record
+ output Version.Record }
+function ReceiveEdits @http(POST, "/realization-b/ReceiveEdits") { input Comment.Record
+ output Comment.Record }
+function RestoreVersion @http(POST, "/realization-b/RestoreVersion") { input Comment.Record
+ output Comment.Record }

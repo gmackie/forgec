@@ -1,0 +1,326 @@
+{
+  "nodes": {
+    "@corpus/airline/_/AirspaceFeasibility": "process",
+    "@corpus/airline/_/ApplyRecovery": "process",
+    "@corpus/airline/_/ApproveRecovery": "process",
+    "@corpus/airline/_/BuildRecoveryPlan": "process",
+    "@corpus/airline/_/CrewFeasibility": "process",
+    "@corpus/airline/_/FleetFeasibility": "process",
+    "@corpus/airline/_/Flight": "entity",
+    "@corpus/airline/_/MaintainAircraft": "process",
+    "@corpus/airline/_/MaintainCrew": "process",
+    "@corpus/airline/_/MaintainGate": "process",
+    "@corpus/airline/_/Operator": "principal",
+    "@corpus/airline/_/ReceiveWeather": "process",
+    "@corpus/airline/_/RecoveryOperations": "purpose",
+    "@corpus/airline/_/ScopedAccess": "policy"
+  },
+  "edges": [
+    {
+      "from": "@corpus/airline/_/AirspaceFeasibility",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/AirspaceFeasibility",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/ApplyRecovery",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/ApplyRecovery",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/ApproveRecovery",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/ApproveRecovery",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/BuildRecoveryPlan",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/BuildRecoveryPlan",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/CrewFeasibility",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/CrewFeasibility",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/FleetFeasibility",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/FleetFeasibility",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainAircraft",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/MaintainAircraft",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainCrew",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/MaintainCrew",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainGate",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/MaintainGate",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/AirspaceFeasibility",
+      "port": "@corpus/airline/_/AirspaceFeasibility",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/ApplyRecovery",
+      "port": "@corpus/airline/_/ApplyRecovery",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/ApproveRecovery",
+      "port": "@corpus/airline/_/ApproveRecovery",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/CrewFeasibility",
+      "port": "@corpus/airline/_/CrewFeasibility",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/FleetFeasibility",
+      "port": "@corpus/airline/_/FleetFeasibility",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/MaintainAircraft",
+      "port": "@corpus/airline/_/MaintainAircraft",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/MaintainCrew",
+      "port": "@corpus/airline/_/MaintainCrew",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/MaintainGate",
+      "port": "@corpus/airline/_/MaintainGate",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/Operator",
+      "to": "@corpus/airline/_/ReceiveWeather",
+      "port": "@corpus/airline/_/ReceiveWeather",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/ReceiveWeather",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/ReceiveWeather",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/AirspaceFeasibility",
+      "port": "@corpus/airline/_/AirspaceFeasibility",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/AirspaceFeasibility",
+      "port": "@corpus/airline/_/AirspaceFeasibility#input:Flight",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/AirspaceFeasibility",
+      "port": "@corpus/airline/_/AirspaceFeasibility#input:WeatherChanged",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/ApplyRecovery",
+      "port": "@corpus/airline/_/ApplyRecovery",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/ApplyRecovery",
+      "port": "@corpus/airline/_/ApplyRecovery#input:RecoveryPlan",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/ApplyRecovery",
+      "port": "@corpus/airline/_/ApplyRecovery#input:RecoveryPlanApproved",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/ApproveRecovery",
+      "port": "@corpus/airline/_/ApproveRecovery",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/ApproveRecovery",
+      "port": "@corpus/airline/_/ApproveRecovery#input:RecoveryPlan",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:Aircraft",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:AircraftOutOfService",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:CrewDuty",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:CrewUnavailable",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:Flight",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:FlightDelayed",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:Gate",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/BuildRecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#input:WeatherChanged",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/CrewFeasibility",
+      "port": "@corpus/airline/_/CrewFeasibility",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/CrewFeasibility",
+      "port": "@corpus/airline/_/CrewFeasibility#input:CrewDuty",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/FleetFeasibility",
+      "port": "@corpus/airline/_/FleetFeasibility",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/FleetFeasibility",
+      "port": "@corpus/airline/_/FleetFeasibility#input:Aircraft",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/FleetFeasibility",
+      "port": "@corpus/airline/_/FleetFeasibility#input:Flight",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/Flight",
+      "port": "@corpus/airline/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/MaintainAircraft",
+      "port": "@corpus/airline/_/MaintainAircraft",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/MaintainCrew",
+      "port": "@corpus/airline/_/MaintainCrew",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/MaintainGate",
+      "port": "@corpus/airline/_/MaintainGate",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/MaintainGate",
+      "port": "@corpus/airline/_/MaintainGate#input:Flight",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/Operator",
+      "port": "@corpus/airline/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/ReceiveWeather",
+      "port": "@corpus/airline/_/ReceiveWeather",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/ReceiveWeather",
+      "port": "@corpus/airline/_/ReceiveWeather#input:Flight",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/airline/_/ScopedAccess",
+      "to": "@corpus/airline/_/RecoveryOperations",
+      "port": "@corpus/airline/_/ScopedAccess",
+      "kind": "purpose"
+    }
+  ]
+}

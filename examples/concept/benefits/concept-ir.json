@@ -1,0 +1,2440 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/benefits",
+  "entities": {
+    "@corpus/benefits/_/Appeal": {
+      "name": "Appeal",
+      "fields": {
+        "case": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/EligibilityCase",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "reviewer": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/benefits/_/BenefitAward": {
+      "name": "BenefitAward",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "case": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/EligibilityCase",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/benefits/_/EligibilityCase": {
+      "name": "EligibilityCase",
+      "fields": {
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "household": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "ruleVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/benefits/_/Evidence": {
+      "name": "Evidence",
+      "fields": {
+        "digest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "receivedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/benefits/_/Household": {
+      "name": "Household",
+      "fields": {
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "members": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/benefits/_/RuleSet": {
+      "name": "RuleSet",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validTo": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "version": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/benefits/_/AppealDecided": {
+      "name": "AppealDecided",
+      "fields": {
+        "appeal": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Appeal",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reviewer": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/benefits/_/AppealFiled": {
+      "name": "AppealFiled",
+      "fields": {
+        "appeal": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Appeal",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/benefits/_/ApplicationSubmitted": {
+      "name": "ApplicationSubmitted",
+      "fields": {
+        "household": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/benefits/_/EligibilityDetermined": {
+      "name": "EligibilityDetermined",
+      "fields": {
+        "case": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/EligibilityCase",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Evidence",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "ruleVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/benefits/_/NoticeDelivered": {
+      "name": "NoticeDelivered",
+      "fields": {
+        "award": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/BenefitAward",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "deliveryEvidenceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/benefits/_/RecertificationRequested": {
+      "name": "RecertificationRequested",
+      "fields": {
+        "case": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/EligibilityCase",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "dueAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/benefits/_/RetroactiveAdjustmentIssued": {
+      "name": "RetroactiveAdjustmentIssued",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "award": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/BenefitAward",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/benefits/_/Sensitive",
+            "purpose": "@corpus/benefits/_/BenefitDetermination"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/benefits/_/IncomeRegistry": {
+      "name": "IncomeRegistry",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/benefits/_/Household",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/benefits/_/Household",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/benefits/_/NoticeService": {
+      "name": "NoticeService",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/benefits/_/Household",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "BenefitAward": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/benefits/_/BenefitAward",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/benefits/_/Household",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/benefits/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/benefits/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/benefits/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/benefits/_/Household",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.subject",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "tenant"
+              ]
+            },
+            "rhs": {
+              "kind": "name",
+              "path": [
+                "resource",
+                "tenant"
+              ]
+            }
+          },
+          "rhs": {
+            "kind": "binary",
+            "op": "&&",
+            "lhs": {
+              "kind": "binary",
+              "op": "==",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "purpose"
+                ]
+              },
+              "rhs": {
+                "kind": "literal",
+                "literal": {
+                  "type": "string",
+                  "value": "BenefitDetermination"
+                }
+              }
+            },
+            "rhs": {
+              "kind": "call",
+              "callee": [
+                "roleAllows"
+              ],
+              "args": [
+                {
+                  "kind": "name",
+                  "path": [
+                    "principal",
+                    "role"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "resource",
+                    "id"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "rhs": {
+          "kind": "call",
+          "callee": [
+            "assignedAgencyCaseworker"
+          ],
+          "args": [
+            {
+              "kind": "name",
+              "path": [
+                "principal",
+                "subject"
+              ]
+            },
+            {
+              "kind": "name",
+              "path": [
+                "resource",
+                "id"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/benefits/_/DeliverNotice": {
+      "name": "DeliverNotice",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/DeliverNotice#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/benefits/_/NoticeService",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/benefits/_/DeliverNotice#input:BenefitAward": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/BenefitAward",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/benefits/_/DeliverNotice#output:NoticeDelivered": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/NoticeDelivered"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/benefits/_/DeliverNotice#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/BenefitAward",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/benefits/_/NoticeService"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/benefits/_/DetermineEligibility": {
+      "name": "DetermineEligibility",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/DetermineEligibility#activation:ApplicationSubmitted": {
+          "kind": "fact",
+          "fact": "@corpus/benefits/_/ApplicationSubmitted"
+        },
+        "@corpus/benefits/_/DetermineEligibility#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/benefits/_/DetermineEligibility#input:ApplicationSubmitted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/ApplicationSubmitted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/benefits/_/DetermineEligibility#input:Evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/benefits/_/DetermineEligibility#input:Household": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "benefitPeriod"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/benefits/_/DetermineEligibility#input:RuleSet": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/RuleSet",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "benefitPeriod"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/benefits/_/DetermineEligibility#output:EligibilityCase": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/EligibilityCase",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/benefits/_/DetermineEligibility#output:EligibilityDetermined": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/EligibilityDetermined"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/benefits/_/HearAppeal": {
+      "name": "HearAppeal",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/HearAppeal#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/benefits/_/HearAppeal#input:EligibilityCase": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/EligibilityCase",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/benefits/_/HearAppeal#input:Evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/benefits/_/HearAppeal#output:Appeal": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Appeal",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/benefits/_/HearAppeal#output:AppealDecided": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/AppealDecided"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/benefits/_/HearAppeal#output:AppealFiled": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/AppealFiled"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/benefits/_/HearAppeal#output:RetroactiveAdjustmentIssued": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/RetroactiveAdjustmentIssued"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/benefits/_/HearAppeal#wait:EligibilityDetermined": "@corpus/benefits/_/EligibilityDetermined"
+          }
+        },
+        "stateMachine": null,
+        "stateful": null
+      }
+    },
+    "@corpus/benefits/_/IssueAward": {
+      "name": "IssueAward",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/IssueAward#activation:EligibilityDetermined": {
+          "kind": "fact",
+          "fact": "@corpus/benefits/_/EligibilityDetermined"
+        }
+      },
+      "inputs": {
+        "@corpus/benefits/_/IssueAward#input:EligibilityDetermined": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/EligibilityDetermined"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/benefits/_/IssueAward#input:Evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/benefits/_/IssueAward#output:BenefitAward": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/BenefitAward",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/benefits/_/IssueAward#wait:NoticeDelivered": "@corpus/benefits/_/NoticeDelivered"
+          }
+        },
+        "stateMachine": null,
+        "stateful": null
+      }
+    },
+    "@corpus/benefits/_/MaintainHousehold": {
+      "name": "MaintainHousehold",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/MaintainHousehold#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/benefits/_/MaintainHousehold#output:ApplicationSubmitted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/ApplicationSubmitted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/benefits/_/MaintainHousehold#output:Household": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/benefits/_/PublishRules": {
+      "name": "PublishRules",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/PublishRules#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/benefits/_/PublishRules#output:RuleSet": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/RuleSet",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/benefits/_/ReceiveEvidence": {
+      "name": "ReceiveEvidence",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/ReceiveEvidence#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/benefits/_/IncomeRegistry",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/benefits/_/ReceiveEvidence#input:Household": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Household",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/benefits/_/IncomeRegistry"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/benefits/_/ReceiveEvidence#output:Evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/benefits/_/Recertify": {
+      "name": "Recertify",
+      "purpose": "@corpus/benefits/_/BenefitDetermination",
+      "principal": "@corpus/benefits/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/benefits/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/benefits/_/Recertify#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/benefits/_/Recertify#input:EligibilityCase": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/benefits/_/EligibilityCase",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/benefits/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/benefits/_/Recertify#output:RecertificationRequested": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/benefits/_/RecertificationRequested"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/benefits/_/BenefitDetermination": {
+      "id": "@corpus/benefits/_/BenefitDetermination",
+      "name": "BenefitDetermination",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/benefits/_/Sensitive": {
+      "id": "@corpus/benefits/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.personal"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

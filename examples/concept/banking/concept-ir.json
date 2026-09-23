@@ -1,0 +1,2028 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/banking",
+  "entities": {
+    "@corpus/banking/_/Account": {
+      "name": "Account",
+      "fields": {
+        "currency": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "holder": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/banking/_/AccountBalance": {
+      "name": "AccountBalance",
+      "fields": {
+        "account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "asOf": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/banking/_/Authorization": {
+      "name": "Authorization",
+      "fields": {
+        "account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "expiresAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/banking/_/Dispute": {
+      "name": "Dispute",
+      "fields": {
+        "account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "evidenceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reversesEntry": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/banking/_/Settlement": {
+      "name": "Settlement",
+      "fields": {
+        "account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "networkReference": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/banking/_/AuthorizationApproved": {
+      "name": "AuthorizationApproved",
+      "fields": {
+        "authorization": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Authorization",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "expiresAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/banking/_/DisputeResolved": {
+      "name": "DisputeResolved",
+      "fields": {
+        "dispute": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Dispute",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reviewer": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/banking/_/LedgerEntryPosted": {
+      "name": "LedgerEntryPosted",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "creditAccount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "debitAccount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "journal": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reversesEntry": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/banking/_/ReversalReceived": {
+      "name": "ReversalReceived",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "originalEntry": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/banking/_/SettlementReceived": {
+      "name": "SettlementReceived",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "networkAmount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "settlement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Settlement",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/banking/_/Sensitive",
+            "purpose": "@corpus/banking/_/Reconciliation"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/banking/_/CardNetwork": {
+      "name": "CardNetwork",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/banking/_/Account",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/banking/_/Account",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/banking/_/SettlementBank": {
+      "name": "SettlementBank",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/banking/_/Account",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "Settlement": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/banking/_/Settlement",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/banking/_/Account",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/banking/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/banking/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/banking/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/banking/_/Account",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/banking/_/Reconciliation",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "principal",
+              "tenant"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "resource",
+              "tenant"
+            ]
+          }
+        },
+        "rhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "purpose"
+              ]
+            },
+            "rhs": {
+              "kind": "literal",
+              "literal": {
+                "type": "string",
+                "value": "Reconciliation"
+              }
+            }
+          },
+          "rhs": {
+            "kind": "call",
+            "callee": [
+              "roleAllows"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "role"
+                ]
+              },
+              {
+                "kind": "name",
+                "path": [
+                  "resource",
+                  "id"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/banking/_/AuthorizeCard": {
+      "name": "AuthorizeCard",
+      "purpose": "@corpus/banking/_/Reconciliation",
+      "principal": "@corpus/banking/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/banking/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/banking/_/AuthorizeCard#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/banking/_/AuthorizeCard#input:Account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/banking/_/AuthorizeCard#input:AccountBalance": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/AccountBalance",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/banking/_/AuthorizeCard#output:Authorization": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Authorization",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/banking/_/AuthorizeCard#output:AuthorizationApproved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/AuthorizationApproved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/banking/_/DeriveBalance": {
+      "name": "DeriveBalance",
+      "purpose": "@corpus/banking/_/Reconciliation",
+      "principal": "@corpus/banking/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/banking/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/banking/_/DeriveBalance#activation:LedgerEntryPosted": {
+          "kind": "fact",
+          "fact": "@corpus/banking/_/LedgerEntryPosted"
+        },
+        "@corpus/banking/_/DeriveBalance#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/banking/_/DeriveBalance#input:LedgerEntryPosted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/LedgerEntryPosted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": "90d",
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "accountingAt"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "filterVisible"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/banking/_/DeriveBalance#output:AccountBalance": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/AccountBalance",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/banking/_/MaintainAccount": {
+      "name": "MaintainAccount",
+      "purpose": "@corpus/banking/_/Reconciliation",
+      "principal": "@corpus/banking/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/banking/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/banking/_/MaintainAccount#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/banking/_/MaintainAccount#output:Account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/banking/_/PostLedger": {
+      "name": "PostLedger",
+      "purpose": "@corpus/banking/_/Reconciliation",
+      "principal": "@corpus/banking/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/banking/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/banking/_/PostLedger#activation:ReversalReceived": {
+          "kind": "fact",
+          "fact": "@corpus/banking/_/ReversalReceived"
+        }
+      },
+      "inputs": {
+        "@corpus/banking/_/PostLedger#input:Authorization": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Authorization",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/banking/_/PostLedger#input:ReversalReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/ReversalReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/banking/_/PostLedger#output:LedgerEntryPosted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/LedgerEntryPosted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/banking/_/ResolveDispute": {
+      "name": "ResolveDispute",
+      "purpose": "@corpus/banking/_/Reconciliation",
+      "principal": "@corpus/banking/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/banking/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/banking/_/ResolveDispute#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/banking/_/ResolveDispute#input:Account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/banking/_/ResolveDispute#input:Settlement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Settlement",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/banking/_/ResolveDispute#output:Dispute": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Dispute",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/banking/_/ResolveDispute#output:DisputeResolved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/DisputeResolved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/banking/_/ResolveDispute#output:ReversalReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/ReversalReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/banking/_/ResolveDispute#wait:SettlementReceived": "@corpus/banking/_/SettlementReceived"
+          }
+        },
+        "stateMachine": null,
+        "stateful": null
+      }
+    },
+    "@corpus/banking/_/SettleCard": {
+      "name": "SettleCard",
+      "purpose": "@corpus/banking/_/Reconciliation",
+      "principal": "@corpus/banking/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/banking/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/banking/_/SettleCard#activation:LedgerEntryPosted": {
+          "kind": "fact",
+          "fact": "@corpus/banking/_/LedgerEntryPosted"
+        },
+        "@corpus/banking/_/SettleCard#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/banking/_/SettleCard#input:Account": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/banking/_/CardNetwork"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/banking/_/SettleCard#input:LedgerEntryPosted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/LedgerEntryPosted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": "90d",
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "filterVisible"
+          }
+        },
+        "@corpus/banking/_/SettleCard#input:bankStatement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Account",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/banking/_/SettlementBank"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/banking/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/banking/_/SettleCard#output:Settlement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Settlement",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/banking/_/SettleCard#output:SettlementReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/banking/_/SettlementReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/banking/_/SettleCard#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/banking/_/Settlement",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/banking/_/SettlementBank"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/banking/_/Reconciliation": {
+      "id": "@corpus/banking/_/Reconciliation",
+      "name": "Reconciliation",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/banking/_/Sensitive": {
+      "id": "@corpus/banking/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.financial"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

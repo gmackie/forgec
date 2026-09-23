@@ -1,0 +1,146 @@
+{
+  "nodes": {
+    "@corpus/configurable-saas/_/MutateDynamicRecord": "process",
+    "@corpus/configurable-saas/_/Operator": "principal",
+    "@corpus/configurable-saas/_/PublishSchema": "process",
+    "@corpus/configurable-saas/_/RegisterTenant": "process",
+    "@corpus/configurable-saas/_/RunAutomation": "process",
+    "@corpus/configurable-saas/_/ScopedAccess": "policy",
+    "@corpus/configurable-saas/_/Tenant": "entity",
+    "@corpus/configurable-saas/_/TenantAdministration": "purpose"
+  },
+  "edges": [
+    {
+      "from": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "to": "@corpus/configurable-saas/_/TenantAdministration",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/Operator",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/Operator",
+      "to": "@corpus/configurable-saas/_/PublishSchema",
+      "port": "@corpus/configurable-saas/_/PublishSchema",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/Operator",
+      "to": "@corpus/configurable-saas/_/RegisterTenant",
+      "port": "@corpus/configurable-saas/_/RegisterTenant",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/Operator",
+      "to": "@corpus/configurable-saas/_/RunAutomation",
+      "port": "@corpus/configurable-saas/_/RunAutomation",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/PublishSchema",
+      "to": "@corpus/configurable-saas/_/TenantAdministration",
+      "port": "@corpus/configurable-saas/_/PublishSchema",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/RegisterTenant",
+      "to": "@corpus/configurable-saas/_/TenantAdministration",
+      "port": "@corpus/configurable-saas/_/RegisterTenant",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/RunAutomation",
+      "to": "@corpus/configurable-saas/_/TenantAdministration",
+      "port": "@corpus/configurable-saas/_/RunAutomation",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#input:FieldDefinition",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#input:ObjectDefinition",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#input:RelationshipDefinition",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#input:Tenant",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/Operator",
+      "port": "@corpus/configurable-saas/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/PublishSchema",
+      "port": "@corpus/configurable-saas/_/PublishSchema",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/PublishSchema",
+      "port": "@corpus/configurable-saas/_/PublishSchema#input:Tenant",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/RegisterTenant",
+      "port": "@corpus/configurable-saas/_/RegisterTenant",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/RunAutomation",
+      "port": "@corpus/configurable-saas/_/RunAutomation",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/RunAutomation",
+      "port": "@corpus/configurable-saas/_/RunAutomation#input:AutomationDefinition",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/RunAutomation",
+      "port": "@corpus/configurable-saas/_/RunAutomation#input:RecordChanged",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/Tenant",
+      "port": "@corpus/configurable-saas/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/ScopedAccess",
+      "to": "@corpus/configurable-saas/_/TenantAdministration",
+      "port": "@corpus/configurable-saas/_/ScopedAccess",
+      "kind": "purpose"
+    }
+  ]
+}

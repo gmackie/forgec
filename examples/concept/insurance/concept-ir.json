@@ -1,0 +1,2353 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/insurance",
+  "entities": {
+    "@corpus/insurance/_/Claim": {
+      "name": "Claim",
+      "fields": {
+        "coverage": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "lossAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "reserve": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/insurance/_/ClaimDecision": {
+      "name": "ClaimDecision",
+      "fields": {
+        "approvedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "coverageVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/insurance/_/Coverage": {
+      "name": "Coverage",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "policyNumber": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validTo": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/insurance/_/Evidence": {
+      "name": "Evidence",
+      "fields": {
+        "claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "digest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/insurance/_/Payout": {
+      "name": "Payout",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reverses": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/insurance/_/ClaimApproved": {
+      "name": "ClaimApproved",
+      "fields": {
+        "approver": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "decision": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/ClaimDecision",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/insurance/_/ClaimReopened": {
+      "name": "ClaimReopened",
+      "fields": {
+        "claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "priorDecision": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/ClaimDecision",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/insurance/_/EvidenceReceived": {
+      "name": "EvidenceReceived",
+      "fields": {
+        "evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Evidence",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/insurance/_/FraudSignalRaised": {
+      "name": "FraudSignalRaised",
+      "fields": {
+        "claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/insurance/_/LossReported": {
+      "name": "LossReported",
+      "fields": {
+        "claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "lossAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/insurance/_/PaymentIssued": {
+      "name": "PaymentIssued",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "payout": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Payout",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/insurance/_/Sensitive",
+            "purpose": "@corpus/insurance/_/ClaimAssessment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/insurance/_/MedicalProvider": {
+      "name": "MedicalProvider",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/Coverage",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/Coverage",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/insurance/_/PoliceRecords": {
+      "name": "PoliceRecords",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/Coverage",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/Coverage",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/insurance/_/RepairNetwork": {
+      "name": "RepairNetwork",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/Coverage",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "ClaimDecision": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/ClaimDecision",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/Coverage",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/insurance/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/insurance/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/insurance/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/insurance/_/Coverage",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.subject",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "tenant"
+              ]
+            },
+            "rhs": {
+              "kind": "name",
+              "path": [
+                "resource",
+                "tenant"
+              ]
+            }
+          },
+          "rhs": {
+            "kind": "binary",
+            "op": "&&",
+            "lhs": {
+              "kind": "binary",
+              "op": "==",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "purpose"
+                ]
+              },
+              "rhs": {
+                "kind": "literal",
+                "literal": {
+                  "type": "string",
+                  "value": "ClaimAssessment"
+                }
+              }
+            },
+            "rhs": {
+              "kind": "call",
+              "callee": [
+                "roleAllows"
+              ],
+              "args": [
+                {
+                  "kind": "name",
+                  "path": [
+                    "principal",
+                    "role"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "resource",
+                    "id"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "rhs": {
+          "kind": "call",
+          "callee": [
+            "assignedClaimTeam"
+          ],
+          "args": [
+            {
+              "kind": "name",
+              "path": [
+                "principal",
+                "subject"
+              ]
+            },
+            {
+              "kind": "name",
+              "path": [
+                "resource",
+                "id"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/insurance/_/AssessClaim": {
+      "name": "AssessClaim",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/insurance/_/AssessClaim#activation:FraudSignalRaised": {
+          "kind": "fact",
+          "fact": "@corpus/insurance/_/FraudSignalRaised"
+        },
+        "@corpus/insurance/_/AssessClaim#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/insurance/_/AssessClaim#input:Claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/AssessClaim#input:Coverage": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "lossAt"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/AssessClaim#input:Evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/AssessClaim#input:FraudSignalRaised": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/FraudSignalRaised"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/insurance/_/AssessClaim#output:ClaimApproved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/ClaimApproved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/insurance/_/AssessClaim#output:ClaimDecision": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/ClaimDecision",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/insurance/_/AssessClaim#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/ClaimDecision",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/insurance/_/RepairNetwork"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/insurance/_/MaintainClaim": {
+      "name": "MaintainClaim",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/insurance/_/MaintainClaim#activation:ClaimApproved": {
+          "kind": "fact",
+          "fact": "@corpus/insurance/_/ClaimApproved"
+        },
+        "@corpus/insurance/_/MaintainClaim#activation:ClaimReopened": {
+          "kind": "fact",
+          "fact": "@corpus/insurance/_/ClaimReopened"
+        },
+        "@corpus/insurance/_/MaintainClaim#activation:LossReported": {
+          "kind": "fact",
+          "fact": "@corpus/insurance/_/LossReported"
+        }
+      },
+      "inputs": {
+        "@corpus/insurance/_/MaintainClaim#input:ClaimApproved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/ClaimApproved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/MaintainClaim#input:ClaimReopened": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/ClaimReopened"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/MaintainClaim#input:LossReported": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/LossReported"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/insurance/_/MaintainClaim#output:Claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/insurance/_/MaintainClaim#wait:EvidenceReceived": "@corpus/insurance/_/EvidenceReceived"
+          }
+        },
+        "stateMachine": null,
+        "stateful": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/insurance/_/Claim",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/insurance/_/MaintainCoverage": {
+      "name": "MaintainCoverage",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/insurance/_/MaintainCoverage#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/insurance/_/MaintainCoverage#output:Coverage": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/insurance/_/PayClaim": {
+      "name": "PayClaim",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {},
+      "inputs": {
+        "@corpus/insurance/_/PayClaim#input:Claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/PayClaim#input:ClaimDecision": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/ClaimDecision",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/insurance/_/PayClaim#output:PaymentIssued": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/PaymentIssued"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/insurance/_/PayClaim#output:Payout": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Payout",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/insurance/_/ReceiveEvidence": {
+      "name": "ReceiveEvidence",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/insurance/_/ReceiveEvidence#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/insurance/_/RepairNetwork",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/insurance/_/ReceiveEvidence#input:MedicalProvider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/insurance/_/MedicalProvider"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/ReceiveEvidence#input:PoliceRecords": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/insurance/_/PoliceRecords"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/insurance/_/ReceiveEvidence#input:RepairNetwork": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/insurance/_/RepairNetwork"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/insurance/_/ReceiveEvidence#output:Evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/insurance/_/ReceiveEvidence#output:EvidenceReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/EvidenceReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/insurance/_/ReopenClaim": {
+      "name": "ReopenClaim",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/insurance/_/ReopenClaim#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/insurance/_/ReopenClaim#input:Claim": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Claim",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/insurance/_/ReopenClaim#output:ClaimReopened": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/ClaimReopened"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/insurance/_/ReportLoss": {
+      "name": "ReportLoss",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/insurance/_/ReportLoss#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Coverage",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/insurance/_/ReportLoss#output:LossReported": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/LossReported"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/insurance/_/ScreenFraud": {
+      "name": "ScreenFraud",
+      "purpose": "@corpus/insurance/_/ClaimAssessment",
+      "principal": "@corpus/insurance/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/insurance/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/insurance/_/ScreenFraud#activation:change": {
+          "kind": "change",
+          "entity": "@corpus/insurance/_/Evidence"
+        }
+      },
+      "inputs": {
+        "@corpus/insurance/_/ScreenFraud#input:Evidence": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/insurance/_/Evidence",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/insurance/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/insurance/_/ScreenFraud#output:FraudSignalRaised": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/insurance/_/FraudSignalRaised"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/insurance/_/ClaimAssessment": {
+      "id": "@corpus/insurance/_/ClaimAssessment",
+      "name": "ClaimAssessment",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/insurance/_/Sensitive": {
+      "id": "@corpus/insurance/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.financial"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

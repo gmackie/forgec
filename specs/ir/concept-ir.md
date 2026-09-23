@@ -78,3 +78,7 @@ Version 1 is rejected explicitly. Re-export projected artifacts. For authored co
 Tests include an Acme snapshot, governance catalog preservation, business waits, file-move stability, transport-only changes, producer conflicts, and a directly constructed ingestion contract with schedule/event activation, external acquisition, multiple inputs, contextual policy and authoritative output.
 
 Remaining #24 work: explicit experimental source grammar, complete business dataflow and activation inference, authored port realization mappings, richer refinement checks, semantic compatibility UX, broader type/policy validation and Studio graph editing. The typed ingestion fixture demonstrates representation, not runtime ABAC enforcement or ingestion execution.
+
+## Cross-domain validation
+
+The [#69 corpus](../../examples/concept/README.md) contains ten explicit contracts with checked coverage evidence, ownership, graph snapshots, partial realization substitutions and adversarial mutations. Its [findings](../../docs/conceptir-validation-corpus.md) document pressures that remain unresolved before freezing the kernel or adding source grammar.

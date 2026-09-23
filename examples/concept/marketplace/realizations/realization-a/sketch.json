@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Cloudflare Workflows + Durable Objects",
+    "storage": "D1 + R2",
+    "transport": "Queues",
+    "conflict": "CRDT",
+    "query": "H3",
+    "batchSize": 100,
+    "concurrency": 8,
+    "cacheTtl": 30
+  },
+  "obligations": [
+    "State carries job identity but there is no explicit state-key facet or compiler consumer proving keyed isolation. This is the corpus's primary stateful admission test.",
+    "Geospatial distance units, matching fairness and stale-location policy are not standardized by expression calls. Compare airline feasibility and manufacturing event-time windows."
+  ]
+}

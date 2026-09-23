@@ -1,0 +1,27 @@
+{
+  "nodes": {
+    "@corpus/configurable-saas/_/MutateDynamicRecord": "process",
+    "@corpus/configurable-saas/_/PublishSchema": "process",
+    "@corpus/configurable-saas/_/TenantImport": "external"
+  },
+  "edges": [
+    {
+      "from": "@corpus/configurable-saas/_/PublishSchema",
+      "to": "@corpus/configurable-saas/_/TenantImport",
+      "port": "@corpus/configurable-saas/_/PublishSchema#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/TenantImport",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/configurable-saas/_/TenantImport",
+      "to": "@corpus/configurable-saas/_/MutateDynamicRecord",
+      "port": "@corpus/configurable-saas/_/MutateDynamicRecord#input:Tenant",
+      "kind": "acquire"
+    }
+  ]
+}

@@ -1,0 +1,1907 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/manufacturing",
+  "entities": {
+    "@corpus/manufacturing/_/Batch": {
+      "name": "Batch",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "materialLot": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parentBatch": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/manufacturing/_/Machine": {
+      "name": "Machine",
+      "fields": {
+        "condition": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "serial": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/manufacturing/_/MaintenanceOrder": {
+      "name": "MaintenanceOrder",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "machine": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "technician": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/manufacturing/_/QualityHold": {
+      "name": "QualityHold",
+      "fields": {
+        "batch": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Batch",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/manufacturing/_/TemperatureWindow": {
+      "name": "TemperatureWindow",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "machine": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "meanTemperature": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "windowEnd": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/manufacturing/_/MachineFaultObserved": {
+      "name": "MachineFaultObserved",
+      "fields": {
+        "faultCode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "machine": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/manufacturing/_/MaintenanceCompleted": {
+      "name": "MaintenanceCompleted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/MaintenanceOrder",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "technician": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/manufacturing/_/ProcessExcursionDetected": {
+      "name": "ProcessExcursionDetected",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "thresholdCelsius": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "window": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/TemperatureWindow",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/manufacturing/_/QualityHoldPlaced": {
+      "name": "QualityHoldPlaced",
+      "fields": {
+        "batch": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Batch",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "hold": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/QualityHold",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/manufacturing/_/TemperatureObserved": {
+      "name": "TemperatureObserved",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "machine": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "temperatureCelsius": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/manufacturing/_/Sensitive",
+            "purpose": "@corpus/manufacturing/_/QualityControl"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/manufacturing/_/Historian": {
+      "name": "Historian",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/manufacturing/_/Machine",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/manufacturing/_/Machine",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/manufacturing/_/PlantControl": {
+      "name": "PlantControl",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/manufacturing/_/Machine",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "QualityHold": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/manufacturing/_/QualityHold",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/manufacturing/_/Machine",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/manufacturing/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/manufacturing/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/manufacturing/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/manufacturing/_/Machine",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/manufacturing/_/QualityControl",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "principal",
+              "tenant"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "resource",
+              "tenant"
+            ]
+          }
+        },
+        "rhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "purpose"
+              ]
+            },
+            "rhs": {
+              "kind": "literal",
+              "literal": {
+                "type": "string",
+                "value": "QualityControl"
+              }
+            }
+          },
+          "rhs": {
+            "kind": "call",
+            "callee": [
+              "roleAllows"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "role"
+                ]
+              },
+              {
+                "kind": "name",
+                "path": [
+                  "resource",
+                  "id"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/manufacturing/_/CalculateTemperatureWindow": {
+      "name": "CalculateTemperatureWindow",
+      "purpose": "@corpus/manufacturing/_/QualityControl",
+      "principal": "@corpus/manufacturing/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/manufacturing/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/manufacturing/_/CalculateTemperatureWindow#activation:TemperatureObserved": {
+          "kind": "fact",
+          "fact": "@corpus/manufacturing/_/TemperatureObserved"
+        },
+        "@corpus/manufacturing/_/CalculateTemperatureWindow#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/manufacturing/_/CalculateTemperatureWindow#input:TemperatureObserved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/TemperatureObserved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": "90m",
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "windowEnd"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "filterVisible"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/manufacturing/_/CalculateTemperatureWindow#output:TemperatureWindow": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/TemperatureWindow",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/manufacturing/_/DetectExcursion": {
+      "name": "DetectExcursion",
+      "purpose": "@corpus/manufacturing/_/QualityControl",
+      "principal": "@corpus/manufacturing/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/manufacturing/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/manufacturing/_/DetectExcursion#activation:change": {
+          "kind": "change",
+          "entity": "@corpus/manufacturing/_/TemperatureWindow"
+        }
+      },
+      "inputs": {
+        "@corpus/manufacturing/_/DetectExcursion#input:Batch": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Batch",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/manufacturing/_/DetectExcursion#input:TemperatureWindow": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/TemperatureWindow",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/manufacturing/_/DetectExcursion#output:ProcessExcursionDetected": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/ProcessExcursionDetected"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/manufacturing/_/DetectExcursion#output:QualityHold": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/QualityHold",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/manufacturing/_/DetectExcursion#output:QualityHoldPlaced": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/QualityHoldPlaced"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/manufacturing/_/DetectExcursion#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/QualityHold",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/manufacturing/_/PlantControl"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/manufacturing/_/MaintainEquipment": {
+      "name": "MaintainEquipment",
+      "purpose": "@corpus/manufacturing/_/QualityControl",
+      "principal": "@corpus/manufacturing/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/manufacturing/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/manufacturing/_/MaintainEquipment#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/manufacturing/_/MaintainEquipment#input:Machine": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/manufacturing/_/MaintainEquipment#input:QualityHold": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/QualityHold",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/manufacturing/_/MaintainEquipment#output:MaintenanceCompleted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/MaintenanceCompleted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/manufacturing/_/MaintainEquipment#output:MaintenanceOrder": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/MaintenanceOrder",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/manufacturing/_/MaintainEquipment#wait:QualityHoldPlaced": "@corpus/manufacturing/_/QualityHoldPlaced"
+          }
+        },
+        "stateMachine": null,
+        "stateful": null
+      }
+    },
+    "@corpus/manufacturing/_/MaintainMachine": {
+      "name": "MaintainMachine",
+      "purpose": "@corpus/manufacturing/_/QualityControl",
+      "principal": "@corpus/manufacturing/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/manufacturing/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/manufacturing/_/MaintainMachine#activation:MachineFaultObserved": {
+          "kind": "fact",
+          "fact": "@corpus/manufacturing/_/MachineFaultObserved"
+        },
+        "@corpus/manufacturing/_/MaintainMachine#activation:MaintenanceCompleted": {
+          "kind": "fact",
+          "fact": "@corpus/manufacturing/_/MaintenanceCompleted"
+        }
+      },
+      "inputs": {
+        "@corpus/manufacturing/_/MaintainMachine#input:MachineFaultObserved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/MachineFaultObserved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/manufacturing/_/MaintainMachine#input:MaintenanceCompleted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/MaintenanceCompleted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/manufacturing/_/MaintainMachine#output:Machine": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": null,
+        "stateMachine": null,
+        "stateful": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/manufacturing/_/Machine",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/manufacturing/_/ReceiveTelemetry": {
+      "name": "ReceiveTelemetry",
+      "purpose": "@corpus/manufacturing/_/QualityControl",
+      "principal": "@corpus/manufacturing/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/manufacturing/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/manufacturing/_/ReceiveTelemetry#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/manufacturing/_/PlantControl",
+          "event": "Updated"
+        },
+        "@corpus/manufacturing/_/ReceiveTelemetry#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/manufacturing/_/ReceiveTelemetry#input:Machine": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/manufacturing/_/PlantControl"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/manufacturing/_/ReceiveTelemetry#input:backfill": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/manufacturing/_/Historian"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/manufacturing/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/manufacturing/_/ReceiveTelemetry#output:MachineFaultObserved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/MachineFaultObserved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/manufacturing/_/ReceiveTelemetry#output:TemperatureObserved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/manufacturing/_/TemperatureObserved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/manufacturing/_/TrackBatch": {
+      "name": "TrackBatch",
+      "purpose": "@corpus/manufacturing/_/QualityControl",
+      "principal": "@corpus/manufacturing/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/manufacturing/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/manufacturing/_/TrackBatch#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Machine",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/manufacturing/_/TrackBatch#output:Batch": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/manufacturing/_/Batch",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/manufacturing/_/QualityControl": {
+      "id": "@corpus/manufacturing/_/QualityControl",
+      "name": "QualityControl",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/manufacturing/_/Sensitive": {
+      "id": "@corpus/manufacturing/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.industrial"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

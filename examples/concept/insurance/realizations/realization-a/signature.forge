@@ -1,0 +1,21 @@
+resource Claim { id : id }
+resource ClaimDecision { id : id }
+resource Coverage { id : id }
+resource Evidence { id : id }
+resource Payout { id : id }
+function AssessClaim @http(POST, "/realization-a/AssessClaim") { input Claim.Record
+ output ClaimDecision.Record }
+function MaintainClaim @http(POST, "/realization-a/MaintainClaim") { input Claim.Record
+ output Claim.Record }
+function MaintainCoverage @http(POST, "/realization-a/MaintainCoverage") { input Claim.Record
+ output Coverage.Record }
+function PayClaim @http(POST, "/realization-a/PayClaim") { input Claim.Record
+ output Payout.Record }
+function ReceiveEvidence @http(POST, "/realization-a/ReceiveEvidence") { input Claim.Record
+ output Evidence.Record }
+function ReopenClaim @http(POST, "/realization-a/ReopenClaim") { input Claim.Record
+ output Claim.Record }
+function ReportLoss @http(POST, "/realization-a/ReportLoss") { input Claim.Record
+ output Claim.Record }
+function ScreenFraud @http(POST, "/realization-a/ScreenFraud") { input Claim.Record
+ output Claim.Record }

@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Temporal + keyed services",
+    "storage": "Postgres + object storage",
+    "transport": "Kafka",
+    "conflict": "OT",
+    "query": "PostGIS",
+    "batchSize": 1000,
+    "concurrency": 32,
+    "cacheTtl": 120
+  },
+  "obligations": [
+    "Evidence digests preserve identity but do not prove authenticity, retention or chain of custody. Compare clinical source provenance and benefits notices.",
+    "Effective validity fields and asOf encode intent without establishing non-overlap, bitemporal corrections or correct coverage-version selection."
+  ]
+}

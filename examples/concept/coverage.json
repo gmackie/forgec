@@ -1,0 +1,184 @@
+[
+  {
+    "axis": "multi-input derivation",
+    "fixture": "airline",
+    "pointer": "/processes/@corpus~1airline~1_~1BuildRecoveryPlan/inputs",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "single logical producer",
+    "fixture": "collaborative",
+    "pointer": "/processes/@corpus~1collaborative~1_~1MaintainDocument/outputs",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "request activation",
+    "fixture": "commerce",
+    "pointer": "/processes/@corpus~1commerce~1_~1CancelOrder/activations",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "fact/event activation",
+    "fixture": "banking",
+    "pointer": "/processes/@corpus~1banking~1_~1PostLedger/activations",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "entity-change activation",
+    "fixture": "manufacturing",
+    "pointer": "/processes/@corpus~1manufacturing~1_~1DetectExcursion/activations",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "schedule activation",
+    "fixture": "benefits",
+    "pointer": "/processes/@corpus~1benefits~1_~1Recertify/activations",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "external acquisition",
+    "fixture": "hospital",
+    "pointer": "/processes/@corpus~1hospital~1_~1ReceiveLab/inputs",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "external export",
+    "fixture": "hospital",
+    "pointer": "/processes/@corpus~1hospital~1_~1PrescribeMedication/outputs",
+    "status": "gap",
+    "limitation": "Export authority references are represented; disclosure enforcement is unproven."
+  },
+  {
+    "axis": "workflow/long waits",
+    "fixture": "insurance",
+    "pointer": "/processes/@corpus~1insurance~1_~1MaintainClaim/behavior",
+    "status": "gap",
+    "limitation": "Wait correlation, order and reopening control flow are unproven."
+  },
+  {
+    "axis": "keyed stateful behavior",
+    "fixture": "marketplace",
+    "pointer": "/processes/@corpus~1marketplace~1_~1DispatchJob/behavior",
+    "status": "gap",
+    "limitation": "State carries job identity; no explicit key-routing/isolation contract exists."
+  },
+  {
+    "axis": "temporal/as-of semantics",
+    "fixture": "banking",
+    "pointer": "/processes/@corpus~1banking~1_~1DeriveBalance/inputs",
+    "status": "gap",
+    "limitation": "As-of intent is represented; implementation selection is unproven."
+  },
+  {
+    "axis": "effective dating",
+    "fixture": "benefits",
+    "pointer": "/entities/@corpus~1benefits~1_~1RuleSet/fields",
+    "status": "gap",
+    "limitation": "Validity fields do not encode non-overlap or bitemporal correction semantics."
+  },
+  {
+    "axis": "business invariants",
+    "fixture": "banking",
+    "pointer": "/facts/@corpus~1banking~1_~1LedgerEntryPosted/fields",
+    "status": "gap",
+    "limitation": "Journal amounts and account references are present; balanced atomic posting cannot be expressed by Unique."
+  },
+  {
+    "axis": "reconciliation/reversal/compensation",
+    "fixture": "commerce",
+    "pointer": "/entities/@corpus~1commerce~1_~1Refund/fields",
+    "status": "gap",
+    "limitation": "Reversal references and amounts exist; compensation ordering is unproven."
+  },
+  {
+    "axis": "human-in-loop decisions",
+    "fixture": "airline",
+    "pointer": "/processes/@corpus~1airline~1_~1ApplyRecovery/behavior",
+    "status": "gap",
+    "limitation": "Approval fact is a required wait; approval-before-apply is unproven."
+  },
+  {
+    "axis": "ABAC/purpose",
+    "fixture": "hospital",
+    "pointer": "/policies/@corpus~1hospital~1_~1ScopedAccess/predicate",
+    "status": "gap",
+    "limitation": "Policy reference validation does not evaluate ABAC."
+  },
+  {
+    "axis": "sensitive data classification",
+    "fixture": "insurance",
+    "pointer": "/entities/@corpus~1insurance~1_~1Evidence/fields",
+    "status": "represented",
+    "limitation": null
+  },
+  {
+    "axis": "exceptional/break-glass authorization",
+    "fixture": "hospital",
+    "pointer": "/policies/@corpus~1hospital~1_~1EmergencyAccess/predicate",
+    "status": "gap",
+    "limitation": "Emergency reason/role predicate exists; mandatory audit coupling is unproven."
+  },
+  {
+    "axis": "provenance/evidence",
+    "fixture": "insurance",
+    "pointer": "/entities/@corpus~1insurance~1_~1ClaimDecision/fields",
+    "status": "gap",
+    "limitation": "Version and evidence references exist; provenance completeness is unproven."
+  },
+  {
+    "axis": "high-rate observations",
+    "fixture": "manufacturing",
+    "pointer": "/processes/@corpus~1manufacturing~1_~1CalculateTemperatureWindow/inputs",
+    "status": "gap",
+    "limitation": "Window length is semantic; rate, lateness, event-time and retractions are not modeled."
+  },
+  {
+    "axis": "runtime-defined schema",
+    "fixture": "configurable-saas",
+    "pointer": "/entities/@corpus~1configurable-saas~1_~1DynamicRecord/fields",
+    "status": "gap",
+    "limitation": "Payload and type descriptors are opaque; runtime schema interpretation remains external to static ConceptIR."
+  },
+  {
+    "axis": "optimization/matching",
+    "fixture": "airline",
+    "pointer": "/processes/@corpus~1airline~1_~1FleetFeasibility/outputs",
+    "status": "gap",
+    "limitation": "Typed results exist; feasibility/optimization algorithms and result-port links are unproven."
+  },
+  {
+    "axis": "geospatial semantics",
+    "fixture": "marketplace",
+    "pointer": "/processes/@corpus~1marketplace~1_~1MatchProviders/inputs",
+    "status": "gap",
+    "limitation": "Proximity predicate is explicit; distance units and custom predicate semantics are not standardized."
+  },
+  {
+    "axis": "concurrent mutation",
+    "fixture": "collaborative",
+    "pointer": "/processes/@corpus~1collaborative~1_~1MaintainDocument/inputs",
+    "status": "gap",
+    "limitation": "Single owner accepts concurrent edits; convergence and conflict equivalence require runtime proof."
+  },
+  {
+    "axis": "documents/blobs/evidence",
+    "fixture": "insurance",
+    "pointer": "/entities/@corpus~1insurance~1_~1Evidence/fields",
+    "status": "gap",
+    "limitation": "Digests identify blobs; authenticity and retention remain unproven."
+  },
+  {
+    "axis": "hierarchical authorization/inheritance",
+    "fixture": "collaborative",
+    "pointer": "/policies/@corpus~1collaborative~1_~1ScopedAccess/predicate",
+    "status": "gap",
+    "limitation": "Inheritance predicate exists; traversal and revocation semantics remain unproven."
+  }
+]

@@ -1,0 +1,17 @@
+resource Account { id : id }
+resource AccountBalance { id : id }
+resource Authorization { id : id }
+resource Dispute { id : id }
+resource Settlement { id : id }
+function AuthorizeCard @http(POST, "/realization-a/AuthorizeCard") { input Account.Record
+ output Authorization.Record }
+function DeriveBalance @http(POST, "/realization-a/DeriveBalance") { input Account.Record
+ output AccountBalance.Record }
+function MaintainAccount @http(POST, "/realization-a/MaintainAccount") { input Account.Record
+ output Account.Record }
+function PostLedger @http(POST, "/realization-a/PostLedger") { input Account.Record
+ output Account.Record }
+function ResolveDispute @http(POST, "/realization-a/ResolveDispute") { input Account.Record
+ output Dispute.Record }
+function SettleCard @http(POST, "/realization-a/SettleCard") { input Account.Record
+ output Settlement.Record }

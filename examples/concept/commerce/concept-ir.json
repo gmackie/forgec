@@ -1,0 +1,1961 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/commerce",
+  "entities": {
+    "@corpus/commerce/_/Order": {
+      "name": "Order",
+      "fields": {
+        "customer": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "fulfilledQuantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "orderedQuantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "refundedAmount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/commerce/_/Refund": {
+      "name": "Refund",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "reverses": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/commerce/_/Return": {
+      "name": "Return",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/commerce/_/Shipment": {
+      "name": "Shipment",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/commerce/_/CancellationRequested": {
+      "name": "CancellationRequested",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "remainingQuantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/commerce/_/PaymentAuthorized": {
+      "name": "PaymentAuthorized",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/commerce/_/RefundIssued": {
+      "name": "RefundIssued",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "refund": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Refund",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/commerce/_/ReturnReceived": {
+      "name": "ReturnReceived",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "return": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Return",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/commerce/_/ShipmentDelivered": {
+      "name": "ShipmentDelivered",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "shipment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Shipment",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/commerce/_/Sensitive",
+            "purpose": "@corpus/commerce/_/OrderSupport"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/commerce/_/Carrier": {
+      "name": "Carrier",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Order",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "Shipment": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Shipment",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Order",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/commerce/_/Payments": {
+      "name": "Payments",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Order",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Order",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/commerce/_/TaxAuthority": {
+      "name": "TaxAuthority",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Order",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Order",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/commerce/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/commerce/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/commerce/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/commerce/_/Order",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/commerce/_/OrderSupport",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "principal",
+              "tenant"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "resource",
+              "tenant"
+            ]
+          }
+        },
+        "rhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "purpose"
+              ]
+            },
+            "rhs": {
+              "kind": "literal",
+              "literal": {
+                "type": "string",
+                "value": "OrderSupport"
+              }
+            }
+          },
+          "rhs": {
+            "kind": "call",
+            "callee": [
+              "roleAllows"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "role"
+                ]
+              },
+              {
+                "kind": "name",
+                "path": [
+                  "resource",
+                  "id"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/commerce/_/CancelOrder": {
+      "name": "CancelOrder",
+      "purpose": "@corpus/commerce/_/OrderSupport",
+      "principal": "@corpus/commerce/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/commerce/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/commerce/_/CancelOrder#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/commerce/_/CancelOrder#input:Order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/commerce/_/CancelOrder#output:CancellationRequested": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/CancellationRequested"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/commerce/_/MaintainOrder": {
+      "name": "MaintainOrder",
+      "purpose": "@corpus/commerce/_/OrderSupport",
+      "principal": "@corpus/commerce/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/commerce/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/commerce/_/MaintainOrder#activation:CancellationRequested": {
+          "kind": "fact",
+          "fact": "@corpus/commerce/_/CancellationRequested"
+        },
+        "@corpus/commerce/_/MaintainOrder#activation:PaymentAuthorized": {
+          "kind": "fact",
+          "fact": "@corpus/commerce/_/PaymentAuthorized"
+        },
+        "@corpus/commerce/_/MaintainOrder#activation:RefundIssued": {
+          "kind": "fact",
+          "fact": "@corpus/commerce/_/RefundIssued"
+        },
+        "@corpus/commerce/_/MaintainOrder#activation:ReturnReceived": {
+          "kind": "fact",
+          "fact": "@corpus/commerce/_/ReturnReceived"
+        },
+        "@corpus/commerce/_/MaintainOrder#activation:ShipmentDelivered": {
+          "kind": "fact",
+          "fact": "@corpus/commerce/_/ShipmentDelivered"
+        },
+        "@corpus/commerce/_/MaintainOrder#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/commerce/_/MaintainOrder#input:CancellationRequested": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/CancellationRequested"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/commerce/_/MaintainOrder#input:PaymentAuthorized": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/PaymentAuthorized"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/commerce/_/MaintainOrder#input:RefundIssued": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/RefundIssued"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/commerce/_/MaintainOrder#input:ReturnReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/ReturnReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/commerce/_/MaintainOrder#input:ShipmentDelivered": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/ShipmentDelivered"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/commerce/_/MaintainOrder#output:Order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": null,
+        "stateMachine": null,
+        "stateful": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/commerce/_/Order",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/commerce/_/ManageRefund": {
+      "name": "ManageRefund",
+      "purpose": "@corpus/commerce/_/OrderSupport",
+      "principal": "@corpus/commerce/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/commerce/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/commerce/_/ManageRefund#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/commerce/_/Payments",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/commerce/_/ManageRefund#input:Order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "refundAt"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/commerce/_/ManageRefund#input:Return": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Return",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/commerce/_/ManageRefund#output:Refund": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Refund",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/commerce/_/ManageRefund#output:RefundIssued": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/RefundIssued"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/commerce/_/ManageReturn": {
+      "name": "ManageReturn",
+      "purpose": "@corpus/commerce/_/OrderSupport",
+      "principal": "@corpus/commerce/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/commerce/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/commerce/_/ManageReturn#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/commerce/_/ManageReturn#input:Shipment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Shipment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/commerce/_/ManageReturn#output:Return": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Return",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/commerce/_/ManageReturn#output:ReturnReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/ReturnReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/commerce/_/ManageReturn#wait:ShipmentDelivered": "@corpus/commerce/_/ShipmentDelivered"
+          }
+        },
+        "stateMachine": null,
+        "stateful": null
+      }
+    },
+    "@corpus/commerce/_/ManageShipment": {
+      "name": "ManageShipment",
+      "purpose": "@corpus/commerce/_/OrderSupport",
+      "principal": "@corpus/commerce/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/commerce/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/commerce/_/ManageShipment#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/commerce/_/Carrier",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/commerce/_/ManageShipment#input:Order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/commerce/_/ManageShipment#output:Shipment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Shipment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/commerce/_/ManageShipment#output:ShipmentDelivered": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/ShipmentDelivered"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/commerce/_/ManageShipment#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Shipment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/commerce/_/Carrier"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/commerce/_/ManageShipment#wait:PaymentAuthorized": "@corpus/commerce/_/PaymentAuthorized"
+          }
+        },
+        "stateMachine": null,
+        "stateful": null
+      }
+    },
+    "@corpus/commerce/_/ReceivePayment": {
+      "name": "ReceivePayment",
+      "purpose": "@corpus/commerce/_/OrderSupport",
+      "principal": "@corpus/commerce/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/commerce/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/commerce/_/ReceivePayment#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/commerce/_/Payments",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/commerce/_/ReceivePayment#input:Order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/commerce/_/Payments"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/commerce/_/ReceivePayment#input:taxQuote": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/commerce/_/Order",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/commerce/_/TaxAuthority"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/commerce/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/commerce/_/ReceivePayment#output:PaymentAuthorized": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/commerce/_/PaymentAuthorized"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/commerce/_/OrderSupport": {
+      "id": "@corpus/commerce/_/OrderSupport",
+      "name": "OrderSupport",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/commerce/_/Sensitive": {
+      "id": "@corpus/commerce/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.financial"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

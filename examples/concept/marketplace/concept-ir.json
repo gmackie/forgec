@@ -1,0 +1,2793 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/marketplace",
+  "entities": {
+    "@corpus/marketplace/_/Job": {
+      "name": "Job",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "phase": {
+          "ty": {
+            "base": {
+              "kind": "enum",
+              "id": "@corpus/marketplace/_/JobPhase"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "pickupLatitude": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "pickupLongitude": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": {
+        "field": "phase",
+        "enumId": "@corpus/marketplace/_/JobPhase",
+        "states": [
+          "Requested",
+          "Offering",
+          "Assigned",
+          "Cancelled"
+        ],
+        "initial": "Requested",
+        "terminals": [
+          "Cancelled"
+        ],
+        "transitions": [
+          {
+            "action": "offer",
+            "from": [
+              "Requested"
+            ],
+            "to": "Offering",
+            "input": []
+          },
+          {
+            "action": "accept",
+            "from": [
+              "Offering"
+            ],
+            "to": "Assigned",
+            "input": []
+          },
+          {
+            "action": "cancel",
+            "from": [
+              "Requested",
+              "Offering",
+              "Assigned"
+            ],
+            "to": "Cancelled",
+            "input": []
+          }
+        ]
+      },
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/marketplace/_/Offer": {
+      "name": "Offer",
+      "fields": {
+        "expiresAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/marketplace/_/Payout": {
+      "name": "Payout",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "trip": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Trip",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/marketplace/_/PriceQuote": {
+      "name": "PriceQuote",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/marketplace/_/Provider": {
+      "name": "Provider",
+      "fields": {
+        "available": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "latitude": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "longitude": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/marketplace/_/Trip": {
+      "name": "Trip",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "phase": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/marketplace/_/JobCancelled": {
+      "name": "JobCancelled",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/JobCompleted": {
+      "name": "JobCompleted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "trip": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Trip",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/JobRequested": {
+      "name": "JobRequested",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/OfferAccepted": {
+      "name": "OfferAccepted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "offer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Offer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/OfferExpired": {
+      "name": "OfferExpired",
+      "fields": {
+        "expiredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "offer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Offer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/PayoutIssued": {
+      "name": "PayoutIssued",
+      "fields": {
+        "amount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "payout": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Payout",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/ProviderLocationObserved": {
+      "name": "ProviderLocationObserved",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "latitude": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "longitude": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/marketplace/_/Sensitive",
+            "purpose": "@corpus/marketplace/_/Dispatch"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/marketplace/_/LocationFeed": {
+      "name": "LocationFeed",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Provider",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Provider",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/PaymentNetwork": {
+      "name": "PaymentNetwork",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Provider",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "Payout": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Payout",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Provider",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/marketplace/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/marketplace/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/marketplace/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/marketplace/_/Provider",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "principal",
+              "tenant"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "resource",
+              "tenant"
+            ]
+          }
+        },
+        "rhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "purpose"
+              ]
+            },
+            "rhs": {
+              "kind": "literal",
+              "literal": {
+                "type": "string",
+                "value": "Dispatch"
+              }
+            }
+          },
+          "rhs": {
+            "kind": "call",
+            "callee": [
+              "roleAllows"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "role"
+                ]
+              },
+              {
+                "kind": "name",
+                "path": [
+                  "resource",
+                  "id"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/marketplace/_/AcceptOffer": {
+      "name": "AcceptOffer",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/marketplace/_/AcceptOffer#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/marketplace/_/AcceptOffer#input:Offer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Offer",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/AcceptOffer#output:OfferAccepted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/OfferAccepted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/marketplace/_/CancelJob": {
+      "name": "CancelJob",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/marketplace/_/CancelJob#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/marketplace/_/CancelJob#input:Job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/CancelJob#output:JobCancelled": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/JobCancelled"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/marketplace/_/DispatchJob": {
+      "name": "DispatchJob",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/marketplace/_/DispatchJob#activation:JobCancelled": {
+          "kind": "fact",
+          "fact": "@corpus/marketplace/_/JobCancelled"
+        },
+        "@corpus/marketplace/_/DispatchJob#activation:OfferAccepted": {
+          "kind": "fact",
+          "fact": "@corpus/marketplace/_/OfferAccepted"
+        },
+        "@corpus/marketplace/_/DispatchJob#activation:OfferExpired": {
+          "kind": "fact",
+          "fact": "@corpus/marketplace/_/OfferExpired"
+        },
+        "@corpus/marketplace/_/DispatchJob#activation:ProviderLocationObserved": {
+          "kind": "fact",
+          "fact": "@corpus/marketplace/_/ProviderLocationObserved"
+        },
+        "@corpus/marketplace/_/DispatchJob#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/marketplace/_/DispatchJob#input:JobCancelled": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/JobCancelled"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/DispatchJob#input:OfferAccepted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/OfferAccepted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/DispatchJob#input:OfferExpired": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/OfferExpired"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/DispatchJob#input:ProviderLocationObserved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/ProviderLocationObserved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": "5m",
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "filterVisible"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/DispatchJob#output:Job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/marketplace/_/DispatchJob#output:JobRequested": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/JobRequested"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": null,
+        "stateMachine": {
+          "entity": "@corpus/marketplace/_/Job",
+          "lifecycle": {
+            "field": "phase",
+            "enumId": "@corpus/marketplace/_/JobPhase",
+            "states": [
+              "Requested",
+              "Offering",
+              "Assigned",
+              "Cancelled"
+            ],
+            "initial": "Requested",
+            "terminals": [
+              "Cancelled"
+            ],
+            "transitions": [
+              {
+                "action": "offer",
+                "from": [
+                  "Requested"
+                ],
+                "to": "Offering",
+                "input": []
+              },
+              {
+                "action": "accept",
+                "from": [
+                  "Offering"
+                ],
+                "to": "Assigned",
+                "input": []
+              },
+              {
+                "action": "cancel",
+                "from": [
+                  "Requested",
+                  "Offering",
+                  "Assigned"
+                ],
+                "to": "Cancelled",
+                "input": []
+              }
+            ]
+          }
+        },
+        "stateful": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Job",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/IssueOffer": {
+      "name": "IssueOffer",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/marketplace/_/IssueOffer#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/marketplace/_/IssueOffer#input:Job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/IssueOffer#input:Provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/IssueOffer#output:Offer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Offer",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/marketplace/_/IssueOffer#output:OfferExpired": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/OfferExpired"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/marketplace/_/MaintainTrip": {
+      "name": "MaintainTrip",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/marketplace/_/MaintainTrip#activation:JobCancelled": {
+          "kind": "fact",
+          "fact": "@corpus/marketplace/_/JobCancelled"
+        },
+        "@corpus/marketplace/_/MaintainTrip#activation:OfferAccepted": {
+          "kind": "fact",
+          "fact": "@corpus/marketplace/_/OfferAccepted"
+        }
+      },
+      "inputs": {
+        "@corpus/marketplace/_/MaintainTrip#input:Job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/MaintainTrip#input:JobCancelled": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/JobCancelled"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/MaintainTrip#input:OfferAccepted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/OfferAccepted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/MaintainTrip#output:JobCompleted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/JobCompleted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/marketplace/_/MaintainTrip#output:Trip": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Trip",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": null,
+        "stateMachine": null,
+        "stateful": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Trip",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/marketplace/_/MatchProviders": {
+      "name": "MatchProviders",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {},
+      "inputs": {
+        "@corpus/marketplace/_/MatchProviders#input:Job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/MatchProviders#input:Provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": "subject",
+            "predicate": {
+              "kind": "call",
+              "callee": [
+                "eligibleWithinDistance"
+              ],
+              "args": [
+                {
+                  "kind": "name",
+                  "path": [
+                    "Provider",
+                    "latitude"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "Provider",
+                    "longitude"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "Job",
+                    "pickupLatitude"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "Job",
+                    "pickupLongitude"
+                  ]
+                }
+              ]
+            },
+            "during": "5m",
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "filterVisible"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/MatchProviders#output:result": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/marketplace/_/Candidate"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "return"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/marketplace/_/ObserveProvider": {
+      "name": "ObserveProvider",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/marketplace/_/ObserveProvider#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/marketplace/_/LocationFeed",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/marketplace/_/ObserveProvider#input:Provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/marketplace/_/LocationFeed"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/ObserveProvider#output:Provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/marketplace/_/ObserveProvider#output:ProviderLocationObserved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/ProviderLocationObserved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/marketplace/_/PayProvider": {
+      "name": "PayProvider",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {},
+      "inputs": {
+        "@corpus/marketplace/_/PayProvider#input:Provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/marketplace/_/PaymentNetwork"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/PayProvider#input:Trip": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Trip",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/PayProvider#output:Payout": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Payout",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/marketplace/_/PayProvider#output:PayoutIssued": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/marketplace/_/PayoutIssued"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/marketplace/_/PayProvider#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Payout",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/marketplace/_/PaymentNetwork"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/marketplace/_/QuotePrice": {
+      "name": "QuotePrice",
+      "purpose": "@corpus/marketplace/_/Dispatch",
+      "principal": "@corpus/marketplace/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/marketplace/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {},
+      "inputs": {
+        "@corpus/marketplace/_/QuotePrice#input:Job": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Job",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/marketplace/_/QuotePrice#input:Provider": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/Provider",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/marketplace/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/marketplace/_/QuotePrice#output:PriceQuote": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/marketplace/_/PriceQuote",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/marketplace/_/Dispatch": {
+      "id": "@corpus/marketplace/_/Dispatch",
+      "name": "Dispatch",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/marketplace/_/Sensitive": {
+      "id": "@corpus/marketplace/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.location"
+    }
+  },
+  "shapes": {
+    "@corpus/marketplace/_/Candidate": {
+      "distanceMeters": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "decimal",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "provider": {
+        "ty": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/marketplace/_/Provider",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {
+    "@corpus/marketplace/_/JobPhase": [
+      "Assigned",
+      "Cancelled",
+      "Offering",
+      "Requested"
+    ]
+  }
+}

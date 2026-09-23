@@ -1,0 +1,435 @@
+{
+  "nodes": {
+    "@corpus/commerce/_/CancelOrder": "process",
+    "@corpus/commerce/_/CancellationRequested": "fact",
+    "@corpus/commerce/_/Carrier": "external",
+    "@corpus/commerce/_/MaintainOrder": "process",
+    "@corpus/commerce/_/ManageRefund": "process",
+    "@corpus/commerce/_/ManageReturn": "process",
+    "@corpus/commerce/_/ManageShipment": "process",
+    "@corpus/commerce/_/Operator": "principal",
+    "@corpus/commerce/_/Order": "entity",
+    "@corpus/commerce/_/OrderSupport": "purpose",
+    "@corpus/commerce/_/PaymentAuthorized": "fact",
+    "@corpus/commerce/_/Payments": "external",
+    "@corpus/commerce/_/ReceivePayment": "process",
+    "@corpus/commerce/_/Refund": "entity",
+    "@corpus/commerce/_/RefundIssued": "fact",
+    "@corpus/commerce/_/Return": "entity",
+    "@corpus/commerce/_/ReturnReceived": "fact",
+    "@corpus/commerce/_/ScopedAccess": "policy",
+    "@corpus/commerce/_/Shipment": "entity",
+    "@corpus/commerce/_/ShipmentDelivered": "fact",
+    "@corpus/commerce/_/TaxAuthority": "external"
+  },
+  "edges": [
+    {
+      "from": "@corpus/commerce/_/CancelOrder",
+      "to": "@corpus/commerce/_/CancellationRequested",
+      "port": "@corpus/commerce/_/CancelOrder#output:CancellationRequested",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/CancelOrder",
+      "to": "@corpus/commerce/_/OrderSupport",
+      "port": "@corpus/commerce/_/CancelOrder",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/commerce/_/CancellationRequested",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#activation:CancellationRequested",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/CancellationRequested",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:CancellationRequested",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/Carrier",
+      "to": "@corpus/commerce/_/ManageShipment",
+      "port": "@corpus/commerce/_/ManageShipment#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/MaintainOrder",
+      "to": "@corpus/commerce/_/Order",
+      "port": "@corpus/commerce/_/MaintainOrder#output:Order",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/MaintainOrder",
+      "to": "@corpus/commerce/_/OrderSupport",
+      "port": "@corpus/commerce/_/MaintainOrder",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageRefund",
+      "to": "@corpus/commerce/_/OrderSupport",
+      "port": "@corpus/commerce/_/ManageRefund",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageRefund",
+      "to": "@corpus/commerce/_/Refund",
+      "port": "@corpus/commerce/_/ManageRefund#output:Refund",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageRefund",
+      "to": "@corpus/commerce/_/RefundIssued",
+      "port": "@corpus/commerce/_/ManageRefund#output:RefundIssued",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageReturn",
+      "to": "@corpus/commerce/_/OrderSupport",
+      "port": "@corpus/commerce/_/ManageReturn",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageReturn",
+      "to": "@corpus/commerce/_/Return",
+      "port": "@corpus/commerce/_/ManageReturn#output:Return",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageReturn",
+      "to": "@corpus/commerce/_/ReturnReceived",
+      "port": "@corpus/commerce/_/ManageReturn#output:ReturnReceived",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/Carrier",
+      "port": "@corpus/commerce/_/ManageShipment#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/OrderSupport",
+      "port": "@corpus/commerce/_/ManageShipment",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/Shipment",
+      "port": "@corpus/commerce/_/ManageShipment#output:Shipment",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/Shipment",
+      "port": "@corpus/commerce/_/ManageShipment#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/ShipmentDelivered",
+      "port": "@corpus/commerce/_/ManageShipment#output:ShipmentDelivered",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/Operator",
+      "to": "@corpus/commerce/_/CancelOrder",
+      "port": "@corpus/commerce/_/CancelOrder",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/commerce/_/Operator",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/commerce/_/Operator",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/commerce/_/Operator",
+      "to": "@corpus/commerce/_/ManageReturn",
+      "port": "@corpus/commerce/_/ManageReturn",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/commerce/_/Operator",
+      "to": "@corpus/commerce/_/ManageShipment",
+      "port": "@corpus/commerce/_/ManageShipment",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/commerce/_/Operator",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/commerce/_/Order",
+      "to": "@corpus/commerce/_/CancelOrder",
+      "port": "@corpus/commerce/_/CancelOrder#input:Order",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/Order",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund#input:Order",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/Order",
+      "to": "@corpus/commerce/_/ManageShipment",
+      "port": "@corpus/commerce/_/ManageShipment#input:Order",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/Order",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:Order",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/Order",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:taxQuote",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/PaymentAuthorized",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#activation:PaymentAuthorized",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/PaymentAuthorized",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:PaymentAuthorized",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/PaymentAuthorized",
+      "to": "@corpus/commerce/_/ManageShipment",
+      "port": "@corpus/commerce/_/ManageShipment#wait:PaymentAuthorized",
+      "kind": "wait"
+    },
+    {
+      "from": "@corpus/commerce/_/Payments",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/Payments",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/Payments",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:Order",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/commerce/_/ReceivePayment",
+      "to": "@corpus/commerce/_/OrderSupport",
+      "port": "@corpus/commerce/_/ReceivePayment",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/commerce/_/ReceivePayment",
+      "to": "@corpus/commerce/_/PaymentAuthorized",
+      "port": "@corpus/commerce/_/ReceivePayment#output:PaymentAuthorized",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/RefundIssued",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#activation:RefundIssued",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/RefundIssued",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:RefundIssued",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/Return",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund#input:Return",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/ReturnReceived",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#activation:ReturnReceived",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/ReturnReceived",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:ReturnReceived",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/CancelOrder",
+      "port": "@corpus/commerce/_/CancelOrder",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/CancelOrder",
+      "port": "@corpus/commerce/_/CancelOrder#input:Order",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:CancellationRequested",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:PaymentAuthorized",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:RefundIssued",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:ReturnReceived",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:ShipmentDelivered",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund#input:Order",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund#input:Return",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ManageReturn",
+      "port": "@corpus/commerce/_/ManageReturn",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ManageReturn",
+      "port": "@corpus/commerce/_/ManageReturn#input:Shipment",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ManageShipment",
+      "port": "@corpus/commerce/_/ManageShipment",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ManageShipment",
+      "port": "@corpus/commerce/_/ManageShipment#input:Order",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/Operator",
+      "port": "@corpus/commerce/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/Order",
+      "port": "@corpus/commerce/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/OrderSupport",
+      "port": "@corpus/commerce/_/ScopedAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:Order",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/ScopedAccess",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:taxQuote",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/commerce/_/Shipment",
+      "to": "@corpus/commerce/_/ManageReturn",
+      "port": "@corpus/commerce/_/ManageReturn#input:Shipment",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/ShipmentDelivered",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#activation:ShipmentDelivered",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/ShipmentDelivered",
+      "to": "@corpus/commerce/_/MaintainOrder",
+      "port": "@corpus/commerce/_/MaintainOrder#input:ShipmentDelivered",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/commerce/_/ShipmentDelivered",
+      "to": "@corpus/commerce/_/ManageReturn",
+      "port": "@corpus/commerce/_/ManageReturn#wait:ShipmentDelivered",
+      "kind": "wait"
+    },
+    {
+      "from": "@corpus/commerce/_/TaxAuthority",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:taxQuote",
+      "kind": "acquire"
+    }
+  ]
+}

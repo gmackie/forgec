@@ -1,0 +1,1577 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/configurable-saas",
+  "entities": {
+    "@corpus/configurable-saas/_/AutomationDefinition": {
+      "name": "AutomationDefinition",
+      "fields": {
+        "expression": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "object": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/configurable-saas/_/DynamicRecord": {
+      "name": "DynamicRecord",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "object": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "payload": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "schemaVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/configurable-saas/_/FieldDefinition": {
+      "name": "FieldDefinition",
+      "fields": {
+        "fieldName": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "object": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "typeDescriptor": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/configurable-saas/_/ObjectDefinition": {
+      "name": "ObjectDefinition",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "schemaVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/Tenant",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/configurable-saas/_/RelationshipDefinition": {
+      "name": "RelationshipDefinition",
+      "fields": {
+        "fromObject": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "toObject": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/configurable-saas/_/Tenant": {
+      "name": "Tenant",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "name": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/configurable-saas/_/AutomationRequested": {
+      "name": "AutomationRequested",
+      "fields": {
+        "automation": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/AutomationDefinition",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "record": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/DynamicRecord",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/configurable-saas/_/RecordChanged": {
+      "name": "RecordChanged",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "record": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/DynamicRecord",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "schemaVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/configurable-saas/_/SchemaPublished": {
+      "name": "SchemaPublished",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "object": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "version": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/configurable-saas/_/Sensitive",
+            "purpose": "@corpus/configurable-saas/_/TenantAdministration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/configurable-saas/_/TenantImport": {
+      "name": "TenantImport",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/configurable-saas/_/Tenant",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "ObjectDefinition": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/configurable-saas/_/ObjectDefinition",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/configurable-saas/_/Tenant",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/configurable-saas/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/configurable-saas/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/configurable-saas/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/configurable-saas/_/Tenant",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/configurable-saas/_/TenantAdministration",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "principal",
+              "tenant"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "resource",
+              "tenant"
+            ]
+          }
+        },
+        "rhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "purpose"
+              ]
+            },
+            "rhs": {
+              "kind": "literal",
+              "literal": {
+                "type": "string",
+                "value": "TenantAdministration"
+              }
+            }
+          },
+          "rhs": {
+            "kind": "call",
+            "callee": [
+              "roleAllows"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "role"
+                ]
+              },
+              {
+                "kind": "name",
+                "path": [
+                  "resource",
+                  "id"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/configurable-saas/_/MutateDynamicRecord": {
+      "name": "MutateDynamicRecord",
+      "purpose": "@corpus/configurable-saas/_/TenantAdministration",
+      "principal": "@corpus/configurable-saas/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/configurable-saas/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/configurable-saas/_/MutateDynamicRecord#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/configurable-saas/_/TenantImport",
+          "event": "Updated"
+        },
+        "@corpus/configurable-saas/_/MutateDynamicRecord#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/Tenant",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/configurable-saas/_/MutateDynamicRecord#input:FieldDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/FieldDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/configurable-saas/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/configurable-saas/_/MutateDynamicRecord#input:ObjectDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/configurable-saas/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/configurable-saas/_/MutateDynamicRecord#input:RelationshipDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/RelationshipDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/configurable-saas/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/configurable-saas/_/MutateDynamicRecord#input:Tenant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/Tenant",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/configurable-saas/_/TenantImport"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/configurable-saas/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/configurable-saas/_/MutateDynamicRecord#output:DynamicRecord": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/DynamicRecord",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/configurable-saas/_/MutateDynamicRecord#output:RecordChanged": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/configurable-saas/_/RecordChanged"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/configurable-saas/_/PublishSchema": {
+      "name": "PublishSchema",
+      "purpose": "@corpus/configurable-saas/_/TenantAdministration",
+      "principal": "@corpus/configurable-saas/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/configurable-saas/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/configurable-saas/_/PublishSchema#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/Tenant",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/configurable-saas/_/PublishSchema#input:Tenant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/Tenant",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/configurable-saas/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/configurable-saas/_/PublishSchema#output:AutomationDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/AutomationDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/configurable-saas/_/PublishSchema#output:FieldDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/FieldDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/configurable-saas/_/PublishSchema#output:ObjectDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/configurable-saas/_/PublishSchema#output:RelationshipDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/RelationshipDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/configurable-saas/_/PublishSchema#output:SchemaPublished": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/configurable-saas/_/SchemaPublished"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/configurable-saas/_/PublishSchema#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/ObjectDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/configurable-saas/_/TenantImport"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/configurable-saas/_/RegisterTenant": {
+      "name": "RegisterTenant",
+      "purpose": "@corpus/configurable-saas/_/TenantAdministration",
+      "principal": "@corpus/configurable-saas/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/configurable-saas/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/configurable-saas/_/RegisterTenant#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/Tenant",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/configurable-saas/_/RegisterTenant#output:Tenant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/Tenant",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/configurable-saas/_/RunAutomation": {
+      "name": "RunAutomation",
+      "purpose": "@corpus/configurable-saas/_/TenantAdministration",
+      "principal": "@corpus/configurable-saas/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/configurable-saas/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/configurable-saas/_/RunAutomation#activation:RecordChanged": {
+          "kind": "fact",
+          "fact": "@corpus/configurable-saas/_/RecordChanged"
+        },
+        "@corpus/configurable-saas/_/RunAutomation#activation:change": {
+          "kind": "change",
+          "entity": "@corpus/configurable-saas/_/AutomationDefinition"
+        }
+      },
+      "inputs": {
+        "@corpus/configurable-saas/_/RunAutomation#input:AutomationDefinition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/configurable-saas/_/AutomationDefinition",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/configurable-saas/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/configurable-saas/_/RunAutomation#input:RecordChanged": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/configurable-saas/_/RecordChanged"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/configurable-saas/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/configurable-saas/_/RunAutomation#output:AutomationRequested": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/configurable-saas/_/AutomationRequested"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/configurable-saas/_/TenantAdministration": {
+      "id": "@corpus/configurable-saas/_/TenantAdministration",
+      "name": "TenantAdministration",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/configurable-saas/_/Sensitive": {
+      "id": "@corpus/configurable-saas/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.customer"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

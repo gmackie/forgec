@@ -1,0 +1,24 @@
+resource Job { id : id }
+resource Offer { id : id }
+resource Payout { id : id }
+resource PriceQuote { id : id }
+resource Provider { id : id }
+resource Trip { id : id }
+function AcceptOffer @http(POST, "/realization-a/AcceptOffer") { input Job.Record
+ output Job.Record }
+function CancelJob @http(POST, "/realization-a/CancelJob") { input Job.Record
+ output Job.Record }
+function DispatchJob @http(POST, "/realization-a/DispatchJob") { input Job.Record
+ output Job.Record }
+function IssueOffer @http(POST, "/realization-a/IssueOffer") { input Job.Record
+ output Offer.Record }
+function MaintainTrip @http(POST, "/realization-a/MaintainTrip") { input Job.Record
+ output Trip.Record }
+function MatchProviders @http(POST, "/realization-a/MatchProviders") { input Job.Record
+ output Job.Record }
+function ObserveProvider @http(POST, "/realization-a/ObserveProvider") { input Job.Record
+ output Provider.Record }
+function PayProvider @http(POST, "/realization-a/PayProvider") { input Job.Record
+ output Payout.Record }
+function QuotePrice @http(POST, "/realization-a/QuotePrice") { input Job.Record
+ output PriceQuote.Record }

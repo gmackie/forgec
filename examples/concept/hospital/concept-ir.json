@@ -1,0 +1,2122 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/hospital",
+  "entities": {
+    "@corpus/hospital/_/Encounter": {
+      "name": "Encounter",
+      "fields": {
+        "admittedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "careTeam": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "patient": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/hospital/_/LabResult": {
+      "name": "LabResult",
+      "fields": {
+        "encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/hospital/_/MedicationOrder": {
+      "name": "MedicationOrder",
+      "fields": {
+        "approvedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "dose": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/hospital/_/Patient": {
+      "name": "Patient",
+      "fields": {
+        "clinicalSummary": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordNumber": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/hospital/_/Transfer": {
+      "name": "Transfer",
+      "fields": {
+        "destination": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/hospital/_/EmergencyAccessUsed": {
+      "name": "EmergencyAccessUsed",
+      "fields": {
+        "actor": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/hospital/_/LabResultReceived": {
+      "name": "LabResultReceived",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "measuredValue": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "result": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/LabResult",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "unit": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/hospital/_/MedicationAdministered": {
+      "name": "MedicationAdministered",
+      "fields": {
+        "clinician": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "dose": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "order": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/MedicationOrder",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/hospital/_/PatientAdmitted": {
+      "name": "PatientAdmitted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "patient": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/hospital/_/PatientTransferred": {
+      "name": "PatientTransferred",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "transfer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Transfer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/hospital/_/Sensitive",
+            "purpose": "@corpus/hospital/_/Treatment"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/hospital/_/ClinicalLab": {
+      "name": "ClinicalLab",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/Patient",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/Patient",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/hospital/_/Insurer": {
+      "name": "Insurer",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/Patient",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/Patient",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/hospital/_/Pharmacy": {
+      "name": "Pharmacy",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/Patient",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "MedicationOrder": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/MedicationOrder",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "medication": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/MedicationOrder",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/Patient",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/hospital/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/hospital/_/EmergencyAccess": {
+      "name": "EmergencyAccess",
+      "principal": "@corpus/hospital/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/hospital/_/Patient",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/hospital/_/Treatment",
+      "requiredAttributes": [
+        "principal.role",
+        "principal.tenant",
+        "request.reason",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "principal",
+              "tenant"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "resource",
+              "tenant"
+            ]
+          }
+        },
+        "rhs": {
+          "kind": "call",
+          "callee": [
+            "emergencyRoleWithReason"
+          ],
+          "args": [
+            {
+              "kind": "name",
+              "path": [
+                "principal",
+                "role"
+              ]
+            },
+            {
+              "kind": "name",
+              "path": [
+                "request",
+                "reason"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "@corpus/hospital/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/hospital/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/hospital/_/Patient",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/hospital/_/Treatment",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.subject",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "tenant"
+              ]
+            },
+            "rhs": {
+              "kind": "name",
+              "path": [
+                "resource",
+                "tenant"
+              ]
+            }
+          },
+          "rhs": {
+            "kind": "binary",
+            "op": "&&",
+            "lhs": {
+              "kind": "binary",
+              "op": "==",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "purpose"
+                ]
+              },
+              "rhs": {
+                "kind": "literal",
+                "literal": {
+                  "type": "string",
+                  "value": "Treatment"
+                }
+              }
+            },
+            "rhs": {
+              "kind": "call",
+              "callee": [
+                "roleAllows"
+              ],
+              "args": [
+                {
+                  "kind": "name",
+                  "path": [
+                    "principal",
+                    "role"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "resource",
+                    "id"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "rhs": {
+          "kind": "call",
+          "callee": [
+            "assignedCareTeam"
+          ],
+          "args": [
+            {
+              "kind": "name",
+              "path": [
+                "principal",
+                "subject"
+              ]
+            },
+            {
+              "kind": "name",
+              "path": [
+                "resource",
+                "id"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/hospital/_/EmergencyRead": {
+      "name": "EmergencyRead",
+      "purpose": "@corpus/hospital/_/Treatment",
+      "principal": "@corpus/hospital/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/hospital/_/EmergencyAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/hospital/_/EmergencyRead#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/hospital/_/EmergencyRead#input:Encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/EmergencyAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/hospital/_/EmergencyRead#output:EmergencyAccessUsed": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/EmergencyAccessUsed"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/hospital/_/MaintainEncounter": {
+      "name": "MaintainEncounter",
+      "purpose": "@corpus/hospital/_/Treatment",
+      "principal": "@corpus/hospital/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/hospital/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/hospital/_/MaintainEncounter#activation:LabResultReceived": {
+          "kind": "fact",
+          "fact": "@corpus/hospital/_/LabResultReceived"
+        },
+        "@corpus/hospital/_/MaintainEncounter#activation:PatientAdmitted": {
+          "kind": "fact",
+          "fact": "@corpus/hospital/_/PatientAdmitted"
+        },
+        "@corpus/hospital/_/MaintainEncounter#activation:PatientTransferred": {
+          "kind": "fact",
+          "fact": "@corpus/hospital/_/PatientTransferred"
+        }
+      },
+      "inputs": {
+        "@corpus/hospital/_/MaintainEncounter#input:LabResultReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/LabResultReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/hospital/_/MaintainEncounter#input:PatientAdmitted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/PatientAdmitted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/hospital/_/MaintainEncounter#input:PatientTransferred": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/PatientTransferred"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/hospital/_/MaintainEncounter#output:Encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/hospital/_/MaintainEncounter#wait:LabResultReceived": "@corpus/hospital/_/LabResultReceived"
+          }
+        },
+        "stateMachine": null,
+        "stateful": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/hospital/_/Encounter",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/hospital/_/PrescribeMedication": {
+      "name": "PrescribeMedication",
+      "purpose": "@corpus/hospital/_/Treatment",
+      "principal": "@corpus/hospital/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/hospital/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/hospital/_/PrescribeMedication#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/hospital/_/PrescribeMedication#input:Encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/hospital/_/PrescribeMedication#input:LabResult": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/LabResult",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/hospital/_/PrescribeMedication#input:coverage": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/hospital/_/Insurer"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/hospital/_/PrescribeMedication#output:MedicationAdministered": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/MedicationAdministered"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/hospital/_/PrescribeMedication#output:MedicationOrder": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/MedicationOrder",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/hospital/_/PrescribeMedication#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/MedicationOrder",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/hospital/_/Pharmacy"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/hospital/_/ReceiveLab": {
+      "name": "ReceiveLab",
+      "purpose": "@corpus/hospital/_/Treatment",
+      "principal": "@corpus/hospital/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/hospital/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/hospital/_/ReceiveLab#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/hospital/_/ClinicalLab",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/hospital/_/ReceiveLab#input:Encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "observedAt"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/hospital/_/ReceiveLab#input:Patient": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/hospital/_/ClinicalLab"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/hospital/_/ReceiveLab#output:LabResult": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/LabResult",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/hospital/_/ReceiveLab#output:LabResultReceived": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/LabResultReceived"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/hospital/_/RegisterPatient": {
+      "name": "RegisterPatient",
+      "purpose": "@corpus/hospital/_/Treatment",
+      "principal": "@corpus/hospital/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/hospital/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/hospital/_/RegisterPatient#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/hospital/_/RegisterPatient#output:Patient": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/hospital/_/RegisterPatient#output:PatientAdmitted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/PatientAdmitted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/hospital/_/TransferPatient": {
+      "name": "TransferPatient",
+      "purpose": "@corpus/hospital/_/Treatment",
+      "principal": "@corpus/hospital/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/hospital/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/hospital/_/TransferPatient#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Patient",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/hospital/_/TransferPatient#input:Encounter": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Encounter",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/hospital/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/hospital/_/TransferPatient#output:PatientTransferred": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/hospital/_/PatientTransferred"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/hospital/_/TransferPatient#output:Transfer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/hospital/_/Transfer",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/hospital/_/Treatment": {
+      "id": "@corpus/hospital/_/Treatment",
+      "name": "Treatment",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/hospital/_/Sensitive": {
+      "id": "@corpus/hospital/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.health"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

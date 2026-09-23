@@ -1,0 +1,2475 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/airline",
+  "entities": {
+    "@corpus/airline/_/Aircraft": {
+      "name": "Aircraft",
+      "fields": {
+        "available": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/airline/_/CrewDuty": {
+      "name": "CrewDuty",
+      "fields": {
+        "crew": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "dutyEndsAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/airline/_/Flight": {
+      "name": "Flight",
+      "fields": {
+        "aircraft": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "departureAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/airline/_/Gate": {
+      "name": "Gate",
+      "fields": {
+        "airport": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "available": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/airline/_/RecoveryPlan": {
+      "name": "RecoveryPlan",
+      "fields": {
+        "approvedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "objective": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/airline/_/AircraftOutOfService": {
+      "name": "AircraftOutOfService",
+      "fields": {
+        "aircraft": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Aircraft",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/airline/_/CrewUnavailable": {
+      "name": "CrewUnavailable",
+      "fields": {
+        "duty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/CrewDuty",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/airline/_/FlightDelayed": {
+      "name": "FlightDelayed",
+      "fields": {
+        "flight": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "revisedDepartureAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/airline/_/RecoveryPlanApproved": {
+      "name": "RecoveryPlanApproved",
+      "fields": {
+        "approver": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "plan": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/RecoveryPlan",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/airline/_/WeatherChanged": {
+      "name": "WeatherChanged",
+      "fields": {
+        "airport": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "restriction": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/airline/_/Sensitive",
+            "purpose": "@corpus/airline/_/RecoveryOperations"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/airline/_/AirTrafficControl": {
+      "name": "AirTrafficControl",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/airline/_/Flight",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/airline/_/Flight",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/airline/_/AirportOperations": {
+      "name": "AirportOperations",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/airline/_/Flight",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "Flight": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/airline/_/Flight",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/airline/_/Flight",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/airline/_/WeatherService": {
+      "name": "WeatherService",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/airline/_/Flight",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/airline/_/Flight",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/airline/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/airline/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/airline/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/airline/_/Flight",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "==",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "principal",
+              "tenant"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "resource",
+              "tenant"
+            ]
+          }
+        },
+        "rhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "purpose"
+              ]
+            },
+            "rhs": {
+              "kind": "literal",
+              "literal": {
+                "type": "string",
+                "value": "RecoveryOperations"
+              }
+            }
+          },
+          "rhs": {
+            "kind": "call",
+            "callee": [
+              "roleAllows"
+            ],
+            "args": [
+              {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "role"
+                ]
+              },
+              {
+                "kind": "name",
+                "path": [
+                  "resource",
+                  "id"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/airline/_/AirspaceFeasibility": {
+      "name": "AirspaceFeasibility",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/AirspaceFeasibility#activation:WeatherChanged": {
+          "kind": "fact",
+          "fact": "@corpus/airline/_/WeatherChanged"
+        }
+      },
+      "inputs": {
+        "@corpus/airline/_/AirspaceFeasibility#input:Flight": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/airline/_/AirTrafficControl"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/AirspaceFeasibility#input:WeatherChanged": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/WeatherChanged"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/AirspaceFeasibility#output:result": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/airline/_/AirspaceFeasibilityResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "return"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/ApplyRecovery": {
+      "name": "ApplyRecovery",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/ApplyRecovery#activation:RecoveryPlanApproved": {
+          "kind": "fact",
+          "fact": "@corpus/airline/_/RecoveryPlanApproved"
+        }
+      },
+      "inputs": {
+        "@corpus/airline/_/ApplyRecovery#input:RecoveryPlan": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/RecoveryPlan",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "effectiveAt"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/ApplyRecovery#input:RecoveryPlanApproved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/RecoveryPlanApproved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/ApplyRecovery#output:Flight": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/airline/_/ApplyRecovery#output:FlightDelayed": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/FlightDelayed"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/airline/_/ApplyRecovery#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/airline/_/AirportOperations"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": {
+          "waits": {
+            "@corpus/airline/_/ApplyRecovery#wait:RecoveryPlanApproved": "@corpus/airline/_/RecoveryPlanApproved"
+          }
+        },
+        "stateMachine": null,
+        "stateful": null
+      }
+    },
+    "@corpus/airline/_/ApproveRecovery": {
+      "name": "ApproveRecovery",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/ApproveRecovery#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/airline/_/ApproveRecovery#input:RecoveryPlan": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/RecoveryPlan",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/ApproveRecovery#output:RecoveryPlanApproved": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/RecoveryPlanApproved"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/BuildRecoveryPlan": {
+      "name": "BuildRecoveryPlan",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/BuildRecoveryPlan#activation:AircraftOutOfService": {
+          "kind": "fact",
+          "fact": "@corpus/airline/_/AircraftOutOfService"
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#activation:CrewUnavailable": {
+          "kind": "fact",
+          "fact": "@corpus/airline/_/CrewUnavailable"
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#activation:FlightDelayed": {
+          "kind": "fact",
+          "fact": "@corpus/airline/_/FlightDelayed"
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#activation:WeatherChanged": {
+          "kind": "fact",
+          "fact": "@corpus/airline/_/WeatherChanged"
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#activation:change": {
+          "kind": "change",
+          "entity": "@corpus/airline/_/CrewDuty"
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#activation:schedule": {
+          "kind": "schedule",
+          "expression": "0 0 * * *",
+          "timezone": "UTC"
+        }
+      },
+      "inputs": {
+        "@corpus/airline/_/BuildRecoveryPlan#input:Aircraft": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Aircraft",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:AircraftOutOfService": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/AircraftOutOfService"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:AirspaceFeasibility": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/airline/_/AirspaceFeasibilityResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "effectiveAt"
+              ]
+            }
+          },
+          "authorization": null
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:CrewDuty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/CrewDuty",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:CrewFeasibility": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/airline/_/CrewFeasibilityResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "effectiveAt"
+              ]
+            }
+          },
+          "authorization": null
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:CrewUnavailable": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/CrewUnavailable"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:FleetFeasibility": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/airline/_/FleetFeasibilityResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "effectiveAt"
+              ]
+            }
+          },
+          "authorization": null
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:Flight": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:FlightDelayed": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/FlightDelayed"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:Gate": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Gate",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/BuildRecoveryPlan#input:WeatherChanged": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/WeatherChanged"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/BuildRecoveryPlan#output:RecoveryPlan": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/RecoveryPlan",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/CrewFeasibility": {
+      "name": "CrewFeasibility",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {},
+      "inputs": {
+        "@corpus/airline/_/CrewFeasibility#input:CrewDuty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/CrewDuty",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/CrewFeasibility#output:result": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/airline/_/CrewFeasibilityResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "return"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/FleetFeasibility": {
+      "name": "FleetFeasibility",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {},
+      "inputs": {
+        "@corpus/airline/_/FleetFeasibility#input:Aircraft": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Aircraft",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/airline/_/FleetFeasibility#input:Flight": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/FleetFeasibility#output:result": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@corpus/airline/_/FleetFeasibilityResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "return"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/MaintainAircraft": {
+      "name": "MaintainAircraft",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/MaintainAircraft#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/airline/_/AirportOperations",
+          "event": "Updated"
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/airline/_/MaintainAircraft#output:Aircraft": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Aircraft",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/airline/_/MaintainAircraft#output:AircraftOutOfService": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/AircraftOutOfService"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/MaintainCrew": {
+      "name": "MaintainCrew",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/MaintainCrew#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/airline/_/MaintainCrew#output:CrewDuty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/CrewDuty",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/airline/_/MaintainCrew#output:CrewUnavailable": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/CrewUnavailable"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/MaintainGate": {
+      "name": "MaintainGate",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/MaintainGate#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/airline/_/AirportOperations",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/airline/_/MaintainGate#input:Flight": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/airline/_/AirportOperations"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/MaintainGate#output:Gate": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Gate",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/airline/_/ReceiveWeather": {
+      "name": "ReceiveWeather",
+      "purpose": "@corpus/airline/_/RecoveryOperations",
+      "principal": "@corpus/airline/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/airline/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/airline/_/ReceiveWeather#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/airline/_/WeatherService",
+          "event": "Updated"
+        }
+      },
+      "inputs": {
+        "@corpus/airline/_/ReceiveWeather#input:Flight": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/airline/_/Flight",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/airline/_/WeatherService"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/airline/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/airline/_/ReceiveWeather#output:WeatherChanged": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/airline/_/WeatherChanged"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/airline/_/RecoveryOperations": {
+      "id": "@corpus/airline/_/RecoveryOperations",
+      "name": "RecoveryOperations",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/airline/_/Sensitive": {
+      "id": "@corpus/airline/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.operational"
+    }
+  },
+  "shapes": {
+    "@corpus/airline/_/AirspaceFeasibilityResult": {
+      "feasible": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "reason": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@corpus/airline/_/CrewFeasibilityResult": {
+      "feasible": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "reason": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@corpus/airline/_/FleetFeasibilityResult": {
+      "feasible": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "reason": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {}
+}

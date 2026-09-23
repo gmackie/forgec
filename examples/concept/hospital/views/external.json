@@ -1,0 +1,35 @@
+{
+  "nodes": {
+    "@corpus/hospital/_/ClinicalLab": "external",
+    "@corpus/hospital/_/Insurer": "external",
+    "@corpus/hospital/_/Pharmacy": "external",
+    "@corpus/hospital/_/PrescribeMedication": "process",
+    "@corpus/hospital/_/ReceiveLab": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/hospital/_/ClinicalLab",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/hospital/_/ClinicalLab",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#input:Patient",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/hospital/_/Insurer",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:coverage",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/Pharmacy",
+      "port": "@corpus/hospital/_/PrescribeMedication#output:external",
+      "kind": "export"
+    }
+  ]
+}

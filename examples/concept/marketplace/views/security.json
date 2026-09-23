@@ -1,0 +1,307 @@
+{
+  "nodes": {
+    "@corpus/marketplace/_/AcceptOffer": "process",
+    "@corpus/marketplace/_/CancelJob": "process",
+    "@corpus/marketplace/_/Dispatch": "purpose",
+    "@corpus/marketplace/_/DispatchJob": "process",
+    "@corpus/marketplace/_/IssueOffer": "process",
+    "@corpus/marketplace/_/MaintainTrip": "process",
+    "@corpus/marketplace/_/MatchProviders": "process",
+    "@corpus/marketplace/_/ObserveProvider": "process",
+    "@corpus/marketplace/_/Operator": "principal",
+    "@corpus/marketplace/_/PayProvider": "process",
+    "@corpus/marketplace/_/Provider": "entity",
+    "@corpus/marketplace/_/QuotePrice": "process",
+    "@corpus/marketplace/_/ScopedAccess": "policy"
+  },
+  "edges": [
+    {
+      "from": "@corpus/marketplace/_/AcceptOffer",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/AcceptOffer",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/CancelJob",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/CancelJob",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/DispatchJob",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/DispatchJob",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/IssueOffer",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/IssueOffer",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/MaintainTrip",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/MaintainTrip",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/MatchProviders",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/MatchProviders",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/ObserveProvider",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/ObserveProvider",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/AcceptOffer",
+      "port": "@corpus/marketplace/_/AcceptOffer",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/CancelJob",
+      "port": "@corpus/marketplace/_/CancelJob",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/DispatchJob",
+      "port": "@corpus/marketplace/_/DispatchJob",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/IssueOffer",
+      "port": "@corpus/marketplace/_/IssueOffer",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/MaintainTrip",
+      "port": "@corpus/marketplace/_/MaintainTrip",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/MatchProviders",
+      "port": "@corpus/marketplace/_/MatchProviders",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/ObserveProvider",
+      "port": "@corpus/marketplace/_/ObserveProvider",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/PayProvider",
+      "port": "@corpus/marketplace/_/PayProvider",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/Operator",
+      "to": "@corpus/marketplace/_/QuotePrice",
+      "port": "@corpus/marketplace/_/QuotePrice",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/PayProvider",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/PayProvider",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/QuotePrice",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/QuotePrice",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/AcceptOffer",
+      "port": "@corpus/marketplace/_/AcceptOffer",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/AcceptOffer",
+      "port": "@corpus/marketplace/_/AcceptOffer#input:Offer",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/CancelJob",
+      "port": "@corpus/marketplace/_/CancelJob",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/CancelJob",
+      "port": "@corpus/marketplace/_/CancelJob#input:Job",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/Dispatch",
+      "port": "@corpus/marketplace/_/ScopedAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/DispatchJob",
+      "port": "@corpus/marketplace/_/DispatchJob",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/DispatchJob",
+      "port": "@corpus/marketplace/_/DispatchJob#input:JobCancelled",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/DispatchJob",
+      "port": "@corpus/marketplace/_/DispatchJob#input:OfferAccepted",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/DispatchJob",
+      "port": "@corpus/marketplace/_/DispatchJob#input:OfferExpired",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/DispatchJob",
+      "port": "@corpus/marketplace/_/DispatchJob#input:ProviderLocationObserved",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/IssueOffer",
+      "port": "@corpus/marketplace/_/IssueOffer",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/IssueOffer",
+      "port": "@corpus/marketplace/_/IssueOffer#input:Job",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/IssueOffer",
+      "port": "@corpus/marketplace/_/IssueOffer#input:Provider",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/MaintainTrip",
+      "port": "@corpus/marketplace/_/MaintainTrip",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/MaintainTrip",
+      "port": "@corpus/marketplace/_/MaintainTrip#input:Job",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/MaintainTrip",
+      "port": "@corpus/marketplace/_/MaintainTrip#input:JobCancelled",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/MaintainTrip",
+      "port": "@corpus/marketplace/_/MaintainTrip#input:OfferAccepted",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/MatchProviders",
+      "port": "@corpus/marketplace/_/MatchProviders",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/MatchProviders",
+      "port": "@corpus/marketplace/_/MatchProviders#input:Job",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/MatchProviders",
+      "port": "@corpus/marketplace/_/MatchProviders#input:Provider",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/ObserveProvider",
+      "port": "@corpus/marketplace/_/ObserveProvider",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/ObserveProvider",
+      "port": "@corpus/marketplace/_/ObserveProvider#input:Provider",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/Operator",
+      "port": "@corpus/marketplace/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/PayProvider",
+      "port": "@corpus/marketplace/_/PayProvider",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/PayProvider",
+      "port": "@corpus/marketplace/_/PayProvider#input:Provider",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/PayProvider",
+      "port": "@corpus/marketplace/_/PayProvider#input:Trip",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/Provider",
+      "port": "@corpus/marketplace/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/QuotePrice",
+      "port": "@corpus/marketplace/_/QuotePrice",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/QuotePrice",
+      "port": "@corpus/marketplace/_/QuotePrice#input:Job",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/marketplace/_/ScopedAccess",
+      "to": "@corpus/marketplace/_/QuotePrice",
+      "port": "@corpus/marketplace/_/QuotePrice#input:Provider",
+      "kind": "authorize"
+    }
+  ]
+}
