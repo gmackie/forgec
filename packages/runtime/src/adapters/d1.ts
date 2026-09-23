@@ -305,6 +305,8 @@ export class D1Storage implements StorageAdapter {
    * serializable snapshot isolation conflicts whenever independent writers overlap.
    */
   protected readonly retryAttempts: number = RETRY_ATTEMPTS;
+  /** PostgreSQL can let the primary key arbitrate create collisions without an SSI absence read. */
+  protected readonly assertCreateAbsent: boolean = true;
   protected retryDelayMs(attempt: number): number {
     return Math.floor(Math.random() * 25 * attempt);
   }
@@ -383,8 +385,12 @@ export class D1Storage implements StorageAdapter {
     const preds: string[] = [];
     const predBinds: unknown[] = [];
     if (plan.kind === "create") {
-      preds.push(`NOT EXISTS (SELECT 1 FROM ${t.name} WHERE ${kw.sql})`);
-      predBinds.push(...kw.bind(tenant, id));
+      if (this.assertCreateAbsent) {
+        preds.push(`NOT EXISTS (SELECT 1 FROM ${t.name} WHERE ${kw.sql})`);
+        predBinds.push(...kw.bind(tenant, id));
+      } else {
+        preds.push("1 = 1");
+      }
     } else {
       const versionSql = plan.expectedVersion !== null ? " AND version = ?" : "";
       preds.push(`EXISTS (SELECT 1 FROM ${t.name} WHERE ${kw.sql}${versionSql})`);
