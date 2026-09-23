@@ -1,0 +1,57 @@
+import { Effect } from 'effect';
+import { expect, it } from 'vitest';
+import { foundation, foundationAdapters } from './helpers/foundation.js';
+import { Notifications } from '../src/foundation/notifications.js';
+import { Deliveries } from '../src/foundation/delivery.js';
+import { localAuthorizer } from '../src/gatekeeper.js';
+const p = '@forgegraph/foundation/notifications/_/', m = '@forgegraph/foundation/participation/_/', d = '@forgegraph/foundation/delivery/_/';
+const at = '2026-01-01T00:00:00Z';
+const run = Effect.runPromise;
+for (const adapter of foundationAdapters) it(`${adapter}: stable logical notices snapshot preferences, resume delivery and preserve suppression`, async () => {
+  const f = await foundation('notifications', adapter, true), { call, engine, ctx } = f;
+  try {
+    const party = await call('@forgegraph/foundation/party/_/Party.create', { label: 'Recipient' });
+    const set = await call(m + 'ParticipationSet.create', { label: 'Audience' });
+    const role = await call(m + 'ParticipationRole.create', { namespace: 'notifications', name: 'recipient' });
+    const recipient = await call(m + 'Participation.create', { participationSet: set.id, participant: party.id, role: role.id, validFrom: at, recordedBy: 'test', reason: 'Subscribed' });
+    const topic = await call(p + 'NotificationTopic.create', { key: 'updates', label: 'Updates' });
+    const destination = await call(d + 'DeliveryDestination.create', { key: 'recipient-email', label: 'Recipient email' });
+    const endpoint = await call(p + 'NotificationEndpointLink.create', { recipient: recipient.id, destination: destination.id });
+    const subscription = await call(p + 'NotificationSubscription.create', { topic: topic.id, recipient: recipient.id, endpoint: endpoint.id });
+    const preference = await call(p + 'NotificationPreference.create', { subscription: subscription.id, revision: 1, enabled: true, reason: 'Enabled' });
+    const api = new Notifications(engine);
+    expect((await run(api.audience(String(topic.id), ctx))).items).toHaveLength(1);
+    const input = { key: 'event-1-recipient-1', subscription: String(subscription.id), preference: String(preference.id), at };
+    const notice = await run(api.create(input, ctx));
+    expect(await run(api.create(input, ctx))).toEqual(notice);
+    await expect(run(api.create({ ...input, at: '2026-01-02T00:00:00Z' }, ctx))).rejects.toThrow();
+    const race = await Promise.allSettled([call(p + 'NotificationPreference.create', { subscription: subscription.id, revision: 2, previous: preference.id, enabled: false, reason: 'Muted' }), run(api.dispatch(String(notice.id), ctx))]);
+    expect(race.every(r => r.status === 'fulfilled')).toBe(true);
+    const muted = (race[0] as PromiseFulfilledResult<Record<string, unknown>>).value;
+    const dispatched = (race[1] as PromiseFulfilledResult<Record<string, unknown>>).value;
+    expect(await run(api.dispatch(String(notice.id), ctx))).toEqual(dispatched);
+    expect((await run(api.outcome(String(notice.id), ctx))).status).toBe('Dispatched');
+    const deliveries = new Deliveries(engine);
+    const step = await run(deliveries.claim(String(dispatched.intent), 'Send', 'Notification dispatch', ctx));
+    const attempt = await run(deliveries.start(String(step.id), at, 'test', 'notification-1', ctx));
+    await run(deliveries.receipt({ step: String(step.id), attempt: String(attempt.id), outcome: 'Succeeded', completedAt: at, providerReference: 'ack', callbackKey: 'callback-1', detail: 'Delivered' }, ctx));
+    expect((await run(api.outcome(String(notice.id), ctx))).status).toBe('Succeeded');
+    const suppressed = await run(api.create({ ...input, key: 'event-2-recipient-1', preference: String(muted.id) }, ctx));
+    const suppression = await run(api.dispatch(String(suppressed.id), ctx));
+    expect(suppression.reason).toBe('Muted');
+    expect((await run(api.outcome(String(suppressed.id), ctx))).status).toBe('Suppressed');
+    await expect(call(p + 'NotificationDeliveryLink.create', { notification: suppressed.id, preference: muted.id, endpoint: endpoint.id, subscription: subscription.id, intent: dispatched.intent })).rejects.toThrow();
+    for (const [name, field] of [['KanBangerNotice', 'issueTitle'], ['ForgeGraphAlert', 'deploymentName'], ['BobUpdate', 'taskTitle']]) {
+      await call('@fixture/notifications-consumer/_/' + name + '.create', { notification: notice.id, [field!]: name });
+    }
+    const crashNotice = await run(api.create({ ...input, key: 'event-3-recipient-1' }, ctx));
+    engine.gatekeeper.authorizer = localAuthorizer({ policies: engine.model.resources.map(r => ({ id: r.id, actions: [r.id + (r.id === p + 'NotificationDeliveryLink' ? '.get' : '.*')], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
+    await expect(run(api.dispatch(String(crashNotice.id), ctx))).rejects.toThrow();
+    engine.gatekeeper.authorizer = localAuthorizer({ policies: engine.model.resources.map(r => ({ id: r.id, actions: [r.id + '.*'], requires: [], where: [] })), pips: [], epoch: 2, knownObligations: [] });
+    const resumed = await run(new Notifications(engine).dispatch(String(crashNotice.id), ctx));
+    expect(await run(api.dispatch(String(crashNotice.id), ctx))).toEqual(resumed);
+    await expect(run(api.dispatch(String(notice.id), { ...ctx, tenant: 'foreign' }))).rejects.toThrow();
+    engine.gatekeeper.authorizer = localAuthorizer({ policies: engine.model.resources.filter(r => r.id !== p + 'NotificationSuppression').map(r => ({ id: r.id, actions: [r.id + '.*'], requires: [], where: [] })), pips: [], epoch: 3, knownObligations: [] });
+    await expect(run(api.outcome(String(suppressed.id), ctx))).rejects.toThrow();
+  } finally { await f.close(); }
+});

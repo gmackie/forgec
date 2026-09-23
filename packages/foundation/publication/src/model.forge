@@ -1,0 +1,157 @@
+import decision
+import specification
+import artifact
+import evaluations
+import evidence
+import participation
+export resource PublicationSeries
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+  find by key
+}
+export enum QualificationPolicy {
+  None
+  EvaluationCompleted
+  DecisionApproved
+  Both
+}
+export resource ReleaseCandidate
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  series : PublicationSeries
+  version : text length 1..128
+  specification : specification.SpecificationPin
+  artifact : artifact.ArtifactRevision
+  policy : QualificationPolicy
+  evaluationDefinition : specification.SpecificationPin?
+  decisionCase : decision.DecisionCase?
+  approvedOption : decision.DecisionOption?
+  support : evidence.EvidenceSeal?
+  rules {
+    artifact.specificationPin == specification
+    (policy == QualificationPolicy.EvaluationCompleted || policy == QualificationPolicy.Both) == (evaluationDefinition != null)
+    (policy == QualificationPolicy.DecisionApproved || policy == QualificationPolicy.Both) == (decisionCase != null)
+    (decisionCase != null) == (approvedOption != null)
+    approvedOption == null || approvedOption.decisionCase == decisionCase
+  }
+  unique series, version
+  find by series, version
+}
+export resource CandidateEvaluation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  candidate : ReleaseCandidate @unique
+  run : evaluations.EvaluationRun @unique
+  rules {
+    run.definition == candidate.evaluationDefinition
+  }
+  find by candidate
+}
+export resource CandidateQualification
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  candidate : ReleaseCandidate @unique
+  policy : QualificationPolicy
+  evaluation : evaluations.EvaluationFinish?
+  decision : decision.DecisionOutcome?
+  rules {
+    policy == candidate.policy
+    (policy == QualificationPolicy.EvaluationCompleted || policy == QualificationPolicy.Both) == (evaluation != null)
+    (policy == QualificationPolicy.DecisionApproved || policy == QualificationPolicy.Both) == (decision != null)
+    evaluation == null || evaluation.outcome == "Completed"
+    decision == null || decision.decisionCase == candidate.decisionCase
+    decision == null || decision.selected == candidate.approvedOption
+  }
+  find by candidate
+}
+export resource Release
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  series : PublicationSeries
+  candidate : ReleaseCandidate @unique
+  qualification : CandidateQualification
+  specification : specification.SpecificationPin
+  artifact : artifact.ArtifactRevision
+  recordedBy : text length 1..128
+  rules {
+    candidate.series == series
+    qualification.candidate == candidate
+    specification == candidate.specification
+    artifact == candidate.artifact
+  }
+  find by candidate
+}
+export resource PublicationChannel
+  @tenant
+  @appendOnly
+{
+  id : id
+  series : PublicationSeries
+  name : text length 1..128
+  audience : participation.ParticipationSet
+  unique series, name
+  find by series, name
+}
+export enum PublicationEventKind {
+  Published
+  Promoted
+  Deprecated
+  Retired
+}
+export resource Promotion
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  series : PublicationSeries
+  ordinal : integer >= 0 <= 127
+  previous : Promotion? @unique
+  kind : PublicationEventKind
+  release : Release
+  channel : PublicationChannel?
+  commandKey : text? length 1..128 @unique
+  reason : text length 1..500
+  recordedBy : text length 1..128
+  rules {
+    release.series == series
+    (previous == null && ordinal == 0) || (previous != null && previous.series == series && ordinal == previous.ordinal + 1)
+    (kind == PublicationEventKind.Published || kind == PublicationEventKind.Promoted) == (channel != null)
+    channel == null || channel.series == series
+  }
+  unique series, ordinal
+  find by series, ordinal
+  find by commandKey
+}
+export resource ReleaseAudienceLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  promotion : Promotion @unique
+  release : Release
+  channel : PublicationChannel
+  audience : participation.ParticipationSet
+  rules {
+    release == promotion.release
+    channel == promotion.channel
+    audience == channel.audience
+  }
+  find by promotion
+}

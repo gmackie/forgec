@@ -1,0 +1,148 @@
+import decision
+import entitlement
+import evidence
+import evaluation
+import fulfillment
+import ledger
+import delivery
+export resource AdjudicationCase
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  coverage : entitlement.Entitlement
+  coverageEnd : entitlement.EntitlementEnd?
+  coverageAt : datetime
+  decisionCase : decision.DecisionCase @unique
+  approvedOption : decision.DecisionOption
+  requested : decimal<6> > 0
+  unit : text length 1..64
+  itemCount : integer >= 1 <= 16
+  support : evidence.EvidenceSeal
+  reconsideration : AdjudicationCase?
+  rules {
+    requested > 0
+    approvedOption.decisionCase == decisionCase
+    coverageAt >= coverage.validFrom
+    coverage.validUntil == null || coverageAt < coverage.validUntil
+    coverageEnd == null || (coverageEnd.entitlement == coverage && coverageAt < coverageEnd.effectiveAt)
+    coverage.quantity == null || coverage.unit == unit
+  }
+  find by key
+}
+export resource AdjudicationItem
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  adjudicationCase : AdjudicationCase
+  ordinal : integer >= 0 <= 15
+  requested : decimal<6> > 0
+  evaluation : evaluation.EvaluationFinish
+  support : evidence.EvidenceSeal
+  rules {
+    requested > 0
+    ordinal < adjudicationCase.itemCount
+    evaluation.outcome == "Completed"
+  }
+  unique adjudicationCase, ordinal
+  find by adjudicationCase, ordinal
+}
+export resource Determination
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  adjudicationCase : AdjudicationCase @unique
+  decision : decision.DecisionOutcome
+  authorized : decimal<6> >= 0
+  unit : text length 1..64
+  reason : text length 1..500
+  support : evidence.EvidenceSeal
+  recordedBy : text length 1..128
+  rules {
+    authorized >= 0
+    decision.decisionCase == adjudicationCase.decisionCase
+    unit == adjudicationCase.unit
+    (decision.selected == adjudicationCase.approvedOption) == (authorized > 0)
+  }
+  find by adjudicationCase
+}
+export resource AdjustmentReasonLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  determination : Determination
+  item : AdjudicationItem
+  reason : text length 1..500
+  support : evidence.EvidenceSeal
+  rules {
+    item.adjudicationCase == determination.adjudicationCase
+  }
+  unique determination, item
+}
+export resource AuthorizedOutcomeLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  determination : Determination @unique
+  fulfillment : fulfillment.Fulfillment @unique
+  rules {
+    determination.authorized > 0
+  }
+  find by determination
+}
+export resource SettlementIntent
+  @tenant
+  @appendOnly
+{
+  id : id
+  determination : Determination @unique
+  book : ledger.LedgerBook
+  debit : ledger.Account
+  credit : ledger.Account
+  quantity : decimal<6> > 0
+  unit : text length 1..64
+  rules {
+    quantity > 0
+    quantity == determination.authorized
+    unit == determination.unit
+    debit != credit
+    debit.book == book && credit.book == book
+    debit.unit == unit && credit.unit == unit
+  }
+  find by determination
+}
+export resource SettlementLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  intent : SettlementIntent @unique
+  posting : ledger.PostingGroup @unique
+  rules {
+    posting.book == intent.book
+    posting.policy == "balanced"
+    posting.reversalOf == null
+  }
+  find by intent
+}
+export resource ExplanationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  determination : Determination @unique
+  intent : delivery.DeliveryIntent @unique
+  support : evidence.EvidenceSeal
+  rules {
+    support == determination.support
+  }
+  find by determination
+}

@@ -1,0 +1,25 @@
+import knowledge
+export resource SupportArticle
+  @tenant
+  @appendOnly
+{
+  id : id
+  product : text length 1..128
+  edition : knowledge.KnowledgePublication
+}
+export resource StandardOperatingProcedure
+  @tenant
+  @appendOnly
+{
+  id : id
+  procedureCode : text length 1..128
+  edition : knowledge.KnowledgePublication
+}
+export resource TrainingMaterial
+  @tenant
+  @appendOnly
+{
+  id : id
+  courseCode : text length 1..128
+  edition : knowledge.KnowledgePublication
+}

@@ -74,12 +74,14 @@ CREATE TABLE allocation_journal (
   "command_key" TEXT NOT NULL,
   "previous" TEXT,
   "reservation" TEXT NOT NULL,
+  "replacement" TEXT,
   "action" TEXT NOT NULL,
   "at" TEXT NOT NULL,
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, pool) REFERENCES allocation_pool (tenant, id),
   FOREIGN KEY (tenant, previous) REFERENCES allocation_journal (tenant, id),
-  FOREIGN KEY (tenant, reservation) REFERENCES allocation_reservation (tenant, id)
+  FOREIGN KEY (tenant, reservation) REFERENCES allocation_reservation (tenant, id),
+  FOREIGN KEY (tenant, replacement) REFERENCES allocation_reservation (tenant, id)
 );
 
 CREATE TABLE allocation_pool (

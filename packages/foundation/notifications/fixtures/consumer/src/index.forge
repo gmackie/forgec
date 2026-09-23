@@ -1,0 +1,25 @@
+import notifications
+export resource KanBangerNotice
+  @tenant
+  @appendOnly
+{
+  id : id
+  notification : notifications.Notification @unique
+  issueTitle : text length 1..200
+}
+export resource ForgeGraphAlert
+  @tenant
+  @appendOnly
+{
+  id : id
+  notification : notifications.Notification @unique
+  deploymentName : text length 1..200
+}
+export resource BobUpdate
+  @tenant
+  @appendOnly
+{
+  id : id
+  notification : notifications.Notification @unique
+  taskTitle : text length 1..200
+}

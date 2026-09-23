@@ -78,3 +78,11 @@ Blob finalization now hashes an isolated sealed copy. Reproduced races previousl
 allowed digest/content mismatch and losing finalizers to overwrite winning bytes;
 both have passing regressions. Legacy object keys remain readable. These fixes do
 not establish general transaction read overlays or live provider certification.
+
+## Bounded authorized atomic mutations
+
+Engine.atomic accepts 1–32 independent operation/input descriptors against durable references. It uses normal purpose scoping and result projection, append-only/write-once checks, Gatekeeper before/candidate authorization, write fencing and suppression. Provider budgets are checked before one commitAll. Sequence allocation, credential sealing, receipt idempotency keys and repeated writes to one record are explicitly rejected. Scheduling uses durable command/publication facts for retries and one combined Allocation journal replacement per pool. Generated memory/SQLite/PostgreSQL tests prove rollback on a late conflict; scope/fence/suppression/budget tests cover the ordinary protected surfaces. General staged references, sequential same-record changes and read-set overlays remain unsupported.
+
+## Decimal validation correction
+
+Exclusive integer/decimal/money field bounds now reject their endpoints. Rule comparison resolves decimal types through declared reference fields and uses exact common-scale BigInt ordering, including equality with numeric literals. Numeric-looking text retains lexical ordering. Regressions reproduced both original failures before correction.

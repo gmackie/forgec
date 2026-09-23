@@ -1,0 +1,151 @@
+import decision
+import specification
+import evaluation
+import fulfillment
+import evidence
+export resource ChangeStream
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+}
+export resource Change
+  @tenant
+  @appendOnly
+{
+  id : id
+  stream : ChangeStream
+  sequence : integer >= 1 <= 1000000
+  fromPin : specification.SpecificationPin
+  toPin : specification.SpecificationPin
+  approvalRequired : boolean
+  verificationRequired : boolean
+  approvalCase : decision.DecisionCase?
+  approvedOption : decision.DecisionOption?
+  rules {
+    fromPin != toPin && fromPin.repository == toPin.repository && fromPin.anchor == toPin.anchor
+    approvalRequired == (approvalCase != null)
+    approvalRequired == (approvedOption != null)
+    approvedOption == null || approvedOption.decisionCase == approvalCase
+  }
+  unique stream, sequence
+}
+export resource ChangeImpactLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : Change
+  run : evaluation.EvaluationRun
+  finish : evaluation.EvaluationFinish
+  rules {
+    run.definition == change.toPin && finish.run == run && finish.outcome == "Completed"
+  }
+}
+export resource ChangeDecisionLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : Change @unique
+  outcome : decision.DecisionOutcome
+  terminal : decision.DecisionEvent
+  selected : decision.DecisionOption
+  rules {
+    outcome.decisionCase == change.approvalCase
+    terminal.decisionCase == change.approvalCase && terminal.kind == "Finalized" && terminal.outcome == outcome
+    outcome.selected == selected
+  }
+  find by change
+}
+export resource ChangeImplementationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : Change @unique
+  decision : ChangeDecisionLink?
+  fulfillment : fulfillment.Fulfillment
+  scheduledAt : datetime
+  rules {
+    fulfillment.specificationPin == change.toPin
+    decision == null || (decision.change == change && decision.selected == change.approvedOption)
+    change.approvalRequired == false || decision != null
+  }
+  find by change
+}
+export resource ChangeVerificationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : Change
+  implementation : ChangeImplementationLink
+  run : evaluation.EvaluationRun
+  finish : evaluation.EvaluationFinish
+  support : evidence.EvidenceSeal
+  rules {
+    implementation.change == change
+    run.definition == change.toPin && finish.run == run && finish.outcome == "Completed"
+    finish.support == support
+  }
+}
+export enum ChangeOutcome {
+  Completed
+  Failed
+  Cancelled
+  Rejected
+}
+export resource ChangeEnd
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : Change @unique
+  outcome : ChangeOutcome
+  implementation : ChangeImplementationLink?
+  fulfillment : fulfillment.Fulfillment?
+  fulfillmentEnd : fulfillment.FulfillmentEnd?
+  verification : ChangeVerificationLink?
+  decision : ChangeDecisionLink?
+  reason : text length 1..500
+  rules {
+    implementation == null || implementation.change == change
+    fulfillment == null || (implementation != null && implementation.fulfillment == fulfillment)
+    fulfillmentEnd == null || (fulfillment != null && fulfillmentEnd.fulfillment == fulfillment)
+    verification == null || (verification.change == change && verification.implementation == implementation)
+    decision == null || decision.change == change
+    outcome != ChangeOutcome.Completed || (implementation != null && fulfillment != null && fulfillmentEnd != null && fulfillmentEnd.outcome == "completed" && fulfillmentEnd.coverage == "complete" && (change.verificationRequired == false || verification != null))
+    outcome != ChangeOutcome.Rejected || (decision != null && decision.selected != change.approvedOption)
+  }
+  find by change
+}
+export resource ChangeRollback
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : Change @unique
+  ended : ChangeEnd
+  rollback : Change
+  rules {
+    ended.change == change
+    rollback.stream == change.stream && rollback.sequence > change.sequence
+    rollback.fromPin == change.toPin && rollback.toPin == change.fromPin
+  }
+  find by change
+}
+export resource ChangeSupersession
+  @tenant
+  @appendOnly
+{
+  id : id
+  prior : Change @unique
+  replacement : Change
+  reason : text length 1..500
+  rules {
+    replacement.stream == prior.stream && replacement.sequence > prior.sequence
+  }
+  find by prior
+}

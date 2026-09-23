@@ -59,6 +59,8 @@ export function stableJson(v: unknown): string {
   return JSON.stringify(v);
 }
 
+export interface AtomicMutation { operation: string; input: Wire }
+
 export interface EngineOptions {
   secrets?: import("./credentials.js").SecretAdapter;
   functions?: FunctionImpl[];
@@ -258,18 +260,62 @@ export class Engine {
     return canonicalize(this.model, plan.resource, plan.hardDelete ? plan.before! : plan.after);
   }
 
-  private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  /** Authorized, bounded composition of independent mutations against durable references.
+   * No staged reads/references or repeated-record composition is implied. Callers
+   * use immutable unique publication facts for retries; receipt keys are rejected. */
+  atomic(mutations: readonly AtomicMutation[], ctx: CallContext): Effect.Effect<Wire[], ForgeError> {
+    const self = this;
+    const started = performance.now();
+    return Effect.gen(function* () {
+      if (ctx.idempotencyKey) return yield* Effect.fail(err("ValidationFailed", "Atomic mutations require a durable application command key, not a per-operation receipt"));
+      if (!mutations.length || mutations.length > 32) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations require 1..32 operations"));
+      const plans: CommitPlan[] = [], surfaces: (import("./scope.js").Surface | null)[] = [];
+      for (const mutation of mutations) {
+        const ref = self.model.operation(mutation.operation);
+        if (!ref) return yield* Effect.fail(err("MethodNotAllowed", "Atomic operation is not a resource mutation"));
+        if (ref.resource.fields.some(f => f.sequence || f.secret)) return yield* Effect.fail(err("ValidationFailed", "Atomic mutations do not support sequence allocation or credential sealing"));
+        const surface = yield* self.scope.resolve(ref.resource, ctx);
+        if (surface) {
+          switch (ref.op.kind) {
+            case "create": yield* self.scope.checkCreate(surface, ref.resource, mutation.input); break;
+            case "update": yield* self.scope.checkPatch(surface, ref.resource, (mutation.input["patch"] ?? {}) as Wire); break;
+            case "transition": yield* self.scope.checkAction(surface, ref.resource, ref.op.action!); break;
+            case "delete": case "restore": yield* self.scope.checkAction(surface, ref.resource, ref.op.kind); break;
+            default: return yield* Effect.fail(err("MethodNotAllowed", "Unsupported atomic mutation"));
+          }
+        }
+        const plan = yield* self.authorizedPlan(mutation.operation, mutation.input, ctx);
+        if (plans.some(p => p.resource.id === plan.resource.id && p.id === plan.id)) return yield* Effect.fail(err("ValidationFailed", "Atomic operations cannot mutate the same record twice"));
+        plans.push(plan); surfaces.push(surface);
+      }
+      const storage = yield* Storage, budget = storage.budget(plans);
+      if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations exceed provider transaction budget"));
+      yield* storage.commitAll(plans);
+      return plans.map((plan, i) => surfaces[i] ? self.scope.project(surfaces[i]!, self.resultOf(plan)) : self.resultOf(plan));
+    }).pipe(
+      Effect.provide(self.layer),
+      Effect.tap(() => Effect.sync(() => { for (const mutation of mutations) self.telemetry.emit(mutation.operation, ctx, started, self.successStatus(mutation.operation)); })),
+      Effect.tapError(error => Effect.sync(() => { for (const mutation of mutations) self.telemetry.emit(mutation.operation, ctx, started, error.status, error.code); })),
+    );
+  }
+
+  private authorizedPlan(opId: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       if (yield* self.portability.isFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
-      // A suppressed subject's data is never recreated or revived, whatever queued the write (PAR-158):
-      // creates are checked on the request body before any reference lookup can answer for the ledger.
       const ref = self.model.operation(opId);
       if (ref?.op.kind === "create") yield* self.suppression.guard(ref.resource, "create", body as StoredRecord, ctx);
       const plan = yield* self.planFor(opId, body, ctx);
-      // Authorize current AND candidate state (PAR-110): a permitted update cannot move the record out of scope.
       yield* self.gatekeeper.requireWrite(opId, plan.resource, ctx, plan.before ? canonicalize(self.model, plan.resource, plan.before) : null, canonicalize(self.model, plan.resource, plan.after));
       yield* self.suppression.guard(plan.resource, plan.kind, plan.after, ctx);
+      return plan;
+    });
+  }
+
+  private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+    const self = this;
+    return Effect.gen(function* () {
+      const plan = yield* self.authorizedPlan(opId, body, ctx);
       yield* (yield* Storage).commit(plan);
       return self.resultOf(plan);
     });

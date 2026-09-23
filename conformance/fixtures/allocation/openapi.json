@@ -97,6 +97,13 @@
             "type": "string",
             "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
           },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+          },
           "action": {
             "type": "string",
             "enum": [
@@ -104,7 +111,9 @@
               "allocate",
               "release",
               "cancel",
-              "expire"
+              "expire",
+              "book",
+              "replace"
             ],
             "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
           },
@@ -123,6 +132,7 @@
           "commandKey",
           "previous",
           "reservation",
+          "replacement",
           "action",
           "at"
         ]
@@ -157,6 +167,13 @@
             "type": "string",
             "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
           },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+          },
           "action": {
             "type": "string",
             "enum": [
@@ -164,7 +181,9 @@
               "allocate",
               "release",
               "cancel",
-              "expire"
+              "expire",
+              "book",
+              "replace"
             ],
             "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
           },

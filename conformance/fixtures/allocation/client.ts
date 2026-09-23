@@ -162,7 +162,8 @@ export interface AllocationJournalRecord {
   commandKey: string;
   previous: string | null;
   reservation: string;
-  action: "reserve" | "allocate" | "release" | "cancel" | "expire";
+  replacement: string | null;
+  action: "reserve" | "allocate" | "release" | "cancel" | "expire" | "book" | "replace";
   at: string;
 }
 
@@ -172,7 +173,8 @@ export interface AllocationJournalCreate {
   commandKey: string;
   previous?: string | null;
   reservation: string;
-  action: "reserve" | "allocate" | "release" | "cancel" | "expire";
+  replacement?: string | null;
+  action: "reserve" | "allocate" | "release" | "cancel" | "expire" | "book" | "replace";
   at: string;
 }
 

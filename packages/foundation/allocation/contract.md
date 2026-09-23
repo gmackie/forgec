@@ -69,3 +69,7 @@ The fixture paths and verification runner above are planned interfaces; they do 
 ## Implemented single-row journal profile
 
 The original mutable-pool-plus-claim algorithm is replaced by a unique pool-ordinal journal entry that commits guard and transition together through Engine. [README.md](README.md) defines the mandatory validated-consumer boundary, raw candidate poison handling, bounded history, trusted-clock assumption and remaining kernel/provider gates. Acceptance statuses remain planned until evidence is registered.
+
+## Atomic multi-pool composition
+
+`Allocations.prepare` now accepts a bounded set of one command per distinct pool and returns operation descriptors for `Engine.atomic`; callers must commit the complete set with their publication facts. `book` directly accepts a durable reservation candidate as allocated, and `replace` atomically releases an allocated original and accepts a durable replacement in the same pool journal row. Whole-interval capacity is checked against the resulting state. `reservation` exposes validated lifecycle and immutable command evidence. Existing `act` commands remain one-pool operations; sequential `act` calls do not provide multi-pool atomicity.

@@ -1,83 +1,44 @@
-# agreement-catalog contract
+# Agreement / Catalog
 
-Phase 0 design contract for [issue #43](https://github.com/gmackie/forgec/issues/43), under epic #25. This freezes the proposed package boundary for implementation; it does not provide executable schemas or claim any passing acceptance. `contract.json` is the machine-readable ownership/dependency/acceptance catalog. Every source issue checkbox has a corresponding `F43-NN` entry in source order.
+Implements issue #43: immutable catalogs, catalog entries, versioned offers, accepted agreements, signatory/term links and issuance of typed rights and duties. The synthetic consumer contains all four requested domain wrappers: SaaSSubscription, CourseEnrollment, LabServiceOrder and VendorContract. None claims application-repository dogfooding.
 
-## Ownership and dependencies
+## Pinned composition
 
-Forge identity: `@forgegraph/foundation/agreement-catalog`. Hard package dependencies: `decision`, `specification`, `participation`, `entitlement`, `evaluation`, `artifact`, `evidence`. Package-qualified identities remain stable when composed into a selected application storage closure. Required compiler, pattern and kernel contracts are prerequisites outside this slug-only dependency list.
+CatalogEntry pins a SpecificationPin describing the service. Offer independently pins its terms SpecificationPin, optional ArtifactRevision document, EvidenceSeal, EvaluationFinish, supplier Party, EntitlementScope and optional RightDefinition/RequirementDefinition. A document must pin exactly the terms revision. Offer revisions form immutable predecessor chains with unique revision and successor claims; publishing a revision never rewrites an existing offer or agreement. Evaluation completion is supporting execution evidence, not an approval verdict.
 
-Owned facts:
+`AgreementCatalog.publish(input, context)` publishes an offer. `select(offer, decisionCase, approvedOption, context)` records OfferQualification before any responses. The immutable unique DecisionCase link prevents reuse for another offer; interpreted acceptance also checks the qualification timestamp precedes the first response. `qualify` reads a fully validated Decision outcome. `accept(input, context)` requires that exact qualification and expected terms/document, both distinct Party signers' Participation records, and both signers' active Decision responses selecting the approved option. Parties must share a ParticipationSet. The schema verifies signer identity and temporal eligibility at server acceptance time, offer validity and exact pins. Known ParticipationEnd facts are captured at acceptance; later backdated ends do not rewrite this knowledge snapshot.
 
-- Catalog.
-- CatalogEntry.
-- Offer.
-- Agreement.
-- AgreementParticipant.
-- AgreementTermLink.
-- AgreementEntitlementLink.
-- AgreementObligationLink.
+The supplied acceptanceKey is durable logical command identity. Concurrent retries return one agreement or a conflict; changed acceptance inputs conflict. The caller's claimed Party representation still needs independent application authorization. Participation and Decision responses are business facts, not authorization credentials.
 
-Commands:
+## Acceptance and resumable issuance
 
-- Publish offer.
-- Qualify selection.
-- Accept agreement.
-- Issue rights and duties.
-- Suspend agreement.
-- Resume agreement.
-- Terminate agreement.
+Agreement acceptance is immutable and inspectable before issuance. `issue(agreement, context)` creates the two AgreementParticipant links, AgreementTermLink, at most one unquantified customer Entitlement and one customer Obligation, their typed links, and finally AgreementIssued. This is a deliberately bounded first version: applications needing multiple grants or quantities must compose additional domain facts rather than encode arbitrary payloads.
 
-These are behavioral operation contracts, not claims that function names or Forge syntax are already implemented. Reads expose bounded, tenant-scoped typed lookups and history. Implementation must define exact input/output/error shapes before its code is accepted.
+Each mutation uses normal Engine.call, with deterministic receipt keys derived from immutable agreement identity and stage. No custom storage commit or authorization bypass exists. An interrupted stage is resumable, including grant-created/link-not-created failures. Concurrent retries cannot duplicate grants under the runtime's atomic receipt contract. Receipts used by incomplete issuance must be retained; deleting them before recovery removes that guarantee. After completion, unique linked records prevent reissuance. A new authorized issuer can resume without changing the accepted fact's attribution.
 
-## Typed composition seams
+This is **not** an all-or-none transaction. Substrate grants and duties can become visible while AgreementIssued is absent. `state` reports PendingIssuance, and `rightsAt` returns no agreement-mediated rights until issuance is complete. Applications must use `rightsAt` when an agreement governs access. Direct Entitlements queries describe independent substrate facts, not complete agreement effectiveness. Completion does not silently imply payment or discharge.
 
-Commercial, clinical and educational term details are typed satellites. Pricing or rating is an imported domain contract, not a new foundation policy language. Agreement owns source links to issued rights; Entitlement never imports Agreement.
+## Validity and lifecycle
 
-Typed resource references must resolve within the explicit selected package closure; remote calls retain normal imported callable contracts. No targetType/targetId, generic EntityRef, tagged-union domain hierarchy or universal JSON business payload is admitted. Domain terminology may wrap these names freely. Lower packages never import this system.
+`state(agreement, at, context)` returns NotAccepted, PendingIssuance, Scheduled, Active, Expired, Suspended or Terminated with immutable history and issuance status. Dates are strictly decoded; validity is half-open. Hidden journal, completion or referenced rows fail closed. `rightsAt` also respects an EntitlementEnd fact.
 
-## Lifecycle and policy
+`transition(agreement, Suspended|Resumed|Terminated, reason, context)` appends one of at most 32 lifecycle events. Unique `(agreement, ordinal)` and unique previous-event claims arbitrate concurrent commands. Schema rules reject skipped ordinals, duplicate suspension, resume without suspension, and any successor of termination. Commands that race may validly serialize if the later command reads the new head; callers must reread after conflicts.
 
-Offers have explicit availability and validity. Agreements move proposed → active → suspended or terminated; expiry is explicit. Contract policy specifies the effective rights/duties effects of suspension, resumption and termination without rewriting issuance history.
+Suspension and termination stop agreement-aware rights without silently revoking independent Entitlement records or cancelling Obligation facts. Duties remain inspectable. Issuance is fulfillment of accepted rights/duties and may finish after suspension or termination; such completion cannot reactivate agreement-aware rights. This preserves an explicit recovery path for partial issuance. Applications own settlement, cancellation and external actions.
 
-The lifecycle above describes required semantic distinctions and explicit policy choices; field names and transition syntax remain implementation details. Stateless waiting, retries, deadlines and orchestration compose through std patterns; durable responses, attempts and outcomes remain owned resources. Immutable specification/artifact references use exact revisions, never floating branches or channel aliases.
+Renewal and amendment create separate Agreement records with a new offer, fresh bound Decision approval, unique predecessor and explicit change kind. Renewal starts at or after predecessor expiry. Amendment may overlap, and does not implicitly terminate its predecessor; the application explicitly transitions the old agreement. Both histories and exact term pins remain intact.
 
-## Invariants, authorization and failure
+Raw Agreement rows are accepted records only after validated interpretation; an authorized raw insert with invalid qualification/signatures fails closed in state/issue. Restrict raw command surfaces appropriately. This package does not provide an arbitrary commercial policy language, pricing or legal enforceability.
 
-- Offer is distinct from its specification.
-- Agreement is distinct from its qualification Decision.
-- Terms retain exact specification and artifact pins.
-- Accepting an agreement issues linked entitlements and obligations once.
+## Verification
 
-- Every mutation checks the caller's declared capability, tenant and resource authorization. Participation or entitlement membership alone does not grant kernel authorization; denied references must not leak foreign data.
-- A logical command carries a stable idempotency identity scoped to tenant, operation and aggregate. Reusing it with different inputs fails with a typed conflict; successful retry returns the existing outcome.
-- Validation and state transition commit under an aggregate/version guard. A stale version produces an explicit conflict; multi-resource invariants either commit atomically within provider bounds or use an explicit durable pending protocol. No read-then-write safety assumption.
-- Invalid transitions, unresolved references, expired validity, stale revisions and provider failures have typed errors. External uncertainty remains recorded as pending/unknown rather than asserted success. Retry does not delete failure history.
-- No generic CRUD mutation may bypass command invariants. History retention, redaction and correction policy must distinguish immutable business facts from mutable projections.
+Generated consumer tests pass on memory, SQLite and local PostgreSQL 17 (12 cases): immutable term/artifact pins, Evidence/Evaluation support, competing acceptance and issuance, no duplicate rights/duties, interrupted grant/link recovery, changed issuer retry, all four domain wrappers, missing signer, expiry, suspension/resume/termination, renewal and amendment, tenant rejection, denied writes and specifically hidden lifecycle reads.
 
-## Acceptance and fixture design
+```sh
+cargo run -q -p forgegraph-cli -- build packages/foundation/agreement-catalog/fixtures/consumer --out /tmp/forge-agreement-consumer
+FORGE_FOUNDATION_CONSUMER=/tmp/forge-agreement-consumer pnpm --filter @forgegraph/runtime exec vitest run test/foundation-agreement-catalog.test.ts
+# Set FORGE_FOUNDATION_PG_URL to add isolated PostgreSQL schema tests.
+pnpm --filter @forgegraph/runtime typecheck
+```
 
-Each source checkbox is retained verbatim below. IDs are stable; implementation records evidence separately rather than changing planned status without a real run.
-
-- `F43-01` (compile, planned): Catalog/Entry/Offer model.
-- `F43-02` (compile, planned): Agreement + participant integration.
-- `F43-03` (runtime, planned): entitlements/obligations issued from agreement.
-- `F43-04` (runtime, planned): validity/suspension/termination lifecycle.
-- `F43-05` (compile, planned): specification/artifact term pinning.
-- `F43-06` (fixture, planned): fixtures for SaaS plan, course offering, lab service and vendor agreement.
-- `F43-R01` (concurrency, planned): Concurrent acceptance cannot duplicate rights or duties.
-- `F43-R02` (runtime, planned): Expired offer cannot be accepted without a new valid offer.
-- `F43-AUTH` (runtime, planned): Reject unauthorized and cross-tenant commands and references through generated runtime surfaces.
-- `F43-STORE` (provider, planned): Run relevant durable invariant traces on PostgreSQL, D1 and DynamoDB with explicit evidence and no hidden required-suite skips.
-
-Fixtures:
-
-- SaaS plan: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
-- course offering: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
-- lab service: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
-- vendor agreement: typed domain wrapper, seeded happy path, invalid transition or authorization case, and retained-history assertions.
-
-Application-named fixtures must record the inspected application repository revision and map real types/operations before being described as dogfooding. Synthetic cases establish only contract usability. Tests build actual imported consumer schemas, then exercise generated runtime surfaces; helper mocks and schema snapshots alone do not prove durable behavior. The independent handoff includes accepted dependency digests, compiler/runtime versions, exact commands, case results and provider configuration. Missing provider infrastructure is explicitly blocked evidence, never a silently passing skip.
-
-## Expanded identity boundary (#52)
-
-Party owns business actor identity. Holder, obligated party and agreement-party references use Party directly; Participation is only required where role/membership facts are used. Dependencies: decision, specification, participation, entitlement, evaluation, artifact, evidence, party.
+Forge formatting checks and byte-identical repeat consumer builds pass. F43-STORE remains planned: local PostgreSQL and SQLite evidence does not establish live D1 or DynamoDB behavior. Local evidence permits further development composition, not production provider certification.

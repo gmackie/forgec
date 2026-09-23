@@ -1,0 +1,1360 @@
+{
+  "version": "forge-source-map/1",
+  "package": "@forgegraph/foundation/notifications",
+  "buildHash": "dfabc79c4fea91cfbc468443139f0a784e61e412a01c035f3a98427dc613bfc1",
+  "compilerVersion": "0.3.0",
+  "sources": {
+    "src/model.forge": {
+      "digest": "sha256:74677715497ed5a4ab083e31d3361c335918b35293b1505f5ece5affdd169d4f",
+      "byteLength": 2290
+    }
+  },
+  "anchors": {
+    "@forgegraph/foundation/notifications/_/Notification": {
+      "file": "src/model.forge",
+      "start": 1150,
+      "end": 1498
+    },
+    "@forgegraph/foundation/notifications/_/Notification#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 1181,
+      "end": 1188
+    },
+    "@forgegraph/foundation/notifications/_/Notification#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 1191,
+      "end": 1202
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:at": {
+      "file": "src/model.forge",
+      "start": 1411,
+      "end": 1424
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:content": {
+      "file": "src/model.forge",
+      "start": 1332,
+      "end": 1368
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:id": {
+      "file": "src/model.forge",
+      "start": 1207,
+      "end": 1214
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:key": {
+      "file": "src/model.forge",
+      "start": 1217,
+      "end": 1249
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:key/decorator:9d28fed5cd87a92aa348d8683e3339a2588f5739042e49b5d075c2374ff25ecc": {
+      "file": "src/model.forge",
+      "start": 1242,
+      "end": 1249
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:preference": {
+      "file": "src/model.forge",
+      "start": 1294,
+      "end": 1329
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:subscription": {
+      "file": "src/model.forge",
+      "start": 1252,
+      "end": 1291
+    },
+    "@forgegraph/foundation/notifications/_/Notification#field:template": {
+      "file": "src/model.forge",
+      "start": 1371,
+      "end": 1408
+    },
+    "@forgegraph/foundation/notifications/_/Notification#find:76a2f7827303fab6d43652731e8597c1541bcdcdee5252e2ab5dedec8f853e4b": {
+      "file": "src/model.forge",
+      "start": 1485,
+      "end": 1496
+    },
+    "@forgegraph/foundation/notifications/_/Notification#op:create": {
+      "file": "src/model.forge",
+      "start": 1150,
+      "end": 1498
+    },
+    "@forgegraph/foundation/notifications/_/Notification#op:find.byKey": {
+      "file": "src/model.forge",
+      "start": 1150,
+      "end": 1498
+    },
+    "@forgegraph/foundation/notifications/_/Notification#op:get": {
+      "file": "src/model.forge",
+      "start": 1150,
+      "end": 1498
+    },
+    "@forgegraph/foundation/notifications/_/Notification#op:list.all": {
+      "file": "src/model.forge",
+      "start": 1150,
+      "end": 1498
+    },
+    "@forgegraph/foundation/notifications/_/Notification#rule:7abb20727ae81306128d78f73cc9b5b1f996a436193b95646bb3de5499bdbda5": {
+      "file": "src/model.forge",
+      "start": 1439,
+      "end": 1478
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink": {
+      "file": "src/model.forge",
+      "start": 1762,
+      "end": 2289
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 1805,
+      "end": 1812
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 1815,
+      "end": 1826
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:endpoint": {
+      "file": "src/model.forge",
+      "start": 1917,
+      "end": 1952
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:id": {
+      "file": "src/model.forge",
+      "start": 1831,
+      "end": 1838
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:intent": {
+      "file": "src/model.forge",
+      "start": 1997,
+      "end": 2037
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:intent/decorator:9d28fed5cd87a92aa348d8683e3339a2588f5739042e49b5d075c2374ff25ecc": {
+      "file": "src/model.forge",
+      "start": 2030,
+      "end": 2037
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:notification": {
+      "file": "src/model.forge",
+      "start": 1841,
+      "end": 1876
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:notification/decorator:9d28fed5cd87a92aa348d8683e3339a2588f5739042e49b5d075c2374ff25ecc": {
+      "file": "src/model.forge",
+      "start": 1869,
+      "end": 1876
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:preference": {
+      "file": "src/model.forge",
+      "start": 1879,
+      "end": 1914
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#field:subscription": {
+      "file": "src/model.forge",
+      "start": 1955,
+      "end": 1994
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#op:create": {
+      "file": "src/model.forge",
+      "start": 1762,
+      "end": 2289
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#op:get": {
+      "file": "src/model.forge",
+      "start": 1762,
+      "end": 2289
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#op:list.all": {
+      "file": "src/model.forge",
+      "start": 1762,
+      "end": 2289
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#rule:35375fa05f39dd04d28074e07a6e0f34963892915715506cf2ced4b4cee57ebb": {
+      "file": "src/model.forge",
+      "start": 2052,
+      "end": 2111
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#rule:4ef455a5b683d14430c12061892198a2a1e78d7db256403a00223714f970bfd5": {
+      "file": "src/model.forge",
+      "start": 2116,
+      "end": 2194
+    },
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#rule:9cea8b595e19a8db2f12d2d1ff8db58b1e6aedb2273fd26b6592694c696e71e1": {
+      "file": "src/model.forge",
+      "start": 2199,
+      "end": 2283
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink": {
+      "file": "src/model.forge",
+      "start": 189,
+      "end": 386
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 232,
+      "end": 239
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 242,
+      "end": 253
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#field:destination": {
+      "file": "src/model.forge",
+      "start": 310,
+      "end": 352
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#field:id": {
+      "file": "src/model.forge",
+      "start": 258,
+      "end": 265
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#field:recipient": {
+      "file": "src/model.forge",
+      "start": 268,
+      "end": 307
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#op:create": {
+      "file": "src/model.forge",
+      "start": 189,
+      "end": 386
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#op:get": {
+      "file": "src/model.forge",
+      "start": 189,
+      "end": 386
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#op:list.all": {
+      "file": "src/model.forge",
+      "start": 189,
+      "end": 386
+    },
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#unique:08923fca5699fbcd4e5802ea464e84388a1b44097b923aa26c87753f7114eb59": {
+      "file": "src/model.forge",
+      "start": 355,
+      "end": 384
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference": {
+      "file": "src/model.forge",
+      "start": 676,
+      "end": 1149
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 717,
+      "end": 724
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 727,
+      "end": 738
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#field:enabled": {
+      "file": "src/model.forge",
+      "start": 865,
+      "end": 882
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#field:id": {
+      "file": "src/model.forge",
+      "start": 743,
+      "end": 750
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#field:previous": {
+      "file": "src/model.forge",
+      "start": 828,
+      "end": 862
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#field:reason": {
+      "file": "src/model.forge",
+      "start": 885,
+      "end": 912
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#field:revision": {
+      "file": "src/model.forge",
+      "start": 795,
+      "end": 825
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#field:subscription": {
+      "file": "src/model.forge",
+      "start": 753,
+      "end": 792
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#list:c5c1e003251910983c34d47123c7d931dc9e85f246e484f104dba5916a4b9bfd": {
+      "file": "src/model.forge",
+      "start": 1101,
+      "end": 1147
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:create": {
+      "file": "src/model.forge",
+      "start": 676,
+      "end": 1149
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:get": {
+      "file": "src/model.forge",
+      "start": 676,
+      "end": 1149
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:list.all": {
+      "file": "src/model.forge",
+      "start": 676,
+      "end": 1149
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:list.bySubscription": {
+      "file": "src/model.forge",
+      "start": 676,
+      "end": 1149
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#rule:572a00e5807470a662182d43b6958ea907fa588eb6ec6bcb0e616dad5bee7c69": {
+      "file": "src/model.forge",
+      "start": 927,
+      "end": 1062
+    },
+    "@forgegraph/foundation/notifications/_/NotificationPreference#unique:d2ab6224a2eb6f97dce5dab166f38b4b27b3e9c1823853964e68c1d3f15131e3": {
+      "file": "src/model.forge",
+      "start": 1069,
+      "end": 1098
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription": {
+      "file": "src/model.forge",
+      "start": 387,
+      "end": 675
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 430,
+      "end": 437
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 440,
+      "end": 451
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#field:endpoint": {
+      "file": "src/model.forge",
+      "start": 536,
+      "end": 571
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#field:id": {
+      "file": "src/model.forge",
+      "start": 456,
+      "end": 463
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#field:recipient": {
+      "file": "src/model.forge",
+      "start": 494,
+      "end": 533
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#field:topic": {
+      "file": "src/model.forge",
+      "start": 466,
+      "end": 491
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#list:f38c6e87f28b99b2d8fd83b33a9bdf8394481dec5d4805e21f4dd4281903f165": {
+      "file": "src/model.forge",
+      "start": 660,
+      "end": 673
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:create": {
+      "file": "src/model.forge",
+      "start": 387,
+      "end": 675
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:get": {
+      "file": "src/model.forge",
+      "start": 387,
+      "end": 675
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:list.all": {
+      "file": "src/model.forge",
+      "start": 387,
+      "end": 675
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:list.byTopic": {
+      "file": "src/model.forge",
+      "start": 387,
+      "end": 675
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#rule:15f414ffa536dc12b6de6754e3a694d17706f1a5c9a1900e644fd544c18509ba": {
+      "file": "src/model.forge",
+      "start": 586,
+      "end": 617
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#unique:4201196b364dc09129c42a41d4fa593f24b157bd8463db073a8be62f3a452645": {
+      "file": "src/model.forge",
+      "start": 624,
+      "end": 657
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression": {
+      "file": "src/model.forge",
+      "start": 1499,
+      "end": 1761
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 1541,
+      "end": 1548
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 1551,
+      "end": 1562
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#field:id": {
+      "file": "src/model.forge",
+      "start": 1567,
+      "end": 1574
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#field:notification": {
+      "file": "src/model.forge",
+      "start": 1577,
+      "end": 1612
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#field:notification/decorator:9d28fed5cd87a92aa348d8683e3339a2588f5739042e49b5d075c2374ff25ecc": {
+      "file": "src/model.forge",
+      "start": 1605,
+      "end": 1612
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#field:preference": {
+      "file": "src/model.forge",
+      "start": 1615,
+      "end": 1650
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#field:reason": {
+      "file": "src/model.forge",
+      "start": 1653,
+      "end": 1680
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#op:create": {
+      "file": "src/model.forge",
+      "start": 1499,
+      "end": 1761
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#op:get": {
+      "file": "src/model.forge",
+      "start": 1499,
+      "end": 1761
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#op:list.all": {
+      "file": "src/model.forge",
+      "start": 1499,
+      "end": 1761
+    },
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#rule:5821825bc456a5721c6677e72de0d3cc9e3302b53db85352a61b83a00555204c": {
+      "file": "src/model.forge",
+      "start": 1695,
+      "end": 1755
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic": {
+      "file": "src/model.forge",
+      "start": 53,
+      "end": 188
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 89,
+      "end": 96
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 99,
+      "end": 110
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#field:id": {
+      "file": "src/model.forge",
+      "start": 115,
+      "end": 122
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#field:key": {
+      "file": "src/model.forge",
+      "start": 125,
+      "end": 157
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#field:key/decorator:9d28fed5cd87a92aa348d8683e3339a2588f5739042e49b5d075c2374ff25ecc": {
+      "file": "src/model.forge",
+      "start": 150,
+      "end": 157
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#field:label": {
+      "file": "src/model.forge",
+      "start": 160,
+      "end": 186
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#op:create": {
+      "file": "src/model.forge",
+      "start": 53,
+      "end": 188
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#op:get": {
+      "file": "src/model.forge",
+      "start": 53,
+      "end": 188
+    },
+    "@forgegraph/foundation/notifications/_/NotificationTopic#op:list.all": {
+      "file": "src/model.forge",
+      "start": 53,
+      "end": 188
+    }
+  },
+  "derivations": {
+    "@forgegraph/foundation/artifact/_/Artifact#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:beginUpload": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:download": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:finalizeUpload": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:find.byContent": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:list.byArtifact": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryAttempt#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryAttempt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryAttempt#op:find.byStep": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryAttempt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryAttempt#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryAttempt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryAttempt#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryAttempt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryDestination#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryDestination"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryDestination#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryDestination"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryDestination#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryDestination"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryIntent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryIntent"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryIntent#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryIntent"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryIntent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryIntent"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryIntent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryIntent"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryReceipt#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryReceipt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryReceipt#op:find.byStep": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryReceipt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryReceipt#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryReceipt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryReceipt#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryReceipt"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryResolution#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryResolution"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryResolution#op:find.byReceipt": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryResolution"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryResolution#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryResolution"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryResolution#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryResolution"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryStep#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryStep"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryStep#op:find.byIntentNumber": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryStep"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryStep#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryStep"
+      }
+    ],
+    "@forgegraph/foundation/delivery/_/DeliveryStep#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/delivery/_/DeliveryStep"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.byBundle": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.bySource": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:find.byBundle": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:find.byNamespaceIssuerScopeValue": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.byIdentifierSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:find.byIdentifier": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/Notification#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/Notification"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/Notification#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/Notification"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/Notification#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/Notification"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/Notification#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/Notification"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationDeliveryLink"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationDeliveryLink"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationDeliveryLink#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationDeliveryLink"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationEndpointLink"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationEndpointLink"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationEndpointLink#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationEndpointLink"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationPreference"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationPreference"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationPreference"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationPreference#op:list.bySubscription": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationPreference"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationSubscription"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationSubscription"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationSubscription"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationSubscription#op:list.byTopic": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationSubscription"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationSuppression"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationSuppression"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationSuppression#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationSuppression"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationTopic#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationTopic"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationTopic#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationTopic"
+      }
+    ],
+    "@forgegraph/foundation/notifications/_/NotificationTopic#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/notifications/_/NotificationTopic"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:list.byParticipant": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:list.byParticipationSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:find.byParticipation": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:find.byNamespaceName": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationSet"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationSet"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationSet"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.byParty": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.byPrincipal": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:find.byRepresentation": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:list.byPin": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:find.byRepositoryAnchorRevision": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:list.byRepositoryAnchor": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ]
+  }
+}

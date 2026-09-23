@@ -1,0 +1,61 @@
+import { Effect } from 'effect';
+import { expect, it } from 'vitest';
+import { foundation, foundationAdapters } from './helpers/foundation.js';
+import { Workforces } from '../src/foundation/organization-workforce.js';
+import { Qualifications } from '../src/foundation/qualification.js';
+const p = '@forgegraph/foundation/organization-workforce/_/', q = '@forgegraph/foundation/qualification/_/', s = '@forgegraph/foundation/specification/_/', m = '@forgegraph/foundation/participation/_/';
+const from = '2026-01-01T00:00:00Z', middle = '2026-02-01T00:00:00Z', until = '2026-03-01T00:00:00Z';
+const run = Effect.runPromise;
+for (const adapter of foundationAdapters) it(`${adapter}: acyclic units, qualified temporal incumbency and exclusive appointment race`, async () => {
+  const f = await foundation('organization-workforce', adapter, true), { call, ctx, engine } = f;
+  try {
+    const organization = await call('@forgegraph/foundation/party/_/Party.create', { label: 'Organization' });
+    const person = await call('@forgegraph/foundation/party/_/Party.create', { label: 'Person' });
+    const ids = '@forgegraph/foundation/identifiers/_/', c = '@forgegraph/foundation/classification/_/';
+    const placeIdentifiers = await call(ids + 'IdentifierSet.create', { label: 'Facility' });
+    const place = await call('@forgegraph/foundation/place/_/Place.create', { identifiers: placeIdentifiers.id, name: 'Facility' });
+    const taxIds = await call(ids + 'IdentifierSet.create', { label: 'Roles' }), conceptIds = await call(ids + 'IdentifierSet.create', { label: 'Operator' });
+    const taxonomy = await call(c + 'Taxonomy.create', { key: 'roles', identifiers: taxIds.id });
+    const concept = await call(c + 'Concept.create', { taxonomy: taxonomy.id, ordinal: 1, identifiers: conceptIds.id });
+    const meaning = await call(c + 'ConceptRevision.create', { concept: concept.id, taxonomy: taxonomy.id, ordinal: 1, revision: 1, label: 'Operator', definition: 'Qualified operator' });
+    const root = await call(p + 'OrganizationUnit.create', { organization: organization.id, depth: 1, label: 'Root', place: place.id, classification: meaning.id });
+    const crew = await call(p + 'OrganizationUnit.create', { organization: organization.id, parent: root.id, depth: 2, label: 'Crew', place: place.id, classification: meaning.id });
+    await expect(call(p + 'OrganizationUnit.create', { organization: organization.id, parent: crew.id, depth: 1, label: 'Cycle' })).rejects.toThrow();
+    await expect(call(p + 'OrganizationUnit.update', { id: root.id, parent: crew.id })).rejects.toThrow();
+    const repository = await call(s + 'Repository.create', { key: 'workforce', provider: 'git', locator: 'https://example.test/workforce' });
+    const pin = await call(s + 'SpecificationPin.create', { repository: repository.id, anchor: 'position', revision: 'a'.repeat(40) });
+    const definition = await call(q + 'QualificationDefinition.create', { key: 'operator', pin: pin.id, label: 'Operator credential' });
+    const requirement = await call(q + 'QualificationRequirement.create', { definition: definition.id });
+    const spec = await call(p + 'PositionSpecification.create', { pin: pin.id, requirement: requirement.id, label: 'Operator' });
+    const set = await call(m + 'ParticipationSet.create', { label: 'Team' });
+    const role = await call(m + 'ParticipationRole.create', { namespace: 'workforce', name: 'incumbent' });
+    const member = await call(m + 'Participation.create', { participationSet: set.id, participant: person.id, role: role.id, validFrom: from, validUntil: until, recordedBy: 'test', reason: 'Joined' });
+    const subject = await call(q + 'QualificationSubject.create', { label: 'Person' });
+    const partySubject = await call(q + 'PartySubject.create', { subject: subject.id, party: person.id });
+    const api = new Workforces(engine), qualifications = new Qualifications(engine);
+    const positions = [];
+    for (const name of ['EmployeePosition', 'ProductionCrewPosition', 'IncidentCommandPosition']) {
+      const position = await call(p + 'Position.create', { unit: crew.id, specification: spec.id, participants: set.id, label: name });
+      await call('@fixture/workforce-consumer/_/' + name + '.create', { position: position.id, label: name }); positions.push(position);
+    }
+    const position = positions[0]!;
+    const candidate = await call(p + 'Incumbency.create', { position: position.id, membership: member.id, partySubject: partySubject.id, from, until });
+    await expect(run(api.publish(String(candidate.id), 'Appoint', from, null, ctx))).rejects.toThrow();
+    const award = await run(qualifications.award({ subject: String(subject.id), definition: String(definition.id), issuer: String(organization.id), issuerRecord: 'credential', issuedAt: from }, ctx));
+    const contender = await call(p + 'Incumbency.create', { position: position.id, membership: member.id, partySubject: partySubject.id, from, until });
+    const race = await Promise.allSettled([candidate, contender].map(row => run(api.publish(String(row.id), 'Appoint', from, null, ctx))));
+    expect(race.filter(r => r.status === 'fulfilled')).toHaveLength(1);
+    const event = (race.find(r => r.status === 'fulfilled') as PromiseFulfilledResult<Record<string, unknown>>).value;
+    const active = await run(api.at(String(position.id), from, ctx)); expect(active?.id).toBe(event.incumbency);
+    const ended = await run(api.publish(String(active!.id), 'End', middle, String(event.id), ctx));
+    expect(await run(api.at(String(position.id), middle, ctx))).toBeNull();
+    expect((await run(api.at(String(position.id), from, ctx)))?.id).toBe(active!.id);
+    const successor = await call(p + 'Incumbency.create', { position: position.id, membership: member.id, partySubject: partySubject.id, from: middle, until });
+    await run(api.publish(String(successor.id), 'Appoint', middle, String(ended.id), ctx));
+    expect((await run(api.at(String(position.id), middle, ctx)))?.id).toBe(successor.id);
+    await run(qualifications.revoke(String(award.id), middle, 'Expired authorization', ctx));
+    await expect(run(api.at(String(position.id), middle, ctx))).rejects.toThrow();
+    expect((await run(api.state(String(position.id), ctx))).events).toHaveLength(3);
+    await expect(run(api.at(String(position.id), from, { ...ctx, tenant: 'foreign' }))).rejects.toThrow();
+  } finally { await f.close(); }
+});

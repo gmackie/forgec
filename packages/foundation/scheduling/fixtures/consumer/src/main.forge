@@ -1,0 +1,19 @@
+import scheduling
+resource FieldVisit
+  @tenant
+{
+  id : id
+  appointment : scheduling.Appointment
+}
+resource LabBooking
+  @tenant
+{
+  id : id
+  appointment : scheduling.Appointment
+}
+resource ClassroomBooking
+  @tenant
+{
+  id : id
+  appointment : scheduling.Appointment
+}

@@ -127,10 +127,17 @@ function main() {
       run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', `packages/foundation/${slug}/fixtures/consumer`]);
       for (const name of ['first', 'second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}`, '--out', join(out, name)]);
       for (const name of ['consumer-first', 'consumer-second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}/fixtures/consumer`, '--out', join(out, name)]);
-      for (const [first, second] of [['first', 'second'], ['consumer-first', 'consumer-second']]) for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts', 'openapi.json', 'api.smithy', 'source-map.json', 'README.md']) {
+      const pairs = [['first', 'second'], ['consumer-first', 'consumer-second']];
+      const extraEnv = {};
+      if (existsSync(join(root, `packages/foundation/${slug}/fixtures/controller/forge.toml`))) {
+        for (const name of ['controller-first', 'controller-second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}/fixtures/controller`, '--out', join(out, name)]);
+        pairs.push(['controller-first', 'controller-second']);
+        extraEnv[`FORGE_${slug.toUpperCase().replaceAll('-', '_')}_CONTROLLER`] = join(out, 'controller-first');
+      }
+      for (const [first, second] of pairs) for (const file of ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts', 'openapi.json', 'api.smithy', 'source-map.json', 'README.md']) {
         if (!readFileSync(join(out, first, file)).equals(readFileSync(join(out, second, file)))) throw new Error(`nondeterministic artifact: ${file}`);
       }
-      run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', ...verifier.tests], { FORGE_FOUNDATION_FIXTURE: join(out, 'first'), FORGE_FOUNDATION_CONSUMER: join(out, 'consumer-first') });
+      run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', ...verifier.tests], { ...extraEnv, FORGE_FOUNDATION_FIXTURE: join(out, 'first'), FORGE_FOUNDATION_CONSUMER: join(out, 'consumer-first') });
       if (slug === 'specification') {
         run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', 'packages/foundation/artifact/fixtures/consumer', '--out', join(out, 'artifact-consumer')]);
         run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-artifact-consumer.test.ts'], { FORGE_FOUNDATION_CONSUMER: join(out, 'artifact-consumer') });

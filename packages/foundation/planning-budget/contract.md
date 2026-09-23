@@ -24,3 +24,7 @@ Project/procurement/capacity; forecast distinct from actual; no overspend under 
 - F67-06: fixtures for project plan, procurement budget and capacity plan
 
 Compile typed consumer fixtures, execute generated-bundle behaviors and adversarial cases, and bind evidence to accepted dependency revisions. Provider certification is separate from local tests.
+
+## Implemented local profile
+
+The executable package and generated consumer now have local memory, SQLite and PostgreSQL evidence in `packages/runtime/test/foundation-planning-budget.test.ts`. See `README.md` for the implemented protocol and explicit limits; `contract.json` records per-case status. Earlier design prose above is the target boundary, not a claim of broader guarantees. Hosted provider certification and real-application dogfooding remain separate.

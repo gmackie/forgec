@@ -97,12 +97,14 @@ CREATE TABLE allocation_journal (
   "command_key" TEXT COLLATE "C" NOT NULL,
   "previous" TEXT COLLATE "C",
   "reservation" TEXT COLLATE "C" NOT NULL,
+  "replacement" TEXT COLLATE "C",
   "action" TEXT COLLATE "C" NOT NULL,
   "at" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "pool") REFERENCES allocation_pool ("tenant", "id"),
   FOREIGN KEY ("tenant", "previous") REFERENCES allocation_journal ("tenant", "id"),
-  FOREIGN KEY ("tenant", "reservation") REFERENCES allocation_reservation ("tenant", "id")
+  FOREIGN KEY ("tenant", "reservation") REFERENCES allocation_reservation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "replacement") REFERENCES allocation_reservation ("tenant", "id")
 );
 
 CREATE TABLE hospital_bed (

@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "c37d16926c086a22afb192306c1f84e1eb1ee4f657ed11a39d22db8b36dfc2bd",
+  "buildHash": "f8801dade2349aaad580eaf8dc475b2bcec1a876ce7505ac7e2982b6a6895737",
   "digests": {
-    "source": "37affb423a151a8cec9c808caca31f97bf38632c556a32fba90fac60e0a00a6a",
-    "wire": "7e9604b170129e6a3d794256f92bcf2052971744da7fc83ab4b28d6e544de5f2",
+    "source": "428394b9d7e5ab813d9e066a65a354bf60bc7d15f74f3b0f33eb4e01b0a24350",
+    "wire": "580fd1189fc8ba2812a2a5e00e17c1eea485dbf0684cdbcc6dd79cac9a8c09e2",
     "docs": "a7b0c4bbc807e06d12049ae172bc996783701de5187f717bcc9e24420d6cc0d6",
-    "security": "f42a8fd105ef16af06d960751e7686f6eb516deb3e400dce1fe0da0a32729776"
+    "security": "24e0c1a4052e86c28891fb2fc7cf5d530d83e7bfa819e37c698f17dacab05db8"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -50,6 +50,14 @@
               {
                 "name": "expire",
                 "value": "expire"
+              },
+              {
+                "name": "book",
+                "value": "book"
+              },
+              {
+                "name": "replace",
+                "value": "replace"
               }
             ]
           },
@@ -199,6 +207,21 @@
                 "synthesized": false
               },
               {
+                "name": "replacement",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/allocation/_/AllocationReservation"
+                  },
+                  "optional": true,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
                 "name": "action",
                 "type": {
                   "base": {
@@ -293,6 +316,121 @@
                   "path": [
                     "pool"
                   ]
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "replacement"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "literal",
+                    "literal": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "==",
+                  "lhs": {
+                    "kind": "name",
+                    "path": [
+                      "replacement",
+                      "pool"
+                    ]
+                  },
+                  "rhs": {
+                    "kind": "name",
+                    "path": [
+                      "pool"
+                    ]
+                  }
+                }
+              },
+              {
+                "kind": "binary",
+                "op": "||",
+                "lhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "action"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "AllocationAction",
+                        "replace"
+                      ]
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "!=",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "replacement"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                },
+                "rhs": {
+                  "kind": "binary",
+                  "op": "&&",
+                  "lhs": {
+                    "kind": "binary",
+                    "op": "!=",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "action"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "name",
+                      "path": [
+                        "AllocationAction",
+                        "replace"
+                      ]
+                    }
+                  },
+                  "rhs": {
+                    "kind": "binary",
+                    "op": "==",
+                    "lhs": {
+                      "kind": "name",
+                      "path": [
+                        "replacement"
+                      ]
+                    },
+                    "rhs": {
+                      "kind": "literal",
+                      "literal": {
+                        "type": "null"
+                      }
+                    }
+                  }
                 }
               },
               {
@@ -990,6 +1128,13 @@
               "type": "string",
               "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
             },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
             "action": {
               "type": "string",
               "enum": [
@@ -997,7 +1142,9 @@
                 "allocate",
                 "release",
                 "cancel",
-                "expire"
+                "expire",
+                "book",
+                "replace"
               ],
               "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
             },
@@ -1015,6 +1162,7 @@
             "commandKey",
             "previous",
             "reservation",
+            "replacement",
             "action",
             "at"
           ],
@@ -1050,6 +1198,13 @@
               "type": "string",
               "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
             },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
             "action": {
               "type": "string",
               "enum": [
@@ -1057,7 +1212,9 @@
                 "allocate",
                 "release",
                 "cancel",
-                "expire"
+                "expire",
+                "book",
+                "replace"
               ],
               "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
             },
@@ -1518,6 +1675,13 @@
             "storage": "text"
           },
           {
+            "name": "replacement",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "field": "replacement",
+            "storage": "text"
+          },
+          {
             "name": "action",
             "sqlType": "TEXT",
             "nullable": false,
@@ -1563,6 +1727,17 @@
             "columns": [
               "tenant",
               "reservation"
+            ],
+            "references": "allocation_reservation",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "replacement"
             ],
             "references": "allocation_reservation",
             "referencedColumns": [
@@ -2163,9 +2338,13 @@
           {
             "field": "reservation",
             "target": "@forgegraph/foundation/allocation/_/AllocationReservation"
+          },
+          {
+            "field": "replacement",
+            "target": "@forgegraph/foundation/allocation/_/AllocationReservation"
           }
         ],
-        "createActions": 10
+        "createActions": 11
       },
       {
         "id": "@forgegraph/foundation/allocation/_/AllocationPool",
@@ -2332,6 +2511,23 @@
             }
           },
           {
+            "name": "replacement",
+            "label": "Replacement",
+            "widget": "reference",
+            "required": false,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/allocation/_/AllocationReservation",
+              "route": "allocation-reservation",
+              "titleField": "id",
+              "lookup": "@forgegraph/foundation/allocation/_/AllocationReservation.list.all",
+              "lookupParams": [],
+              "find": "@forgegraph/foundation/allocation/_/AllocationReservation.find.byPoolKey"
+            }
+          },
+          {
             "name": "action",
             "label": "Action",
             "widget": "select",
@@ -2359,6 +2555,14 @@
               {
                 "value": "expire",
                 "label": "Expire"
+              },
+              {
+                "value": "book",
+                "label": "Book"
+              },
+              {
+                "value": "replace",
+                "label": "Replace"
               }
             ]
           },
@@ -2379,7 +2583,7 @@
           "commandKey",
           "previous",
           "reservation",
-          "action"
+          "replacement"
         ],
         "lists": [
           {
@@ -3104,6 +3308,23 @@
       },
       {
         "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
+        "field": "replacement",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/allocation/_/AllocationJournal",
         "field": "action",
         "class": "data.structural",
         "ancestors": [
@@ -3363,7 +3584,7 @@
     "subjects": [],
     "summary": {
       "inferred": 2,
-      "structural": 14,
+      "structural": 15,
       "unclassified": 5
     }
   },
@@ -3381,6 +3602,7 @@
           "commandKey",
           "previous",
           "reservation",
+          "replacement",
           "action",
           "at"
         ],
@@ -3390,12 +3612,15 @@
           "commandKey",
           "previous",
           "reservation",
+          "replacement",
           "action",
           "at"
         ],
         "filters": [
           "reservation",
           "pool",
+          "replacement",
+          "action",
           "previous",
           "ordinal",
           "at"
@@ -3417,6 +3642,7 @@
           "commandKey",
           "previous",
           "reservation",
+          "replacement",
           "action",
           "at"
         ],
@@ -3441,6 +3667,7 @@
           "commandKey",
           "previous",
           "reservation",
+          "replacement",
           "action",
           "at"
         ],
@@ -3465,6 +3692,7 @@
           "commandKey",
           "previous",
           "reservation",
+          "replacement",
           "action",
           "at"
         ],
@@ -3785,6 +4013,13 @@
               "type": "string",
               "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
             },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
             "action": {
               "type": "string",
               "enum": [
@@ -3792,7 +4027,9 @@
                 "allocate",
                 "release",
                 "cancel",
-                "expire"
+                "expire",
+                "book",
+                "replace"
               ],
               "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
             },
@@ -3811,6 +4048,7 @@
             "commandKey",
             "previous",
             "reservation",
+            "replacement",
             "action",
             "at"
           ]
@@ -3845,6 +4083,13 @@
               "type": "string",
               "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
             },
+            "replacement": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-forge-reference": "@forgegraph/foundation/allocation/_/AllocationReservation"
+            },
             "action": {
               "type": "string",
               "enum": [
@@ -3852,7 +4097,9 @@
                 "allocate",
                 "release",
                 "cancel",
-                "expire"
+                "expire",
+                "book",
+                "replace"
               ],
               "x-forge-enum": "@forgegraph/foundation/allocation/_/AllocationAction"
             },

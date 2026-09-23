@@ -1,0 +1,2029 @@
+{
+  "version": "forge-source-map/1",
+  "package": "@forgegraph/foundation/planning-budget",
+  "buildHash": "aea22aa986df755d661b49795b1c50ebbcc53539ba368fc0c3307299c5b4bfd9",
+  "compilerVersion": "0.3.0",
+  "sources": {
+    "src/model.forge": {
+      "digest": "sha256:24a531540ab5aaaf91b25112724e0a419e5ee6863e8cbf31a05bf92464133e5a",
+      "byteLength": 3068
+    }
+  },
+  "anchors": {
+    "@forgegraph/foundation/planning-budget/_/BudgetAction": {
+      "file": "src/model.forge",
+      "start": 2159,
+      "end": 2224
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual": {
+      "file": "src/model.forge",
+      "start": 1855,
+      "end": 2158
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 1886,
+      "end": 1893
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 1896,
+      "end": 1907
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:account": {
+      "file": "src/model.forge",
+      "start": 2016,
+      "end": 2040
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:amount": {
+      "file": "src/model.forge",
+      "start": 1950,
+      "end": 1973
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:encumbrance": {
+      "file": "src/model.forge",
+      "start": 1922,
+      "end": 1947
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:fulfillment": {
+      "file": "src/model.forge",
+      "start": 2071,
+      "end": 2109
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:id": {
+      "file": "src/model.forge",
+      "start": 1912,
+      "end": 1919
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:posting": {
+      "file": "src/model.forge",
+      "start": 1976,
+      "end": 2013
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:posting/decorator:9d28fed5cd87a92aa348d8683e3339a2588f5739042e49b5d075c2374ff25ecc": {
+      "file": "src/model.forge",
+      "start": 2006,
+      "end": 2013
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#field:usage": {
+      "file": "src/model.forge",
+      "start": 2043,
+      "end": 2068
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#op:create": {
+      "file": "src/model.forge",
+      "start": 1855,
+      "end": 2158
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#op:get": {
+      "file": "src/model.forge",
+      "start": 1855,
+      "end": 2158
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#op:list.all": {
+      "file": "src/model.forge",
+      "start": 1855,
+      "end": 2158
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#rule:9b4fad1d4e6fabaa3118ed6e02b892c27c6ad8e75c5c1b302b04715d69b82928": {
+      "file": "src/model.forge",
+      "start": 2124,
+      "end": 2152
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent": {
+      "file": "src/model.forge",
+      "start": 2225,
+      "end": 3067
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 2255,
+      "end": 2262
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 2265,
+      "end": 2276
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:action": {
+      "file": "src/model.forge",
+      "start": 2406,
+      "end": 2427
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:actual": {
+      "file": "src/model.forge",
+      "start": 2430,
+      "end": 2452
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:encumbrance": {
+      "file": "src/model.forge",
+      "start": 2320,
+      "end": 2345
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:envelope": {
+      "file": "src/model.forge",
+      "start": 2291,
+      "end": 2317
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:id": {
+      "file": "src/model.forge",
+      "start": 2281,
+      "end": 2288
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:ordinal": {
+      "file": "src/model.forge",
+      "start": 2348,
+      "end": 2377
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:previous": {
+      "file": "src/model.forge",
+      "start": 2380,
+      "end": 2403
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#field:reversal": {
+      "file": "src/model.forge",
+      "start": 2455,
+      "end": 2486
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#list:3ae0329e6e8b72e6cbd66c809232f6d891dfe98b1fc6d2b34df48b0a11263404": {
+      "file": "src/model.forge",
+      "start": 3024,
+      "end": 3065
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:create": {
+      "file": "src/model.forge",
+      "start": 2225,
+      "end": 3067
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:get": {
+      "file": "src/model.forge",
+      "start": 2225,
+      "end": 3067
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:list.all": {
+      "file": "src/model.forge",
+      "start": 2225,
+      "end": 3067
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:list.byEnvelope": {
+      "file": "src/model.forge",
+      "start": 2225,
+      "end": 3067
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#rule:08c4bb64d94863a38fae381ef020adadeb37dc2c14397d860bc30fb57ed6bd15": {
+      "file": "src/model.forge",
+      "start": 2501,
+      "end": 2533
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#rule:4ce21105e1744ac54e91418d59a5df5f18783e0f9080bd3300e6606e9be541b7": {
+      "file": "src/model.forge",
+      "start": 2538,
+      "end": 2662
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#rule:d2345ea533e3c04c2ba8a89640d61b3f556a8efcdb1e2b6c088b324dc7ea8c47": {
+      "file": "src/model.forge",
+      "start": 2667,
+      "end": 2990
+    },
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#unique:d553248eef3406be8de2f28896d4539875e4a608539814ae74728075f89875de": {
+      "file": "src/model.forge",
+      "start": 2997,
+      "end": 3021
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance": {
+      "file": "src/model.forge",
+      "start": 1634,
+      "end": 1854
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 1664,
+      "end": 1671
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 1674,
+      "end": 1685
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#field:amount": {
+      "file": "src/model.forge",
+      "start": 1756,
+      "end": 1779
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#field:envelope": {
+      "file": "src/model.forge",
+      "start": 1700,
+      "end": 1726
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#field:id": {
+      "file": "src/model.forge",
+      "start": 1690,
+      "end": 1697
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#field:key": {
+      "file": "src/model.forge",
+      "start": 1729,
+      "end": 1753
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#field:reservation": {
+      "file": "src/model.forge",
+      "start": 1782,
+      "end": 1829
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#op:create": {
+      "file": "src/model.forge",
+      "start": 1634,
+      "end": 1854
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#op:get": {
+      "file": "src/model.forge",
+      "start": 1634,
+      "end": 1854
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#op:list.all": {
+      "file": "src/model.forge",
+      "start": 1634,
+      "end": 1854
+    },
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#unique:37758192454eaeb56d88d66a3a5898dc46f52dd712ec106c6bbe33b0207adee7": {
+      "file": "src/model.forge",
+      "start": 1832,
+      "end": 1852
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario": {
+      "file": "src/model.forge",
+      "start": 840,
+      "end": 1226
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 875,
+      "end": 882
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 885,
+      "end": 896
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#field:assumptions": {
+      "file": "src/model.forge",
+      "start": 989,
+      "end": 1033
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#field:id": {
+      "file": "src/model.forge",
+      "start": 901,
+      "end": 908
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#field:label": {
+      "file": "src/model.forge",
+      "start": 1036,
+      "end": 1062
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#field:plan": {
+      "file": "src/model.forge",
+      "start": 911,
+      "end": 922
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#field:previous": {
+      "file": "src/model.forge",
+      "start": 958,
+      "end": 986
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#field:revision": {
+      "file": "src/model.forge",
+      "start": 925,
+      "end": 955
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#op:create": {
+      "file": "src/model.forge",
+      "start": 840,
+      "end": 1226
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#op:get": {
+      "file": "src/model.forge",
+      "start": 840,
+      "end": 1226
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#op:list.all": {
+      "file": "src/model.forge",
+      "start": 840,
+      "end": 1226
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#rule:d494971b6def9e8fc6b4e0c317d1fac3706cd4656027f1571ad979a353c3939a": {
+      "file": "src/model.forge",
+      "start": 1077,
+      "end": 1196
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#unique:640bcaf9e73e37b4f8728544f38a98ca88f26c6dca3219f017398141f8f92d47": {
+      "file": "src/model.forge",
+      "start": 1203,
+      "end": 1224
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue": {
+      "file": "src/model.forge",
+      "start": 1227,
+      "end": 1431
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 1259,
+      "end": 1266
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 1269,
+      "end": 1280
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#field:goal": {
+      "file": "src/model.forge",
+      "start": 1325,
+      "end": 1336
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#field:id": {
+      "file": "src/model.forge",
+      "start": 1285,
+      "end": 1292
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#field:quantity": {
+      "file": "src/model.forge",
+      "start": 1339,
+      "end": 1360
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#field:scenario": {
+      "file": "src/model.forge",
+      "start": 1295,
+      "end": 1322
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#op:create": {
+      "file": "src/model.forge",
+      "start": 1227,
+      "end": 1431
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#op:get": {
+      "file": "src/model.forge",
+      "start": 1227,
+      "end": 1431
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#op:list.all": {
+      "file": "src/model.forge",
+      "start": 1227,
+      "end": 1431
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#rule:e225c6115479202943ea7db2b4b84a6facbda14298a4df246ca59a6abe801688": {
+      "file": "src/model.forge",
+      "start": 1375,
+      "end": 1401
+    },
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#unique:5d4bb7b484f9b75840b89c889a65b7c97191930689baf82a9f7b32a3273930fb": {
+      "file": "src/model.forge",
+      "start": 1408,
+      "end": 1429
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope": {
+      "file": "src/model.forge",
+      "start": 1432,
+      "end": 1633
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 1466,
+      "end": 1473
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 1476,
+      "end": 1487
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#field:account": {
+      "file": "src/model.forge",
+      "start": 1516,
+      "end": 1540
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#field:id": {
+      "file": "src/model.forge",
+      "start": 1492,
+      "end": 1499
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#field:limit": {
+      "file": "src/model.forge",
+      "start": 1543,
+      "end": 1565
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#field:plan": {
+      "file": "src/model.forge",
+      "start": 1502,
+      "end": 1513
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#field:unit": {
+      "file": "src/model.forge",
+      "start": 1568,
+      "end": 1592
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#op:create": {
+      "file": "src/model.forge",
+      "start": 1432,
+      "end": 1633
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#op:get": {
+      "file": "src/model.forge",
+      "start": 1432,
+      "end": 1633
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#op:list.all": {
+      "file": "src/model.forge",
+      "start": 1432,
+      "end": 1633
+    },
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#rule:f13be0ec58ee1be4a1550a1b79e095eefe6ed4e9eeb9f687006b983ddf62f01b": {
+      "file": "src/model.forge",
+      "start": 1607,
+      "end": 1627
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal": {
+      "file": "src/model.forge",
+      "start": 310,
+      "end": 461
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 333,
+      "end": 340
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 343,
+      "end": 354
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#field:id": {
+      "file": "src/model.forge",
+      "start": 359,
+      "end": 366
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#field:metric": {
+      "file": "src/model.forge",
+      "start": 383,
+      "end": 410
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#field:plan": {
+      "file": "src/model.forge",
+      "start": 369,
+      "end": 380
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#field:target": {
+      "file": "src/model.forge",
+      "start": 440,
+      "end": 459
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#field:unit": {
+      "file": "src/model.forge",
+      "start": 413,
+      "end": 437
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#op:create": {
+      "file": "src/model.forge",
+      "start": 310,
+      "end": 461
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#op:get": {
+      "file": "src/model.forge",
+      "start": 310,
+      "end": 461
+    },
+    "@forgegraph/foundation/planning-budget/_/Goal#op:list.all": {
+      "file": "src/model.forge",
+      "start": 310,
+      "end": 461
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone": {
+      "file": "src/model.forge",
+      "start": 462,
+      "end": 654
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 490,
+      "end": 497
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 500,
+      "end": 511
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#field:dueAt": {
+      "file": "src/model.forge",
+      "start": 554,
+      "end": 570
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#field:fulfillmentSet": {
+      "file": "src/model.forge",
+      "start": 573,
+      "end": 616
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#field:goal": {
+      "file": "src/model.forge",
+      "start": 540,
+      "end": 551
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#field:id": {
+      "file": "src/model.forge",
+      "start": 516,
+      "end": 523
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#field:plan": {
+      "file": "src/model.forge",
+      "start": 526,
+      "end": 537
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#op:create": {
+      "file": "src/model.forge",
+      "start": 462,
+      "end": 654
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#op:get": {
+      "file": "src/model.forge",
+      "start": 462,
+      "end": 654
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#op:list.all": {
+      "file": "src/model.forge",
+      "start": 462,
+      "end": 654
+    },
+    "@forgegraph/foundation/planning-budget/_/Milestone#rule:ed6b642c82cb51554b8065b5bdd96a8643c3deb705610e36c000e235ef3872d5": {
+      "file": "src/model.forge",
+      "start": 631,
+      "end": 648
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation": {
+      "file": "src/model.forge",
+      "start": 655,
+      "end": 839
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 693,
+      "end": 700
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 703,
+      "end": 714
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#field:finish": {
+      "file": "src/model.forge",
+      "start": 753,
+      "end": 789
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#field:id": {
+      "file": "src/model.forge",
+      "start": 719,
+      "end": 726
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#field:milestone": {
+      "file": "src/model.forge",
+      "start": 729,
+      "end": 750
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#op:create": {
+      "file": "src/model.forge",
+      "start": 655,
+      "end": 839
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#op:get": {
+      "file": "src/model.forge",
+      "start": 655,
+      "end": 839
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#op:list.all": {
+      "file": "src/model.forge",
+      "start": 655,
+      "end": 839
+    },
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#rule:343e59aa2c6d403728959465c76a295b347d0b67dad4ebcae73682aca97e6bb9": {
+      "file": "src/model.forge",
+      "start": 804,
+      "end": 833
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan": {
+      "file": "src/model.forge",
+      "start": 125,
+      "end": 309
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/model.forge",
+      "start": 148,
+      "end": 155
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#decorator:ca6572386214da94e59f5090ab851bce4b33b475aa2b5c2a298aba9662a32c8d": {
+      "file": "src/model.forge",
+      "start": 158,
+      "end": 169
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#field:classification": {
+      "file": "src/model.forge",
+      "start": 259,
+      "end": 307
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#field:definition": {
+      "file": "src/model.forge",
+      "start": 184,
+      "end": 227
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#field:id": {
+      "file": "src/model.forge",
+      "start": 174,
+      "end": 181
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#field:label": {
+      "file": "src/model.forge",
+      "start": 230,
+      "end": 256
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#op:create": {
+      "file": "src/model.forge",
+      "start": 125,
+      "end": 309
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#op:get": {
+      "file": "src/model.forge",
+      "start": 125,
+      "end": 309
+    },
+    "@forgegraph/foundation/planning-budget/_/Plan#op:list.all": {
+      "file": "src/model.forge",
+      "start": 125,
+      "end": 309
+    }
+  },
+  "derivations": {
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:list.byPool": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:find.byPoolKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:beginUpload": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:download": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:finalizeUpload": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:find.byContent": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:list.byArtifact": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationAssignment#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationAssignment"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationAssignment#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationAssignment"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationAssignment#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationAssignment"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationAssignment#op:list.byClassifications": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationAssignment"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationRetraction#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationRetraction"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationRetraction#op:find.byAssignment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationRetraction"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationRetraction#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationRetraction"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationRetraction#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationRetraction"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationSet"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationSet"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ClassificationSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ClassificationSet"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:ancestors": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:children": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:list.byTaxonomy": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:move": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Concept#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Concept"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptAlias#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptAlias"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptAlias#op:find.byTaxonomyAlias": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptAlias"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptAlias#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptAlias"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptAlias#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptAlias"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptDisposition#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptDisposition"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptDisposition#op:find.byConcept": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptDisposition"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptDisposition#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptDisposition"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptDisposition#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptDisposition"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptRevision#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptRevision"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptRevision#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptRevision"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptRevision#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptRevision"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/ConceptRevision#op:list.byConcept": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/ConceptRevision"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Taxonomy#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Taxonomy"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Taxonomy#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Taxonomy"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Taxonomy#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Taxonomy"
+      }
+    ],
+    "@forgegraph/foundation/classification/_/Taxonomy#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/classification/_/Taxonomy"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationExecutor#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationExecutor"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationExecutor#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationExecutor"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationExecutor#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationExecutor"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationFinish#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationFinish#op:find.byRun": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationFinish#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationFinish#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationRun#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationRun#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationRun#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationRun#op:list.byDefinition": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationRun#op:list.byEvaluationSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationSet"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationSet"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationSet"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationStart#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationStart"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationStart#op:find.byRun": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationStart"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationStart#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationStart"
+      }
+    ],
+    "@forgegraph/foundation/evaluation/_/EvaluationStart#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evaluation/_/EvaluationStart"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.byBundle": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.bySource": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:find.byBundle": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:list.byFulfillmentSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:find.byFulfillment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:find.byPrior": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentSet"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentSet"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentSet"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:find.byFulfillment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:find.byQueueTask": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:list.byFulfillment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:find.byNamespaceIssuerScopeValue": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.byIdentifierSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:find.byIdentifier": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/Account#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/Account"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/Account#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/Account"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/Account#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/Account"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/Entry#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/Entry"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/Entry#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/Entry"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/Entry#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/Entry"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/LedgerBook#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/LedgerBook"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/LedgerBook#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/LedgerBook"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/LedgerBook#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/LedgerBook"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/PostingGroup#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/PostingGroup"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/PostingGroup#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/PostingGroup"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/PostingGroup#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/PostingGroup"
+      }
+    ],
+    "@forgegraph/foundation/ledger/_/PostingGroup#op:list.byBook": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/ledger/_/PostingGroup"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/BudgetActual"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/BudgetActual"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/BudgetActual#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/BudgetActual"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/BudgetEvent"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/BudgetEvent"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/BudgetEvent"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/BudgetEvent#op:list.byEnvelope": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/BudgetEvent"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Encumbrance"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Encumbrance"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Encumbrance#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Encumbrance"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/ForecastScenario"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/ForecastScenario"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/ForecastScenario#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/ForecastScenario"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/ForecastValue"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/ForecastValue"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/ForecastValue#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/ForecastValue"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/FundingEnvelope"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/FundingEnvelope"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/FundingEnvelope#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/FundingEnvelope"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Goal#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Goal"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Goal#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Goal"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Goal#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Goal"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Milestone#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Milestone"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Milestone#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Milestone"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Milestone#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Milestone"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/MilestoneEvaluation"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Plan#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Plan"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Plan#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Plan"
+      }
+    ],
+    "@forgegraph/foundation/planning-budget/_/Plan#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/planning-budget/_/Plan"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:list.byPin": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:find.byRepositoryAnchorRevision": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:list.byRepositoryAnchor": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageCorrection#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageCorrection"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageCorrection#op:find.byEvent": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageCorrection"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageCorrection#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageCorrection"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageCorrection#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageCorrection"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageDimension#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageDimension"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageDimension#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageDimension"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageDimension#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageDimension"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageDimension#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageDimension"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageEvent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageEvent"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageEvent#op:find.bySourceEventKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageEvent"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageEvent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageEvent"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageEvent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageEvent"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageEvent#op:list.byStream": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageEvent"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageSource#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageSource"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageSource#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageSource"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageSource#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageSource"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageSource#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageSource"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageStream#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageStream"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageStream#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageStream"
+      }
+    ],
+    "@forgegraph/foundation/usage/_/UsageStream#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/usage/_/UsageStream"
+      }
+    ]
+  }
+}

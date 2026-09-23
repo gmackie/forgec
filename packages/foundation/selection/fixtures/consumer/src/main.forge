@@ -1,0 +1,22 @@
+import selection
+resource ProcurementBid
+  @tenant
+{
+  id : id
+  submission : selection.Submission
+  tenderCode : text length 1..100
+}
+resource JobApplication
+  @tenant
+{
+  id : id
+  submission : selection.Submission
+  applicationCode : text length 1..100
+}
+resource GrantApplication
+  @tenant
+{
+  id : id
+  submission : selection.Submission
+  programCode : text length 1..100
+}

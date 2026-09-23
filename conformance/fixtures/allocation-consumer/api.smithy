@@ -23,6 +23,7 @@ structure AllocationJournalRecord {
     previous: String
     @required
     reservation: String
+    replacement: String
     @required
     action: String
     @required
@@ -39,6 +40,7 @@ structure AllocationJournalCreateInput {
     previous: String
     @required
     reservation: String
+    replacement: String
     @required
     action: String
     @required

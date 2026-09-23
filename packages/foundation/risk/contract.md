@@ -1,6 +1,6 @@
 # risk contract
 
-Issue #61; implementation acceptance remains planned.
+Issue #61; local implementation acceptance passes on memory, SQLite and PostgreSQL. Hosted provider certification remains separate.
 
 ## Ownership
 

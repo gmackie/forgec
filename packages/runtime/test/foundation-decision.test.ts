@@ -71,7 +71,7 @@ for (const adapter of foundationAdapters) {
       expect((await run(f.decisions.state(id, ctx))).responses).toHaveLength(1);
       await expect(f.open("First")).rejects.toThrow();
       const guarded = new Engine(f.engine.model, f.engine.layer);
-      guarded.gatekeeper.authorizer = localAuthorizer({ policies: f.engine.model.resources.map(r => r.name).filter(name => name !== p + "DecisionEvent").map(name => ({ id: name, actions: [name + ".*"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
+      guarded.gatekeeper.authorizer = localAuthorizer({ policies: f.engine.model.resources.map(r => r.id).filter(name => name !== p + "DecisionEvent").map(name => ({ id: name, actions: [name + ".*"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
       await expect(run(new Decisions(guarded).state(id, ctx))).rejects.toThrow();
       await expect(run(f.decisions.expire(id, ctx))).rejects.toThrow();
     } finally { await f.close(); }
@@ -106,7 +106,7 @@ for (const adapter of foundationAdapters) {
     try {
       const record = await f.open("Single", 1), id = String(record.id);
       const blocked = new Engine(f.engine.model, f.engine.layer);
-      blocked.gatekeeper.authorizer = localAuthorizer({ policies: f.engine.model.resources.map(r => ({ id: r.name, actions: [r.name + ".get"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
+      blocked.gatekeeper.authorizer = localAuthorizer({ policies: f.engine.model.resources.map(r => ({ id: r.id, actions: [r.id + ".get"], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
       await expect(run(new Decisions(blocked).respond(id, f.voters[0]!, [0], ctx))).rejects.toThrow();
       expect((await run(f.decisions.state(id, ctx))).events).toHaveLength(0);
       await run(f.decisions.respond(id, f.voters[0]!, [0], ctx));

@@ -1,0 +1,7 @@
+# Notifications
+
+Topics and typed Participation subscriptions resolve a paginated visible audience. Endpoints point to DeliveryDestination; provider-specific addresses remain typed application satellites. Notifications pin optional content/template Artifact revisions without imposing a template language.
+
+The dispatch policy is an explicitly selected immutable preference snapshot. Later preferences never cancel existing logical notifications; callers select a newer revision for subsequent events. A disabled snapshot durably suppresses delivery with its reason. Stable tenant-scoped event/recipient keys deduplicate logical notifications; reuse with different inputs conflicts. Enabled snapshots create one stable DeliveryIntent and a resumable NotificationDeliveryLink. A crash between intent and link leaves recoverable durable work, not a false delivery claim. Delivery owns attempt/receipt/uncertainty, and outcome walks its complete bounded attempt chain with authorized reads.
+
+Participation is checked at the notification instant. Retroactive membership changes can fail validation and must be governed. Kernel policies remain mandatory; membership does not grant dispatch authority. Synthetic KanBanger, ForgeGraph and Bob consumers demonstrate typed content extensions, not application dogfooding. Local generated memory/SQLite/PostgreSQL traces cover preferences, suppression, duplicate triggers, crash recovery, callbacks, tenant boundaries and hidden facts. Hosted D1/DynamoDB certification remains pending.

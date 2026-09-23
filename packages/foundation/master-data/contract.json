@@ -10,10 +10,20 @@
     "reconciliation"
   ],
   "facts": [
-    "Resolution case, typed source/canonical links, survivorship decisions and reversible merge history."
+    "ResolutionDomain",
+    "SourceRecord",
+    "CanonicalRecord",
+    "ResolutionCase",
+    "ResolutionChoice",
+    "SurvivorshipDecision",
+    "CanonicalLink"
   ],
   "operations": [
-    "Typed creation, query and lifecycle operations for master-data"
+    "Initialize source mapping",
+    "Validate decision-backed survivorship",
+    "Merge source mapping with expected predecessor",
+    "Unmerge current merge",
+    "Read validated immutable mapping history"
   ],
   "invariants": [
     "Party/domain canonical entities and Integration adapters are consumers/bridges. Resolution-specific handle, never a universal EntityRef.",
@@ -24,37 +34,61 @@
       "id": "F62-01",
       "description": "source mapping model",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-master-data.test.ts"
+      ]
     },
     {
       "id": "F62-02",
       "description": "match/evaluation case",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-master-data.test.ts"
+      ]
     },
     {
       "id": "F62-03",
       "description": "canonical-link fact",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-master-data.test.ts"
+      ]
     },
     {
       "id": "F62-04",
       "description": "survivorship decisions",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-master-data.test.ts"
+      ]
     },
     {
       "id": "F62-05",
       "description": "merge/unmerge semantics",
       "kind": "runtime",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-master-data.test.ts"
+      ]
     },
     {
       "id": "F62-06",
       "description": "fixtures for customer, supplier and asset resolution",
       "kind": "fixture",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-master-data.test.ts"
+      ]
     }
   ],
   "fixtures": [

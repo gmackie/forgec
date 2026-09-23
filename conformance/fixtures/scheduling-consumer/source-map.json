@@ -1,0 +1,1393 @@
+{
+  "version": "forge-source-map/1",
+  "package": "@foundation-probe/scheduling-consumers",
+  "buildHash": "79107a01fc934b57c79759062f88f413e30ddb827dc9ecba6a86f8b2658cd22b",
+  "compilerVersion": "0.3.0",
+  "sources": {
+    "src/main.forge": {
+      "digest": "sha256:09ad9f9df86ae4103fe4e194984b49a94c8740366f366fdb26ddf5f626995fd2",
+      "byteLength": 273
+    }
+  },
+  "anchors": {
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking": {
+      "file": "src/main.forge",
+      "start": 184,
+      "end": 272
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/main.forge",
+      "start": 212,
+      "end": 219
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#field:appointment": {
+      "file": "src/main.forge",
+      "start": 234,
+      "end": 270
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#field:id": {
+      "file": "src/main.forge",
+      "start": 224,
+      "end": 231
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:create": {
+      "file": "src/main.forge",
+      "start": 184,
+      "end": 272
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:delete": {
+      "file": "src/main.forge",
+      "start": 184,
+      "end": 272
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:get": {
+      "file": "src/main.forge",
+      "start": 184,
+      "end": 272
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:list.all": {
+      "file": "src/main.forge",
+      "start": 184,
+      "end": 272
+    },
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:update": {
+      "file": "src/main.forge",
+      "start": 184,
+      "end": 272
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit": {
+      "file": "src/main.forge",
+      "start": 18,
+      "end": 100
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/main.forge",
+      "start": 40,
+      "end": 47
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#field:appointment": {
+      "file": "src/main.forge",
+      "start": 62,
+      "end": 98
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#field:id": {
+      "file": "src/main.forge",
+      "start": 52,
+      "end": 59
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:create": {
+      "file": "src/main.forge",
+      "start": 18,
+      "end": 100
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:delete": {
+      "file": "src/main.forge",
+      "start": 18,
+      "end": 100
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:get": {
+      "file": "src/main.forge",
+      "start": 18,
+      "end": 100
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:list.all": {
+      "file": "src/main.forge",
+      "start": 18,
+      "end": 100
+    },
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:update": {
+      "file": "src/main.forge",
+      "start": 18,
+      "end": 100
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking": {
+      "file": "src/main.forge",
+      "start": 101,
+      "end": 183
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#decorator:a25a935fe578cb9f71af8b0d6b7efe45330e9f7db8ab93e120a6e6803699b35b": {
+      "file": "src/main.forge",
+      "start": 123,
+      "end": 130
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#field:appointment": {
+      "file": "src/main.forge",
+      "start": 145,
+      "end": 181
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#field:id": {
+      "file": "src/main.forge",
+      "start": 135,
+      "end": 142
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:create": {
+      "file": "src/main.forge",
+      "start": 101,
+      "end": 183
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:delete": {
+      "file": "src/main.forge",
+      "start": 101,
+      "end": 183
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:get": {
+      "file": "src/main.forge",
+      "start": 101,
+      "end": 183
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:list.all": {
+      "file": "src/main.forge",
+      "start": 101,
+      "end": 183
+    },
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:update": {
+      "file": "src/main.forge",
+      "start": 101,
+      "end": 183
+    }
+  },
+  "derivations": {
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationJournal#op:list.byPool": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationJournal"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationPool#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationPool"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:find.byPoolKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/allocation/_/AllocationReservation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/allocation/_/AllocationReservation"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/Artifact#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/Artifact"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactComponent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactComponent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:beginUpload": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:download": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:finalizeUpload": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactContent#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactContent"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:find.byContent": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/artifact/_/ArtifactRevision#op:list.byArtifact": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityCalendar#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityCalendar"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityCalendar#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityCalendar"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityCalendar#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityCalendar"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision#op:list.byCalendar": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityCalendarRevision"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityRule#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityRule"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityRule#op:find.byRuleSetOrdinal": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityRule"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityRule#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityRule"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityRule#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityRule"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityRuleSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityRuleSet"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityRuleSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityRuleSet"
+      }
+    ],
+    "@forgegraph/foundation/availability/_/AvailabilityRuleSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/availability/_/AvailabilityRuleSet"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceBundle#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceBundle"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.byBundle": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceItem#op:list.bySource": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceItem"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceMember#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceMember"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:find.byBundle": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSeal#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/evidence/_/EvidenceSource#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/Fulfillment#op:list.byFulfillmentSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/Fulfillment"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:find.byFulfillment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentEnd#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentExecutor"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:find.byPrior": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentReplacement"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentSet"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentSet"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentSet"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:find.byFulfillment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentStart#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentStart"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:find.byQueueTask": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink#op:list.byFulfillment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/fulfillment/_/FulfillmentTaskLink"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:find.byNamespaceIssuerScopeValue": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.byIdentifierSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:find.byIdentifier": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:list.byParticipant": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/Participation#op:list.byParticipationSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/Participation"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:find.byParticipation": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationEnd#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationEnd"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:find.byNamespaceName": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationRole#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationRole"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationSet"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationSet"
+      }
+    ],
+    "@forgegraph/foundation/participation/_/ParticipationSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/participation/_/ParticipationSet"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.byParty": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.byPrincipal": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:find.byRepresentation": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:ancestors": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:children": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:find.byIdentifiers": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:move": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/Place#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/Place"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceAddressRevision#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceAddressRevision"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceAddressRevision#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceAddressRevision"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceAddressRevision#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceAddressRevision"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceAddressRevision#op:list.byPlace": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceAddressRevision"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceTimezoneRevision#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceTimezoneRevision"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceTimezoneRevision#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceTimezoneRevision"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceTimezoneRevision#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceTimezoneRevision"
+      }
+    ],
+    "@forgegraph/foundation/place/_/PlaceTimezoneRevision#op:list.byPlace": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/place/_/PlaceTimezoneRevision"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/Appointment#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/Appointment"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/Appointment#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/Appointment"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/Appointment#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/Appointment"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/Appointment#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/Appointment"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentCommit#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentCommit"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentCommit#op:find.byAppointment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentCommit"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentCommit#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentCommit"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentCommit#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentCommit"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentEnd#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentEnd#op:find.byAppointment": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentEnd#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentEnd#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentEnd"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentReservation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentReservation"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentReservation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentReservation"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/AppointmentReservation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/AppointmentReservation"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/CandidateSlot#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/CandidateSlot"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/CandidateSlot#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/CandidateSlot"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/CandidateSlot#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/CandidateSlot"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/SchedulingNeed#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/SchedulingNeed"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/SchedulingNeed#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/SchedulingNeed"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/SchedulingNeed#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/SchedulingNeed"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/SchedulingRequirement#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/SchedulingRequirement"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/SchedulingRequirement#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/SchedulingRequirement"
+      }
+    ],
+    "@forgegraph/foundation/scheduling/_/SchedulingRequirement#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/scheduling/_/SchedulingRequirement"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Realization#op:list.byPin": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Realization"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/Repository#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/Repository"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:find.byRepositoryAnchorRevision": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@forgegraph/foundation/specification/_/SpecificationPin#op:list.byRepositoryAnchor": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/specification/_/SpecificationPin"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/ClassroomBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/ClassroomBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/ClassroomBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/ClassroomBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/ClassroomBooking#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/ClassroomBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/FieldVisit"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/FieldVisit"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/FieldVisit"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/FieldVisit"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/FieldVisit#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/FieldVisit"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/LabBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:delete": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/LabBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/LabBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/LabBooking"
+      }
+    ],
+    "@foundation-probe/scheduling-consumers/_/LabBooking#op:update": [
+      {
+        "kind": "generated-operation",
+        "from": "@foundation-probe/scheduling-consumers/_/LabBooking"
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+import risk
+resource ProjectRisk @tenant @appendOnly {
+ id : id
+ risk : risk.Risk
+ project : text length 1..100
+ daysExposed : integer >= 0
+}
+resource SecurityRisk @tenant @appendOnly {
+ id : id
+ risk : risk.Risk
+ threat : text length 1..200
+ asset : text length 1..200
+}
+resource VendorRisk @tenant @appendOnly {
+ id : id
+ risk : risk.Risk
+ vendor : text length 1..200
+ region : text length 1..100
+}
