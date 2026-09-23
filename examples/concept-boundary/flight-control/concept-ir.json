@@ -1,0 +1,628 @@
+{
+  "version": "concept-ir/2",
+  "package": "@boundary/flight-control",
+  "entities": {
+    "@boundary/flight-control/_/FlightMode": {
+      "name": "FlightMode",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "mode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "lastSequence": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "approvalRevision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@boundary/flight-control/_/FlightEnvelope": {
+      "name": "FlightEnvelope",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "maxSampleAgeUs": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "approvedEnvelopeDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/flight-control/_/ControlDecision": {
+      "name": "ControlDecision",
+      "fields": {
+        "sequence": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "approvalRevision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "selectedMode": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/flight-control/_/AirframeIO": {
+      "name": "AirframeIO",
+      "data": {
+        "sample": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/flight-control/_/FlightSample"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Tick"
+      ],
+      "accepts": {
+        "command": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/flight-control/_/SurfaceDemand"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@boundary/flight-control/_/ApproveFlightEnvelope": {
+      "name": "ApproveFlightEnvelope",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/flight-control/_/ApproveFlightEnvelope#activation:approval": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/flight-control/_/FlightEnvelope",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@boundary/flight-control/_/ApproveFlightEnvelope#output:approval": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/flight-control/_/FlightEnvelope",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/flight-control/_/ReactToFlightTick": {
+      "name": "ReactToFlightTick",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {
+        "@boundary/flight-control/_/ReactToFlightTick#activation:tick": {
+          "kind": "externalEvent",
+          "external": "@boundary/flight-control/_/AirframeIO",
+          "event": "Tick"
+        }
+      },
+      "inputs": {
+        "@boundary/flight-control/_/ReactToFlightTick#input:sample": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/flight-control/_/FlightSample"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/flight-control/_/AirframeIO"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/flight-control/_/ReactToFlightTick#input:approval": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/flight-control/_/FlightEnvelope",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/flight-control/_/ReactToFlightTick#input:previous": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/flight-control/_/FlightMode",
+              "representation": "record"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/flight-control/_/ReactToFlightTick#output:state": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/flight-control/_/FlightMode",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@boundary/flight-control/_/ReactToFlightTick#output:decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/flight-control/_/ControlDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/flight-control/_/ReactToFlightTick#output:command": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/flight-control/_/SurfaceDemand"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/flight-control/_/AirframeIO"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/flight-control/_/FlightSample": {
+      "sampleSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "capturedAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "airspeedMps": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "decimal",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "attitudeValid": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "channelDisagreement": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/flight-control/_/SurfaceDemand": {
+      "sequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "engaged": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "bool",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      },
+      "demandToken": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": false,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {}
+}

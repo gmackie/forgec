@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "conceptHash": "3afd9c1b17f32f74e1216825278455c583a2e77aa47b06b0dd9f6fd75fdcb349",
+  "boundarySemanticHash": "c402c211d561ac998d6143d3754dfd61492f02c9e4bf6c74c23667172f77e04c",
+  "artifacts": [
+    {
+      "id": "epoch-fencing",
+      "sha256": "5c631a908411616e8359a8f57d7a4c215b011de98cec2523184fdb8e03dafee8",
+      "path": "specialized-model/epoch-fencing.txt",
+      "process": "@boundary/network-control/_/ApplyNetworkPlan",
+      "inputPorts": [
+        "@boundary/network-control/_/ApplyNetworkPlan#input:decision",
+        "@boundary/network-control/_/ApplyNetworkPlan#input:receipt"
+      ],
+      "outputPorts": [
+        "@boundary/network-control/_/ApplyNetworkPlan#output:attempt",
+        "@boundary/network-control/_/ApplyNetworkPlan#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Unexecuted state and adversarial-trace handoff only; no formal model checker run."
+    }
+  ]
+}

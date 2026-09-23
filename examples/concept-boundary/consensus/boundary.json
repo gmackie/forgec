@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "slug": "consensus",
+  "outcomes": [
+    "A",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "logical-replication",
+      "description": "One logical committed-state owner across physical replicas",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/consensus/_/ApplyCommitted",
+        "@boundary/consensus/_/ReplicatedState",
+        "@boundary/consensus/_/ProposeCommand"
+      ],
+      "pressures": [
+        "consensus"
+      ],
+      "rationale": "Physical replicas implement one logical history; ApplyCommitted alone owns the application projection, without proving the external certificate sound."
+    },
+    {
+      "id": "verification-record",
+      "description": "Artifact-bound requests and immutable evidence",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/consensus/_/CheckProtocol",
+        "@boundary/consensus/_/RecordVerification",
+        "@boundary/consensus/_/VerificationRun"
+      ],
+      "pressures": [
+        "traceability"
+      ],
+      "rationale": "Discrete admission and provenance fit typed inputs/outputs; RecordVerification is the sole logical owner."
+    },
+    {
+      "id": "agreement",
+      "description": "Quorum intersection and adversarial interleavings",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/consensus/_/TLC"
+      ],
+      "pressures": [
+        "consensus",
+        "formal-verification"
+      ],
+      "rationale": "State/action exploration belongs to TLA+; a ConceptIR graph cannot establish temporal safety or liveness."
+    },
+    {
+      "id": "replica-execution",
+      "description": "Replicas and retrying analyzer jobs",
+      "layer": "L1",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/consensus/_/CheckProtocol"
+      ],
+      "pressures": [
+        "platform-mapping"
+      ],
+      "rationale": "Multiple execution attempts realize one request; they do not create competing semantic owners."
+    },
+    {
+      "id": "failure-domains",
+      "description": "Physical replica and checker placement",
+      "layer": "L2",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/consensus/_/TLC"
+      ],
+      "pressures": [
+        "platform-mapping",
+        "resource-budgets"
+      ],
+      "rationale": "Region/host allocation is deployment evidence; the bounded model contains no topology."
+    }
+  ],
+  "facets": [],
+  "realization": {
+    "strategy": "Export digest-bound verification request; admit matching analyzer report.",
+    "placement": "Protocol replicas may span failure domains; TLC workers run on analysis hosts.",
+    "limitations": [
+      "No executable Forge adapter supplied.",
+      "Bounded single-slot write-once voting model; no leader election, crash recovery, log replication, or liveness proof."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "quorum-model",
+      "path": "specialized-model/BoundedQuorum.tla",
+      "format": "TLA+",
+      "status": "checked",
+      "process": "@boundary/consensus/_/CheckProtocol",
+      "inputPorts": [
+        "@boundary/consensus/_/CheckProtocol#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/consensus/_/CheckProtocol#output:request"
+      ],
+      "claim": "TLC checks three named safety invariants only for the finite supplied configuration."
+    },
+    {
+      "id": "quorum-config",
+      "path": "specialized-model/BoundedQuorum.cfg",
+      "format": "TLC configuration",
+      "status": "checked",
+      "process": "@boundary/consensus/_/CheckProtocol",
+      "inputPorts": [
+        "@boundary/consensus/_/CheckProtocol#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/consensus/_/CheckProtocol#output:request"
+      ],
+      "claim": "Three voters, two values, one slot; no fairness assumption."
+    },
+    {
+      "id": "verification-report",
+      "path": "specialized-model/verification.json",
+      "format": "analyzer execution evidence",
+      "status": "checked",
+      "process": "@boundary/consensus/_/RecordVerification",
+      "inputPorts": [
+        "@boundary/consensus/_/RecordVerification#input:report"
+      ],
+      "outputPorts": [
+        "@boundary/consensus/_/RecordVerification#output:record",
+        "@boundary/consensus/_/RecordVerification#output:recorded"
+      ],
+      "claim": "Pins tool and input digests, bounded state counts and checks."
+    }
+  ],
+  "sources": [
+    {
+      "title": "TLA+ language and tools",
+      "url": "https://lamport.azurewebsites.net/tla/tla.html",
+      "supports": "State/action/temporal semantics and finite model checking are separate from architecture."
+    },
+    {
+      "title": "TLA+ official tool release",
+      "url": "https://github.com/tlaplus/tlaplus/releases/tag/v1.8.0",
+      "supports": "Source of external TLC binary; exact downloaded bytes are hash pinned."
+    },
+    {
+      "title": "Raft authors: In Search of an Understandable Consensus Algorithm",
+      "url": "https://raft.github.io/raft.pdf",
+      "supports": "Leader election, replicated logs and safety obligations omitted from this intentionally smaller voting abstraction."
+    }
+  ]
+}

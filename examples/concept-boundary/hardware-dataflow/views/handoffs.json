@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "conceptHash": "caf5c6adc98acac3d9e26eb0d095560e1c327033db51c2a175500ccfb585c1ae",
+  "boundarySemanticHash": "4a613d2e362a2f923f71b366ab9b4a9c12505ceb108dfd40142a1c0209cf3768",
+  "artifacts": [
+    {
+      "id": "elastic-stage",
+      "sha256": "22473e3af1111a5da49d3e7b3aef4b49fb98f579980a3eec4673d1a5e5dea9ab",
+      "path": "specialized-model/elastic_stage.sv",
+      "process": "@boundary/hardware-dataflow/_/ValidatePipeline",
+      "inputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#output:request"
+      ],
+      "status": "checked",
+      "claim": "One-slot ready/valid pipeline, verified by directed stall/replacement test."
+    },
+    {
+      "id": "elastic-testbench",
+      "sha256": "89bbc97ad4a5ba2a616ac61b85e0b8240f865e3f6ada2a821b28a51aafe2140c",
+      "path": "specialized-model/elastic_stage_tb.sv",
+      "process": "@boundary/hardware-dataflow/_/ValidatePipeline",
+      "inputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#output:request"
+      ],
+      "status": "checked",
+      "claim": "Checks occupancy, stable stalled output, ordering and sample conservation."
+    },
+    {
+      "id": "rtl-report",
+      "sha256": "aff552ec212c80d3b98342b0f944f05496862df2eab41d8ec10660d87706d619",
+      "path": "specialized-model/verification.json",
+      "process": "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+      "inputPorts": [
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#input:report"
+      ],
+      "outputPorts": [
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:record",
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:recorded"
+      ],
+      "status": "checked",
+      "claim": "Pins source and testbench; records directed simulation only."
+    }
+  ]
+}

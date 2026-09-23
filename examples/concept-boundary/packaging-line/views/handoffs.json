@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "conceptHash": "74973fd7971d65fa51228e7bf066148ffcf66693d063c056413d1eccc31dbc67",
+  "boundarySemanticHash": "84f5e13a597dea2b470076a186d11e058f26865e7c368f7f33c0684f2dfada0a",
+  "artifacts": [
+    {
+      "id": "controller-model",
+      "sha256": "d87583e2ae99745295722b24fa554bb7ba3d5c4b09f205e554b6ecb92d287065",
+      "path": "specialized-model/controller.st-sketch.txt",
+      "process": "@boundary/packaging-line/_/ReactToScan",
+      "inputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#input:sample",
+        "@boundary/packaging-line/_/ReactToScan#input:approval",
+        "@boundary/packaging-line/_/ReactToScan#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#output:state",
+        "@boundary/packaging-line/_/ReactToScan#output:decision",
+        "@boundary/packaging-line/_/ReactToScan#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Interface and explanatory pseudocode only; no control analyzer, code generator or hardware test executed."
+    },
+    {
+      "id": "deployment-model",
+      "sha256": "210d464503f925c7a65d694231b313b532e11ceb25ab818611b0b1757d9ed5f0",
+      "path": "specialized-model/deployment.aadl-sketch.txt",
+      "process": "@boundary/packaging-line/_/ReactToScan",
+      "inputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#input:sample",
+        "@boundary/packaging-line/_/ReactToScan#input:approval",
+        "@boundary/packaging-line/_/ReactToScan#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#output:state",
+        "@boundary/packaging-line/_/ReactToScan#output:decision",
+        "@boundary/packaging-line/_/ReactToScan#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Analysis inputs and mapping questions only; not an executable AADL model or schedulability result."
+    }
+  ]
+}

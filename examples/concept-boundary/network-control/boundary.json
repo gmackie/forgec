@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "slug": "network-control",
+  "outcomes": [
+    "A",
+    "B"
+  ],
+  "concerns": [
+    {
+      "id": "intent-observation",
+      "description": "Desired configuration, observed generations and application evidence",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/network-control/_/NetworkIntent",
+        "@boundary/network-control/_/ObservedTopology",
+        "@boundary/network-control/_/ApplicationAttempt"
+      ],
+      "pressures": [
+        "reconciliation",
+        "traceability"
+      ],
+      "rationale": "Intended configuration and observed device state are separate durable concepts with separate logical owners."
+    },
+    {
+      "id": "convergence-contract",
+      "description": "Fenced idempotent reconciliation under stale telemetry",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/network-control/_/ReconcileNetwork",
+        "@boundary/network-control/_/ApplyNetworkPlan"
+      ],
+      "pressures": [
+        "convergence",
+        "backpressure"
+      ],
+      "rationale": "Progress depends on stable intent, fair retries and reachable devices; neither monotonic convergence nor bounded completion is implied by a Process edge."
+    },
+    {
+      "id": "routing-strategy",
+      "description": "Route computation and device protocol adapters",
+      "layer": "L1",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/network-control/_/RoutingEngine",
+        "@boundary/network-control/_/ReconcileNetwork"
+      ],
+      "pressures": [],
+      "rationale": "A route solver implementation can change while topology/policy digests and feasibility meaning remain fixed."
+    },
+    {
+      "id": "replica-placement",
+      "description": "Replicated coordinators with epoch-fenced device writes",
+      "layer": "L2",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/network-control/_/ApplyNetworkPlan",
+        "@boundary/network-control/_/NetworkDevices"
+      ],
+      "pressures": [
+        "platform-mapping",
+        "resource-budgets"
+      ],
+      "rationale": "Physical replicas implement one logical owner; epoch allocation/fencing is a concrete deployment obligation."
+    },
+    {
+      "id": "fencing-validation",
+      "description": "Adversarial epoch and retry validation handoff",
+      "layer": "L1",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/network-control/_/ApplyNetworkPlan"
+      ],
+      "pressures": [
+        "formal-verification"
+      ],
+      "rationale": "The current state/trace sketch records validation obligations only; an executed temporal protocol model would be a separate C artifact, not a kernel extension."
+    }
+  ],
+  "facets": [
+    {
+      "id": "reconcile-convergence",
+      "kind": "convergence",
+      "status": "proposed",
+      "targets": [
+        "@boundary/network-control/_/ReconcileNetwork",
+        "@boundary/network-control/_/ApplyNetworkPlan"
+      ],
+      "parameters": {
+        "stableIntentRequired": true,
+        "deviceReachabilityRequired": true,
+        "writeKey": [
+          "deviceId",
+          "desiredRevision",
+          "controllerEpoch",
+          "idempotencyKey"
+        ]
+      },
+      "meaning": "After intent stabilizes, repeated reconciliation should approach the same admitted configuration under explicitly stated availability assumptions.",
+      "obligations": [
+        "Specify fair retry and observable success criteria.",
+        "Test stale epochs, reordered telemetry and duplicate receipts; no liveness or consensus proof is supplied."
+      ]
+    },
+    {
+      "id": "device-backpressure",
+      "kind": "resource-budget",
+      "status": "proposed",
+      "targets": [
+        "@boundary/network-control/_/ApplyNetworkPlan"
+      ],
+      "parameters": {
+        "queuePolicy": "coalesce superseded desired revisions",
+        "perDeviceOutstanding": "bounded"
+      },
+      "meaning": "Slow devices must not create unbounded retry work.",
+      "obligations": [
+        "Choose finite limits and retry budgets in the realization.",
+        "Prove coalescing does not discard required teardown operations before adopting it."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "Generation-aware reconciliation, idempotency keys and device-side epoch fencing; protocol adapters realize typed boundaries.",
+    "placement": "Coordinator replicas and routing workers may be distributed; a fencing authority and durable observations are explicit dependencies.",
+    "limitations": [
+      "No consensus protocol or temporal proof is implemented.",
+      "Conditional convergence is not a bounded completion guarantee during partitions."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "epoch-fencing",
+      "path": "specialized-model/epoch-fencing.txt",
+      "format": "Epoch-fencing validation sketch",
+      "status": "sketch",
+      "process": "@boundary/network-control/_/ApplyNetworkPlan",
+      "inputPorts": [
+        "@boundary/network-control/_/ApplyNetworkPlan#input:decision",
+        "@boundary/network-control/_/ApplyNetworkPlan#input:receipt"
+      ],
+      "outputPorts": [
+        "@boundary/network-control/_/ApplyNetworkPlan#output:attempt",
+        "@boundary/network-control/_/ApplyNetworkPlan#output:command"
+      ],
+      "claim": "Unexecuted state and adversarial-trace handoff only; no formal model checker run."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Ptolemy II models of computation",
+      "url": "https://ptolemy.berkeley.edu/ptolemyII/",
+      "supports": "Directors define distinct continuous-time, discrete-event, synchronous/reactive and dataflow laws; typed graph edges alone do not supply them."
+    },
+    {
+      "title": "AUTOSAR Classic Platform",
+      "url": "https://www.autosar.org/standards/classic-platform",
+      "supports": "Application, RTE and basic software separation illustrates logical contract versus platform realization; no AUTOSAR conformance claimed."
+    },
+    {
+      "title": "Arcadia method",
+      "url": "https://mbse-capella.org/arcadia.html",
+      "supports": "Logical architecture versus physical architecture supports keeping semantic ownership independent of processor placement."
+    },
+    {
+      "title": "RFC 8342 Network Management Datastore Architecture",
+      "url": "https://www.rfc-editor.org/rfc/rfc8342.html",
+      "supports": "Intended and operational configuration can differ because of propagation, protocol and hardware state; intent is not an observation."
+    }
+  ]
+}

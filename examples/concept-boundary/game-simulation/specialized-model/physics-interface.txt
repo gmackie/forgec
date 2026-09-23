@@ -1,0 +1,8 @@
+NUMERICAL PHYSICS HANDOFF — interface sketch only, not an executable solver.
+Process: @boundary/game-simulation/_/AdvanceWorld
+Inputs: prior WorldState (optional at initialization), sealed InputBatch, PhysicsEngine collision response.
+Outputs: owned WorldState, TickCommitted evidence, physicsRequest (PhysicsRequest) to PhysicsEngine.
+PhysicsRequest binds sessionId, tick, prior state and inputBatchDigest. PhysicsResult binds sessionId, tick, inputStateDigest, inputBatchDigest, collisionDigest and solverBuildDigest. Reject a response for another tick or state. An adapter obtains the response after exporting the input state; no commit is permitted while the matching result is absent.
+The external solver must specify integration method, step size, geometry/material inputs, contact ordering, precision and platform constraints. Those laws are not encoded by the ConceptIR graph. Tick equality alone does not guarantee deterministic floating point.
+A replay experiment must pin solver configuration with the rules/build envelope and compare every committed digest. Missing data, NaNs, differing contacts or solver builds are explicit failure cases, not permission to claim equivalent physics.
+No numerical integration, replay run, collision test or analyzer was executed for this artifact.

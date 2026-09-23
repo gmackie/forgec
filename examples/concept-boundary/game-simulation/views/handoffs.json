@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "conceptHash": "c1aa3366dc5938234f97b545270b009130c182d4f4f7e6cdb9033bef560a5c85",
+  "boundarySemanticHash": "e70007ed23581f75dd2ada24d114b6f1a12e981331908cf4463e6d42877e30cc",
+  "artifacts": [
+    {
+      "id": "replay-envelope",
+      "sha256": "5e3edcb1810bb3fb048062f728d91b02911243735e8d614075d4baffb27763f4",
+      "path": "specialized-model/replay-envelope.json",
+      "process": "@boundary/game-simulation/_/VerifyReplay",
+      "inputPorts": [
+        "@boundary/game-simulation/_/VerifyReplay#input:request",
+        "@boundary/game-simulation/_/VerifyReplay#input:verdict",
+        "@boundary/game-simulation/_/VerifyReplay#input:commits"
+      ],
+      "outputPorts": [
+        "@boundary/game-simulation/_/VerifyReplay#output:checked",
+        "@boundary/game-simulation/_/VerifyReplay#output:replayRequest"
+      ],
+      "status": "sketch",
+      "claim": "Envelope contract only; no replay harness was executed."
+    },
+    {
+      "id": "physics-interface",
+      "sha256": "6146a15364e1cff44548d51110d3e81b459ccebdd42c2da1ec992a6be7cf27ff",
+      "path": "specialized-model/physics-interface.txt",
+      "process": "@boundary/game-simulation/_/AdvanceWorld",
+      "inputPorts": [
+        "@boundary/game-simulation/_/AdvanceWorld#input:prior",
+        "@boundary/game-simulation/_/AdvanceWorld#input:batch",
+        "@boundary/game-simulation/_/AdvanceWorld#input:physics"
+      ],
+      "outputPorts": [
+        "@boundary/game-simulation/_/AdvanceWorld#output:world",
+        "@boundary/game-simulation/_/AdvanceWorld#output:committed",
+        "@boundary/game-simulation/_/AdvanceWorld#output:physicsRequest"
+      ],
+      "status": "sketch",
+      "claim": "No numerical solver or simulation analyzer executed."
+    }
+  ]
+}

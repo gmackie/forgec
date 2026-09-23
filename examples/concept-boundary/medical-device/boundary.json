@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "slug": "medical-device",
+  "outcomes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "coordination",
+      "description": "Approved therapy identity, audit correlation, explicit mode owner and immutable decisions",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/medical-device/_/ApprovedTherapy",
+        "@boundary/medical-device/_/TherapyMode",
+        "@boundary/medical-device/_/ReactToTherapyTick",
+        "@boundary/medical-device/_/TherapyDecision"
+      ],
+      "pressures": [
+        "sensor-actuator"
+      ],
+      "rationale": "Typed contracts and one logical producer express discrete responsibility without prescribing the control implementation."
+    },
+    {
+      "id": "reaction-budget",
+      "description": "Periodic release and reaction deadline change acceptable system behavior",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/medical-device/_/ReactToTherapyTick"
+      ],
+      "pressures": [
+        "fixed-period",
+        "deadlines",
+        "wcet"
+      ],
+      "rationale": "Activation admits a reaction but does not constrain clock, release jitter, sample age or completion time."
+    },
+    {
+      "id": "safe-modes",
+      "description": "Explicit inhibited/startup behavior and nonautomatic recovery",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/medical-device/_/ReactToTherapyTick",
+        "@boundary/medical-device/_/TherapyMode"
+      ],
+      "pressures": [
+        "modes",
+        "fail-safe"
+      ],
+      "rationale": "Modes can be domain data; hazard-specific transition and recovery obligations need contracts beyond a graph."
+    },
+    {
+      "id": "execution-strategy",
+      "description": "A SCADE or Stateflow model may realize supervisory mode logic with independently assessed generated code and monitor logic. Model transitions and alarm timing need tool-specific semantics; ConceptIR contains the interface only.",
+      "layer": "L1",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/medical-device/_/ReactToTherapyTick"
+      ],
+      "pressures": [
+        "deterministic-execution",
+        "platform-mapping"
+      ],
+      "rationale": "A thread, synchronous node or PLC task is a realization of the same responsibility; the mechanism alone does not discharge requirements."
+    },
+    {
+      "id": "deployment",
+      "description": "A safety controller, independent watchdog, sensor acquisition path and pump driver require hardware-specific deployment and common-cause analysis. Device certification is not inferred from artifact references.",
+      "layer": "L2",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/medical-device/_/ReactToTherapyTick",
+        "@boundary/medical-device/_/PumpIO"
+      ],
+      "pressures": [
+        "hardware-placement",
+        "platform-mapping"
+      ],
+      "rationale": "Physical mapping and latency budgets need deployment-specific evidence, separate from logical ownership."
+    },
+    {
+      "id": "specialized-semantics",
+      "description": "Verified reactive state-machine execution, motor/flow dynamics, alarm effectiveness, dose accuracy and clinical safety arguments",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/medical-device/_/ReactToTherapyTick",
+        "@boundary/medical-device/_/PumpIO"
+      ],
+      "pressures": [
+        "formal-verification",
+        "simulation-artifacts"
+      ],
+      "rationale": "A matching typed interface cannot define the external tool model of computation, prove safety, or solve physical equations."
+    }
+  ],
+  "facets": [
+    {
+      "id": "reaction-budget",
+      "kind": "timing",
+      "status": "proposed",
+      "targets": [
+        "@boundary/medical-device/_/ReactToTherapyTick"
+      ],
+      "parameters": {
+        "periodUs": 5000,
+        "deadlineUs": 2000,
+        "wcetBudgetUs": 800
+      },
+      "meaning": "Illustrative release-to-command requirement measured on one monotonic clock; period changes require domain review.",
+      "obligations": [
+        "Offline inequality validation is not a WCET proof, schedulability analysis, timer implementation or runtime safety proof.",
+        "Specify release jitter, clock error, sample-age bound, execution platform and interrupt/bus interference before analysis.",
+        "Deadline is measured from scheduled release to command acceptance at the I/O boundary, not merely process return; include communication delay.",
+        "Missed releases and expired outputs require independently assessed monitoring; do not queue unbounded catch-up reactions."
+      ]
+    },
+    {
+      "id": "safe-modes",
+      "kind": "mode",
+      "status": "proposed",
+      "targets": [
+        "@boundary/medical-device/_/ReactToTherapyTick",
+        "@boundary/medical-device/_/TherapyMode"
+      ],
+      "parameters": {
+        "modes": [
+          "idle",
+          "armed",
+          "delivering",
+          "inhibited"
+        ],
+        "restartMode": "idle",
+        "automaticRecovery": false
+      },
+      "meaning": "Modes and reset semantics remain domain vocabulary; this sidecar proposes obligations, not executable transition logic.",
+      "obligations": [
+        "Define transition priority and handling of simultaneous reset/fault inputs in the specialized model.",
+        "Assess safe outputs and monitor independence against domain hazards; neither naming a mode nor parsing this file proves safety."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "A SCADE or Stateflow model may realize supervisory mode logic with independently assessed generated code and monitor logic. Model transitions and alarm timing need tool-specific semantics; ConceptIR contains the interface only.",
+    "placement": "A safety controller, independent watchdog, sensor acquisition path and pump driver require hardware-specific deployment and common-cause analysis. Device certification is not inferred from artifact references.",
+    "limitations": [
+      "No executable control law, hardware binding or analyzer result is included.",
+      "Single logical owner does not provide physical redundancy, mutual exclusion or exactly-once actuation.",
+      "Policy and clinical/operator authorization are implementation prerequisites, not asserted by these policy-free interface sketches."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "controller-model",
+      "path": "specialized-model/supervisor.stateflow-sketch.txt",
+      "format": "Stateflow/SCADE supervisory interface sketch",
+      "status": "sketch",
+      "process": "@boundary/medical-device/_/ReactToTherapyTick",
+      "inputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#input:sample",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:approval",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#output:state",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:decision",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:command"
+      ],
+      "claim": "Interface and explanatory pseudocode only; no control analyzer, code generator or hardware test executed."
+    },
+    {
+      "id": "deployment-model",
+      "path": "specialized-model/deployment.aadl-sketch.txt",
+      "format": "AADL-inspired deployment/analysis sketch",
+      "status": "sketch",
+      "process": "@boundary/medical-device/_/ReactToTherapyTick",
+      "inputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#input:sample",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:approval",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#output:state",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:decision",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:command"
+      ],
+      "claim": "Analysis inputs and mapping questions only; not an executable AADL model or schedulability result."
+    }
+  ],
+  "sources": [
+    {
+      "title": "OMG SysML version 2.0 specification",
+      "url": "https://www.omg.org/spec/SysML/2.0/About-SysML",
+      "supports": "Fetched 2026-09-23. Describes system structure/behavior and analysis/verification cases; supports keeping requirement-to-verification traceability separate from execution proof."
+    },
+    {
+      "title": "Ansys SCADE Suite official product documentation",
+      "url": "https://ansys.synopsys.com/products/embedded-software/ansys-scade-suite",
+      "supports": "Fetched 2026-09-23 after redirect from ansys.com. Describes model analyses and architecture/design synchronization; its qualified-generation workflow does not certify this unexecuted sketch or discharge platform/physical assumptions."
+    },
+    {
+      "title": "MathWorks: Stateflow overview",
+      "url": "https://www.mathworks.com/help/stateflow/ug/overview-of-stateflow.html",
+      "supports": "Official documentation URL; retrieval returned HTTP403 on 2026-09-23. State-machine modeling is relevant prior art; exact transition-order semantics must be checked in tool/version-specific documentation before implementation."
+    },
+    {
+      "title": "MathWorks: Types of Sample Time",
+      "url": "https://www.mathworks.com/help/simulink/ug/types-of-sample-time.html",
+      "supports": "Official documentation URL; retrieval returned HTTP403 on 2026-09-23. Comparison is limited to established distinction between sampled and continuous models; no detailed solver guarantees or reviewed page quotations claimed."
+    },
+    {
+      "title": "SEI: Architecture Analysis and Design Language (AADL)",
+      "url": "https://www.sei.cmu.edu/projects/architecture-analysis-and-design-language-aadl/",
+      "supports": "Fetched 2026-09-23. Architectural component categories include processors, devices and threads; analysis of embedded-system quality attributes is distinct from a typed responsibility graph."
+    },
+    {
+      "title": "AUTOSAR Classic Platform",
+      "url": "https://www.autosar.org/standards/classic-platform",
+      "supports": "Fetched with curl 2026-09-23. Distinguishes application, runtime environment and basic software; mostly hardware-independent application components communicate through RTE. Used as a separation analogy, not an avionics/medical compliance requirement."
+    }
+  ]
+}
