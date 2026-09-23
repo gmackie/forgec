@@ -25,7 +25,7 @@ import { Governance } from "./governance.js";
 import { Scope } from "./scope.js";
 import { Gatekeeper } from "./gatekeeper.js";
 import { Suppression } from "./suppression.js";
-import { testClocks } from "./testing.js";
+import { jumpTestClock } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
 
@@ -367,7 +367,7 @@ export class Engine {
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {
-    testClocks.at(-1)?.jump(ms);
+    jumpTestClock(this.layer, ms);
   }
 
   /** Every projection is one durable logical subscription on its source's change channel. */

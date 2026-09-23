@@ -31,7 +31,7 @@ export function fingerprint(root, slug, contracts) {
   walk(join(root, 'packages/runtime/src'));
   // Tests are evidence-producing code, not merely a string attached to a status.
   walk(join(root, 'packages/runtime/test'));
-  for (const path of ['Cargo.lock', 'pnpm-lock.yaml', 'scripts/verify-foundation.mjs', 'scripts/foundation-state.mjs']) if (existsSync(join(root, path))) paths.add(join(root, path));
+  for (const path of ['Cargo.lock', 'pnpm-lock.yaml', 'scripts/verify-foundation.mjs', 'scripts/foundation-state.mjs', 'packages/runtime/vitest.config.ts']) if (existsSync(join(root, path))) paths.add(join(root, path));
   const h = createHash('sha256');
   for (const path of [...paths].sort()) h.update(relative(root, path)).update('\0').update(readFileSync(path)).update('\0');
   return h.digest('hex');
