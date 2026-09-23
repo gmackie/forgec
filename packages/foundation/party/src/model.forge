@@ -1,0 +1,47 @@
+import identifiers
+
+export resource Party
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+  identifiers : identifiers.IdentifierSet? @unique
+}
+
+export resource PrincipalRepresentation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  party : Party
+  principal : text length 1..128
+  validFrom : datetime
+  validUntil : datetime?
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    validUntil == null || validUntil > validFrom
+  }
+  unique principal, party, validFrom
+  list by principal
+  list by party
+}
+
+export resource RepresentationRevocation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  representation : PrincipalRepresentation @unique
+  effectiveAt : datetime
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    effectiveAt >= representation.validFrom
+  }
+  find by representation
+}

@@ -2,19 +2,21 @@
   "slug": "participation",
   "layer": "substrate",
   "issue": 29,
-  "dependencies": [],
+  "dependencies": [
+    "party"
+  ],
   "facts": [
-    "Participant: participation-specific identity handle",
+    "Party: imported durable business identity owned by the party substrate",
     "ParticipationSet: application-owned scope sidecar",
     "Participation: participant + role + set + validity + recorded provenance"
   ],
   "operations": [
-    "RegisterParticipant; AddParticipation(set, participant, role, validity)",
+    "AddParticipation(set, participant, role, validity)",
     "EndParticipation; RevokeParticipation; ListParticipantsAt(set, instant)",
     "ReadParticipationFacts for Gatekeeper PIP"
   ],
   "invariants": [
-    "Participant is a typed handle, not resourceType plus id; Principal and organization/device mappings are typed satellites",
+    "participant is a typed Party reference; Party owns Principal representation and domain Person/Organization satellites",
     "Role vocabulary is owned by the consuming package, namespaced and validated through its typed wrapper",
     "Validity is half-open; ended/revoked history remains queryable",
     "Participation alone never grants authority; tenant and governance checks apply to PIP reads"

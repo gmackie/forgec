@@ -1,22 +1,32 @@
-export resource Participant @tenant @timestamps @appendOnly {
+import party
+
+export resource ParticipationSet
+  @tenant
+  @timestamps
+  @appendOnly
+{
   id : id
   label : text length 1..200
 }
-export resource ParticipationSet @tenant @timestamps @appendOnly {
-  id : id
-  label : text length 1..200
-}
-export resource ParticipationRole @tenant @timestamps @appendOnly {
+export resource ParticipationRole
+  @tenant
+  @timestamps
+  @appendOnly
+{
   id : id
   namespace : text trim lowercase length 1..128
   name : text trim length 1..64
   unique namespace, name
   find by namespace, name
 }
-export resource Participation @tenant @timestamps @appendOnly {
+export resource Participation
+  @tenant
+  @timestamps
+  @appendOnly
+{
   id : id
   participationSet : ParticipationSet
-  participant : Participant
+  participant : party.Party
   role : ParticipationRole
   validFrom : datetime
   validUntil : datetime?
@@ -29,7 +39,11 @@ export resource Participation @tenant @timestamps @appendOnly {
   list by participationSet
   list by participant
 }
-export resource ParticipationEnd @tenant @timestamps @appendOnly {
+export resource ParticipationEnd
+  @tenant
+  @timestamps
+  @appendOnly
+{
   id : id
   participation : Participation @unique
   effectiveAt : datetime

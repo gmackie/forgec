@@ -1,26 +1,49 @@
-# party contract
+# Party substrate contract
 
-Issue #52; implementation acceptance remains planned.
+Implemented experimental `@forgegraph/foundation/party` version `0.1.0`, issue #52.
+Local acceptance covers generated memory/SQLite runtimes, not hosted provider certification.
 
-## Ownership
+## Ownership and identity
 
-Stable business Party; Principal representation; typed Person/Organization satellites. Representation does not confer authority.
+Party is an append-only tenant-scoped business actor with an optional unique
+Identifiers.IdentifierSet sidecar. PrincipalRepresentation records many-to-many
+principal/Party associations, half-open validity, recorded actor and reason.
+RepresentationRevocation is a unique append-only terminal fact. Person, Organization,
+Customer and Worker are typed consumer satellites. No universal EntityRef or
+inheritance hierarchy is introduced.
 
-## Composition
+The principal is an external authentication identifier scoped by tenant. Its removal
+cannot cascade into Party or erase business history; external deprovisioning must
+explicitly record representation revocation. Representation never grants authority.
 
-Required dependencies: identifiers.
+## Composition and operations
 
-Domain relationships and identity resolution are above Party; Party never imports Master Data.
+Direct dependency: `identifiers`, explicitly co-deployed with `deploy = true`.
+`Parties` exposes create, represent, revoke and paginated listRepresentedAt operations
+through Engine. Lists preserve cursors even for empty filtered pages. Existing
+revocation facts and referenced Party reads must be authorized; unreadable terminal
+history is never treated as absent. Different-start overlapping representations are
+permitted and are separate facts; callers needing a set deduplicate Party IDs.
 
-## Independent acceptance
+## Verification
 
-Customer, worker and organization; revoked representation retains history; cross-tenant denial; business identity survives Principal removal.
+All six F52 acceptance criteria in `contract.json` link to
+`packages/runtime/test/foundation-party.test.ts`. Four generated-runtime tests cover
+the memory and SQLite adapters. Typed consumer compilation covers Person, Organization,
+Customer and Worker; runtime cases cover identifier linkage, duplication/revocation
+races, half-open windows, history, paging, append-only guards, cross-tenant denial and
+independent authorization denial. The migrated Participation consumer additionally
+proves representation revocation removes PIP eligibility without changing membership.
 
-- F52-01: Party handle/resource model
-- F52-02: Principal-to-Party representation relation
-- F52-03: typed Person/Organization satellite examples
-- F52-04: Identifiers integration
-- F52-05: no conflation with authorization identity
-- F52-06: fixtures for customer, worker and organization
+Shared harness registration is integrator-owned. Reproduce independently after
+building with the current compiler:
 
-Compile typed consumer fixtures, execute generated-bundle behaviors and adversarial cases, and bind evidence to accepted dependency revisions. Provider certification is separate from local tests.
+```sh
+cargo build -p forgegraph-cli --locked
+target/debug/forgec build packages/foundation/party/fixtures/consumer --out /tmp/foundation-party-consumer
+FORGE_FOUNDATION_CONSUMER=/tmp/foundation-party-consumer pnpm --filter @forgegraph/runtime exec vitest run test/foundation-party.test.ts
+```
+
+See README.md for semantics and `docs/foundation/party-identity-migration.md` for the
+explicit breaking change to experimental Participation identity. No production data
+migration or remote identity-provider synchronization is claimed.
