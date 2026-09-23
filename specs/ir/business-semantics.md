@@ -19,3 +19,18 @@ Assurance is a separate L1 sidecar bound to the concept hash and each contract h
 `views` derive participant perspectives from one neutral Entity/Fact identity. A view binds its observer role to a typed participant field, selects fields and references existing policies/purpose. Secret fields are rejected. Other classification and purpose metadata remains on the original field types. The declaration is not an authorization bypass: runtime projection must enforce these policies and field restrictions. That generated runtime bridge and external Integration mapping remain follow-up work.
 
 These are explicit JSON contracts. New Forge surface syntax, complete semantic typechecking for every existing expression family, enforcement adapters, and full acceptance coverage for #74–78 remain outstanding. Use `forgec concept check`, `inspect`, and `diff` for declaration-level validation and review.
+
+## Interaction contexts
+
+`semantics.interactions` maps a semantic identity to an engagement contract:
+
+- `carrier`: a declared Entity owning the engagement identity, with a valid-time interval in `semantics.temporal`.
+- `participation`: carried relationship IDs with an endpoint to the carrier. Participant roles remain domain-defined relationship semantics.
+- `events`: occurrence Fact ID to the required Entity-reference field identifying its engagement.
+- `processes`: Process ID to the required Entity-reference input port identifying its engagement.
+- `parent`: optional carrier field referencing a declared interaction carrier, permitting same-type or cross-type nesting.
+- `purpose`: optional declared purpose.
+
+An entity has at most one interaction declaration. Events and processes remain independent identities and can bind multiple engagement types through separate typed fields/ports. Carrier, participation, event, process, parent, temporal, and purpose mismatches report `E-L0-INTERACTION` (existing temporal and relationship validators also apply). Graphs expose interaction nodes and `participatesIn`, `occursIn`, `engagesIn`, and `parentInteraction` edges. Semantic hashes and diffs include the interaction contract; legacy models omit the new empty map and retain their encoding.
+
+The model expresses business context, not runtime connection/session ownership. It introduces no untyped entity reference, domain inheritance, provider choice, or enforcement claim. Instance parent-cycle checks, actual interval ordering, and runtime realization remain outside this declaration validator. See `examples/concept/interactions` for six domain fixtures.

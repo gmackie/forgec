@@ -1,0 +1,348 @@
+{
+  "version": "concept-ir/2",
+  "package": "@interaction/support",
+  "entities": {
+    "@interaction/support/_/Conversation": {
+      "name": "Conversation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/support/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@interaction/support/_/Customer": {
+      "name": "Customer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@interaction/support/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/support/_/Customer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/support/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/support/_/MessageReceived": {
+      "name": "MessageReceived",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/support/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/support/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/support/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@interaction/support/_/Respond": {
+      "name": "Respond",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/support/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    },
+    "@interaction/support/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/support/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@interaction/support/_/Conversation": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      }
+    },
+    "relationships": {
+      "@interaction/support/_/Participants": {
+        "carrier": "@interaction/support/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@interaction/support/_/Customer",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@interaction/support/_/Conversation",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@interaction/support/_/MessageReceived",
+      "@interaction/support/_/Closed"
+    ],
+    "interactions": {
+      "@interaction/support/_/Engagement": {
+        "carrier": "@interaction/support/_/Conversation",
+        "participation": [
+          "@interaction/support/_/Participants"
+        ],
+        "events": {
+          "@interaction/support/_/MessageReceived": "context",
+          "@interaction/support/_/Closed": "context"
+        },
+        "processes": {
+          "@interaction/support/_/Respond": "engagement",
+          "@interaction/support/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    }
+  }
+}

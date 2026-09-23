@@ -1,0 +1,412 @@
+{
+  "version": "concept-ir/2",
+  "package": "@interaction/economic-exchange",
+  "entities": {
+    "@interaction/economic-exchange/_/Exchange": {
+      "name": "Exchange",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Exchange",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@interaction/economic-exchange/_/Trader": {
+      "name": "Trader",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@interaction/economic-exchange/_/Agreement": {
+      "name": "Agreement",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "origin": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Exchange",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@interaction/economic-exchange/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Trader",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Exchange",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/economic-exchange/_/TransferRecorded": {
+      "name": "TransferRecorded",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Exchange",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/economic-exchange/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Exchange",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@interaction/economic-exchange/_/Settle": {
+      "name": "Settle",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Exchange",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "agreement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Agreement",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@interaction/economic-exchange/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/economic-exchange/_/Exchange",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@interaction/economic-exchange/_/Exchange": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      }
+    },
+    "relationships": {
+      "@interaction/economic-exchange/_/Participants": {
+        "carrier": "@interaction/economic-exchange/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@interaction/economic-exchange/_/Trader",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@interaction/economic-exchange/_/Exchange",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@interaction/economic-exchange/_/TransferRecorded",
+      "@interaction/economic-exchange/_/Closed"
+    ],
+    "interactions": {
+      "@interaction/economic-exchange/_/Engagement": {
+        "carrier": "@interaction/economic-exchange/_/Exchange",
+        "participation": [
+          "@interaction/economic-exchange/_/Participants"
+        ],
+        "events": {
+          "@interaction/economic-exchange/_/TransferRecorded": "context",
+          "@interaction/economic-exchange/_/Closed": "context"
+        },
+        "processes": {
+          "@interaction/economic-exchange/_/Settle": "engagement",
+          "@interaction/economic-exchange/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    }
+  }
+}

@@ -5,6 +5,7 @@ pub mod assembly;
 pub mod capability;
 pub mod compiler;
 pub mod concept;
+mod concept_interactions;
 pub mod concept_semantics;
 mod concept_validation;
 pub mod cron;

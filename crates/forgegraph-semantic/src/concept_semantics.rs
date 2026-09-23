@@ -10,6 +10,8 @@ pub struct BusinessSemantics {
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub temporal: BTreeMap<String, TemporalSemantics>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub interactions: BTreeMap<String, Interaction>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub selections: BTreeMap<String, TemporalSelection>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub contracts: BTreeMap<String, Contract>,
@@ -26,6 +28,22 @@ impl BusinessSemantics {
     pub fn is_empty(&self) -> bool {
         self == &Self::default()
     }
+}
+
+/// An engagement has an entity identity; occurrences and work remain separate declarations.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Interaction {
+    pub carrier: String,
+    /// Relationship declarations with a typed endpoint to this engagement.
+    pub participation: BTreeSet<String>,
+    /// Occurrence Fact -> field holding this engagement's entity reference.
+    pub events: BTreeMap<String, String>,
+    /// Process -> input port carrying this engagement's entity reference.
+    pub processes: BTreeMap<String, String>,
+    /// Optional carrier field referencing another interaction carrier (including this type).
+    pub parent: Option<String>,
+    pub purpose: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -152,6 +170,7 @@ impl ConceptIR {
     pub(crate) fn validate_business_semantics(&self) -> Vec<Violation> {
         let mut errors = self.validate_expressions();
         let s = &self.semantics;
+        errors.extend(self.validate_interactions());
         for (id, temporal) in &s.temporal {
             let Some(fs) = fields(self, id) else {
                 problem(
@@ -867,6 +886,31 @@ impl ConceptIR {
                 kind: kind.into(),
             });
         };
+        for (id, interaction) in &self.semantics.interactions {
+            graph.nodes.insert(id.clone(), "interaction".into());
+            edge(id, &interaction.carrier, id, "carrier");
+            for participation in &interaction.participation {
+                edge(participation, id, id, "participatesIn");
+            }
+            for (event, field) in &interaction.events {
+                edge(event, id, field, "occursIn");
+            }
+            for (process, port) in &interaction.processes {
+                edge(process, id, port, "engagesIn");
+            }
+            if let Some(field) = &interaction.parent
+                && let Some(parent) = self
+                    .entities
+                    .get(&interaction.carrier)
+                    .and_then(|e| e.fields.get(field))
+                    .and_then(|f| target(&f.ty.base))
+            {
+                edge(&interaction.carrier, parent, field, "parentInteraction");
+            }
+            if let Some(purpose) = &interaction.purpose {
+                edge(purpose, id, id, "purpose");
+            }
+        }
         for (id, relation) in &self.semantics.relationships {
             graph.nodes.insert(id.clone(), "relationship".into());
             for (role, endpoint) in &relation.endpoints {
