@@ -1,0 +1,121 @@
+import party
+import participation
+import specification
+import evaluation
+import quotation-pricing
+import selection
+import agreement-catalog
+
+export enum StageOutcome {
+ Open
+ Won
+ Lost
+ Abandoned
+}
+export resource PursuitDefinition @tenant @appendOnly {
+ id : id
+ key : text length 1..128
+ specification : specification.SpecificationPin
+ unique key, specification
+}
+/// Domain-owned vocabulary: the kernel owns no sales funnel stages.
+export resource PursuitStage @tenant @appendOnly {
+ id : id
+ definition : PursuitDefinition
+ key : text length 1..128
+ label : text length 1..200
+ initial : boolean
+ outcome : StageOutcome
+ rules { initial == false || outcome == StageOutcome.Open }
+ unique definition, key
+}
+export resource StageTransition @tenant @appendOnly {
+ id : id
+ fromStage : PursuitStage
+ toStage : PursuitStage
+ rules {
+  fromStage.definition == toStage.definition
+  fromStage.outcome == StageOutcome.Open
+  fromStage != toStage
+ }
+ unique fromStage, toStage
+}
+export resource Opportunity @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ definition : PursuitDefinition
+ subject : party.Party
+ participants : participation.ParticipationSet
+ qualification : specification.SpecificationPin
+ evaluations : evaluation.EvaluationSet @unique
+ potentialOutcome : text length 1..1000
+ openedAt : datetime
+ expectedAt : datetime?
+ rules { expectedAt == null || expectedAt >= openedAt }
+}
+export resource OpportunityParticipant @tenant @appendOnly {
+ id : id
+ opportunity : Opportunity
+ participant : participation.Participation
+ rules { participant.participationSet == opportunity.participants }
+ unique opportunity, participant
+}
+/// An assessment is a sourced assertion, never an automatic promise of success.
+export resource OpportunityAssessment @tenant @appendOnly {
+ id : id
+ opportunity : Opportunity
+ run : evaluation.EvaluationRun
+ finish : evaluation.EvaluationFinish
+ confidence : decimal<6>? >= 0 <= 1
+ potentialValue : decimal<6>? >= 0
+ unit : text? length 1..64
+ rationale : text length 1..1000
+ rules {
+  run.evaluationSet == opportunity.evaluations
+  run.definition == opportunity.qualification
+  finish.run == run
+  finish.outcome == "Completed"
+  (potentialValue == null && unit == null) || (potentialValue != null && unit != null)
+ }
+ unique opportunity, finish
+}
+/// Quote and solicitation links preserve explicit conversion provenance.
+export resource OpportunityQuote @tenant @appendOnly {
+ id : id
+ opportunity : Opportunity
+ quote : quotation-pricing.Quote @unique
+ rules { quote.buyer == opportunity.subject }
+}
+export resource OpportunitySelection @tenant @appendOnly {
+ id : id
+ opportunity : Opportunity
+ solicitation : selection.Solicitation @unique
+ rules { solicitation.participants == opportunity.participants }
+}
+/// One event is the terminal decision; agreement issuance is separately proven.
+export resource OpportunityEvent @tenant @appendOnly {
+ id : id
+ opportunity : Opportunity
+ ordinal : integer >= 0 <= 127
+ previous : OpportunityEvent?
+ stage : PursuitStage
+ outcome : StageOutcome
+ transition : StageTransition?
+ assessment : OpportunityAssessment?
+ agreement : agreement-catalog.Agreement?
+ issuance : agreement-catalog.AgreementIssued?
+ effectiveAt : datetime
+ nextAction : text? length 1..1000
+ reason : text length 1..1000
+ recordedBy : text length 1..128
+ rules {
+  stage.definition == opportunity.definition
+  outcome == stage.outcome
+  effectiveAt >= opportunity.openedAt
+  (previous == null && ordinal == 0 && stage.initial == true && transition == null) || (previous != null && previous.opportunity == opportunity && ordinal == previous.ordinal + 1 && previous.outcome == StageOutcome.Open && effectiveAt >= previous.effectiveAt && transition != null && transition.fromStage == previous.stage && transition.toStage == stage)
+  assessment == null || assessment.opportunity == opportunity
+  (outcome == StageOutcome.Won && agreement != null && issuance != null && issuance.agreement == agreement && effectiveAt >= issuance.createdAt && agreement.customer == opportunity.subject) || (outcome != StageOutcome.Won && agreement == null && issuance == null)
+ }
+ unique opportunity, ordinal
+ find by opportunity, ordinal
+}
