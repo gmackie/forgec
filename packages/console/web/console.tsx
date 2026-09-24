@@ -32,6 +32,7 @@ import {
 import type { App, Environment, ViewState } from "../src/model.js";
 import type { PackageSummary } from "../src/oci.js";
 import { PackageGovernance } from "./governance.js";
+import { RegistryCredentials } from "./credentials.js";
 
 type Api = <T>(
   path: string,
@@ -1310,6 +1311,10 @@ export function Console({
                   server’s environment configuration.
                 </p>
               </section>
+              <RegistryCredentials
+                api={api}
+                authority={state.instance.authority}
+              />
               <div className="two-columns">
                 <section className="panel detail-panel">
                   <ShieldCheckIcon size={24} />
