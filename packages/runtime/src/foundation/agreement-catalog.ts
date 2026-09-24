@@ -40,7 +40,8 @@ export class AgreementCatalog {
       yield* new Evidence(self.engine).sealedItems(String(seal.bundle), ctx);
     });
   }
-  private offer(id: string, ctx: CallContext): Effect.Effect<Wire, ForgeError> {
+  /** Authorized immutable offer, including its evidence and completed evaluation. */
+  offer(id: string, ctx: CallContext): Effect.Effect<Wire, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
       const offer = yield* self.call("Offer.get", { id }, ctx);

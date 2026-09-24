@@ -1,0 +1,21 @@
+import campaign
+export resource MarketingCampaign @tenant @appendOnly {
+ id : id
+ campaign : campaign.Campaign
+ purpose : text length 1..200
+}
+export resource PublicHealthCampaign @tenant @appendOnly {
+ id : id
+ campaign : campaign.Campaign
+ purpose : text length 1..200
+}
+export resource RecruitingCampaign @tenant @appendOnly {
+ id : id
+ campaign : campaign.Campaign
+ purpose : text length 1..200
+}
+export resource SecurityAwarenessCampaign @tenant @appendOnly {
+ id : id
+ campaign : campaign.Campaign
+ purpose : text length 1..200
+}
