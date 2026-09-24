@@ -1,0 +1,1798 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "cec36f118d85ed5c6c51e178d24673c82e328c5ae3895e90b7ec56cd5981daf3",
+  "digests": {
+    "source": "1ad1acd8731a76675fc46493a85e8b6d4102af3e333865bf1c18768a7f3ad6c5",
+    "wire": "2c6e957662f948c3be07b157af5fadfd0f7fac11b6cf322e5272b3cb93e3ef1a",
+    "docs": "42cb62e3557ee1e9ee463e9e0bf3d27865a73f53bd9a4bce4ddba5d4af5800c3",
+    "security": "0c79fc01525570f3871767c0eecdab6441ef40f01c7acd844f9243911939882f"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@fixture/sql-identifiers",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@fixture/sql-identifiers/_/StageTransition",
+            "name": "StageTransition",
+            "kind": "resource",
+            "exported": false,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "from",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@fixture/sql-identifiers/_/To"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "to",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@fixture/sql-identifiers/_/To"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "from_to",
+                "fields": [
+                  "from",
+                  "to"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [
+              {
+                "name": "byFromTo",
+                "fields": [
+                  "from",
+                  "to"
+                ],
+                "coveredBy": "from_to"
+              }
+            ],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@fixture/sql-identifiers/_/StageTransition.create",
+                "kind": "create"
+              },
+              {
+                "id": "@fixture/sql-identifiers/_/StageTransition.get",
+                "kind": "get"
+              },
+              {
+                "id": "@fixture/sql-identifiers/_/StageTransition.find.byFromTo",
+                "kind": "find",
+                "query": "byFromTo"
+              },
+              {
+                "id": "@fixture/sql-identifiers/_/StageTransition.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@fixture/sql-identifiers/_/To",
+            "name": "To",
+            "kind": "resource",
+            "exported": false,
+            "doc": "Exercises reserved physical table and reference-column names.",
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "key",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 100
+                    }
+                  ]
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "key",
+                "fields": [
+                  "key"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@fixture/sql-identifiers/_/To.create",
+                "kind": "create"
+              },
+              {
+                "id": "@fixture/sql-identifiers/_/To.get",
+                "kind": "get"
+              },
+              {
+                "id": "@fixture/sql-identifiers/_/To.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": [
+      "append-only/1"
+    ]
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@fixture/sql-identifiers",
+    "resources": [
+      {
+        "id": "@fixture/sql-identifiers/_/StageTransition",
+        "name": "StageTransition",
+        "wireName": "stage_transition",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "from": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "to": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            }
+          },
+          "required": [
+            "id",
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "to": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "byFromTo",
+            "kind": "find",
+            "params": [
+              "from",
+              "to"
+            ],
+            "order": []
+          },
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@fixture/sql-identifiers/_/StageTransition.create",
+            "kind": "create"
+          },
+          {
+            "id": "@fixture/sql-identifiers/_/StageTransition.get",
+            "kind": "get"
+          },
+          {
+            "id": "@fixture/sql-identifiers/_/StageTransition.find.byFromTo",
+            "kind": "find",
+            "query": "byFromTo"
+          },
+          {
+            "id": "@fixture/sql-identifiers/_/StageTransition.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@fixture/sql-identifiers/_/To",
+        "name": "To",
+        "wireName": "to",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "id",
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@fixture/sql-identifiers/_/To.create",
+            "kind": "create"
+          },
+          {
+            "id": "@fixture/sql-identifiers/_/To.get",
+            "kind": "get"
+          },
+          {
+            "id": "@fixture/sql-identifiers/_/To.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "stage_transition",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "from_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "from",
+            "storage": "text"
+          },
+          {
+            "name": "to_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "to",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "from_"
+            ],
+            "references": "to_",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "to_"
+            ],
+            "references": "to_",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "to_",
+        "resource": "@fixture/sql-identifiers/_/To",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "key_",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "key",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ],
+    "indexes": [
+      {
+        "name": "stage_transition_uq_from_to",
+        "table": "stage_transition",
+        "columns": [
+          "tenant",
+          "from_",
+          "to_"
+        ],
+        "unique": true,
+        "constraint": "from_to"
+      },
+      {
+        "name": "to__uq_key",
+        "table": "to_",
+        "columns": [
+          "tenant",
+          "key_"
+        ],
+        "unique": true,
+        "constraint": "key"
+      }
+    ],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@fixture/sql-identifiers/_/StageTransition",
+        "name": "StageTransition",
+        "wireName": "stage_transition",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "from_to",
+            "keyFields": [
+              "from",
+              "to"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "from",
+            "target": "@fixture/sql-identifiers/_/To"
+          },
+          {
+            "field": "to",
+            "target": "@fixture/sql-identifiers/_/To"
+          }
+        ],
+        "createActions": 7
+      },
+      {
+        "id": "@fixture/sql-identifiers/_/To",
+        "name": "To",
+        "wireName": "to",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "key",
+            "keyFields": [
+              "key"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [],
+        "createActions": 5
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@fixture/sql-identifiers",
+    "resources": [
+      {
+        "id": "@fixture/sql-identifiers/_/StageTransition",
+        "name": "StageTransition",
+        "kind": "resource",
+        "label": "Stage Transition",
+        "plural": "Stage Transitions",
+        "route": "stage-transitions",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "from",
+            "label": "From",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@fixture/sql-identifiers/_/To",
+              "route": "to",
+              "titleField": "id",
+              "lookup": "@fixture/sql-identifiers/_/To.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "to",
+            "label": "To",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@fixture/sql-identifiers/_/To",
+              "route": "to",
+              "titleField": "id",
+              "lookup": "@fixture/sql-identifiers/_/To.list.all",
+              "lookupParams": []
+            }
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "from",
+          "to"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@fixture/sql-identifiers/_/StageTransition.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [
+          {
+            "name": "byFromTo",
+            "op": "@fixture/sql-identifiers/_/StageTransition.find.byFromTo",
+            "params": [
+              "from",
+              "to"
+            ]
+          }
+        ],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@fixture/sql-identifiers/_/To",
+        "name": "To",
+        "kind": "resource",
+        "label": "To",
+        "plural": "Tos",
+        "route": "tos",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "key",
+            "label": "Key",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 100
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "key"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@fixture/sql-identifiers/_/To.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-fixture-sql-identifiers-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.create",
+        "kind": "create",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.get",
+        "kind": "get",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.find.byFromTo",
+        "kind": "find",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.list.all",
+        "kind": "list",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/To.create",
+        "kind": "create",
+        "resource": "@fixture/sql-identifiers/_/To",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/To.get",
+        "kind": "get",
+        "resource": "@fixture/sql-identifiers/_/To",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/To.list.all",
+        "kind": "list",
+        "resource": "@fixture/sql-identifiers/_/To",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "field": "from",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "field": "to",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/sql-identifiers/_/To",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/sql-identifiers/_/To",
+        "field": "key",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "structural": 4,
+      "unclassified": 1
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.create",
+        "kind": "create",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "outputs": [
+          "id",
+          "from",
+          "to"
+        ],
+        "writes": [
+          "from",
+          "to"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.get",
+        "kind": "get",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "outputs": [
+          "id",
+          "from",
+          "to"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.find.byFromTo",
+        "kind": "find",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "outputs": [
+          "id",
+          "from",
+          "to"
+        ],
+        "writes": [],
+        "filters": [
+          "from",
+          "to"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.list.all",
+        "kind": "list",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "outputs": [
+          "id",
+          "from",
+          "to"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/To.create",
+        "kind": "create",
+        "resource": "@fixture/sql-identifiers/_/To",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [
+          "key"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/To.get",
+        "kind": "get",
+        "resource": "@fixture/sql-identifiers/_/To",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/To.list.all",
+        "kind": "list",
+        "resource": "@fixture/sql-identifiers/_/To",
+        "outputs": [
+          "id",
+          "key"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@fixture/sql-identifiers",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "StageTransitionRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "from": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "to": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "from",
+            "to"
+          ]
+        },
+        "StageTransitionCreate": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "to": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "from",
+            "to"
+          ]
+        },
+        "StageTransitionPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "ToRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "key"
+          ]
+        },
+        "ToCreate": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "key"
+          ]
+        },
+        "ToPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  }
+}

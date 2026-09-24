@@ -1,0 +1,12 @@
+/// Exercises reserved physical table and reference-column names.
+resource To @tenant @appendOnly {
+ id : id
+ key : text length 1..100 @unique
+}
+resource StageTransition @tenant @appendOnly {
+ id : id
+ from : To
+ to : To
+ unique from, to
+ find by from, to
+}
