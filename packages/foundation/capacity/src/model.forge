@@ -1,0 +1,72 @@
+import specification
+import qualification
+import availability
+import allocation
+import demand
+import place
+import resource-relations
+
+export resource CapabilitySpecification @tenant @appendOnly {
+ id : id
+ key : text length 1..128
+ definition : specification.SpecificationPin
+ requirement : qualification.QualificationRequirement
+ dimension : text length 1..64
+ unit : text length 1..64
+ unique key, definition
+}
+/// Domain satellites may represent a resource set without inventing a polymorphic ID.
+export resource CapabilityProvider @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ subject : qualification.QualificationSubject
+ resource : resource-relations.ResourceSubject?
+ capability : CapabilitySpecification
+ calendar : availability.AvailabilityCalendarRevision
+}
+export enum CapacityBasis { planned
+ forecast
+ actual }
+/// A fixed application count seals this interval's complete demand projection.
+export resource Capacity @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ provider : CapabilityProvider
+ capability : CapabilitySpecification
+ basis : CapacityBasis
+ amount : decimal<6> >= 0
+ unit : text length 1..64
+ from : datetime
+ until : datetime
+ place : place.Place?
+ scope : specification.SpecificationPin
+ pool : allocation.AllocationPool
+ applicationCount : integer >= 0 <= 16
+ rules { provider.capability == capability
+ unit == capability.unit
+ unit == pool.unit
+ from < until }
+}
+export resource CapacityDemand @tenant @appendOnly {
+ id : id
+ capacity : Capacity
+ capability : CapabilitySpecification
+ ordinal : integer >= 1 <= 16
+ demand : demand.Demand
+ reservation : allocation.AllocationReservation?
+ rules { capability == capacity.capability
+ demand.specification == capability.definition
+ ordinal <= capacity.applicationCount
+ demand.unit == capacity.unit
+ demand.from >= capacity.from
+ demand.until <= capacity.until
+ demand.place == capacity.place
+ reservation == null || reservation.pool == capacity.pool
+ reservation == null || reservation.quantity == demand.quantity
+ reservation == null || reservation.from == demand.from
+ reservation == null || reservation.until == demand.until }
+ unique capacity, ordinal
+ unique capacity, demand
+ unique capacity, reservation
+ list by capacity
+}

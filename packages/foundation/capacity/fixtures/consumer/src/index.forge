@@ -1,0 +1,26 @@
+import capacity
+export resource ManufacturingCellCapacity @tenant @appendOnly {
+ id : id
+ capacity : capacity.Capacity @unique
+ cell : text length 1..128
+}
+export resource HospitalServiceCapacity @tenant @appendOnly {
+ id : id
+ capacity : capacity.Capacity @unique
+ service : text length 1..128
+}
+export resource CloudComputeCapacity @tenant @appendOnly {
+ id : id
+ capacity : capacity.Capacity @unique
+ region : text length 1..128
+}
+export resource NetworkCapacity @tenant @appendOnly {
+ id : id
+ capacity : capacity.Capacity @unique
+ circuit : text length 1..128
+}
+export resource FieldServiceCapacity @tenant @appendOnly {
+ id : id
+ capacity : capacity.Capacity @unique
+ territory : text length 1..128
+}
