@@ -8,6 +8,7 @@ pub mod concept;
 pub mod concept_governance;
 mod concept_interactions;
 pub mod concept_realization;
+pub mod concept_registry;
 pub mod concept_semantics;
 mod concept_subjects;
 pub mod concept_traceability;

@@ -137,6 +137,8 @@ enum ConceptCmd {
     },
     /// Check supplied trace reconstruction evidence against a ConceptIR requirement.
     CheckTrace { path: PathBuf, witness: PathBuf },
+    /// Validate exact registry references for supplied L1 artifacts (not implementation proof).
+    CheckRegistryRealizations { path: PathBuf, references: PathBuf },
     /// Inspect the semantic graph and invariant producer responsibilities.
     Inspect { path: PathBuf },
     /// Compare semantic declarations independently of implementation choices.
@@ -335,6 +337,17 @@ fn main() -> Result<()> {
                         return Err(anyhow!(serde_json::to_string(&errors)?));
                     }
                     serde_json::json!({"valid":true,"conceptHash":concept.content_hash(),"scope":"supplied-trace-witness","applicabilityEvaluated":false,"implementationProven":false})
+                }
+                ConceptCmd::CheckRegistryRealizations { path, references } => {
+                    let concept = load_concept(&path)?;
+                    let references = serde_json::from_slice::<
+                        Vec<forgegraph_semantic::concept_registry::RegistryRealization>,
+                    >(&std::fs::read(references)?)?;
+                    let errors = concept.check_registry_realizations(&references);
+                    if !errors.is_empty() {
+                        return Err(anyhow!(serde_json::to_string(&errors)?));
+                    }
+                    serde_json::json!({"valid":true,"scope":"registry-references","implementationProven":false})
                 }
                 ConceptCmd::Inspect { path } => {
                     let concept = load_concept(&path)?;
