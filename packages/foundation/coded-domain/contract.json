@@ -1,0 +1,81 @@
+{
+  "slug": "coded-domain",
+  "layer": "substrate",
+  "issue": 101,
+  "dependencies": [
+    "identifiers",
+    "classification",
+    "evidence"
+  ],
+  "facts": [
+    "CodedDomain authority/context namespace",
+    "DomainRelease and withdrawal",
+    "Code identity, CodeRevision and CodeLabel",
+    "CodeDisposition and versioned ConceptMapping"
+  ],
+  "operations": [
+    "CodedDomains.inspect/inspectMapping"
+  ],
+  "invariants": [
+    "Code identity is independent of display labels",
+    "Exact meaning references never float",
+    "Hidden lifecycle history fails closed"
+  ],
+  "acceptance": [
+    {
+      "id": "F101-identity",
+      "description": "Authority/context identity and external identifiers",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-coded-domain.test.ts"
+      ]
+    },
+    {
+      "id": "F101-meaning",
+      "description": "Release-pinned meaning, validity and supersession",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-coded-domain.test.ts"
+      ]
+    },
+    {
+      "id": "F101-labels",
+      "description": "Labels change independently; new codes need no enum change",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-coded-domain.test.ts"
+      ]
+    },
+    {
+      "id": "F101-mapping",
+      "description": "Explicit versioned concept mappings with source and evidence",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-coded-domain.test.ts"
+      ]
+    },
+    {
+      "id": "F101-fixtures",
+      "description": "Country, currency and industry typed consumers",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-coded-domain.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "CountryAddress",
+    "CurrencyAmount",
+    "IndustryRegistration"
+  ]
+}
