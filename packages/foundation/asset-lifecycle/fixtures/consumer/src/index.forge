@@ -1,0 +1,21 @@
+import asset-lifecycle
+export resource IndustrialAsset @tenant @appendOnly {
+ id : id
+ asset : asset-lifecycle.AssetProfile @unique
+ machine : text length 1..128
+}
+export resource MedicalAsset @tenant @appendOnly {
+ id : id
+ asset : asset-lifecycle.AssetProfile @unique
+ device : text length 1..128
+}
+export resource CloudAsset @tenant @appendOnly {
+ id : id
+ asset : asset-lifecycle.AssetProfile @unique
+ service : text length 1..128
+}
+export resource FleetAsset @tenant @appendOnly {
+ id : id
+ asset : asset-lifecycle.AssetProfile @unique
+ vehicle : text length 1..128
+}
