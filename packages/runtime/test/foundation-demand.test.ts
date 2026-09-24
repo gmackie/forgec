@@ -1,0 +1,70 @@
+import type { Wire } from '../src/decode.js';
+import { Effect } from 'effect';
+import { expect,it } from 'vitest';
+import { foundation,foundationAdapters } from './helpers/foundation.js';
+import { Demands } from '../src/foundation/demand.js';
+import { Evidence } from '../src/foundation/evidence.js';
+import { Allocations } from '../src/foundation/allocation.js';
+import { Scheduling } from '../src/foundation/scheduling.js';
+import { Availability } from '../src/foundation/availability.js';
+import { Engine } from '../src/engine.js';
+import { localAuthorizer } from '../src/gatekeeper.js';
+const p='@forgegraph/foundation/demand/_/',sp='@forgegraph/foundation/specification/_/',f='@forgegraph/foundation/fulfillment/_/',a='@forgegraph/foundation/allocation/_/',sc='@forgegraph/foundation/scheduling/_/',q='@forgegraph/foundation/qualification/_/';
+const from='2026-01-02T14:00:00Z',until='2026-01-02T15:00:00Z',at='2026-01-01T12:00:00Z';
+for(const adapter of foundationAdapters)it(`${adapter}: typed demand provenance, complete aggregation, atomic conversion and planning`,async()=>{
+ const h=await foundation('demand',adapter,true),run=Effect.runPromise;
+ try{
+  const {engine,ctx,call}=h,service=new Demands(engine);
+  const repo=await call(sp+'Repository.create',{key:'demand',provider:'git',locator:'https://example.test/spec'}),pin=await call(sp+'SpecificationPin.create',{repository:repo.id,anchor:'service',revision:'a'.repeat(40)});
+  const party=await call('@forgegraph/foundation/party/_/Party.create',{label:'Requester'}),ids=await call('@forgegraph/foundation/identifiers/_/IdentifierSet.create',{label:'Place'}),place=await call('@forgegraph/foundation/place/_/Place.create',{identifiers:ids.id,name:'Office'});
+  const bundle=await call('@forgegraph/foundation/evidence/_/EvidenceBundle.create',{key:'forecast',label:'Forecast model receipt'}),seal=await run(new Evidence(engine).seal(String(bundle.id),null,ctx));
+  const input={requester:String(party.id),specification:String(pin.id),constraints:String(pin.id),origin:'explicit' as const,quantity:'1',unit:'slot',place:String(place.id),from,until,priority:1,priorityPolicy:String(pin.id),source:'request:1'};
+  const demands:Wire[]=[];
+  for(const [key,name,extra] of [['service','ServiceRequest',{problem:'Repair'}],['inventory','ReplenishmentSignal',{sku:'part-1',forecastRevision:'forecast-v2'}],['staffing','StaffingRequest',{skill:'Engineer'}],['compute','ComputeRequest',{workload:'simulation'}]] as const){
+   const demand=await run(service.record({...input,key,origin:key==='inventory'?'inferred':'explicit',...(key==='inventory'?{support:String(seal.id)}:{})},ctx));demands.push(demand);
+   await call('@fixture/demand-consumer/_/'+name+'.create',{demand:demand.id,...extra});
+  }
+  await expect(run(service.record({...input,key:'bad-inferred',origin:'inferred'},ctx))).rejects.toThrow();
+  const group=await call(p+'DemandGroup.create',{key:'batch',memberCount:2,specification:pin.id,constraints:pin.id,unit:'slot',place:place.id,from,until});
+  await call(p+'DemandGroupMember.create',{group:group.id,demand:demands[0]!.id,ordinal:1});
+  await expect(run(service.aggregate(String(group.id),ctx))).rejects.toThrow();
+  await call(p+'DemandGroupMember.create',{group:group.id,demand:demands[1]!.id,ordinal:2});
+  expect((await run(service.aggregate(String(group.id),ctx))).quantity).toBe('2.000000');
+  const wrong=await call(p+'DemandGroup.create',{key:'bad',memberCount:1,specification:pin.id,constraints:pin.id,unit:'hours',place:place.id,from,until});
+  await expect(call(p+'DemandGroupMember.create',{group:wrong.id,demand:demands[0]!.id,ordinal:1})).rejects.toThrow();
+  const executor=await call(f+'FulfillmentExecutor.create',{key:'worker'}),set=await call(f+'FulfillmentSet.create',{label:'Delivery'});
+  const executions:Wire[]=[];for(let i=0;i<4;i++)executions.push(await call(f+'Fulfillment.create',{fulfillmentSet:set.id,ordinal:i+1,specificationPin:pin.id,executor:executor.id,requestedAt:at,evidence:null}));
+  // Force a cancellation between the aggregate read and atomic commit.
+  const atomic=engine.atomic.bind(engine);let cancelled=false;
+  engine.atomic=(mutations,context,options)=>Effect.gen(function*(){if(!cancelled){cancelled=true;yield* service.resolve(String(demands[1]!.id),'cancelled',null,at,'Withdrawn',ctx);}return yield* atomic(mutations,context,options);});
+  await expect(run(service.convertGroup(String(group.id),demands.slice(0,2).map((d,i)=>({demand:String(d.id),fulfillment:String(executions[i]!.id)})),at,ctx))).rejects.toThrow();engine.atomic=atomic;
+  expect((await run(service.state(String(demands[0]!.id),ctx))).phase).toBe('open');
+  const converted=await run(service.convertGroup(String(group.id),[{demand:String(demands[0]!.id),fulfillment:String(executions[0]!.id)}],at,ctx));
+  expect((await run(service.aggregate(String(group.id),ctx))).quantity).toBe('0.000000');
+  await expect(run(service.resolve(String(demands[0]!.id),'cancelled',null,at,'Too late',ctx))).rejects.toThrow();
+  await run(service.resolve(String(demands[2]!.id),'superseded',String(demands[3]!.id),at,'Revised',ctx));
+  await expect(run(service.resolve(String(demands[3]!.id),'superseded',String(demands[2]!.id),at,'Backwards',ctx))).rejects.toThrow();
+  const pool=await call(a+'AllocationPool.create',{key:'planning',mode:'exclusive',capacity:'1',unit:'slot'}),reservation=await call(a+'AllocationReservation.create',{pool:pool.id,key:'demand',quantity:'1',unit:'slot',from,until,holdUntil:at});
+  const allocation=await call(p+'DemandAllocation.create',{demand:demands[0]!.id,reservation:reservation.id});
+  expect((await run(service.allocation(String(allocation.id),ctx))).allocation.phase).toBeNull();
+  await run(new Allocations(engine).act(String(reservation.id),'book',ctx));
+  expect((await run(service.allocation(String(allocation.id),ctx))).allocation.phase).toBe('allocated');
+  await run(new Allocations(engine).act(String(reservation.id),'release',ctx));
+  const participants=await call('@forgegraph/foundation/participation/_/ParticipationSet.create',{label:'Staff'}),availability=new Availability(engine),scheduler=new Scheduling(engine);
+  const calendar=await run(availability.createCalendar('Office',ctx)),revision=await run(availability.createRevision({calendar:String(calendar.id),timezone:'UTC',weekly:[{weekday:5,startMinute:840,endMinute:960}]},ctx));
+  const requirement=await run(scheduler.requirement({key:'work',durationMinutes:60,participants:String(participants.id),place:String(place.id),needs:[{pool:String(pool.id),calendar:String(revision.id),quantity:'1'}]},ctx));
+  const slot=await run(scheduler.slot(String(requirement.id),from,ctx)),appointment=await run(scheduler.book({key:'delivery',slot:String(slot.id),fulfillment:String(set.id)},ctx));
+  const schedule=await call(p+'DemandSchedule.create',{demand:demands[0]!.id,resolution:converted[0]!.id,fulfillment:executions[0]!.id,appointment:appointment.id,slot:slot.id,requirement:requirement.id});
+  expect((await run(service.schedule(String(schedule.id),ctx))).appointment.commit).not.toBeNull();
+  await run(scheduler.cancel(String(appointment.id),'Reschedule elsewhere',ctx));
+  expect((await run(service.schedule(String(schedule.id),ctx))).appointment.end).not.toBeNull();
+  const definition=await call(q+'QualificationDefinition.create',{key:'skill',pin:pin.id,label:'Skill'}),qualification=await call(q+'QualificationRequirement.create',{definition:definition.id,minimumLevel:null});
+  const request=await call('@forgegraph/foundation/routing/_/RoutingRequest.create',{key:'route',requirement:qualification.id,participants:participants.id,fulfillment:set.id,from,until,quantity:'1',unit:'slot'});
+  const route=await call(p+'DemandRoute.create',{demand:demands[0]!.id,resolution:converted[0]!.id,fulfillment:executions[0]!.id,request:request.id});
+  expect((await run(service.route(String(route.id),ctx))).request.id).toBe(request.id);
+  await expect(call(p+'Demand.delete',{id:demands[0]!.id})).rejects.toThrow();
+  await expect(run(service.state(String(demands[0]!.id),{...ctx,tenant:'foreign'}))).rejects.toThrow();
+  const guarded=new Engine(engine.model,engine.layer);guarded.gatekeeper.authorizer=localAuthorizer({policies:engine.model.resources.filter(r=>r.id!==p+'DemandResolution').map(r=>({id:r.id,actions:[r.id+'.*'],requires:[],where:[]})),pips:[],epoch:2,knownObligations:[]});
+  await expect(run(new Demands(guarded).aggregate(String(group.id),ctx))).rejects.toThrow();
+ }finally{await h.close();}
+});
