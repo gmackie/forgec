@@ -1,0 +1,88 @@
+import specification
+import evidence
+import evaluation
+import fulfillment
+export resource MetricDefinition @tenant @appendOnly {
+ id : id
+ key : text length 1..128
+ definition : specification.SpecificationPin
+ dimension : text length 1..64
+ unit : text length 1..64
+ semantics : specification.SpecificationPin
+ unique key, definition
+}
+export resource MetricSubject @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+}
+export enum MetricOperation { sample
+ sum
+ mean
+ product
+ ratio }
+/// Derived candidates are interpreted and verified, not trusted because CRUD succeeded.
+export resource MetricObservation @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ metric : MetricDefinition
+ subject : MetricSubject
+ unit : text length 1..64
+ value : decimal<6>
+ observedAt : datetime?
+ from : datetime?
+ until : datetime?
+ source : evidence.EvidenceSource
+ sourceRecord : text length 1..200
+ support : evidence.EvidenceSeal?
+ operation : MetricOperation
+ left : MetricObservation?
+ right : MetricObservation?
+ depth : integer >= 1 <= 8
+ rules { unit == metric.unit
+ (observedAt != null && from == null && until == null) || (observedAt == null && from != null && until != null && from < until)
+ (operation == MetricOperation.sample && left == null && right == null && depth == 1) || (operation != MetricOperation.sample && left != null && right != null && depth > left.depth && depth > right.depth)
+ left == null || left.subject == subject
+ right == null || right.subject == subject }
+ unique source, sourceRecord
+}
+export resource MetricObjective @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ metric : MetricDefinition
+ subject : MetricSubject
+ policy : specification.SpecificationPin
+ target : decimal<6>
+ minimum : decimal<6>?
+ maximum : decimal<6>?
+ from : datetime
+ until : datetime
+ rules { from < until
+ minimum != null || maximum != null
+ minimum == null || maximum == null || minimum <= maximum
+ minimum == null || target >= minimum
+ maximum == null || target <= maximum }
+}
+export resource PerformanceAssessment @tenant @appendOnly {
+ id : id
+ objective : MetricObjective
+ observation : MetricObservation
+ evaluation : evaluation.EvaluationFinish?
+ rules { objective.metric == observation.metric
+ objective.subject == observation.subject
+ evaluation == null || evaluation.outcome == "Completed" }
+ unique objective, observation
+}
+/// Occurrence consumed through Measurements.breach, which verifies the threshold.
+export resource MetricBreachEvent @tenant @appendOnly {
+ id : id
+ assessment : PerformanceAssessment @unique
+ occurredAt : datetime
+ find by assessment
+}
+/// A response is separate from the observation and never silently executes work.
+export resource MetricBreachEffect @tenant @appendOnly {
+ id : id
+ breach : MetricBreachEvent
+ fulfillment : fulfillment.Fulfillment
+ unique breach, fulfillment
+}

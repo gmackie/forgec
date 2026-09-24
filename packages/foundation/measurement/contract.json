@@ -1,0 +1,85 @@
+{
+  "slug": "measurement",
+  "layer": "substrate",
+  "issue": 124,
+  "dependencies": [
+    "specification",
+    "evidence",
+    "evaluation",
+    "fulfillment"
+  ],
+  "facts": [
+    "ManufacturingPerformance",
+    "ServicePerformance",
+    "ClinicalPerformance",
+    "AgentPerformance"
+  ],
+  "operations": [
+    "measurement authorized runtime services"
+  ],
+  "invariants": [
+    "Pinned metric definitions and unit-aware point/interval observations",
+    "Exact bounded derived indicators with immutable input provenance",
+    "Expected and actual comparisons with objective threshold status",
+    "Verified breach events and separately linked business effects",
+    "Manufacturing service clinical and agent metric consumers"
+  ],
+  "acceptance": [
+    {
+      "id": "F124-01",
+      "description": "Pinned metric definitions and unit-aware point/interval observations",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-measurement.test.ts"
+      ]
+    },
+    {
+      "id": "F124-02",
+      "description": "Exact bounded derived indicators with immutable input provenance",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-measurement.test.ts"
+      ]
+    },
+    {
+      "id": "F124-03",
+      "description": "Expected and actual comparisons with objective threshold status",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-measurement.test.ts"
+      ]
+    },
+    {
+      "id": "F124-04",
+      "description": "Verified breach events and separately linked business effects",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-measurement.test.ts"
+      ]
+    },
+    {
+      "id": "F124-05",
+      "description": "Manufacturing service clinical and agent metric consumers",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-measurement.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ManufacturingPerformance",
+    "ServicePerformance",
+    "ClinicalPerformance",
+    "AgentPerformance"
+  ]
+}
