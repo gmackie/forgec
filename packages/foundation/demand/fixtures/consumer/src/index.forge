@@ -1,0 +1,26 @@
+import demand
+resource ServiceRequest @tenant @appendOnly {
+ id : id
+ demand : demand.Demand @unique
+ problem : text length 1..1000
+ rules { demand.origin == "explicit" }
+}
+resource ReplenishmentSignal @tenant @appendOnly {
+ id : id
+ demand : demand.Demand @unique
+ sku : text length 1..128
+ forecastRevision : text length 1..128
+ rules { demand.origin == "inferred" }
+}
+resource StaffingRequest @tenant @appendOnly {
+ id : id
+ demand : demand.Demand @unique
+ skill : text length 1..128
+ rules { demand.origin == "explicit" }
+}
+resource ComputeRequest @tenant @appendOnly {
+ id : id
+ demand : demand.Demand @unique
+ workload : text length 1..128
+ rules { demand.origin == "explicit" }
+}

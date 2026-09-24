@@ -89,3 +89,4 @@ export * from "./foundation/quota.js";
 export * from "./foundation/attestation.js";
 
 export * from "./foundation/party-relationship.js";
+export * from "./foundation/demand.js";
