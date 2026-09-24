@@ -1,0 +1,48 @@
+import party
+import specification
+import evidence
+
+export resource PartyRelationshipDefinition @tenant @appendOnly {
+ id : id
+ key : text length 1..128
+ pin : specification.SpecificationPin
+ forwardLabel : text length 1..128
+ inverseLabel : text length 1..128
+ unique key, pin
+}
+export resource PartyRelationshipScope @tenant @appendOnly {
+ id : id
+ label : text length 1..200
+}
+/// The carrier of a ConceptIR Relationship with two typed Party endpoints.
+export resource PartyRelationship @tenant @timestamps @appendOnly {
+ id : id
+ definition : PartyRelationshipDefinition
+ fromParty : party.Party
+ toParty : party.Party
+ scope : PartyRelationshipScope?
+ validFrom : datetime
+ validUntil : datetime?
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ rules {
+  fromParty != toParty
+  validUntil == null || validUntil > validFrom
+ }
+ unique definition, fromParty, toParty, validFrom
+ list by fromParty
+ list by toParty
+}
+export resource PartyRelationshipEnd @tenant @timestamps @appendOnly {
+ id : id
+ relationship : PartyRelationship @unique
+ replacement : PartyRelationship?
+ effectiveAt : datetime
+ reason : text length 1..1000
+ recordedBy : text length 1..128
+ rules {
+  effectiveAt >= relationship.validFrom
+  replacement == null || (replacement.definition == relationship.definition && replacement.fromParty == relationship.fromParty && replacement.toParty == relationship.toParty && replacement.scope == relationship.scope && replacement.validFrom > relationship.validFrom && replacement.validFrom == effectiveAt)
+ }
+ find by relationship
+}

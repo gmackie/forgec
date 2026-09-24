@@ -1,0 +1,68 @@
+import party-relationship
+import party
+
+resource Employment @tenant @appendOnly {
+ id : id
+ relationship : party-relationship.PartyRelationship @unique
+ fromParty : party.Party
+ toParty : party.Party
+ validFrom : datetime
+ validUntil : datetime?
+ rules { fromParty == relationship.fromParty
+ toParty == relationship.toParty
+ validFrom == relationship.validFrom
+ validUntil == relationship.validUntil }
+ definition : party-relationship.PartyRelationshipDefinition
+ rules { relationship.definition == definition
+ definition.key == "employment" }
+ jobTitle : text length 1..200
+}
+resource CorporateOwnership @tenant @appendOnly {
+ id : id
+ relationship : party-relationship.PartyRelationship @unique
+ fromParty : party.Party
+ toParty : party.Party
+ validFrom : datetime
+ validUntil : datetime?
+ rules { fromParty == relationship.fromParty
+ toParty == relationship.toParty
+ validFrom == relationship.validFrom
+ validUntil == relationship.validUntil }
+ definition : party-relationship.PartyRelationshipDefinition
+ rules { relationship.definition == definition
+ definition.key == "corporate" }
+ ownershipPercent : decimal<4> >= 0
+ rules { ownershipPercent <= 100 }
+}
+resource Guardianship @tenant @appendOnly {
+ id : id
+ relationship : party-relationship.PartyRelationship @unique
+ fromParty : party.Party
+ toParty : party.Party
+ validFrom : datetime
+ validUntil : datetime?
+ rules { fromParty == relationship.fromParty
+ toParty == relationship.toParty
+ validFrom == relationship.validFrom
+ validUntil == relationship.validUntil }
+ definition : party-relationship.PartyRelationshipDefinition
+ rules { relationship.definition == definition
+ definition.key == "guardianship" }
+ courtOrder : text length 1..200
+}
+resource SupplyRelationship @tenant @appendOnly {
+ id : id
+ relationship : party-relationship.PartyRelationship @unique
+ fromParty : party.Party
+ toParty : party.Party
+ validFrom : datetime
+ validUntil : datetime?
+ rules { fromParty == relationship.fromParty
+ toParty == relationship.toParty
+ validFrom == relationship.validFrom
+ validUntil == relationship.validUntil }
+ definition : party-relationship.PartyRelationshipDefinition
+ rules { relationship.definition == definition
+ definition.key == "supply" }
+ supplierNumber : text length 1..200
+}

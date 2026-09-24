@@ -1223,3 +1223,49 @@ fn registry_cli_checks_exact_artifact_references_and_identity_based_diff() {
         .success()
     );
 }
+
+#[test]
+fn foundation_party_profiles_use_compiled_typed_concept_relationships() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../packages/foundation/party-relationship/fixtures");
+    let out = forgec()
+        .arg("inspect")
+        .arg(root.join("consumer"))
+        .arg("--concept")
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let projected: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let raw: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("relationships.concept.json")).unwrap())
+            .unwrap();
+    let concept = forgegraph_semantic::concept::ConceptIR::load_closed(&raw).unwrap();
+    assert_eq!(
+        raw["entities"],
+        projected["projection"]["concept"]["entities"]
+    );
+    assert_eq!(concept.semantics.relationships.len(), 4);
+    for relationship in concept.semantics.relationships.values() {
+        assert_eq!(relationship.endpoints.len(), 2);
+        assert!(
+            relationship
+                .endpoints
+                .values()
+                .all(|endpoint| endpoint.target == "@forgegraph/foundation/party/_/Party")
+        );
+        assert!(
+            concept
+                .semantics
+                .temporal
+                .contains_key(relationship.carrier.as_ref().unwrap())
+        );
+    }
+    let mut invalid = raw;
+    invalid["semantics"]["relationships"]["@fixture/party-relationship-consumer/_/EmploymentRoles"]
+        ["endpoints"]["employee"]["target"] = serde_json::json!("MissingParty");
+    assert!(forgegraph_semantic::concept::ConceptIR::load_closed(&invalid).is_err());
+}

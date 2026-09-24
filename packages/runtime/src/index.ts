@@ -87,3 +87,5 @@ export * from "./foundation/opportunity.js";
 export * from "./foundation/trust.js";
 export * from "./foundation/quota.js";
 export * from "./foundation/attestation.js";
+
+export * from "./foundation/party-relationship.js";
