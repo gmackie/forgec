@@ -1,0 +1,89 @@
+{
+  "slug": "challenge",
+  "layer": "system",
+  "issue": 108,
+  "dependencies": [
+    "trust",
+    "risk",
+    "evaluation",
+    "decision",
+    "evidence",
+    "specification"
+  ],
+  "facts": [
+    "ProofOfPerson",
+    "StepUpVerification",
+    "ManualReview",
+    "CustomerServiceException",
+    "AgentAction"
+  ],
+  "operations": [
+    "challenge authorized runtime services"
+  ],
+  "invariants": [
+    "Explainable risk/trust challenge decisions bound to typed interactions",
+    "Pinned verification and approval requirements with evidence",
+    "Serialized attempts, bounded retries, expiry and cancellation",
+    "Proof/step-up, manual review, customer-service and agent fixtures",
+    "Assurance projection is consumed by Gatekeeper without granting authority"
+  ],
+  "acceptance": [
+    {
+      "id": "F108-01",
+      "description": "Explainable risk/trust challenge decisions bound to typed interactions",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-challenge.test.ts"
+      ]
+    },
+    {
+      "id": "F108-02",
+      "description": "Pinned verification and approval requirements with evidence",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-challenge.test.ts"
+      ]
+    },
+    {
+      "id": "F108-03",
+      "description": "Serialized attempts, bounded retries, expiry and cancellation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-challenge.test.ts"
+      ]
+    },
+    {
+      "id": "F108-04",
+      "description": "Proof/step-up, manual review, customer-service and agent fixtures",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-challenge.test.ts"
+      ]
+    },
+    {
+      "id": "F108-05",
+      "description": "Assurance projection is consumed by Gatekeeper without granting authority",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-challenge.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ProofOfPerson",
+    "StepUpVerification",
+    "ManualReview",
+    "CustomerServiceException",
+    "AgentAction"
+  ]
+}

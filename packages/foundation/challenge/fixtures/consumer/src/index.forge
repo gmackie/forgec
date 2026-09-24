@@ -1,0 +1,38 @@
+import challenge
+resource ProofOfPerson @tenant @appendOnly {
+ id : id
+ challenge : challenge.Challenge @unique
+ proofProtocol : text length 1..128
+ rules { challenge.mechanism == "proof-of-person" }
+}
+resource StepUpVerification @tenant @appendOnly {
+ id : id
+ challenge : challenge.Challenge @unique
+ assuranceLevel : text length 1..128
+ rules { challenge.mechanism == "step-up" }
+}
+resource ManualReview @tenant @appendOnly {
+ id : id
+ challenge : challenge.Challenge @unique
+ queue : text length 1..128
+ rules { challenge.mechanism == "manual-review" }
+}
+resource CustomerServiceException @tenant @appendOnly {
+ id : id
+ interaction : challenge.ChallengeInteraction @unique
+ caseNumber : text length 1..128
+}
+resource AgentAction @tenant @appendOnly {
+ id : id
+ interaction : challenge.ChallengeInteraction @unique
+ toolName : text length 1..128
+}
+import evaluation
+resource VerificationObservation @tenant @appendOnly {
+ id : id
+ evaluation : evaluation.EvaluationFinish @unique
+ challenge : challenge.Challenge
+ passed : boolean
+ protocol : text length 1..128
+ find by evaluation
+}

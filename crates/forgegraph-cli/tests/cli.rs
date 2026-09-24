@@ -1269,3 +1269,36 @@ fn foundation_party_profiles_use_compiled_typed_concept_relationships() {
         ["endpoints"]["employee"]["target"] = serde_json::json!("MissingParty");
     assert!(forgegraph_semantic::concept::ConceptIR::load_closed(&invalid).is_err());
 }
+
+#[test]
+fn foundation_challenge_context_uses_compiled_interaction_and_subject_semantics() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../packages/foundation/challenge/fixtures");
+    let out = forgec()
+        .arg("inspect")
+        .arg(root.join("consumer"))
+        .arg("--concept")
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let projection: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let raw: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("interaction.concept.json")).unwrap())
+            .unwrap();
+    let concept = forgegraph_semantic::concept::ConceptIR::load_closed(&raw).unwrap();
+    assert_eq!(
+        raw["entities"],
+        projection["projection"]["concept"]["entities"]
+    );
+    assert_eq!(concept.semantics.interactions.len(), 1);
+    assert_eq!(concept.semantics.subjects.len(), 1);
+    assert!(
+        concept.semantics.interactions["ChallengedAction"]
+            .participation
+            .contains("ChallengeParticipation")
+    );
+}
