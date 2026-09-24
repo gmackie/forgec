@@ -17,8 +17,10 @@ projections, caches, purposes, classifications, and capability blocks are covere
 References in queries are syntactic only; local captures do not resolve packages.
 
 Structural facets and their applications are covered by the shared valid corpus.
-Collections (#17), work queues (#8), and actors (#16) remain pending compiler
-features and are not advertised as supported syntax. Source fixtures use the
+Bounded collections, work queues, actors, conditional uniqueness, exact search
+and workflow map/collect are covered by the grammar and example drift tests.
+The shared runtime-construct fixture and capture tests also cover declaration
+tags, folding, keywords and map-item locals for these newer constructs. Source fixtures use the
 canonical `source ... { -> Function }` form; proposed resource exposure syntax
 must land in the compiler before entering the valid corpus.
 

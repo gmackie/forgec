@@ -28,3 +28,13 @@ done
 
 # Reserved SQL table and reference names must execute on both SQL adapters.
 cargo run -q -p forgegraph-cli -- build examples/sql-identifiers --out conformance/fixtures/sql-identifiers
+
+feature_out=$(mktemp -d)
+trap 'rm -rf "$foundation_out" "$feature_out"' EXIT
+for feature_slug in collections credentials search issue-numbers project-portfolio deployment-lanes; do
+  cargo run -q -p forgegraph-cli -- build "examples/$feature_slug" --out "$feature_out" >/dev/null
+  cp "$feature_out/app.json" "conformance/fixtures/$feature_slug/app.json"
+  mkdir -p "conformance/fixtures/$feature_slug/d1" "conformance/fixtures/$feature_slug/postgres"
+  cp "$feature_out/d1/0001_init.sql" "conformance/fixtures/$feature_slug/d1/0001_init.sql"
+  cp "$feature_out/postgres/0001_init.sql" "conformance/fixtures/$feature_slug/postgres/0001_init.sql"
+done

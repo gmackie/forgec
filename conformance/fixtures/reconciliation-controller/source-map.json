@@ -49,7 +49,24 @@
       "file": "src/index.forge",
       "start": 288,
       "end": 390
+    },
+    "@fixture/reconciliation-controller/_/ReconciliationController#handler:Desired": {
+      "file": "src/index.forge",
+      "start": 362,
+      "end": 388
+    },
+    "@fixture/reconciliation-controller/_/ReconciliationController#state": {
+      "file": "src/index.forge",
+      "start": 338,
+      "end": 359
     }
   },
-  "derivations": {}
+  "derivations": {
+    "@fixture/reconciliation-controller/_/ReconciliationController#handler:Desired": [
+      {
+        "kind": "actor-handler",
+        "from": "@fixture/reconciliation-controller/_/ApplyDesired"
+      }
+    ]
+  }
 }

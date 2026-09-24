@@ -4,6 +4,18 @@ expression: projection
 ---
 {
   "concept": {
+    "semantics": {
+      "temporal": {
+        "@acme/commerce/_/SitePolicy": {
+          "occurrence": null,
+          "valid": {
+            "from": "effectiveFrom",
+            "to": "effectiveUntil"
+          },
+          "knowledge": null
+        }
+      }
+    },
     "version": "concept-ir/2",
     "package": "@acme/commerce",
     "entities": {
@@ -690,6 +702,40 @@ expression: projection
       "@acme/commerce/_/SitePolicy": {
         "name": "SitePolicy",
         "fields": {
+          "effectiveFrom": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "datetime",
+                "args": []
+              },
+              "optional": false,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
+          "effectiveUntil": {
+            "ty": {
+              "base": {
+                "kind": "scalar",
+                "name": "datetime",
+                "args": []
+              },
+              "optional": true,
+              "constraints": [],
+              "normalizers": [],
+              "dataClass": null,
+              "purpose": null
+            },
+            "immutable": false,
+            "default": null,
+            "derived": null
+          },
           "id": {
             "ty": {
               "base": {

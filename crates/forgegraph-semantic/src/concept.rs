@@ -8,6 +8,11 @@ pub const CONCEPT_IR_VERSION: &str = "concept-ir/2";
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ConceptIR {
+    #[serde(
+        default,
+        skip_serializing_if = "crate::concept_semantics::BusinessSemantics::is_empty"
+    )]
+    pub semantics: crate::concept_semantics::BusinessSemantics,
     pub version: String,
     /// Package identity only: provider targets and runtime profile are L1.
     pub package: String,
@@ -68,6 +73,9 @@ pub struct ConceptType {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase", deny_unknown_fields)]
 pub enum Type {
+    Principal {
+        id: String,
+    },
     Collection {
         collection: ir::CollectionKind,
         element: Box<ConceptType>,
@@ -322,9 +330,11 @@ impl Graph {
 
 fn type_id(ty: &ConceptType) -> Option<&str> {
     match &ty.base {
-        Type::Entity { id, .. } | Type::Fact { id } | Type::Shape { id } | Type::Enum { id } => {
-            Some(id)
-        }
+        Type::Entity { id, .. }
+        | Type::Fact { id }
+        | Type::Shape { id }
+        | Type::Enum { id }
+        | Type::Principal { id } => Some(id),
         Type::Collection { element, .. } => type_id(element),
         Type::Scalar { .. } => None,
     }
@@ -446,6 +456,7 @@ impl ConceptIR {
         for id in self.purposes.keys() {
             graph.nodes.insert(id.clone(), "purpose".into());
         }
+        self.add_business_graph(&mut graph);
         graph
     }
     pub fn canonical_json(&self) -> String {
@@ -468,7 +479,7 @@ impl ConceptIR {
     /// Authoritative producer ownership applies only to explicit produce/emit contracts.
     /// Legacy permissions are not proof of ownership and are never turned into producers.
     pub fn validate(&self) -> Vec<Violation> {
-        let mut errors = vec![];
+        let mut errors = self.validate_business_semantics();
         let mut producers: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
         for (id, process) in &self.processes {
             let mut missing = |subject: &str, family: &str, target: &str| {
@@ -665,7 +676,8 @@ fn compare_contract(
         && expected.as_object().is_none_or(|v| !v.is_empty());
     let family = path.first().map(String::as_str).unwrap_or("");
     let field = path.get(2).map(String::as_str).unwrap_or("");
-    let unknown = (path.len() == 2 && matches!(family, "externals" | "principals" | "policies"))
+    let unknown = (family == "semantics" && actual.is_none())
+        || (path.len() == 2 && matches!(family, "externals" | "principals" | "policies"))
         || (family == "processes"
             && ((path.len() == 3 && matches!(field, "principal" | "authorizations"))
                 || (field == "behavior"
@@ -880,6 +892,7 @@ fn process(
 pub fn project(ir: &DomainIR) -> Projection {
     let mut out = Projection {
         concept: ConceptIR {
+            semantics: Default::default(),
             version: CONCEPT_IR_VERSION.into(),
             package: ir.package.name.clone(),
             entities: BTreeMap::new(),
@@ -927,7 +940,23 @@ pub fn project(ir: &DomainIR) -> Projection {
                 r.id.clone(),
                 Entity {
                     name: r.name.clone(),
-                    fields: fields(&r.fields),
+                    fields: fields(
+                        &r.fields
+                            .iter()
+                            .cloned()
+                            .map(|mut field| {
+                                if r.decorators.effective_dated.is_some()
+                                    && matches!(
+                                        field.name.as_str(),
+                                        "effectiveFrom" | "effectiveUntil"
+                                    )
+                                {
+                                    field.synthesized = false;
+                                }
+                                field
+                            })
+                            .collect::<Vec<_>>(),
+                    ),
                     lifecycle: r.lifecycle.clone(),
                     invariants: r.uniques.clone(),
                     subject: r.decorators.subject.clone(),
@@ -937,6 +966,19 @@ pub fn project(ir: &DomainIR) -> Projection {
                     purpose_bindings: r.purpose_bindings.clone(),
                 },
             );
+            if r.decorators.effective_dated.is_some() {
+                out.concept.semantics.temporal.insert(
+                    r.id.clone(),
+                    crate::concept_semantics::TemporalSemantics {
+                        occurrence: None,
+                        valid: Some(crate::concept_semantics::IntervalBinding {
+                            from: "effectiveFrom".into(),
+                            to: Some("effectiveUntil".into()),
+                        }),
+                        knowledge: None,
+                    },
+                );
+            }
             out.realizations.insert(r.id.clone(), r.id.clone());
         }
         for shape in &module.shapes {

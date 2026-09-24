@@ -15,3 +15,6 @@
 (step_call function: (qualified_name) @name) @reference.call
 
 (facet_declaration name: (identifier) @name) @definition.class
+(actor_declaration name: (identifier) @name) @definition.class
+(work_queue_declaration name: (identifier) @name) @definition.class
+(step_declaration name: (identifier) @name) @definition.function

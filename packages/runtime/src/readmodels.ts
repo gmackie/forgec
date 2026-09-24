@@ -19,7 +19,7 @@ const CACHE = "cache";
 const SEP = String.fromCharCode(1);
 
 type Doc = Record<string, unknown> & { _version?: number };
-interface ProjectionMeta extends Doc { generation: number; status: "active" | "building"; builtAt: string; lastProcessed: unknown }
+interface ProjectionMeta extends Doc { reservedGeneration?: number; generation: number; status: "active" | "building"; builtAt: string; lastProcessed: unknown }
 interface Contribution extends Doc { version: number; key?: string; values?: Record<string, string> }
 interface CacheEntry extends Doc { value: Wire; freshUntil: string; loadedAt: string }
 
@@ -144,8 +144,8 @@ export class ReadModels {
     return Effect.gen(function* () {
       const m = yield* self.meta(p, ctx.tenant);
       if (!m) return { generation: 0, status: "not-built", lastProcessed: null };
-      const { _version, ...rest } = m;
-      void _version;
+      const { _version, reservedGeneration, ...rest } = m;
+      void _version; void reservedGeneration;
       return rest;
     });
   }
@@ -186,7 +186,10 @@ export class ReadModels {
     return Effect.gen(function* () {
       const tenant = env.tenant;
       const m = yield* self.meta(p, tenant);
-      if (!m || m.status !== "active") return "ignored" as const;
+      if (!m) return "ignored" as const;
+      // Once the initial scan starts, acknowledging an event could lose a write
+      // made after its source page was read. Keep it retryable until activation.
+      if (m.status !== "active") return yield* Effect.fail(err("ProjectionNotReady", `${p.name} is building its first generation`));
       const storage = yield* Storage;
       const r = self.engine.model.resource(p.source);
       const id = String(env.payload?.id ?? "");
@@ -228,7 +231,16 @@ export class ReadModels {
       const storage = yield* Storage;
       const r = self.engine.model.resource(p.source);
       const prev = yield* self.meta(p, ctx.tenant);
-      const generation = (prev?.generation ?? 0) + 1;
+      // Reserve a never-reused generation before writing any candidate rows. The
+      // active pointer remains readable; failed hosts only abandon their candidate.
+      const generation = Math.max(prev?.generation ?? 0, prev?.reservedGeneration ?? 0) + 1;
+      if (!Number.isSafeInteger(generation)) return yield* Effect.fail(err("BudgetExceeded", "projection generation exhausted"));
+      const reserved: ProjectionMeta = {
+        ...(prev ?? { generation: 0, status: "building", builtAt: (yield* Clock).now(), lastProcessed: null }),
+        reservedGeneration: generation,
+      };
+      yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:meta`, reserved, prev?._version ?? null);
+      const reservedVersion = (prev?._version ?? 0) + 1;
       const groups = new Map<string, Doc>();
       let cursor: unknown = null;
       for (let pages = 0; pages < 10_000; pages++) {
@@ -251,7 +263,9 @@ export class ReadModels {
         yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:${generation}:group:${key}`, g, null);
       }
       const meta: Omit<ProjectionMeta, "_version"> = { generation, status: "active", builtAt: (yield* Clock).now(), lastProcessed: null };
-      yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:meta`, meta, prev?._version ?? null);
+      // Event application and competing reservations change this version. A stale
+      // snapshot must fail publication rather than overwrite acknowledged progress.
+      yield* storage.putDocument(ctx.tenant, PROJ, `${p.name}:meta`, { ...meta, reservedGeneration: generation }, reservedVersion);
       return meta;
     });
   }

@@ -1,0 +1,642 @@
+{
+  "version": "concept-ir/2",
+  "package": "@semantics/insurance",
+  "entities": {
+    "@semantics/insurance/_/Policy": {
+      "name": "Policy",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "covered": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "paid": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "insurer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/insurance/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "insured": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/insurance/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@semantics/insurance/_/Party": {
+      "name": "Party",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@semantics/insurance/_/LossReported": {
+      "name": "LossReported",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@semantics/insurance/_/CoverageDecision": {
+      "name": "CoverageDecision",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "cause": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/insurance/_/LossReported"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "target": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/insurance/_/Policy",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@semantics/insurance/_/Determine": {
+      "name": "Determine",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/insurance/_/Policy",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "occurrence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/insurance/_/LossReported"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "result": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/insurance/_/Policy",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "consequence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/insurance/_/CoverageDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@semantics/insurance/_/Policy": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      },
+      "@semantics/insurance/_/LossReported": {
+        "occurrence": "occurredAt",
+        "valid": null,
+        "knowledge": {
+          "from": "knownAt",
+          "to": null
+        }
+      },
+      "@semantics/insurance/_/CoverageDecision": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      }
+    },
+    "selections": {
+      "@semantics/insurance/_/validAtOccurrence": {
+        "context": "@semantics/insurance/_/Determine",
+        "target": "@semantics/insurance/_/Policy",
+        "axis": "valid",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "occurredAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      },
+      "@semantics/insurance/_/knownAtDecision": {
+        "context": "@semantics/insurance/_/Determine",
+        "target": "@semantics/insurance/_/Policy",
+        "axis": "knowledge",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "knownAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      }
+    },
+    "contracts": {
+      "@semantics/insurance/_/BoundedContribution": {
+        "owner": {
+          "kind": "entity",
+          "id": "@semantics/insurance/_/Policy"
+        },
+        "kind": "invariant",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "covered"
+            ]
+          }
+        },
+        "selectors": []
+      },
+      "@semantics/insurance/_/Available": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/insurance/_/Determine"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "covered"
+            ]
+          }
+        },
+        "selectors": [
+          "@semantics/insurance/_/validAtOccurrence",
+          "@semantics/insurance/_/knownAtDecision"
+        ]
+      },
+      "@semantics/insurance/_/Preserved": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/insurance/_/Determine"
+        },
+        "kind": "ensures",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "covered"
+            ]
+          }
+        },
+        "selectors": []
+      }
+    },
+    "relationships": {
+      "@semantics/insurance/_/PositionRoles": {
+        "carrier": "@semantics/insurance/_/Policy",
+        "endpoints": {
+          "insurer": {
+            "target": "@semantics/insurance/_/Party",
+            "field": "insurer"
+          },
+          "insured": {
+            "target": "@semantics/insurance/_/Party",
+            "field": "insured"
+          }
+        },
+        "evidence": [
+          "@semantics/insurance/_/LossReported"
+        ]
+      }
+    },
+    "events": [
+      "@semantics/insurance/_/LossReported"
+    ],
+    "effects": {
+      "@semantics/insurance/_/BusinessConsequence": {
+        "fact": "@semantics/insurance/_/CoverageDecision",
+        "causes": {
+          "cause": "@semantics/insurance/_/LossReported"
+        },
+        "targets": {
+          "target": "@semantics/insurance/_/Policy"
+        }
+      }
+    },
+    "views": {
+      "@semantics/insurance/_/InsurerView": {
+        "fact": "@semantics/insurance/_/Policy",
+        "observerRole": "insurer",
+        "fields": [
+          "id",
+          "covered",
+          "paid"
+        ],
+        "authorizations": [],
+        "purpose": null
+      },
+      "@semantics/insurance/_/InsuredView": {
+        "fact": "@semantics/insurance/_/Policy",
+        "observerRole": "insured",
+        "fields": [
+          "id",
+          "covered",
+          "paid"
+        ],
+        "authorizations": [],
+        "purpose": null
+      }
+    }
+  }
+}

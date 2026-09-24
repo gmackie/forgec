@@ -20,6 +20,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
+    /// Validate, inspect, or compare explicit business-semantic contracts.
+    Concept {
+        #[command(subcommand)]
+        command: ConceptCmd,
+    },
     /// Parse, resolve and check a package and its dependencies.
     Check {
         #[arg(default_value = ".")]
@@ -110,6 +115,37 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
+}
+
+#[derive(Subcommand)]
+enum ConceptCmd {
+    /// Validate an explicit ConceptIR file. This does not prove its implementation.
+    Check {
+        path: PathBuf,
+        /// Require all type and activation references and external port types to resolve.
+        #[arg(long)]
+        closed: bool,
+    },
+    /// Validate recorded engagement membership, bounds, and parent links.
+    CheckEngagements { path: PathBuf, snapshot: PathBuf },
+    /// Explain effective external constraints; applicability predicates remain unevaluated.
+    ExplainConstraints {
+        path: PathBuf,
+        process: String,
+        #[arg(long, allow_hyphen_values = true)]
+        at: i64,
+    },
+    /// Check supplied trace reconstruction evidence against a ConceptIR requirement.
+    CheckTrace { path: PathBuf, witness: PathBuf },
+    /// Inspect the semantic graph and invariant producer responsibilities.
+    Inspect { path: PathBuf },
+    /// Compare semantic declarations independently of implementation choices.
+    Diff { old: PathBuf, new: PathBuf },
+}
+fn load_concept(path: &Path) -> Result<forgegraph_semantic::concept::ConceptIR> {
+    let value = serde_json::from_slice(&std::fs::read(path)?)?;
+    forgegraph_semantic::concept::ConceptIR::load(&value)
+        .map_err(|e| anyhow!("invalid ConceptIR {}: {e}", path.display()))
 }
 
 mod lsp;
@@ -263,6 +299,55 @@ fn load_tree(
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
+        Cmd::Concept { command } => {
+            let value = match command {
+                ConceptCmd::Check { path, closed } => {
+                    let concept = load_concept(&path)?;
+                    if closed {
+                        let errors = concept.validate_closed();
+                        if !errors.is_empty() {
+                            return Err(anyhow!(serde_json::to_string(&errors)?));
+                        }
+                    }
+                    serde_json::json!({"valid":true, "conceptHash":concept.content_hash(), "implementationProven":false})
+                }
+                ConceptCmd::CheckEngagements { path, snapshot } => {
+                    let concept = load_concept(&path)?;
+                    let records = serde_json::from_slice(&std::fs::read(snapshot)?)?;
+                    let errors = concept.check_engagement_snapshot(&records);
+                    if !errors.is_empty() {
+                        return Err(anyhow!(serde_json::to_string(&errors)?));
+                    }
+                    serde_json::json!({"valid":true,"conceptHash":concept.content_hash(),"scope":"supplied-engagement-snapshot","implementationProven":false})
+                }
+                ConceptCmd::ExplainConstraints { path, process, at } => {
+                    let concept = load_concept(&path)?;
+                    if !concept.processes.contains_key(&process) {
+                        return Err(anyhow!("unknown process {process}"));
+                    }
+                    serde_json::json!({"conceptHash":concept.content_hash(),"applicabilityEvaluated":false,"constraints":concept.external_constraints_for(&process, at)})
+                }
+                ConceptCmd::CheckTrace { path, witness } => {
+                    let concept = load_concept(&path)?;
+                    let witness = serde_json::from_slice(&std::fs::read(witness)?)?;
+                    let errors = concept.check_trace_witness(&witness);
+                    if !errors.is_empty() {
+                        return Err(anyhow!(serde_json::to_string(&errors)?));
+                    }
+                    serde_json::json!({"valid":true,"conceptHash":concept.content_hash(),"scope":"supplied-trace-witness","applicabilityEvaluated":false,"implementationProven":false})
+                }
+                ConceptCmd::Inspect { path } => {
+                    let concept = load_concept(&path)?;
+                    serde_json::json!({"conceptHash":concept.content_hash(), "graph":concept.graph(), "invariantProducers":concept.invariant_producers()})
+                }
+                ConceptCmd::Diff { old, new } => {
+                    let old = load_concept(&old)?;
+                    let new = load_concept(&new)?;
+                    serde_json::json!({"before":old.content_hash(), "after":new.content_hash(), "changes":old.semantic_changes(&new)})
+                }
+            };
+            println!("{}", serde_json::to_string_pretty(&value)?);
+        }
         Cmd::Check {
             path,
             concept_contract,

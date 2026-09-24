@@ -31,6 +31,7 @@ credential resources, CSV staging, changeset staging and record-only migration a
 rejected in this profile. Dedicated key-aware migration, read-once disclosure,
 automatic external secret injection and provider KMS integrations remain outstanding.
 
-Tests exercise memory and SQLite storage, non-disclosure, sealing failures, tenant
-binding, authorized/denied use, receipts and token replacement. Live provider/KMS
-certification is not claimed.
+Tests exercise memory, SQLite and real PostgreSQL (raw-pg and Drizzle) storage,
+non-disclosure, sealing failures, tenant binding, authorized/denied use, receipts
+and token replacement. PostgreSQL runs when FORGE_PG_URL is configured. Other
+live providers and provider KMS integrations remain uncertified.

@@ -25,5 +25,7 @@ Exact means the whole normalized value, not substring, token, prefix or ranked
 search. Those modes fail with an explicit diagnostic and still need dedicated
 provider plans and conformance. Large transcript/evidence body search is not
 implemented by this slice. Tests cover generated index/routes and actual
-memory/SQLite pagination, query-bound cursors and updates. Live PostgreSQL and
-DynamoDB certification remains outstanding.
+memory/SQLite and real PostgreSQL (raw-pg and Drizzle) pagination, query-bound
+cursors and updates. PostgreSQL tests run in isolated schemas when FORGE_PG_URL
+is configured, including the hosted Node CI matrix. DynamoDB certification remains
+outstanding.

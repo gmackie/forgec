@@ -16,8 +16,11 @@ rejected by the portable planner. Collections cannot be index, order, uniqueness
 or cache keys. SQL stores JSON text; DynamoDB stores document values.
 
 OpenAPI exposes array/object bounds and uniqueItems; generated TypeScript keeps
-element types. GraphQL rejects open map objects explicitly. Other client/interface
-projections still need collection-specific conformance coverage.
+element types. GraphQL rejects open map objects explicitly. The routed LevelDefinition and MailingGroup examples also run a shared HTTP
+conformance corpus through TypeScript, Python and Go clients. It covers nested
+lists, normalized set ordering, arbitrary map keys, exact safe integers, PATCH
+preservation and invalid collection values. GraphQL preserves input element
+nullability and rejects maps, open objects and unsupported unions explicitly.
 
 Element classifications appear as wildcard paths such as `recipients[]`.
 Audit sinks conservatively redact entire collection containers. This does not
@@ -26,3 +29,7 @@ require compatibility and existing-data review before rollout.
 
 Build: `cargo run -p forgegraph-cli --bin forgec -- build examples/collections`.
 Runtime tests use the tracked fixture in `conformance/fixtures/collections`.
+
+Storage conformance runs the same round-trip and record-size checks against memory,
+SQLite and real PostgreSQL through raw-pg and Drizzle. PostgreSQL runs when
+FORGE_PG_URL is configured, using an isolated schema per test.

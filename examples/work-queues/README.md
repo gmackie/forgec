@@ -6,7 +6,11 @@ package to inspect the `workQueues` IR. Instantiate the exported runtime
 `WorkQueue` service with that definition, a storage adapter and a clock.
 
 `enqueueDerived` derives requirements from pinned execution manifests (#9) and
-stores the complete immutable snapshot on the task. `enqueue` accepts an already
+stores the complete immutable snapshot on the task. `enqueueWorkflowStep` accepts
+a pinned compiled workflow and a selected call/map step, derives that activity's
+requirements, and retains its workflow version/graph hash on the task. The caller
+supplies stable per-item task IDs and performs branch selection; automatic
+workflow dispatch to runners remains outstanding. `enqueue` accepts an already
 materialized snapshot and verifies its digest and operation identity. A digest
 is integrity, not authentication: only trusted application code should enqueue.
 The host must authenticate runners and authorize every service call; this slice

@@ -164,6 +164,10 @@ export function projectGraphQL(
     key: string,
     input: boolean,
   ): GraphQLInputType | GraphQLOutputType {
+    if (["oneOf", "anyOf", "allOf"].some(keyword => s[keyword] !== undefined))
+      throw Error(`Unsupported GraphQL schema composition: ${key}`);
+    if (Array.isArray(s.type) && s.type.filter(t => t !== "null").length !== 1)
+      throw Error(`Unsupported GraphQL type union: ${key}`);
     if (s.$ref) {
       const c = component(s)!;
       return type(resolve(s), c, input);
@@ -186,11 +190,19 @@ export function projectGraphQL(
       return cache.get(n) as GraphQLEnumType;
     }
     const t = Array.isArray(s.type) ? s.type.find((t) => t !== "null") : s.type;
-    if (t === "array")
-      return new GraphQLList(
-        type(s.items ?? {}, key + "Item", input) as GraphQLOutputType,
-      );
+    if (t === "array") {
+      const item = s.items ?? {};
+      let itemType = type(item, key + "Item", input);
+      const resolved = resolve(item);
+      // Preserve element nullability for inputs. Output minimization may omit fields,
+      // so the existing nullable output policy remains in force.
+      if (input && !(Array.isArray(resolved.type) && resolved.type.includes("null")))
+        itemType = new GraphQLNonNull(itemType as GraphQLInputType);
+      return new GraphQLList(itemType as GraphQLOutputType);
+    }
     if (t === "object" || s.properties) {
+      if (s.additionalProperties !== undefined && s.additionalProperties !== false)
+        throw Error(`Unsupported open object: ${key}`);
       if (!s.properties || !Object.keys(s.properties).length)
         throw Error(`Unsupported empty or open object: ${key}`);
       const n =

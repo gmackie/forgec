@@ -1,0 +1,11 @@
+{
+  "engagements": [
+    {"id":"case-1","interaction":"@interaction/support/_/Engagement","startedAt":1000,"endedAt":5000,"parent":null},
+    {"id":"call-1","interaction":"@interaction/support/_/Engagement","startedAt":2000,"endedAt":3000,"parent":"case-1"}
+  ],
+  "events": [{"id":"message-1","declaration":"@interaction/support/_/MessageReceived","engagement":"call-1"}],
+  "processes": [
+    {"id":"response-1","declaration":"@interaction/support/_/Respond","engagement":"call-1"},
+    {"id":"response-1","declaration":"@interaction/support/_/Respond","engagement":"case-1"}
+  ]
+}

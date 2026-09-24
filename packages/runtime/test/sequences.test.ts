@@ -1,6 +1,4 @@
-import { DatabaseSync, type SQLInputValue } from "node:sqlite";
-import { D1Storage } from "../src/adapters/d1.js";
-import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
+import { featureAdapters, featureStorage, unavailable } from "./helpers/feature-storage.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Effect } from "effect";
@@ -12,23 +10,10 @@ import { testLayer } from "../src/testing.js";
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname,"../../../conformance/fixtures/issue-numbers/app.json"),"utf8")) as AppBundle;
 const model = new Model(bundle);
 const prefix = "@dogfood/issues/_/";
-for (const adapter of ["memory","sqlite"] as const) it(`${adapter}: reserves unique partition numbers and keeps committed values immutable`,async()=>{
-  const db = new DatabaseSync(":memory:");
-  db.exec(readFileSync(resolve(import.meta.dirname,"../../../conformance/fixtures/issue-numbers/d1/0001_init.sql"),"utf8"));
-  const run = (s:SqlStatement)=>({changes:Number(db.prepare(s.sql).run(...s.params as SQLInputValue[]).changes)});
-  const executor:SqlExecutor = {
-    facade:"sqlite-test",
-    first:async<T>(s:SqlStatement)=>(db.prepare(s.sql).get(...s.params as SQLInputValue[]) ?? null) as T|null,
-    all:async<T>(s:SqlStatement)=>db.prepare(s.sql).all(...s.params as SQLInputValue[]) as T[],
-    run:async(s)=>run(s),
-    batch:async(statements)=>{
-      db.exec("BEGIN");
-      try {const results=statements.map(run);db.exec("COMMIT");return results;}
-      catch(error){db.exec("ROLLBACK");throw error;}
-    },
-  };
+for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapter}: reserves unique partition numbers and keeps committed values immutable`,async()=>{
+  const {storage, close} = await featureStorage("issue-numbers",model,adapter);
   try {
-  const engine = new Engine(model,testLayer(adapter === "memory" ? new MemoryStorage() : new D1Storage(executor,model)));
+  const engine = new Engine(model,testLayer(storage));
   const ctx={tenant:"tenant",actor:"operator",requestId:"sequence"};
   const create=(project:string,tenant="tenant",key?:string)=>Effect.runPromise(engine.call(prefix+"Issue.create",{project,title:"Task"},{...ctx,tenant,...(key?{idempotencyKey:key}:{})}));
   const issues=await Promise.all(Array.from({length:24},()=>create("FORGE")));
@@ -42,7 +27,7 @@ for (const adapter of ["memory","sqlite"] as const) it(`${adapter}: reserves uni
   await expect(Effect.runPromise(engine.call(prefix+"Issue.update",{id:before["id"],expectedVersion:1,patch:{project:"OTHER"}},ctx))).rejects.toThrow();
   for(let number=100;number<=102;number++) expect(await Effect.runPromise(engine.call(prefix+"Ticket.create",{title:"Ticket"},ctx))).toMatchObject({number});
   await expect(Effect.runPromise(engine.call(prefix+"Ticket.create",{title:"Overflow"},ctx))).rejects.toThrow();
-  } finally { db.close(); }
+  } finally { await close(); }
 });
 
 it("previewing a sequence create does not consume numbers",async()=>{

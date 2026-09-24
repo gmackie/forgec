@@ -1,0 +1,420 @@
+{
+  "version": "concept-ir/2",
+  "package": "@interaction/negotiation",
+  "entities": {
+    "@interaction/negotiation/_/Negotiation": {
+      "name": "Negotiation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiation",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@interaction/negotiation/_/Negotiator": {
+      "name": "Negotiator",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@interaction/negotiation/_/Agreement": {
+      "name": "Agreement",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "origin": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@interaction/negotiation/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiator",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/negotiation/_/OfferRecorded": {
+      "name": "OfferRecorded",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/negotiation/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@interaction/negotiation/_/Agree": {
+      "name": "Agree",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "agreement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Agreement",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@interaction/negotiation/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/negotiation/_/Negotiation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@interaction/negotiation/_/Negotiation": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      }
+    },
+    "relationships": {
+      "@interaction/negotiation/_/Participants": {
+        "carrier": "@interaction/negotiation/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@interaction/negotiation/_/Negotiator",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@interaction/negotiation/_/Negotiation",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@interaction/negotiation/_/OfferRecorded",
+      "@interaction/negotiation/_/Closed"
+    ],
+    "interactions": {
+      "@interaction/negotiation/_/Engagement": {
+        "carrier": "@interaction/negotiation/_/Negotiation",
+        "participation": [
+          "@interaction/negotiation/_/Participants"
+        ],
+        "events": {
+          "@interaction/negotiation/_/OfferRecorded": "context",
+          "@interaction/negotiation/_/Closed": "context"
+        },
+        "processes": {
+          "@interaction/negotiation/_/Agree": "engagement",
+          "@interaction/negotiation/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    },
+    "subjects": {
+      "@interaction/negotiation/_/ParticipantIdentity": {
+        "carrier": "@interaction/negotiation/_/Negotiator",
+        "profiles": [
+          "party"
+        ]
+      }
+    }
+  }
+}

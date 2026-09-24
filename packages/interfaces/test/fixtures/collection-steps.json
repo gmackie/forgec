@@ -1,0 +1,292 @@
+[
+  {
+    "step": "create",
+    "operation": "LevelDefinition.create",
+    "input": {
+      "objectives": [
+        {
+          "title": "Win 🧭",
+          "score": 9007199254740991
+        }
+      ],
+      "tags": [
+        "z",
+        "a"
+      ],
+      "metadata": {
+        "z": "last",
+        "a": "first",
+        "__proto__": "ordinary key"
+      },
+      "grid": [
+        [
+          3,
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    }
+  },
+  {
+    "step": "get",
+    "operation": "LevelDefinition.get",
+    "input": {
+      "id": "$create.id"
+    }
+  },
+  {
+    "step": "patch",
+    "operation": "LevelDefinition.update",
+    "input": {
+      "id": "$create.id",
+      "expectedVersion": 1,
+      "patch": {
+        "tags": [
+          "b",
+          "a"
+        ],
+        "grid": [
+          [
+            4
+          ],
+          []
+        ]
+      }
+    }
+  },
+  {
+    "step": "get-updated",
+    "operation": "LevelDefinition.get",
+    "input": {
+      "id": "$create.id"
+    }
+  },
+  {
+    "step": "duplicate-set",
+    "operation": "LevelDefinition.create",
+    "input": {
+      "objectives": [
+        {
+          "title": "Win 🧭",
+          "score": 9007199254740991
+        }
+      ],
+      "tags": [
+        "a",
+        "a"
+      ],
+      "metadata": {
+        "z": "last",
+        "a": "first",
+        "__proto__": "ordinary key"
+      },
+      "grid": [
+        [
+          3,
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    }
+  },
+  {
+    "step": "bounds",
+    "operation": "LevelDefinition.create",
+    "input": {
+      "objectives": [
+        {
+          "title": "Win 🧭",
+          "score": 9007199254740991
+        }
+      ],
+      "tags": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+        "32"
+      ],
+      "metadata": {
+        "z": "last",
+        "a": "first",
+        "__proto__": "ordinary key"
+      },
+      "grid": [
+        [
+          3,
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    }
+  },
+  {
+    "step": "nested-type",
+    "operation": "LevelDefinition.create",
+    "input": {
+      "objectives": [
+        {
+          "title": "Win 🧭",
+          "score": 9007199254740991
+        }
+      ],
+      "tags": [
+        "z",
+        "a"
+      ],
+      "metadata": {
+        "z": "last",
+        "a": "first",
+        "__proto__": "ordinary key"
+      },
+      "grid": [
+        [
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "step": "unknown-field",
+    "operation": "LevelDefinition.create",
+    "input": {
+      "objectives": [
+        {
+          "title": "Win",
+          "score": 1,
+          "extra": true
+        }
+      ],
+      "tags": [
+        "z",
+        "a"
+      ],
+      "metadata": {
+        "z": "last",
+        "a": "first",
+        "__proto__": "ordinary key"
+      },
+      "grid": [
+        [
+          3,
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    }
+  },
+  {
+    "step": "required-element",
+    "operation": "LevelDefinition.create",
+    "input": {
+      "objectives": [
+        null
+      ],
+      "tags": [
+        "z",
+        "a"
+      ],
+      "metadata": {
+        "z": "last",
+        "a": "first",
+        "__proto__": "ordinary key"
+      },
+      "grid": [
+        [
+          3,
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    }
+  },
+  {
+    "step": "map-key",
+    "operation": "LevelDefinition.create",
+    "input": {
+      "objectives": [
+        {
+          "title": "Win 🧭",
+          "score": 9007199254740991
+        }
+      ],
+      "tags": [
+        "z",
+        "a"
+      ],
+      "metadata": {
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx": "value"
+      },
+      "grid": [
+        [
+          3,
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    }
+  },
+  {
+    "step": "mailing",
+    "operation": "MailingGroup.create",
+    "input": {
+      "recipients": [
+        "z@example.com",
+        "a@example.com"
+      ],
+      "labels": {
+        "team": "release"
+      }
+    }
+  },
+  {
+    "step": "invalid-email",
+    "operation": "MailingGroup.create",
+    "input": {
+      "recipients": [
+        "invalid"
+      ],
+      "labels": {}
+    }
+  }
+]
