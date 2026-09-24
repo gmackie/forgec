@@ -1,0 +1,88 @@
+{
+  "slug": "project",
+  "layer": "system",
+  "issue": 128,
+  "dependencies": [
+    "planning-budget",
+    "party",
+    "participation",
+    "specification",
+    "fulfillment",
+    "evaluation",
+    "usage",
+    "scheduling",
+    "allocation"
+  ],
+  "facts": [
+    "SoftwareProject",
+    "CapitalProject",
+    "ResearchStudy"
+  ],
+  "operations": [
+    "project authorized runtime services"
+  ],
+  "invariants": [
+    "Project program scope ownership and participation",
+    "Separate complete WBS and typed acyclic dependency graph",
+    "Milestone schedule allocation and budget integration",
+    "Fulfillment Usage and Ledger-backed actual progress",
+    "Software construction capital and research profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F128-01",
+      "description": "Project program scope ownership and participation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-project.test.ts"
+      ]
+    },
+    {
+      "id": "F128-02",
+      "description": "Separate complete WBS and typed acyclic dependency graph",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-project.test.ts"
+      ]
+    },
+    {
+      "id": "F128-03",
+      "description": "Milestone schedule allocation and budget integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-project.test.ts"
+      ]
+    },
+    {
+      "id": "F128-04",
+      "description": "Fulfillment Usage and Ledger-backed actual progress",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-project.test.ts"
+      ]
+    },
+    {
+      "id": "F128-05",
+      "description": "Software construction capital and research profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-project.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "SoftwareProject",
+    "CapitalProject",
+    "ResearchStudy"
+  ]
+}
