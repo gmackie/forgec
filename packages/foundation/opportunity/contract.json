@@ -1,0 +1,88 @@
+{
+  "slug": "opportunity",
+  "layer": "system",
+  "issue": 103,
+  "dependencies": [
+    "party",
+    "participation",
+    "specification",
+    "evaluation",
+    "quotation-pricing",
+    "selection",
+    "agreement-catalog"
+  ],
+  "facts": [
+    "Opportunity and participants",
+    "PursuitDefinition, stages and transitions",
+    "OpportunityAssessment",
+    "OpportunityQuote and OpportunitySelection",
+    "OpportunityEvent with Agreement issuance"
+  ],
+  "operations": [
+    "Opportunities.state/transition/assess/linkQuote/linkSelection"
+  ],
+  "invariants": [
+    "Terminal outcomes never reopen",
+    "Won requires an issued agreement",
+    "Evaluation results bind this pursuit and exact criteria",
+    "Confidence and value are sourced assessments"
+  ],
+  "acceptance": [
+    {
+      "id": "F103-identity",
+      "description": "Durable typed pursuits with Party/Participation integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-opportunity.test.ts"
+      ]
+    },
+    {
+      "id": "F103-stages",
+      "description": "Domain stages, ordered lifecycle and lost/abandoned outcomes",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-opportunity.test.ts"
+      ]
+    },
+    {
+      "id": "F103-assessment",
+      "description": "Evaluation-backed qualification, confidence and potential value",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-opportunity.test.ts"
+      ]
+    },
+    {
+      "id": "F103-conversion",
+      "description": "Real Quote/Selection links and issued Agreement conversion",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-opportunity.test.ts"
+      ]
+    },
+    {
+      "id": "F103-fixtures",
+      "description": "Sales, partnership, grant and procurement fixtures",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-opportunity.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "SalesPursuit",
+    "PartnershipPursuit",
+    "GrantPursuit",
+    "ProcurementPursuit"
+  ]
+}
