@@ -1,0 +1,117 @@
+import specification
+import notifications
+import delivery
+import artifact
+import agreement-catalog
+import planning-budget
+import scheduling
+import collaboration
+import measurement
+import evidence
+export resource CampaignAudience @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ selector : specification.SpecificationPin
+ topic : notifications.NotificationTopic
+}
+/// Host-owned reachability assertion; this is not the future Reachability substrate.
+export resource CampaignRoute @tenant @appendOnly {
+ id : id
+ endpoint : notifications.NotificationEndpointLink
+ channel : specification.SpecificationPin
+ from : datetime
+ until : datetime
+ support : evidence.EvidenceSeal
+ rules { from < until }
+}
+export resource CampaignRouteEnd @tenant @appendOnly {
+ id : id
+ route : CampaignRoute @unique
+ at : datetime
+ reason : text length 1..500
+}
+export resource Campaign @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ audience : CampaignAudience
+ objective : planning-budget.Goal
+ plan : planning-budget.Plan
+ budget : planning-budget.FundingEnvelope?
+ content : artifact.ArtifactRevision?
+ offer : agreement-catalog.Offer?
+ channel : specification.SpecificationPin
+ metricSubject : measurement.MetricSubject @unique
+ from : datetime
+ until : datetime
+ rules { from < until
+ objective.plan == plan
+ budget == null || budget.plan == plan
+ content != null || offer != null }
+}
+export resource CampaignWave @tenant @appendOnly {
+ id : id
+ campaign : Campaign
+ key : text length 1..128
+ from : datetime
+ until : datetime
+ appointment : scheduling.Appointment?
+ memberCount : integer >= 1 <= 16
+ rules { from < until
+ from >= campaign.from
+ until <= campaign.until }
+ unique campaign, key
+}
+export resource CampaignMember @tenant @appendOnly {
+ id : id
+ wave : CampaignWave
+ ordinal : integer >= 1 <= 16
+ notification : notifications.Notification @unique
+ route : CampaignRoute
+ rules { ordinal <= wave.memberCount
+ notification.at >= wave.from
+ notification.at < wave.until }
+ unique wave, ordinal
+}
+export enum CampaignAction { activate
+ pause
+ resume
+ wave
+ close }
+export enum CampaignPhase { active
+ paused
+ closed }
+export resource CampaignEvent @tenant @appendOnly {
+ id : id
+ campaign : Campaign
+ ordinal : integer >= 1 <= 128
+ previous : CampaignEvent?
+ kind : CampaignAction
+ phase : CampaignPhase
+ wave : CampaignWave? @unique
+ at : datetime
+ rules {
+ (previous == null && ordinal == 1 && kind == "activate" && phase == "active") || (previous != null && previous.campaign == campaign && ordinal == previous.ordinal + 1 && at >= previous.at && previous.phase != "closed" && ((kind == "pause" && previous.phase == "active" && phase == "paused") || (kind == "resume" && previous.phase == "paused" && phase == "active") || (kind == "wave" && previous.phase == "active" && phase == "active") || (kind == "close" && phase == "closed")))
+ (kind == "wave" && wave != null && wave.campaign == campaign && at <= wave.from) || (kind != "wave" && wave == null)
+ }
+ unique campaign, ordinal
+}
+export resource CampaignResponse @tenant @appendOnly {
+ id : id
+ member : CampaignMember
+ interaction : collaboration.ThreadEvent
+ attribution : specification.SpecificationPin
+ kind : text length 1..64
+ rules { interaction.kind == "Entry" }
+ unique member, interaction, attribution
+}
+export resource CampaignPerformance @tenant @appendOnly {
+ id : id
+ campaign : Campaign
+ assessment : measurement.PerformanceAssessment
+ objective : measurement.MetricObjective
+ rules { assessment.objective == objective
+ objective.subject == campaign.metricSubject
+ objective.from >= campaign.from
+ objective.until <= campaign.until }
+ unique campaign, assessment
+}
