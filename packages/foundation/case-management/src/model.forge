@@ -1,0 +1,106 @@
+import party
+import participation
+import specification
+import evidence
+import artifact
+import evaluation
+import decision
+import fulfillment
+import collaboration
+export resource CaseSubject @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+}
+export resource Case @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ subject : CaseSubject
+ context : specification.SpecificationPin
+ reason : text length 1..1000
+ owner : party.Party
+ participants : participation.ParticipationSet
+ openedAt : datetime
+}
+export resource CaseFile @tenant @appendOnly {
+ id : id
+ case : Case
+ evidence : evidence.EvidenceSeal?
+ document : artifact.ArtifactRevision?
+ rules { evidence != null || document != null }
+}
+/// A bounded engagement within a case; neither the case nor its prescribed workflow.
+export resource CaseInteraction @tenant @appendOnly {
+ id : id
+ case : Case
+ discussion : collaboration.Thread
+ purpose : specification.SpecificationPin
+ from : datetime
+ until : datetime?
+ rules { discussion.participants == case.participants
+ from >= case.openedAt
+ until == null || until > from }
+}
+export resource CaseMilestone @tenant @appendOnly {
+ id : id
+ case : Case
+ key : text length 1..128
+ criteria : specification.SpecificationPin
+ run : evaluation.EvaluationRun
+ evaluation : evaluation.EvaluationFinish
+ support : evidence.EvidenceSeal
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ rules { accepted.decisionCase == approval
+ run.definition == criteria
+ evaluation.run == run
+ evaluation.outcome == "Completed" }
+ unique case, key
+}
+export enum CaseAction { file
+ interaction
+ decision
+ work
+ milestone
+ transfer
+ relate
+ escalate
+ close
+ reopen }
+/// The journal admits typed facts into the case; raw candidates are inert.
+export resource CaseEvent @tenant @appendOnly {
+ id : id
+ case : Case
+ ordinal : integer >= 1 <= 128
+ previous : CaseEvent?
+ kind : CaseAction
+ at : datetime
+ reason : text length 1..1000
+ recordedBy : text length 1..128
+ closed : boolean
+ owner : party.Party
+ file : CaseFile?
+ interaction : CaseInteraction?
+ decision : decision.DecisionCase?
+ work : fulfillment.Fulfillment?
+ milestone : CaseMilestone?
+ related : Case?
+ rules { (previous == null && ordinal == 1) || (previous != null && previous.case == case && ordinal == previous.ordinal + 1)
+ at >= case.openedAt
+ previous == null || at >= previous.at
+ (kind == CaseAction.reopen) == (previous != null && previous.closed)
+ closed == (kind == CaseAction.close)
+ kind == CaseAction.transfer || (previous == null && owner == case.owner) || (previous != null && owner == previous.owner)
+ (kind == CaseAction.file) == (file != null)
+ (kind == CaseAction.interaction) == (interaction != null)
+ (kind == CaseAction.decision) == (decision != null)
+ (kind == CaseAction.work) == (work != null)
+ (kind == CaseAction.milestone) == (milestone != null)
+ (kind == CaseAction.relate || kind == CaseAction.escalate) == (related != null)
+ file == null || file.case == case
+ interaction == null || interaction.case == case
+ milestone == null || milestone.case == case
+ related == null || related != case }
+ unique case, ordinal
+ unique case, milestone
+ find by case, ordinal
+}
