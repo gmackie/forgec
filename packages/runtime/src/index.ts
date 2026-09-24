@@ -80,3 +80,5 @@ export * from "./foundation/quotation-pricing.js";
 
 export * from "./foundation/resource-relations.js";
 export * from "./foundation/settlement.js";
+
+export * from "./foundation/records.js";
