@@ -1,0 +1,84 @@
+import specification
+import resource-relations
+export resource CompositionSpecification @tenant @appendOnly {
+ id : id
+ definition : specification.SpecificationPin
+ key : text length 1..128 @unique
+ slotCount : integer >= 0 <= 16
+ ordered : boolean
+ allowCycles : boolean
+}
+export resource CompositionSlot @tenant @appendOnly {
+ id : id
+ specification : CompositionSpecification
+ ordinal : integer >= 1 <= 16
+ key : text length 1..128
+ component : CompositionSpecification
+ unit : text length 1..64
+ minimumCount : integer >= 0 <= 16
+ maximumCount : integer >= 1 <= 16
+ minimumQuantity : decimal<6> >= 0
+ maximumQuantity : decimal<6> > 0
+ alternativeCount : integer >= 0 <= 16
+ from : datetime
+ until : datetime?
+ rules { ordinal <= specification.slotCount
+ minimumCount <= maximumCount
+ minimumQuantity <= maximumQuantity
+ until == null || until > from }
+ unique specification, ordinal
+ unique specification, key
+ list by specification
+}
+export resource CompositionAlternative @tenant @appendOnly {
+ id : id
+ slot : CompositionSlot
+ ordinal : integer >= 1 <= 16
+ component : CompositionSpecification
+ authority : specification.SpecificationPin
+ rules { ordinal <= slot.alternativeCount
+ component != slot.component }
+ unique slot, ordinal
+ unique slot, component
+ list by slot
+}
+export resource CompositionInstance @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ specification : CompositionSpecification
+ resource : resource-relations.ResourceSubject? @unique
+}
+export resource CompositionSet @tenant @appendOnly {
+ id : id
+ instance : CompositionInstance
+ componentCount : integer >= 0 <= 16
+}
+export resource CompositionMember @tenant @appendOnly {
+ id : id
+ set : CompositionSet
+ ordinal : integer >= 1 <= 16
+ slot : CompositionSlot
+ child : CompositionInstance
+ quantity : decimal<6> > 0
+ unit : text length 1..64
+ rules { ordinal <= set.componentCount
+ unit == slot.unit }
+ unique set, ordinal
+ unique set, child
+ list by set
+}
+export resource CompositionRevision @tenant @appendOnly {
+ id : id
+ instance : CompositionInstance
+ ordinal : integer >= 1 <= 64
+ previous : CompositionRevision?
+ set : CompositionSet @unique
+ from : datetime
+ until : datetime?
+ reason : text length 1..500
+ rules { set.instance == instance
+ (previous == null && ordinal == 1) || (previous != null && previous.instance == instance && ordinal == previous.ordinal + 1 && from > previous.from)
+ until == null || until > from }
+ unique instance, ordinal
+ find by instance, ordinal
+}
