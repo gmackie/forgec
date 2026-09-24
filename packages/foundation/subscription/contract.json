@@ -1,0 +1,90 @@
+{
+  "slug": "subscription",
+  "layer": "system",
+  "issue": 136,
+  "dependencies": [
+    "party",
+    "specification",
+    "agreement-catalog",
+    "entitlement",
+    "billing",
+    "quota",
+    "service-level",
+    "decision",
+    "evidence"
+  ],
+  "facts": [
+    "SaaSSubscription",
+    "MembershipSubscription",
+    "MediaSubscription",
+    "ServicePlanSubscription"
+  ],
+  "operations": [
+    "subscription authorized runtime services"
+  ],
+  "invariants": [
+    "Fixed, auto-renewing and evergreen subscriptions use approved immutable terms",
+    "Serialized changes preserve entitlement continuity and explicit consent",
+    "Suspension, grace, expiry and effective cancellation govern availability",
+    "Typed agreement rights, quota, billing and service-level remain composed",
+    "Proration is a separately issued Billing adjustment"
+  ],
+  "acceptance": [
+    {
+      "id": "F136-01",
+      "description": "Fixed, auto-renewing and evergreen subscriptions use approved immutable terms",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-subscription.test.ts"
+      ]
+    },
+    {
+      "id": "F136-02",
+      "description": "Serialized changes preserve entitlement continuity and explicit consent",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-subscription.test.ts"
+      ]
+    },
+    {
+      "id": "F136-03",
+      "description": "Suspension, grace, expiry and effective cancellation govern availability",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-subscription.test.ts"
+      ]
+    },
+    {
+      "id": "F136-04",
+      "description": "Typed agreement rights, quota, billing and service-level remain composed",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-subscription.test.ts"
+      ]
+    },
+    {
+      "id": "F136-05",
+      "description": "Proration is a separately issued Billing adjustment",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-subscription.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "SaaSSubscription",
+    "MembershipSubscription",
+    "MediaSubscription",
+    "ServicePlanSubscription"
+  ]
+}
