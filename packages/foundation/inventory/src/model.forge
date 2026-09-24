@@ -1,0 +1,113 @@
+import specification
+import identifiers
+import place
+import party
+import resource-relations
+import allocation
+import evidence
+import demand
+export resource StockItemSpecification @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ definition : specification.SpecificationPin
+ unit : text length 1..64
+}
+export enum StockIdentityKind { serialized
+ lot }
+export resource StockItem @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ specification : StockItemSpecification
+ identifiers : identifiers.IdentifierSet
+ kind : StockIdentityKind
+ serial : resource-relations.ResourceSubject? @unique
+ lot : text? length 1..128
+ rules { (kind == StockIdentityKind.serialized && serial != null && lot == null) || (kind == StockIdentityKind.lot && serial == null && lot != null) }
+ unique specification, lot
+}
+export enum StockCondition { usable
+ returned
+ damaged
+ quarantine }
+export resource InventoryPosition @tenant @appendOnly {
+ id : id
+ item : StockItem
+ place : place.Place
+ custodian : party.Party
+ condition : StockCondition
+ pool : allocation.AllocationPool @unique
+ reorderPoint : decimal<6> >= 0
+ unique item, place, custodian, condition
+}
+export resource InventoryReservation @tenant @appendOnly {
+ id : id
+ position : InventoryPosition
+ allocation : allocation.AllocationReservation @unique
+ demand : demand.Demand?
+ rules { allocation.pool == position.pool }
+}
+export resource InventoryCount @tenant @appendOnly {
+ id : id
+ position : InventoryPosition
+ quantity : decimal<6> >= 0
+ at : datetime
+ evidence : evidence.EvidenceSeal
+}
+export enum InventoryAction { receipt
+ issue
+ transfer
+ returned
+ reserve
+ release
+ reconcile }
+/// One stock-item history serializes all positions and stock claims.
+export resource InventoryMovement @tenant @appendOnly {
+ id : id
+ item : StockItem
+ ordinal : integer >= 1 <= 256
+ previous : InventoryMovement?
+ key : text length 1..128
+ kind : InventoryAction
+ at : datetime
+ position : InventoryPosition
+ destination : InventoryPosition?
+ quantity : decimal<6> > 0
+ reservation : InventoryReservation?
+ count : InventoryCount? @unique
+ source : specification.SpecificationPin
+ rules { position.item == item
+ destination == null || destination.item == item
+ destination == null || destination != position
+ (previous == null && ordinal == 1) || (previous != null && previous.item == item && ordinal == previous.ordinal + 1 && at >= previous.at)
+ (kind == InventoryAction.transfer) == (destination != null)
+ kind != InventoryAction.reserve && kind != InventoryAction.release || reservation != null
+ reservation == null || kind == InventoryAction.reserve || kind == InventoryAction.release || kind == InventoryAction.issue
+ reservation == null || reservation.position == position
+ (kind == InventoryAction.reconcile) == (count != null)
+ count == null || count.position == position
+ count == null || count.at <= at }
+ unique item, ordinal
+ unique item, key
+ find by item, ordinal
+}
+/// Visibility semantics attach to admitted movements; they never change stock themselves.
+export enum VisibilityKind { object
+ aggregation
+ transformation
+ transaction
+ association }
+export resource InventoryVisibility @tenant @appendOnly {
+ id : id
+ movement : InventoryMovement
+ kind : VisibilityKind
+ related : StockItem?
+ transaction : specification.SpecificationPin?
+ evidence : evidence.EvidenceSeal
+ rules { (kind == VisibilityKind.aggregation || kind == VisibilityKind.transformation || kind == VisibilityKind.association) == (related != null)
+ (kind == VisibilityKind.transaction) == (transaction != null) }
+}
+export resource InventoryReorder @tenant @appendOnly {
+ id : id
+ position : InventoryPosition
+ demand : demand.Demand
+}
