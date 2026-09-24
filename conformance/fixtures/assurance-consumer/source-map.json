@@ -1,7 +1,7 @@
 {
   "version": "forge-source-map/1",
   "package": "@fixture/assurance-consumer",
-  "buildHash": "3877dbc407fe888069a04da2000daec8b005ae9ecc2d80c10843e593c00db22f",
+  "buildHash": "458a8bdf634dc90b828aeba6191ebd53e52a1e5c708e4dea9085b7d36749c3e7",
   "compilerVersion": "0.3.0",
   "sources": {
     "src/index.forge": {
@@ -455,66 +455,6 @@
         "from": "@forgegraph/foundation/artifact/_/ArtifactRevision"
       }
     ],
-    "@forgegraph/foundation/assurance/_/AssuranceIssuer#op:create": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/AssuranceIssuer"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/AssuranceIssuer#op:get": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/AssuranceIssuer"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/AssuranceIssuer#op:list.all": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/AssuranceIssuer"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/Attestation#op:create": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/Attestation"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/Attestation#op:get": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/Attestation"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/Attestation#op:list.all": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/Attestation"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/AttestationEnd#op:create": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/AttestationEnd"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/AttestationEnd#op:find.byAttestation": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/AttestationEnd"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/AttestationEnd#op:get": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/AttestationEnd"
-      }
-    ],
-    "@forgegraph/foundation/assurance/_/AttestationEnd#op:list.all": [
-      {
-        "kind": "generated-operation",
-        "from": "@forgegraph/foundation/assurance/_/AttestationEnd"
-      }
-    ],
     "@forgegraph/foundation/assurance/_/Disposition#op:create": [
       {
         "kind": "generated-operation",
@@ -555,6 +495,30 @@
       {
         "kind": "generated-operation",
         "from": "@forgegraph/foundation/assurance/_/Finding"
+      }
+    ],
+    "@forgegraph/foundation/assurance/_/FindingAttestation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/assurance/_/FindingAttestation"
+      }
+    ],
+    "@forgegraph/foundation/assurance/_/FindingAttestation#op:find.byAttestation": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/assurance/_/FindingAttestation"
+      }
+    ],
+    "@forgegraph/foundation/assurance/_/FindingAttestation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/assurance/_/FindingAttestation"
+      }
+    ],
+    "@forgegraph/foundation/assurance/_/FindingAttestation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/assurance/_/FindingAttestation"
       }
     ],
     "@forgegraph/foundation/assurance/_/FindingClosure#op:create": [
@@ -639,6 +603,144 @@
       {
         "kind": "generated-operation",
         "from": "@forgegraph/foundation/assurance/_/RemediationFinish"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/Attestation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/Attestation"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/Attestation#op:find.byIssuerIssuerRecord": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/Attestation"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/Attestation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/Attestation"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/Attestation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/Attestation"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationArtifactSubject#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationArtifactSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationArtifactSubject#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationArtifactSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationArtifactSubject#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationArtifactSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationEnd#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationEnd"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationEnd#op:find.byAttestation": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationEnd"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationEnd#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationEnd"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationEnd#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationEnd"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationPartySubject#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationPartySubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationPartySubject#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationPartySubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationPartySubject#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationPartySubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationQualificationSubject#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationQualificationSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationQualificationSubject#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationQualificationSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationQualificationSubject#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationQualificationSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationSubject#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationSubject#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/AttestationSubject#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/AttestationSubject"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/QualificationAttestation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/QualificationAttestation"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/QualificationAttestation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/QualificationAttestation"
+      }
+    ],
+    "@forgegraph/foundation/attestation/_/QualificationAttestation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/attestation/_/QualificationAttestation"
       }
     ],
     "@forgegraph/foundation/evaluation/_/EvaluationExecutor#op:create": [
@@ -897,6 +999,330 @@
       {
         "kind": "generated-operation",
         "from": "@forgegraph/foundation/evidence/_/EvidenceSource"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:find.byNamespaceIssuerScopeValue": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Identifier#op:list.byIdentifierSet": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Identifier"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:find.byIdentifier": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierDisposition"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/IdentifierSet#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:find.byKey": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/identifiers/_/Issuer#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/identifiers/_/Issuer"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/Party#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/Party"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.byParty": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/PrincipalRepresentation#op:list.byPrincipal": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:find.byRepresentation": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/party/_/RepresentationRevocation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/party/_/RepresentationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/PartySubject#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/PartySubject"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/PartySubject#op:find.byParty": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/PartySubject"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/PartySubject#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/PartySubject"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/PartySubject#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/PartySubject"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/Qualification#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/Qualification"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/Qualification#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/Qualification"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/Qualification#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/Qualification"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/Qualification#op:list.bySubject": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/Qualification"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationDefinition#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationDefinition#op:find.byKeyPin": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationDefinition#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationDefinition#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationLevel#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationLevel"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationLevel#op:find.byDefinitionCode": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationLevel"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationLevel#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationLevel"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationLevel#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationLevel"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationRequirement#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationRequirement"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationRequirement#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationRequirement"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationRequirement#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationRequirement"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationRevocation#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationRevocation#op:find.byQualification": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationRevocation#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationRevocation#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationRevocation"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationSubject#op:create": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationSubject"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationSubject#op:get": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationSubject"
+      }
+    ],
+    "@forgegraph/foundation/qualification/_/QualificationSubject#op:list.all": [
+      {
+        "kind": "generated-operation",
+        "from": "@forgegraph/foundation/qualification/_/QualificationSubject"
       }
     ],
     "@forgegraph/foundation/specification/_/Realization#op:create": [

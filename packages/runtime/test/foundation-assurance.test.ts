@@ -1,6 +1,7 @@
 import { Effect } from 'effect';
 import { expect,it } from 'vitest';
 import { foundation, foundationAdapters } from './helpers/foundation.js';
+import { Attestations } from '../src/foundation/attestation.js';
 import { Assurance } from '../src/foundation/assurance.js';
 import { Evaluations } from '../src/foundation/evaluation.js';
 import { Artifacts } from '../src/foundation/artifact.js';
@@ -49,7 +50,9 @@ for(const adapter of foundationAdapters)it(`${adapter}: findings, dispositions, 
   const cancelled=await call(p+'Remediation.create',{disposition:disposition.id,finding:finding.id,intendedAction:'Alternate action'});
   await call(p+'RemediationFinish.create',{remediation:cancelled.id,disposition:disposition.id,outcome:'Cancelled',reason:'No longer needed'});
   expect(await Effect.runPromise(service.remediationPhase(String(cancelled.id),ctx))).toBe('Cancelled');
-  const issuer=await call(p+'AssuranceIssuer.create',{key:'review-board',label:'Review board'});
+  const ap='@forgegraph/foundation/attestation/_/';
+  const issuer=await call(ap+'AttestationSubject.create',{label:'Review board'}),subject=await call(ap+'AttestationSubject.create',{label:'Assurance subject'});
+  const assertions=new Attestations(engine);
   const a='@forgegraph/foundation/artifact/_/';
   const artifact=await call(a+'Artifact.create',{key:'assurance-report',label:'Report'});
   const content=await call(a+'ArtifactContent.create',{});
@@ -57,18 +60,21 @@ for(const adapter of foundationAdapters)it(`${adapter}: findings, dispositions, 
   await f.objects.simulateUpload((upload.upload as {url:string}).url,new TextEncoder().encode('proof'),'text/plain');
   const sealed=await call(a+'ArtifactContent.finalizeUpload',{id:content.id,expectedVersion:2});
   const revision=await Effect.runPromise(new Artifacts(engine).publish({artifact:String(artifact.id),content:String(content.id),digest:String(sealed.digest)},ctx));
-  const input={finding:String(finding.id),issuer:String(issuer.id),issuerRecord:'assertion',specification:String(pin.id),finish:String(repeated.finish.id),run:String(repeated.run.id),support:String(seal.id),artifact:String(revision.id),conclusion:'Domain-qualified assertion',validFrom:start,validUntil:'2026-03-01T00:00:00Z'};
+  const assertionInput={issuer:String(issuer.id),subject:String(subject.id),issuerRecord:'assertion',specification:String(pin.id),issuedAt:start,validFrom:start,validUntil:'2026-03-01T00:00:00Z',source:'review-board:record',support:String(seal.id),proof:String(revision.id),conclusion:'Domain-qualified assertion'};
+  const assertion=await Effect.runPromise(assertions.issue(assertionInput,ctx));
+  const input={finding:String(finding.id),attestation:String(assertion.id),finish:String(repeated.finish.id),run:String(repeated.run.id)};
   const attestation=await Effect.runPromise(service.issue(input,ctx));
   expect(await Effect.runPromise(service.current(String(attestation.id),start,ctx))).toMatchObject({support:seal.id});
   expect(await Effect.runPromise(service.current(String(attestation.id),'2026-03-01T00:00:00Z',ctx))).toBeNull();
-  const replacement=await Effect.runPromise(service.issue({...input,issuerRecord:'successor',validFrom:end},ctx));
+  const successor=await Effect.runPromise(assertions.issue({...assertionInput,issuerRecord:'successor',validFrom:end},ctx));
+  const replacement=await Effect.runPromise(service.issue({...input,attestation:String(successor.id)},ctx));
   const endings=await Promise.allSettled([Effect.runPromise(service.end(String(attestation.id),end,'Superseded',ctx,String(replacement.id))),Effect.runPromise(service.end(String(attestation.id),end,'Revoked',ctx))]);
   expect(endings.filter(x=>x.status==='fulfilled')).toHaveLength(1);
   expect(await Effect.runPromise(service.current(String(attestation.id),end,ctx))).toBeNull();
   expect(await Effect.runPromise(service.current(String(attestation.id),start,ctx))).not.toBeNull();
-  await expect(call(p+'Attestation.create',{...input,issuerRecord:'invalid',support:bundle.id})).rejects.toThrow();
-  await expect(Effect.runPromise(service.issue({...input,issuerRecord:'foreign'},{...ctx,tenant:'foreign'}))).rejects.toThrow();
-  for(const [name,id] of [['Finding',finding.id],['Disposition',disposition.id],['Remediation',remediation.id],['Attestation',attestation.id]])await expect(call(p+name+'.delete',{id})).rejects.toThrow();
+  await expect(Effect.runPromise(assertions.issue({...assertionInput,issuerRecord:'invalid',support:String(bundle.id)},ctx))).rejects.toThrow();
+  await expect(Effect.runPromise(service.issue(input,{...ctx,tenant:'foreign'}))).rejects.toThrow();
+  for(const [name,id] of [['Finding',finding.id],['Disposition',disposition.id],['Remediation',remediation.id],['FindingAttestation',attestation.id]])await expect(call(p+name+'.delete',{id})).rejects.toThrow();
   // Readable attestation metadata must not reveal unreadable sealed support.
   engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'assurance',actions:[p+'*'],requires:[],where:[]},{id:'evaluation',actions:[v+'*'],requires:[],where:[]},{id:'specification',actions:[s+'*'],requires:[],where:[]}],pips:[],epoch:3,knownObligations:[]});
   await expect(Effect.runPromise(service.current(String(replacement.id),end,ctx))).rejects.toThrow();
