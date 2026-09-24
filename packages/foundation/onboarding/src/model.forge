@@ -1,0 +1,95 @@
+import case-management
+import intake
+import qualification
+import party-relationship
+import access-governance
+import delegation
+import specification
+import evaluation
+import decision
+import evidence
+import fulfillment
+import records
+export resource Onboarding @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ case : case-management.Case @unique
+ subject : qualification.QualificationSubject
+ party : qualification.PartySubject?
+ principal : delegation.DelegationSubject?
+ criteria : specification.SpecificationPin
+ submission : intake.Submission @unique
+ validation : intake.SubmissionValidation
+ requirement : qualification.QualificationRequirement
+ decision : decision.DecisionCase @unique
+ accepted : decision.DecisionOption
+ gateCount : integer >= 1 <= 16
+ rules { validation.submission == submission
+ validation.verdict == "Accepted"
+ party == null || party.subject == subject
+ accepted.decisionCase == decision }
+}
+/// Configuration #94 is a pinned verified hook, not a second configuration engine.
+export resource OnboardingConfiguration @tenant @appendOnly {
+ id : id
+ onboarding : Onboarding
+ definition : specification.SpecificationPin
+ run : evaluation.EvaluationRun
+ finish : evaluation.EvaluationFinish
+ support : evidence.EvidenceSeal
+ rules { run.definition == definition
+ finish.run == run
+ finish.outcome == "Completed" }
+}
+export resource OnboardingGate @tenant @appendOnly {
+ id : id
+ onboarding : Onboarding
+ ordinal : integer >= 1 <= 16
+ previous : OnboardingGate?
+ at : datetime
+ relationship : party-relationship.PartyRelationship?
+ access : access-governance.AccessGrant?
+ delegation : delegation.Delegation?
+ configuration : OnboardingConfiguration?
+ provision : fulfillment.Fulfillment?
+ rules { ordinal <= onboarding.gateCount
+ (previous == null && ordinal == 1) || (previous != null && previous.onboarding == onboarding && ordinal == previous.ordinal + 1 && at >= previous.at)
+ configuration == null || configuration.onboarding == onboarding
+(relationship != null && access == null && delegation == null && configuration == null && provision == null) || (relationship == null && access != null && delegation == null && configuration == null && provision == null) || (relationship == null && access == null && delegation != null && configuration == null && provision == null) || (relationship == null && access == null && delegation == null && configuration != null && provision == null) || (relationship == null && access == null && delegation == null && configuration == null && provision != null)
+ }
+ unique onboarding, ordinal
+}
+export resource OnboardingActivation @tenant @appendOnly {
+ id : id
+ onboarding : Onboarding @unique
+ head : OnboardingGate
+ at : datetime
+ support : evidence.EvidenceSeal
+ rules { head.onboarding == onboarding
+ head.ordinal == onboarding.gateCount
+ at >= head.at }
+}
+export resource Offboarding @tenant @appendOnly {
+ id : id
+ activation : OnboardingActivation @unique
+ case : case-management.Case @unique
+ policy : specification.SpecificationPin
+ cleanup : fulfillment.Fulfillment
+ transfer : fulfillment.Fulfillment
+ obligationReview : evaluation.EvaluationRun
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ retention : records.Record
+ rules { accepted.decisionCase == approval
+ cleanup != transfer }
+}
+export resource OffboardingCompletion @tenant @appendOnly {
+ id : id
+ offboarding : Offboarding @unique
+ obligations : evaluation.EvaluationFinish
+ support : evidence.EvidenceSeal
+ at : datetime
+ rules { obligations.run == offboarding.obligationReview
+ obligations.outcome == "Completed"
+ obligations.finishedAt <= at }
+}

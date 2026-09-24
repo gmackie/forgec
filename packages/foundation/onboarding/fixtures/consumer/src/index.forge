@@ -1,0 +1,21 @@
+import onboarding
+export resource EmployeeOnboarding @tenant @appendOnly {
+ id : id
+ onboarding : onboarding.Onboarding
+ profile : text length 1..200
+}
+export resource VendorOnboarding @tenant @appendOnly {
+ id : id
+ onboarding : onboarding.Onboarding
+ profile : text length 1..200
+}
+export resource TenantOnboarding @tenant @appendOnly {
+ id : id
+ onboarding : onboarding.Onboarding
+ profile : text length 1..200
+}
+export resource DeviceOnboarding @tenant @appendOnly {
+ id : id
+ onboarding : onboarding.Onboarding
+ profile : text length 1..200
+}
