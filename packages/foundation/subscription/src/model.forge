@@ -1,0 +1,81 @@
+import party
+import specification
+import agreement-catalog
+import entitlement
+import billing
+import quota
+import service-level
+import decision
+import evidence
+export enum SubscriptionMode { fixed
+ autoRenew
+ evergreen }
+export resource Subscription @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ customer : party.Party
+ policy : specification.SpecificationPin
+ mode : SubscriptionMode
+ graceSeconds : integer >= 0 <= 2678400
+}
+export resource SubscriptionTerm @tenant @appendOnly {
+ id : id
+ subscription : Subscription
+ previous : SubscriptionTerm?
+ agreement : agreement-catalog.Agreement
+ right : agreement-catalog.AgreementEntitlementLink
+ entitlement : entitlement.Entitlement
+ billing : billing.BillingPeriod
+ allowance : quota.Allowance?
+ serviceLevel : service-level.ServiceLevelInstance?
+ consent : decision.DecisionCase
+ accepted : decision.DecisionOption
+ from : datetime
+ until : datetime
+ rules { from < until
+ previous == null || previous.subscription == subscription
+ agreement.customer == subscription.customer
+ right.agreement == agreement
+ right.entitlement == entitlement
+ entitlement.holder == subscription.customer
+ billing.agreement == agreement
+ billing.from == from && billing.until == until
+ from >= agreement.validFrom && until <= agreement.validUntil
+ from >= entitlement.validFrom
+ entitlement.validUntil == null || until <= entitlement.validUntil
+ allowance == null || allowance.grant == entitlement
+ serviceLevel == null || serviceLevel.agreement == agreement
+ accepted.decisionCase == consent }
+}
+export enum SubscriptionAction { start
+ renew
+ change
+ suspend
+ resume
+ cancel }
+export enum SubscriptionPhase { active
+ suspended
+ cancelled }
+export resource SubscriptionEvent @tenant @appendOnly {
+ id : id
+ subscription : Subscription
+ ordinal : integer >= 1 <= 128
+ previous : SubscriptionEvent?
+ term : SubscriptionTerm
+ kind : SubscriptionAction
+ phase : SubscriptionPhase
+ effectiveAt : datetime
+ reason : text length 1..500
+ support : evidence.EvidenceSeal
+ rules { term.subscription == subscription
+ (previous == null && ordinal == 1 && kind == "start" && phase == "active" && term.previous == null && effectiveAt == term.from) || (previous != null && previous.subscription == subscription && ordinal == previous.ordinal + 1 && effectiveAt >= previous.effectiveAt && previous.phase != "cancelled" && ((kind == "renew" && subscription.mode != "fixed" && term.previous == previous.term && effectiveAt == term.from && phase == "active") || (kind == "change" && term.previous == previous.term && effectiveAt == term.from && phase == "active") || (kind == "suspend" && previous.phase == "active" && term == previous.term && phase == "suspended") || (kind == "resume" && previous.phase == "suspended" && term == previous.term && phase == "active") || (kind == "cancel" && term == previous.term && phase == "cancelled"))) }
+ unique subscription, ordinal
+}
+export resource SubscriptionProration @tenant @appendOnly {
+ id : id
+ transition : SubscriptionEvent
+ charge : billing.BillingCharge @unique
+ policy : specification.SpecificationPin
+ rules { transition.kind == "change" || transition.kind == "cancel"
+ charge.kind == "adjustment" }
+}

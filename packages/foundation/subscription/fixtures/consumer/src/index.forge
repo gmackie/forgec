@@ -1,0 +1,21 @@
+import subscription
+export resource SaaSSubscription @tenant @appendOnly {
+ id : id
+ subscription : subscription.Subscription
+ product : text length 1..200
+}
+export resource MembershipSubscription @tenant @appendOnly {
+ id : id
+ subscription : subscription.Subscription
+ product : text length 1..200
+}
+export resource MediaSubscription @tenant @appendOnly {
+ id : id
+ subscription : subscription.Subscription
+ product : text length 1..200
+}
+export resource ServicePlanSubscription @tenant @appendOnly {
+ id : id
+ subscription : subscription.Subscription
+ product : text length 1..200
+}
