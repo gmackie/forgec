@@ -1,0 +1,90 @@
+{
+  "slug": "capacity",
+  "layer": "system",
+  "issue": 123,
+  "dependencies": [
+    "specification",
+    "qualification",
+    "availability",
+    "allocation",
+    "demand",
+    "place",
+    "resource-relations"
+  ],
+  "facts": [
+    "ManufacturingCellCapacity",
+    "HospitalServiceCapacity",
+    "CloudComputeCapacity",
+    "NetworkCapacity",
+    "FieldServiceCapacity"
+  ],
+  "operations": [
+    "capacity authorized runtime services"
+  ],
+  "invariants": [
+    "Typed capability specification and subject/resource provider bindings",
+    "Unit-aware planned forecast and actual interval capacity",
+    "Complete demand applications and exact remaining/gap projections",
+    "Qualification availability and authoritative Allocation integration",
+    "Five domain profiles and tenant isolation"
+  ],
+  "acceptance": [
+    {
+      "id": "F123-01",
+      "description": "Typed capability specification and subject/resource provider bindings",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-capacity.test.ts"
+      ]
+    },
+    {
+      "id": "F123-02",
+      "description": "Unit-aware planned forecast and actual interval capacity",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-capacity.test.ts"
+      ]
+    },
+    {
+      "id": "F123-03",
+      "description": "Complete demand applications and exact remaining/gap projections",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-capacity.test.ts"
+      ]
+    },
+    {
+      "id": "F123-04",
+      "description": "Qualification availability and authoritative Allocation integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-capacity.test.ts"
+      ]
+    },
+    {
+      "id": "F123-05",
+      "description": "Five domain profiles and tenant isolation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-capacity.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ManufacturingCellCapacity",
+    "HospitalServiceCapacity",
+    "CloudComputeCapacity",
+    "NetworkCapacity",
+    "FieldServiceCapacity"
+  ]
+}
