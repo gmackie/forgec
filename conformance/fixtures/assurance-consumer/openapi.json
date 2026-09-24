@@ -690,342 +690,6 @@
         "properties": {},
         "additionalProperties": false
       },
-      "AssuranceIssuerRecord": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "x-forge-type": "id",
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_-]+$",
-            "readOnly": true
-          },
-          "key": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "label": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 200
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "key",
-          "label"
-        ]
-      },
-      "AssuranceIssuerCreate": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "label": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 200
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "key",
-          "label"
-        ]
-      },
-      "AssuranceIssuerPatch": {
-        "type": "object",
-        "properties": {},
-        "additionalProperties": false
-      },
-      "AttestationRecord": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "x-forge-type": "id",
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_-]+$",
-            "readOnly": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms",
-            "readOnly": true
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms",
-            "readOnly": true
-          },
-          "finding": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/Finding"
-          },
-          "issuer": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/AssuranceIssuer"
-          },
-          "issuerRecord": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "specification": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
-          },
-          "finish": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
-          },
-          "run": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
-          },
-          "support": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
-          },
-          "artifact": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
-          },
-          "conclusion": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 1000
-          },
-          "validFrom": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms"
-          },
-          "validUntil": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms"
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "finding",
-          "issuer",
-          "issuerRecord",
-          "specification",
-          "finish",
-          "run",
-          "support",
-          "artifact",
-          "conclusion",
-          "validFrom",
-          "validUntil"
-        ]
-      },
-      "AttestationCreate": {
-        "type": "object",
-        "properties": {
-          "finding": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/Finding"
-          },
-          "issuer": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/AssuranceIssuer"
-          },
-          "issuerRecord": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "specification": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
-          },
-          "finish": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
-          },
-          "run": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
-          },
-          "support": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
-          },
-          "artifact": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
-          },
-          "conclusion": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 1000
-          },
-          "validFrom": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms"
-          },
-          "validUntil": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms"
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "finding",
-          "issuer",
-          "issuerRecord",
-          "specification",
-          "finish",
-          "run",
-          "support",
-          "conclusion",
-          "validFrom"
-        ]
-      },
-      "AttestationPatch": {
-        "type": "object",
-        "properties": {},
-        "additionalProperties": false
-      },
-      "AttestationEndRecord": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "x-forge-type": "id",
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_-]+$",
-            "readOnly": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms",
-            "readOnly": true
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms",
-            "readOnly": true
-          },
-          "attestation": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/Attestation"
-          },
-          "replacement": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/Attestation"
-          },
-          "effectiveAt": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms"
-          },
-          "reason": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 500
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "attestation",
-          "replacement",
-          "effectiveAt",
-          "reason"
-        ]
-      },
-      "AttestationEndCreate": {
-        "type": "object",
-        "properties": {
-          "attestation": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/Attestation"
-          },
-          "replacement": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "x-forge-reference": "@forgegraph/foundation/assurance/_/Attestation"
-          },
-          "effectiveAt": {
-            "type": "string",
-            "format": "date-time",
-            "x-forge-type": "datetime",
-            "x-forge-precision": "ms"
-          },
-          "reason": {
-            "type": "string",
-            "x-forge-type": "text",
-            "minLength": 1,
-            "maxLength": 500
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "attestation",
-          "effectiveAt",
-          "reason"
-        ]
-      },
-      "AttestationEndPatch": {
-        "type": "object",
-        "properties": {},
-        "additionalProperties": false
-      },
       "DispositionRecord": {
         "type": "object",
         "properties": {
@@ -1233,6 +897,75 @@
         ]
       },
       "FindingPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "FindingAttestationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "finding": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/assurance/_/Finding"
+          },
+          "attestation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          },
+          "finish": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
+          },
+          "run": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "finding",
+          "attestation",
+          "finish",
+          "run"
+        ]
+      },
+      "FindingAttestationCreate": {
+        "type": "object",
+        "properties": {
+          "finding": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/assurance/_/Finding"
+          },
+          "attestation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          },
+          "finish": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationFinish"
+          },
+          "run": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/evaluation/_/EvaluationRun"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "finding",
+          "attestation",
+          "finish",
+          "run"
+        ]
+      },
+      "FindingAttestationPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false
@@ -1587,6 +1320,581 @@
         ]
       },
       "RemediationFinishPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AttestationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "issuer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "issuerRecord": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "specification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "conclusion": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "source": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "support": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+          },
+          "proof": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "issuer",
+          "subject",
+          "issuerRecord",
+          "specification",
+          "issuedAt",
+          "validFrom",
+          "validUntil",
+          "conclusion",
+          "source",
+          "support",
+          "proof"
+        ]
+      },
+      "AttestationCreate": {
+        "type": "object",
+        "properties": {
+          "issuer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "issuerRecord": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "specification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "conclusion": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "source": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "support": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+          },
+          "proof": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "issuer",
+          "subject",
+          "issuerRecord",
+          "specification",
+          "issuedAt",
+          "validFrom",
+          "conclusion",
+          "source"
+        ]
+      },
+      "AttestationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AttestationArtifactSubjectRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "revision": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "subject",
+          "revision"
+        ]
+      },
+      "AttestationArtifactSubjectCreate": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "revision": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/artifact/_/ArtifactRevision"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "revision"
+        ]
+      },
+      "AttestationArtifactSubjectPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AttestationEndRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "attestation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "attestation",
+          "replacement",
+          "effectiveAt",
+          "reason",
+          "recordedBy"
+        ]
+      },
+      "AttestationEndCreate": {
+        "type": "object",
+        "properties": {
+          "attestation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "attestation",
+          "effectiveAt",
+          "reason",
+          "recordedBy"
+        ]
+      },
+      "AttestationEndPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AttestationPartySubjectRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "subject",
+          "party"
+        ]
+      },
+      "AttestationPartySubjectCreate": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "party"
+        ]
+      },
+      "AttestationPartySubjectPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AttestationQualificationSubjectRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "qualificationSubject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationSubject"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "subject",
+          "qualificationSubject"
+        ]
+      },
+      "AttestationQualificationSubjectCreate": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationSubject"
+          },
+          "qualificationSubject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationSubject"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "qualificationSubject"
+        ]
+      },
+      "AttestationQualificationSubjectPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AttestationSubjectRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label"
+        ]
+      },
+      "AttestationSubjectCreate": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ]
+      },
+      "AttestationSubjectPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "QualificationAttestationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/Qualification"
+          },
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationQualificationSubject"
+          },
+          "issuer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationPartySubject"
+          },
+          "attestation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "qualification",
+          "definition",
+          "subject",
+          "issuer",
+          "attestation"
+        ]
+      },
+      "QualificationAttestationCreate": {
+        "type": "object",
+        "properties": {
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/Qualification"
+          },
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationQualificationSubject"
+          },
+          "issuer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/AttestationPartySubject"
+          },
+          "attestation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/attestation/_/Attestation"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "qualification",
+          "definition",
+          "subject",
+          "issuer",
+          "attestation"
+        ]
+      },
+      "QualificationAttestationPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false
@@ -2566,6 +2874,1193 @@
         ]
       },
       "EvidenceSourcePatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "IdentifierRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "identifierSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          },
+          "namespace": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "issuer": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+          },
+          "issuerScope": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "identifierSet",
+          "namespace",
+          "issuer",
+          "issuerScope",
+          "value",
+          "validFrom",
+          "validUntil"
+        ]
+      },
+      "IdentifierCreate": {
+        "type": "object",
+        "properties": {
+          "identifierSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          },
+          "namespace": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "issuer": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Issuer"
+          },
+          "issuerScope": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "identifierSet",
+          "namespace",
+          "issuerScope",
+          "value",
+          "validFrom"
+        ]
+      },
+      "IdentifierPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "IdentifierDispositionRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "identifier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "identifier",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "IdentifierDispositionCreate": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/Identifier"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "identifier",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "IdentifierDispositionPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "IdentifierSetRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label"
+        ]
+      },
+      "IdentifierSetCreate": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ]
+      },
+      "IdentifierSetPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "IssuerRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "key"
+        ]
+      },
+      "IssuerCreate": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "key"
+        ]
+      },
+      "IssuerPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "PartyRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "identifiers": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "label",
+          "identifiers"
+        ]
+      },
+      "PartyCreate": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "identifiers": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/identifiers/_/IdentifierSet"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ]
+      },
+      "PartyPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "PrincipalRepresentationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "principal": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "party",
+          "principal",
+          "validFrom",
+          "validUntil",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "PrincipalRepresentationCreate": {
+        "type": "object",
+        "properties": {
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "principal": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "party",
+          "principal",
+          "validFrom",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "PrincipalRepresentationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "RepresentationRevocationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "representation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "RepresentationRevocationCreate": {
+        "type": "object",
+        "properties": {
+          "representation": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/PrincipalRepresentation"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "representation",
+          "effectiveAt",
+          "recordedBy",
+          "reason"
+        ]
+      },
+      "RepresentationRevocationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "PartySubjectRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationSubject"
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "subject",
+          "party"
+        ]
+      },
+      "PartySubjectCreate": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationSubject"
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "party"
+        ]
+      },
+      "PartySubjectPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "QualificationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationSubject"
+          },
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "level": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationLevel"
+          },
+          "issuer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "issuerRecord": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "expiresAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "support": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "subject",
+          "definition",
+          "level",
+          "issuer",
+          "issuerRecord",
+          "issuedAt",
+          "expiresAt",
+          "support",
+          "recordedBy"
+        ]
+      },
+      "QualificationCreate": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationSubject"
+          },
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "level": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationLevel"
+          },
+          "issuer": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          },
+          "issuerRecord": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "expiresAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "support": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/evidence/_/EvidenceSeal"
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "definition",
+          "issuer",
+          "issuerRecord",
+          "issuedAt",
+          "recordedBy"
+        ]
+      },
+      "QualificationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "QualificationDefinitionRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "pin": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "key",
+          "pin",
+          "label"
+        ]
+      },
+      "QualificationDefinitionCreate": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "pin": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/specification/_/SpecificationPin"
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "pin",
+          "label"
+        ]
+      },
+      "QualificationDefinitionPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "QualificationLevelRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "code": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000,
+            "x-forge-type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "definition",
+          "code",
+          "rank"
+        ]
+      },
+      "QualificationLevelCreate": {
+        "type": "object",
+        "properties": {
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "code": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000,
+            "x-forge-type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "definition",
+          "code",
+          "rank"
+        ]
+      },
+      "QualificationLevelPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "QualificationRequirementRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "minimumLevel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationLevel"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "definition",
+          "minimumLevel"
+        ]
+      },
+      "QualificationRequirementCreate": {
+        "type": "object",
+        "properties": {
+          "definition": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationDefinition"
+          },
+          "minimumLevel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/QualificationLevel"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "definition"
+        ]
+      },
+      "QualificationRequirementPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "QualificationRevocationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/Qualification"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "qualification",
+          "effectiveAt",
+          "reason",
+          "recordedBy"
+        ]
+      },
+      "QualificationRevocationCreate": {
+        "type": "object",
+        "properties": {
+          "qualification": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/qualification/_/Qualification"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "recordedBy": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "qualification",
+          "effectiveAt",
+          "reason",
+          "recordedBy"
+        ]
+      },
+      "QualificationRevocationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "QualificationSubjectRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms",
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "label"
+        ]
+      },
+      "QualificationSubjectCreate": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ]
+      },
+      "QualificationSubjectPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false

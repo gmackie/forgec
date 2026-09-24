@@ -114,109 +114,6 @@ structure ArtifactRevisionCreateInput {
 structure ArtifactRevisionPatchInput {
 }
 
-structure AssuranceIssuerRecord {
-    @required
-    id: String
-    @required
-    key: String
-    @required
-    label: String
-}
-
-structure AssuranceIssuerCreateInput {
-    @required
-    key: String
-    @required
-    label: String
-}
-
-structure AssuranceIssuerPatchInput {
-}
-
-structure AttestationRecord {
-    @required
-    id: String
-    @required
-    createdAt: String
-    @required
-    updatedAt: String
-    @required
-    finding: String
-    @required
-    issuer: String
-    @required
-    issuerRecord: String
-    @required
-    specification: String
-    @required
-    finish: String
-    @required
-    run: String
-    @required
-    support: String
-    artifact: String
-    @required
-    conclusion: String
-    @required
-    validFrom: String
-    validUntil: String
-}
-
-structure AttestationCreateInput {
-    @required
-    finding: String
-    @required
-    issuer: String
-    @required
-    issuerRecord: String
-    @required
-    specification: String
-    @required
-    finish: String
-    @required
-    run: String
-    @required
-    support: String
-    artifact: String
-    @required
-    conclusion: String
-    @required
-    validFrom: String
-    validUntil: String
-}
-
-structure AttestationPatchInput {
-}
-
-structure AttestationEndRecord {
-    @required
-    id: String
-    @required
-    createdAt: String
-    @required
-    updatedAt: String
-    @required
-    attestation: String
-    replacement: String
-    @required
-    effectiveAt: String
-    @required
-    reason: String
-}
-
-structure AttestationEndCreateInput {
-    @required
-    attestation: String
-    replacement: String
-    @required
-    effectiveAt: String
-    @required
-    reason: String
-}
-
-structure AttestationEndPatchInput {
-}
-
 structure DispositionRecord {
     @required
     id: String
@@ -279,6 +176,33 @@ structure FindingCreateInput {
 }
 
 structure FindingPatchInput {
+}
+
+structure FindingAttestationRecord {
+    @required
+    id: String
+    @required
+    finding: String
+    @required
+    attestation: String
+    @required
+    finish: String
+    @required
+    run: String
+}
+
+structure FindingAttestationCreateInput {
+    @required
+    finding: String
+    @required
+    attestation: String
+    @required
+    finish: String
+    @required
+    run: String
+}
+
+structure FindingAttestationPatchInput {
 }
 
 structure FindingClosureRecord {
@@ -395,6 +319,195 @@ structure RemediationFinishCreateInput {
 }
 
 structure RemediationFinishPatchInput {
+}
+
+structure AttestationRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    issuer: String
+    @required
+    subject: String
+    @required
+    issuerRecord: String
+    @required
+    specification: String
+    @required
+    issuedAt: String
+    @required
+    validFrom: String
+    validUntil: String
+    @required
+    conclusion: String
+    @required
+    source: String
+    support: String
+    proof: String
+}
+
+structure AttestationCreateInput {
+    @required
+    issuer: String
+    @required
+    subject: String
+    @required
+    issuerRecord: String
+    @required
+    specification: String
+    @required
+    issuedAt: String
+    @required
+    validFrom: String
+    validUntil: String
+    @required
+    conclusion: String
+    @required
+    source: String
+    support: String
+    proof: String
+}
+
+structure AttestationPatchInput {
+}
+
+structure AttestationArtifactSubjectRecord {
+    @required
+    id: String
+    @required
+    subject: String
+    @required
+    revision: String
+}
+
+structure AttestationArtifactSubjectCreateInput {
+    @required
+    subject: String
+    @required
+    revision: String
+}
+
+structure AttestationArtifactSubjectPatchInput {
+}
+
+structure AttestationEndRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    attestation: String
+    replacement: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure AttestationEndCreateInput {
+    @required
+    attestation: String
+    replacement: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure AttestationEndPatchInput {
+}
+
+structure AttestationPartySubjectRecord {
+    @required
+    id: String
+    @required
+    subject: String
+    @required
+    party: String
+}
+
+structure AttestationPartySubjectCreateInput {
+    @required
+    subject: String
+    @required
+    party: String
+}
+
+structure AttestationPartySubjectPatchInput {
+}
+
+structure AttestationQualificationSubjectRecord {
+    @required
+    id: String
+    @required
+    subject: String
+    @required
+    qualificationSubject: String
+}
+
+structure AttestationQualificationSubjectCreateInput {
+    @required
+    subject: String
+    @required
+    qualificationSubject: String
+}
+
+structure AttestationQualificationSubjectPatchInput {
+}
+
+structure AttestationSubjectRecord {
+    @required
+    id: String
+    @required
+    label: String
+}
+
+structure AttestationSubjectCreateInput {
+    @required
+    label: String
+}
+
+structure AttestationSubjectPatchInput {
+}
+
+structure QualificationAttestationRecord {
+    @required
+    id: String
+    @required
+    qualification: String
+    @required
+    definition: String
+    @required
+    subject: String
+    @required
+    issuer: String
+    @required
+    attestation: String
+}
+
+structure QualificationAttestationCreateInput {
+    @required
+    qualification: String
+    @required
+    definition: String
+    @required
+    subject: String
+    @required
+    issuer: String
+    @required
+    attestation: String
+}
+
+structure QualificationAttestationPatchInput {
 }
 
 structure EvaluationExecutorRecord {
@@ -692,6 +805,366 @@ structure EvidenceSourceCreateInput {
 }
 
 structure EvidenceSourcePatchInput {
+}
+
+structure IdentifierRecord {
+    @required
+    id: String
+    @required
+    identifierSet: String
+    @required
+    namespace: String
+    issuer: String
+    @required
+    issuerScope: String
+    @required
+    value: String
+    @required
+    validFrom: String
+    validUntil: String
+}
+
+structure IdentifierCreateInput {
+    @required
+    identifierSet: String
+    @required
+    namespace: String
+    issuer: String
+    @required
+    issuerScope: String
+    @required
+    value: String
+    @required
+    validFrom: String
+    validUntil: String
+}
+
+structure IdentifierPatchInput {
+}
+
+structure IdentifierDispositionRecord {
+    @required
+    id: String
+    @required
+    identifier: String
+    replacement: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+}
+
+structure IdentifierDispositionCreateInput {
+    @required
+    identifier: String
+    replacement: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+}
+
+structure IdentifierDispositionPatchInput {
+}
+
+structure IdentifierSetRecord {
+    @required
+    id: String
+    @required
+    label: String
+}
+
+structure IdentifierSetCreateInput {
+    @required
+    label: String
+}
+
+structure IdentifierSetPatchInput {
+}
+
+structure IssuerRecord {
+    @required
+    id: String
+    @required
+    key: String
+}
+
+structure IssuerCreateInput {
+    @required
+    key: String
+}
+
+structure IssuerPatchInput {
+}
+
+structure PartyRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    label: String
+    identifiers: String
+}
+
+structure PartyCreateInput {
+    @required
+    label: String
+    identifiers: String
+}
+
+structure PartyPatchInput {
+}
+
+structure PrincipalRepresentationRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    party: String
+    @required
+    principal: String
+    @required
+    validFrom: String
+    validUntil: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure PrincipalRepresentationCreateInput {
+    @required
+    party: String
+    @required
+    principal: String
+    @required
+    validFrom: String
+    validUntil: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure PrincipalRepresentationPatchInput {
+}
+
+structure RepresentationRevocationRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    representation: String
+    @required
+    effectiveAt: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure RepresentationRevocationCreateInput {
+    @required
+    representation: String
+    @required
+    effectiveAt: String
+    @required
+    recordedBy: String
+    @required
+    reason: String
+}
+
+structure RepresentationRevocationPatchInput {
+}
+
+structure PartySubjectRecord {
+    @required
+    id: String
+    @required
+    subject: String
+    @required
+    party: String
+}
+
+structure PartySubjectCreateInput {
+    @required
+    subject: String
+    @required
+    party: String
+}
+
+structure PartySubjectPatchInput {
+}
+
+structure QualificationRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    subject: String
+    @required
+    definition: String
+    level: String
+    @required
+    issuer: String
+    @required
+    issuerRecord: String
+    @required
+    issuedAt: String
+    expiresAt: String
+    support: String
+    @required
+    recordedBy: String
+}
+
+structure QualificationCreateInput {
+    @required
+    subject: String
+    @required
+    definition: String
+    level: String
+    @required
+    issuer: String
+    @required
+    issuerRecord: String
+    @required
+    issuedAt: String
+    expiresAt: String
+    support: String
+    @required
+    recordedBy: String
+}
+
+structure QualificationPatchInput {
+}
+
+structure QualificationDefinitionRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    key: String
+    @required
+    pin: String
+    @required
+    label: String
+}
+
+structure QualificationDefinitionCreateInput {
+    @required
+    key: String
+    @required
+    pin: String
+    @required
+    label: String
+}
+
+structure QualificationDefinitionPatchInput {
+}
+
+structure QualificationLevelRecord {
+    @required
+    id: String
+    @required
+    definition: String
+    @required
+    code: String
+    @required
+    rank: Long
+}
+
+structure QualificationLevelCreateInput {
+    @required
+    definition: String
+    @required
+    code: String
+    @required
+    rank: Long
+}
+
+structure QualificationLevelPatchInput {
+}
+
+structure QualificationRequirementRecord {
+    @required
+    id: String
+    @required
+    definition: String
+    minimumLevel: String
+}
+
+structure QualificationRequirementCreateInput {
+    @required
+    definition: String
+    minimumLevel: String
+}
+
+structure QualificationRequirementPatchInput {
+}
+
+structure QualificationRevocationRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    qualification: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure QualificationRevocationCreateInput {
+    @required
+    qualification: String
+    @required
+    effectiveAt: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure QualificationRevocationPatchInput {
+}
+
+structure QualificationSubjectRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    label: String
+}
+
+structure QualificationSubjectCreateInput {
+    @required
+    label: String
+}
+
+structure QualificationSubjectPatchInput {
 }
 
 structure RealizationRecord {

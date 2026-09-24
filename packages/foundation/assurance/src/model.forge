@@ -1,3 +1,4 @@
+import attestation
 import specification
 import evaluation
 import evidence
@@ -109,54 +110,19 @@ export resource FindingClosure
   }
   find by finding
 }
-export resource AssuranceIssuer
-  @tenant
-  @appendOnly
-{
-  id : id
-  key : text length 1..128 @unique
-  label : text length 1..200
-}
-export resource Attestation
-  @tenant
-  @timestamps
-  @appendOnly
-{
-  id : id
-  finding : Finding
-  issuer : AssuranceIssuer
-  issuerRecord : text length 1..128
-  specification : specification.SpecificationPin
-  finish : evaluation.EvaluationFinish
-  run : evaluation.EvaluationRun
-  support : evidence.EvidenceSeal
-  artifact : artifact.ArtifactRevision?
-  conclusion : text length 1..1000
-  validFrom : datetime
-  validUntil : datetime?
-  rules {
-    specification == finding.specification
-    finish.run == run
-    run.definition == specification
-    finish.outcome == "Completed"
-    finish.support == support
-    validUntil == null || validUntil > validFrom
-  }
-  unique issuer, issuerRecord
-}
-export resource AttestationEnd
-  @tenant
-  @timestamps
-  @appendOnly
-{
-  id : id
-  attestation : Attestation @unique
-  replacement : Attestation?
-  effectiveAt : datetime
-  reason : text length 1..500
-  rules {
-    effectiveAt >= attestation.validFrom
-    replacement == null || (replacement.finding == attestation.finding && replacement.issuer == attestation.issuer && replacement.validFrom > attestation.validFrom && effectiveAt == replacement.validFrom)
-  }
-  find by attestation
+/// Assurance consumes the shared assertion; only finding/evaluation bindings live here.
+export resource FindingAttestation @tenant @appendOnly {
+ id : id
+ finding : Finding
+ attestation : attestation.Attestation @unique
+ finish : evaluation.EvaluationFinish
+ run : evaluation.EvaluationRun
+ rules {
+  attestation.specification == finding.specification
+  finish.run == run
+  run.definition == finding.specification
+  finish.outcome == "Completed"
+  finish.support == attestation.support
+ }
+ find by attestation
 }

@@ -86,3 +86,4 @@ export * from "./foundation/coded-domain.js";
 export * from "./foundation/opportunity.js";
 export * from "./foundation/trust.js";
 export * from "./foundation/quota.js";
+export * from "./foundation/attestation.js";

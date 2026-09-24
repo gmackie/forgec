@@ -197,7 +197,8 @@
         "specification",
         "evaluation",
         "evidence",
-        "artifact"
+        "artifact",
+        "attestation"
       ],
       "requiresGates": [
         "G-core"
@@ -787,6 +788,23 @@
         "G-core"
       ],
       "wave": 4,
+      "acceptanceGates": []
+    },
+    {
+      "issue": 100,
+      "slug": "attestation",
+      "layer": "substrate",
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence",
+        "artifact",
+        "qualification"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 6,
       "acceptanceGates": []
     }
   ],

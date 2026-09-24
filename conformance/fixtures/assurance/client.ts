@@ -245,74 +245,6 @@ export interface ArtifactRevisionCreate {
 export interface ArtifactRevisionPatch {
 }
 
-export interface AssuranceIssuerRecord {
-  id: string;
-  key: string;
-  label: string;
-}
-
-export interface AssuranceIssuerCreate {
-  key: string;
-  label: string;
-}
-
-export interface AssuranceIssuerPatch {
-}
-
-export interface AttestationRecord {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  finding: string;
-  issuer: string;
-  issuerRecord: string;
-  specification: string;
-  finish: string;
-  run: string;
-  support: string;
-  artifact: string | null;
-  conclusion: string;
-  validFrom: string;
-  validUntil: string | null;
-}
-
-export interface AttestationCreate {
-  finding: string;
-  issuer: string;
-  issuerRecord: string;
-  specification: string;
-  finish: string;
-  run: string;
-  support: string;
-  artifact?: string | null;
-  conclusion: string;
-  validFrom: string;
-  validUntil?: string | null;
-}
-
-export interface AttestationPatch {
-}
-
-export interface AttestationEndRecord {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  attestation: string;
-  replacement: string | null;
-  effectiveAt: string;
-  reason: string;
-}
-
-export interface AttestationEndCreate {
-  attestation: string;
-  replacement?: string | null;
-  effectiveAt: string;
-  reason: string;
-}
-
-export interface AttestationEndPatch {
-}
-
 export interface DispositionRecord {
   id: string;
   createdAt: string;
@@ -353,6 +285,24 @@ export interface FindingCreate {
 }
 
 export interface FindingPatch {
+}
+
+export interface FindingAttestationRecord {
+  id: string;
+  finding: string;
+  attestation: string;
+  finish: string;
+  run: string;
+}
+
+export interface FindingAttestationCreate {
+  finding: string;
+  attestation: string;
+  finish: string;
+  run: string;
+}
+
+export interface FindingAttestationPatch {
 }
 
 export interface FindingClosureRecord {
@@ -431,6 +381,136 @@ export interface RemediationFinishCreate {
 }
 
 export interface RemediationFinishPatch {
+}
+
+export interface AttestationRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  issuer: string;
+  subject: string;
+  issuerRecord: string;
+  specification: string;
+  issuedAt: string;
+  validFrom: string;
+  validUntil: string | null;
+  conclusion: string;
+  source: string;
+  support: string | null;
+  proof: string | null;
+}
+
+export interface AttestationCreate {
+  issuer: string;
+  subject: string;
+  issuerRecord: string;
+  specification: string;
+  issuedAt: string;
+  validFrom: string;
+  validUntil?: string | null;
+  conclusion: string;
+  source: string;
+  support?: string | null;
+  proof?: string | null;
+}
+
+export interface AttestationPatch {
+}
+
+export interface AttestationArtifactSubjectRecord {
+  id: string;
+  subject: string;
+  revision: string;
+}
+
+export interface AttestationArtifactSubjectCreate {
+  subject: string;
+  revision: string;
+}
+
+export interface AttestationArtifactSubjectPatch {
+}
+
+export interface AttestationEndRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  attestation: string;
+  replacement: string | null;
+  effectiveAt: string;
+  reason: string;
+  recordedBy: string;
+}
+
+export interface AttestationEndCreate {
+  attestation: string;
+  replacement?: string | null;
+  effectiveAt: string;
+  reason: string;
+  recordedBy: string;
+}
+
+export interface AttestationEndPatch {
+}
+
+export interface AttestationPartySubjectRecord {
+  id: string;
+  subject: string;
+  party: string;
+}
+
+export interface AttestationPartySubjectCreate {
+  subject: string;
+  party: string;
+}
+
+export interface AttestationPartySubjectPatch {
+}
+
+export interface AttestationQualificationSubjectRecord {
+  id: string;
+  subject: string;
+  qualificationSubject: string;
+}
+
+export interface AttestationQualificationSubjectCreate {
+  subject: string;
+  qualificationSubject: string;
+}
+
+export interface AttestationQualificationSubjectPatch {
+}
+
+export interface AttestationSubjectRecord {
+  id: string;
+  label: string;
+}
+
+export interface AttestationSubjectCreate {
+  label: string;
+}
+
+export interface AttestationSubjectPatch {
+}
+
+export interface QualificationAttestationRecord {
+  id: string;
+  qualification: string;
+  definition: string;
+  subject: string;
+  issuer: string;
+  attestation: string;
+}
+
+export interface QualificationAttestationCreate {
+  qualification: string;
+  definition: string;
+  subject: string;
+  issuer: string;
+  attestation: string;
+}
+
+export interface QualificationAttestationPatch {
 }
 
 export interface EvaluationExecutorRecord {
@@ -639,6 +719,258 @@ export interface EvidenceSourceCreate {
 export interface EvidenceSourcePatch {
 }
 
+export interface IdentifierRecord {
+  id: string;
+  identifierSet: string;
+  namespace: string;
+  issuer: string | null;
+  issuerScope: string;
+  value: string;
+  validFrom: string;
+  validUntil: string | null;
+}
+
+export interface IdentifierCreate {
+  identifierSet: string;
+  namespace: string;
+  issuer?: string | null;
+  issuerScope: string;
+  value: string;
+  validFrom: string;
+  validUntil?: string | null;
+}
+
+export interface IdentifierPatch {
+}
+
+export interface IdentifierDispositionRecord {
+  id: string;
+  identifier: string;
+  replacement: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface IdentifierDispositionCreate {
+  identifier: string;
+  replacement?: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface IdentifierDispositionPatch {
+}
+
+export interface IdentifierSetRecord {
+  id: string;
+  label: string;
+}
+
+export interface IdentifierSetCreate {
+  label: string;
+}
+
+export interface IdentifierSetPatch {
+}
+
+export interface IssuerRecord {
+  id: string;
+  key: string;
+}
+
+export interface IssuerCreate {
+  key: string;
+}
+
+export interface IssuerPatch {
+}
+
+export interface PartyRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  label: string;
+  identifiers: string | null;
+}
+
+export interface PartyCreate {
+  label: string;
+  identifiers?: string | null;
+}
+
+export interface PartyPatch {
+}
+
+export interface PrincipalRepresentationRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  party: string;
+  principal: string;
+  validFrom: string;
+  validUntil: string | null;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface PrincipalRepresentationCreate {
+  party: string;
+  principal: string;
+  validFrom: string;
+  validUntil?: string | null;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface PrincipalRepresentationPatch {
+}
+
+export interface RepresentationRevocationRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  representation: string;
+  effectiveAt: string;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface RepresentationRevocationCreate {
+  representation: string;
+  effectiveAt: string;
+  recordedBy: string;
+  reason: string;
+}
+
+export interface RepresentationRevocationPatch {
+}
+
+export interface PartySubjectRecord {
+  id: string;
+  subject: string;
+  party: string;
+}
+
+export interface PartySubjectCreate {
+  subject: string;
+  party: string;
+}
+
+export interface PartySubjectPatch {
+}
+
+export interface QualificationRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  subject: string;
+  definition: string;
+  level: string | null;
+  issuer: string;
+  issuerRecord: string;
+  issuedAt: string;
+  expiresAt: string | null;
+  support: string | null;
+  recordedBy: string;
+}
+
+export interface QualificationCreate {
+  subject: string;
+  definition: string;
+  level?: string | null;
+  issuer: string;
+  issuerRecord: string;
+  issuedAt: string;
+  expiresAt?: string | null;
+  support?: string | null;
+  recordedBy: string;
+}
+
+export interface QualificationPatch {
+}
+
+export interface QualificationDefinitionRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  key: string;
+  pin: string;
+  label: string;
+}
+
+export interface QualificationDefinitionCreate {
+  key: string;
+  pin: string;
+  label: string;
+}
+
+export interface QualificationDefinitionPatch {
+}
+
+export interface QualificationLevelRecord {
+  id: string;
+  definition: string;
+  code: string;
+  rank: number;
+}
+
+export interface QualificationLevelCreate {
+  definition: string;
+  code: string;
+  rank: number;
+}
+
+export interface QualificationLevelPatch {
+}
+
+export interface QualificationRequirementRecord {
+  id: string;
+  definition: string;
+  minimumLevel: string | null;
+}
+
+export interface QualificationRequirementCreate {
+  definition: string;
+  minimumLevel?: string | null;
+}
+
+export interface QualificationRequirementPatch {
+}
+
+export interface QualificationRevocationRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  qualification: string;
+  effectiveAt: string;
+  reason: string;
+  recordedBy: string;
+}
+
+export interface QualificationRevocationCreate {
+  qualification: string;
+  effectiveAt: string;
+  reason: string;
+  recordedBy: string;
+}
+
+export interface QualificationRevocationPatch {
+}
+
+export interface QualificationSubjectRecord {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  label: string;
+}
+
+export interface QualificationSubjectCreate {
+  label: string;
+}
+
+export interface QualificationSubjectPatch {
+}
+
 export interface RealizationRecord {
   id: string;
   pin: string;
@@ -702,19 +1034,13 @@ export interface ArtifactContentApi {
 export interface ArtifactRevisionApi {
 }
 
-export interface AssuranceIssuerApi {
-}
-
-export interface AttestationApi {
-}
-
-export interface AttestationEndApi {
-}
-
 export interface DispositionApi {
 }
 
 export interface FindingApi {
+}
+
+export interface FindingAttestationApi {
 }
 
 export interface FindingClosureApi {
@@ -727,6 +1053,27 @@ export interface RemediationApi {
 }
 
 export interface RemediationFinishApi {
+}
+
+export interface AttestationApi {
+}
+
+export interface AttestationArtifactSubjectApi {
+}
+
+export interface AttestationEndApi {
+}
+
+export interface AttestationPartySubjectApi {
+}
+
+export interface AttestationQualificationSubjectApi {
+}
+
+export interface AttestationSubjectApi {
+}
+
+export interface QualificationAttestationApi {
 }
 
 export interface EvaluationExecutorApi {
@@ -760,6 +1107,48 @@ export interface EvidenceSealApi {
 }
 
 export interface EvidenceSourceApi {
+}
+
+export interface IdentifierApi {
+}
+
+export interface IdentifierDispositionApi {
+}
+
+export interface IdentifierSetApi {
+}
+
+export interface IssuerApi {
+}
+
+export interface PartyApi {
+}
+
+export interface PrincipalRepresentationApi {
+}
+
+export interface RepresentationRevocationApi {
+}
+
+export interface PartySubjectApi {
+}
+
+export interface QualificationApi {
+}
+
+export interface QualificationDefinitionApi {
+}
+
+export interface QualificationLevelApi {
+}
+
+export interface QualificationRequirementApi {
+}
+
+export interface QualificationRevocationApi {
+}
+
+export interface QualificationSubjectApi {
 }
 
 export interface RealizationApi {
@@ -799,15 +1188,20 @@ export interface ForgeClient {
   artifactComponents: ArtifactComponentApi;
   artifactContents: ArtifactContentApi;
   artifactRevisions: ArtifactRevisionApi;
-  assuranceIssuers: AssuranceIssuerApi;
-  attestations: AttestationApi;
-  attestationEnds: AttestationEndApi;
   dispositions: DispositionApi;
   findings: FindingApi;
+  findingAttestations: FindingAttestationApi;
   findingClosures: FindingClosureApi;
   reevaluations: ReevaluationApi;
   remediations: RemediationApi;
   remediationFinishs: RemediationFinishApi;
+  attestations: AttestationApi;
+  attestationArtifactSubjects: AttestationArtifactSubjectApi;
+  attestationEnds: AttestationEndApi;
+  attestationPartySubjects: AttestationPartySubjectApi;
+  attestationQualificationSubjects: AttestationQualificationSubjectApi;
+  attestationSubjects: AttestationSubjectApi;
+  qualificationAttestations: QualificationAttestationApi;
   evaluationExecutors: EvaluationExecutorApi;
   evaluationFinishs: EvaluationFinishApi;
   evaluationQuarantines: EvaluationQuarantineApi;
@@ -819,6 +1213,20 @@ export interface ForgeClient {
   evidenceMembers: EvidenceMemberApi;
   evidenceSeals: EvidenceSealApi;
   evidenceSources: EvidenceSourceApi;
+  identifiers: IdentifierApi;
+  identifierDispositions: IdentifierDispositionApi;
+  identifierSets: IdentifierSetApi;
+  issuers: IssuerApi;
+  partys: PartyApi;
+  principalRepresentations: PrincipalRepresentationApi;
+  representationRevocations: RepresentationRevocationApi;
+  partySubjects: PartySubjectApi;
+  qualifications: QualificationApi;
+  qualificationDefinitions: QualificationDefinitionApi;
+  qualificationLevels: QualificationLevelApi;
+  qualificationRequirements: QualificationRequirementApi;
+  qualificationRevocations: QualificationRevocationApi;
+  qualificationSubjects: QualificationSubjectApi;
   realizations: RealizationApi;
   repositorys: RepositoryApi;
   specificationPins: SpecificationPinApi;
@@ -877,15 +1285,11 @@ export function createClient(options: ClientOptions): ForgeClient {
     },
     artifactRevisions: {
     },
-    assuranceIssuers: {
-    },
-    attestations: {
-    },
-    attestationEnds: {
-    },
     dispositions: {
     },
     findings: {
+    },
+    findingAttestations: {
     },
     findingClosures: {
     },
@@ -894,6 +1298,20 @@ export function createClient(options: ClientOptions): ForgeClient {
     remediations: {
     },
     remediationFinishs: {
+    },
+    attestations: {
+    },
+    attestationArtifactSubjects: {
+    },
+    attestationEnds: {
+    },
+    attestationPartySubjects: {
+    },
+    attestationQualificationSubjects: {
+    },
+    attestationSubjects: {
+    },
+    qualificationAttestations: {
     },
     evaluationExecutors: {
     },
@@ -916,6 +1334,34 @@ export function createClient(options: ClientOptions): ForgeClient {
     evidenceSeals: {
     },
     evidenceSources: {
+    },
+    identifiers: {
+    },
+    identifierDispositions: {
+    },
+    identifierSets: {
+    },
+    issuers: {
+    },
+    partys: {
+    },
+    principalRepresentations: {
+    },
+    representationRevocations: {
+    },
+    partySubjects: {
+    },
+    qualifications: {
+    },
+    qualificationDefinitions: {
+    },
+    qualificationLevels: {
+    },
+    qualificationRequirements: {
+    },
+    qualificationRevocations: {
+    },
+    qualificationSubjects: {
     },
     realizations: {
       create: (input, opts) => t.unwrap(t.call("@forgegraph/foundation/specification/_/Realization.create", input, opts)),

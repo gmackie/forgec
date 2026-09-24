@@ -91,10 +91,9 @@ CREATE TABLE artifact_content (
   PRIMARY KEY ("tenant", "id")
 );
 
-CREATE TABLE assurance_issuer (
+CREATE TABLE attestation_subject (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
-  "key_" TEXT COLLATE "C" NOT NULL,
   "label" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id")
 );
@@ -120,6 +119,125 @@ CREATE TABLE evidence_source (
   "key_" TEXT COLLATE "C" NOT NULL,
   "label" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE identifier_set (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE issuer (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "key_" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE identifier (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "identifier_set" TEXT COLLATE "C" NOT NULL,
+  "namespace" TEXT COLLATE "C" NOT NULL,
+  "issuer" TEXT COLLATE "C",
+  "issuer_scope" TEXT COLLATE "C" NOT NULL,
+  "value_" TEXT COLLATE "C" NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C",
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "identifier_set") REFERENCES identifier_set ("tenant", "id"),
+  FOREIGN KEY ("tenant", "issuer") REFERENCES issuer ("tenant", "id")
+);
+
+CREATE TABLE identifier_disposition (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "identifier" TEXT COLLATE "C" NOT NULL,
+  "replacement" TEXT COLLATE "C",
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "identifier") REFERENCES identifier ("tenant", "id"),
+  FOREIGN KEY ("tenant", "replacement") REFERENCES identifier ("tenant", "id")
+);
+
+CREATE TABLE party (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  "identifiers" TEXT COLLATE "C",
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "identifiers") REFERENCES identifier_set ("tenant", "id")
+);
+
+CREATE TABLE attestation_party_subject (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "subject" TEXT COLLATE "C" NOT NULL,
+  "party" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "subject") REFERENCES attestation_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "party") REFERENCES party ("tenant", "id")
+);
+
+CREATE TABLE principal_representation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "party" TEXT COLLATE "C" NOT NULL,
+  "principal" TEXT COLLATE "C" NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C",
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "party") REFERENCES party ("tenant", "id")
+);
+
+CREATE TABLE representation_revocation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "representation" TEXT COLLATE "C" NOT NULL,
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "representation") REFERENCES principal_representation ("tenant", "id")
+);
+
+CREATE TABLE qualification_subject (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE attestation_qualification_subject (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "subject" TEXT COLLATE "C" NOT NULL,
+  "qualification_subject" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "subject") REFERENCES attestation_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "qualification_subject") REFERENCES qualification_subject ("tenant", "id")
+);
+
+CREATE TABLE party_subject (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "subject" TEXT COLLATE "C" NOT NULL,
+  "party" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "subject") REFERENCES qualification_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "party") REFERENCES party ("tenant", "id")
 );
 
 CREATE TABLE repository (
@@ -182,6 +300,38 @@ CREATE TABLE evaluation_start (
   "updated_at" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "run") REFERENCES evaluation_run ("tenant", "id")
+);
+
+CREATE TABLE qualification_definition (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "key_" TEXT COLLATE "C" NOT NULL,
+  "pin" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "pin") REFERENCES specification_pin ("tenant", "id")
+);
+
+CREATE TABLE qualification_level (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "definition" TEXT COLLATE "C" NOT NULL,
+  "code" TEXT COLLATE "C" NOT NULL,
+  "rank" BIGINT NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "definition") REFERENCES qualification_definition ("tenant", "id")
+);
+
+CREATE TABLE qualification_requirement (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "definition" TEXT COLLATE "C" NOT NULL,
+  "minimum_level" TEXT COLLATE "C",
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "definition") REFERENCES qualification_definition ("tenant", "id"),
+  FOREIGN KEY ("tenant", "minimum_level") REFERENCES qualification_level ("tenant", "id")
 );
 
 CREATE TABLE realization (
@@ -265,41 +415,14 @@ CREATE TABLE artifact_revision (
   FOREIGN KEY ("tenant", "components") REFERENCES artifact_component ("tenant", "id")
 );
 
-CREATE TABLE attestation (
+CREATE TABLE attestation_artifact_subject (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
-  "finding" TEXT COLLATE "C" NOT NULL,
-  "issuer" TEXT COLLATE "C" NOT NULL,
-  "issuer_record" TEXT COLLATE "C" NOT NULL,
-  "specification" TEXT COLLATE "C" NOT NULL,
-  "finish" TEXT COLLATE "C" NOT NULL,
-  "run" TEXT COLLATE "C" NOT NULL,
-  "support" TEXT COLLATE "C" NOT NULL,
-  "artifact" TEXT COLLATE "C",
-  "conclusion" TEXT COLLATE "C" NOT NULL,
-  "valid_from" TEXT COLLATE "C" NOT NULL,
-  "valid_until" TEXT COLLATE "C",
-  "created_at" TEXT COLLATE "C" NOT NULL,
-  "updated_at" TEXT COLLATE "C" NOT NULL,
+  "subject" TEXT COLLATE "C" NOT NULL,
+  "revision" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "issuer") REFERENCES assurance_issuer ("tenant", "id"),
-  FOREIGN KEY ("tenant", "specification") REFERENCES specification_pin ("tenant", "id"),
-  FOREIGN KEY ("tenant", "run") REFERENCES evaluation_run ("tenant", "id"),
-  FOREIGN KEY ("tenant", "artifact") REFERENCES artifact_revision ("tenant", "id")
-);
-
-CREATE TABLE attestation_end (
-  "tenant" TEXT COLLATE "C" NOT NULL,
-  "id" TEXT COLLATE "C" NOT NULL,
-  "attestation" TEXT COLLATE "C" NOT NULL,
-  "replacement" TEXT COLLATE "C",
-  "effective_at" TEXT COLLATE "C" NOT NULL,
-  "reason" TEXT COLLATE "C" NOT NULL,
-  "created_at" TEXT COLLATE "C" NOT NULL,
-  "updated_at" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "attestation") REFERENCES attestation ("tenant", "id"),
-  FOREIGN KEY ("tenant", "replacement") REFERENCES attestation ("tenant", "id")
+  FOREIGN KEY ("tenant", "subject") REFERENCES attestation_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id")
 );
 
 CREATE TABLE disposition (
@@ -343,6 +466,18 @@ CREATE TABLE remediation (
   FOREIGN KEY ("tenant", "finding") REFERENCES finding ("tenant", "id")
 );
 
+CREATE TABLE finding_attestation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "finding" TEXT COLLATE "C" NOT NULL,
+  "attestation" TEXT COLLATE "C" NOT NULL,
+  "finish" TEXT COLLATE "C" NOT NULL,
+  "run" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "finding") REFERENCES finding ("tenant", "id"),
+  FOREIGN KEY ("tenant", "run") REFERENCES evaluation_run ("tenant", "id")
+);
+
 CREATE TABLE finding_closure (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -384,6 +519,59 @@ CREATE TABLE remediation_finish (
   FOREIGN KEY ("tenant", "remediation") REFERENCES remediation ("tenant", "id"),
   FOREIGN KEY ("tenant", "disposition") REFERENCES disposition ("tenant", "id"),
   FOREIGN KEY ("tenant", "reevaluation") REFERENCES reevaluation ("tenant", "id")
+);
+
+CREATE TABLE attestation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "issuer" TEXT COLLATE "C" NOT NULL,
+  "subject" TEXT COLLATE "C" NOT NULL,
+  "issuer_record" TEXT COLLATE "C" NOT NULL,
+  "specification" TEXT COLLATE "C" NOT NULL,
+  "issued_at" TEXT COLLATE "C" NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C",
+  "conclusion" TEXT COLLATE "C" NOT NULL,
+  "source" TEXT COLLATE "C" NOT NULL,
+  "support" TEXT COLLATE "C",
+  "proof" TEXT COLLATE "C",
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "issuer") REFERENCES attestation_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "subject") REFERENCES attestation_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "specification") REFERENCES specification_pin ("tenant", "id"),
+  FOREIGN KEY ("tenant", "proof") REFERENCES artifact_revision ("tenant", "id")
+);
+
+CREATE TABLE attestation_end (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "attestation" TEXT COLLATE "C" NOT NULL,
+  "replacement" TEXT COLLATE "C",
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "attestation") REFERENCES attestation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "replacement") REFERENCES attestation ("tenant", "id")
+);
+
+CREATE TABLE qualification_attestation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "qualification" TEXT COLLATE "C" NOT NULL,
+  "definition" TEXT COLLATE "C" NOT NULL,
+  "subject" TEXT COLLATE "C" NOT NULL,
+  "issuer" TEXT COLLATE "C" NOT NULL,
+  "attestation" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "definition") REFERENCES qualification_definition ("tenant", "id"),
+  FOREIGN KEY ("tenant", "subject") REFERENCES attestation_qualification_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "issuer") REFERENCES attestation_party_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "attestation") REFERENCES attestation ("tenant", "id")
 );
 
 CREATE TABLE evaluation_finish (
@@ -457,6 +645,41 @@ CREATE TABLE evidence_seal (
   FOREIGN KEY ("tenant", "head") REFERENCES evidence_member ("tenant", "id")
 );
 
+CREATE TABLE qualification (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "subject" TEXT COLLATE "C" NOT NULL,
+  "definition" TEXT COLLATE "C" NOT NULL,
+  "level" TEXT COLLATE "C",
+  "issuer" TEXT COLLATE "C" NOT NULL,
+  "issuer_record" TEXT COLLATE "C" NOT NULL,
+  "issued_at" TEXT COLLATE "C" NOT NULL,
+  "expires_at" TEXT COLLATE "C",
+  "support" TEXT COLLATE "C",
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "subject") REFERENCES qualification_subject ("tenant", "id"),
+  FOREIGN KEY ("tenant", "definition") REFERENCES qualification_definition ("tenant", "id"),
+  FOREIGN KEY ("tenant", "level") REFERENCES qualification_level ("tenant", "id"),
+  FOREIGN KEY ("tenant", "issuer") REFERENCES party ("tenant", "id"),
+  FOREIGN KEY ("tenant", "support") REFERENCES evidence_seal ("tenant", "id")
+);
+
+CREATE TABLE qualification_revocation (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "qualification" TEXT COLLATE "C" NOT NULL,
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  "recorded_by" TEXT COLLATE "C" NOT NULL,
+  "created_at" TEXT COLLATE "C" NOT NULL,
+  "updated_at" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "qualification") REFERENCES qualification ("tenant", "id")
+);
+
 ALTER TABLE access_review ADD FOREIGN KEY ("tenant", "finding") REFERENCES finding ("tenant", "id");
 
 ALTER TABLE corrective_work ADD FOREIGN KEY ("tenant", "remediation") REFERENCES remediation ("tenant", "id");
@@ -469,19 +692,21 @@ ALTER TABLE vulnerability ADD FOREIGN KEY ("tenant", "finding") REFERENCES findi
 
 ALTER TABLE artifact_component ADD FOREIGN KEY ("tenant", "revision") REFERENCES artifact_revision ("tenant", "id");
 
-ALTER TABLE attestation ADD FOREIGN KEY ("tenant", "finding") REFERENCES finding ("tenant", "id");
-
-ALTER TABLE attestation ADD FOREIGN KEY ("tenant", "finish") REFERENCES evaluation_finish ("tenant", "id");
-
-ALTER TABLE attestation ADD FOREIGN KEY ("tenant", "support") REFERENCES evidence_seal ("tenant", "id");
-
 ALTER TABLE disposition ADD FOREIGN KEY ("tenant", "finding") REFERENCES finding ("tenant", "id");
 
 ALTER TABLE finding ADD FOREIGN KEY ("tenant", "finish") REFERENCES evaluation_finish ("tenant", "id");
 
+ALTER TABLE finding_attestation ADD FOREIGN KEY ("tenant", "attestation") REFERENCES attestation ("tenant", "id");
+
+ALTER TABLE finding_attestation ADD FOREIGN KEY ("tenant", "finish") REFERENCES evaluation_finish ("tenant", "id");
+
 ALTER TABLE finding_closure ADD FOREIGN KEY ("tenant", "remediation_finish") REFERENCES remediation_finish ("tenant", "id");
 
 ALTER TABLE reevaluation ADD FOREIGN KEY ("tenant", "finish") REFERENCES evaluation_finish ("tenant", "id");
+
+ALTER TABLE attestation ADD FOREIGN KEY ("tenant", "support") REFERENCES evidence_seal ("tenant", "id");
+
+ALTER TABLE qualification_attestation ADD FOREIGN KEY ("tenant", "qualification") REFERENCES qualification ("tenant", "id");
 
 ALTER TABLE evaluation_finish ADD FOREIGN KEY ("tenant", "support") REFERENCES evidence_seal ("tenant", "id");
 
@@ -495,12 +720,19 @@ CREATE UNIQUE INDEX vulnerability_uq_finding ON vulnerability ("tenant", "findin
 CREATE UNIQUE INDEX artifact_uq_key ON artifact ("tenant", "key_");
 CREATE UNIQUE INDEX artifact_revision_uq_content ON artifact_revision ("tenant", "content");
 CREATE INDEX artifact_revision_ix_by_artifact ON artifact_revision ("tenant", "artifact", "id");
-CREATE UNIQUE INDEX assurance_issuer_uq_key ON assurance_issuer ("tenant", "key_");
-CREATE UNIQUE INDEX attestation_uq_issuer_issuerRecord ON attestation ("tenant", "issuer", "issuer_record");
-CREATE UNIQUE INDEX attestation_end_uq_attestation ON attestation_end ("tenant", "attestation");
 CREATE UNIQUE INDEX disposition_uq_finding ON disposition ("tenant", "finding");
+CREATE UNIQUE INDEX finding_attestation_uq_attestation ON finding_attestation ("tenant", "attestation");
 CREATE UNIQUE INDEX finding_closure_uq_finding ON finding_closure ("tenant", "finding");
 CREATE UNIQUE INDEX remediation_finish_uq_remediation ON remediation_finish ("tenant", "remediation");
+CREATE UNIQUE INDEX attestation_uq_issuer_issuerRecord ON attestation ("tenant", "issuer", "issuer_record");
+CREATE UNIQUE INDEX attestation_artifact_subject_uq_revision ON attestation_artifact_subject ("tenant", "revision");
+CREATE UNIQUE INDEX attestation_artifact_subject_uq_subject ON attestation_artifact_subject ("tenant", "subject");
+CREATE UNIQUE INDEX attestation_end_uq_attestation ON attestation_end ("tenant", "attestation");
+CREATE UNIQUE INDEX attestation_party_subject_uq_party ON attestation_party_subject ("tenant", "party");
+CREATE UNIQUE INDEX attestation_party_subject_uq_subject ON attestation_party_subject ("tenant", "subject");
+CREATE UNIQUE INDEX attestation_qualification_subject_uq_qualificationSubject ON attestation_qualification_subject ("tenant", "qualification_subject");
+CREATE UNIQUE INDEX attestation_qualification_subject_uq_subject ON attestation_qualification_subject ("tenant", "subject");
+CREATE UNIQUE INDEX qualification_attestation_uq_qualification_attestation ON qualification_attestation ("tenant", "qualification", "attestation");
 CREATE UNIQUE INDEX evaluation_executor_uq_key ON evaluation_executor ("tenant", "key_");
 CREATE UNIQUE INDEX evaluation_finish_uq_run ON evaluation_finish ("tenant", "run");
 CREATE UNIQUE INDEX evaluation_quarantine_uq_run ON evaluation_quarantine ("tenant", "run");
@@ -513,6 +745,23 @@ CREATE INDEX evidence_item_ix_by_bundle ON evidence_item ("tenant", "bundle", "i
 CREATE INDEX evidence_item_ix_by_source ON evidence_item ("tenant", "source", "id");
 CREATE UNIQUE INDEX evidence_seal_uq_bundle ON evidence_seal ("tenant", "bundle");
 CREATE UNIQUE INDEX evidence_source_uq_key ON evidence_source ("tenant", "key_");
+CREATE UNIQUE INDEX identifier_uq_namespace_issuerScope_value ON identifier ("tenant", "namespace", "issuer_scope", "value_");
+CREATE INDEX identifier_ix_by_identifier_set ON identifier ("tenant", "identifier_set", "id");
+CREATE UNIQUE INDEX identifier_disposition_uq_identifier ON identifier_disposition ("tenant", "identifier");
+CREATE UNIQUE INDEX issuer_uq_key ON issuer ("tenant", "key_");
+CREATE UNIQUE INDEX party_uq_identifiers ON party ("tenant", "identifiers");
+CREATE UNIQUE INDEX principal_representation_uq_principal_party_validFrom ON principal_representation ("tenant", "principal", "party", "valid_from");
+CREATE INDEX principal_representation_ix_by_party ON principal_representation ("tenant", "party", "id");
+CREATE INDEX principal_representation_ix_by_principal ON principal_representation ("tenant", "principal", "id");
+CREATE UNIQUE INDEX representation_revocation_uq_representation ON representation_revocation ("tenant", "representation");
+CREATE UNIQUE INDEX party_subject_uq_party ON party_subject ("tenant", "party");
+CREATE UNIQUE INDEX party_subject_uq_subject ON party_subject ("tenant", "subject");
+CREATE UNIQUE INDEX qualification_uq_issuer_issuerRecord ON qualification ("tenant", "issuer", "issuer_record");
+CREATE INDEX qualification_ix_by_subject ON qualification ("tenant", "subject", "id");
+CREATE UNIQUE INDEX qualification_definition_uq_key_pin ON qualification_definition ("tenant", "key_", "pin");
+CREATE UNIQUE INDEX qualification_level_uq_definition_code ON qualification_level ("tenant", "definition", "code");
+CREATE UNIQUE INDEX qualification_level_uq_definition_rank ON qualification_level ("tenant", "definition", "rank");
+CREATE UNIQUE INDEX qualification_revocation_uq_qualification ON qualification_revocation ("tenant", "qualification");
 CREATE UNIQUE INDEX realization_uq_pin_buildHash_manifestDigest ON realization ("tenant", "pin", "build_hash", "manifest_digest");
 CREATE INDEX realization_ix_by_pin ON realization ("tenant", "pin", "id");
 CREATE UNIQUE INDEX repository_uq_key ON repository ("tenant", "key_");
