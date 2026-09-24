@@ -1,0 +1,80 @@
+import { Effect } from 'effect';
+import { expect, it } from 'vitest';
+import { foundation, foundationAdapters } from './helpers/foundation.js';
+import { Maintenance } from '../src/foundation/maintenance.js';
+import { Assets } from '../src/foundation/asset-lifecycle.js';
+import { Demands } from '../src/foundation/demand.js';
+import { Fulfillments } from '../src/foundation/fulfillment.js';
+import { Qualifications } from '../src/foundation/qualification.js';
+import { Decisions } from '../src/foundation/decision.js';
+import { Participations } from '../src/foundation/participation.js';
+import { Evaluations } from '../src/foundation/evaluation.js';
+import { Evidence } from '../src/foundation/evidence.js';
+import { Measurements } from '../src/foundation/measurement.js';
+import { Inventory } from '../src/foundation/inventory.js';
+import { Operations } from '../src/foundation/operations.js';
+import { Routing } from '../src/foundation/routing.js';
+import { Availability } from '../src/foundation/availability.js';
+const p = '@forgegraph/foundation/maintenance/_/', a = '@forgegraph/foundation/asset-lifecycle/_/', s = '@forgegraph/foundation/specification/_/', q = '@forgegraph/foundation/qualification/_/', f = '@forgegraph/foundation/fulfillment/_/', e = '@forgegraph/foundation/evaluation/_/', m = '@forgegraph/foundation/measurement/_/', inv = '@forgegraph/foundation/inventory/_/';
+for (const adapter of foundationAdapters) it(`${adapter}: maintenance triggers, routing, parts, inspection and return to service`, async () => {
+ const h = await foundation('maintenance', adapter, true), run = Effect.runPromise;
+ try {
+  const { call, engine, ctx } = h, maintenance = new Maintenance(engine), from = '2026-01-02T00:00:00Z', until = '2026-01-03T00:00:00Z';
+  const repo = await call(s + 'Repository.create', { key: 'maintenance', provider: 'git', locator: 'https://example.test/maintenance' }), pin = await call(s + 'SpecificationPin.create', { repository: repo.id, anchor: 'service', revision: 'a'.repeat(40) });
+  const party = await call('@forgegraph/foundation/party/_/Party.create', { label: 'Maintainer' }), participants = await call('@forgegraph/foundation/participation/_/ParticipationSet.create', { label: 'Maintenance team' });
+  const resource = await call('@forgegraph/foundation/resource-relations/_/ResourceSubject.create', { key: 'machine', label: 'Machine' }), subject = await call('@forgegraph/foundation/attestation/_/AttestationSubject.create', { label: 'Machine' });
+  const asset = await call(a + 'AssetProfile.create', { resource: resource.id, specification: pin.id, attestationSubject: subject.id, commissioningAttestationRequired: false, custodyKind: null }), config = await call(a + 'AssetConfiguration.create', { resource: resource.id, definition: pin.id, snapshot: null });
+  const bundle = await call('@forgegraph/foundation/evidence/_/EvidenceBundle.create', { key: 'inspection', label: 'Inspection' }), seal = await run(new Evidence(engine).seal(String(bundle.id), null, ctx));
+  const assets = new Assets(engine), assetInput = { asset: String(asset.id), at: from, configuration: String(config.id), evidence: String(seal.id), reason: 'Maintenance' };
+  await run(assets.act({ ...assetInput, action: 'acquire', previous: null }, ctx));
+  const technician = await call(q + 'QualificationSubject.create', { label: 'Technician' }), definition = await call(q + 'QualificationDefinition.create', { key: 'technician', pin: pin.id, label: 'Technician requirement' }), requirement = await call(q + 'QualificationRequirement.create', { definition: definition.id, minimumLevel: null });
+  await run(new Qualifications(engine).award({ subject: String(technician.id), definition: String(definition.id), issuer: String(party.id), issuerRecord: '1', issuedAt: '2025-01-01T00:00:00Z' }, ctx));
+  const plan = await call(p + 'MaintenancePlan.create', { asset: asset.id, requirement: requirement.id, anchor: from, intervalDays: 30 });
+  const memberships = new Participations(engine, { namespace: 'maintenance', roles: ['inspector'] });
+  await run(memberships.registerRole('inspector', ctx));
+  const member = await run(memberships.add({ participationSet: String(participants.id), participant: String(party.id), role: 'inspector', validFrom: '2025-01-01T00:00:00Z', reason: 'Assigned' }, ctx));
+  const decisions = new Decisions(engine), approval = await run(decisions.open({ participationSet: String(participants.id), electors: [String(member.id)], eligibilityAt: '2026-01-01T00:00:00Z', deadline: '2027-01-01T00:00:00Z', options: ['Safe', 'Unsafe'], rule: 'Single', threshold: 1 }, ctx)), accepted = (await run(decisions.state(String(approval.id), ctx))).options[0]!;
+  const executor = await call(f + 'FulfillmentExecutor.create', { key: 'technician' }), set = await call(f + 'FulfillmentSet.create', { label: 'Maintenance' });
+  const evaluationSet = await call(e + 'EvaluationSet.create', { label: 'Inspection' }), evalExecutor = await call(e + 'EvaluationExecutor.create', { key: 'inspector', label: 'Inspector' }), evaluations = new Evaluations(engine), inspection = await run(evaluations.create({ evaluationSet: String(evaluationSet.id), definition: String(pin.id), executor: String(evalExecutor.id) }, ctx));
+  const metric = await call(m + 'MetricDefinition.create', { key: 'vibration', definition: pin.id, dimension: 'velocity', unit: 'mm/s', semantics: pin.id }), measured = await call(m + 'MetricSubject.create', { key: 'machine' }), source = await call('@forgegraph/foundation/evidence/_/EvidenceSource.create', { key: 'condition', label: 'Condition sensor' });
+  const observation = await run(new Measurements(engine).record({ key: 'vibration', metric: String(metric.id), subject: String(measured.id), unit: 'mm/s', value: '5', observedAt: from, source: String(source.id), sourceRecord: '1' }, ctx)), objective = await call(m + 'MetricObjective.create', { key: 'normal', metric: metric.id, subject: measured.id, policy: pin.id, target: '1', minimum: null, maximum: '3', from, until }), condition = await call(m + 'PerformanceAssessment.create', { objective: objective.id, observation: observation.id, evaluation: null });
+  const orders = [];
+  for (const [i, trigger] of ['preventive', 'condition', 'corrective', 'inspection'].entries()) {
+   const execution = await call(f + 'Fulfillment.create', { fulfillmentSet: set.id, ordinal: i + 1, specificationPin: pin.id, executor: executor.id, requestedAt: from, evidence: null });
+   const demand = await run(new Demands(engine).record({ key: trigger, requester: String(party.id), specification: String(pin.id), constraints: String(pin.id), origin: 'explicit', quantity: '1', unit: 'job', from, until, priority: 1, priorityPolicy: String(pin.id), source: trigger }, ctx));
+   const conversion = await run(new Demands(engine).resolve(String(demand.id), 'converted', String(execution.id), from, 'Maintenance work', ctx));
+   let assignment = null, operation = null;
+   if (i === 0) {
+    const pool = await call('@forgegraph/foundation/allocation/_/AllocationPool.create', { key: 'technician', mode: 'exclusive', capacity: '1', unit: 'job' }), availability = new Availability(engine), calendar = await run(availability.createCalendar('Technician', ctx)), calendarRevision = await run(availability.createRevision({ calendar: String(calendar.id), timezone: 'UTC', weekly: [{ weekday: 5, startMinute: 0, endMinute: 1440 }] }, ctx));
+    const route = '@forgegraph/foundation/routing/_/', routing = new Routing(engine), routeResource = await call(route + 'RoutingResource.create', { key: 'technician', subject: technician.id, party: null, executor: executor.id, pool: pool.id, calendar: calendarRevision.id }), request = await call(route + 'RoutingRequest.create', { key: 'maintenance', requirement: requirement.id, participants: participants.id, fulfillment: set.id, from, until, quantity: '1', unit: 'job' });
+    const candidate = await run(routing.evaluate({ request: String(request.id), resource: String(routeResource.id), rank: 1, rationale: 'Qualified' }, ctx)), offer = await run(routing.offer(String(candidate.id), '2026-01-01T12:00:00Z', ctx));
+    assignment = (await run(routing.accept(String(offer.id), ctx))).id;
+    const usage = '@forgegraph/foundation/usage/_/', op = '@forgegraph/foundation/operations/_/', dimension = await call(usage + 'UsageDimension.create', { key: 'labor', unit: 'hour' }), stream = await call(usage + 'UsageStream.create', { label: 'Labor', dimension: dimension.id }), usageSource = await call(usage + 'UsageSource.create', { key: 'timesheet' }), operationDefinition = await call(op + 'Operation.create', { key: 'service', definition: pin.id }), operationRun = await call(op + 'OperationRun.create', { operation: operationDefinition.id, ordinal: 1, plans: null, usageStream: stream.id, usageSource: usageSource.id });
+    operation = (await call(op + 'OperationFulfillmentLink.create', { run: operationRun.id, operation: operationDefinition.id, fulfillment: execution.id })).id;
+    await run(new Operations(engine).start(String(operationRun.id), null, ctx));
+    await run(new Operations(engine).usage(String(operationRun.id), { stream: String(stream.id), dimension: String(dimension.id), unit: 'hour', quantity: '2', ordinal: 1, source: String(usageSource.id), eventKey: 'labor', occurredAt: from }, ctx));
+   }
+   const order = await call(p + 'MaintenanceWorkOrder.create', { key: trigger, asset: asset.id, trigger, plan: i === 0 ? plan.id : null, cycle: 1, demand: demand.id, conversion: conversion.id, fulfillment: execution.id, technician: technician.id, requirement: requirement.id, assignment, appointment: null, operation, condition: trigger === 'condition' ? condition.id : null, defect: trigger === 'corrective' ? seal.id : null, partCount: i === 0 ? 1 : 0, inspection: inspection.id, approval: approval.id, accepted: accepted.id });
+   orders.push(order);
+   if (i > 0) expect((await run(maintenance.inspect(String(order.id), ctx))).row.trigger).toBe(trigger);
+  }
+  await expect(run(maintenance.inspect(String(orders[0]!.id), ctx))).rejects.toThrow();
+  const identifiers = await call('@forgegraph/foundation/identifiers/_/IdentifierSet.create', { label: 'Parts' }), place = await call('@forgegraph/foundation/place/_/Place.create', { identifiers: identifiers.id, name: 'Workshop' }), itemSpec = await call(inv + 'StockItemSpecification.create', { key: 'filter', definition: pin.id, unit: 'each' }), stock = await call(inv + 'StockItem.create', { key: 'filters', specification: itemSpec.id, identifiers: identifiers.id, kind: 'lot', serial: null, lot: '1' }), partPool = await call('@forgegraph/foundation/allocation/_/AllocationPool.create', { key: 'parts', mode: 'fungible', capacity: '10', unit: 'each' }), position = await call(inv + 'InventoryPosition.create', { item: stock.id, place: place.id, custodian: party.id, condition: 'usable', pool: partPool.id, reorderPoint: '0' });
+  const inventory = new Inventory(engine), movement = { item: String(stock.id), at: from, position: String(position.id), quantity: '1', source: String(pin.id) }, received = await run(inventory.move({ ...movement, previous: null, key: 'receive', kind: 'receipt' }, ctx)), issued = await run(inventory.move({ ...movement, previous: String(received.id), key: 'consume', kind: 'issue' }, ctx));
+  await call(p + 'MaintenancePart.create', { order: orders[0]!.id, ordinal: 1, movement: issued.id });
+  expect((await run(maintenance.inspect(String(orders[0]!.id), ctx))).usage!.quantity).toBe('2.000000');
+  const fulfillments = new Fulfillments(engine);
+  await run(fulfillments.start(String(orders[0]!.fulfillment), from, ctx));
+  await run(fulfillments.finish(String(orders[0]!.fulfillment), 'completed', 'complete', '2026-01-02T01:00:00Z', 'Serviced', ctx));
+  await run(evaluations.start(String(inspection.id), '2026-01-02T02:00:00Z', ctx));
+  const result = await run(evaluations.finish(String(inspection.id), 'Completed', '2026-01-02T03:00:00Z', 'Inspected', ctx));
+  await expect(run(maintenance.finish({ order: String(orders[0]!.id), inspection: String(result.id), evidence: String(seal.id), at: until }, ctx))).rejects.toThrow();
+  await run(decisions.respond(String(approval.id), String(member.id), [0], ctx)); await run(decisions.finalize(String(approval.id), ctx));
+  const returned = await run(assets.act({ ...assetInput, at: '2026-01-02T04:00:00Z', action: 'commission', previous: (await run(assets.state(String(asset.id), ctx))).head }, ctx));
+  await run(maintenance.finish({ order: String(orders[0]!.id), inspection: String(result.id), evidence: String(seal.id), returnToService: String(returned.id), at: until }, ctx));
+  expect((await run(maintenance.inspect(String(orders[0]!.id), ctx))).finish!.returnToService).toBe(returned.id);
+  expect(await run(maintenance.history(String(asset.id), ctx))).toHaveLength(4);
+  for (const [i, [name, field]] of [['IndustrialMaintenance', 'machine'], ['FleetMaintenance', 'vehicle'], ['MedicalMaintenance', 'device'], ['NetworkMaintenance', 'service']].entries()) await call('@fixture/maintenance-consumer/_/' + name + '.create', { order: orders[i]!.id, [field!]: name });
+  await expect(run(maintenance.inspect(String(orders[0]!.id), { ...ctx, tenant: 'other' }))).rejects.toThrow();
+ } finally { await h.close(); }
+});

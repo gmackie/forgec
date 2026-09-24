@@ -1,0 +1,93 @@
+{
+  "slug": "maintenance",
+  "layer": "system",
+  "issue": 130,
+  "dependencies": [
+    "asset-lifecycle",
+    "demand",
+    "fulfillment",
+    "qualification",
+    "routing",
+    "scheduling",
+    "inventory",
+    "operations",
+    "evaluation",
+    "decision",
+    "evidence",
+    "measurement"
+  ],
+  "facts": [
+    "IndustrialMaintenance",
+    "FleetMaintenance",
+    "MedicalMaintenance",
+    "NetworkMaintenance"
+  ],
+  "operations": [
+    "maintenance authorized runtime services"
+  ],
+  "invariants": [
+    "Preventive recurring condition corrective and inspection-only work orders",
+    "Typed converted demand fulfillment and qualified routed technicians",
+    "Complete admitted Inventory parts and Operations usage links",
+    "Inspection decision evidence and explicit return-to-service lifecycle facts",
+    "Industrial fleet medical and network maintenance profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F130-01",
+      "description": "Preventive recurring condition corrective and inspection-only work orders",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-maintenance.test.ts"
+      ]
+    },
+    {
+      "id": "F130-02",
+      "description": "Typed converted demand fulfillment and qualified routed technicians",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-maintenance.test.ts"
+      ]
+    },
+    {
+      "id": "F130-03",
+      "description": "Complete admitted Inventory parts and Operations usage links",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-maintenance.test.ts"
+      ]
+    },
+    {
+      "id": "F130-04",
+      "description": "Inspection decision evidence and explicit return-to-service lifecycle facts",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-maintenance.test.ts"
+      ]
+    },
+    {
+      "id": "F130-05",
+      "description": "Industrial fleet medical and network maintenance profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-maintenance.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "IndustrialMaintenance",
+    "FleetMaintenance",
+    "MedicalMaintenance",
+    "NetworkMaintenance"
+  ]
+}
