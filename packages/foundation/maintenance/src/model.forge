@@ -1,0 +1,85 @@
+import asset-lifecycle
+import demand
+import fulfillment
+import qualification
+import routing
+import scheduling
+import inventory
+import operations
+import evaluation
+import decision
+import evidence
+import measurement
+export resource MaintenancePlan @tenant @appendOnly {
+ id : id
+ asset : asset-lifecycle.AssetProfile
+ requirement : qualification.QualificationRequirement
+ anchor : datetime
+ intervalDays : integer >= 1 <= 36500
+}
+export enum MaintenanceTrigger { preventive
+ condition
+ corrective
+ inspection }
+export resource MaintenanceWorkOrder @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ asset : asset-lifecycle.AssetProfile
+ trigger : MaintenanceTrigger
+ plan : MaintenancePlan?
+ cycle : integer >= 1 <= 128
+ demand : demand.Demand @unique
+ conversion : demand.DemandResolution
+ fulfillment : fulfillment.Fulfillment @unique
+ technician : qualification.QualificationSubject
+ requirement : qualification.QualificationRequirement
+ assignment : routing.Assignment?
+ appointment : scheduling.Appointment?
+ operation : operations.OperationFulfillmentLink?
+ condition : measurement.PerformanceAssessment?
+ defect : evidence.EvidenceSeal?
+ partCount : integer >= 0 <= 16
+ inspection : evaluation.EvaluationRun
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ rules { conversion.demand == demand
+ conversion.fulfillment == fulfillment
+ conversion.outcome == "converted"
+ plan == null || plan.asset == asset
+ plan == null || plan.requirement == requirement
+ trigger != MaintenanceTrigger.preventive || plan != null
+ trigger != MaintenanceTrigger.condition || condition != null
+ trigger != MaintenanceTrigger.corrective || defect != null
+ trigger != MaintenanceTrigger.inspection || partCount == 0
+ operation == null || operation.fulfillment == fulfillment
+ accepted.decisionCase == approval }
+ unique plan, cycle
+ list by asset
+}
+export resource MaintenancePart @tenant @appendOnly {
+ id : id
+ order : MaintenanceWorkOrder
+ ordinal : integer >= 1 <= 16
+ movement : inventory.InventoryMovement @unique
+ rules { ordinal <= order.partCount
+ movement.kind == "issue" }
+ unique order, ordinal
+ list by order
+}
+export resource MaintenanceFinish @tenant @appendOnly {
+ id : id
+ order : MaintenanceWorkOrder @unique
+ inspection : evaluation.EvaluationFinish
+ evidence : evidence.EvidenceSeal
+ returnToService : asset-lifecycle.AssetLifecycleEvent?
+ at : datetime
+ followUp : demand.Demand?
+ rules { inspection.run == order.inspection
+ inspection.outcome == "Completed"
+ inspection.finishedAt <= at
+ returnToService == null || returnToService.asset == order.asset
+ returnToService == null || returnToService.action == "commission"
+ returnToService == null || returnToService.at <= at
+ returnToService != null || followUp != null || order.trigger == "inspection" }
+ find by order
+}

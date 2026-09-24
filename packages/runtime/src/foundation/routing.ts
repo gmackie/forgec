@@ -105,6 +105,8 @@ export class Routing {
     if(released&&!allocation.history.some(e=>e.action==="release"&&e.commandKey==="routing-release:"+id))return yield* bad("Assignment release lacks pool evidence");
     return {row,offer,facts,released};
   });}
+  /** Authorized publication/history inspection, including released assignments. */
+  inspect(assignment:string,ctx:CallContext){return this.assignment(assignment,ctx);}
   consume(assignment:string,ctx:CallContext):Effect.Effect<Wire,ForgeError>{const self=this;return Effect.gen(function*(){
     const state=yield* self.assignment(assignment,ctx);if(state.released)return yield* bad("Assignment released");
     if((yield* self.eligible(state.facts.request,state.facts.resource,state.facts.candidate.participant,yield* self.now(),ctx))!==state.facts.candidate.qualification)return yield* bad("Assignment eligibility changed");
