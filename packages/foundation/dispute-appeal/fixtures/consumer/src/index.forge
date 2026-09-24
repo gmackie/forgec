@@ -1,0 +1,21 @@
+import dispute-appeal
+export resource BillingDispute @tenant @appendOnly {
+ id : id
+ dispute : dispute-appeal.Dispute
+ context : text length 1..200
+}
+export resource BenefitsAppeal @tenant @appendOnly {
+ id : id
+ dispute : dispute-appeal.Dispute
+ context : text length 1..200
+}
+export resource ModerationAppeal @tenant @appendOnly {
+ id : id
+ dispute : dispute-appeal.Dispute
+ context : text length 1..200
+}
+export resource QualityAppeal @tenant @appendOnly {
+ id : id
+ dispute : dispute-appeal.Dispute
+ context : text length 1..200
+}
