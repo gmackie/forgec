@@ -1,0 +1,67 @@
+import entitlement
+import usage
+import allocation
+import specification
+import ledger
+export enum QuotaWindow {
+ Fixed
+ Rolling
+ Tumbling
+ CalendarDay
+ CalendarMonth
+ CalendarYear
+}
+export enum QuotaMeasure {
+ Usage
+ Occupancy
+ UsageAndReservations
+}
+export enum QuotaEnforcement {
+ Soft
+ Hard
+}
+export resource Allowance @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ grant : entitlement.Entitlement
+ scope : entitlement.EntitlementScope
+ policy : specification.SpecificationPin
+ dimension : usage.UsageDimension
+ unit : text length 1..64
+ limit : decimal<6> >= 0
+ warningAt : decimal<6> >= 0
+ window : QuotaWindow
+ windowSeconds : integer? >= 1 <= 315360000
+ timezone : text length 1..64
+ validFrom : datetime
+ validUntil : datetime
+ measure : QuotaMeasure
+ stream : usage.UsageStream?
+ pool : allocation.AllocationPool?
+ enforcement : QuotaEnforcement
+ predecessor : Allowance? @unique
+ rules {
+  scope == grant.scope
+  unit == dimension.unit
+  grant.unit == null || grant.unit == unit
+  grant.quantity == null || limit <= grant.quantity
+  warningAt <= limit
+  validUntil > validFrom
+  validFrom >= grant.validFrom
+  grant.validUntil == null || validUntil <= grant.validUntil
+  timezone == "UTC"
+  ((window == QuotaWindow.Rolling || window == QuotaWindow.Tumbling) && windowSeconds != null) || ((window != QuotaWindow.Rolling && window != QuotaWindow.Tumbling) && windowSeconds == null)
+  (measure == QuotaMeasure.Usage && stream != null && pool == null) || (measure == QuotaMeasure.Occupancy && stream == null && pool != null) || (measure == QuotaMeasure.UsageAndReservations && stream != null && pool != null)
+  stream == null || stream.dimension == dimension
+  pool == null || pool.unit == unit
+  predecessor == null || ((grant == predecessor.grant || grant.predecessor == predecessor.grant) && predecessor.scope == scope && predecessor.dimension == dimension && predecessor.unit == unit && validFrom >= predecessor.validUntil)
+ }
+}
+/// Optional realization binding, not a second source of consumption truth.
+export resource QuotaCounter @tenant @appendOnly {
+ id : id
+ allowance : Allowance @unique
+ account : ledger.Account @unique
+ sourcePolicy : specification.SpecificationPin
+ rules { account.unit == allowance.unit }
+}

@@ -1,0 +1,83 @@
+{
+  "slug": "quota",
+  "layer": "system",
+  "issue": 106,
+  "dependencies": [
+    "entitlement",
+    "usage",
+    "allocation",
+    "specification",
+    "ledger"
+  ],
+  "facts": [
+    "Allowance",
+    "QuotaCounter realization binding"
+  ],
+  "operations": [
+    "Quotas.inspect"
+  ],
+  "invariants": [
+    "Quota is not authorization",
+    "Usage and Allocation own quantitative facts",
+    "Half-open explicit windows",
+    "Hard projection is not an atomic admission token"
+  ],
+  "acceptance": [
+    {
+      "id": "F106-windows",
+      "description": "Fixed, rolling, UTC calendar and resetting allowances",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quota.test.ts"
+      ]
+    },
+    {
+      "id": "F106-sources",
+      "description": "Entitlement renewal, Usage corrections and Allocation claims",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quota.test.ts"
+      ]
+    },
+    {
+      "id": "F106-policy",
+      "description": "Exact remaining quantity and soft/hard distinction",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quota.test.ts"
+      ]
+    },
+    {
+      "id": "F106-realization",
+      "description": "Ledger counter mirrors the same semantic allowance",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quota.test.ts"
+      ]
+    },
+    {
+      "id": "F106-fixtures",
+      "description": "API tokens, seats, benefits and machine capacity",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-quota.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ApiTokenBudget",
+    "SeatAllowance",
+    "BenefitAllowance",
+    "MachineCapacity"
+  ]
+}
