@@ -1,0 +1,72 @@
+import classification
+import evidence
+import artifact
+export enum DispositionKind {
+ Archive
+ Destroy
+ Anonymize
+ Transfer
+}
+export enum RecordEventKind {
+ Hold
+ Release
+ Dispose
+}
+export resource RecordCategory @tenant @appendOnly {
+ id : id
+ label : text length 1..200
+ meaning : classification.ConceptRevision?
+}
+export resource RetentionRule @tenant @appendOnly {
+ id : id
+ category : RecordCategory
+ trigger : text length 1..128
+ periodDays : integer >= 0 <= 365000
+ disposition : DispositionKind
+ authority : text length 1..500
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+}
+export resource Record @tenant @appendOnly {
+ id : id
+ rule : RetentionRule
+ trigger : text length 1..128
+ triggeredAt : datetime
+ retainUntil : datetime
+ support : evidence.EvidenceSeal?
+ rules {
+  trigger == rule.trigger
+  retainUntil >= triggeredAt
+ }
+}
+export resource ArtifactRecord @tenant @appendOnly {
+ id : id
+ record : Record @unique
+ revision : artifact.ArtifactRevision
+}
+export resource RecordEvent @tenant @appendOnly {
+ id : id
+ record : Record
+ ordinal : integer >= 0 <= 127
+ previous : RecordEvent?
+ kind : RecordEventKind
+ hold : RecordEvent? @unique
+ activeHolds : integer >= 0 <= 128
+ effectiveAt : datetime
+ reason : text length 1..1000
+ authority : text length 1..500
+ support : evidence.EvidenceSeal?
+ recordedBy : text length 1..128
+ rules {
+  (previous == null && ordinal == 0) || (previous != null && previous.record == record && ordinal == previous.ordinal + 1)
+  previous == null || previous.kind != RecordEventKind.Dispose
+  previous == null || effectiveAt >= previous.effectiveAt
+  effectiveAt >= record.triggeredAt
+  (kind == RecordEventKind.Release && hold != null) || (kind != RecordEventKind.Release && hold == null)
+  hold == null || (hold.record == record && hold.kind == RecordEventKind.Hold && effectiveAt >= hold.effectiveAt)
+  (kind == RecordEventKind.Hold && ((previous == null && activeHolds == 1) || (previous != null && activeHolds == previous.activeHolds + 1))) || (kind == RecordEventKind.Release && previous != null && activeHolds == previous.activeHolds - 1) || (kind == RecordEventKind.Dispose && activeHolds == 0 && (previous == null || previous.activeHolds == 0))
+  kind != RecordEventKind.Dispose || effectiveAt >= record.retainUntil
+ }
+ unique record, ordinal
+ find by record, ordinal
+}

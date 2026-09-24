@@ -1,0 +1,72 @@
+{
+  "slug": "records",
+  "layer": "system",
+  "issue": 97,
+  "dependencies": [
+    "classification",
+    "evidence",
+    "artifact"
+  ],
+  "facts": [
+    "RecordCategory and pinned RetentionRule",
+    "Record business trigger and retention deadline",
+    "Append-only RecordEvent hold/release/disposition journal",
+    "ArtifactRecord typed revision attachment"
+  ],
+  "operations": [
+    "Records.register/state/hold/release/dispose"
+  ],
+  "invariants": [
+    "Journal ordinal uniqueness serializes holds against disposition",
+    "No disposition while an active hold exists",
+    "Terminal disposition freezes subsequent commands",
+    "Historical decisions do not cause physical deletion or TTL"
+  ],
+  "acceptance": [
+    {
+      "id": "F97-category",
+      "description": "Category/classification and artifact/entity attachment",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-records.test.ts"
+      ]
+    },
+    {
+      "id": "F97-trigger",
+      "description": "Business-triggered retention deadline and disposition types",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-records.test.ts"
+      ]
+    },
+    {
+      "id": "F97-hold",
+      "description": "Hold/release ordering, races and disposition blocking",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-records.test.ts"
+      ]
+    },
+    {
+      "id": "F97-history",
+      "description": "Immutable authorized disposition history and provenance",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-records.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ComplianceInvoice",
+    "ApplicantData",
+    "LitigationFile"
+  ]
+}
