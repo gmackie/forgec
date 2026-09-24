@@ -20,6 +20,8 @@ export interface Audit {
   at: string;
   action: string;
   subject: string;
+  /** Who made the change. Optional so audit logs written before this existed still parse. */
+  actor?: string;
 }
 export interface State {
   revision: number;
@@ -37,6 +39,10 @@ export interface Instance {
   authority: string;
   runtime: string;
   registry: { url: string; repository: string } | null;
+  /** How operators sign in. The UI describes the instance honestly from this. */
+  authMode?: "token" | "cloudflare-access";
+  /** Whose sign-in, when it is delegated. */
+  identityAuthority?: string | null;
 }
 export interface ViewState extends State {
   instance: Instance;

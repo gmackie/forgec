@@ -2,7 +2,36 @@
 
 ## Unreleased
 
+## 0.4.0 (2026-09-24)
+
+### Added
+
+- ConceptIR business archetypes, typed Subjects, semantic identities and revision
+  pins, traceability requirements, and explicit authority and boundary validation.
+- Portable actors, work queues, search, sealed credentials, sequences, conditional
+  uniqueness, typed collections, workflow maps, and incremental projections.
+- Foundation contracts and composed systems, including capacity, inventory,
+  projects, subscriptions, billing, returns, maintenance, rewards, and collections.
+- Forge Studio business and developer views, editable records, source navigation,
+  repository reviews, runtime connections, and Worker deployment management.
+- Production console integration with Cloudflare Access, an R2-backed OCI registry,
+  scoped registry credentials, and authenticated activity attribution.
+
+### Changed
+
+- Requires Node.js 24 or later.
+- Expanded ConceptIR validation rejects ambiguous or unsupported models, including
+  unsupported multi-hop reference expressions. Review compiler diagnostics when
+  upgrading existing models.
+- Foundation trust subjects use `TrustPartySubject`; regenerate dependent bundles
+  and review updated package contracts before upgrading deployed applications.
+
 ### Fixed
+
+- Concurrent workflow activity replay, PostgreSQL predicate conflict handling and
+  contention retries, actor alarm supersession, and projection rebuild recovery.
+- Collection contracts in SDK and GraphQL generation, SQL reserved identifiers,
+  language-server completion and references, and editor syntax coverage.
 
 - `forgec --version` printed `forge 0.3.0` and the language server announced
   itself as `forge`, both left over from the rename. The binary now identifies

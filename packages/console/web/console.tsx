@@ -440,7 +440,25 @@ function Confirm({
   );
 }
 
-export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
+/** Carries the HTTP status, which the previous helper discarded. */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export function Console({
+  fetcher = fetch,
+  autoAuth = true,
+}: {
+  fetcher?: typeof fetch;
+  /** Probe for an already-authenticated session on mount (Cloudflare Access signs in upstream). */
+  autoAuth?: boolean;
+}) {
   const [token, setToken] = useState(""),
     [state, setState] = useState<ViewState | null>(null),
     [page, setPage] = useState<Page>("Editor");
@@ -464,6 +482,40 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
   const [dialog, setDialogState] = useState<DialogState | null>(null);
   const [runtimeTarget,setRuntimeTarget]=useState<string|undefined>();
   const session = useRef(0);
+  // Distinct from refresh(): a failed probe is the normal unauthenticated case, not an error to
+  // show. Painting "Enter this instance's administrator token" on a virgin card would be wrong.
+  const [probing, setProbing] = useState(autoAuth);
+  const [signIn, setSignIn] = useState<"token" | "cloudflare-access">("token");
+  useEffect(() => {
+    if (!autoAuth) return;
+    let live = true;
+    void (async () => {
+      try {
+        // /healthz is public, so this answers even when the API cannot start.
+        const health = await fetcher("/healthz");
+        const mode = ((await health.json()) as { authMode?: string }).authMode;
+        if (live && mode === "cloudflare-access") setSignIn("cloudflare-access");
+      } catch {
+        // Unreachable health endpoint tells us nothing; assume the local scheme.
+      }
+      try {
+        const next = await api<ViewState>("/state");
+        if (live) setState(next);
+      } catch (e) {
+        // Not signed in is the ordinary case and says nothing. A server that is reachable but
+        // failing is worth showing, because the alternative is a login form that cannot work.
+        if (live && e instanceof ApiError && e.status >= 500)
+          setError((e as Error).message);
+      } finally {
+        if (live) setProbing(false);
+      }
+    })();
+    return () => {
+      live = false;
+    };
+    // Once, on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const setDialog = (next: Omit<DialogState, "revision"> | null) =>
     setDialogState(next ? { ...next, revision: state?.revision ?? 0 } : null);
   const api: Api = useCallback(async (path, method = "GET", body, revision) => {
@@ -471,16 +523,39 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
     const response = await fetcher(`/api${path}`, {
       method,
       headers: {
-        authorization: `Bearer ${token}`,
+        // Access authenticates at the edge and injects its own assertion; the browser has no
+        // token to send and must not invent one.
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
         ...(body !== undefined ? { "content-type": "application/json" } : {}),
         ...(revision !== undefined ? { "if-match": String(revision) } : {}),
       },
+      credentials: "same-origin",
+      // An expired Access session answers with a cross-origin redirect to the login domain.
+      // Following it from here yields an HTML page, not JSON; catching it as an opaque
+      // redirect lets the page reload and re-authenticate properly.
+      redirect: "manual",
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
-    const data = (await response.json()) as { error?: string };
+    if (response.type === "opaqueredirect" || response.status === 0) {
+      if (typeof location !== "undefined") location.reload();
+      throw new ApiError(0, "Re-authenticating…");
+    }
+    // Read as text first: a login page, a proxy error or an empty body are all valid HTTP and
+    // none of them are JSON. Parsing before checking the status turned those into an
+    // unreadable SyntaxError instead of the status that explains them.
+    const text = await response.text();
     if (epoch !== session.current) throw new Error("Session ended.");
+    let data: { error?: string } = {};
+    try {
+      data = text ? (JSON.parse(text) as { error?: string }) : {};
+    } catch {
+      data = {};
+    }
     if (!response.ok)
-      throw new Error(data.error || `Request failed (${response.status})`);
+      throw new ApiError(
+        response.status,
+        data.error || `Request failed (${response.status})`,
+      );
     return data as never;
   },[token,fetcher]);
   async function refresh() {
@@ -526,6 +601,7 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
   }
   const app = state?.apps.find((a) => a.id === selectedApp);
   const close = () => setDialog(null);
+  if (!state && probing) return <main className="login-page" aria-busy="true" />;
   if (!state)
     return (
       <main className="login-page">
@@ -545,32 +621,54 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
             Manage applications, configure environments, and explore your
             registry.
           </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void refresh();
-            }}
-          >
-            <Input
-              label="Administrator token"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              description="Use the token configured by this instance’s operator."
-            />
-            <ErrorMessage error={error} />
-            <Button variant="primary" type="submit" loading={busy}>
-              Connect to instance
-            </Button>
-          </form>
-          <div className="login-note">
-            <ShieldCheckIcon size={18} />
-            <span>
-              Your token stays in this browser tab. No central account required.
-            </span>
-          </div>
+          {signIn === "cloudflare-access" ? (
+            // This instance has no token to type. Offering the box anyway — which is what
+            // happened when the API failed behind a working Access session — invites someone
+            // to enter a credential that cannot be accepted, and hides the real fault.
+            <>
+              <ErrorMessage error={error} />
+              <Button variant="primary" onClick={() => location.reload()}>
+                Retry sign-in
+              </Button>
+              <div className="login-note">
+                <ShieldCheckIcon size={18} />
+                <span>
+                  Sign-in is delegated to Cloudflare Access. If this keeps
+                  failing, the instance is reachable but not serving its API.
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void refresh();
+                }}
+              >
+                <Input
+                  label="Administrator token"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  description="Use the token configured by this instance’s operator."
+                />
+                <ErrorMessage error={error} />
+                <Button variant="primary" type="submit" loading={busy}>
+                  Connect to instance
+                </Button>
+              </form>
+              <div className="login-note">
+                <ShieldCheckIcon size={18} />
+                <span>
+                  Your token stays in this browser tab. No central account
+                  required.
+                </span>
+              </div>
+            </>
+          )}
         </section>
         <p className="login-footer">
           Forge management console · Independently hosted
@@ -624,6 +722,12 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
             variant="ghost"
             icon={<SignOutIcon />}
             onClick={() => {
+              // Under Access the session is a cookie the edge owns; clearing local state would
+              // look like signing out while the next request silently succeeds.
+              if (state.instance.authMode === "cloudflare-access") {
+                location.href = "/cdn-cgi/access/logout";
+                return;
+              }
               session.current++;
               setBusy(false);
               setState(null);
@@ -1209,12 +1313,29 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
               <div className="two-columns">
                 <section className="panel detail-panel">
                   <ShieldCheckIcon size={24} />
-                  <h2>Local authority</h2>
-                  <p>
-                    Authentication and package signing belong to this instance.
-                    There is no central sign-in, telemetry, or required upstream
-                    registry.
-                  </p>
+                  <h2>
+                    {state.instance.authMode === "cloudflare-access"
+                      ? "Delegated sign-in"
+                      : "Local authority"}
+                  </h2>
+                  {state.instance.authMode === "cloudflare-access" ? (
+                    <p>
+                      Package signing belongs to this instance. Sign-in is
+                      delegated to Cloudflare Access
+                      {state.instance.identityAuthority
+                        ? ` for ${state.instance.identityAuthority}`
+                        : ""}
+                      ; registry clients authenticate with credentials this
+                      instance issues. There is no telemetry or required
+                      upstream registry.
+                    </p>
+                  ) : (
+                    <p>
+                      Authentication and package signing belong to this
+                      instance. There is no central sign-in, telemetry, or
+                      required upstream registry.
+                    </p>
+                  )}
                 </section>
                 <section className="panel detail-panel">
                   <PackageIcon size={24} />
