@@ -10,6 +10,11 @@ pub const CONCEPT_IR_VERSION: &str = "concept-ir/2";
 pub struct ConceptIR {
     #[serde(
         default,
+        skip_serializing_if = "crate::concept_registry::Registry::is_empty"
+    )]
+    pub registry: crate::concept_registry::Registry,
+    #[serde(
+        default,
         skip_serializing_if = "crate::concept_semantics::BusinessSemantics::is_empty"
     )]
     pub semantics: crate::concept_semantics::BusinessSemantics,
@@ -480,6 +485,7 @@ impl ConceptIR {
     /// Legacy permissions are not proof of ownership and are never turned into producers.
     pub fn validate(&self) -> Vec<Violation> {
         let mut errors = self.validate_business_semantics();
+        errors.extend(self.validate_registry());
         let mut producers: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
         for (id, process) in &self.processes {
             let mut missing = |subject: &str, family: &str, target: &str| {
@@ -893,6 +899,7 @@ pub fn project(ir: &DomainIR) -> Projection {
     let mut out = Projection {
         concept: ConceptIR {
             semantics: Default::default(),
+            registry: Default::default(),
             version: CONCEPT_IR_VERSION.into(),
             package: ir.package.name.clone(),
             entities: BTreeMap::new(),

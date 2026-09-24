@@ -912,8 +912,8 @@ impl ConceptIR {
         let mut changes = vec![];
         walk(
             String::new(),
-            &serde_json::to_value(self).unwrap(),
-            &serde_json::to_value(next).unwrap(),
+            &self.registry_diff_value(),
+            &next.registry_diff_value(),
             &mut changes,
         );
         changes

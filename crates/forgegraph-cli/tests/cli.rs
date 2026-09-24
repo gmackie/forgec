@@ -1160,3 +1160,66 @@ fn check_trace_validates_finite_reconstruction_without_claiming_enforcement() {
     assert!(String::from_utf8_lossy(&output.stderr).contains("E-L0-TRACE-WITNESS"));
     std::fs::remove_file(file).unwrap();
 }
+
+#[test]
+fn registry_cli_checks_exact_artifact_references_and_identity_based_diff() {
+    let fixture =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/concept/registry");
+    let run = |args: &[&std::path::Path]| {
+        std::process::Command::new(env!("CARGO_BIN_EXE_forgec"))
+            .arg("concept")
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    let model = fixture.join("support.json");
+    let references = fixture.join("realizations.json");
+    let out = run(&[
+        std::path::Path::new("check-registry-realizations"),
+        &model,
+        &references,
+    ]);
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["implementationProven"], false);
+    let temp = std::env::temp_dir().join(format!("forge-registry-{}", std::process::id()));
+    std::fs::create_dir_all(&temp).unwrap();
+    let moved = temp.join("moved.json");
+    std::fs::write(
+        &moved,
+        std::fs::read_to_string(&model).unwrap().replace(
+            "@interaction/support/_/Customer",
+            "@interaction/support/new/Client",
+        ),
+    )
+    .unwrap();
+    let out = run(&[std::path::Path::new("diff"), &model, &moved]);
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["changes"], serde_json::json!([]));
+    let bad = temp.join("bad.json");
+    std::fs::write(
+        &bad,
+        std::fs::read_to_string(&references)
+            .unwrap()
+            .replace("definition-1", "latest"),
+    )
+    .unwrap();
+    assert!(
+        !run(&[
+            std::path::Path::new("check-registry-realizations"),
+            &model,
+            &bad
+        ])
+        .status
+        .success()
+    );
+}
