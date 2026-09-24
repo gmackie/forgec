@@ -159,11 +159,13 @@ export interface StageTransitionRecord {
   id: string;
   from: string;
   to: string;
+  grant: string;
 }
 
 export interface StageTransitionCreate {
   from: string;
   to: string;
+  grant: string;
 }
 
 export interface StageTransitionPatch {

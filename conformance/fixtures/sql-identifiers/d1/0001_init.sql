@@ -71,9 +71,11 @@ CREATE TABLE stage_transition (
   "id" TEXT NOT NULL,
   "from_" TEXT NOT NULL,
   "to_" TEXT NOT NULL,
+  "grant" TEXT NOT NULL,
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, from_) REFERENCES to_ (tenant, id),
-  FOREIGN KEY (tenant, to_) REFERENCES to_ (tenant, id)
+  FOREIGN KEY (tenant, to_) REFERENCES to_ (tenant, id),
+  FOREIGN KEY (tenant, grant) REFERENCES to_ (tenant, id)
 );
 
 CREATE TABLE to_ (
@@ -85,4 +87,6 @@ CREATE TABLE to_ (
 
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);
 CREATE UNIQUE INDEX stage_transition_uq_from_to ON stage_transition (tenant, from_, to_);
+CREATE UNIQUE INDEX stage_transition_uq_grant ON stage_transition (tenant, grant);
+CREATE INDEX stage_transition_ix_by_grant ON stage_transition (tenant, grant, id);
 CREATE UNIQUE INDEX to__uq_key ON to_ (tenant, key_);
