@@ -1595,7 +1595,7 @@ impl<'a> Ctx<'a> {
         None
     }
 
-    /// Validate `a.b.c` against a resource's fields, following references.
+    /// Validate resource paths against the runtime's single-reference-hop profile.
     fn check_path(
         &mut self,
         path: &[String],
@@ -1678,7 +1678,19 @@ impl<'a> Ctx<'a> {
             };
             if i + 1 < path.len() {
                 match &f.ty.base {
-                    TypeBase::Reference { resource } => current = resource.clone(),
+                    TypeBase::Reference { resource } => {
+                        if i > 0 {
+                            self.err(
+                                "E-EXPR-003",
+                                file,
+                                range,
+                                "expressions support only one reference hop; bind a direct reference instead",
+                                None,
+                            );
+                            return None;
+                        }
+                        current = resource.clone();
+                    }
                     _ => {
                         self.err(
                             "E-EXPR-002",
