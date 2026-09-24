@@ -96,3 +96,55 @@ describe("console authentication behaviour", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("registry credentials panel", () => {
+  afterEach(cleanup);
+
+  // The endpoints existed for a while with no way to reach them, so the console offered no way
+  // to obtain the credential its own registry requires. This asserts the panel is actually
+  // rendered and wired, not merely that the API exists.
+  it("issues a credential and shows the secret exactly once", async () => {
+    const calls: { url: string; method?: string }[] = [];
+    const fetcher = (async (url: string, init?: RequestInit) => {
+      const u = String(url);
+      calls.push({ url: u, ...(init?.method ? { method: init.method } : {}) });
+      if (u.includes("/healthz"))
+        return Response.json({ status: "ok", authMode: "cloudflare-access" });
+      if (u.includes("/api/registry/credentials") && init?.method === "POST")
+        return Response.json(
+          {
+            credential: {
+              id: "fgc_abc",
+              label: "ci",
+              scopes: ["pull", "push"],
+              createdAt: "2026-01-01T00:00:00.000Z",
+              createdBy: "ops@example",
+              lastUsedAt: null,
+              expiresAt: null,
+              revokedAt: null,
+            },
+            secret: "s".repeat(64),
+          },
+          { status: 201 },
+        );
+      if (u.includes("/api/registry/credentials"))
+        return Response.json({ credentials: [] });
+      return Response.json(emptyState);
+    }) as unknown as typeof fetch;
+
+    render(<Console fetcher={fetcher} />);
+    await screen.findByText("Apps");
+    (await screen.findByRole("button", { name: "Settings" })).click();
+
+    const label = await screen.findByLabelText("Label");
+    (label as HTMLInputElement).value = "ci";
+    label.dispatchEvent(new Event("input", { bubbles: true }));
+    screen.getByRole("button", { name: "Issue credential" }).click();
+
+    // The one moment the secret is visible, presented as the command it is for.
+    const shown = await screen.findByText(/docker login/);
+    expect(shown.textContent).toContain("fgc_abc");
+    expect(shown.textContent).toContain("s".repeat(64));
+    expect(calls.some((c) => c.url.includes("/api/registry/credentials") && c.method === "POST")).toBe(true);
+  });
+});
