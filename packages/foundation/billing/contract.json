@@ -1,0 +1,79 @@
+{
+  "slug": "billing",
+  "layer": "system",
+  "issue": 105,
+  "dependencies": [
+    "agreement-catalog",
+    "quotation-pricing",
+    "usage",
+    "entitlement",
+    "settlement",
+    "ledger",
+    "specification"
+  ],
+  "facts": [
+    "SaaSInvoice",
+    "UtilityInvoice",
+    "ServiceInvoice",
+    "BillingTaxDetail",
+    "BillingProration"
+  ],
+  "operations": [
+    "billing authorized runtime services"
+  ],
+  "invariants": [
+    "Usage-rated, fixed recurring and one-off charges preserve exact source pins",
+    "Signed credits and typed tax/proration hooks correct without mutation",
+    "Issued bill snapshots atomically claim charges and preserve exact totals",
+    "Multiple settlement positions and ledger links stay independent financial truth"
+  ],
+  "acceptance": [
+    {
+      "id": "F105-01",
+      "description": "Usage-rated, fixed recurring and one-off charges preserve exact source pins",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-billing.test.ts"
+      ]
+    },
+    {
+      "id": "F105-02",
+      "description": "Signed credits and typed tax/proration hooks correct without mutation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-billing.test.ts"
+      ]
+    },
+    {
+      "id": "F105-03",
+      "description": "Issued bill snapshots atomically claim charges and preserve exact totals",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-billing.test.ts"
+      ]
+    },
+    {
+      "id": "F105-04",
+      "description": "Multiple settlement positions and ledger links stay independent financial truth",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-billing.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "SaaSInvoice",
+    "UtilityInvoice",
+    "ServiceInvoice",
+    "BillingTaxDetail",
+    "BillingProration"
+  ]
+}

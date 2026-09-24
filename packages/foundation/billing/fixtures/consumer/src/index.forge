@@ -1,0 +1,50 @@
+import billing
+import specification
+resource SaaSInvoice @tenant @appendOnly {
+ id : id
+ issue : billing.BillIssued @unique
+ invoiceNumber : text length 1..128 @unique
+}
+resource UtilityInvoice @tenant @appendOnly {
+ id : id
+ issue : billing.BillIssued @unique
+ servicePoint : text length 1..128
+}
+resource ServiceInvoice @tenant @appendOnly {
+ id : id
+ issue : billing.BillIssued @unique
+ engagement : text length 1..128
+}
+/// Domain-owned calculation detail. Core billing only consumes signed PriceAdjustments.
+resource BillingTaxDetail @tenant @appendOnly {
+ id : id
+ charge : billing.BillingCharge @unique
+ jurisdiction : text length 1..128
+ calculation : specification.SpecificationPin
+ rules { charge.kind == "adjustment"
+ charge.definition == calculation }
+}
+resource BillingProration @tenant @appendOnly {
+ id : id
+ charge : billing.BillingCharge @unique
+ numeratorDays : integer >= 1
+ denominatorDays : integer >= 1
+ calculation : specification.SpecificationPin
+ rules { charge.kind == "adjustment"
+ numeratorDays <= denominatorDays
+ charge.definition == calculation }
+}
+import fulfillment
+import agreement
+/// Independently observed performance/payment, never inferred from an invoice.
+resource BillingEconomicEvent @tenant @appendOnly {
+ id : id
+ fulfillmentEnd : fulfillment.FulfillmentEnd @unique
+ agreement : agreement.Agreement
+ kind : text length 1..32
+ unit : text length 1..64
+ quantity : decimal<6> > 0
+ occurredAt : datetime
+ rules { fulfillmentEnd.outcome == "completed"
+ occurredAt >= fulfillmentEnd.endedAt }
+}

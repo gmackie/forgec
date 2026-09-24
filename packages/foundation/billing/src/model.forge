@@ -1,0 +1,105 @@
+import agreement-catalog
+import quotation-pricing
+import usage
+import entitlement
+import settlement
+import ledger
+import specification
+export resource BillingPeriod @tenant @appendOnly {
+ id : id
+ agreement : agreement-catalog.Agreement
+ terms : specification.SpecificationPin
+ from : datetime
+ until : datetime
+ rules { terms == agreement.terms
+ from < until
+ from >= agreement.validFrom
+ until <= agreement.validUntil }
+ unique agreement, from, until
+}
+export resource BillingMeterRate @tenant @appendOnly {
+ id : id
+ rate : quotation-pricing.PricingRate
+ dimension : usage.UsageDimension
+ unique rate, dimension
+}
+export enum BillingChargeKind { usage
+ recurring
+ oneOff
+ adjustment }
+/// Immutable rating result, never a ledger posting or settlement observation.
+export resource BillingCharge @tenant @appendOnly {
+ id : id
+ period : BillingPeriod
+ sourceKey : text length 1..128
+ kind : BillingChargeKind
+ rate : quotation-pricing.PricingRate?
+ meter : BillingMeterRate?
+ usageEvent : usage.UsageEvent? @unique
+ adjustment : quotation-pricing.PriceAdjustment?
+ adjustmentFor : BillingCharge?
+ definition : specification.SpecificationPin
+ account : ledger.Account
+ quantity : decimal<6> > 0
+ amount : decimal<6>
+ ratedAt : datetime
+ source : text length 1..1000
+ rules {
+ (kind == BillingChargeKind.usage && usageEvent != null && meter != null && rate != null && adjustment == null) || (kind == BillingChargeKind.adjustment && adjustment != null && adjustmentFor != null && rate == null && usageEvent == null && meter == null) || ((kind == BillingChargeKind.recurring || kind == BillingChargeKind.oneOff) && rate != null && meter == null && usageEvent == null && adjustment == null)
+ kind == BillingChargeKind.adjustment || adjustmentFor == null
+ rate == null || (definition == rate.definition && account == rate.account && ratedAt >= rate.validFrom && ratedAt < rate.validUntil)
+ meter == null || (meter.rate == rate && meter.dimension == usageEvent.dimension && quantity == usageEvent.quantity)
+ adjustment == null || (definition == adjustment.definition && account == adjustment.account && amount == adjustment.amount && quantity == 1.000000)
+ kind == BillingChargeKind.adjustment || amount >= 0
+ }
+ unique period, sourceKey
+}
+export resource BillingLine @tenant @appendOnly {
+ id : id
+ charge : BillingCharge
+ next : BillingLine?
+}
+export resource Bill @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ period : BillingPeriod
+ head : BillingLine
+ corrects : Bill?
+ reason : text length 1..1000
+}
+export resource BillIssued @tenant @timestamps @appendOnly {
+ id : id
+ bill : Bill @unique
+ digest : text length 64..64
+ issuedBy : text length 1..128
+ find by bill
+}
+export resource BilledCharge @tenant @appendOnly {
+ id : id
+ bill : Bill
+ charge : BillingCharge @unique
+ find by charge
+}
+export resource BillPosition @tenant @appendOnly {
+ id : id
+ bill : Bill
+ issue : BillIssued
+ period : BillingPeriod
+ agreement : agreement-catalog.Agreement
+ position : settlement.SettlementPosition
+ rules { issue.bill == bill
+ bill.period == period
+ period.agreement == agreement
+ position.agreement == agreement }
+ unique bill, position
+ list by bill
+}
+/// One fixed recurring rate per agreement period; retries cannot change its source key.
+export resource BillingRecurringClaim @tenant @appendOnly {
+ id : id
+ period : BillingPeriod
+ rate : quotation-pricing.PricingRate
+ sourceKey : text length 1..128
+ unique period, rate
+ find by period, rate
+}
