@@ -5295,55 +5295,6 @@
         "properties": {},
         "additionalProperties": false
       },
-      "PartySubjectRecord": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "x-forge-type": "id",
-            "maxLength": 64,
-            "pattern": "^[A-Za-z0-9_-]+$",
-            "readOnly": true
-          },
-          "subject": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
-          },
-          "party": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "subject",
-          "party"
-        ]
-      },
-      "PartySubjectCreate": {
-        "type": "object",
-        "properties": {
-          "subject": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
-          },
-          "party": {
-            "type": "string",
-            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "subject",
-          "party"
-        ]
-      },
-      "PartySubjectPatch": {
-        "type": "object",
-        "properties": {},
-        "additionalProperties": false
-      },
       "RiskTrustInputRecord": {
         "type": "object",
         "properties": {
@@ -6001,6 +5952,55 @@
         ]
       },
       "TrustDimensionPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "TrustPartySubjectRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "subject",
+          "party"
+        ]
+      },
+      "TrustPartySubjectCreate": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
+          },
+          "party": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "party"
+        ]
+      },
+      "TrustPartySubjectPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false

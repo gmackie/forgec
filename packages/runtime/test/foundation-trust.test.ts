@@ -28,7 +28,7 @@ for(const adapter of foundationAdapters) it(`${adapter}: contextual trust proven
   const kind=await call(p+'SignalKind.create',{dimension:dimension.id,key:'delivery',definition:method.id});
   const agentKind=await call(p+'SignalKind.create',{dimension:otherDimension.id,key:'verified-output',definition:method.id});
   const subject=await call(p+'TrustSubject.create',{label:'Supplier'});
-  await call(p+'PartySubject.create',{subject:subject.id,party:issuer.id});
+  await call(p+'TrustPartySubject.create',{subject:subject.id,party:issuer.id});
   async function signal(key:string,subjectId=subject.id,dimensionId=dimension.id,kindId=kind.id){return call(p+'TrustSignal.create',{subject:subjectId,dimension:dimensionId,kind:kindId,issuer:issuer.id,sourceRecord:key,observedAt,support:seal.id,explanation:'Observed fact with immutable source evidence'});}
   const onTime=await signal('on-time'),late=await signal('late');
   await call('@fixture/trust-consumer/_/VendorDeliverySignal.create',{signal:onTime.id,orderNumber:'order-1',lateMinutes:0});

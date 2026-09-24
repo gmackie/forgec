@@ -704,16 +704,6 @@ CREATE TABLE dispute_resolution (
   FOREIGN KEY (tenant, support) REFERENCES evidence_seal (tenant, id)
 );
 
-CREATE TABLE party_subject (
-  "tenant" TEXT NOT NULL,
-  "id" TEXT NOT NULL,
-  "subject" TEXT NOT NULL,
-  "party" TEXT NOT NULL,
-  PRIMARY KEY (tenant, id),
-  FOREIGN KEY (tenant, subject) REFERENCES trust_subject (tenant, id),
-  FOREIGN KEY (tenant, party) REFERENCES party (tenant, id)
-);
-
 CREATE TABLE risk_trust_input (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
@@ -811,6 +801,16 @@ CREATE TABLE trust_dimension (
   "maximum" INTEGER NOT NULL,
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, method) REFERENCES specification_pin (tenant, id)
+);
+
+CREATE TABLE trust_party_subject (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "subject" TEXT NOT NULL,
+  "party" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, subject) REFERENCES trust_subject (tenant, id),
+  FOREIGN KEY (tenant, party) REFERENCES party (tenant, id)
 );
 
 CREATE TABLE trust_review (
@@ -916,13 +916,13 @@ CREATE UNIQUE INDEX repository_uq_key ON repository (tenant, key_);
 CREATE UNIQUE INDEX specification_pin_uq_repository_anchor_revision ON specification_pin (tenant, repository, anchor, revision);
 CREATE INDEX specification_pin_ix_by_repository_anchor ON specification_pin (tenant, repository, anchor, id);
 CREATE UNIQUE INDEX dispute_resolution_uq_dispute ON dispute_resolution (tenant, dispute);
-CREATE UNIQUE INDEX party_subject_uq_party ON party_subject (tenant, party);
-CREATE UNIQUE INDEX party_subject_uq_subject ON party_subject (tenant, subject);
 CREATE UNIQUE INDEX risk_trust_input_uq_assessment_trust ON risk_trust_input (tenant, assessment, trust);
 CREATE UNIQUE INDEX signal_correction_uq_signal ON signal_correction (tenant, signal);
 CREATE UNIQUE INDEX signal_dispute_uq_signal ON signal_dispute (tenant, signal);
 CREATE UNIQUE INDEX signal_kind_uq_dimension_key ON signal_kind (tenant, dimension, key_);
 CREATE UNIQUE INDEX trust_assessment_uq_review ON trust_assessment (tenant, review);
 CREATE UNIQUE INDEX trust_dimension_uq_key_context_method ON trust_dimension (tenant, key_, context, method);
+CREATE UNIQUE INDEX trust_party_subject_uq_party ON trust_party_subject (tenant, party);
+CREATE UNIQUE INDEX trust_party_subject_uq_subject ON trust_party_subject (tenant, subject);
 CREATE UNIQUE INDEX trust_review_uq_evaluations ON trust_review (tenant, evaluations);
 CREATE UNIQUE INDEX trust_signal_uq_issuer_sourceRecord ON trust_signal (tenant, issuer, source_record);

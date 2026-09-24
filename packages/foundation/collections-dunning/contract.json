@@ -1,0 +1,93 @@
+{
+  "slug": "collections-dunning",
+  "layer": "system",
+  "issue": 138,
+  "dependencies": [
+    "settlement",
+    "case-management",
+    "notifications",
+    "agreement-catalog",
+    "decision",
+    "specification",
+    "evidence",
+    "dispute-appeal",
+    "billing",
+    "challenge",
+    "trust",
+    "evaluation",
+    "fulfillment",
+    "ledger"
+  ],
+  "facts": [
+    "B2BCollections",
+    "SaaSCollections",
+    "ConsumerCollections"
+  ],
+  "operations": [
+    "collections-dunning authorized runtime services"
+  ],
+  "invariants": [
+    "Delinquency and aging derive from admitted Settlement positions at explicit times",
+    "Notices and interactions remain separately admitted communications",
+    "Accepted payment arrangements and promises do not settle debt",
+    "Disputes bind the exact billed position and preserve originals",
+    "Cure requires zero balance; writeoff and recovery remain explicit validated extension effects"
+  ],
+  "acceptance": [
+    {
+      "id": "F138-01",
+      "description": "Delinquency and aging derive from admitted Settlement positions at explicit times",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-collections-dunning.test.ts"
+      ]
+    },
+    {
+      "id": "F138-02",
+      "description": "Notices and interactions remain separately admitted communications",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-collections-dunning.test.ts"
+      ]
+    },
+    {
+      "id": "F138-03",
+      "description": "Accepted payment arrangements and promises do not settle debt",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-collections-dunning.test.ts"
+      ]
+    },
+    {
+      "id": "F138-04",
+      "description": "Disputes bind the exact billed position and preserve originals",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-collections-dunning.test.ts"
+      ]
+    },
+    {
+      "id": "F138-05",
+      "description": "Cure requires zero balance; writeoff and recovery remain explicit validated extension effects",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-collections-dunning.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "B2BCollections",
+    "SaaSCollections",
+    "ConsumerCollections"
+  ]
+}
