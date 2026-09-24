@@ -92,3 +92,4 @@ export * from "./foundation/party-relationship.js";
 export * from "./foundation/demand.js";
 export * from "./foundation/billing.js";
 export * from "./foundation/challenge.js";
+export * from "./foundation/delegation.js";

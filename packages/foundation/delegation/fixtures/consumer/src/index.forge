@@ -1,0 +1,16 @@
+import delegation
+resource HumanDelegation @tenant @appendOnly {
+ id : id
+ delegation : delegation.Delegation @unique
+ mandate : text length 1..200
+}
+resource EmployeeDelegation @tenant @appendOnly {
+ id : id
+ delegation : delegation.Delegation @unique
+ position : text length 1..200
+}
+resource AgentDelegation @tenant @appendOnly {
+ id : id
+ delegation : delegation.Delegation @unique
+ tool : text length 1..200
+}

@@ -1,0 +1,72 @@
+{
+  "slug": "delegation",
+  "layer": "substrate",
+  "issue": 92,
+  "dependencies": [
+    "party",
+    "entitlement",
+    "specification",
+    "evidence"
+  ],
+  "facts": [
+    "HumanDelegation",
+    "EmployeeDelegation",
+    "AgentDelegation"
+  ],
+  "operations": [
+    "delegation authorized runtime services"
+  ],
+  "invariants": [
+    "Typed human, organization and software subjects with explicit scope",
+    "Time-bounded chains require re-delegation permission and preserve root authority",
+    "Revocation and evidence provenance fail closed at every chain hop",
+    "Gatekeeper consumes delegation facts without inferring authority from membership"
+  ],
+  "acceptance": [
+    {
+      "id": "F92-01",
+      "description": "Typed human, organization and software subjects with explicit scope",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delegation.test.ts"
+      ]
+    },
+    {
+      "id": "F92-02",
+      "description": "Time-bounded chains require re-delegation permission and preserve root authority",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delegation.test.ts"
+      ]
+    },
+    {
+      "id": "F92-03",
+      "description": "Revocation and evidence provenance fail closed at every chain hop",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delegation.test.ts"
+      ]
+    },
+    {
+      "id": "F92-04",
+      "description": "Gatekeeper consumes delegation facts without inferring authority from membership",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-delegation.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "HumanDelegation",
+    "EmployeeDelegation",
+    "AgentDelegation"
+  ]
+}
