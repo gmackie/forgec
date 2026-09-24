@@ -108,6 +108,16 @@ export class Ledger {
       return yield* self.post({ book, key, reason, reversalOf: original, policy: group.fact.policy as LedgerPost["policy"], entries: group.entries.map(e => ({ account: e.account, quantity: formatMinor(-toMinor(e.quantity, 6), 6) })) }, ctx);
     });
   }
+  /** Authorized published group plus reversal provenance for composed systems. */
+  inspect(group: string, ctx: CallContext) {
+    const self = this;
+    return Effect.gen(function* () {
+      const fact = yield* self.call("PostingGroup.get", { id: group }, ctx);
+      const groups = yield* self.groups(String(fact.book), ctx);
+      const selected = groups.find(g => g.fact.id === group)!;
+      return { ...selected, reversedBy: groups.find(g => g.fact.reversalOf === group)?.fact ?? null };
+    });
+  }
   rebuild(book: string, ctx: CallContext) {
     const self = this;
     return Effect.gen(function* () {

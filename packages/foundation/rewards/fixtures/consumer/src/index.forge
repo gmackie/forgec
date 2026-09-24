@@ -1,0 +1,21 @@
+import rewards
+export resource CustomerLoyalty @tenant @appendOnly {
+ id : id
+ award : rewards.RewardAward
+ context : text length 1..200
+}
+export resource EmployeeIncentive @tenant @appendOnly {
+ id : id
+ award : rewards.RewardAward
+ context : text length 1..200
+}
+export resource ReferralReward @tenant @appendOnly {
+ id : id
+ award : rewards.RewardAward
+ context : text length 1..200
+}
+export resource EducationReward @tenant @appendOnly {
+ id : id
+ award : rewards.RewardAward
+ context : text length 1..200
+}
