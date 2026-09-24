@@ -1,0 +1,111 @@
+import case-management
+import party
+import participation
+import specification
+import evidence
+import evaluation
+import decision
+import billing
+import assurance
+import fulfillment
+import change
+export resource ContestedFact @tenant @appendOnly {
+ id : id
+ decision : decision.DecisionOutcome?
+ charge : billing.BillingCharge?
+ finding : assurance.Finding?
+ outcome : fulfillment.FulfillmentEnd?
+ rules { (decision != null && charge == null && finding == null && outcome == null) || (decision == null && charge != null && finding == null && outcome == null) || (decision == null && charge == null && finding != null && outcome == null) || (decision == null && charge == null && finding == null && outcome != null) }
+}
+export resource ReviewMandate @tenant @appendOnly {
+ id : id
+ authority : party.Party
+ reviewer : participation.Participation
+ jurisdiction : specification.SpecificationPin
+ policy : specification.SpecificationPin
+ support : evidence.EvidenceSeal
+ from : datetime
+ until : datetime
+ rules { from < until }
+}
+export resource ReviewMandateEnd @tenant @appendOnly {
+ id : id
+ mandate : ReviewMandate @unique
+ at : datetime
+ reason : text length 1..500
+}
+export resource Dispute @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ case : case-management.Case @unique
+ contested : ContestedFact
+ appellant : party.Party
+ grounds : text length 1..2000
+ requestedRemedy : specification.SpecificationPin
+ support : evidence.EvidenceSeal
+ jurisdiction : specification.SpecificationPin
+ policy : specification.SpecificationPin
+ authority : party.Party
+ reviewer : participation.Participation
+ mandate : ReviewMandate
+ filedAt : datetime
+ filingDeadline : datetime
+ reviewDeadline : datetime
+ evaluation : evaluation.EvaluationRun
+ decision : decision.DecisionCase @unique
+ uphold : decision.DecisionOption
+ modify : decision.DecisionOption
+ reverse : decision.DecisionOption
+ remand : decision.DecisionOption
+ previous : Dispute?
+ priorResult : DisputeResult?
+ level : integer >= 1 <= 8
+ rules { mandate.authority == authority
+ mandate.reviewer == reviewer
+ mandate.jurisdiction == jurisdiction
+ mandate.policy == policy
+ filedAt <= filingDeadline
+ filedAt < reviewDeadline
+ uphold.decisionCase == decision
+ modify.decisionCase == decision
+ reverse.decisionCase == decision
+ remand.decisionCase == decision
+ uphold != modify && uphold != reverse && uphold != remand && modify != reverse && modify != remand && reverse != remand
+ (previous == null && priorResult == null && level == 1) || (previous != null && priorResult != null && priorResult.dispute == previous && previous.contested == contested && previous.appellant == appellant && level == previous.level + 1 && filedAt >= priorResult.at) }
+}
+export enum DisputeVerdict { uphold
+ modify
+ reverse
+ remand }
+export resource DisputeResult @tenant @appendOnly {
+ id : id
+ dispute : Dispute @unique
+ review : evaluation.EvaluationFinish
+ decision : decision.DecisionOutcome
+ verdict : DisputeVerdict
+ rationale : text length 1..2000
+ support : evidence.EvidenceSeal
+ at : datetime
+ rules { review.run == dispute.evaluation
+ review.outcome == "Completed"
+ review.finishedAt <= at
+ at >= dispute.filedAt
+ at <= dispute.reviewDeadline
+ decision.decisionCase == dispute.decision
+ (verdict == "uphold" && decision.selected == dispute.uphold) || (verdict == "modify" && decision.selected == dispute.modify) || (verdict == "reverse" && decision.selected == dispute.reverse) || (verdict == "remand" && decision.selected == dispute.remand) }
+}
+/// Candidate remedy effects never rewrite the challenged record.
+export resource DisputeRemedy @tenant @appendOnly {
+ id : id
+ result : DisputeResult
+ implementation : specification.SpecificationPin
+ fulfillment : fulfillment.Fulfillment?
+ adjustment : billing.BillingCharge?
+ change : change.Change?
+ support : evidence.EvidenceSeal
+ at : datetime
+ rules { result.verdict != "uphold"
+ at >= result.at
+ (fulfillment != null && adjustment == null && change == null) || (fulfillment == null && adjustment != null && change == null) || (fulfillment == null && adjustment == null && change != null)
+ adjustment == null || adjustment.kind == "adjustment" }
+}
