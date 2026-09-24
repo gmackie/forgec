@@ -7,6 +7,9 @@ resource StageTransition @tenant @appendOnly {
  id : id
  from : To
  to : To
+ grant : To @unique
  unique from, to
  find by from, to
+ find by grant
+ list by grant
 }

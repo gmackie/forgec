@@ -18,6 +18,8 @@ structure StageTransitionRecord {
     from: String
     @required
     to: String
+    @required
+    grant: String
 }
 
 structure StageTransitionCreateInput {
@@ -25,6 +27,8 @@ structure StageTransitionCreateInput {
     from: String
     @required
     to: String
+    @required
+    grant: String
 }
 
 structure StageTransitionPatchInput {

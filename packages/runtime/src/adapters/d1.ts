@@ -23,6 +23,7 @@ export interface D1Stmt {
   run(): Promise<{ meta: { changes: number } }>;
 }
 
+const identifier = (name: string) => `"${name.replaceAll('"', '""')}"`;
 const st = (sql: string, ...params: unknown[]): SqlStatement => ({ sql, params });
 
 /** D1 serializes writes behind one writer, so a transient conflict is rare and clears quickly. */
@@ -63,7 +64,7 @@ export class D1Storage implements StorageAdapter {
   findUnique(tenant: string, r: Resource, u: Unique, _claimKey: string, values: Record<string, unknown>): Effect.Effect<StoredRecord | null, ForgeError> {
     const t = this.map.table(r);
     const fields = [...u.within, ...u.fields];
-    const where = [...(r.decorators.tenant ? ["tenant = ?"] : []), ...fields.map((f) => `${this.map.column(r, f).name} = ?`)].join(" AND ");
+    const where = [...(r.decorators.tenant ? ["tenant = ?"] : []), ...fields.map((f) => `${identifier(this.map.column(r, f).name)} = ?`)].join(" AND ");
     const binds = [...(r.decorators.tenant ? [tenant] : []), ...fields.map((f) => this.map.toColumn(r.fields.find((x) => x.name === f)!, values[f]))];
     return this.wrap(async () => {
       const row = await this.db.first(st(`SELECT * FROM ${t.name} WHERE ${where}`, ...binds));
@@ -73,7 +74,7 @@ export class D1Storage implements StorageAdapter {
 
   list(tenant: string, r: Resource, q: ListQuery, _sortKeys: (rec: StoredRecord) => string[]): Effect.Effect<{ records: StoredRecord[]; hasMore: boolean }, ForgeError> {
     const t = this.map.table(r);
-    const col = (f: string) => this.map.column(r, f).name;
+    const col = (f: string) => identifier(this.map.column(r, f).name);
     const field = (f: string) => r.fields.find((x) => x.name === f)!;
     const where: string[] = [];
     const binds: unknown[] = [];
@@ -120,7 +121,7 @@ export class D1Storage implements StorageAdapter {
 
   countDependents(tenant: string, child: Resource, field: string, id: string): Effect.Effect<number, ForgeError> {
     const t = this.map.table(child);
-    const col = this.map.column(child, field).name;
+    const col = identifier(this.map.column(child, field).name);
     const live = child.decorators.softDelete ? " AND deleted_at IS NULL" : "";
     const tenantSql = child.decorators.tenant ? "tenant = ? AND " : "";
     const binds = child.decorators.tenant ? [tenant, id] : [id];
@@ -138,7 +139,7 @@ export class D1Storage implements StorageAdapter {
     const binds: unknown[] = [];
     if (r.decorators.tenant) where.push("tenant = ?");
     for (const [i, f] of g.groupFields.entries()) {
-      where.push(`${this.map.column(r, f).name} = ?`);
+      where.push(`${identifier(this.map.column(r, f).name)} = ?`);
       binds.push(this.map.toColumn(r.fields.find((x) => x.name === f)!, g.groupValues[i]));
     }
     where.push("id <> ?");
@@ -166,7 +167,7 @@ export class D1Storage implements StorageAdapter {
       binds.push(tenant);
     }
     for (const [i, f] of groupFields.entries()) {
-      where.push(`${this.map.column(r, f).name} = ?`);
+      where.push(`${identifier(this.map.column(r, f).name)} = ?`);
       binds.push(this.map.toColumn(r.fields.find((x) => x.name === f)!, groupValues[i]));
     }
     if (r.decorators.softDelete) where.push("deleted_at IS NULL");
@@ -179,7 +180,7 @@ export class D1Storage implements StorageAdapter {
   }
   children(tenant: string, r: Resource, parentField: string, id: string, limit: number): Effect.Effect<StoredRecord[], ForgeError> {
     const t = this.map.table(r);
-    const col = this.map.column(r, parentField).name;
+    const col = identifier(this.map.column(r, parentField).name);
     const order = r.fields.some((f) => f.name === "name") ? "name, id" : "id";
     const live = r.decorators.softDelete ? " AND deleted_at IS NULL" : "";
     const tenantSql = r.decorators.tenant ? "tenant = ? AND " : "";
@@ -358,7 +359,7 @@ export class D1Storage implements StorageAdapter {
   private absenceQuery(guard: AtomicAbsenceGuard): SqlStatement {
     const { resource, unique, tenant, values } = guard;
     const fields = [...unique.within, ...unique.fields];
-    const where = [...(resource.decorators.tenant ? ["tenant = ?"] : []), ...fields.map(f => `${this.map.column(resource, f).name} = ?`)];
+    const where = [...(resource.decorators.tenant ? ["tenant = ?"] : []), ...fields.map(f => `${identifier(this.map.column(resource, f).name)} = ?`)];
     return st(`SELECT 1 FROM ${this.map.table(resource).name} WHERE ${where.join(" AND ")}`,
       ...(resource.decorators.tenant ? [tenant] : []),
       ...fields.map(f => this.map.toColumn(resource.fields.find(field => field.name === f)!, values[f])));
@@ -427,7 +428,7 @@ export class D1Storage implements StorageAdapter {
     }
     for (const d of plan.dependents) {
       const dt = this.map.table(d.resource);
-      const col = this.map.column(d.resource, d.field).name;
+      const col = identifier(this.map.column(d.resource, d.field).name);
       const live = d.resource.decorators.softDelete ? " AND deleted_at IS NULL" : "";
       const tenantSql = d.resource.decorators.tenant ? "tenant = ? AND " : "";
       preds.push(`NOT EXISTS (SELECT 1 FROM ${dt.name} WHERE ${tenantSql}${col} = ?${live})`);

@@ -1,0 +1,16 @@
+import access-governance
+resource WorkforceAccess @tenant @appendOnly {
+ id : id
+ grant : access-governance.AccessGrant @unique
+ position : text length 1..128
+}
+resource TenantAccess @tenant @appendOnly {
+ id : id
+ grant : access-governance.AccessGrant @unique
+ tenantKey : text length 1..128
+}
+resource ServiceAccountAccess @tenant @appendOnly {
+ id : id
+ grant : access-governance.AccessGrant @unique
+ workload : text length 1..128
+}

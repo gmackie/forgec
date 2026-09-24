@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "cec36f118d85ed5c6c51e178d24673c82e328c5ae3895e90b7ec56cd5981daf3",
+  "buildHash": "3ad781c17bdee69c8acb46de6a854fde49812dc1a464574b631a37ca9d830894",
   "digests": {
-    "source": "1ad1acd8731a76675fc46493a85e8b6d4102af3e333865bf1c18768a7f3ad6c5",
-    "wire": "2c6e957662f948c3be07b157af5fadfd0f7fac11b6cf322e5272b3cb93e3ef1a",
+    "source": "956d5c2928b2b32a8d73f1221bcd69e94ad5e0ba891e3f7b89d425a87d5d67b2",
+    "wire": "3b211a658f62f10166980c5f57406c17171d7f30a6a169e6aa6d7fc24d1ff88c",
     "docs": "42cb62e3557ee1e9ee463e9e0bf3d27865a73f53bd9a4bce4ddba5d4af5800c3",
-    "security": "0c79fc01525570f3871767c0eecdab6441ef40f01c7acd844f9243911939882f"
+    "security": "a0b90e6b4da6248e115989b150202f6b73ffd5a734cb607cf99d8eb7f259292a"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -89,6 +89,21 @@
                 "immutable": true,
                 "serverOwned": false,
                 "synthesized": false
+              },
+              {
+                "name": "grant",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@fixture/sql-identifiers/_/To"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
               }
             ],
             "uniques": [
@@ -97,6 +112,13 @@
                 "fields": [
                   "from",
                   "to"
+                ],
+                "within": []
+              },
+              {
+                "name": "grant",
+                "fields": [
+                  "grant"
                 ],
                 "within": []
               }
@@ -109,12 +131,31 @@
                   "to"
                 ],
                 "coveredBy": "from_to"
+              },
+              {
+                "name": "byGrant",
+                "fields": [
+                  "grant"
+                ],
+                "coveredBy": "grant"
               }
             ],
             "lists": [
               {
                 "name": "all",
                 "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "name": "byGrant",
+                "fields": [
+                  "grant"
+                ],
                 "order": [
                   {
                     "field": "id",
@@ -139,9 +180,19 @@
                 "query": "byFromTo"
               },
               {
+                "id": "@fixture/sql-identifiers/_/StageTransition.find.byGrant",
+                "kind": "find",
+                "query": "byGrant"
+              },
+              {
                 "id": "@fixture/sql-identifiers/_/StageTransition.list.all",
                 "kind": "list",
                 "query": "all"
+              },
+              {
+                "id": "@fixture/sql-identifiers/_/StageTransition.list.byGrant",
+                "kind": "list",
+                "query": "byGrant"
               }
             ],
             "capabilities": [],
@@ -289,12 +340,17 @@
             "to": {
               "type": "string",
               "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "grant": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
             }
           },
           "required": [
             "id",
             "from",
-            "to"
+            "to",
+            "grant"
           ],
           "additionalProperties": false
         },
@@ -308,11 +364,16 @@
             "to": {
               "type": "string",
               "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "grant": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
             }
           },
           "required": [
             "from",
-            "to"
+            "to",
+            "grant"
           ],
           "additionalProperties": false
         },
@@ -333,9 +394,30 @@
             "order": []
           },
           {
+            "name": "byGrant",
+            "kind": "find",
+            "params": [
+              "grant"
+            ],
+            "order": []
+          },
+          {
             "name": "all",
             "kind": "list",
             "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          },
+          {
+            "name": "byGrant",
+            "kind": "list",
+            "params": [
+              "grant"
+            ],
             "order": [
               {
                 "field": "id",
@@ -359,9 +441,19 @@
             "query": "byFromTo"
           },
           {
+            "id": "@fixture/sql-identifiers/_/StageTransition.find.byGrant",
+            "kind": "find",
+            "query": "byGrant"
+          },
+          {
             "id": "@fixture/sql-identifiers/_/StageTransition.list.all",
             "kind": "list",
             "query": "all"
+          },
+          {
+            "id": "@fixture/sql-identifiers/_/StageTransition.list.byGrant",
+            "kind": "list",
+            "query": "byGrant"
           }
         ]
       },
@@ -488,6 +580,13 @@
             "nullable": false,
             "field": "to",
             "storage": "text"
+          },
+          {
+            "name": "grant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "grant",
+            "storage": "text"
           }
         ],
         "primaryKey": [
@@ -510,6 +609,17 @@
             "columns": [
               "tenant",
               "to_"
+            ],
+            "references": "to_",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "grant"
             ],
             "references": "to_",
             "referencedColumns": [
@@ -564,6 +674,27 @@
         ],
         "unique": true,
         "constraint": "from_to"
+      },
+      {
+        "name": "stage_transition_uq_grant",
+        "table": "stage_transition",
+        "columns": [
+          "tenant",
+          "grant"
+        ],
+        "unique": true,
+        "constraint": "grant"
+      },
+      {
+        "name": "stage_transition_ix_by_grant",
+        "table": "stage_transition",
+        "columns": [
+          "tenant",
+          "grant",
+          "id"
+        ],
+        "unique": false,
+        "query": "byGrant"
       },
       {
         "name": "to__uq_key",
@@ -912,6 +1043,12 @@
               "from",
               "to"
             ]
+          },
+          {
+            "name": "grant",
+            "keyFields": [
+              "grant"
+            ]
           }
         ],
         "access": [
@@ -928,6 +1065,23 @@
             "projection": [
               "id"
             ]
+          },
+          {
+            "name": "byGrant",
+            "kind": "list",
+            "partitionFields": [
+              "grant"
+            ],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "grant"
+            ]
           }
         ],
         "references": [
@@ -938,9 +1092,13 @@
           {
             "field": "to",
             "target": "@fixture/sql-identifiers/_/To"
+          },
+          {
+            "field": "grant",
+            "target": "@fixture/sql-identifiers/_/To"
           }
         ],
-        "createActions": 7
+        "createActions": 10
       },
       {
         "id": "@fixture/sql-identifiers/_/To",
@@ -1029,12 +1187,29 @@
               "lookup": "@fixture/sql-identifiers/_/To.list.all",
               "lookupParams": []
             }
+          },
+          {
+            "name": "grant",
+            "label": "Grant",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@fixture/sql-identifiers/_/To",
+              "route": "to",
+              "titleField": "id",
+              "lookup": "@fixture/sql-identifiers/_/To.list.all",
+              "lookupParams": []
+            }
           }
         ],
         "tableColumns": [
           "id",
           "from",
-          "to"
+          "to",
+          "grant"
         ],
         "lists": [
           {
@@ -1042,6 +1217,14 @@
             "op": "@fixture/sql-identifiers/_/StageTransition.list.all",
             "params": [],
             "label": "All"
+          },
+          {
+            "name": "byGrant",
+            "op": "@fixture/sql-identifiers/_/StageTransition.list.byGrant",
+            "params": [
+              "grant"
+            ],
+            "label": "By Grant"
           }
         ],
         "finds": [
@@ -1051,6 +1234,13 @@
             "params": [
               "from",
               "to"
+            ]
+          },
+          {
+            "name": "byGrant",
+            "op": "@fixture/sql-identifiers/_/StageTransition.find.byGrant",
+            "params": [
+              "grant"
             ]
           }
         ],
@@ -1242,7 +1432,59 @@
         "businessErrors": []
       },
       {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.find.byGrant",
+        "kind": "find",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
         "operation": "@fixture/sql-identifiers/_/StageTransition.list.all",
+        "kind": "list",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.list.byGrant",
         "kind": "list",
         "resource": "@fixture/sql-identifiers/_/StageTransition",
         "class": "crud-read",
@@ -1403,6 +1645,23 @@
         "completeness": "structural"
       },
       {
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "field": "grant",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
         "resource": "@fixture/sql-identifiers/_/To",
         "field": "id",
         "class": "data.structural",
@@ -1439,7 +1698,7 @@
     ],
     "subjects": [],
     "summary": {
-      "structural": 4,
+      "structural": 5,
       "unclassified": 1
     }
   },
@@ -1453,11 +1712,13 @@
         "outputs": [
           "id",
           "from",
-          "to"
+          "to",
+          "grant"
         ],
         "writes": [
           "from",
-          "to"
+          "to",
+          "grant"
         ],
         "filters": [],
         "orders": [],
@@ -1473,7 +1734,8 @@
         "outputs": [
           "id",
           "from",
-          "to"
+          "to",
+          "grant"
         ],
         "writes": [],
         "filters": [
@@ -1492,12 +1754,33 @@
         "outputs": [
           "id",
           "from",
-          "to"
+          "to",
+          "grant"
         ],
         "writes": [],
         "filters": [
           "from",
           "to"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.find.byGrant",
+        "kind": "find",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "outputs": [
+          "id",
+          "from",
+          "to",
+          "grant"
+        ],
+        "writes": [],
+        "filters": [
+          "grant"
         ],
         "orders": [],
         "groups": [],
@@ -1512,10 +1795,33 @@
         "outputs": [
           "id",
           "from",
-          "to"
+          "to",
+          "grant"
         ],
         "writes": [],
         "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/sql-identifiers/_/StageTransition.list.byGrant",
+        "kind": "list",
+        "resource": "@fixture/sql-identifiers/_/StageTransition",
+        "outputs": [
+          "id",
+          "from",
+          "to",
+          "grant"
+        ],
+        "writes": [],
+        "filters": [
+          "grant"
+        ],
         "orders": [
           "id"
         ],
@@ -1663,13 +1969,18 @@
             "to": {
               "type": "string",
               "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "grant": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
             }
           },
           "additionalProperties": false,
           "required": [
             "id",
             "from",
-            "to"
+            "to",
+            "grant"
           ]
         },
         "StageTransitionCreate": {
@@ -1682,12 +1993,17 @@
             "to": {
               "type": "string",
               "x-forge-reference": "@fixture/sql-identifiers/_/To"
+            },
+            "grant": {
+              "type": "string",
+              "x-forge-reference": "@fixture/sql-identifiers/_/To"
             }
           },
           "additionalProperties": false,
           "required": [
             "from",
-            "to"
+            "to",
+            "grant"
           ]
         },
         "StageTransitionPatch": {

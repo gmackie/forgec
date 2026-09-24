@@ -1,0 +1,119 @@
+import delegation
+import entitlement
+import participation
+import qualification
+import decision
+import evidence
+import attestation
+import specification
+export resource AccessIdentity @tenant @appendOnly {
+ id : id
+ subject : delegation.DelegationSubject @unique
+ qualificationSubject : qualification.QualificationSubject @unique
+ attestationSubject : attestation.AttestationSubject @unique
+}
+export resource AccessRequest @tenant @timestamps @appendOnly {
+ id : id
+ identity : AccessIdentity
+ subject : delegation.DelegationSubject
+ root : entitlement.Entitlement
+ holder : delegation.DelegationPartySubject?
+ delegation : delegation.Delegation?
+ membership : participation.Participation?
+ qualification : qualification.QualificationRequirement?
+ policy : specification.SpecificationPin
+ decisionCase : decision.DecisionCase @unique
+ approvedOption : decision.DecisionOption
+ validFrom : datetime
+ validUntil : datetime
+ reviewDue : datetime
+ source : text length 1..1000
+ support : evidence.EvidenceSeal
+ rules {
+ identity.subject == subject
+ approvedOption.decisionCase == decisionCase
+ validFrom < validUntil
+ reviewDue > validFrom
+ reviewDue <= validUntil
+ validFrom >= root.validFrom
+ root.validUntil == null || validUntil <= root.validUntil
+ (delegation == null && holder != null && holder.subject == subject && holder.party == root.holder) || (delegation != null && holder == null && delegation.delegate == subject && delegation.root == root && validFrom >= delegation.validFrom && validUntil <= delegation.validUntil)
+ membership == null || (holder != null && membership.participant == holder.party)
+ }
+}
+export resource AccessGrant @tenant @timestamps @appendOnly {
+ id : id
+ request : AccessRequest @unique
+ approval : decision.DecisionOutcome
+ rules { approval.decisionCase == request.decisionCase
+ approval.selected == request.approvedOption }
+}
+export enum AccessReviewKind { periodic
+ adHoc }
+export resource AccessReview @tenant @timestamps @appendOnly {
+ id : id
+ grant : AccessGrant
+ kind : AccessReviewKind
+ reviewer : participation.Participation
+ certifier : attestation.AttestationPartySubject
+ decisionCase : decision.DecisionCase @unique
+ continueOption : decision.DecisionOption
+ modifyOption : decision.DecisionOption
+ revokeOption : decision.DecisionOption
+ findingCount : integer >= 0 <= 16
+ reason : text length 1..1000
+ rules {
+ certifier.party == reviewer.participant
+ continueOption.decisionCase == decisionCase
+ modifyOption.decisionCase == decisionCase
+ revokeOption.decisionCase == decisionCase
+ continueOption != modifyOption && continueOption != revokeOption && modifyOption != revokeOption
+ }
+}
+export resource AccessReviewFinding @tenant @appendOnly {
+ id : id
+ review : AccessReview
+ ordinal : integer >= 1 <= 16
+ conflictingGrant : AccessGrant
+ support : evidence.EvidenceSeal
+ reason : text length 1..1000
+ rules { ordinal <= review.findingCount
+ conflictingGrant != review.grant }
+ unique review, ordinal
+ find by review, ordinal
+}
+export enum AccessReviewOutcome { continued
+ modified
+ revoked }
+export resource AccessReviewCompletion @tenant @timestamps @appendOnly {
+ id : id
+ grant : AccessGrant
+ ordinal : integer >= 1 <= 64
+ previous : AccessReviewCompletion?
+ review : AccessReview @unique
+ outcome : AccessReviewOutcome
+ approval : decision.DecisionOutcome
+ certification : attestation.Attestation
+ nextReviewAt : datetime
+ acceptsConflicts : boolean
+ replacement : AccessGrant?
+ reason : text length 1..1000
+ rules {
+ review.grant == grant
+ approval.decisionCase == review.decisionCase
+ (outcome == AccessReviewOutcome.continued && approval.selected == review.continueOption && replacement == null) || (outcome == AccessReviewOutcome.modified && approval.selected == review.modifyOption && replacement != null && replacement != grant) || (outcome == AccessReviewOutcome.revoked && approval.selected == review.revokeOption && replacement == null)
+ (previous == null && ordinal == 1) || (previous != null && previous.grant == grant && previous.outcome == AccessReviewOutcome.continued && ordinal == previous.ordinal + 1)
+ nextReviewAt > createdAt
+ review.findingCount == 0 || outcome != AccessReviewOutcome.continued || acceptsConflicts
+ }
+ unique grant, ordinal
+ find by grant, ordinal
+}
+export resource AccessGrantEnd @tenant @timestamps @appendOnly {
+ id : id
+ grant : AccessGrant @unique
+ replacement : AccessGrant?
+ effectiveAt : datetime
+ reason : text length 1..1000
+ find by grant
+}

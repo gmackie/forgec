@@ -77,13 +77,18 @@
           "to": {
             "type": "string",
             "x-forge-reference": "@fixture/sql-identifiers/_/To"
+          },
+          "grant": {
+            "type": "string",
+            "x-forge-reference": "@fixture/sql-identifiers/_/To"
           }
         },
         "additionalProperties": false,
         "required": [
           "id",
           "from",
-          "to"
+          "to",
+          "grant"
         ]
       },
       "StageTransitionCreate": {
@@ -96,12 +101,17 @@
           "to": {
             "type": "string",
             "x-forge-reference": "@fixture/sql-identifiers/_/To"
+          },
+          "grant": {
+            "type": "string",
+            "x-forge-reference": "@fixture/sql-identifiers/_/To"
           }
         },
         "additionalProperties": false,
         "required": [
           "from",
-          "to"
+          "to",
+          "grant"
         ]
       },
       "StageTransitionPatch": {
