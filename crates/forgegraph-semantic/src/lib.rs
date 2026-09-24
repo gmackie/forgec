@@ -5,6 +5,7 @@ pub mod assembly;
 pub mod capability;
 pub mod compiler;
 pub mod concept;
+pub mod concept_archetypes;
 pub mod concept_governance;
 mod concept_interactions;
 pub mod concept_realization;

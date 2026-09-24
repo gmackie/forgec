@@ -351,12 +351,12 @@ fn main() -> Result<()> {
                 }
                 ConceptCmd::Inspect { path } => {
                     let concept = load_concept(&path)?;
-                    serde_json::json!({"conceptHash":concept.content_hash(), "graph":concept.graph(), "invariantProducers":concept.invariant_producers()})
+                    serde_json::json!({"conceptHash":concept.content_hash(), "graph":concept.graph(), "invariantProducers":concept.invariant_producers(), "archetypes":concept.elaborate_archetypes().map_err(|errors| anyhow!(serde_json::to_string(&errors).unwrap()))?})
                 }
                 ConceptCmd::Diff { old, new } => {
                     let old = load_concept(&old)?;
                     let new = load_concept(&new)?;
-                    serde_json::json!({"before":old.content_hash(), "after":new.content_hash(), "changes":old.semantic_changes(&new)})
+                    serde_json::json!({"before":old.content_hash(), "after":new.content_hash(), "changes":old.semantic_changes(&new), "archetypeChanges":old.archetype_changes(&new)})
                 }
             };
             println!("{}", serde_json::to_string_pretty(&value)?);

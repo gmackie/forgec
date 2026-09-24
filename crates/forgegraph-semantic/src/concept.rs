@@ -10,6 +10,11 @@ pub const CONCEPT_IR_VERSION: &str = "concept-ir/2";
 pub struct ConceptIR {
     #[serde(
         default,
+        skip_serializing_if = "crate::concept_archetypes::Archetypes::is_empty"
+    )]
+    pub archetypes: crate::concept_archetypes::Archetypes,
+    #[serde(
+        default,
         skip_serializing_if = "crate::concept_registry::Registry::is_empty"
     )]
     pub registry: crate::concept_registry::Registry,
@@ -346,6 +351,11 @@ fn type_id(ty: &ConceptType) -> Option<&str> {
 }
 impl ConceptIR {
     pub fn graph(&self) -> Graph {
+        if !self.archetypes.is_empty()
+            && let Ok(expanded) = self.elaborate_archetypes()
+        {
+            return expanded.concept.graph();
+        }
         let mut graph = Graph {
             nodes: BTreeMap::new(),
             edges: BTreeSet::new(),
@@ -486,6 +496,7 @@ impl ConceptIR {
     pub fn validate(&self) -> Vec<Violation> {
         let mut errors = self.validate_business_semantics();
         errors.extend(self.validate_registry());
+        errors.extend(self.validate_archetypes());
         let mut producers: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
         for (id, process) in &self.processes {
             let mut missing = |subject: &str, family: &str, target: &str| {
@@ -898,6 +909,7 @@ fn process(
 pub fn project(ir: &DomainIR) -> Projection {
     let mut out = Projection {
         concept: ConceptIR {
+            archetypes: Default::default(),
             semantics: Default::default(),
             registry: Default::default(),
             version: CONCEPT_IR_VERSION.into(),
