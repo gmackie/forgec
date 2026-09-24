@@ -12,6 +12,12 @@ import { Decisions } from "./decision.js";
 import { Evidence } from "./evidence.js";
 const p="@forgegraph/foundation/quotation-pricing/_/",a="@forgegraph/foundation/agreement-catalog/_/",sp="@forgegraph/foundation/specification/_/",ep="@forgegraph/foundation/evaluation/_/",lp="@forgegraph/foundation/ledger/_/";
 const bad=(detail:string)=>Effect.fail(err("ValidationFailed",detail));
+/** Shared fixed-rate arithmetic for quoting and billing. No implicit rounding or FX. */
+export function exactRateAmount(quantity: string, unitPrice: string): bigint {
+ const q=toMinor(quantity,6),price=toMinor(unitPrice,6),product=q*price;
+ if(q<=0n||price<0n||product%1000000n!==0n)throw err("ValidationFailed","Rate multiplication requires exact six-decimal result");
+ return product/1000000n;
+}
 export interface QuoteInput {key:string;offer:string;buyer:string;terms:string;pricedAt:string;expiresAt:string;lines:readonly {rate:string;quantity:string;adjustment?:string}[];evaluation?:string;previous?:string}
 export type QuoteAgreementInput=Omit<AcceptAgreement,"acceptanceKey"|"offer"|"customer"|"expectedTerms"|"predecessor"|"change">;
 /** Six-decimal exact fixed rates plus signed fixed adjustments. No floating point,
@@ -30,7 +36,7 @@ export class Quotations{
   const lines:Wire[]=[],seen=new Set<string>(),totals=new Map<string,bigint>();let id=String(quote.head);
   while(id){if(lines.length>=128||seen.has(id))return yield* bad("Quote requires bounded acyclic lines");seen.add(id);const line=yield* self.call("QuoteLine.get",{id},ctx),rate=yield* self.call("PricingRate.get",{id:line.rate},ctx),account=yield* self.engine.call(lp+"Account.get",{id:rate.account},ctx);yield* self.engine.call(sp+"SpecificationPin.get",{id:rate.definition},ctx);
    if(String(quote.pricedAt)<String(rate.validFrom)||String(quote.pricedAt)>=String(rate.validUntil))return yield* bad("Rate outside its half-open effective interval");
-   const quantity=toMinor(String(line.quantity),6),unitPrice=toMinor(String(rate.unitPrice),6),product=quantity*unitPrice;if(quantity<=0n||unitPrice<0n||product%1000000n!==0n)return yield* bad("Rate multiplication requires exact six-decimal result");let amount=product/1000000n;
+   let amount=yield* Effect.try({try:()=>exactRateAmount(String(line.quantity),String(rate.unitPrice)),catch:()=>err("ValidationFailed","Rate multiplication requires exact six-decimal result")});
    if(line.adjustment!=null){const adjustment=yield* self.call("PriceAdjustment.get",{id:line.adjustment},ctx),value=yield* self.engine.call(lp+"Account.get",{id:adjustment.account},ctx);yield* self.engine.call(sp+"SpecificationPin.get",{id:adjustment.definition},ctx);if(value.unit!==account.unit)return yield* bad("Adjustment unit differs from rate");amount+=toMinor(String(adjustment.amount),6);}
    if(amount<0n)return yield* bad("Adjusted quote line cannot be negative");totals.set(String(account.unit),(totals.get(String(account.unit))??0n)+amount);lines.push({...line,unit:account.unit,amount:formatMinor(amount,6)});id=line.next==null?"":String(line.next);
   }

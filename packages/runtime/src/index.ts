@@ -90,3 +90,4 @@ export * from "./foundation/attestation.js";
 
 export * from "./foundation/party-relationship.js";
 export * from "./foundation/demand.js";
+export * from "./foundation/billing.js";

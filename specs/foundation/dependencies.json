@@ -842,6 +842,25 @@
       ],
       "wave": 6,
       "acceptanceGates": []
+    },
+    {
+      "issue": 105,
+      "slug": "billing",
+      "layer": "system",
+      "dependencies": [
+        "agreement-catalog",
+        "quotation-pricing",
+        "usage",
+        "entitlement",
+        "settlement",
+        "ledger",
+        "specification"
+      ],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 6,
+      "acceptanceGates": []
     }
   ],
   "gateOwnership": {

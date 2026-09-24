@@ -1,0 +1,16 @@
+[package]
+name = "@fixture/billing-consumer"
+version = "0.1.0"
+edition = "2027"
+[dependencies.billing]
+path = "../.."
+deploy = true
+[dependencies.specification]
+path = "../../../specification"
+deploy = true
+[dependencies.fulfillment]
+path = "../../../fulfillment"
+deploy = true
+[dependencies.agreement]
+path = "../../../agreement-catalog"
+deploy = true
