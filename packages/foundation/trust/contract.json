@@ -1,0 +1,85 @@
+{
+  "slug": "trust",
+  "layer": "system",
+  "issue": 107,
+  "dependencies": [
+    "party",
+    "specification",
+    "evaluation",
+    "evidence",
+    "risk"
+  ],
+  "facts": [
+    "TrustSubject, TrustDimension and SignalKind",
+    "TrustSignal and correction/dispute lifecycle",
+    "TrustReview and TrustAssessment",
+    "RiskTrustInput"
+  ],
+  "operations": [
+    "Trust.open/review/assess/inspect/signal/linkRisk"
+  ],
+  "invariants": [
+    "No global trust score",
+    "Exact method and input set precede evaluation",
+    "Corrections never rewrite or silently replace historical inputs",
+    "Hidden terminal facts fail closed"
+  ],
+  "acceptance": [
+    {
+      "id": "F107-signals",
+      "description": "Typed contextual signals with issuer and sealed evidence",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-trust.test.ts"
+      ]
+    },
+    {
+      "id": "F107-assessment",
+      "description": "Pinned method and explainable immutable input aggregation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-trust.test.ts"
+      ]
+    },
+    {
+      "id": "F107-correction",
+      "description": "Corrections/disputes preserve history and affect usability",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-trust.test.ts"
+      ]
+    },
+    {
+      "id": "F107-risk",
+      "description": "Risk consumes trust while authorization remains separate",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-trust.test.ts"
+      ]
+    },
+    {
+      "id": "F107-fixtures",
+      "description": "Vendor, marketplace and agent/device fixtures",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-trust.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "VendorDeliverySignal",
+    "MarketplaceResolutionSignal",
+    "AgentRunSignal",
+    "DeviceSubject"
+  ]
+}
