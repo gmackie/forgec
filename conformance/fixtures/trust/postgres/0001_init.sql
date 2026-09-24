@@ -399,7 +399,7 @@ CREATE TABLE trust_subject (
   PRIMARY KEY ("tenant", "id")
 );
 
-CREATE TABLE party_subject (
+CREATE TABLE trust_party_subject (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
   "subject" TEXT COLLATE "C" NOT NULL,
@@ -925,13 +925,13 @@ CREATE UNIQUE INDEX repository_uq_key ON repository ("tenant", "key_");
 CREATE UNIQUE INDEX specification_pin_uq_repository_anchor_revision ON specification_pin ("tenant", "repository", "anchor", "revision");
 CREATE INDEX specification_pin_ix_by_repository_anchor ON specification_pin ("tenant", "repository", "anchor", "id");
 CREATE UNIQUE INDEX dispute_resolution_uq_dispute ON dispute_resolution ("tenant", "dispute");
-CREATE UNIQUE INDEX party_subject_uq_party ON party_subject ("tenant", "party");
-CREATE UNIQUE INDEX party_subject_uq_subject ON party_subject ("tenant", "subject");
 CREATE UNIQUE INDEX risk_trust_input_uq_assessment_trust ON risk_trust_input ("tenant", "assessment", "trust");
 CREATE UNIQUE INDEX signal_correction_uq_signal ON signal_correction ("tenant", "signal");
 CREATE UNIQUE INDEX signal_dispute_uq_signal ON signal_dispute ("tenant", "signal");
 CREATE UNIQUE INDEX signal_kind_uq_dimension_key ON signal_kind ("tenant", "dimension", "key_");
 CREATE UNIQUE INDEX trust_assessment_uq_review ON trust_assessment ("tenant", "review");
 CREATE UNIQUE INDEX trust_dimension_uq_key_context_method ON trust_dimension ("tenant", "key_", "context", "method");
+CREATE UNIQUE INDEX trust_party_subject_uq_party ON trust_party_subject ("tenant", "party");
+CREATE UNIQUE INDEX trust_party_subject_uq_subject ON trust_party_subject ("tenant", "subject");
 CREATE UNIQUE INDEX trust_review_uq_evaluations ON trust_review ("tenant", "evaluations");
 CREATE UNIQUE INDEX trust_signal_uq_issuer_sourceRecord ON trust_signal ("tenant", "issuer", "source_record");

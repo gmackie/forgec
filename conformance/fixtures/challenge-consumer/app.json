@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "6e19642ea4265346307afcf7a680880111eee8cf3e2ed79243fa4911f786b1d8",
+  "buildHash": "ca6fdca0c6b2209ff7f690fdd094694345943ad1d480d6a3d4c2f88aa611d2c2",
   "digests": {
-    "source": "5a8d46b670ed558ee84c122d90c1b6ed7e92546544c2c8d25eafb7a020e7ff99",
-    "wire": "4b9c61fd0d9cb96b892cbc751d96e117f09124a9b6bdb2c3834ff6100a4347e8",
+    "source": "bf5a01af46a953f8713f58f76443b291cd3f0f86bed2d2e53f47a7e81de40609",
+    "wire": "2e6985b31fcf15da6e652d78a94302bf758ce3fbc3e7da8ec9970f55fff79f22",
     "docs": "b90a6deda1b4bcc0ed3e60d942420622a8453bd10ed4e22d630dc1e2ad159dde",
-    "security": "7e47729c5dd1b55810d51dc20cb8ef55f61ff1777debdeab7b2469966a44a279"
+    "security": "fd4cc5147ae0b84900a9ea0b2db1c6b8ec1989d7b18006f6ec1e8964b9201c91"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -14409,117 +14409,6 @@
             "purposeBindings": []
           },
           {
-            "id": "@forgegraph/foundation/trust/_/PartySubject",
-            "name": "PartySubject",
-            "kind": "resource",
-            "exported": true,
-            "decorators": {
-              "appendOnly": true,
-              "tenant": true,
-              "timestamps": false,
-              "softDelete": false,
-              "versioned": false,
-              "audited": false,
-              "hierarchical": false,
-              "purposeScoped": false
-            },
-            "fields": [
-              {
-                "name": "id",
-                "type": {
-                  "base": {
-                    "kind": "scalar",
-                    "name": "id",
-                    "args": []
-                  },
-                  "optional": false,
-                  "normalizers": [],
-                  "constraints": []
-                },
-                "immutable": true,
-                "serverOwned": true,
-                "synthesized": false
-              },
-              {
-                "name": "subject",
-                "type": {
-                  "base": {
-                    "kind": "reference",
-                    "resource": "@forgegraph/foundation/trust/_/TrustSubject"
-                  },
-                  "optional": false,
-                  "normalizers": [],
-                  "constraints": []
-                },
-                "immutable": true,
-                "serverOwned": false,
-                "synthesized": false
-              },
-              {
-                "name": "party",
-                "type": {
-                  "base": {
-                    "kind": "reference",
-                    "resource": "@forgegraph/foundation/party/_/Party"
-                  },
-                  "optional": false,
-                  "normalizers": [],
-                  "constraints": []
-                },
-                "immutable": true,
-                "serverOwned": false,
-                "synthesized": false
-              }
-            ],
-            "uniques": [
-              {
-                "name": "party",
-                "fields": [
-                  "party"
-                ],
-                "within": []
-              },
-              {
-                "name": "subject",
-                "fields": [
-                  "subject"
-                ],
-                "within": []
-              }
-            ],
-            "finds": [],
-            "lists": [
-              {
-                "name": "all",
-                "fields": [],
-                "order": [
-                  {
-                    "field": "id",
-                    "direction": "asc"
-                  }
-                ]
-              }
-            ],
-            "rules": [],
-            "operations": [
-              {
-                "id": "@forgegraph/foundation/trust/_/PartySubject.create",
-                "kind": "create"
-              },
-              {
-                "id": "@forgegraph/foundation/trust/_/PartySubject.get",
-                "kind": "get"
-              },
-              {
-                "id": "@forgegraph/foundation/trust/_/PartySubject.list.all",
-                "kind": "list",
-                "query": "all"
-              }
-            ],
-            "capabilities": [],
-            "purposeBindings": []
-          },
-          {
             "id": "@forgegraph/foundation/trust/_/RiskTrustInput",
             "name": "RiskTrustInput",
             "kind": "resource",
@@ -16149,6 +16038,117 @@
               },
               {
                 "id": "@forgegraph/foundation/trust/_/TrustDimension.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@forgegraph/foundation/trust/_/TrustPartySubject",
+            "name": "TrustPartySubject",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "appendOnly": true,
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": false,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "subject",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/trust/_/TrustSubject"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "party",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@forgegraph/foundation/party/_/Party"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              }
+            ],
+            "uniques": [
+              {
+                "name": "party",
+                "fields": [
+                  "party"
+                ],
+                "within": []
+              },
+              {
+                "name": "subject",
+                "fields": [
+                  "subject"
+                ],
+                "within": []
+              }
+            ],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@forgegraph/foundation/trust/_/TrustPartySubject.create",
+                "kind": "create"
+              },
+              {
+                "id": "@forgegraph/foundation/trust/_/TrustPartySubject.get",
+                "kind": "get"
+              },
+              {
+                "id": "@forgegraph/foundation/trust/_/TrustPartySubject.list.all",
                 "kind": "list",
                 "query": "all"
               }
@@ -25417,92 +25417,6 @@
         ]
       },
       {
-        "id": "@forgegraph/foundation/trust/_/PartySubject",
-        "name": "PartySubject",
-        "wireName": "party_subject",
-        "tenantScoped": true,
-        "softDelete": false,
-        "versioned": false,
-        "record": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "x-forge-type": "id",
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_-]+$",
-              "readOnly": true
-            },
-            "subject": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
-            },
-            "party": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
-            }
-          },
-          "required": [
-            "id",
-            "subject",
-            "party"
-          ],
-          "additionalProperties": false
-        },
-        "create": {
-          "type": "object",
-          "properties": {
-            "subject": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
-            },
-            "party": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
-            }
-          },
-          "required": [
-            "subject",
-            "party"
-          ],
-          "additionalProperties": false
-        },
-        "patch": {
-          "type": "object",
-          "properties": {},
-          "required": [],
-          "additionalProperties": false
-        },
-        "queries": [
-          {
-            "name": "all",
-            "kind": "list",
-            "params": [],
-            "order": [
-              {
-                "field": "id",
-                "direction": "asc"
-              }
-            ]
-          }
-        ],
-        "operations": [
-          {
-            "id": "@forgegraph/foundation/trust/_/PartySubject.create",
-            "kind": "create"
-          },
-          {
-            "id": "@forgegraph/foundation/trust/_/PartySubject.get",
-            "kind": "get"
-          },
-          {
-            "id": "@forgegraph/foundation/trust/_/PartySubject.list.all",
-            "kind": "list",
-            "query": "all"
-          }
-        ]
-      },
-      {
         "id": "@forgegraph/foundation/trust/_/RiskTrustInput",
         "name": "RiskTrustInput",
         "wireName": "risk_trust_input",
@@ -26456,6 +26370,92 @@
           },
           {
             "id": "@forgegraph/foundation/trust/_/TrustDimension.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "name": "TrustPartySubject",
+        "wireName": "trust_party_subject",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": false,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "subject": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
+            },
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            }
+          },
+          "required": [
+            "id",
+            "subject",
+            "party"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
+            },
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            }
+          },
+          "required": [
+            "subject",
+            "party"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@forgegraph/foundation/trust/_/TrustPartySubject.create",
+            "kind": "create"
+          },
+          {
+            "id": "@forgegraph/foundation/trust/_/TrustPartySubject.get",
+            "kind": "get"
+          },
+          {
+            "id": "@forgegraph/foundation/trust/_/TrustPartySubject.list.all",
             "kind": "list",
             "query": "all"
           }
@@ -32009,68 +32009,6 @@
         "checks": []
       },
       {
-        "name": "party_subject",
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "columns": [
-          {
-            "name": "tenant",
-            "sqlType": "TEXT",
-            "nullable": false,
-            "storage": "text"
-          },
-          {
-            "name": "id",
-            "sqlType": "TEXT",
-            "nullable": false,
-            "field": "id",
-            "storage": "text"
-          },
-          {
-            "name": "subject",
-            "sqlType": "TEXT",
-            "nullable": false,
-            "field": "subject",
-            "storage": "text"
-          },
-          {
-            "name": "party",
-            "sqlType": "TEXT",
-            "nullable": false,
-            "field": "party",
-            "storage": "text"
-          }
-        ],
-        "primaryKey": [
-          "tenant",
-          "id"
-        ],
-        "foreignKeys": [
-          {
-            "columns": [
-              "tenant",
-              "subject"
-            ],
-            "references": "trust_subject",
-            "referencedColumns": [
-              "tenant",
-              "id"
-            ]
-          },
-          {
-            "columns": [
-              "tenant",
-              "party"
-            ],
-            "references": "party",
-            "referencedColumns": [
-              "tenant",
-              "id"
-            ]
-          }
-        ],
-        "checks": []
-      },
-      {
         "name": "risk_trust_input",
         "resource": "@forgegraph/foundation/trust/_/RiskTrustInput",
         "columns": [
@@ -32711,6 +32649,68 @@
               "method"
             ],
             "references": "specification_pin",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "trust_party_subject",
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "subject",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "subject",
+            "storage": "text"
+          },
+          {
+            "name": "party",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "party",
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "subject"
+            ],
+            "references": "trust_subject",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          },
+          {
+            "columns": [
+              "tenant",
+              "party"
+            ],
+            "references": "party",
             "referencedColumns": [
               "tenant",
               "id"
@@ -33744,26 +33744,6 @@
         "constraint": "dispute"
       },
       {
-        "name": "party_subject_uq_party",
-        "table": "party_subject",
-        "columns": [
-          "tenant",
-          "party"
-        ],
-        "unique": true,
-        "constraint": "party"
-      },
-      {
-        "name": "party_subject_uq_subject",
-        "table": "party_subject",
-        "columns": [
-          "tenant",
-          "subject"
-        ],
-        "unique": true,
-        "constraint": "subject"
-      },
-      {
         "name": "risk_trust_input_uq_assessment_trust",
         "table": "risk_trust_input",
         "columns": [
@@ -33826,6 +33806,26 @@
         ],
         "unique": true,
         "constraint": "key_context_method"
+      },
+      {
+        "name": "trust_party_subject_uq_party",
+        "table": "trust_party_subject",
+        "columns": [
+          "tenant",
+          "party"
+        ],
+        "unique": true,
+        "constraint": "party"
+      },
+      {
+        "name": "trust_party_subject_uq_subject",
+        "table": "trust_party_subject",
+        "columns": [
+          "tenant",
+          "subject"
+        ],
+        "unique": true,
+        "constraint": "subject"
       },
       {
         "name": "trust_review_uq_evaluations",
@@ -36957,53 +36957,6 @@
         "createActions": 7
       },
       {
-        "id": "@forgegraph/foundation/trust/_/PartySubject",
-        "name": "PartySubject",
-        "wireName": "party_subject",
-        "tenantScoped": true,
-        "claims": [
-          {
-            "name": "party",
-            "keyFields": [
-              "party"
-            ]
-          },
-          {
-            "name": "subject",
-            "keyFields": [
-              "subject"
-            ]
-          }
-        ],
-        "access": [
-          {
-            "name": "all",
-            "kind": "list",
-            "partitionFields": [],
-            "sortFields": [
-              "id"
-            ],
-            "sortDirections": [
-              "asc"
-            ],
-            "projection": [
-              "id"
-            ]
-          }
-        ],
-        "references": [
-          {
-            "field": "subject",
-            "target": "@forgegraph/foundation/trust/_/TrustSubject"
-          },
-          {
-            "field": "party",
-            "target": "@forgegraph/foundation/party/_/Party"
-          }
-        ],
-        "createActions": 8
-      },
-      {
         "id": "@forgegraph/foundation/trust/_/RiskTrustInput",
         "name": "RiskTrustInput",
         "wireName": "risk_trust_input",
@@ -37298,6 +37251,53 @@
           }
         ],
         "createActions": 6
+      },
+      {
+        "id": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "name": "TrustPartySubject",
+        "wireName": "trust_party_subject",
+        "tenantScoped": true,
+        "claims": [
+          {
+            "name": "party",
+            "keyFields": [
+              "party"
+            ]
+          },
+          {
+            "name": "subject",
+            "keyFields": [
+              "subject"
+            ]
+          }
+        ],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "subject",
+            "target": "@forgegraph/foundation/trust/_/TrustSubject"
+          },
+          {
+            "field": "party",
+            "target": "@forgegraph/foundation/party/_/Party"
+          }
+        ],
+        "createActions": 8
       },
       {
         "id": "@forgegraph/foundation/trust/_/TrustReview",
@@ -44146,75 +44146,6 @@
         "versioned": false
       },
       {
-        "id": "@forgegraph/foundation/trust/_/PartySubject",
-        "name": "PartySubject",
-        "kind": "resource",
-        "label": "Party Subject",
-        "plural": "Party Subjects",
-        "route": "party-subjects",
-        "titleField": "id",
-        "fields": [
-          {
-            "name": "id",
-            "label": "Id",
-            "widget": "readonly",
-            "required": false,
-            "editableOnCreate": false,
-            "editableOnUpdate": false,
-            "sortable": true
-          },
-          {
-            "name": "subject",
-            "label": "Subject",
-            "widget": "reference",
-            "required": true,
-            "editableOnCreate": true,
-            "editableOnUpdate": false,
-            "sortable": false,
-            "reference": {
-              "resource": "@forgegraph/foundation/trust/_/TrustSubject",
-              "route": "trust-subject",
-              "titleField": "label",
-              "lookup": "@forgegraph/foundation/trust/_/TrustSubject.list.all",
-              "lookupParams": []
-            }
-          },
-          {
-            "name": "party",
-            "label": "Party",
-            "widget": "reference",
-            "required": true,
-            "editableOnCreate": true,
-            "editableOnUpdate": false,
-            "sortable": false,
-            "reference": {
-              "resource": "@forgegraph/foundation/party/_/Party",
-              "route": "party",
-              "titleField": "label",
-              "lookup": "@forgegraph/foundation/party/_/Party.list.all",
-              "lookupParams": []
-            }
-          }
-        ],
-        "tableColumns": [
-          "id",
-          "subject",
-          "party"
-        ],
-        "lists": [
-          {
-            "name": "all",
-            "op": "@forgegraph/foundation/trust/_/PartySubject.list.all",
-            "params": [],
-            "label": "All"
-          }
-        ],
-        "finds": [],
-        "actions": [],
-        "softDelete": false,
-        "versioned": false
-      },
-      {
         "id": "@forgegraph/foundation/trust/_/RiskTrustInput",
         "name": "RiskTrustInput",
         "kind": "resource",
@@ -45006,6 +44937,75 @@
           {
             "name": "all",
             "op": "@forgegraph/foundation/trust/_/TrustDimension.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": false
+      },
+      {
+        "id": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "name": "TrustPartySubject",
+        "kind": "resource",
+        "label": "Trust Party Subject",
+        "plural": "Trust Party Subjects",
+        "route": "trust-party-subjects",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "subject",
+            "label": "Subject",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/trust/_/TrustSubject",
+              "route": "trust-subject",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/trust/_/TrustSubject.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "party",
+            "label": "Party",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@forgegraph/foundation/party/_/Party",
+              "route": "party",
+              "titleField": "label",
+              "lookup": "@forgegraph/foundation/party/_/Party.list.all",
+              "lookupParams": []
+            }
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "subject",
+          "party"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@forgegraph/foundation/trust/_/TrustPartySubject.list.all",
             "params": [],
             "label": "All"
           }
@@ -51672,84 +51672,6 @@
         "businessErrors": []
       },
       {
-        "operation": "@forgegraph/foundation/trust/_/PartySubject.create",
-        "kind": "create",
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "class": "crud-write",
-        "slo": {
-          "availability": "99.9%",
-          "latencyGood": "99%",
-          "latencyWithinMs": 1000,
-          "window": "28d"
-        },
-        "histogramBoundariesMs": [
-          5,
-          10,
-          25,
-          50,
-          100,
-          250,
-          500,
-          1000,
-          2500,
-          5000,
-          10000
-        ],
-        "businessErrors": []
-      },
-      {
-        "operation": "@forgegraph/foundation/trust/_/PartySubject.get",
-        "kind": "get",
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "class": "crud-read",
-        "slo": {
-          "availability": "99.9%",
-          "latencyGood": "99%",
-          "latencyWithinMs": 500,
-          "window": "28d"
-        },
-        "histogramBoundariesMs": [
-          5,
-          10,
-          25,
-          50,
-          100,
-          250,
-          500,
-          1000,
-          2500,
-          5000,
-          10000
-        ],
-        "businessErrors": []
-      },
-      {
-        "operation": "@forgegraph/foundation/trust/_/PartySubject.list.all",
-        "kind": "list",
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "class": "crud-read",
-        "slo": {
-          "availability": "99.9%",
-          "latencyGood": "99%",
-          "latencyWithinMs": 500,
-          "window": "28d"
-        },
-        "histogramBoundariesMs": [
-          5,
-          10,
-          25,
-          50,
-          100,
-          250,
-          500,
-          1000,
-          2500,
-          5000,
-          10000
-        ],
-        "businessErrors": []
-      },
-      {
         "operation": "@forgegraph/foundation/trust/_/RiskTrustInput.create",
         "kind": "create",
         "resource": "@forgegraph/foundation/trust/_/RiskTrustInput",
@@ -52351,6 +52273,84 @@
         "operation": "@forgegraph/foundation/trust/_/TrustDimension.list.all",
         "kind": "list",
         "resource": "@forgegraph/foundation/trust/_/TrustDimension",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/trust/_/TrustPartySubject.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/trust/_/TrustPartySubject.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@forgegraph/foundation/trust/_/TrustPartySubject.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
         "class": "crud-read",
         "slo": {
           "availability": "99.9%",
@@ -58941,57 +58941,6 @@
         "completeness": "structural"
       },
       {
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "field": "id",
-        "class": "data.structural",
-        "ancestors": [
-          "data.structural",
-          "data"
-        ],
-        "kinds": [
-          "structural"
-        ],
-        "identifiability": "none",
-        "handling": "internal",
-        "personal": "no",
-        "evidence": "structural",
-        "completeness": "structural"
-      },
-      {
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "field": "subject",
-        "class": "data.structural",
-        "ancestors": [
-          "data.structural",
-          "data"
-        ],
-        "kinds": [
-          "structural"
-        ],
-        "identifiability": "none",
-        "handling": "internal",
-        "personal": "no",
-        "evidence": "structural",
-        "completeness": "structural"
-      },
-      {
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "field": "party",
-        "class": "data.structural",
-        "ancestors": [
-          "data.structural",
-          "data"
-        ],
-        "kinds": [
-          "structural"
-        ],
-        "identifiability": "none",
-        "handling": "internal",
-        "personal": "no",
-        "evidence": "structural",
-        "completeness": "structural"
-      },
-      {
         "resource": "@forgegraph/foundation/trust/_/RiskTrustInput",
         "field": "id",
         "class": "data.structural",
@@ -59793,6 +59742,57 @@
         "personal": "no",
         "evidence": "inferred-from-type",
         "completeness": "inferred"
+      },
+      {
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "field": "subject",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "field": "party",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
       },
       {
         "resource": "@forgegraph/foundation/trust/_/TrustReview",
@@ -65817,64 +65817,6 @@
         "coverage": "modeled"
       },
       {
-        "operation": "@forgegraph/foundation/trust/_/PartySubject.create",
-        "kind": "create",
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "outputs": [
-          "id",
-          "subject",
-          "party"
-        ],
-        "writes": [
-          "subject",
-          "party"
-        ],
-        "filters": [],
-        "orders": [],
-        "groups": [],
-        "externalSinks": [],
-        "publishes": [],
-        "coverage": "modeled"
-      },
-      {
-        "operation": "@forgegraph/foundation/trust/_/PartySubject.get",
-        "kind": "get",
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "outputs": [
-          "id",
-          "subject",
-          "party"
-        ],
-        "writes": [],
-        "filters": [
-          "id"
-        ],
-        "orders": [],
-        "groups": [],
-        "externalSinks": [],
-        "publishes": [],
-        "coverage": "modeled"
-      },
-      {
-        "operation": "@forgegraph/foundation/trust/_/PartySubject.list.all",
-        "kind": "list",
-        "resource": "@forgegraph/foundation/trust/_/PartySubject",
-        "outputs": [
-          "id",
-          "subject",
-          "party"
-        ],
-        "writes": [],
-        "filters": [],
-        "orders": [
-          "id"
-        ],
-        "groups": [],
-        "externalSinks": [],
-        "publishes": [],
-        "coverage": "modeled"
-      },
-      {
         "operation": "@forgegraph/foundation/trust/_/RiskTrustInput.create",
         "kind": "create",
         "resource": "@forgegraph/foundation/trust/_/RiskTrustInput",
@@ -66458,6 +66400,64 @@
           "method",
           "minimum",
           "maximum"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/trust/_/TrustPartySubject.create",
+        "kind": "create",
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "outputs": [
+          "id",
+          "subject",
+          "party"
+        ],
+        "writes": [
+          "subject",
+          "party"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/trust/_/TrustPartySubject.get",
+        "kind": "get",
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "outputs": [
+          "id",
+          "subject",
+          "party"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@forgegraph/foundation/trust/_/TrustPartySubject.list.all",
+        "kind": "list",
+        "resource": "@forgegraph/foundation/trust/_/TrustPartySubject",
+        "outputs": [
+          "id",
+          "subject",
+          "party"
         ],
         "writes": [],
         "filters": [],
@@ -72336,55 +72336,6 @@
           "properties": {},
           "additionalProperties": false
         },
-        "PartySubjectRecord": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "x-forge-type": "id",
-              "maxLength": 64,
-              "pattern": "^[A-Za-z0-9_-]+$",
-              "readOnly": true
-            },
-            "subject": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
-            },
-            "party": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "id",
-            "subject",
-            "party"
-          ]
-        },
-        "PartySubjectCreate": {
-          "type": "object",
-          "properties": {
-            "subject": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
-            },
-            "party": {
-              "type": "string",
-              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "subject",
-            "party"
-          ]
-        },
-        "PartySubjectPatch": {
-          "type": "object",
-          "properties": {},
-          "additionalProperties": false
-        },
         "RiskTrustInputRecord": {
           "type": "object",
           "properties": {
@@ -73042,6 +72993,55 @@
           ]
         },
         "TrustDimensionPatch": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "TrustPartySubjectRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "subject": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
+            },
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "subject",
+            "party"
+          ]
+        },
+        "TrustPartySubjectCreate": {
+          "type": "object",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/trust/_/TrustSubject"
+            },
+            "party": {
+              "type": "string",
+              "x-forge-reference": "@forgegraph/foundation/party/_/Party"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "subject",
+            "party"
+          ]
+        },
+        "TrustPartySubjectPatch": {
           "type": "object",
           "properties": {},
           "additionalProperties": false

@@ -1180,20 +1180,6 @@ export interface DisputeResolutionCreate {
 export interface DisputeResolutionPatch {
 }
 
-export interface PartySubjectRecord {
-  id: string;
-  subject: string;
-  party: string;
-}
-
-export interface PartySubjectCreate {
-  subject: string;
-  party: string;
-}
-
-export interface PartySubjectPatch {
-}
-
 export interface RiskTrustInputRecord {
   id: string;
   createdAt: string;
@@ -1334,6 +1320,20 @@ export interface TrustDimensionCreate {
 }
 
 export interface TrustDimensionPatch {
+}
+
+export interface TrustPartySubjectRecord {
+  id: string;
+  subject: string;
+  party: string;
+}
+
+export interface TrustPartySubjectCreate {
+  subject: string;
+  party: string;
+}
+
+export interface TrustPartySubjectPatch {
 }
 
 export interface TrustReviewRecord {
@@ -1580,9 +1580,6 @@ export interface SpecificationPinApi {
 export interface DisputeResolutionApi {
 }
 
-export interface PartySubjectApi {
-}
-
 export interface RiskTrustInputApi {
 }
 
@@ -1602,6 +1599,9 @@ export interface TrustAssessmentApi {
 }
 
 export interface TrustDimensionApi {
+}
+
+export interface TrustPartySubjectApi {
 }
 
 export interface TrustReviewApi {
@@ -1677,7 +1677,6 @@ export interface ForgeClient {
   repositorys: RepositoryApi;
   specificationPins: SpecificationPinApi;
   disputeResolutions: DisputeResolutionApi;
-  partySubjects: PartySubjectApi;
   riskTrustInputs: RiskTrustInputApi;
   signalCorrections: SignalCorrectionApi;
   signalDisputes: SignalDisputeApi;
@@ -1685,6 +1684,7 @@ export interface ForgeClient {
   signalMembers: SignalMemberApi;
   trustAssessments: TrustAssessmentApi;
   trustDimensions: TrustDimensionApi;
+  trustPartySubjects: TrustPartySubjectApi;
   trustReviews: TrustReviewApi;
   trustSignals: TrustSignalApi;
   trustSubjects: TrustSubjectApi;
@@ -1860,8 +1860,6 @@ export function createClient(options: ClientOptions): ForgeClient {
     },
     disputeResolutions: {
     },
-    partySubjects: {
-    },
     riskTrustInputs: {
     },
     signalCorrections: {
@@ -1875,6 +1873,8 @@ export function createClient(options: ClientOptions): ForgeClient {
     trustAssessments: {
     },
     trustDimensions: {
+    },
+    trustPartySubjects: {
     },
     trustReviews: {
     },

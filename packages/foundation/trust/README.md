@@ -9,3 +9,7 @@ SignalCorrection retains the original fact and names a later-recorded replacemen
 RiskTrustInput links a separate RiskAssessment to a usable contextual TrustAssessment at the risk assessment instant. Its rationale records why the assessment is relevant; this link is provenance, not proof that the evaluator executed a particular algorithm. Trust and future-harm Risk remain distinct. Authorization can consume inspected assessment facts through its own policies; a score never grants authority itself.
 
 Applications must authorize trusted publishers/evaluators and deny untrusted raw TrustReview/TrustAssessment/RiskTrustInput writes that bypass service checks. The system proves consistency and provenance of declared facts, not the honesty of observers or external algorithms. Generated row rules enforce method/set bindings, score ranges and immutable history. Tests cover memory, SQLite and PostgreSQL; live external provider certification is separate.
+
+The Party mapping is `TrustPartySubject`, prefixed so this package can co-deploy
+with Qualification's `PartySubject`. Consumers of the initial 0.1 symbol must update
+that resource name; TrustSubject identity and assessment semantics are unchanged.

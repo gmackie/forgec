@@ -1719,25 +1719,6 @@ structure DisputeResolutionCreateInput {
 structure DisputeResolutionPatchInput {
 }
 
-structure PartySubjectRecord {
-    @required
-    id: String
-    @required
-    subject: String
-    @required
-    party: String
-}
-
-structure PartySubjectCreateInput {
-    @required
-    subject: String
-    @required
-    party: String
-}
-
-structure PartySubjectPatchInput {
-}
-
 structure RiskTrustInputRecord {
     @required
     id: String
@@ -1953,6 +1934,25 @@ structure TrustDimensionCreateInput {
 }
 
 structure TrustDimensionPatchInput {
+}
+
+structure TrustPartySubjectRecord {
+    @required
+    id: String
+    @required
+    subject: String
+    @required
+    party: String
+}
+
+structure TrustPartySubjectCreateInput {
+    @required
+    subject: String
+    @required
+    party: String
+}
+
+structure TrustPartySubjectPatchInput {
 }
 
 structure TrustReviewRecord {

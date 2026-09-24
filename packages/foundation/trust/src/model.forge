@@ -7,7 +7,7 @@ export resource TrustSubject @tenant @appendOnly {
  id : id
  label : text length 1..200
 }
-export resource PartySubject @tenant @appendOnly {
+export resource TrustPartySubject @tenant @appendOnly {
  id : id
  subject : TrustSubject @unique
  party : party.Party @unique
