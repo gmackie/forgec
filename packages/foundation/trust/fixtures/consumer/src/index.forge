@@ -1,0 +1,24 @@
+import trust
+export resource VendorDeliverySignal @tenant @appendOnly {
+ id : id
+ signal : trust.TrustSignal @unique
+ orderNumber : text length 1..128
+ lateMinutes : integer >= 0
+}
+export resource MarketplaceResolutionSignal @tenant @appendOnly {
+ id : id
+ signal : trust.TrustSignal @unique
+ caseNumber : text length 1..128
+ resolved : boolean
+}
+export resource AgentRunSignal @tenant @appendOnly {
+ id : id
+ signal : trust.TrustSignal @unique
+ runKey : text length 1..128
+ verified : boolean
+}
+export resource DeviceSubject @tenant @appendOnly {
+ id : id
+ subject : trust.TrustSubject @unique
+ serial : text length 1..128 @unique
+}

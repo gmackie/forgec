@@ -1,0 +1,123 @@
+import party
+import specification
+import evaluation
+import evidence
+import risk
+export resource TrustSubject @tenant @appendOnly {
+ id : id
+ label : text length 1..200
+}
+export resource PartySubject @tenant @appendOnly {
+ id : id
+ subject : TrustSubject @unique
+ party : party.Party @unique
+}
+export resource TrustDimension @tenant @appendOnly {
+ id : id
+ key : text length 1..128
+ context : text length 1..200
+ method : specification.SpecificationPin
+ minimum : decimal<6>
+ maximum : decimal<6>
+ rules { maximum > minimum }
+ unique key, context, method
+}
+export resource SignalKind @tenant @appendOnly {
+ id : id
+ dimension : TrustDimension
+ key : text length 1..128
+ definition : specification.SpecificationPin
+ unique dimension, key
+}
+export resource TrustSignal @tenant @timestamps @appendOnly {
+ id : id
+ subject : TrustSubject
+ dimension : TrustDimension
+ kind : SignalKind
+ issuer : party.Party
+ sourceRecord : text length 1..200
+ observedAt : datetime
+ support : evidence.EvidenceSeal
+ explanation : text length 1..1000
+ rules { kind.dimension == dimension }
+ unique issuer, sourceRecord
+}
+export resource SignalCorrection @tenant @timestamps @appendOnly {
+ id : id
+ signal : TrustSignal @unique
+ replacement : TrustSignal?
+ effectiveAt : datetime
+ reason : text length 1..1000
+ support : evidence.EvidenceSeal
+ rules {
+  effectiveAt >= signal.observedAt
+  replacement == null || (replacement.subject == signal.subject && replacement.dimension == signal.dimension && replacement.createdAt > signal.createdAt)
+ }
+ find by signal
+}
+export resource SignalDispute @tenant @timestamps @appendOnly {
+ id : id
+ signal : TrustSignal @unique
+ raisedBy : party.Party
+ effectiveAt : datetime
+ reason : text length 1..1000
+ support : evidence.EvidenceSeal
+ rules { effectiveAt >= signal.observedAt }
+ find by signal
+}
+export resource DisputeResolution @tenant @timestamps @appendOnly {
+ id : id
+ dispute : SignalDispute @unique
+ upheld : boolean
+ effectiveAt : datetime
+ reason : text length 1..1000
+ support : evidence.EvidenceSeal
+ rules { effectiveAt >= dispute.effectiveAt }
+ find by dispute
+}
+/// Membership and explanation are frozen before the evaluation begins.
+export resource SignalMember @tenant @appendOnly {
+ id : id
+ signal : TrustSignal
+ rationale : text length 1..1000
+ next : SignalMember?
+ depth : integer >= 1 <= 128
+ rules { (next == null && depth == 1) || (next != null && depth == next.depth + 1) }
+}
+export resource TrustReview @tenant @timestamps @appendOnly {
+ id : id
+ subject : TrustSubject
+ dimension : TrustDimension
+ windowFrom : datetime
+ windowUntil : datetime
+ evaluations : evaluation.EvaluationSet @unique
+ head : SignalMember
+ rules { windowUntil > windowFrom }
+}
+export resource TrustAssessment @tenant @timestamps @appendOnly {
+ id : id
+ review : TrustReview @unique
+ dimension : TrustDimension
+ run : evaluation.EvaluationRun
+ finish : evaluation.EvaluationFinish
+ score : decimal<6>
+ confidence : decimal<6> >= 0 <= 1
+ explanation : text length 1..2000
+ rules {
+  dimension == review.dimension
+  run.definition == dimension.method
+  run.evaluationSet == review.evaluations
+  run.createdAt >= review.createdAt
+  finish.run == run
+  finish.outcome == "Completed"
+  score >= dimension.minimum && score <= dimension.maximum
+ }
+ find by review
+}
+export resource RiskTrustInput @tenant @timestamps @appendOnly {
+ id : id
+ assessment : risk.RiskAssessment
+ trust : TrustAssessment
+ rationale : text length 1..1000
+ unique assessment, trust
+}
