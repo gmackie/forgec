@@ -25,3 +25,6 @@ for foundation_verifier in packages/foundation/*/verification.json; do
     cargo run -q -p forgegraph-cli -- build "packages/foundation/$foundation_slug/fixtures/controller" --out "conformance/fixtures/$foundation_slug-controller"
   fi
 done
+
+# Reserved SQL table and reference names must execute on both SQL adapters.
+cargo run -q -p forgegraph-cli -- build examples/sql-identifiers --out conformance/fixtures/sql-identifiers
