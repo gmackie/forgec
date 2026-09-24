@@ -167,6 +167,26 @@ export class Model {
     this.sources = bundle.ir.modules.flatMap((m) => m.sources ?? []);
     for (const m of bundle.ir.modules) for (const e of m.enums) this.enums.set(e.id, e);
     for (const r of this.resources) {
+      const validateReferencePath = (expression: Expr): void => {
+        switch (expression.kind) {
+          case "name":
+            if (expression.path.length > 2 && r.fields.some(f => f.name === expression.path[0] && f.type.base.kind === "reference")) {
+              throw new Error(`unsupported multi-hop reference expression ${expression.path.join(".")} on ${r.id}; recompile with a direct reference`);
+            }
+            break;
+          case "binary": validateReferencePath(expression.lhs); validateReferencePath(expression.rhs); break;
+          case "unary": validateReferencePath(expression.operand); break;
+          case "call": expression.args.forEach(validateReferencePath); break;
+          case "literal": break;
+        }
+      };
+      r.rules.forEach(validateReferencePath);
+      for (const field of r.fields) if (field.derived) validateReferencePath(field.derived);
+      for (const view of this.views) if (view.source === r.id && view.where) validateReferencePath(view.where);
+      for (const projection of this.projections) if (projection.source === r.id) {
+        if (projection.where) validateReferencePath(projection.where);
+        for (const aggregate of projection.aggregates) if (aggregate.filter) validateReferencePath(aggregate.filter);
+      }
       this.byId.set(r.id, r);
       for (const op of r.operations) this.ops.set(op.id, { op, resource: r });
     }

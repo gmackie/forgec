@@ -85,3 +85,12 @@ building -> validating -> active -> retired
 
 Exactly one active generation per projection; reads report generation,
 checkpoint, and freshness.
+
+Resource expressions support at most one reference hop (`record.field`). The
+compiler reports `E-EXPR-003` for paths that dereference another stored identity
+such as `record.parent.field`. Runtime bundle loading rejects these paths in
+rules and derived fields, including bundles produced by older compilers. Bind a
+direct reference and enforce its relationship explicitly instead. Enum and
+lifecycle-state literals are not reference traversal. This restriction avoids
+interpreting unresolved IDs as null and does not imply transactional support
+for arbitrary graph traversal.

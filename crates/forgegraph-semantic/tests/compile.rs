@@ -1262,3 +1262,66 @@ fn workflow_arguments_are_type_checked_against_the_callee_contract() {
             .any(|d| d.code == "E-WF-008")
     );
 }
+
+#[test]
+fn multi_hop_reference_rules_fail_closed() {
+    for expression in [
+        "replacement.code.domain == code.domain",
+        "code.ordinal > replacement.code.ordinal",
+    ] {
+        let source = format!(
+            r#"
+resource Domain {{
+ id : id
+}}
+resource Code {{
+ id : id
+ domain : Domain
+ ordinal : integer
+}}
+resource Revision {{
+ id : id
+ code : Code
+}}
+resource Link {{
+ id : id
+ code : Code
+ replacement : Revision
+ rules {{ {expression} }}
+}}
+"#
+        );
+        let out = compile(
+            &inline("@test/reference-path", &[("src/index.forge", &source)]),
+            &[],
+        );
+        assert!(
+            out.diagnostics.iter().any(|d| d.code == "E-EXPR-003"),
+            "{:#?}",
+            out.diagnostics
+        );
+        assert!(out.ir.is_none());
+    }
+}
+
+#[test]
+fn direct_reference_rules_still_compile() {
+    let source = r#"
+resource Code {
+ id : id
+ ordinal : integer
+}
+resource Link {
+ id : id
+ code : Code
+ prior : Code
+ rules { code.ordinal > prior.ordinal }
+}
+"#;
+    let out = compile(
+        &inline("@test/direct-reference", &[("src/index.forge", source)]),
+        &[],
+    );
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    assert!(out.ir.is_some());
+}
