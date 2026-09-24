@@ -55,8 +55,18 @@ pub struct Compilation {
     /// Build-local UTF-8 spans, excluded from canonical DomainIR.
     pub source_index: BTreeMap<String, SourceSpan>,
     pub references: Vec<SourceReference>,
+    pub workflow_scopes: Vec<WorkflowScope>,
+    pub workflow_fields: BTreeMap<String, Vec<(String, TypeSpec)>>,
     pub(crate) files: Vec<SourceFile>,
     pub(crate) parsed: BTreeMap<String, Parse>,
+}
+
+/// Build-local bindings visible at a workflow source position, shared by IDE tooling.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct WorkflowScope {
+    pub span: SourceSpan,
+    pub workflow: String,
+    pub bindings: BTreeMap<String, TypeSpec>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -145,12 +155,17 @@ struct Ctx<'a> {
     resolving: Vec<String>,
     facet_origins: BTreeMap<String, String>,
     references: Vec<SourceReference>,
+    workflow_scopes: Vec<WorkflowScope>,
+    workflow_fields: BTreeMap<String, Vec<(String, TypeSpec)>>,
+    workflow_origins: BTreeMap<String, SourceSpan>,
     type_depth: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 /// Per-workflow lowering state: declared step ids, names bound so far, declared errors.
 struct WfScope {
+    workflow: String,
+    origins: BTreeMap<String, String>,
     ids: Vec<String>,
     bound: Vec<String>,
     errors: Vec<String>,
@@ -187,6 +202,9 @@ pub(crate) fn compile_with_parser(
         resolving: Vec::new(),
         facet_origins: BTreeMap::new(),
         references: Vec::new(),
+        workflow_scopes: Vec::new(),
+        workflow_fields: BTreeMap::new(),
+        workflow_origins: BTreeMap::new(),
         type_depth: 0,
     };
     for (alias, name) in &pkg.dependencies {
@@ -311,9 +329,12 @@ pub(crate) fn compile_with_parser(
         ))
     });
     ctx.references.dedup();
+    source_index.extend(ctx.workflow_origins);
     Compilation {
         source_index,
         references: ctx.references,
+        workflow_scopes: ctx.workflow_scopes,
+        workflow_fields: ctx.workflow_fields,
         parsed: ctx
             .files
             .iter()
@@ -3838,7 +3859,21 @@ impl<'a> Ctx<'a> {
                 ),
             }
         }
+        let input_anchor = format!("{id}#binding:input");
+        if let Some(input) = w.input() {
+            let (start, end) = range_of(&input);
+            self.workflow_origins.insert(
+                input_anchor.clone(),
+                SourceSpan {
+                    file: self.files[file].path.clone(),
+                    start,
+                    end,
+                },
+            );
+        }
         let mut scope = WfScope {
+            workflow: id.clone(),
+            origins: BTreeMap::from([("input".into(), input_anchor)]),
             ids: Vec::new(),
             bound: vec!["input".into()],
             errors: errors.clone(),
@@ -3872,7 +3907,29 @@ impl<'a> Ctx<'a> {
         scope: &mut WfScope,
     ) -> Vec<Step> {
         let mut out = Vec::new();
+        let mut previous_end = items
+            .first()
+            .map(|i| u32::from(i.syntax().text_range().start()) as usize)
+            .unwrap_or(0);
         for item in items {
+            for (_, ty) in &scope.types {
+                self.record_workflow_type(&ty.base, module, 0);
+            }
+            self.workflow_scopes.push(WorkflowScope {
+                span: SourceSpan {
+                    file: self.files[file].path.clone(),
+                    start: previous_end,
+                    end: u32::from(item.syntax().text_range().end()) as usize,
+                },
+                workflow: scope.workflow.clone(),
+                bindings: scope
+                    .types
+                    .iter()
+                    .filter(|(name, _)| scope.bound.contains(name))
+                    .cloned()
+                    .collect(),
+            });
+            previous_end = u32::from(item.syntax().text_range().end()) as usize;
             match item {
                 ast::StepItem::Step(s) => {
                     let Some(name_tok) = s.name() else { continue };
@@ -3915,6 +3972,36 @@ impl<'a> Ctx<'a> {
                             scope.types.push((sid.clone(), t));
                         }
                     }
+                    if let Some(Step::Wait {
+                        channel, message, ..
+                    }) = &step
+                    {
+                        scope.types.push((
+                            sid.clone(),
+                            TypeSpec {
+                                base: TypeBase::Message {
+                                    channel: channel.clone(),
+                                    message: message.clone(),
+                                },
+                                optional: false,
+                                normalizers: vec![],
+                                constraints: vec![],
+                                purpose: None,
+                                data_class: None,
+                            },
+                        ));
+                    }
+                    let anchor = format!("{}#step:{sid}", scope.workflow);
+                    let (start, end) = range_of(s);
+                    self.workflow_origins.insert(
+                        anchor.clone(),
+                        SourceSpan {
+                            file: self.files[file].path.clone(),
+                            start,
+                            end,
+                        },
+                    );
+                    scope.origins.insert(sid.clone(), anchor);
                     scope.bound.push(sid);
                     if let Some(st) = step {
                         out.push(st);
@@ -3941,8 +4028,15 @@ impl<'a> Ctx<'a> {
                     let id = first(&then_items)
                         .or_else(|| first(&else_items))
                         .unwrap_or_else(|| format!("{}", scope.ids.len()));
+                    let before = scope.clone();
                     let then = self.workflow_items(&then_items, module, file, scope);
+                    let then_ids = scope.ids.clone();
+                    *scope = before.clone();
+                    scope.ids = then_ids;
                     let otherwise = self.workflow_items(&else_items, module, file, scope);
+                    let all_ids = scope.ids.clone();
+                    *scope = before;
+                    scope.ids = all_ids;
                     out.push(Step::Choice {
                         id,
                         condition: cond,
@@ -4085,9 +4179,35 @@ impl<'a> Ctx<'a> {
                     );
                     return None;
                 }
+                if let Some(anchor) = scope.origins.get(head) {
+                    let (start, _) = range_of(n);
+                    self.references.push(SourceReference {
+                        span: SourceSpan {
+                            file: self.files[file].path.clone(),
+                            start,
+                            end: start + head.len(),
+                        },
+                        target: anchor.clone(),
+                    });
+                }
                 Expr::Name { path }
             }
         })
+    }
+
+    fn record_workflow_type(&mut self, ty: &TypeBase, module: &str, depth: usize) {
+        if depth > 8 {
+            return;
+        }
+        let key = serde_json::to_string(ty).unwrap();
+        if self.workflow_fields.contains_key(&key) {
+            return;
+        }
+        let fields = self.typed_fields_of(ty, module);
+        self.workflow_fields.insert(key, fields.clone());
+        for (_, field) in fields {
+            self.record_workflow_type(&field.base, module, depth + 1);
+        }
     }
 
     fn workflow_wait(
@@ -4227,7 +4347,8 @@ impl<'a> Ctx<'a> {
             );
             return None;
         }
-        let binding = m.binding()?.text().to_string();
+        let binding_token = m.binding()?;
+        let binding = binding_token.text().to_string();
         if scope.bound.contains(&binding) {
             self.err(
                 "E-WF-MAP-002",
@@ -4241,8 +4362,36 @@ impl<'a> Ctx<'a> {
         let value = self.workflow_expr(&source, module, file, scope)?;
         let mut child_scope = scope.clone();
         child_scope.bound.push(binding.clone());
+        self.record_workflow_type(&element.base, module, 0);
         child_scope.types.push((binding.clone(), *element));
-        let call = self.workflow_call(sid, &m.call()?, module, file, &child_scope)?;
+        let anchor = format!("{}#step:{sid}/binding:{binding}", scope.workflow);
+        let (start, end) = tok_range(&binding_token);
+        self.workflow_origins.insert(
+            anchor.clone(),
+            SourceSpan {
+                file: self.files[file].path.clone(),
+                start,
+                end,
+            },
+        );
+        child_scope.origins.insert(binding.clone(), anchor);
+        let call_ast = m.call()?;
+        let (start, end) = range_of(&call_ast);
+        self.workflow_scopes.push(WorkflowScope {
+            span: SourceSpan {
+                file: self.files[file].path.clone(),
+                start,
+                end,
+            },
+            workflow: scope.workflow.clone(),
+            bindings: child_scope
+                .types
+                .iter()
+                .filter(|(name, _)| child_scope.bound.contains(name))
+                .cloned()
+                .collect(),
+        });
+        let call = self.workflow_call(sid, &call_ast, module, file, &child_scope)?;
         if let Step::Call {
             target: CallTarget::Function { function },
             ..
@@ -4476,6 +4625,52 @@ impl<'a> Ctx<'a> {
                 .into_iter()
                 .map(|f| (f.name, f.ty))
                 .collect(),
+            TypeBase::Message { channel, message } => {
+                let prefix = format!("{}/{}/", self.pkg.name, module);
+                if let Some(name) = channel.strip_prefix(&prefix)
+                    && let Some(Symbol {
+                        decl: Declaration::Channel(c),
+                        file,
+                        ..
+                    }) = self.sym(module, name)
+                {
+                    let (c, file) = (c.clone(), *file);
+                    if let Some(m) = c
+                        .messages()
+                        .find(|m| m.name().is_some_and(|n| n.text() == message))
+                    {
+                        let saved = self.diags.len();
+                        let fields = m
+                            .fields()
+                            .filter_map(|f| self.field(&f, module, file, None, &["immutable"]))
+                            .map(|f| (f.name, f.ty))
+                            .collect();
+                        self.diags.truncate(saved);
+                        return fields;
+                    }
+                    let (contract, _) = self.channel_contract(&c, module, file);
+                    if contract != *channel {
+                        return self.typed_fields_of(
+                            &TypeBase::Message {
+                                channel: contract,
+                                message: message.clone(),
+                            },
+                            module,
+                        );
+                    }
+                }
+                self.deps
+                    .values()
+                    .find_map(|d| d.find_channel(channel))
+                    .and_then(|c| c.messages.iter().find(|m| &m.name == message))
+                    .map(|m| {
+                        m.fields
+                            .iter()
+                            .map(|f| (f.name.clone(), f.ty.clone()))
+                            .collect()
+                    })
+                    .unwrap_or_default()
+            }
             _ => vec![],
         }
     }

@@ -33,6 +33,8 @@ fn equivalent(
     assert_eq!(cached.diagnostics, clean.diagnostics);
     assert_eq!(cached.source_index, clean.source_index);
     assert_eq!(cached.references, clean.references);
+    assert_eq!(cached.workflow_scopes, clean.workflow_scopes);
+    assert_eq!(cached.workflow_fields, clean.workflow_fields);
     assert_eq!(
         cached.source_map("build", "test", None),
         clean.source_map("build", "test", None)
@@ -132,5 +134,39 @@ fn large_package_latency() {
         "500 files: cold={cold:?}, warm={warm:?}, edited plus clean verification={:?}; stats={:?}",
         start.elapsed(),
         cache.stats()
+    );
+}
+
+#[test]
+fn editor_source_map_reuses_only_the_exact_cached_compilation() {
+    let mut cache = AnalysisCache::default();
+    let mut package = package();
+    let before = cache.analyze("root", &package, &[]);
+    let first = cache.editor_source_map("root", &before);
+    assert!(Rc::ptr_eq(
+        &first,
+        &cache.editor_source_map("root", &before)
+    ));
+    package.files[1].path = "src/moved.forge".into();
+    let after = cache.analyze("root", &package, &[]);
+    let second = cache.editor_source_map("root", &after);
+    assert!(!Rc::ptr_eq(&first, &second));
+    assert_ne!(first["sources"], second["sources"]);
+    assert_eq!(
+        *second,
+        after.source_map("editor", env!("CARGO_PKG_VERSION"), None)
+    );
+    assert_eq!(*first, *cache.editor_source_map("root", &before));
+    cache.clear();
+    assert_eq!(*second, *cache.editor_source_map("root", &after));
+    assert_eq!(
+        after.source_map("new-build", "new-compiler", Some("revision"))["revision"],
+        "revision"
+    );
+    assert!(
+        cache
+            .editor_source_map("root", &after)
+            .get("revision")
+            .is_none()
     );
 }

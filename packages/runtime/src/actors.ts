@@ -85,7 +85,26 @@ export class ActorHost {
  });}
  load(tenant:string,key:string):Effect.Effect<ActorState,ForgeError> {return Effect.suspend(()=>this.storage.getDocument(tenant,"actor",this.key(key)).pipe(Effect.flatMap(doc=>doc?Effect.succeed(structuredClone(doc as unknown as ActorState)):Effect.fail(err("NotFound","actor not initialized")))));}
  fireDue(tenant:string,key:string,generation:number):Effect.Effect<number,ForgeError> {
-  const self=this;return Effect.gen(function*(){const doc=yield* self.load(tenant,key);let fired=0;for(const alarm of doc.alarms.filter(a=>a.at<=self.now())) {yield* self.command(tenant,key,`alarm:${alarm.occurrence}`,alarm.command,alarm.payload,generation,alarm.occurrence);fired++;}return fired;});
+  const self=this;
+  return Effect.gen(function*(){
+   const doc=yield* self.load(tenant,key);
+   let fired=0;
+   // Bound each pass to the initial batch; replacement occurrences run on a later pass.
+   for(const alarm of doc.alarms.filter(a=>a.at<=self.now())) {
+    const result=yield* self.command(tenant,key,`alarm:${alarm.occurrence}`,alarm.command,alarm.payload,generation,alarm.occurrence).pipe(
+     Effect.catch(error=>{
+      if(error.code!=="VersionConflict") return Effect.fail(error);
+      return self.load(tenant,key).pipe(Effect.flatMap(current=>{
+       // Cancellation/replacement is normal. Never hide fencing or a still-live conflict.
+       if(current.generation!==generation || current.alarms.some(a=>a.occurrence===alarm.occurrence)) return Effect.fail(error);
+       return Effect.succeed(null);
+      }));
+     }),
+    );
+    if(result && !result.duplicate) fired++;
+   }
+   return fired;
+  });
  }
  acknowledgeEffect(tenant:string,key:string,id:string,generation:number) {return this.change(tenant,key,doc=>{
   if(!doc) throw err("NotFound","actor not initialized");if(doc.generation!==generation) throw err("VersionConflict","stale actor generation");

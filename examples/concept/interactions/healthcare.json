@@ -1,0 +1,356 @@
+{
+  "version": "concept-ir/2",
+  "package": "@interaction/healthcare",
+  "entities": {
+    "@interaction/healthcare/_/Encounter": {
+      "name": "Encounter",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/healthcare/_/Encounter",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@interaction/healthcare/_/Patient": {
+      "name": "Patient",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@interaction/healthcare/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/healthcare/_/Patient",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/healthcare/_/Encounter",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/healthcare/_/ObservationRecorded": {
+      "name": "ObservationRecorded",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/healthcare/_/Encounter",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@interaction/healthcare/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/healthcare/_/Encounter",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@interaction/healthcare/_/Assess": {
+      "name": "Assess",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/healthcare/_/Encounter",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    },
+    "@interaction/healthcare/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@interaction/healthcare/_/Encounter",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@interaction/healthcare/_/Encounter": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      }
+    },
+    "relationships": {
+      "@interaction/healthcare/_/Participants": {
+        "carrier": "@interaction/healthcare/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@interaction/healthcare/_/Patient",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@interaction/healthcare/_/Encounter",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@interaction/healthcare/_/ObservationRecorded",
+      "@interaction/healthcare/_/Closed"
+    ],
+    "interactions": {
+      "@interaction/healthcare/_/Engagement": {
+        "carrier": "@interaction/healthcare/_/Encounter",
+        "participation": [
+          "@interaction/healthcare/_/Participants"
+        ],
+        "events": {
+          "@interaction/healthcare/_/ObservationRecorded": "context",
+          "@interaction/healthcare/_/Closed": "context"
+        },
+        "processes": {
+          "@interaction/healthcare/_/Assess": "engagement",
+          "@interaction/healthcare/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    },
+    "subjects": {
+      "@interaction/healthcare/_/ParticipantIdentity": {
+        "carrier": "@interaction/healthcare/_/Patient",
+        "profiles": [
+          "party"
+        ]
+      }
+    }
+  }
+}

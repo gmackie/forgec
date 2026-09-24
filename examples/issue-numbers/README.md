@@ -21,9 +21,10 @@ numbering or a transactional counter rollback. Functions use the same allocator
 through their declared resource create capability.
 
 D1, PostgreSQL and DynamoDB use their existing durable document CAS adapter.
-Tests cover concurrent memory/SQLite allocation, tenant/partition isolation,
-idempotent replay, immutable fields and exhaustion. Live PostgreSQL/DynamoDB
-certification is still outstanding. Declare a unique key over partition + number
+Tests cover concurrent memory/SQLite and real PostgreSQL allocation through both
+raw-pg and Drizzle, tenant/partition isolation, idempotent replay, immutable fields
+and exhaustion. PostgreSQL runs whenever FORGE_PG_URL is configured, including
+the hosted Node CI matrix. DynamoDB certification remains outstanding. Declare a unique key over partition + number
 for an additional storage invariant, as this fixture does.
 
 Renames or partition/bound changes require high-water migration review. Existing

@@ -994,3 +994,169 @@ fn inspect_concept_supports_scoped_graphs() {
     );
     assert!(!run("missing").status.success());
 }
+
+#[test]
+fn explicit_business_contract_cli_validates_inspects_and_diffs() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/business-semantics/commerce.json");
+    for command in ["check", "inspect", "diff"] {
+        let mut cmd = std::process::Command::new(env!("CARGO_BIN_EXE_forgec"));
+        cmd.args(["concept", command]).arg(&fixture);
+        if command == "diff" {
+            cmd.arg(&fixture);
+        }
+        let out = cmd.output().unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+        match command {
+            "check" => {
+                assert_eq!(value["valid"], true);
+                assert_eq!(value["implementationProven"], false);
+            }
+            "inspect" => assert!(
+                value["graph"]["nodes"]
+                    .as_object()
+                    .unwrap()
+                    .values()
+                    .any(|v| v == "effect")
+            ),
+            _ => assert_eq!(value["changes"], serde_json::json!([])),
+        }
+    }
+}
+
+#[test]
+fn concept_closed_check_is_opt_in() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept-boundary/flight-control/concept-ir.json");
+    let mut raw: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(fixture).unwrap()).unwrap();
+    let path = std::env::temp_dir().join(format!("forge-closed-check-{}.json", std::process::id()));
+    let check = |closed: bool| {
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_forgec"));
+        cmd.args(["concept", "check"]).arg(&path);
+        if closed {
+            cmd.arg("--closed");
+        }
+        cmd.output().unwrap()
+    };
+    std::fs::write(&path, serde_json::to_vec(&raw).unwrap()).unwrap();
+    assert!(check(true).status.success());
+    raw["processes"]
+        .as_object_mut()
+        .unwrap()
+        .values_mut()
+        .next()
+        .unwrap()["activations"]["missing"] =
+        serde_json::json!({"kind":"fact","fact":"undeclared"});
+    std::fs::write(&path, serde_json::to_vec(&raw).unwrap()).unwrap();
+    assert!(check(false).status.success());
+    let output = check(true);
+    assert!(!output.status.success());
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("unknown activation fact `undeclared`")
+    );
+    std::fs::remove_file(path).unwrap();
+}
+
+#[test]
+fn check_engagements_accepts_observed_records_and_rejects_parent_cycles() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/interactions");
+    let path = std::env::temp_dir().join(format!("forge-engagements-{}.json", std::process::id()));
+    let mut snapshot: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("realizations/support.json")).unwrap())
+            .unwrap();
+    let check = || {
+        Command::new(env!("CARGO_BIN_EXE_forgec"))
+            .args(["concept", "check-engagements"])
+            .arg(root.join("support.json"))
+            .arg(&path)
+            .output()
+            .unwrap()
+    };
+    std::fs::write(&path, serde_json::to_vec(&snapshot).unwrap()).unwrap();
+    let output = check();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let result: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(result["implementationProven"], false);
+    snapshot["engagements"][0]["parent"] = serde_json::json!("call-1");
+    std::fs::write(&path, serde_json::to_vec(&snapshot).unwrap()).unwrap();
+    let output = check();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("parent engagement cycle"));
+    std::fs::remove_file(path).unwrap();
+}
+
+#[test]
+fn explain_external_constraints_preserves_citations_and_applicability() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/governance/privacy.json");
+    for (at, prohibited) in [("999", false), ("1000", true)] {
+        let output = Command::new(env!("CARGO_BIN_EXE_forgec"))
+            .args(["concept", "explain-constraints"])
+            .arg(&fixture)
+            .args(["@governance/privacy/_/Respond", "--at", at])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(value["applicabilityEvaluated"], false);
+        assert_eq!(value["constraints"][0]["prohibited"], prohibited);
+        assert!(
+            value["constraints"][0]["citations"][0]
+                .as_str()
+                .unwrap()
+                .starts_with("illustrative:")
+        );
+        assert!(value["constraints"][0]["applicability"]["predicate"].is_object());
+    }
+}
+
+#[test]
+fn check_trace_validates_finite_reconstruction_without_claiming_enforcement() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/concept/traceability");
+    let model: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("food.json")).unwrap()).unwrap();
+    let c = forgegraph_semantic::concept::ConceptIR::load_closed(&model).unwrap();
+    let graph: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(root.join("food-graph.json")).unwrap()).unwrap();
+    let mut witness = serde_json::json!({"conceptHash":c.content_hash(),"requirement":"@trace/food/_/Reconstruction","at":100,"evidence":"illustrative:lineage","chain":["record-0","record-1","record-2"],"records":graph["records"],"links":graph["links"]});
+    let file = std::env::temp_dir().join(format!("forge-trace-{}.json", std::process::id()));
+    let check = || {
+        Command::new(env!("CARGO_BIN_EXE_forgec"))
+            .args(["concept", "check-trace"])
+            .arg(root.join("food.json"))
+            .arg(&file)
+            .output()
+            .unwrap()
+    };
+    std::fs::write(&file, serde_json::to_vec(&witness).unwrap()).unwrap();
+    let output = check();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["implementationProven"], false);
+    witness["links"][0]["roles"]["source"] = serde_json::json!("record-2");
+    std::fs::write(&file, serde_json::to_vec(&witness).unwrap()).unwrap();
+    let output = check();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("E-L0-TRACE-WITNESS"));
+    std::fs::remove_file(file).unwrap();
+}

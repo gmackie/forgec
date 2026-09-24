@@ -1,0 +1,29 @@
+shape Batch {
+  values : list<text> length <= 8
+  labels : set<text> length <= 8
+  metadata : map<text, text> length <= 8
+}
+shape Item { value : text }
+function Evaluate {
+  input Item
+  output Item
+}
+workflow BatchEvaluation {
+  input Batch
+  version 1
+  step results = map value in input.values concurrency 2 {
+    Evaluate(value: value)
+  }
+  return results
+}
+workQueue EvaluationWork {
+  execute Evaluate
+  lease 90s
+  retry 3
+  capacity 32
+  runners 8
+}
+actor EvaluationSession keyed by session {
+  state Item
+  on Evaluate -> Evaluate
+}

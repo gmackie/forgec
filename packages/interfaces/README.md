@@ -68,7 +68,10 @@ Explicit mappings give public contracts readable or legacy names; collisions and
 unknown mappings fail construction. Component mappings apply to inputs and outputs;
 input type names add `Input`. Enum identities and values are stable encoded names.
 Forge integers use `ForgeInteger` (safe 53-bit integers); exact decimals remain
-strings. `diffGraphQL(before, after)` reports GraphQL breaking/dangerous changes
+strings. List inputs preserve element nullability; bounds and set uniqueness
+remain enforced by the canonical operation. Open map objects, schema composition
+and non-null type unions are rejected rather than narrowed silently.
+`diffGraphQL(before, after)` reports GraphQL breaking/dangerous changes
 and changes to canonical resolver bindings even when the SDL is unchanged.
 
 The HTTP mount accepts POST only, rejects batches and bodies above 1 MiB, and

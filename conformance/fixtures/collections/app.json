@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "b2f0d19cf25246400d839d3feb132b0ea0e7336d68a74906d31d204e302e0768",
+  "buildHash": "4a7dd01f89019822afa5a86e540b59ccd34407fe39a78b2155e19e4cfb9857f4",
   "digests": {
-    "source": "9f5be34de889e4ec5ddc8a6a0e64a11bd807d0200ce270a718d7962e5e11709f",
-    "wire": "baa7d116ba08a37afcb1dbfe8807af6e7c426f0f6b9f72a324af5e034ea3e8c9",
+    "source": "fa9bdeb7ac50bc69d70bc1b523297d732521f42057e291249244146c4f636ccf",
+    "wire": "0ed58be16217d638155301fe9ff1238f5fa01a203dbe7635c0f736e3edd745df",
     "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
-    "security": "1291919529ff6147fb962436548878f325f89e2037160886b97ed3dddc29ce38"
+    "security": "73cb5ddc8e26e745af53ed0cd8e4127f170bdd0bab6967125244ee127bb58c78"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -112,6 +112,10 @@
               "softDelete": false,
               "versioned": true,
               "audited": false,
+              "crud": {
+                "path": "/v1/levels",
+                "actions": []
+              },
               "hierarchical": false,
               "purposeScoped": false
             },
@@ -301,24 +305,44 @@
             "operations": [
               {
                 "id": "@dogfood/collections/_/LevelDefinition.create",
-                "kind": "create"
+                "kind": "create",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/levels"
+                }
               },
               {
                 "id": "@dogfood/collections/_/LevelDefinition.get",
-                "kind": "get"
+                "kind": "get",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/levels/{id}"
+                }
               },
               {
                 "id": "@dogfood/collections/_/LevelDefinition.update",
-                "kind": "update"
+                "kind": "update",
+                "http": {
+                  "method": "PATCH",
+                  "path": "/v1/levels/{id}"
+                }
               },
               {
                 "id": "@dogfood/collections/_/LevelDefinition.delete",
-                "kind": "delete"
+                "kind": "delete",
+                "http": {
+                  "method": "DELETE",
+                  "path": "/v1/levels/{id}"
+                }
               },
               {
                 "id": "@dogfood/collections/_/LevelDefinition.list.all",
                 "kind": "list",
-                "query": "all"
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/levels"
+                }
               }
             ],
             "capabilities": [],
@@ -335,6 +359,10 @@
               "softDelete": false,
               "versioned": true,
               "audited": false,
+              "crud": {
+                "path": "/v1/mailing-groups",
+                "actions": []
+              },
               "hierarchical": false,
               "purposeScoped": false
             },
@@ -451,24 +479,44 @@
             "operations": [
               {
                 "id": "@dogfood/collections/_/MailingGroup.create",
-                "kind": "create"
+                "kind": "create",
+                "http": {
+                  "method": "POST",
+                  "path": "/v1/mailing-groups"
+                }
               },
               {
                 "id": "@dogfood/collections/_/MailingGroup.get",
-                "kind": "get"
+                "kind": "get",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/mailing-groups/{id}"
+                }
               },
               {
                 "id": "@dogfood/collections/_/MailingGroup.update",
-                "kind": "update"
+                "kind": "update",
+                "http": {
+                  "method": "PATCH",
+                  "path": "/v1/mailing-groups/{id}"
+                }
               },
               {
                 "id": "@dogfood/collections/_/MailingGroup.delete",
-                "kind": "delete"
+                "kind": "delete",
+                "http": {
+                  "method": "DELETE",
+                  "path": "/v1/mailing-groups/{id}"
+                }
               },
               {
                 "id": "@dogfood/collections/_/MailingGroup.list.all",
                 "kind": "list",
-                "query": "all"
+                "query": "all",
+                "http": {
+                  "method": "GET",
+                  "path": "/v1/mailing-groups"
+                }
               }
             ],
             "capabilities": [],
@@ -771,24 +819,44 @@
         "operations": [
           {
             "id": "@dogfood/collections/_/LevelDefinition.create",
-            "kind": "create"
+            "kind": "create",
+            "http": {
+              "method": "POST",
+              "path": "/v1/levels"
+            }
           },
           {
             "id": "@dogfood/collections/_/LevelDefinition.get",
-            "kind": "get"
+            "kind": "get",
+            "http": {
+              "method": "GET",
+              "path": "/v1/levels/{id}"
+            }
           },
           {
             "id": "@dogfood/collections/_/LevelDefinition.update",
-            "kind": "update"
+            "kind": "update",
+            "http": {
+              "method": "PATCH",
+              "path": "/v1/levels/{id}"
+            }
           },
           {
             "id": "@dogfood/collections/_/LevelDefinition.delete",
-            "kind": "delete"
+            "kind": "delete",
+            "http": {
+              "method": "DELETE",
+              "path": "/v1/levels/{id}"
+            }
           },
           {
             "id": "@dogfood/collections/_/LevelDefinition.list.all",
             "kind": "list",
-            "query": "all"
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/levels"
+            }
           }
         ]
       },
@@ -918,24 +986,44 @@
         "operations": [
           {
             "id": "@dogfood/collections/_/MailingGroup.create",
-            "kind": "create"
+            "kind": "create",
+            "http": {
+              "method": "POST",
+              "path": "/v1/mailing-groups"
+            }
           },
           {
             "id": "@dogfood/collections/_/MailingGroup.get",
-            "kind": "get"
+            "kind": "get",
+            "http": {
+              "method": "GET",
+              "path": "/v1/mailing-groups/{id}"
+            }
           },
           {
             "id": "@dogfood/collections/_/MailingGroup.update",
-            "kind": "update"
+            "kind": "update",
+            "http": {
+              "method": "PATCH",
+              "path": "/v1/mailing-groups/{id}"
+            }
           },
           {
             "id": "@dogfood/collections/_/MailingGroup.delete",
-            "kind": "delete"
+            "kind": "delete",
+            "http": {
+              "method": "DELETE",
+              "path": "/v1/mailing-groups/{id}"
+            }
           },
           {
             "id": "@dogfood/collections/_/MailingGroup.list.all",
             "kind": "list",
-            "query": "all"
+            "query": "all",
+            "http": {
+              "method": "GET",
+              "path": "/v1/mailing-groups"
+            }
           }
         ]
       }
@@ -2953,6 +3041,1145 @@
         "bearer": []
       }
     ],
-    "paths": {}
+    "paths": {
+      "/v1/levels": {
+        "post": {
+          "operationId": "@dogfood/collections/_/LevelDefinition.create",
+          "tags": [
+            "LevelDefinition"
+          ],
+          "x-forge-kind": "create",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "201": {
+              "description": "Created",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/LevelDefinitionRecord"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "UniqueConflict / ReferenceMissing",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LevelDefinitionCreate"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "get": {
+          "operationId": "@dogfood/collections/_/LevelDefinition.list.all",
+          "tags": [
+            "LevelDefinition"
+          ],
+          "x-forge-kind": "list",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Page",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "items",
+                      "next",
+                      "limit"
+                    ],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/LevelDefinitionRecord"
+                        }
+                      },
+                      "next": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "InvalidCursor",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        }
+      },
+      "/v1/levels/{id}": {
+        "get": {
+          "operationId": "@dogfood/collections/_/LevelDefinition.get",
+          "tags": [
+            "LevelDefinition"
+          ],
+          "x-forge-kind": "get",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/LevelDefinitionRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        },
+        "patch": {
+          "operationId": "@dogfood/collections/_/LevelDefinition.update",
+          "tags": [
+            "LevelDefinition"
+          ],
+          "x-forge-kind": "update",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/LevelDefinitionRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict (stale If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LevelDefinitionPatch"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "delete": {
+          "operationId": "@dogfood/collections/_/LevelDefinition.delete",
+          "tags": [
+            "LevelDefinition"
+          ],
+          "x-forge-kind": "delete",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/LevelDefinitionRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "HasDependents / InvalidTransition",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        }
+      },
+      "/v1/mailing-groups": {
+        "post": {
+          "operationId": "@dogfood/collections/_/MailingGroup.create",
+          "tags": [
+            "MailingGroup"
+          ],
+          "x-forge-kind": "create",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "201": {
+              "description": "Created",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MailingGroupRecord"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "UniqueConflict / ReferenceMissing",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailingGroupCreate"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "get": {
+          "operationId": "@dogfood/collections/_/MailingGroup.list.all",
+          "tags": [
+            "MailingGroup"
+          ],
+          "x-forge-kind": "list",
+          "parameters": [
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "cursor",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Page",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "items",
+                      "next",
+                      "limit"
+                    ],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/MailingGroupRecord"
+                        }
+                      },
+                      "next": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "InvalidCursor",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        }
+      },
+      "/v1/mailing-groups/{id}": {
+        "get": {
+          "operationId": "@dogfood/collections/_/MailingGroup.get",
+          "tags": [
+            "MailingGroup"
+          ],
+          "x-forge-kind": "get",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MailingGroupRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 500,
+            "window": "28d",
+            "class": "crud-read"
+          }
+        },
+        "patch": {
+          "operationId": "@dogfood/collections/_/MailingGroup.update",
+          "tags": [
+            "MailingGroup"
+          ],
+          "x-forge-kind": "update",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MailingGroupRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict (stale If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "ValidationFailed",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailingGroupPatch"
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        },
+        "delete": {
+          "operationId": "@dogfood/collections/_/MailingGroup.delete",
+          "tags": [
+            "MailingGroup"
+          ],
+          "x-forge-kind": "delete",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "X-Forge-Purpose",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Purpose surface for this invocation (edition 2027; exactly one)"
+            },
+            {
+              "name": "If-Match",
+              "in": "header",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Expected record version; 412 on mismatch, 428 when missing"
+            },
+            {
+              "name": "Idempotency-Key",
+              "in": "header",
+              "required": false,
+              "schema": {
+                "type": "string"
+              },
+              "description": "Replay returns the stored result; reuse with a different body is 409 IdempotencyMismatch"
+            }
+          ],
+          "responses": {
+            "401": {
+              "description": "Unauthenticated",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "NotPermitted",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "OK",
+              "headers": {
+                "ETag": {
+                  "schema": {
+                    "type": "string"
+                  },
+                  "description": "Record version as a strong ETag"
+                }
+              },
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MailingGroupRecord"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "NotFound",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "HasDependents / InvalidTransition",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "412": {
+              "description": "VersionConflict",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            },
+            "428": {
+              "description": "Precondition required (If-Match)",
+              "content": {
+                "application/problem+json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Problem"
+                  }
+                }
+              }
+            }
+          },
+          "x-forge-slo": {
+            "availability": "99.9%",
+            "latencyGood": "99%",
+            "latencyWithinMs": 1000,
+            "window": "28d",
+            "class": "crud-write"
+          }
+        }
+      }
+    }
   }
 }

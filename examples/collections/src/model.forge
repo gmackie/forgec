@@ -4,14 +4,14 @@ shape Objective {
   title : text length 1..100
   score : integer >= 0
 }
-export resource LevelDefinition @tenant @versioned {
+export resource LevelDefinition @tenant @versioned @crud("/v1/levels") {
   id : id
   objectives : list<Objective> length 1..20
   tags : set<text> length <= 32
   metadata : map<text, text> length <= 64
   grid : list<list<integer> length <= 8> length <= 8
 }
-export resource MailingGroup @tenant @versioned {
+export resource MailingGroup @tenant @versioned @crud("/v1/mailing-groups") {
   id : id
   recipients : set<Recipient> length <= 100
   labels : map<text, text> length <= 16

@@ -91,6 +91,20 @@ impl Compilation {
                         ],
                     );
                 }
+                for actor in &module.actors {
+                    for (message, function) in &actor.handlers {
+                        derivations.insert(
+                            format!("{}#handler:{message}", actor.id),
+                            vec![json!({"kind":"actor-handler","from":function})],
+                        );
+                    }
+                }
+                for queue in &module.work_queues {
+                    derivations.insert(
+                        format!("{}#execute", queue.id),
+                        vec![json!({"kind":"queue-execute","from":queue.execute})],
+                    );
+                }
                 for resource in &module.resources {
                     for operation in &resource.operations {
                         let suffix = operation
@@ -128,6 +142,22 @@ fn normalized_key(node: &SyntaxNode) -> String {
     hash_hex(&material)
 }
 fn anchor_component(node: &SyntaxNode) -> Option<String> {
+    if matches!(node.kind(), K::ACTOR_ITEM | K::WORK_QUEUE_ITEM) {
+        let mut tokens = node
+            .children_with_tokens()
+            .filter_map(|e| e.into_token())
+            .filter(|t| t.kind() == K::IDENT);
+        let keyword = tokens.next()?;
+        return match (node.kind(), keyword.text()) {
+            (K::ACTOR_ITEM, "state") => Some("state".into()),
+            (K::ACTOR_ITEM, "on") => tokens.next().map(|name| format!("handler:{}", name.text())),
+            (K::WORK_QUEUE_ITEM, "execute") => Some("execute".into()),
+            (K::WORK_QUEUE_ITEM, key @ ("lease" | "retry" | "capacity" | "runners")) => {
+                Some(format!("config:{key}"))
+            }
+            _ => None,
+        };
+    }
     let kind = match node.kind() {
         K::FIELD_DECL => "field",
         K::DECORATOR => "decorator",

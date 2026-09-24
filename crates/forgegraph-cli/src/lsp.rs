@@ -5,6 +5,7 @@
 //! JSON-RPC keeps the compiler core free of server frameworks.
 use forgegraph_semantic::analysis::AnalysisCache;
 use forgegraph_semantic::load_package;
+use forgegraph_syntax::AstNode;
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
@@ -140,6 +141,54 @@ fn path_to_uri(path: &Path) -> String {
     uri
 }
 
+/// Use compiler scope snapshots, including recovery compilations, rather than guessing binding
+/// visibility from token order. Choice and parallel branches have independent snapshots.
+fn workflow_binding_completion(
+    analysis: &[Analysis],
+    current: &Analysis,
+    source: &forgegraph_semantic::package::SourceFile,
+    offset: usize,
+) -> Option<Vec<Value>> {
+    use forgegraph_semantic::ir::TypeBase;
+    let prefix = &source.text[..offset];
+    let fragment = prefix
+        .rsplit(|c: char| !(c.is_alphanumeric() || c == '_' || c == '.'))
+        .next()
+        .unwrap_or("");
+    let scope = current
+        .compiled
+        .workflow_scopes
+        .iter()
+        .filter(|s| s.span.file == source.path && s.span.start <= offset && offset <= s.span.end)
+        .min_by_key(|s| s.span.end - s.span.start)?;
+    let fields = |ty: &TypeBase| -> Vec<(String, forgegraph_semantic::ir::TypeSpec)> {
+        let key = serde_json::to_string(ty).unwrap();
+        analysis
+            .iter()
+            .find_map(|a| a.compiled.workflow_fields.get(&key))
+            .cloned()
+            .unwrap_or_default()
+    };
+    let segments: Vec<_> = fragment.split('.').collect();
+    if segments.len() > 1 {
+        let mut ty = scope.bindings.get(segments[0])?.clone();
+        for segment in &segments[1..segments.len() - 1] {
+            ty = fields(&ty.base)
+                .into_iter()
+                .find(|(name, _)| name == segment)?
+                .1;
+        }
+        return Some(fields(&ty.base).into_iter().map(|(name, ty)| json!({"label":name, "kind":5, "detail":serde_json::to_string(&ty).unwrap()})).collect());
+    }
+    // Bare bindings only at expression positions, never while selecting a callee or message.
+    let line = prefix.lines().last().unwrap_or("");
+    let expression = line.contains(": ")
+        || line.trim_start().starts_with("return ")
+        || line.trim_start().starts_with("if ")
+        || line.contains(" == ");
+    expression.then(|| scope.bindings.iter().map(|(name, ty)| json!({"label":name,"kind":6,"detail":serde_json::to_string(ty).unwrap()})).collect())
+}
+
 struct Analysis {
     root: PathBuf,
     package: forgegraph_semantic::Package,
@@ -226,7 +275,10 @@ impl Server {
                     .filter_map(|a| a.compiled.ir.as_ref())
                     .collect::<Vec<_>>(),
             );
-            let map = compiled.source_map("editor", env!("CARGO_PKG_VERSION"), None);
+            let map = server
+                .cache
+                .borrow()
+                .editor_source_map(&root.to_string_lossy(), &compiled);
             let anchors = serde_json::from_value(map["anchors"].clone()).unwrap_or_default();
             out.push(Analysis {
                 root,
@@ -261,10 +313,41 @@ impl Server {
         character: usize,
         declaration: bool,
     ) -> Vec<Value> {
-        let analysis = self.analysis(file);
+        let mut analysis = self.analysis(file);
         let Some(target) = target_at(&analysis, file, line, character) else {
             return vec![];
         };
+        let owner = |analyses: &[Analysis]| {
+            analyses.iter().find_map(|a| {
+                a.anchors.get(&target).map(|span| {
+                    let path = a.root.join(&span.file);
+                    path.canonicalize().unwrap_or(path)
+                })
+            })
+        };
+        let target_owner = owner(&analysis);
+        // A declaration in a dependency must also find callers in workspace packages.
+        // Analyze each package with its own dependency context, then deduplicate locations.
+        let mut roots = std::collections::BTreeSet::new();
+        if let Some(root) = package_root(file) {
+            roots.insert(root.canonicalize().unwrap_or(root));
+        }
+        for path in self
+            .open
+            .keys()
+            .cloned()
+            .chain(self.roots.iter().map(|root| root.join("forge.toml")))
+        {
+            if let Some(root) = package_root(&path)
+                && roots.insert(root.canonicalize().unwrap_or_else(|_| root.clone()))
+            {
+                let candidates = self.analysis(&path);
+                // Semantic ids alone do not distinguish separate checkouts of one package.
+                if target_owner.is_some() && owner(&candidates) == target_owner {
+                    analysis.extend(candidates);
+                }
+            }
+        }
         let mut locations = vec![];
         for a in &analysis {
             if declaration
@@ -396,14 +479,86 @@ impl Server {
                 .unwrap_or_else(|| "_".into())
         };
         let module = module_of(&parsed);
+        let workflow = parsed.root().declarations().find_map(|d| match d {
+            Declaration::Workflow(w)
+                if u32::from(w.syntax().text_range().start()) as usize <= offset
+                    && offset <= u32::from(w.syntax().text_range().end()) as usize =>
+            {
+                Some(w)
+            }
+            _ => None,
+        });
+        if workflow.is_some()
+            && let Some(result) = workflow_binding_completion(&analysis, current, source, offset)
+        {
+            return result;
+        }
         let in_uses = parsed.syntax().descendants().any(|n| {
             n.kind() == K::USES_BLOCK
                 && u32::from(n.text_range().start()) as usize <= offset
                 && offset <= u32::from(n.text_range().end()) as usize
         });
-        if !in_uses {
+        // Restrict type suggestions to the qualified name, excluding refinements and
+        // literal type arguments. Nested collection element names have their own TypeRef.
+        let type_name = parsed
+            .syntax()
+            .descendants()
+            .filter_map(forgegraph_syntax::ast::TypeRef::cast)
+            .filter_map(|ty| ty.name())
+            .find(|name| {
+                let range = name.syntax().text_range();
+                u32::from(range.start()) as usize <= offset
+                    && offset <= u32::from(range.end()) as usize
+            });
+        let in_type = type_name.is_some();
+        if !in_uses && workflow.is_none() && !in_type {
             return vec![];
         }
+        let in_wait = parsed.syntax().descendants().any(|n| {
+            n.kind() == K::STEP_WAIT
+                && u32::from(n.text_range().start()) as usize <= offset
+                && offset <= u32::from(n.text_range().end()) as usize
+        });
+        let prefix = &source.text[..offset];
+        let fail_context = prefix.lines().last().is_some_and(|line| {
+            line.trim_start().starts_with("fail ") || line.contains("-> fail ")
+        });
+        if fail_context && let Some(workflow) = &workflow {
+            return workflow
+                .errors()
+                .iter()
+                .map(|e| json!({"label":e.text(), "kind":20, "detail":"declared workflow error"}))
+                .collect();
+        }
+        let catch_target = if prefix
+            .lines()
+            .last()
+            .is_some_and(|line| line.trim_start().starts_with("catch ") && !line.contains("->"))
+        {
+            parsed
+                .syntax()
+                .descendants()
+                .filter_map(forgegraph_syntax::ast::StepCall::cast)
+                .find(|call| {
+                    u32::from(call.syntax().text_range().start()) as usize <= offset
+                        && offset <= u32::from(call.syntax().text_range().end()) as usize
+                })
+                .and_then(|call| call.target())
+                .and_then(|target| {
+                    current
+                        .compiled
+                        .references
+                        .iter()
+                        .find(|r| {
+                            r.span.file == source.path
+                                && r.span.start
+                                    == u32::from(target.syntax().text_range().start()) as usize
+                        })
+                        .map(|r| r.target.clone())
+                })
+        } else {
+            None
+        };
         let imports: std::collections::BTreeSet<String> = current
             .package
             .files
@@ -429,6 +584,18 @@ impl Server {
             })
             .collect();
         let mut result = vec![];
+        if in_type {
+            result.extend(
+                forgegraph_semantic::compiler::SCALARS
+                    .iter()
+                    .map(|name| json!({"label":name,"kind":25,"detail":"built-in scalar"})),
+            );
+            result.extend(
+                ["list", "set", "map"]
+                    .iter()
+                    .map(|name| json!({"label":name,"kind":7,"detail":"bounded collection"})),
+            );
+        }
         for a in &analysis {
             let local = a.root == current.root;
             let aliases: Vec<String> = if local {
@@ -448,11 +615,55 @@ impl Server {
                 if local && target_module != module {
                     continue;
                 }
-                if !local && target_module != "_" {
+                if !in_type && !local && target_module != "_" {
                     continue;
                 }
                 for decl in parsed.root().declarations() {
                     if !local && !decl.is_exported() {
+                        continue;
+                    }
+                    if in_type {
+                        let Some(name) = decl.name() else { continue };
+                        let mut names = match &decl {
+                            Declaration::Shape(_) | Declaration::Enum(_) | Declaration::Type(_) => {
+                                vec![name.text().to_string()]
+                            }
+                            Declaration::Resource(_) | Declaration::Blob(_) => {
+                                ["", ".Record", ".Id", ".Status"]
+                                    .iter()
+                                    .map(|suffix| format!("{}{suffix}", name.text()))
+                                    .collect()
+                            }
+                            Declaration::Channel(channel) => channel
+                                .messages()
+                                .filter_map(|m| {
+                                    m.name().map(|message| {
+                                        format!("{}.{}", name.text(), message.text())
+                                    })
+                                })
+                                .collect(),
+                            _ => vec![],
+                        };
+                        names.sort();
+                        for alias in &aliases {
+                            for name in &names {
+                                result.push(json!({"label":format!("{alias}{name}"),"kind":7,"detail":format!("{}/{target_module}/{name}", a.package.name)}));
+                            }
+                        }
+                        continue;
+                    }
+                    if in_wait {
+                        if let Declaration::Channel(channel) = &decl
+                            && let Some(name) = channel.name()
+                        {
+                            for alias in &aliases {
+                                for message in channel.messages() {
+                                    if let Some(message) = message.name() {
+                                        result.push(json!({"label":format!("{alias}{}.{}", name.text(), message.text()), "kind":7, "detail":"workflow wait message"}));
+                                    }
+                                }
+                            }
+                        }
                         continue;
                     }
                     if !matches!(
@@ -468,7 +679,17 @@ impl Server {
                         let label = format!("{alias}{}", name.text());
                         let anchor =
                             format!("{}/{}/{}", a.package.name, target_module, name.text());
-                        result.push(json!({"label":label,"kind":if matches!(decl,Declaration::Function(_)){3}else{7},"detail":anchor}));
+                        if let Some(target) = &catch_target {
+                            if &anchor == target
+                                && let Declaration::Function(function) = &decl
+                            {
+                                result.extend(function.errors().iter().map(|e| json!({"label":e.text(),"kind":20,"detail":format!("error declared by {anchor}")})));
+                            }
+                            continue;
+                        }
+                        if in_uses || matches!(decl, Declaration::Function(_)) {
+                            result.push(json!({"label":label,"kind":if matches!(decl,Declaration::Function(_)){3}else{7},"detail":anchor}));
+                        }
                         if let Declaration::Resource(resource) = &decl
                             && let Some(lifecycle) = resource.lifecycle()
                         {
@@ -480,6 +701,22 @@ impl Server {
                         }
                     }
                 }
+            }
+        }
+        if let Some(name) = type_name {
+            let range = name.syntax().text_range();
+            let start = u32::from(range.start()) as usize;
+            let prefix = &source.text[start..offset];
+            result.retain(|item| {
+                item["label"]
+                    .as_str()
+                    .is_some_and(|label| label.starts_with(prefix))
+            });
+            for item in &mut result {
+                item["textEdit"] = json!({
+                    "range": {"start":position(&source.text, start), "end":position(&source.text, u32::from(range.end()) as usize)},
+                    "newText":item["label"],
+                });
             }
         }
         result.sort_by_key(Value::to_string);
@@ -770,7 +1007,12 @@ mod tests {
         assert!(completion.iter().any(|v| v["label"] == "Callee"));
         assert!(completion.iter().any(|v| v["label"] == "R"));
         assert!(!completion.iter().any(|v| v["label"] == "Input"));
-        assert!(server.completion(&path, 1, 8).is_empty());
+        assert!(
+            server
+                .completion(&path, 1, 8)
+                .iter()
+                .any(|v| v["label"] == "Input")
+        );
         server
             .open
             .insert(path.clone(), source.replace("Callee", "Missing"));
@@ -779,6 +1021,201 @@ mod tests {
         assert_eq!(server.references(&declarations, 2, 10, false).len(), 0);
         std::fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn workflow_completion_uses_real_scope_types_and_navigates_bindings() {
+        let root = std::env::temp_dir().join(format!("forge-workflow-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("forge.toml"),
+            "[package]\nname = \"@test/workflow-nav\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        let path = root.join("src/workflow.forge");
+        let source = "shape Payload { value : text }\nfunction Echo { input Payload\n output Payload }\nworkflow Flow {\n input Payload\n output Payload\n version 1\n step first = Echo(value: input.value)\n step second = Echo(value: first.value)\n return second\n}\n";
+        std::fs::write(&path, source).unwrap();
+        let mut server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
+        };
+        assert!(
+            server.diagnostics_for(&path).is_empty(),
+            "{:?}",
+            server.diagnostics_for(&path)
+        );
+        let complete = |server: &Server, text: &str, needle: &str| {
+            let offset = text.find(needle).unwrap() + needle.len();
+            let pos = position(text, offset);
+            server.completion(
+                &path,
+                pos["line"].as_u64().unwrap() as usize,
+                pos["character"].as_u64().unwrap() as usize,
+            )
+        };
+        assert!(
+            complete(&server, source, "value: first.")
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        let bindings = complete(&server, source, "value: first");
+        assert!(bindings.iter().any(|v| v["label"] == "first"));
+        assert!(!bindings.iter().any(|v| v["label"] == "second"));
+        let first_use = position(source, source.find("first.value").unwrap());
+        let definition = server.definition(
+            &path,
+            first_use["line"].as_u64().unwrap() as usize,
+            first_use["character"].as_u64().unwrap() as usize,
+        );
+        assert_eq!(definition[0]["range"]["start"]["line"], 7);
+        let incomplete = source.replace("first.value", "first.");
+        server.open.insert(path.clone(), incomplete.clone());
+        assert!(
+            complete(&server, &incomplete, "value: first.")
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        let errors_source = source
+            .replace(
+                "function Echo { input Payload\n output Payload }",
+                "function Echo { input Payload\n output Payload\n errors { Rejected } }",
+            )
+            .replace(
+                " step second = Echo(value: first.value)",
+                " step second = Echo(value: first.value)\n catch Rejected -> fail Stopped",
+            )
+            .replace(" return second", " return second\n errors { Stopped }");
+        server.open.insert(path.clone(), errors_source.clone());
+        let catches = complete(&server, &errors_source, "catch R");
+        assert!(
+            catches.iter().any(|v| v["label"] == "Rejected"),
+            "{catches:?}"
+        );
+        let failures = complete(&server, &errors_source, "fail S");
+        assert!(failures.iter().any(|v| v["label"] == "Stopped"));
+        let wait_source = source
+            .replace(
+                "workflow Flow",
+                "channel Events { message Arrived { value : text } }\nworkflow Flow",
+            )
+            .replace(
+                " step second = Echo(value: first.value)",
+                " step received = wait Events.Arrived\n step second = Echo(value: received.value)",
+            );
+        server.open.insert(path.clone(), wait_source.clone());
+        let messages = complete(&server, &wait_source, "wait Events.");
+        assert!(messages.iter().any(|v| v["label"] == "Events.Arrived"));
+        assert!(
+            complete(&server, &wait_source, "value: received.")
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        let branch_source = source.replace(" step second = Echo(value: first.value)", " if input.value == \"yes\" {\n step hidden = Echo(value: first.value)\n } else {\n step second = Echo(value: first.value)\n }");
+        server.open.insert(path.clone(), branch_source.clone());
+        let offset = branch_source.rfind("value: first").unwrap() + "value: first".len();
+        let pos = position(&branch_source, offset);
+        let suggestions = server.completion(
+            &path,
+            pos["line"].as_u64().unwrap() as usize,
+            pos["character"].as_u64().unwrap() as usize,
+        );
+        assert!(suggestions.iter().any(|v| v["label"] == "first"));
+        assert!(!suggestions.iter().any(|v| v["label"] == "hidden"));
+        let parallel = source.replace(" step second = Echo(value: first.value)", " parallel {\n step hidden = Echo(value: first.value)\n step second = Echo(value: first.value)\n }");
+        server.open.insert(path.clone(), parallel.clone());
+        let offset = parallel.rfind("value: first").unwrap() + "value: first".len();
+        let pos = position(&parallel, offset);
+        let suggestions = server.completion(
+            &path,
+            pos["line"].as_u64().unwrap() as usize,
+            pos["character"].as_u64().unwrap() as usize,
+        );
+        assert!(!suggestions.iter().any(|v| v["label"] == "hidden"));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn workflow_map_items_have_local_completion_and_distinct_navigation() {
+        let root = std::env::temp_dir().join(format!("forge-map-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("forge.toml"),
+            "[package]\nname = \"@test/map-nav\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        let path = root.join("src/model.forge");
+        let source = "shape Item { value : text }\nshape Batch { items : list<Item> length <= 8 }\nfunction Echo { input Item\n output Item }\nworkflow Flow {\n input Batch\n version 1\n step first = map item in input.items concurrency 2 {\n Echo(value: item.value)\n }\n step second = map item in input.items concurrency 2 {\n Echo(value: item.value)\n }\n return second\n}\n";
+        std::fs::write(&path, source).unwrap();
+        let mut server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
+        };
+        assert!(
+            server.diagnostics_for(&path).is_empty(),
+            "{:?}",
+            server.diagnostics_for(&path)
+        );
+        let at = |text: &str, offset: usize| {
+            let p = position(text, offset);
+            (
+                p["line"].as_u64().unwrap() as usize,
+                p["character"].as_u64().unwrap() as usize,
+            )
+        };
+        for (offset, expected_line) in source
+            .match_indices("item.value")
+            .map(|(i, _)| i)
+            .zip([7, 10])
+        {
+            let (line, col) = at(source, offset);
+            let definitions = server.definition(&path, line, col);
+            assert_eq!(definitions.len(), 1);
+            assert_eq!(definitions[0]["range"]["start"]["line"], expected_line);
+            let references = server.references(&path, line, col, true);
+            assert_eq!(
+                references.len(),
+                2,
+                "map items must not share reference identities"
+            );
+            let (line, col) = at(source, offset + "item.".len());
+            assert!(
+                server
+                    .completion(&path, line, col)
+                    .iter()
+                    .any(|v| v["label"] == "value")
+            );
+            let (line, col) = at(source, offset + "item".len());
+            assert!(
+                server
+                    .completion(&path, line, col)
+                    .iter()
+                    .any(|v| v["label"] == "item")
+            );
+        }
+        for needle in ["in input", "return second"] {
+            let (line, col) = at(source, source.rfind(needle).unwrap() + needle.len());
+            assert!(
+                !server
+                    .completion(&path, line, col)
+                    .iter()
+                    .any(|v| v["label"] == "item")
+            );
+        }
+        let incomplete = source.replacen("item.value", "item.", 1);
+        server.open.insert(path.clone(), incomplete.clone());
+        let (line, col) = at(
+            &incomplete,
+            incomplete.find("item.").unwrap() + "item.".len(),
+        );
+        assert!(
+            server
+                .completion(&path, line, col)
+                .iter()
+                .any(|v| v["label"] == "value")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn imported_symbols_resolve_and_completion_hides_private_declarations() {
         let root = std::env::temp_dir().join(format!("forge-import-lsp-{}", std::process::id()));
@@ -801,9 +1238,9 @@ mod tests {
             "import dep\nfunction Caller {\n uses {\n dep.Public\n }\n}\n",
         )
         .unwrap();
-        let server = Server {
+        let mut server = Server {
             open: BTreeMap::new(),
-            roots: vec![],
+            roots: vec![root.clone()],
             cache: RefCell::new(AnalysisCache::default()),
         };
         assert!(
@@ -817,11 +1254,148 @@ mod tests {
                 .unwrap()
                 .ends_with("dep/src/index.forge")
         );
+        let declaration = root.join("dep/src/index.forge");
+        let references = server.references(&declaration, 0, 18, false);
+        assert_eq!(
+            references.len(),
+            1,
+            "dependency declaration must find its workspace caller"
+        );
+        assert_eq!(references[0]["uri"], path_to_uri(&path));
         let completions = server.completion(&path, 3, 1);
         assert!(completions.iter().any(|v| v["label"] == "dep.Public"));
         assert!(!completions.iter().any(|v| v["label"] == "dep.Private"));
+        // Another checkout of the same package must not contribute its own callers.
+        let other = root.join("other");
+        std::fs::create_dir_all(other.join("src")).unwrap();
+        std::fs::write(
+            other.join("forge.toml"),
+            "[package]\nname = \"@test/dep\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        std::fs::write(
+            other.join("src/index.forge"),
+            "export function Public {}\nfunction Local { uses { Public } }\n",
+        )
+        .unwrap();
+        server.roots.push(other);
+        assert_eq!(server.references(&declaration, 0, 18, false).len(), 1);
+        // Open-buffer edits invalidate callers even when the request targets the dependency.
+        server
+            .open
+            .insert(path.clone(), "import dep\nfunction Caller {}\n".into());
+        assert!(server.references(&declaration, 0, 18, false).is_empty());
+        assert_eq!(server.references(&declaration, 0, 18, true).len(), 1);
+        // Open packages are searched even without a workspace-folder registration.
+        server.roots.clear();
+        server.open.insert(
+            path.clone(),
+            "import dep\nfunction Caller { uses { dep.Public } }\n".into(),
+        );
+        assert_eq!(server.references(&declaration, 0, 18, false).len(), 1);
         std::fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn type_completion_filters_visibility_and_replaces_qualified_names() {
+        let root = std::env::temp_dir().join(format!("forge-type-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::create_dir_all(root.join("dep/src")).unwrap();
+        std::fs::write(root.join("forge.toml"), "[package]\nname = \"@test/types\"\nversion = \"0.1.0\"\n[dependencies]\ndep = { path = \"dep\" }\n").unwrap();
+        std::fs::write(
+            root.join("dep/forge.toml"),
+            "[package]\nname = \"@test/contracts\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        std::fs::write(root.join("dep/src/index.forge"), "export shape Public { value : text }\nshape Private { value : text }\nexport resource Record { id : id }\nexport function Run {}\n").unwrap();
+        std::fs::write(
+            root.join("src/hidden.forge"),
+            "module hidden\nshape Hidden { value : text }\n",
+        )
+        .unwrap();
+        let path = root.join("src/index.forge");
+        let source = "import dep\nshape Local { value : text }\nchannel Events { message Arrived { value : text } }\nshape Input {\n a : dep.Public\n b : list<Local> length <= 8\n c : text\n d : Events.Arrived\n}\nfunction Caller { input Local\n output dep.Public }\n";
+        std::fs::write(&path, source).unwrap();
+        let mut server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
+        };
+        assert!(
+            server.diagnostics_for(&path).is_empty(),
+            "{:?}",
+            server.diagnostics_for(&path)
+        );
+        let complete = |server: &Server, text: &str, needle: &str| {
+            let offset = text.rfind(needle).unwrap() + needle.len();
+            let pos = position(text, offset);
+            server.completion(
+                &path,
+                pos["line"].as_u64().unwrap() as usize,
+                pos["character"].as_u64().unwrap() as usize,
+            )
+        };
+        let imported = complete(&server, source, "a : dep.");
+        assert!(imported.iter().any(|v| v["label"] == "dep.Public"));
+        assert!(imported.iter().any(|v| v["label"] == "dep.Record.Id"));
+        assert!(
+            !imported
+                .iter()
+                .any(|v| v["label"] == "dep.Private" || v["label"] == "dep.Run")
+        );
+        let public = imported
+            .iter()
+            .find(|v| v["label"] == "dep.Public")
+            .unwrap();
+        assert_eq!(
+            public["textEdit"]["range"]["start"],
+            json!({"line":4,"character":5})
+        );
+        assert_eq!(
+            public["textEdit"]["range"]["end"],
+            json!({"line":4,"character":15})
+        );
+        assert_eq!(public["textEdit"]["newText"], "dep.Public");
+        assert!(
+            complete(&server, source, "list<Lo")
+                .iter()
+                .any(|v| v["label"] == "Local")
+        );
+        assert!(
+            complete(&server, source, "c : te")
+                .iter()
+                .any(|v| v["label"] == "text")
+        );
+        assert!(
+            complete(&server, source, "d : Events.")
+                .iter()
+                .any(|v| v["label"] == "Events.Arrived")
+        );
+        assert!(complete(&server, source, "length <= ").is_empty());
+        assert!(
+            complete(&server, source, "input Lo")
+                .iter()
+                .any(|v| v["label"] == "Local")
+        );
+        assert!(
+            complete(&server, source, "output dep.")
+                .iter()
+                .any(|v| v["label"] == "dep.Public")
+        );
+        let incomplete = source.replace("a : dep.Public", "a : dep.");
+        server.open.insert(path.clone(), incomplete.clone());
+        assert!(
+            complete(&server, &incomplete, "a : dep.")
+                .iter()
+                .any(|v| v["label"] == "dep.Public")
+        );
+        let unimported = source.replace("import dep\n", "");
+        server.open.insert(path.clone(), unimported.clone());
+        assert!(complete(&server, &unimported, "a : dep.").is_empty());
+        let all = complete(&server, &unimported, "c : ");
+        assert!(!all.iter().any(|v| v["label"] == "Hidden" || v["label"].as_str().unwrap().starts_with("dep.")));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn incremental_changes_follow_utf16_and_sequential_ranges() {
         let changes = json!([

@@ -1325,3 +1325,25 @@ resource Link {
     assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
     assert!(out.ir.is_some());
 }
+
+#[test]
+fn workflow_choice_bindings_do_not_escape_or_leak_to_other_branch() {
+    let prefix = "shape Payload { value : text }\nfunction Echo { input Payload\n output Payload }\nworkflow Flow { input Payload\n output Payload\n version 1\n";
+    for body in [
+        "if input.value == \"yes\" { step branch = Echo(value: input.value) } else { step other = Echo(value: branch.value) }\nreturn input\n}",
+        "if input.value == \"yes\" { step branch = Echo(value: input.value) }\nreturn branch\n}",
+    ] {
+        let result = compile(
+            &inline(
+                "@test/branch-scope",
+                &[("flow.forge", &format!("{prefix}{body}"))],
+            ),
+            &[],
+        );
+        assert!(
+            result.diagnostics.iter().any(|d| d.code == "E-SYM-001"),
+            "{}",
+            result.render()
+        );
+    }
+}

@@ -8,8 +8,18 @@ export interface ExecutionManifest {
   requires: string[];
 }
 export interface PinnedExecutionManifest { digest: string; manifest: ExecutionManifest }
+/** Structural subset of compiled workflow IR needed for activity selection. */
+export interface ExecutionWorkflowStep {
+  kind: string;
+  id?: string;
+  target?: { kind: string; function?: string };
+  call?: ExecutionWorkflowStep;
+  then?: ExecutionWorkflowStep[];
+  otherwise?: ExecutionWorkflowStep[];
+  branches?: ExecutionWorkflowStep[][];
+}
 export interface ExecutionArtifact {
-  modules: { functions: { id: string; generated?: boolean; uses: {kind: string; function?: string; resource?: string}[] }[]; resources: {id: string}[] }[];
+  modules: { functions: { id: string; generated?: boolean; uses: {kind: string; function?: string; resource?: string}[] }[]; resources: {id: string}[]; workflows?: { id: string; version: number; graphHash: string; steps: ExecutionWorkflowStep[] }[] }[];
 }
 export interface ExecutionProfile {
   id: string;
@@ -25,6 +35,7 @@ export interface ExecutionRequirements {
   requirements: string[];
   explanations: Record<string, string[]>;
   provenanceDigest: string;
+  workflowStep?: { workflow: string; step: string; version: number; graphHash: string };
 }
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical);
@@ -57,7 +68,7 @@ export function deriveExecutionRequirements(input: {
     if(checked.digest!==pin.digest) throw Error("execution manifest digest mismatch");
     manifests.set(pin.digest,checked.manifest);
   }
-  const explanations:Record<string,string[]>={};
+  const explanations:Record<string,string[]>=Object.create(null);
   const add=(atom:string,source:string)=>{(explanations[atom]??=[]).push(source);};
   const useManifest=(digest:string,source:string,kind?:ExecutionManifest["kind"])=>{
     const manifest=manifests.get(digest);
@@ -65,8 +76,19 @@ export function deriveExecutionRequirements(input: {
     for(const atom of manifest.requires) add(atom,`${source} -> ${manifest.id}@${digest}`);
   };
   for(const digest of [...new Set(input.profile.providers)].sort()) useManifest(digest,`profile:${input.profile.id}`,"provider");
-  const functions=new Map(input.artifact.modules.flatMap(m=>m.functions).map(f=>[f.id,f]));
-  const resources=new Set(input.artifact.modules.flatMap(m=>m.resources).map(r=>r.id));
+  const functions=new Map<string,ExecutionArtifact["modules"][number]["functions"][number]>();
+  const resources=new Set<string>();
+  const identities=new Set<string>();
+  const register=(id:string)=>{
+    if(typeof id!=="string" || !id.trim()) throw Error("invalid execution identity");
+    if(identities.has(id)) throw Error(`ambiguous execution identity ${id}`);
+    identities.add(id);
+  };
+  for(const module of input.artifact.modules) {
+    for(const fn of module.functions) {register(fn.id);functions.set(fn.id,fn);}
+    for(const resource of module.resources) {register(resource.id);resources.add(resource.id);}
+    for(const workflow of module.workflows??[]) register(workflow.id);
+  }
   const visited=new Set<string>();
   const visit=(id:string)=>{
     if(visited.has(id)) return;
@@ -74,7 +96,7 @@ export function deriveExecutionRequirements(input: {
     visited.add(id);
     const fn=functions.get(id);
     if(!fn && !resources.has(id)) throw Error(`unknown execution dependency ${id}`);
-    const binding=input.profile.bindings[id];
+    const binding=Object.hasOwn(input.profile.bindings,id)?input.profile.bindings[id]:undefined;
     if(binding) useManifest(binding,`operation:${id}`,fn?"implementation":"provider");
     else if(!fn?.generated) throw Error(`missing pinned execution binding for ${id}`);
     for(const use of fn?.uses??[]) {
@@ -100,4 +122,42 @@ export function runnerEligibility(task: Pick<ExecutionRequirements,"requirements
   const available=new Set(atoms(capabilities));
   const missing=task.requirements.filter(a=>!available.has(a));
   return {eligible:missing.length===0,missing,explanations:structuredClone(task.explanations)};
+}
+
+/** Select a function activity from a pinned workflow without evaluating its branches.
+ * The caller identifies the step actually being dispatched. Map item identities remain
+ * the workflow driver's concern; every item shares this immutable execution contract. */
+export function deriveWorkflowStepRequirements(input: Omit<Parameters<typeof deriveExecutionRequirements>[0], "operation"> & {
+  workflow: string; step: string;
+}): ExecutionRequirements {
+  if (executionDigest(input.artifact) !== input.artifactDigest) throw Error("artifact digest mismatch");
+  const workflows = input.artifact.modules.flatMap(module => module.workflows ?? []).filter(workflow => workflow.id === input.workflow);
+  if (workflows.length !== 1) throw Error("workflow selection must resolve exactly once");
+  const workflow = workflows[0]!;
+  if (!Number.isSafeInteger(workflow.version) || workflow.version < 1 || !/^[a-f0-9]{64}$/.test(workflow.graphHash)) throw Error("invalid pinned workflow identity");
+  const pending = [...workflow.steps];
+  const ids = new Set<string>();
+  let selected: ExecutionWorkflowStep | undefined;
+  let count = 0;
+  while (pending.length) {
+    if (++count > 4096) throw Error("workflow selection graph exceeds 4096 nodes");
+    const step = pending.pop()!;
+    if (!["call", "map", "choice", "parallel", "wait", "sleep", "return", "fail"].includes(step.kind)) throw Error(`unsupported workflow step kind ${step.kind}`);
+    if (step.id !== undefined) {
+      if (ids.has(step.id)) throw Error(`ambiguous workflow step ${step.id}`);
+      ids.add(step.id);
+      if (step.id === input.step) selected = step;
+    }
+    if (step.kind === "choice") pending.push(...(step.then ?? []), ...(step.otherwise ?? []));
+    if (step.kind === "parallel") for (const branch of step.branches ?? []) pending.push(...branch);
+  }
+  const call = selected?.kind === "map" ? selected.call : selected;
+  if (selected?.kind === "map" && selected.call?.id !== selected.id) throw Error("mapped call must retain its parent step identity");
+  if (call?.kind !== "call" || call.target?.kind !== "function" || !call.target.function) throw Error("workflow step must select a function call or mapped function call");
+  const derived = deriveExecutionRequirements({ ...input, operation: call.target.function });
+  const { provenanceDigest: _previous, ...snapshot } = derived;
+  const workflowStep = { workflow: workflow.id, step: input.step, version: workflow.version, graphHash: workflow.graphHash };
+  const source = `workflow:${workflow.id}#step:${input.step}@${workflow.version}/${workflow.graphHash}`;
+  const result = { ...snapshot, workflowStep, explanations: Object.fromEntries(Object.entries(snapshot.explanations).map(([atom, sources]) => [atom, [...sources, source].sort()])) };
+  return { ...result, provenanceDigest: executionDigest(result) };
 }

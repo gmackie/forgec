@@ -1,8 +1,6 @@
 //! #88: discrete coordination versus facets, placement, and external semantic domains.
 //! Corpus sidecars are research contracts, not additions to the ConceptIR schema.
-use forgegraph_semantic::concept::{
-    Activation, ConceptIR, ConceptType, InputOrigin, OutputDisposition, Type,
-};
+use forgegraph_semantic::concept::{Activation, ConceptIR, Type};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
@@ -46,30 +44,6 @@ fn text(value: &Value) -> &str {
     assert!(!s.trim().is_empty());
     s
 }
-fn require_reference(exists: bool, family: &str, id: &str) -> Result<(), String> {
-    if exists {
-        Ok(())
-    } else {
-        Err(format!("unresolved {family} {id}"))
-    }
-}
-fn referenced_type(ty: &ConceptType, c: &ConceptIR) -> Result<(), String> {
-    match &ty.base {
-        Type::Entity { id, .. } => require_reference(c.entities.contains_key(id), "entity", id)?,
-        Type::Fact { id } => require_reference(c.facts.contains_key(id), "fact", id)?,
-        Type::Shape { id } => require_reference(c.shapes.contains_key(id), "shape", id)?,
-        Type::Enum { id } => require_reference(c.enums.contains_key(id), "enum", id)?,
-        Type::Collection { element, .. } => referenced_type(element, c)?,
-        Type::Scalar { .. } => {}
-    }
-    if let Some(id) = &ty.purpose {
-        require_reference(c.purposes.contains_key(id), "purpose", id)?;
-    }
-    if let Some(id) = &ty.data_class {
-        require_reference(c.data_classes.contains_key(id), "data class", id)?;
-    }
-    Ok(())
-}
 /// Graphs intentionally retain dangling reference nodes for diagnostics. Only declarations
 /// can anchor corpus claims; graph membership is not declaration evidence.
 fn declared_ids(c: &ConceptIR) -> BTreeSet<&str> {
@@ -86,89 +60,6 @@ fn declared_ids(c: &ConceptIR) -> BTreeSet<&str> {
         .chain(c.enums.keys())
         .map(String::as_str)
         .collect()
-}
-fn closed_references(c: &ConceptIR) -> Result<(), String> {
-    for fields in c
-        .entities
-        .values()
-        .map(|e| &e.fields)
-        .chain(c.facts.values().map(|f| &f.fields))
-        .chain(c.shapes.values())
-    {
-        for field in fields.values() {
-            referenced_type(&field.ty, c)?;
-        }
-    }
-    for external in c.externals.values() {
-        for ty in external.data.values().chain(external.accepts.values()) {
-            referenced_type(ty, c)?;
-        }
-    }
-    for principal in c.principals.values() {
-        for ty in principal.attributes.values() {
-            referenced_type(ty, c)?;
-        }
-    }
-    for policy in c.policies.values() {
-        referenced_type(&policy.resource, c)?;
-        if let Some(id) = &policy.purpose {
-            require_reference(c.purposes.contains_key(id), "purpose", id)?;
-        }
-    }
-    for process in c.processes.values() {
-        if let Some(id) = &process.purpose {
-            require_reference(c.purposes.contains_key(id), "purpose", id)?;
-        }
-        for activation in process.activations.values() {
-            match activation {
-                Activation::Request { payload: Some(ty) } => referenced_type(ty, c)?,
-                Activation::Fact { fact } => {
-                    require_reference(c.facts.contains_key(fact), "activation fact", fact)?
-                }
-                Activation::Change { entity } => {
-                    require_reference(c.entities.contains_key(entity), "activation entity", entity)?
-                }
-                Activation::ExternalEvent { external, event } => {
-                    require_reference(c.externals.contains_key(external), "external", external)?;
-                    require_reference(
-                        c.externals[external].events.contains(event),
-                        "external event",
-                        event,
-                    )?;
-                }
-                _ => {}
-            }
-        }
-        for input in process.inputs.values() {
-            referenced_type(&input.ty, c)?;
-            if let InputOrigin::External { external } = &input.origin {
-                require_reference(c.externals.contains_key(external), "external", external)?;
-                require_reference(
-                    c.externals[external]
-                        .data
-                        .values()
-                        .any(|ty| ty == &input.ty),
-                    "external input type",
-                    external,
-                )?;
-            }
-        }
-        for output in process.outputs.values() {
-            referenced_type(&output.ty, c)?;
-            if let OutputDisposition::Export { external } = &output.disposition {
-                require_reference(c.externals.contains_key(external), "external", external)?;
-                require_reference(
-                    c.externals[external]
-                        .accepts
-                        .values()
-                        .any(|ty| ty == &output.ty),
-                    "external output type",
-                    external,
-                )?;
-            }
-        }
-    }
-    Ok(())
 }
 fn timing_valid(parameters: &Value) -> bool {
     let values = ["periodUs", "deadlineUs", "wcetBudgetUs"].map(|key| parameters[key].as_u64());
@@ -276,7 +167,11 @@ fn boundary_corpus_loads_current_kernel_and_checks_every_declared_seam() {
             !c.externals.is_empty(),
             "{slug} must expose the environment boundary"
         );
-        closed_references(&c).unwrap_or_else(|e| panic!("{slug}: {e}"));
+        assert!(
+            c.validate_closed().is_empty(),
+            "{slug}: {:?}",
+            c.validate_closed()
+        );
         let mut unknown = raw.clone();
         unknown["continuousEquations"] = json!([]);
         assert!(
@@ -466,7 +361,7 @@ fn offline_timing_checker_rejects_missing_invalid_and_late_observations() {
 fn corpus_references_reject_diagnostic_only_nodes_and_unclosed_activation_types() {
     let raw = read(&root().join("flight-control/concept-ir.json"));
     let valid = ConceptIR::load(&raw).unwrap();
-    assert!(closed_references(&valid).is_ok());
+    assert!(valid.validate_closed().is_empty());
     let process = "@boundary/flight-control/_/ReactToFlightTick";
     let missing = "@boundary/flight-control/_/MissingObservation";
     let mut dangling = valid.clone();
@@ -487,8 +382,8 @@ fn corpus_references_reject_diagnostic_only_nodes_and_unclosed_activation_types(
     assert!(dangling.graph().nodes.contains_key(missing));
     assert!(!declared_ids(&dangling).contains(missing));
     assert_eq!(
-        closed_references(&dangling),
-        Err(format!("unresolved activation fact {missing}"))
+        dangling.validate_closed()[0].message,
+        format!("unknown activation fact `{missing}`")
     );
 
     let mut unknown_event = valid.clone();
@@ -505,8 +400,8 @@ fn corpus_references_reject_diagnostic_only_nodes_and_unclosed_activation_types(
             },
         );
     assert_eq!(
-        closed_references(&unknown_event),
-        Err("unresolved external event UndeclaredTick".into())
+        unknown_event.validate_closed()[0].message,
+        "unknown external event `UndeclaredTick`"
     );
 
     let mut payload = valid.clone();
@@ -528,8 +423,8 @@ fn corpus_references_reject_diagnostic_only_nodes_and_unclosed_activation_types(
             Activation::Request { payload: Some(ty) },
         );
     assert_eq!(
-        closed_references(&payload),
-        Err(format!("unresolved shape {missing}"))
+        payload.validate_closed()[0].message,
+        format!("unknown shape `{missing}`")
     );
 
     let mut incompatible = valid.clone();
@@ -540,8 +435,9 @@ fn corpus_references_reject_diagnostic_only_nodes_and_unclosed_activation_types(
         .accepts
         .clear();
     assert!(
-        closed_references(&incompatible)
-            .unwrap_err()
-            .contains("external output type")
+        incompatible
+            .validate_closed()
+            .iter()
+            .any(|e| e.message.contains("external output type"))
     );
 }

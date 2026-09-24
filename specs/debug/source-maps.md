@@ -16,7 +16,9 @@ Supported child kinds are `field`, `decorator`, `rule`, `unique`, `find`, `list`
 
 Resource operations use `<resource>#op:<operation-suffix>`, with a `generated-operation` edge to the resource declaration. Facet-expanded fields use the consuming resource's field anchor and have `facet-field` and `facet-application` edges to the template field and application. Application anchors use `<resource>#facet:<qualified-facet-id>`.
 
-Future language constructs can add kinds such as `expose`, `binding`, `handler`, `alarm`, `execute`, `requirement`, and `search`. Source blocks currently support schedules and function targets; HTTP exposure blocks are not yet accepted by the parser. Physical SQL/SDK output maps and complete lowering provenance are outside this initial implementation.
+Actor clauses use `<actor>#state` and `<actor>#handler:<command>`. WorkQueue clauses use `<queue>#execute` and `<queue>#config:<lease|retry|capacity|runners>`. These anchors retain identity when their values or function targets change, and their spans cover the individual clause. Handler and execution anchors have `actor-handler` and `queue-execute` edges to their resolved function identifiers, including imported execution functions for queues. Actor handlers currently require local functions.
+
+Future language constructs can add kinds such as `expose`, `binding`, `alarm`, `requirement`, and `search`. Source blocks currently support schedules and function targets; HTTP exposure blocks are not yet accepted by the parser. Physical SQL/SDK output maps and complete lowering provenance are outside this initial implementation.
 
 ## Resolution and trust
 

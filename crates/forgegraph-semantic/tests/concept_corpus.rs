@@ -54,51 +54,11 @@ fn compile_signature(folder: &Path, slug: &str, variant: &str) -> DomainIR {
     assert!(result.ir.is_some(), "{slug}: {}", result.render());
     result.ir.unwrap()
 }
-fn type_references(ty: &ConceptType, c: &ConceptIR) {
-    match &ty.base {
-        Type::Entity { id, .. } => assert!(c.entities.contains_key(id), "unknown entity {id}"),
-        Type::Fact { id } => assert!(c.facts.contains_key(id), "unknown fact {id}"),
-        Type::Shape { id } => assert!(c.shapes.contains_key(id), "unknown shape {id}"),
-        Type::Enum { id } => assert!(c.enums.contains_key(id), "unknown enum {id}"),
-        Type::Collection { element, .. } => type_references(element, c),
-        Type::Scalar { .. } => {}
-    }
-    if let Some(id) = &ty.data_class {
-        assert!(c.data_classes.contains_key(id));
-    }
-    if let Some(id) = &ty.purpose {
-        assert!(c.purposes.contains_key(id));
-    }
-}
 fn check_integrity(c: &ConceptIR) {
     let mut owners: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
-    for entity in c.entities.values() {
-        for field in entity.fields.values() {
-            type_references(&field.ty, c);
-        }
-    }
-    for fields in c.facts.values().map(|f| &f.fields).chain(c.shapes.values()) {
-        for field in fields.values() {
-            type_references(&field.ty, c);
-        }
-    }
-    for external in c.externals.values() {
-        for ty in external.data.values().chain(external.accepts.values()) {
-            type_references(ty, c);
-        }
-    }
-    for policy in c.policies.values() {
-        type_references(&policy.resource, c);
-    }
+    assert!(c.validate_closed().is_empty(), "{:?}", c.validate_closed());
     for (id, p) in &c.processes {
-        for input in p.inputs.values() {
-            type_references(&input.ty, c);
-            if let InputOrigin::ProcessResult { process, output } = &input.origin {
-                assert_eq!(c.processes[process].outputs[output].ty, input.ty);
-            }
-        }
         for output in p.outputs.values() {
-            type_references(&output.ty, c);
             if matches!(
                 output.disposition,
                 OutputDisposition::ProduceEntity | OutputDisposition::EmitFact
@@ -108,27 +68,6 @@ fn check_integrity(c: &ConceptIR) {
                     _ => panic!("invalid durable output"),
                 };
                 owners.entry(target).or_default().insert(id);
-            }
-        }
-        for activation in p.activations.values() {
-            match activation {
-                Activation::Fact { fact } => assert!(c.facts.contains_key(fact)),
-                Activation::Change { entity } => assert!(c.entities.contains_key(entity)),
-                Activation::ExternalEvent { external, event } => {
-                    assert!(c.externals[external].events.contains(event))
-                }
-                Activation::Request { payload: Some(ty) } => type_references(ty, c),
-                _ => {}
-            }
-        }
-        if let Some(behavior) = &p.behavior {
-            if let Some(state) = &behavior.stateful {
-                type_references(state, c);
-            }
-            if let Some(workflow) = &behavior.workflow {
-                for fact in workflow.waits.values() {
-                    assert!(c.facts.contains_key(fact));
-                }
             }
         }
     }

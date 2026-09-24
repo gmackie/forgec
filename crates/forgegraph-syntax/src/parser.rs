@@ -694,9 +694,11 @@ impl<'a> Parser<'a> {
     fn qualified_name(&mut self, what: &str) {
         self.start(K::QUALIFIED_NAME);
         if self.expect_ident(what) {
-            while self.at(TokenKind::Dot) && self.nth(1) == TokenKind::Ident {
+            while self.at(TokenKind::Dot) {
                 self.bump();
-                self.bump();
+                if !self.expect_ident("name after `.`") {
+                    break;
+                }
             }
         }
         self.finish();

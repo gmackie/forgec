@@ -6,3 +6,4 @@
  (content_block) (choice) (parallel)] @fold
 
 (facet_declaration) @fold
+[(actor_declaration) (work_queue_declaration) (step_map)] @fold
