@@ -1,0 +1,91 @@
+{
+  "slug": "rewards",
+  "layer": "system",
+  "issue": 137,
+  "dependencies": [
+    "party",
+    "specification",
+    "usage",
+    "evaluation",
+    "decision",
+    "ledger",
+    "entitlement",
+    "agreement-catalog",
+    "fulfillment",
+    "evidence"
+  ],
+  "facts": [
+    "CustomerLoyalty",
+    "EmployeeIncentive",
+    "ReferralReward",
+    "EducationReward"
+  ],
+  "operations": [
+    "rewards authorized runtime services"
+  ],
+  "invariants": [
+    "Program pins eligibility, earning rules and reward catalog",
+    "Awards require observed behavior, completed evaluations and accepted decision",
+    "Points use exact published ledger transfers; nonfungible benefits use Entitlement",
+    "One terminal disposition serializes whole-award redemption, expiry and reversal",
+    "Corrections create bounded new awards only after reversing predecessors"
+  ],
+  "acceptance": [
+    {
+      "id": "F137-01",
+      "description": "Program pins eligibility, earning rules and reward catalog",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-rewards.test.ts"
+      ]
+    },
+    {
+      "id": "F137-02",
+      "description": "Awards require observed behavior, completed evaluations and accepted decision",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-rewards.test.ts"
+      ]
+    },
+    {
+      "id": "F137-03",
+      "description": "Points use exact published ledger transfers; nonfungible benefits use Entitlement",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-rewards.test.ts"
+      ]
+    },
+    {
+      "id": "F137-04",
+      "description": "One terminal disposition serializes whole-award redemption, expiry and reversal",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-rewards.test.ts"
+      ]
+    },
+    {
+      "id": "F137-05",
+      "description": "Corrections create bounded new awards only after reversing predecessors",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-rewards.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "CustomerLoyalty",
+    "EmployeeIncentive",
+    "ReferralReward",
+    "EducationReward"
+  ]
+}
