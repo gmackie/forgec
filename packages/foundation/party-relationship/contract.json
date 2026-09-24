@@ -1,0 +1,73 @@
+{
+  "slug": "party-relationship",
+  "layer": "substrate",
+  "issue": 99,
+  "dependencies": [
+    "party",
+    "specification",
+    "evidence"
+  ],
+  "facts": [
+    "Employment",
+    "CorporateOwnership",
+    "Guardianship",
+    "SupplyRelationship"
+  ],
+  "operations": [
+    "party-relationship authorized runtime services"
+  ],
+  "invariants": [
+    "Typed party endpoints and exact definition pins with inverse labels",
+    "Immutable validity, end and supersession history",
+    "Authorized evidence and source provenance",
+    "Employment, corporate, guardianship and supplier profiles use ConceptIR Relationships without granting access"
+  ],
+  "acceptance": [
+    {
+      "id": "F99-01",
+      "description": "Typed party endpoints and exact definition pins with inverse labels",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-party-relationship.test.ts"
+      ]
+    },
+    {
+      "id": "F99-02",
+      "description": "Immutable validity, end and supersession history",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-party-relationship.test.ts"
+      ]
+    },
+    {
+      "id": "F99-03",
+      "description": "Authorized evidence and source provenance",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-party-relationship.test.ts"
+      ]
+    },
+    {
+      "id": "F99-04",
+      "description": "Employment, corporate, guardianship and supplier profiles use ConceptIR Relationships without granting access",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-party-relationship.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "Employment",
+    "CorporateOwnership",
+    "Guardianship",
+    "SupplyRelationship"
+  ]
+}
