@@ -1,3 +1,4 @@
+import {EnvironmentOperations} from "./environment-operations.js";
 import React, {
   lazy,
   Suspense,
@@ -482,6 +483,7 @@ export function Console({
   };
   const [dialog, setDialogState] = useState<DialogState | null>(null);
   const [runtimeTarget,setRuntimeTarget]=useState<string|undefined>();
+  const [deploymentTarget,setDeploymentTarget]=useState<string|undefined>();
   const session = useRef(0);
   // Distinct from refresh(): a failed probe is the normal unauthenticated case, not an error to
   // show. Painting "Enter this instance's administrator token" on a virgin card would be wrong.
@@ -775,7 +777,7 @@ export function Console({
           </div>
         </header>
         <main className="content">
-          {page==='Deployments'&&<Suspense fallback={<p>Loading deployments…</p>}><DeploymentWorkspace api={api} onTest={id=>{setRuntimeTarget(id);setPage('Playground');}}/></Suspense>}
+          {page==='Deployments'&&<Suspense fallback={<p>Loading deployments…</p>}><DeploymentWorkspace api={api} initialTarget={deploymentTarget} onTest={id=>{setRuntimeTarget(id);setPage('Playground');}}/></Suspense>}
           {page==='Playground'&&<Suspense fallback={<p>Loading playground…</p>}><FunctionPlayground api={api} initialTarget={runtimeTarget}/></Suspense>}
           <div hidden={page !== "Editor"}><Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} api={api} /></Suspense></div>
           <ErrorMessage error={error} />
@@ -973,62 +975,11 @@ export function Console({
                   endpoints and configuration.
                 </Blank>
               ) : (
-                <div className="environment-grid">
-                  {app.environments.map((e) => (
-                    <section className="panel environment" key={e.id}>
-                      <div className="section-toolbar">
-                        <h3>{e.name}</h3>
-                        <Badge variant="secondary">{targets[e.target]}</Badge>
-                      </div>
-                      <a
-                        href={e.endpoint}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="endpoint"
-                      >
-                        {e.endpoint}
-                        <ArrowUpRightIcon />
-                      </a>
-                      <div className="environment-meta">
-                        <span>
-                          {Object.keys(e.config).length} configuration values
-                        </span>
-                        <span>
-                          {Object.keys(e.secretRefs).length} secret references
-                        </span>
-                      </div>
-                      <p className="muted small">
-                        {e.packageDigest
-                          ? `Package ${e.packageDigest.slice(0, 22)}…`
-                          : "No package pinned"}
-                      </p>
-                      <Badge variant="outline">Deployment unverified</Badge>
-                      <div className="card-footer">
-                        <Button
-                          disabled={app.archived}
-                          onClick={() =>
-                            setDialog({
-                              kind: "environment",
-                              app,
-                              environment: e,
-                            })
-                          }
-                        >
-                          Configure
-                        </Button>
-                        <Button
-                          disabled={app.archived}
-                          variant="ghost"
-                          onClick={() =>
-                            setDialog({ kind: "remove", app, environment: e })
-                          }
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    </section>
-                  ))}
-                </div>
+                <EnvironmentOperations app={app} api={api}
+                  onConfigure={environment=>setDialog({kind:"environment",app,environment})}
+                  onRemove={environment=>setDialog({kind:"remove",app,environment})}
+                  onManage={id=>{setDeploymentTarget(id);setPage("Deployments");}}
+                  onTest={id=>{setRuntimeTarget(id);setPage("Playground");}}/>
               )}
             </>
           ) : null}

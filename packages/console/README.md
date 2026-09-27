@@ -564,3 +564,13 @@ The Application foundations gizmo appears when deployed descriptors contain `@fo
 In Design, Try form accepts local sample values from the current field draft. It checks required values and native input formats, never calls a runtime, and can open field configuration directly. Cross-field rules, policy enforcement and calculated values still require the compiled application.
 
 Editable record tables support bounded cursor pages and refresh. Pending edits block page changes and refresh. The deployed operation catalog controls available create/update/delete, import, lifecycle action and review controls; a catalog entry is not an authorization grant. Loading disables editing so a late response cannot replace a new local change. Completed saves and actions report their outcome, and failure messages survive the subsequent refresh.
+
+### App environment deployment links
+
+Set `appId` and `environmentId` on a server-configured deployment connection to link it to an
+app environment. The Apps screen shows that target's last deployment result, release and
+configuration differences, with shortcuts to Manage deployment and Test functions (`runtimeId`).
+Identifiers must match exactly; endpoints and names are never used to guess a connection.
+Duplicate connections and unavailable controllers are shown explicitly. Refresh deployments
+reloads the observations. Inventory edits are not deployed automatically; apply configuration
+through the deployment review flow. Health is the result of the last deployment action.
