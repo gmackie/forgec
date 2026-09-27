@@ -204,3 +204,27 @@ test('opens the linked deployment and playground from an app environment',async(
  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Apps',exact:true}).click();await page.getByRole('button',{name:'Support app',exact:true}).click();
  await expect(page.getByRole('button',{name:'Manage deployment'})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('keeps function drafts and restores a request from session history',async({page})=>{
+ let invocations=0;
+ await page.route('**/api/runtime/targets',r=>r.fulfill({json:{targets:[{id:'workers',name:'Workers production'}]}}));
+ await page.route('**/api/runtime/targets/workers/catalog',r=>r.fulfill({json:{buildHash:'build-1',deploymentRevision:'deployment-1',observedAt:'2026-09-27T00:00:00Z',operations:['Estimate','Validate'].map(id=>({id,summary:id,method:'POST',path:'/'+id,sample:{hours:1}}))}}));
+ await page.route('**/api/runtime/targets/workers/invoke',r=>{invocations++;expect(r.request().postDataJSON()).toMatchObject({operationId:'Estimate',input:{hours:2},deploymentRevision:'deployment-1'});return r.fulfill({json:{status:200,durationMs:12,at:'2026-09-27T00:00:00Z',outcome:{kind:'ok',value:{total:300}}}})});
+ await page.goto('/');await page.getByLabel('Administrator token').fill('local-console-test-token-1234567890');await page.getByRole('button',{name:'Connect to instance'}).click();
+ await page.getByRole('button',{name:'Playground',exact:true}).click();
+ await page.getByLabel('Sample input').fill('{"hours":2}');
+ await page.getByLabel('Idempotency key').fill('request-1');
+ await page.getByRole('button',{name:/Validate.*POST/}).click();
+ await page.getByRole('button',{name:/Estimate.*POST/}).click();
+ await expect(page.getByLabel('Sample input')).toHaveValue('{"hours":2}');
+ await page.getByRole('button',{name:'Invoke function'}).click();
+ await expect(page.getByRole('button',{name:'Restore input'})).toBeEnabled();
+ await page.getByRole('button',{name:/Validate.*POST/}).click();
+ await page.getByRole('button',{name:/Estimate.*Workers production/}).click();
+ await page.getByRole('button',{name:'Restore input'}).click();
+ await expect(page.getByLabel('Sample input')).toHaveValue('{"hours":2}');
+ await expect(page.getByLabel('Idempotency key')).toHaveValue('');
+ expect(invocations).toBe(1);
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:'/tmp/forge-playground-session-mobile.png',fullPage:true});
+});

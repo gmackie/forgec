@@ -574,3 +574,5 @@ Identifiers must match exactly; endpoints and names are never used to guess a co
 Duplicate connections and unavailable controllers are shown explicitly. Refresh deployments
 reloads the observations. Inventory edits are not deployed automatically; apply configuration
 through the deployment review flow. Health is the result of the last deployment action.
+
+Function playground drafts are kept independently for each runtime and function while the workspace is open. Recent invocations include the original input, purpose, environment, and build. **Restore input** prepares the original request without sending it and clears its idempotency key; restoration requires the same runtime, build, and deployment revision. Drafts and the last ten responses stay in memory, and leaving the workspace clears them. **Clear history** removes recorded requests and responses without discarding the current draft.
