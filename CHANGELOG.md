@@ -2,6 +2,47 @@
 
 ## Unreleased
 
+### Fixed
+
+- `/healthz` can now fail. Both hosts return 503 with the names of the absent
+  settings when the instance's own configuration implies something it does not
+  have — an R2 bucket, `REGISTRY_TOKEN_SECRET`, `INSTANCE_AUTHORITY`, the Access
+  team domain and audience tag. It previously returned a constant `ok`, so a
+  Worker deployed with no secrets reported healthy on every probe while
+  answering 503 to every authenticated request, which is exactly what happened
+  to `forge.gmac.io`. `.forgegraph.yaml` points a deployment health check here,
+  so a probe that could not fail could not detect the only outage this
+  deployment has had. Only names are reported, never values, and only absence is
+  checked — a present but invalid signing key is a different failure and
+  claiming to have checked it here would be the same kind of lie.
+- `/v2` refuses outright when `REGISTRY_TOKEN_SECRET` is unset, instead of
+  challenging the client with a `WWW-Authenticate` realm naming a `/v2/token`
+  endpoint that does not exist. `docker login` could not exit that loop.
+- `src/node.ts` passes a credential store to `createApi` and applies
+  `migrations/0003_registry_credentials.sql`. Registry credentials were
+  Workers-only by accident, so the panel answered 503 on every Docker
+  deployment — and on the Playwright suite, which runs this host rather than the
+  Worker, which is why no test saw it.
+- README: corrected the release status. It claimed all five required profiles
+  were certified against this build; `RELEASE_MANIFEST.json` reports
+  `allRequiredProfilesCertified: false`, with two profiles' evidence bound to a
+  superseded build and three carrying none. The manifest's auto-demotion rule
+  worked; the prose had not followed it down. It also still described 0.3.0 as
+  the current release.
+
+### Added
+
+- `packages/console/test/worker.test.ts` — the first test of the Workers
+  entrypoint, which had none despite being the only place `/v2`, R2, D1, the
+  credential store and the token endpoint are wired together. D1 is real
+  `node:sqlite` running the real migrations, which no test had executed. It
+  covers the missing-secret and missing-binding cases, and carries a credential
+  from HTTP Basic through token exchange to an authorized request — a seam every
+  component of which was tested and none of which was tested together.
+- `packages/console/e2e/credentials.spec.ts` — issues a credential through the
+  real UI against the real server. Verified to fail when the wiring above is
+  removed.
+
 ## 0.4.0 (2026-09-24)
 
 ### Added
