@@ -2,6 +2,7 @@ FROM rust:1.97-bookworm AS compiler
 WORKDIR /source
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
+COPY tree-sitter-forge ./tree-sitter-forge
 RUN rustup target add wasm32-unknown-unknown && cargo build --locked --release --target wasm32-unknown-unknown -p forgegraph-editor
 
 FROM node:24-bookworm-slim AS build
