@@ -1,0 +1,111 @@
+{
+  "slug": "reachability",
+  "layer": "substrate",
+  "issue": 91,
+  "dependencies": [],
+  "facts": [
+    "LocatorSet: sidecar attached by canonical application resource",
+    "ContactPoint: personal locator with purpose, preference, validity and supersession",
+    "Endpoint: system locator with purpose, preference, validity and supersession",
+    "Verification: evidence that a locator reached who it claimed to"
+  ],
+  "operations": [
+    "DeclareContactPoint(set, kind, purpose, value, preference, validFrom?, validUntil?)",
+    "DeclareEndpoint(set, kind, purpose, value, preference, validFrom?, validUntil?)",
+    "VerifyLocator(locator, verifiedAt, method, evidence)",
+    "SupersedeLocator(old, replacement); RevokeLocator",
+    "ResolveLocator(set, kind, purpose, at); ListBySet"
+  ],
+  "invariants": [
+    "Contact points carry personal data and endpoints do not; the kind registry's personal flag decides, enforced by a rule on each profile rather than by convention",
+    "Uniqueness is tenant + set + kind + purpose + normalized value, and separately + preference, so a preferred locator is never ambiguous",
+    "Validity uses half-open intervals; an expired window is unreachable without any disposition",
+    "Supersession is explicit history: a replacement shares the set and kind, starts strictly later, and takes effect at its own start, so chains cannot cycle",
+    "Reachability says where something can be reached and never whether it should be: consent, notification preference and delivery mechanics are separate facts owned elsewhere"
+  ],
+  "acceptance": [
+    {
+      "id": "F91-01",
+      "description": "Email/phone/postal contact-point examples.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-reachability.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F91-02",
+      "description": "API/MCP/webhook endpoint examples.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-reachability.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F91-03",
+      "description": "Validity/supersession semantics.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-reachability.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F91-04",
+      "description": "Verification/evidence hooks.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-reachability.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F91-05",
+      "description": "Purpose/context labels.",
+      "kind": "concurrency",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-reachability.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F91-06",
+      "description": "Party and non-Party Subject attachment.",
+      "kind": "fixture",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-reachability-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F91-07",
+      "description": "Notifications #50 consumes the substrate without owning it.",
+      "kind": "runtime",
+      "status": "planned",
+      "evidence": [],
+      "verification": "local"
+    },
+    {
+      "id": "F91-08",
+      "description": "No provider-specific transport/runtime mechanics become foundation semantics.",
+      "kind": "compile",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-reachability-consumer.test.ts"
+      ],
+      "verification": "local"
+    }
+  ],
+  "fixtures": [
+    "party-contact-points",
+    "service-endpoints",
+    "device-endpoints"
+  ]
+}
