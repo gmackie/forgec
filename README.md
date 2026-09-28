@@ -127,24 +127,30 @@ their alternatives are in [`docs/decisions/`](docs/decisions).
 
 ## Status
 
-0.3.0 is the first public release. The API surface is 0.x and will move — pin
-exact versions.
+0.3.0 was the first public release; the current version is 0.4.0. The API
+surface is 0.x and will move — pin exact versions.
 
-All five required profiles are certified against *this* build, per
-[`RELEASE_MANIFEST.json`](RELEASE_MANIFEST.json):
+**No profile is certified against this build.**
+[`RELEASE_MANIFEST.json`](RELEASE_MANIFEST.json) reports
+`allRequiredProfilesCertified: false`:
 
-| profile | evidence |
+| profile | state on this build |
 | --- | --- |
-| `cloudflare-d1` | live: 15 scenarios, 221 steps, realtime, switching both ways |
-| `aws-dynamodb` | live: 15 scenarios, 221 steps, realtime, switching both ways |
-| `node-postgres`, `sqlite-node`, `runtime-memory` | differential: 221 steps compared, 0 unexplained |
+| `cloudflare-d1`, `aws-dynamodb` | `unverified` — live evidence exists (15 scenarios, 221 steps, realtime, switching both ways) but is bound to build `cfc8286aa3a7`, and this is `92d084e2bbea` |
+| `node-postgres`, `sqlite-node`, `runtime-memory` | `unverified` — no evidence on this build |
 
 Live evidence is bound to the build it ran against and to a 90-day window. If
 either moves, the manifest downgrades that profile to `unverified` on its own
 rather than carrying the claim forward — so a stale manifest tells you it is
-stale instead of quietly lying. `conformance/certification/latest.json` holds
-the full run; only the private hostnames are withheld, and they are marked as
-withheld.
+stale instead of quietly lying. That is what has happened here: the rule fired
+and this prose, which used to claim all five were certified, did not follow it
+down until an audit caught it.
+
+To restore the claim, run `pnpm certify` against live Cloudflare and AWS
+endpoints (`FORGE_CF_URL`/`FORGE_CF_WS`, `FORGE_AWS_URL`/`FORGE_AWS_WS`) and
+sign the manifest in CI — an unsigned manifest is a draft by its own rule.
+`conformance/certification/latest.json` holds the last full run; only the
+private hostnames are withheld, and they are marked as withheld.
 
 Known gaps are stated as gaps: see the `notCertified` entries in
 `RELEASE_MANIFEST.json` and [docs/security-review.md](docs/security-review.md).
