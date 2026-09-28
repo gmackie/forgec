@@ -1,17 +1,54 @@
 # Resource relations and settlement: semantic boundaries
 
-Audit baseline: `466efe47` (23 September 2026). This document records the integration contract for Foundation issues #79 and #80. It does not claim delivery of ConceptIR issues #74–78 or completion of the REA validation corpus in #81. Application integrations remain deferred.
+Audit baseline: `466efe47` (23 September 2026), **partly superseded on 28 September 2026** — see
+“What the existing compiler supports” below. This document records the integration contract for
+Foundation issues #79 and #80. It does not claim delivery of ConceptIR issues #74–78 or completion
+of the REA validation corpus in #81. Application integrations remain deferred.
 
 ## What the existing compiler supports
 
-`crates/forgegraph-semantic/src/concept.rs` defines `concept-ir/1` with Entity, Fact, Process, typed fields, policy, purpose, activation, and process input/output contracts. It provides deterministic serialization and conservative realization comparison. The existing relationship building blocks are typed references and independently addressable resource records.
+`crates/forgegraph-semantic/src/concept.rs` defines `concept-ir/2` (`CONCEPT_IR_VERSION`,
+`concept.rs:6`) with Entity, Fact, Process, typed fields, policy, purpose, activation, and process
+input/output contracts. It provides deterministic serialization and conservative realization
+comparison. The existing relationship building blocks are typed references and independently
+addressable resource records.
+
+**The limitations below were written against the September baseline and several no longer hold.**
+An optional `semantics` object has since landed, specified in
+[`specs/ir/business-semantics.md`](../../specs/ir/business-semantics.md), carrying `temporal`,
+`selections`, `contracts`, `relationships`, `events`, `effects`, `views`, `subjects`,
+`representations`, `interactions`, `externalConstraints` and `traceability` maps. Corrections are
+marked inline. Per-criterion acceptance for #74–#78 and #90 is recorded on those issues; declaration
+support existing is not the same as their acceptance being complete, and this document should not be
+read as granting either.
 
 The following limitations are material:
 
-- `Entity.invariants` contains uniqueness declarations, not #74 business preconditions, postconditions, or arbitrary cross-output invariants. Legacy projection does not preserve resource row rules as those business contracts.
-- `Selection.during` and `Selection.as_of` exist, but do not bind selection to occurrence, valid, or knowledge axes. `Cardinality::Latest` does not declare a temporal axis or a complete tie-breaking contract.
-- Legacy projection does not preserve `@effectiveDated` as an L0 temporal facet. It filters synthesized fields, including storage timestamps. Runtime effective dating provides a grouped, zero-or-one valid-at query and overlap guards; it is not general knowledge-time history.
-- There is no first-class relationship specification/reification model (#77), event-to-effect model (#76), or Party-parameterized perspective model (#78). Resource references and ordinary projections are useful implementation mechanisms, but do not establish those semantic contracts.
+- `Entity.invariants` contains uniqueness declarations, not #74 business preconditions,
+  postconditions, or arbitrary cross-output invariants, and legacy projection still does not preserve
+  resource row rules as business contracts (`concept.rs:981` populates it from `r.uniques`).
+  **Still true of that field, but no longer true of the IR:** `semantics.contracts` carries named
+  requires/ensures/invariant predicates owned by a Process, Entity or Fact, and `invariant_producers()`
+  associates data invariants with their authoritative producer.
+- `Selection.during` and `Selection.as_of` exist, but do not bind selection to occurrence, valid, or
+  knowledge axes, and `Cardinality::Latest` declares neither an axis nor a tie-breaking contract
+  (`concept.rs:218-234`). **Still true of `Selection`, but no longer true of the IR:** the separate
+  `semantics.selections` map binds an explicit `TemporalAxis` and a `TemporalRelation`, and requires
+  `tie_break` fields for `latest` so physical insertion order is never inferred
+  (`concept_semantics.rs:89-113`). Two selection mechanisms now coexist and only one carries an axis;
+  #75 tracks what becomes of the unaxed pair.
+- ~~Legacy projection does not preserve `@effectiveDated` as an L0 temporal facet.~~ **Corrected:** it
+  does. Projection clears the `synthesized` flag on `effectiveFrom`/`effectiveUntil` so they survive
+  the field filter (`concept.rs:964-977`) and emits a valid-time `IntervalBinding`
+  (`concept.rs:988-1000`). Runtime effective dating still provides only a grouped, zero-or-one
+  valid-at query and overlap guards; it is not general knowledge-time history, and the L0 facet does
+  not create one.
+- ~~There is no first-class relationship specification/reification model (#77), event-to-effect model
+  (#76), or Party-parameterized perspective model (#78).~~ **Corrected:** `semantics.relationships`,
+  `semantics.events`/`semantics.effects` and `semantics.views` all exist and are validated. What
+  remains open is per-criterion acceptance on each issue, not the representation. Resource references
+  and ordinary projections are still not those contracts: declaring the semantics is what establishes
+  them.
 - Legacy message projection explicitly warns that a message contract does not prove an immutable business occurrence. Append-only Foundation resources remain projected Entities; their existence alone does not establish the Event/Effect distinction.
 
 Consequently no new compiler feature blocks a narrowly described package implementation of #79/#80. Full acceptance of their ConceptIR integration does require additional compiler work.
@@ -37,7 +74,10 @@ This is an explicit package-owned bridge to #75. It is not a compiler-level temp
 
 #79 and #80 may be implemented and verified in parallel after their imported packages' contracts are frozen. Neither needs to depend on the other merely because both mention Party or time. Declare every directly imported package in the package manifest and contract dependency list. Do not add dependencies on issue numbers that are not package slugs; #30 is `entitlement`, not an `obligation` package.
 
-For future ConceptIR integration, freeze the temporal axis/selector contract (#75) before attaching it to relationship validity (#77), effect timing (#76), or time-sensitive invariants (#74). The core contract and relationship representations can be developed independently, but their temporal integration tests need the shared #75 contract. Event/effect integration then composes those typed targets and contracts. Neutral perspectives (#78) consume these contracts without creating duplicate authoritative facts. #81's complete transaction corpus validates the combined model; its scenario skeletons can be developed earlier. These are semantic integration dependencies, not a reason to block package-level implementation now.
+For future ConceptIR integration, freeze the temporal axis/selector contract (#75) before attaching it
+to relationship validity (#77), effect timing (#76), or time-sensitive invariants (#74). (As of the
+28 September correction the temporal contract exists and is corpus-tested; “freeze” now means closing
+out #75's remaining criteria rather than designing it.) The core contract and relationship representations can be developed independently, but their temporal integration tests need the shared #75 contract. Event/effect integration then composes those typed targets and contracts. Neutral perspectives (#78) consume these contracts without creating duplicate authoritative facts. #81's complete transaction corpus validates the combined model; its scenario skeletons can be developed earlier. These are semantic integration dependencies, not a reason to block package-level implementation now.
 
 ## Required contract tests
 
