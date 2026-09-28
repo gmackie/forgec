@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### Added
+
+- `@forgegraph/foundation/configuration` (experimental): typed parameterization
+  against a pinned specification revision, layered defaults and overrides,
+  deterministic resolution, and resolutions identified by a digest over their
+  values. `Configuration` in `@forgegraph/runtime` resolves a chain and records it.
+
+  Configuration is not arbitrary JSON: every value assigns a parameter the pinned
+  revision declared, so an unknown key cannot be set and a key retyped in a later
+  revision cannot be silently inherited. Layers carry an ordinal and a child's is
+  strictly greater than its parent's, so precedence is a total order and resolution
+  gives the same answer whichever end of the chain you start from. Every resolved
+  value records which configuration supplied it, so a surprising value is
+  attributable without re-deriving the chain by hand.
+
+  Secret parameters carry a reference and never a literal, may not carry a default,
+  and resolve to that reference. This package cannot dereference a binding, and a
+  test scans the compiled contract for any field that could hold secret material.
+
+  All eight criteria on #94 have executable local evidence.
+
 ## 0.4.0 (2026-09-24)
 
 ### Added
