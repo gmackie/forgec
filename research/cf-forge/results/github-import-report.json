@@ -1,0 +1,357 @@
+{
+  "version": "openapi-import/1",
+  "package": "@research/github",
+  "source": {
+    "title": "GitHub v3 REST API",
+    "version": "1.1.4",
+    "openapi": "3.0.3"
+  },
+  "hosts": [
+    "api.github.com"
+  ],
+  "pins": [],
+  "operations": [
+    {
+      "operation_id": "issues/list-for-repo",
+      "function": "IssuesListForRepo",
+      "method": "GET",
+      "path": "/repos/{owner}/{repo}/issues"
+    },
+    {
+      "operation_id": "issues/create",
+      "function": "IssuesCreate",
+      "method": "POST",
+      "path": "/repos/{owner}/{repo}/issues"
+    }
+  ],
+  "skipped_operations": [],
+  "unsupported": [
+    {
+      "feature": "array",
+      "at": "components.schemas.issue-field-value.multi_select_options",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "anyOf",
+      "at": "components.schemas.issue-field-value.value",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.issue.assignees",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.issue.issue_field_values",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.issue.labels",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.issue.performed_via_github_app.events",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "oneOf",
+      "at": "components.schemas.issue.performed_via_github_app.owner",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.issue.pinned_comment.performed_via_github_app.events",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "oneOf",
+      "at": "components.schemas.issue.pinned_comment.performed_via_github_app.owner",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.issue.repository.topics",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.nullable-integration.events",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "oneOf",
+      "at": "components.schemas.nullable-integration.owner",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.nullable-issue-comment.performed_via_github_app.events",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "oneOf",
+      "at": "components.schemas.nullable-issue-comment.performed_via_github_app.owner",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.repository.topics",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.scim-error.schemas",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "components.schemas.validation-error.errors",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "response-schema",
+      "at": "paths./repos/{owner}/{repo}/issues.get.responses.200",
+      "note": "non-object success body; output omitted"
+    },
+    {
+      "feature": "array",
+      "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.assignees",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.issue_field_values",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "array",
+      "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.labels",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "oneOf",
+      "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.milestone",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    },
+    {
+      "feature": "oneOf",
+      "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.title",
+      "note": "union schemas have no Forge shape; typed as json (opaque)"
+    }
+  ],
+  "foreign_identifiers": [
+    {
+      "shape": "Enterprise",
+      "field": "node_id"
+    },
+    {
+      "shape": "Issue",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueAssignee",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "IssueAssignee",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueClosedBy",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "IssueClosedBy",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueFieldValue",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueMilestone",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueMilestoneCreator",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "IssueMilestoneCreator",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssuePerformedViaGithubApp",
+      "field": "client_id"
+    },
+    {
+      "shape": "IssuePerformedViaGithubApp",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssuePinnedComment",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssuePinnedCommentPerformedViaGithubApp",
+      "field": "client_id"
+    },
+    {
+      "shape": "IssuePinnedCommentPerformedViaGithubApp",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssuePinnedCommentPinPinnedBy",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "IssuePinnedCommentPinPinnedBy",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssuePinnedCommentUser",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "IssuePinnedCommentUser",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueRepository",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueRepositoryLicense",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueRepositoryLicense",
+      "field": "spdx_id"
+    },
+    {
+      "shape": "IssueRepositoryOwner",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "IssueRepositoryOwner",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueType",
+      "field": "node_id"
+    },
+    {
+      "shape": "IssueUser",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "IssueUser",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableIntegration",
+      "field": "client_id"
+    },
+    {
+      "shape": "NullableIntegration",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableIssueComment",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableIssueCommentPerformedViaGithubApp",
+      "field": "client_id"
+    },
+    {
+      "shape": "NullableIssueCommentPerformedViaGithubApp",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableIssueCommentPinPinnedBy",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "NullableIssueCommentPinPinnedBy",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableIssueCommentUser",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "NullableIssueCommentUser",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableLicenseSimple",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableLicenseSimple",
+      "field": "spdx_id"
+    },
+    {
+      "shape": "NullableMilestone",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableMilestoneCreator",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "NullableMilestoneCreator",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullablePinnedIssueCommentPinnedBy",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "NullablePinnedIssueCommentPinnedBy",
+      "field": "node_id"
+    },
+    {
+      "shape": "NullableSimpleUser",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "NullableSimpleUser",
+      "field": "node_id"
+    },
+    {
+      "shape": "Repository",
+      "field": "node_id"
+    },
+    {
+      "shape": "RepositoryLicense",
+      "field": "node_id"
+    },
+    {
+      "shape": "RepositoryLicense",
+      "field": "spdx_id"
+    },
+    {
+      "shape": "RepositoryOwner",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "RepositoryOwner",
+      "field": "node_id"
+    },
+    {
+      "shape": "SimpleUser",
+      "field": "gravatar_id"
+    },
+    {
+      "shape": "SimpleUser",
+      "field": "node_id"
+    }
+  ],
+  "callbacks": [],
+  "security": []
+}

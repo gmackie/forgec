@@ -1,0 +1,46 @@
+[
+  {
+    "name": "cloudflare",
+    "url": "https://github.com/cloudflare/forge/releases/download/openapi%40e934edf0cddfc816c0a06cec0fabbff479424a1a/openapi.forge.json",
+    "sourceSha256": "d7319145abc348e0e2f02c9d0d2532f095f8f68cfb7cdb4f92cb4bd402870db7",
+    "fixtureSha256": "0ee04fed2bbc7cfa99af1d81fa53ca34bae3bf8795d3e16706e060ff452d596f",
+    "selection": {
+      "/zones/{zone_id}/dns_records": [
+        "get",
+        "post"
+      ]
+    },
+    "localRefs": 61,
+    "license": {
+      "name": "BSD-3-Clause",
+      "url": "https://opensource.org/licenses/BSD-3-Clause"
+    },
+    "transformation": "select paths/methods and transitive local refs; retain schemas unchanged",
+    "operations": [
+      "dns-records-for-a-zone-list-dns-records",
+      "dns-records-for-a-zone-create-dns-record"
+    ]
+  },
+  {
+    "name": "github",
+    "url": "https://raw.githubusercontent.com/github/rest-api-description/1d567e953615d18fc53cd847036489bcd8f7f00c/descriptions/api.github.com/api.github.com.json",
+    "sourceSha256": "072595660cbe07c91b8320f826c3a54762df1a1a6a0656d8653de8940b61f55f",
+    "fixtureSha256": "852275f0af38ba7d48a3b73b40ca2879ff0e481b9d882e4d88d09fe0b551e218",
+    "selection": {
+      "/repos/{owner}/{repo}/issues": [
+        "get",
+        "post"
+      ]
+    },
+    "localRefs": 37,
+    "license": {
+      "name": "MIT",
+      "url": "https://spdx.org/licenses/MIT"
+    },
+    "transformation": "select paths/methods and transitive local refs; retain schemas unchanged",
+    "operations": [
+      "issues/list-for-repo",
+      "issues/create"
+    ]
+  }
+]

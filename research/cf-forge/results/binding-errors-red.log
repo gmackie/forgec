@@ -1,0 +1,39 @@
+✔ generated SDK supplies transport behind an external binding (22.249916ms)
+✔ connection rejects another tenant before resolving credentials or sending traffic (2.191209ms)
+✔ uncertain writes return an explicit outcome without retry or credential leakage (5.560292ms)
+✔ invalid success data is rejected at the binding boundary (2.429ms)
+✖ HTTP failures distinguish rejected input, credentials, throttling, and unavailable reads (3.670958ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 365.637958
+
+✖ failing tests:
+
+test at research/cf-forge/bindings.test.mjs:16:1
+✖ HTTP failures distinguish rejected input, credentials, throttling, and unavailable reads (3.670958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   code: 'ExternalOutcomeUnknown',
+  -   code: 'ExternalRejected',
+      ok: false
+    }
+  
+      at <anonymous> (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:16:397)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async vendor (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:9:505)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { ok: false, code: 'ExternalOutcomeUnknown' },
+    expected: { ok: false, code: 'ExternalRejected' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

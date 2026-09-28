@@ -1,0 +1,139 @@
+[
+  "listItems"
+]
+[
+  {
+    "name": "plain OpenAPI resolves operations but has no command surface",
+    "status": "observed",
+    "route": "GET /items",
+    "commands": 0
+  },
+  {
+    "name": "overlay names surface methods without changing operation identity",
+    "status": "pass",
+    "sourceUnchanged": true,
+    "normalizedHash": "ef9fc9e860e8b0de4f88251f162cad9d2bee7188e16ce8e9c1b0d16df4be9039",
+    "methodMap": [
+      {
+        "items": [
+          "list"
+        ]
+      }
+    ],
+    "generated": [
+      {
+        "path": "binding-map.json",
+        "content": "{\"id\":\"listItems\",\"route\":\"GET /items\",\"surface\":[{\"items\":[\"list\"]}]}"
+      }
+    ]
+  },
+  {
+    "name": "independent Forge instances preserve their response metadata",
+    "status": "fail",
+    "before": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "ref": null,
+          "isArray": false,
+          "itemRef": null
+        }
+      },
+      "description": "first API"
+    },
+    "after": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "ref": null,
+          "isArray": false,
+          "itemRef": null
+        }
+      },
+      "description": "second API"
+    }
+  },
+  {
+    "name": "generic business response must remain intact",
+    "status": "fail",
+    "input": {
+      "success": true,
+      "result": {
+        "id": "issue-1"
+      },
+      "audit": "business-data"
+    },
+    "output": {
+      "id": "issue-1"
+    }
+  },
+  {
+    "name": "generic negative business result is not transport failure",
+    "status": "fail",
+    "input": {
+      "success": false,
+      "result": null,
+      "reason": "not-yet-complete"
+    },
+    "error": "CloudflareApiEnvelopeError",
+    "message": "Cloudflare API request failed"
+  },
+  {
+    "name": "duplicate canonical operation IDs are rejected",
+    "status": "pass",
+    "error": "Duplicate operation ids found listItems"
+  },
+  {
+    "name": "cloudflare real selected API surface",
+    "status": "pass",
+    "methodStats": {
+      "total": 2,
+      "byMethod": {
+        "create": 1,
+        "list": 1
+      }
+    },
+    "operations": [
+      {
+        "id": "dns-records-for-a-zone-list-dns-records",
+        "route": "GET /zones/{zone_id}/dns_records"
+      },
+      {
+        "id": "dns-records-for-a-zone-create-dns-record",
+        "route": "POST /zones/{zone_id}/dns_records"
+      }
+    ]
+  },
+  {
+    "name": "github real selected API surface",
+    "status": "pass",
+    "methodStats": {
+      "total": 0,
+      "byMethod": {}
+    },
+    "operations": [
+      {
+        "id": "issues/list-for-repo",
+        "route": "GET /repos/{owner}/{repo}/issues"
+      },
+      {
+        "id": "issues/create",
+        "route": "POST /repos/{owner}/{repo}/issues"
+      }
+    ]
+  }
+]
