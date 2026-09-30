@@ -20,7 +20,12 @@ for (const adapter of foundationAdapters) it(`${adapter}: campaign lifecycle, re
   const active = await run(service.act({ campaign: String(campaign.id), previous: null, kind: 'activate', at: from }, ctx));
   const wave = await call(p + 'CampaignWave.create', { campaign: campaign.id, key: 'first', from, until, appointment: null, memberCount: 1 });
   await expect(run(service.act({ campaign: String(campaign.id), previous: String(active.id), kind: 'wave', wave: String(wave.id), at: from }, ctx))).rejects.toThrow();
-  const destination = await call('@forgegraph/foundation/delivery/_/DeliveryDestination.create', { key: 'email', label: 'Email' }), endpoint = await call(n + 'NotificationEndpointLink.create', { recipient: contract.signers[1]!.id, destination: destination.id }), subscription = await call(n + 'NotificationSubscription.create', { topic: topic.id, recipient: contract.signers[1]!.id, endpoint: endpoint.id }), preference = await call(n + 'NotificationPreference.create', { subscription: subscription.id, revision: 1, previous: null, enabled: true, reason: 'Opted in' });
+  const reach = '@forgegraph/foundation/reachability/_/';
+  const locatorSet = await call(reach + 'LocatorSet.create', {label:'Recipient'});
+  const locatorKind = await call(reach + 'LocatorKind.create', {key:'email',label:'Email',personal:true});
+  const locatorPurpose = await call(reach + 'LocatorPurpose.create', {key:'billing',label:'Billing'});
+  const contact = await call(reach + 'ContactPoint.create', {locatorSet:locatorSet.id,kind:locatorKind.id,purpose:locatorPurpose.id,value:'recipient@example.com',preference:1,validFrom:from});
+  const destination = await call('@forgegraph/foundation/delivery/_/DeliveryDestination.create', { key: 'email', label: 'Email' }), endpoint = await call(n + 'NotificationEndpointLink.create', { recipient: contract.signers[1]!.id, destination: destination.id, contactPoint:contact.id }), subscription = await call(n + 'NotificationSubscription.create', { topic: topic.id, recipient: contract.signers[1]!.id, endpoint: endpoint.id }), preference = await call(n + 'NotificationPreference.create', { subscription: subscription.id, revision: 1, previous: null, enabled: true, reason: 'Opted in' });
   const bundle = await call('@forgegraph/foundation/evidence/_/EvidenceBundle.create', { key: 'reachability', label: 'Contact evidence' }), seal = await run(new Evidence(engine).seal(String(bundle.id), null, ctx));
   const route = await call(p + 'CampaignRoute.create', { endpoint: endpoint.id, channel: contract.pin.id, from, until, support: seal.id });
   const notice = await run(new Notifications(engine).create({ key: 'first', subscription: String(subscription.id), preference: String(preference.id), at: from }, ctx));

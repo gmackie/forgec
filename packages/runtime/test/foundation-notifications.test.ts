@@ -7,6 +7,7 @@ import { localAuthorizer } from '../src/gatekeeper.js';
 const p = '@forgegraph/foundation/notifications/_/', m = '@forgegraph/foundation/participation/_/', d = '@forgegraph/foundation/delivery/_/';
 const at = '2026-01-01T00:00:00Z';
 const run = Effect.runPromise;
+const r = '@forgegraph/foundation/reachability/_/';
 for (const adapter of foundationAdapters) it(`${adapter}: stable logical notices snapshot preferences, resume delivery and preserve suppression`, async () => {
   const f = await foundation('notifications', adapter, true), { call, engine, ctx } = f;
   try {
@@ -16,12 +17,18 @@ for (const adapter of foundationAdapters) it(`${adapter}: stable logical notices
     const recipient = await call(m + 'Participation.create', { participationSet: set.id, participant: party.id, role: role.id, validFrom: at, recordedBy: 'test', reason: 'Subscribed' });
     const topic = await call(p + 'NotificationTopic.create', { key: 'updates', label: 'Updates' });
     const destination = await call(d + 'DeliveryDestination.create', { key: 'recipient-email', label: 'Recipient email' });
-    const endpoint = await call(p + 'NotificationEndpointLink.create', { recipient: recipient.id, destination: destination.id });
+    const locators = await call(r + 'LocatorSet.create', {label:'Recipient'});
+    const kind = await call(r + 'LocatorKind.create', {key:'email',label:'Email',personal:true});
+    const purpose = await call(r + 'LocatorPurpose.create', {key:'updates',label:'Updates'});
+    const contact = await call(r + 'ContactPoint.create', {locatorSet:locators.id,kind:kind.id,purpose:purpose.id,value:'recipient@example.com',preference:1,validFrom:at,validUntil:'2026-02-01T00:00:00Z'});
+    const endpoint = await call(p + 'NotificationEndpointLink.create', { recipient: recipient.id, destination: destination.id, contactPoint:contact.id });
+    await expect(call(p + 'NotificationEndpointLink.create', {recipient:recipient.id,destination:destination.id})).rejects.toThrow();
     const subscription = await call(p + 'NotificationSubscription.create', { topic: topic.id, recipient: recipient.id, endpoint: endpoint.id });
     const preference = await call(p + 'NotificationPreference.create', { subscription: subscription.id, revision: 1, enabled: true, reason: 'Enabled' });
     const api = new Notifications(engine);
     expect((await run(api.audience(String(topic.id), ctx))).items).toHaveLength(1);
     const input = { key: 'event-1-recipient-1', subscription: String(subscription.id), preference: String(preference.id), at };
+    await expect(run(api.create({...input,key:'expired',at:'2026-02-01T00:00:00Z'},ctx))).rejects.toMatchObject({code:'ValidationFailed'});
     const notice = await run(api.create(input, ctx));
     expect(await run(api.create(input, ctx))).toEqual(notice);
     await expect(run(api.create({ ...input, at: '2026-01-02T00:00:00Z' }, ctx))).rejects.toThrow();
@@ -47,6 +54,22 @@ for (const adapter of foundationAdapters) it(`${adapter}: stable logical notices
     for (const [name, field] of [['KanBangerNotice', 'issueTitle'], ['ForgeGraphAlert', 'deploymentName'], ['BobUpdate', 'taskTitle']]) {
       await call('@fixture/notifications-consumer/_/' + name + '.create', { notification: notice.id, [field!]: name });
     }
+    // A terminal locator disposition blocks future notices but preserves historical outcomes.
+    await call(r + 'ContactPointDisposition.create', {contactPoint:contact.id,effectiveAt:'2026-01-15T00:00:00Z',reason:'Retired'});
+    await expect(run(api.create({...input,key:'retired',at:'2026-01-20T00:00:00Z'},ctx))).rejects.toMatchObject({code:'ValidationFailed'});
+    expect((await run(api.outcome(String(notice.id),ctx))).status).toBe('Succeeded');
+    const webhookKind = await call(r + 'LocatorKind.create', {key:'webhook',label:'Webhook',personal:false});
+    const webhook = await call(r + 'Endpoint.create', {locatorSet:locators.id,kind:webhookKind.id,purpose:purpose.id,value:'https://example.com/hook',preference:1,validFrom:at});
+    const webhookDestination = await call(d + 'DeliveryDestination.create', {key:'webhook',label:'Webhook'});
+    await expect(call(p + 'NotificationEndpointLink.create', {recipient:recipient.id,destination:webhookDestination.id,contactPoint:contact.id,serviceEndpoint:webhook.id})).rejects.toThrow();
+    const webhookLink = await call(p + 'NotificationEndpointLink.create', {recipient:recipient.id,destination:webhookDestination.id,serviceEndpoint:webhook.id});
+    const webhookSubscription = await call(p + 'NotificationSubscription.create', {topic:topic.id,recipient:recipient.id,endpoint:webhookLink.id});
+    const webhookPreference = await call(p + 'NotificationPreference.create', {subscription:webhookSubscription.id,revision:1,enabled:true,reason:'Enabled'});
+    const webhookInput = {...input,key:'webhook',subscription:String(webhookSubscription.id),preference:String(webhookPreference.id)};
+    const webhookNotice = await run(api.create(webhookInput,ctx));
+    expect((await run(api.dispatch(String(webhookNotice.id),ctx))).endpoint).toBe(webhookLink.id);
+    await call(r + 'EndpointDisposition.create', {endpoint:webhook.id,effectiveAt:'2026-01-15T00:00:00Z',reason:'Retired'});
+    await expect(run(api.create({...webhookInput,key:'retired-webhook',at:'2026-01-20T00:00:00Z'},ctx))).rejects.toMatchObject({code:'ValidationFailed'});
     const crashNotice = await run(api.create({ ...input, key: 'event-3-recipient-1' }, ctx));
     engine.gatekeeper.authorizer = localAuthorizer({ policies: engine.model.resources.map(r => ({ id: r.id, actions: [r.id + (r.id === p + 'NotificationDeliveryLink' ? '.get' : '.*')], requires: [], where: [] })), pips: [], epoch: 1, knownObligations: [] });
     await expect(run(api.dispatch(String(crashNotice.id), ctx))).rejects.toThrow();
@@ -54,6 +77,8 @@ for (const adapter of foundationAdapters) it(`${adapter}: stable logical notices
     const resumed = await run(new Notifications(engine).dispatch(String(crashNotice.id), ctx));
     expect(await run(api.dispatch(String(crashNotice.id), ctx))).toEqual(resumed);
     await expect(run(api.dispatch(String(notice.id), { ...ctx, tenant: 'foreign' }))).rejects.toThrow();
+    engine.gatekeeper.authorizer=localAuthorizer({policies:engine.model.resources.filter(resource=>resource.id!==r+'ContactPoint').map(resource=>({id:resource.id,actions:[resource.id+'.*'],requires:[],where:[]})),pips:[],epoch:3,knownObligations:[]});
+    await expect(run(api.outcome(String(notice.id),ctx))).rejects.toThrow();
     engine.gatekeeper.authorizer=localAuthorizer({policies:engine.model.resources.filter(r=>r.id!==p+'NotificationPreference').map(r=>({id:r.id,actions:[r.id+'.*'],requires:[],where:[]})),pips:[],epoch:3,knownObligations:[]});
     await expect(run(api.outcome(String(notice.id),ctx))).rejects.toThrow();
     engine.gatekeeper.authorizer = localAuthorizer({ policies: engine.model.resources.filter(r => r.id !== p + 'NotificationSuppression').map(r => ({ id: r.id, actions: [r.id + '.*'], requires: [], where: [] })), pips: [], epoch: 3, knownObligations: [] });

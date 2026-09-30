@@ -1528,9 +1528,13 @@ CREATE TABLE notification_endpoint_link (
   "id" TEXT NOT NULL,
   "recipient" TEXT NOT NULL,
   "destination" TEXT NOT NULL,
+  "contact_point" TEXT,
+  "service_endpoint" TEXT,
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, recipient) REFERENCES participation (tenant, id),
-  FOREIGN KEY (tenant, destination) REFERENCES delivery_destination (tenant, id)
+  FOREIGN KEY (tenant, destination) REFERENCES delivery_destination (tenant, id),
+  FOREIGN KEY (tenant, contact_point) REFERENCES contact_point (tenant, id),
+  FOREIGN KEY (tenant, service_endpoint) REFERENCES endpoint (tenant, id)
 );
 
 CREATE TABLE notification_preference (
@@ -1835,6 +1839,108 @@ CREATE TABLE plan (
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, definition) REFERENCES specification_pin (tenant, id),
   FOREIGN KEY (tenant, classification) REFERENCES concept_revision (tenant, id)
+);
+
+CREATE TABLE contact_point (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "locator_set" TEXT NOT NULL,
+  "kind" TEXT NOT NULL,
+  "purpose" TEXT NOT NULL,
+  "value_" TEXT NOT NULL,
+  "preference" INTEGER NOT NULL,
+  "valid_from" TEXT NOT NULL,
+  "valid_until" TEXT,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, locator_set) REFERENCES locator_set (tenant, id),
+  FOREIGN KEY (tenant, kind) REFERENCES locator_kind (tenant, id),
+  FOREIGN KEY (tenant, purpose) REFERENCES locator_purpose (tenant, id)
+);
+
+CREATE TABLE contact_point_disposition (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "contact_point" TEXT NOT NULL,
+  "replacement" TEXT,
+  "effective_at" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, contact_point) REFERENCES contact_point (tenant, id),
+  FOREIGN KEY (tenant, replacement) REFERENCES contact_point (tenant, id)
+);
+
+CREATE TABLE contact_point_verification (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "contact_point" TEXT NOT NULL,
+  "verified_at" TEXT NOT NULL,
+  "method" TEXT NOT NULL,
+  "evidence" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, contact_point) REFERENCES contact_point (tenant, id)
+);
+
+CREATE TABLE endpoint (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "locator_set" TEXT NOT NULL,
+  "kind" TEXT NOT NULL,
+  "purpose" TEXT NOT NULL,
+  "value_" TEXT NOT NULL,
+  "preference" INTEGER NOT NULL,
+  "valid_from" TEXT NOT NULL,
+  "valid_until" TEXT,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, locator_set) REFERENCES locator_set (tenant, id),
+  FOREIGN KEY (tenant, kind) REFERENCES locator_kind (tenant, id),
+  FOREIGN KEY (tenant, purpose) REFERENCES locator_purpose (tenant, id)
+);
+
+CREATE TABLE endpoint_disposition (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "endpoint" TEXT NOT NULL,
+  "replacement" TEXT,
+  "effective_at" TEXT NOT NULL,
+  "reason" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, endpoint) REFERENCES endpoint (tenant, id),
+  FOREIGN KEY (tenant, replacement) REFERENCES endpoint (tenant, id)
+);
+
+CREATE TABLE endpoint_verification (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "endpoint" TEXT NOT NULL,
+  "verified_at" TEXT NOT NULL,
+  "method" TEXT NOT NULL,
+  "evidence" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, endpoint) REFERENCES endpoint (tenant, id)
+);
+
+CREATE TABLE locator_kind (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "key_" TEXT NOT NULL,
+  "label" TEXT NOT NULL,
+  "personal" INTEGER NOT NULL,
+  PRIMARY KEY (tenant, id)
+);
+
+CREATE TABLE locator_purpose (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "key_" TEXT NOT NULL,
+  "label" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id)
+);
+
+CREATE TABLE locator_set (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "label" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id)
 );
 
 CREATE TABLE appointment (
@@ -2160,6 +2266,21 @@ CREATE INDEX budget_event_ix_by_envelope ON budget_event (tenant, envelope, ordi
 CREATE UNIQUE INDEX encumbrance_uq_envelope_key ON encumbrance (tenant, envelope, key_);
 CREATE UNIQUE INDEX forecast_scenario_uq_plan_revision ON forecast_scenario (tenant, plan, revision);
 CREATE UNIQUE INDEX forecast_value_uq_scenario_goal ON forecast_value (tenant, scenario, goal);
+CREATE UNIQUE INDEX contact_point_uq_locatorSet_kind_purpose_preference ON contact_point (tenant, locator_set, kind, purpose, preference);
+CREATE UNIQUE INDEX contact_point_uq_locatorSet_kind_purpose_value ON contact_point (tenant, locator_set, kind, purpose, value_);
+CREATE INDEX contact_point_ix_by_locator_set ON contact_point (tenant, locator_set, id);
+CREATE INDEX contact_point_ix_by_locator_set_kind_purpose ON contact_point (tenant, locator_set, kind, purpose, preference, id);
+CREATE UNIQUE INDEX contact_point_disposition_uq_contactPoint ON contact_point_disposition (tenant, contact_point);
+CREATE UNIQUE INDEX contact_point_verification_uq_contactPoint ON contact_point_verification (tenant, contact_point);
+CREATE UNIQUE INDEX endpoint_uq_locatorSet_kind_purpose_preference ON endpoint (tenant, locator_set, kind, purpose, preference);
+CREATE UNIQUE INDEX endpoint_uq_locatorSet_kind_purpose_value ON endpoint (tenant, locator_set, kind, purpose, value_);
+CREATE INDEX endpoint_ix_by_locator_set ON endpoint (tenant, locator_set, id);
+CREATE INDEX endpoint_ix_by_locator_set_kind_purpose ON endpoint (tenant, locator_set, kind, purpose, preference, id);
+CREATE UNIQUE INDEX endpoint_disposition_uq_endpoint ON endpoint_disposition (tenant, endpoint);
+CREATE UNIQUE INDEX endpoint_verification_uq_endpoint ON endpoint_verification (tenant, endpoint);
+CREATE UNIQUE INDEX locator_kind_uq_key ON locator_kind (tenant, key_);
+CREATE INDEX locator_kind_ix_by_personal ON locator_kind (tenant, personal, id);
+CREATE UNIQUE INDEX locator_purpose_uq_key ON locator_purpose (tenant, key_);
 CREATE UNIQUE INDEX appointment_uq_key ON appointment (tenant, key_);
 CREATE UNIQUE INDEX appointment_commit_uq_appointment ON appointment_commit (tenant, appointment);
 CREATE UNIQUE INDEX appointment_end_uq_appointment ON appointment_end (tenant, appointment);
