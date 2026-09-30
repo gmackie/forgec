@@ -32,7 +32,7 @@ export interface DynamoOptions {
 
 type Item = Record<string, unknown>;
 type TxItem = NonNullable<TransactWriteCommandInput["TransactItems"]>[number];
-type Role = "entity" | "claim" | "access" | "parent" | "audit" | "outbox" | "receipt" | "absence";
+type Role = "entity" | "claim" | "access" | "parent" | "audit" | "outbox" | "receipt" | "absence" | "completion";
 
 /** Merge only generated additive reference-counter updates, never entity writes,
  * hierarchy checks or effective-date revision SETs. All original guards survive. */
@@ -146,6 +146,7 @@ export async function ensureDynamoTable(table: string, region: string): Promise<
 
 export class DynamoStorage implements StorageAdapter {
   readonly atomicAbsenceGuards = true;
+  readonly atomicCompletion = true;
   readonly name = "dynamodb";
   private readonly doc: DynamoDBDocumentClient;
   private readonly table: string;
@@ -363,6 +364,12 @@ export class DynamoStorage implements StorageAdapter {
   outboxRedrive(r: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError> {
     return this.wrap(() => this.conditional(new UpdateCommand({ TableName: this.table, Key: this.outboxKey(r.tenant, r.opId, r.ordinal), UpdateExpression: "SET #s = :pending, attempts = :zero, pendingShard = :shard, pendingAt = :at REMOVE leaseOwner, leaseUntil", ConditionExpression: "#s = :dead", ExpressionAttributeNames: { "#s": "status" }, ExpressionAttributeValues: { ":pending": "pending", ":dead": "dead", ":zero": 0, ":shard": encodeIdentity(["T", r.tenant]), ":at": Date.now() } })));
   }
+  hasProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
+    return Effect.tryPromise({
+      try: async () => !!(await this.doc.send(new GetCommand({ TableName: this.table, Key: { PK: encodeIdentity(["T", tenant, "P", subscription, messageId]), SK: "PROCESSED" }, ConsistentRead: true }))).Item,
+      catch: (e) => err("StorageUnavailable", String(e)),
+    });
+  }
   markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
     return Effect.tryPromise({
       try: async () => {
@@ -493,6 +500,11 @@ export class DynamoStorage implements StorageAdapter {
       roles.push(role);
       items.push(item);
     };
+    if (plan.completion) {
+      const w = plan.completion;
+      const { _version, ...doc } = w.doc; void _version;
+      push("completion", { Put: { TableName: this.table, Item: { ...doc, ...this.documentKey(tenant, w.kind, w.id), docVersion: (w.expectedVersion ?? 0) + 1 }, ConditionExpression: w.expectedVersion === null ? "attribute_not_exists(PK)" : "docVersion = :v", ...(w.expectedVersion === null ? {} : { ExpressionAttributeValues: { ":v": w.expectedVersion } }) } });
+    }
     if (plan.kind === "publish") {
       const a = plan.audit;
       push("audit", { Put: { TableName: this.table, Item: { ...this.auditKey(tenant, a.opId), resource: a.resource, recordId: a.recordId, kind: a.kind, newVersion: a.newVersion, actor: a.actor, at: a.at } } });
@@ -700,6 +712,7 @@ export class DynamoStorage implements StorageAdapter {
     const failed = reasons.find((r) => r.code === "ConditionalCheckFailed");
     if (failed) plan = owners[reasons.indexOf(failed)] ?? first;
     switch (failed?.role) {
+      case "completion": return err("VersionConflict", "subscription claim changed");
       case "absence": return err("VersionConflict", "Atomic absence guard failed");
       case "entity": {
         if (plan.kind === "create") return err("TransientConflict", "id collision");

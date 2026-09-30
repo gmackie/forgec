@@ -86,3 +86,12 @@ describe("Dispatcher", () => {
     expect(processed).toEqual(["op_1:0"]);
   });
 });
+
+it("does not acknowledge a failed opaque consumer callback as a successful duplicate", async () => {
+  let attempts=0;
+  const consume=dispatcher.consumer("opaque",async()=>{attempts++;throw new Error("unknown external outcome");});
+  const env={channel:"c",message:"M",tenant:"acme",opId:"failed",ordinal:0,messageId:"failed:0",payload:{},createdAt:"t"};
+  await expect(consume(env)).rejects.toMatchObject({code:"DeliveryOutcomeUnknown"});
+  await expect(consume(env)).rejects.toMatchObject({code:"DeliveryOutcomeUnknown"});
+  expect(attempts).toBe(1);
+});

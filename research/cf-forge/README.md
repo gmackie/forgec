@@ -49,3 +49,19 @@ It is deliberately **not production-ready**: it is untyped JavaScript, accepts t
 - `results/decision.json`: bounded recommendation and outstanding gates.
 
 These results justify continued isolated connector work, not automatic vendor import, production migration or replacement of existing clients.
+
+## Issue closeout (2026-09-30)
+
+Research PR #190 is merged. Importer #187 is fixed in PR #191; the unchanged
+vendor fixtures now both import and pass `forgec check`. New evidence is in
+`results/importer-fix-187.json`. Delivery #188 is addressed in PR #192, with
+cross-adapter fault tests and [recovery/upgrade guidance](../../docs/subscription-delivery.md).
+
+The original results and `run.sh` hash checks intentionally describe the pinned
+pre-fix baseline. Run that historical pipeline at the research revision; do not
+replace its hashes to imply the same experiment ran on different source. The new
+importer tests and delivery fault scenarios qualify the fixes separately.
+
+The maintainer has deferred #189: no disposable live sandbox exists yet. The live
+pilot, application capability choice, connector-specific reconciliation, historical
+compatibility matrix and remaining host/vendor gates are still open.

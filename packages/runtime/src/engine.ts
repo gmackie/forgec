@@ -823,6 +823,8 @@ export class Engine {
           outboxProgress: (...a) => storage.outboxProgress(...a),
           outboxDead: (...a) => storage.outboxDead(...a),
           outboxRedrive: (...a) => storage.outboxRedrive(...a),
+          ...(storage.atomicCompletion ? { atomicCompletion: true as const } : {}),
+          hasProcessed: (...a) => storage.hasProcessed(...a),
           markProcessed: (...a) => storage.markProcessed(...a),
           overlapping: (...a) => storage.overlapping(...a),
           effectiveAt: (...a) => storage.effectiveAt(...a),

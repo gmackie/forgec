@@ -95,8 +95,8 @@ describe.skipIf(!url)("Node host on PostgreSQL", () => {
     const row = await pool.query("SELECT status, delivered FROM forge_outbox WHERE tenant = $1 AND op_id = 'op_restart'", [tenant]);
     expect(row.rows[0]).toMatchObject({ status: "delivered" });
     expect(JSON.parse(row.rows[0].delivered)).toContain("realtime:OrderEvents");
-    // and the FulfillOrder consumer ran exactly once (processed ledger)
-    const processed = await pool.query("SELECT count(*)::int AS n FROM forge_processed WHERE tenant = $1 AND message_id = 'op_restart:0'", [tenant]);
+    // and the FulfillOrder consumer durably completed once (fenced inbox)
+    const processed = await pool.query("SELECT count(*)::int AS n FROM forge_document WHERE tenant = $1 AND kind = 'subscription-delivery-v1' AND body::jsonb->>'messageId' = 'op_restart:0' AND body::jsonb->>'status' = 'complete'", [tenant]);
     expect(processed.rows[0].n).toBe(1);
   }, 30_000);
 
@@ -142,7 +142,7 @@ describe.skipIf(!url)("Node host on PostgreSQL", () => {
     // outbox rows delivered, consumer ledger exactly once per message
     const rows = await pool.query("SELECT status FROM forge_outbox WHERE tenant = $1", [tenant]);
     expect(rows.rows.every((r: { status: string }) => r.status === "delivered")).toBe(true);
-    const processed = await pool.query("SELECT message_id, count(*)::int AS n FROM forge_processed WHERE tenant = $1 GROUP BY message_id", [tenant]);
+    const processed = await pool.query("SELECT id, count(*)::int AS n FROM forge_document WHERE tenant = $1 AND kind = 'subscription-delivery-v1' AND body::jsonb->>'status' = 'complete' GROUP BY id", [tenant]);
     expect(processed.rows.length).toBeGreaterThan(0);
     expect(processed.rows.every((r: { n: number }) => r.n === 1)).toBe(true);
   }, 90_000);

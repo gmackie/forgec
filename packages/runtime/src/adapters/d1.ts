@@ -34,6 +34,7 @@ const D1_BATCH_STATEMENT_LIMIT = 100;
 export class D1Storage implements StorageAdapter {
   readonly name: string;
   readonly atomicAbsenceGuards = true;
+  readonly atomicCompletion = true;
   private readonly map: SqlMapping;
   private readonly db: SqlExecutor;
 
@@ -224,6 +225,9 @@ export class D1Storage implements StorageAdapter {
   outboxRedrive(r: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError> {
     return this.wrap(async () => (await this.db.run(st("UPDATE forge_outbox SET status = 'pending', attempts = 0, lease_owner = NULL, lease_until = NULL WHERE tenant = ? AND op_id = ? AND ordinal = ? AND status = 'dead'", r.tenant, r.opId, r.ordinal))).changes === 1);
   }
+  hasProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(async () => !!await this.db.first(st("SELECT 1 FROM forge_processed WHERE tenant = ? AND subscription = ? AND message_id = ?", tenant, subscription, messageId)));
+  }
   markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
     return this.wrap(async () => {
       const res = await this.db.run(st("INSERT OR IGNORE INTO forge_processed (tenant, subscription, message_id, at) VALUES (?, ?, ?, ?)", tenant, subscription, messageId, new Date().toISOString()));
@@ -346,6 +350,13 @@ export class D1Storage implements StorageAdapter {
             if (found) return err("VersionConflict", "Atomic absence guard failed");
           }
         }
+        for (const plan of plans) {
+          if (plan.completion) {
+            const w = plan.completion;
+            const row = await this.db.first<{version: number}>(st("SELECT version FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", plan.tenant, w.kind, w.id));
+            if ((row?.version ?? null) !== w.expectedVersion) return err("VersionConflict", "subscription claim changed");
+          }
+        }
         // Find the plan whose precondition failed: diagnose each until one explains the failure.
         for (const plan of plans) {
           const outcome = await this.classify(e, plan);
@@ -369,6 +380,19 @@ export class D1Storage implements StorageAdapter {
   private statementsFor(plan: CommitPlan): SqlStatement[] {
     const { resource: r, tenant, id } = plan;
     const stmts: SqlStatement[] = [];
+    if (plan.completion) {
+      const w = plan.completion;
+      const op = `completion:${plan.opId}`;
+      const { _version, ...doc } = w.doc; void _version;
+      const predicate = w.expectedVersion === null
+        ? "NOT EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?)"
+        : "EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ? AND version = ?)";
+      stmts.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, ${predicate}`, op, tenant, w.kind, w.id, ...(w.expectedVersion === null ? [] : [w.expectedVersion])));
+      stmts.push(w.expectedVersion === null
+        ? st("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, ?)", tenant, w.kind, w.id, JSON.stringify(doc))
+        : st("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?", JSON.stringify(doc), tenant, w.kind, w.id, w.expectedVersion));
+      stmts.push(st("DELETE FROM _forge_assert WHERE op_id = ?", op));
+    }
     if (plan.kind === "publish") {
       const a = plan.audit;
       stmts.push(st("INSERT INTO forge_audit (tenant, op_id, resource, record_id, kind, new_version, actor, at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", a.tenant, a.opId, a.resource, a.recordId, a.kind, a.newVersion, a.actor, a.at, null));
