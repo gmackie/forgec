@@ -1,0 +1,148 @@
+/// Whether a subject agreed, to what, for how long, and how we know.
+///
+/// Consent is not authorization. A policy engine may read these facts to decide a request,
+/// but nothing here grants access, and a missing grant is not a denial reason by itself —
+/// it is the absence of one input. Consent is also not an agreement, an entitlement or a
+/// notification preference: an unsubscribed newsletter says nothing about research consent,
+/// and a contract that permits processing is a different fact with a different lifecycle.
+///
+/// Two time axes, both explicit. `validFrom`/`validUntil` is when the subject's permission
+/// applies; `recordedAt` is when this instance learned of it. They differ whenever a paper
+/// form is entered late or a withdrawal is backdated, and a decision made last Tuesday has to
+/// be explainable with what was known last Tuesday rather than what is known now. These are
+/// ordinary fields, a bounded interpretation rather than an L0 temporal facet: ConceptIR #75
+/// is what would make valid and knowledge time a language-level axis.
+export dataClass ConsentNarrative extends data.communication.content
+export type ConsentEvidenceText = text length 1..1000 @data(ConsentNarrative)
+
+export resource ConsentSubject
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+
+/// Why the processing happens. Deliberately a separate axis from the activity: the same
+/// activity can be consented for one purpose and refused for another.
+export resource ConsentPurpose
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..64 @unique
+  label : text length 1..200
+  find by key
+}
+
+/// What is actually done. Storing, sharing, profiling and contacting are different acts and
+/// a subject may agree to one without agreeing to another.
+export resource ProcessingActivity
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..64 @unique
+  label : text length 1..200
+  find by key
+}
+
+/// Which data or resources are in scope.
+export resource ConsentScope
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..64 @unique
+  label : text length 1..200
+  find by key
+}
+
+/// Who the permission runs to, when it is not simply this controller. A keyed handle rather
+/// than a universal entity reference: the domain resolves its own typed counterparty.
+export resource ConsentCounterparty
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..128 @unique
+  label : text length 1..200
+  find by key
+}
+
+/// The basis a policy stands on where one is required. Recorded, never inferred, and never
+/// interpreted here: this package does not decide whether a basis is lawful.
+export resource ConsentBasis
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..64 @unique
+  label : text length 1..200
+  find by key
+}
+
+export resource ConsentGrant
+  @tenant
+  @appendOnly
+{
+  id : id
+  subject : ConsentSubject
+  grantedTo : ConsentCounterparty?
+  purpose : ConsentPurpose
+  activity : ProcessingActivity
+  scope : ConsentScope
+  basis : ConsentBasis?
+  conditions : text? length 1..1000
+  validFrom : datetime
+  validUntil : datetime?
+  recordedAt : datetime
+  rules {
+    validUntil == null || validUntil > validFrom
+  }
+  unique subject, purpose, activity, scope, validFrom
+  find by subject, purpose, activity, scope, validFrom
+  list by subject
+  list by subject, purpose, activity, scope
+    order by validFrom asc
+}
+
+/// How the grant was captured, kept separate so an unevidenced grant is still a recorded
+/// fact rather than a missing one.
+export resource ConsentEvidence
+  @tenant
+  @appendOnly
+{
+  id : id
+  grant : ConsentGrant @unique
+  capturedAt : datetime
+  method : text trim lowercase length 1..64
+  provenance : ConsentEvidenceText
+  rules {
+    capturedAt >= grant.validFrom
+  }
+  find by grant
+}
+
+/// Withdrawal, expiry by supersession, or narrowing. One terminal fact per grant, carrying
+/// both axes: `effectiveAt` is when permission stopped applying, `recordedAt` is when we were
+/// told. History is never erased — a withdrawn grant remains, which is what makes it possible
+/// to answer what was permitted at the time something happened.
+export resource ConsentDisposition
+  @tenant
+  @appendOnly
+{
+  id : id
+  grant : ConsentGrant @unique
+  replacement : ConsentGrant?
+  withdrawn : boolean
+  effectiveAt : datetime
+  recordedAt : datetime
+  reason : text length 1..500
+  rules {
+    effectiveAt >= grant.validFrom
+    replacement == null || (replacement.subject == grant.subject && replacement.purpose == grant.purpose && replacement.activity == grant.activity && replacement.validFrom > grant.validFrom && effectiveAt == replacement.validFrom)
+    withdrawn == true || replacement != null
+  }
+  find by grant
+}
