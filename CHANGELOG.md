@@ -23,6 +23,26 @@
 
   Seven criteria have local evidence; scalar type validation remains tracked in #94.
 
+- `@forgegraph/foundation/reachability` (experimental): contact points and service
+  endpoints as durable facts, with purpose labels, preference ranking, half-open
+  validity, verification evidence and explicit supersession. `Reachability` in
+  `@forgegraph/runtime` declares, verifies, supersedes and resolves them.
+
+  Contact points and endpoints are separate resources rather than one polymorphic
+  locator, because a data classification is a property of a field. A single `value`
+  column has to be classified once: as `data.contact`, which sweeps webhook URLs into
+  subject-rights erasure that does not apply to them, or as structural, which
+  under-classifies an email address. `LocatorKind.personal` decides which profile a
+  kind belongs to and a rule on each profile enforces it.
+
+  No transport mechanics are foundation semantics here: a locator says where something
+  can be reached, never whether a message was sent, how many attempts it took, or what
+  a provider answered. A test asserts that structurally against the compiled contract.
+  Notifications now consumes typed contact points and endpoints and checks their
+  validity at notification time. All eight criteria have local evidence.
+
+### Added
+
 - `@forgegraph/foundation/consent` (experimental): consent grants, withdrawal,
   supersession and evidence as durable facts, with purpose, processing activity and
   data scope as three independent axes. `Consent` in `@forgegraph/runtime` grants,

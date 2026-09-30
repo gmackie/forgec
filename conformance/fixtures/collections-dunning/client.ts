@@ -2893,11 +2893,15 @@ export interface NotificationEndpointLinkRecord {
   id: string;
   recipient: string;
   destination: string;
+  contactPoint: string | null;
+  serviceEndpoint: string | null;
 }
 
 export interface NotificationEndpointLinkCreate {
   recipient: string;
   destination: string;
+  contactPoint?: string | null;
+  serviceEndpoint?: string | null;
 }
 
 export interface NotificationEndpointLinkPatch {
@@ -3359,6 +3363,168 @@ export interface QuoteLineCreate {
 }
 
 export interface QuoteLinePatch {
+}
+
+export interface ContactPointRecord {
+  id: string;
+  locatorSet: string;
+  kind: string;
+  purpose: string;
+  value: string;
+  preference: number;
+  validFrom: string;
+  validUntil: string | null;
+}
+
+export interface ContactPointCreate {
+  locatorSet: string;
+  kind: string;
+  purpose: string;
+  value: string;
+  preference: number;
+  validFrom: string;
+  validUntil?: string | null;
+}
+
+export interface ContactPointPatch {
+}
+
+export interface ContactPointDispositionRecord {
+  id: string;
+  contactPoint: string;
+  replacement: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface ContactPointDispositionCreate {
+  contactPoint: string;
+  replacement?: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface ContactPointDispositionPatch {
+}
+
+export interface ContactPointVerificationRecord {
+  id: string;
+  contactPoint: string;
+  verifiedAt: string;
+  method: string;
+  evidence: string;
+}
+
+export interface ContactPointVerificationCreate {
+  contactPoint: string;
+  verifiedAt: string;
+  method: string;
+  evidence: string;
+}
+
+export interface ContactPointVerificationPatch {
+}
+
+export interface EndpointRecord {
+  id: string;
+  locatorSet: string;
+  kind: string;
+  purpose: string;
+  value: string;
+  preference: number;
+  validFrom: string;
+  validUntil: string | null;
+}
+
+export interface EndpointCreate {
+  locatorSet: string;
+  kind: string;
+  purpose: string;
+  value: string;
+  preference: number;
+  validFrom: string;
+  validUntil?: string | null;
+}
+
+export interface EndpointPatch {
+}
+
+export interface EndpointDispositionRecord {
+  id: string;
+  endpoint: string;
+  replacement: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface EndpointDispositionCreate {
+  endpoint: string;
+  replacement?: string | null;
+  effectiveAt: string;
+  reason: string;
+}
+
+export interface EndpointDispositionPatch {
+}
+
+export interface EndpointVerificationRecord {
+  id: string;
+  endpoint: string;
+  verifiedAt: string;
+  method: string;
+  evidence: string;
+}
+
+export interface EndpointVerificationCreate {
+  endpoint: string;
+  verifiedAt: string;
+  method: string;
+  evidence: string;
+}
+
+export interface EndpointVerificationPatch {
+}
+
+export interface LocatorKindRecord {
+  id: string;
+  key: string;
+  label: string;
+  personal: boolean;
+}
+
+export interface LocatorKindCreate {
+  key: string;
+  label: string;
+  personal: boolean;
+}
+
+export interface LocatorKindPatch {
+}
+
+export interface LocatorPurposeRecord {
+  id: string;
+  key: string;
+  label: string;
+}
+
+export interface LocatorPurposeCreate {
+  key: string;
+  label: string;
+}
+
+export interface LocatorPurposePatch {
+}
+
+export interface LocatorSetRecord {
+  id: string;
+  label: string;
+}
+
+export interface LocatorSetCreate {
+  label: string;
+}
+
+export interface LocatorSetPatch {
 }
 
 export interface ResidualRiskRecord {
@@ -4485,6 +4651,33 @@ export interface QuoteEndApi {
 export interface QuoteLineApi {
 }
 
+export interface ContactPointApi {
+}
+
+export interface ContactPointDispositionApi {
+}
+
+export interface ContactPointVerificationApi {
+}
+
+export interface EndpointApi {
+}
+
+export interface EndpointDispositionApi {
+}
+
+export interface EndpointVerificationApi {
+}
+
+export interface LocatorKindApi {
+}
+
+export interface LocatorPurposeApi {
+}
+
+export interface LocatorSetApi {
+}
+
 export interface ResidualRiskApi {
 }
 
@@ -4766,6 +4959,15 @@ export interface ForgeClient {
   quoteAgreements: QuoteAgreementApi;
   quoteEnds: QuoteEndApi;
   quoteLines: QuoteLineApi;
+  contactPoints: ContactPointApi;
+  contactPointDispositions: ContactPointDispositionApi;
+  contactPointVerifications: ContactPointVerificationApi;
+  endpoints: EndpointApi;
+  endpointDispositions: EndpointDispositionApi;
+  endpointVerifications: EndpointVerificationApi;
+  locatorKinds: LocatorKindApi;
+  locatorPurposes: LocatorPurposeApi;
+  locatorSets: LocatorSetApi;
   residualRisks: ResidualRiskApi;
   risks: RiskApi;
   riskAcceptances: RiskAcceptanceApi;
@@ -5156,6 +5358,24 @@ export function createClient(options: ClientOptions): ForgeClient {
     quoteEnds: {
     },
     quoteLines: {
+    },
+    contactPoints: {
+    },
+    contactPointDispositions: {
+    },
+    contactPointVerifications: {
+    },
+    endpoints: {
+    },
+    endpointDispositions: {
+    },
+    endpointVerifications: {
+    },
+    locatorKinds: {
+    },
+    locatorPurposes: {
+    },
+    locatorSets: {
     },
     residualRisks: {
     },

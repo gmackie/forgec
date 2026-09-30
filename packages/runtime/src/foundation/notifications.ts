@@ -41,6 +41,16 @@ export class Notifications {
       const member = yield* self.engine.call(m + 'Participation.get', { id: subscription.recipient }, ctx);
       const end = yield* findTerminalFact(self.engine, m + 'ParticipationEnd', 'participation', member.id, ctx);
       const instant = Date.parse(at);
+      const profile = endpoint.contactPoint != null ? 'ContactPoint' : 'Endpoint';
+      const owner = profile === 'ContactPoint' ? 'contactPoint' : 'endpoint';
+      const locatorId = endpoint.contactPoint ?? endpoint.serviceEndpoint;
+      const reachability = '@forgegraph/foundation/reachability/_/';
+      const locator = yield* self.engine.call(reachability + profile + '.get', {id:locatorId}, ctx);
+      const disposition = yield* findTerminalFact(self.engine, reachability + profile + 'Disposition', owner, locator.id, ctx);
+      if (!Number.isFinite(instant) || instant < Date.parse(String(locator.validFrom)) ||
+          locator.validUntil != null && instant >= Date.parse(String(locator.validUntil)) ||
+          disposition && instant >= Date.parse(String(disposition.effectiveAt)))
+        return yield* Effect.fail(err('ValidationFailed', 'Selected locator is not reachable at notification time'));
       if (!Number.isFinite(instant) || instant < Date.parse(String(member.validFrom)) || member.validUntil != null && instant >= Date.parse(String(member.validUntil)) || end && instant >= Date.parse(String(end.effectiveAt))) return yield* Effect.fail(err('ValidationFailed', 'Recipient participation is not active at notification time'));
       return { ...subscription, destination: endpoint.destination };
     });

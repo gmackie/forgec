@@ -2234,13 +2234,29 @@
           "destination": {
             "type": "string",
             "x-forge-reference": "@forgegraph/foundation/delivery/_/DeliveryDestination"
+          },
+          "contactPoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "serviceEndpoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
           }
         },
         "additionalProperties": false,
         "required": [
           "id",
           "recipient",
-          "destination"
+          "destination",
+          "contactPoint",
+          "serviceEndpoint"
         ]
       },
       "NotificationEndpointLinkCreate": {
@@ -2253,6 +2269,20 @@
           "destination": {
             "type": "string",
             "x-forge-reference": "@forgegraph/foundation/delivery/_/DeliveryDestination"
+          },
+          "contactPoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "serviceEndpoint": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
           }
         },
         "additionalProperties": false,
@@ -3219,6 +3249,781 @@
         ]
       },
       "RepresentationRevocationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "ContactPointRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "locatorSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorSet"
+          },
+          "kind": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorKind"
+          },
+          "purpose": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorPurpose"
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 320,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "preference": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64,
+            "x-forge-type": "integer"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locatorSet",
+          "kind",
+          "purpose",
+          "value",
+          "preference",
+          "validFrom",
+          "validUntil"
+        ]
+      },
+      "ContactPointCreate": {
+        "type": "object",
+        "properties": {
+          "locatorSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorSet"
+          },
+          "kind": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorKind"
+          },
+          "purpose": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorPurpose"
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 320,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "preference": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64,
+            "x-forge-type": "integer"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "locatorSet",
+          "kind",
+          "purpose",
+          "value",
+          "preference",
+          "validFrom"
+        ]
+      },
+      "ContactPointPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "ContactPointDispositionRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "contactPoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "contactPoint",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "ContactPointDispositionCreate": {
+        "type": "object",
+        "properties": {
+          "contactPoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "contactPoint",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "ContactPointDispositionPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "ContactPointVerificationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "contactPoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "method": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "contactPoint",
+          "verifiedAt",
+          "method",
+          "evidence"
+        ]
+      },
+      "ContactPointVerificationCreate": {
+        "type": "object",
+        "properties": {
+          "contactPoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/ContactPoint"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "method": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "contactPoint",
+          "verifiedAt",
+          "method",
+          "evidence"
+        ]
+      },
+      "ContactPointVerificationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "EndpointRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "locatorSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorSet"
+          },
+          "kind": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorKind"
+          },
+          "purpose": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorPurpose"
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 2048,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "preference": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64,
+            "x-forge-type": "integer"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locatorSet",
+          "kind",
+          "purpose",
+          "value",
+          "preference",
+          "validFrom",
+          "validUntil"
+        ]
+      },
+      "EndpointCreate": {
+        "type": "object",
+        "properties": {
+          "locatorSet": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorSet"
+          },
+          "kind": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorKind"
+          },
+          "purpose": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/LocatorPurpose"
+          },
+          "value": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 2048,
+            "x-forge-normalizers": [
+              "trim"
+            ]
+          },
+          "preference": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64,
+            "x-forge-type": "integer"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "validUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "locatorSet",
+          "kind",
+          "purpose",
+          "value",
+          "preference",
+          "validFrom"
+        ]
+      },
+      "EndpointPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "EndpointDispositionRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "endpoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "endpoint",
+          "replacement",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "EndpointDispositionCreate": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
+          },
+          "replacement": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "reason": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "endpoint",
+          "effectiveAt",
+          "reason"
+        ]
+      },
+      "EndpointDispositionPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "EndpointVerificationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "endpoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "method": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "endpoint",
+          "verifiedAt",
+          "method",
+          "evidence"
+        ]
+      },
+      "EndpointVerificationCreate": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/reachability/_/Endpoint"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "x-forge-type": "datetime",
+            "x-forge-precision": "ms"
+          },
+          "method": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "endpoint",
+          "verifiedAt",
+          "method",
+          "evidence"
+        ]
+      },
+      "EndpointVerificationPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "LocatorKindRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "personal": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "key",
+          "label",
+          "personal"
+        ]
+      },
+      "LocatorKindCreate": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "personal": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "label",
+          "personal"
+        ]
+      },
+      "LocatorKindPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "LocatorPurposeRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "key",
+          "label"
+        ]
+      },
+      "LocatorPurposeCreate": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-forge-normalizers": [
+              "trim",
+              "lowercase"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "label"
+        ]
+      },
+      "LocatorPurposePatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "LocatorSetRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label"
+        ]
+      },
+      "LocatorSetCreate": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "x-forge-type": "text",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ]
+      },
+      "LocatorSetPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false

@@ -64,6 +64,17 @@
       "acceptanceGates": []
     },
     {
+      "issue": 91,
+      "slug": "reachability",
+      "layer": "substrate",
+      "dependencies": [],
+      "requiresGates": [
+        "G-core"
+      ],
+      "wave": 0,
+      "acceptanceGates": []
+    },
+    {
       "issue": 29,
       "slug": "participation",
       "layer": "substrate",
@@ -398,7 +409,8 @@
       "dependencies": [
         "participation",
         "delivery",
-        "artifact"
+        "artifact",
+        "reachability"
       ],
       "requiresGates": [
         "G-core"
