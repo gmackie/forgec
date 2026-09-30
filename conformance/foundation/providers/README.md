@@ -120,7 +120,9 @@ The aggregate accepts exactly 16 profiles × 3 providers. Every receipt must mat
 the current source fingerprint, rebuilt artifacts, exact required trace set,
 raw test report digest, and observed provider identity. Missing, skipped, failed,
 or stale cells prevent certification. The Forgejo job uses the same verifier and
-aggregate check, with a 120-minute timeout and serialized workflow runs.
+aggregate check, with a 120-minute timeout and serialized workflow runs. Up to
+three profiles execute concurrently within a job; each profile uses its own D1
+deployment, isolated PostgreSQL schema and per-run DynamoDB tenant.
 
 When rotating a package harness, update its private infrastructure receipt and
 the corresponding `FOUNDATION_D1_PROFILES` JSON entry in Forgejo. The secret has

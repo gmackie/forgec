@@ -53,7 +53,7 @@ jobs:
         run: |
           node --input-type=module <<'JS'
           import { readFileSync } from 'node:fs';
-          import { spawnSync } from 'node:child_process';
+          import { spawn } from 'node:child_process';
           const profiles = ['core', ...Object.keys(JSON.parse(readFileSync('conformance/foundation/providers/profiles.json', 'utf8')))];
           const deployments = JSON.parse(process.env.FOUNDATION_D1_PROFILES);
           delete process.env.FOUNDATION_D1_PROFILES;
@@ -61,12 +61,23 @@ jobs:
             const deployment = deployments[profile];
             if (!deployment?.url || !deployment?.token) throw new Error(`Missing D1 deployment for ${profile}`);
           }
-          for (const profile of profiles) {
-            console.log(`Verifying ${profile} across all three providers`);
-            const env = { ...process.env, FORGE_FOUNDATION_D1_URL: deployments[profile].url, FORGE_FOUNDATION_D1_TOKEN: deployments[profile].token };
-            const result = spawnSync(process.execPath, ['scripts/verify-foundation-providers.mjs', '--provider', 'all', '--profile', profile], { env, stdio: 'inherit' });
-            if (result.error || result.status !== 0) process.exit(1);
+          let next = 0;
+          let failed = false;
+          async function worker() {
+            while (!failed && next < profiles.length) {
+              const profile = profiles[next++];
+              console.log(`Verifying ${profile} across all three providers`);
+              const env = { ...process.env, FORGE_FOUNDATION_D1_URL: deployments[profile].url, FORGE_FOUNDATION_D1_TOKEN: deployments[profile].token };
+              const passed = await new Promise(resolve => {
+                const child = spawn(process.execPath, ['scripts/verify-foundation-providers.mjs', '--provider', 'all', '--profile', profile], { env, stdio: 'inherit' });
+                child.on('error', () => resolve(false));
+                child.on('close', code => resolve(code === 0));
+              });
+              if (!passed) failed = true;
+            }
           }
+          await Promise.all(Array.from({ length: 3 }, () => worker()));
+          if (failed) process.exit(1);
           JS
       - name: Validate complete package certification matrix
         run: >-
