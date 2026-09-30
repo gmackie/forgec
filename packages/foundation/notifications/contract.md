@@ -4,7 +4,7 @@ Phase 0 design contract for [issue #50](https://github.com/gmackie/forgec/issues
 
 ## Ownership and dependencies
 
-Forge identity: `@forgegraph/foundation/notifications`. Hard package dependencies: `participation`, `delivery`, `artifact`. Package-qualified identities remain stable when composed into a selected application storage closure. Required compiler, pattern and kernel contracts are prerequisites outside this slug-only dependency list.
+Forge identity: `@forgegraph/foundation/notifications`. Hard package dependencies: `participation`, `delivery`, `artifact`, `reachability`. Package-qualified identities remain stable when composed into a selected application storage closure. Required compiler, pattern and kernel contracts are prerequisites outside this slug-only dependency list.
 
 Owned facts:
 
@@ -81,3 +81,15 @@ Application-named fixtures must record the inspected application repository revi
 ## Implemented local profile
 
 The executable package and generated consumer now have local memory, SQLite and PostgreSQL evidence in `packages/runtime/test/foundation-notifications.test.ts`. See `README.md` for the implemented protocol and explicit limits; `contract.json` records per-case status. Earlier design prose above is the target boundary, not a claim of broader guarantees. Hosted provider certification and real-application dogfooding remain separate.
+
+## Reachability composition
+
+NotificationEndpointLink requires exactly one typed ContactPoint or Endpoint
+reference plus the DeliveryDestination used for delivery. Locator addresses,
+classification, validity and supersession belong to Reachability. The runtime
+checks validity and dispositions at the notice's recorded time; retired or expired
+locators cannot be selected for a later notice. Historical notices remain readable.
+
+This changes the experimental contract: existing endpoint links need a locator
+reference before migration. Provider delivery configuration must associate the
+selected locator with its destination; this package does not provision transports.

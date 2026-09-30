@@ -204,41 +204,6 @@ CREATE TABLE participation (
   FOREIGN KEY ("tenant", "role") REFERENCES participation_role ("tenant", "id")
 );
 
-CREATE TABLE notification_endpoint_link (
-  "tenant" TEXT COLLATE "C" NOT NULL,
-  "id" TEXT COLLATE "C" NOT NULL,
-  "recipient" TEXT COLLATE "C" NOT NULL,
-  "destination" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "recipient") REFERENCES participation ("tenant", "id"),
-  FOREIGN KEY ("tenant", "destination") REFERENCES delivery_destination ("tenant", "id")
-);
-
-CREATE TABLE notification_subscription (
-  "tenant" TEXT COLLATE "C" NOT NULL,
-  "id" TEXT COLLATE "C" NOT NULL,
-  "topic" TEXT COLLATE "C" NOT NULL,
-  "recipient" TEXT COLLATE "C" NOT NULL,
-  "endpoint" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "topic") REFERENCES notification_topic ("tenant", "id"),
-  FOREIGN KEY ("tenant", "recipient") REFERENCES participation ("tenant", "id"),
-  FOREIGN KEY ("tenant", "endpoint") REFERENCES notification_endpoint_link ("tenant", "id")
-);
-
-CREATE TABLE notification_preference (
-  "tenant" TEXT COLLATE "C" NOT NULL,
-  "id" TEXT COLLATE "C" NOT NULL,
-  "subscription" TEXT COLLATE "C" NOT NULL,
-  "revision" BIGINT NOT NULL,
-  "previous" TEXT COLLATE "C",
-  "enabled" BIGINT NOT NULL,
-  "reason" TEXT COLLATE "C" NOT NULL,
-  PRIMARY KEY ("tenant", "id"),
-  FOREIGN KEY ("tenant", "subscription") REFERENCES notification_subscription ("tenant", "id"),
-  FOREIGN KEY ("tenant", "previous") REFERENCES notification_preference ("tenant", "id")
-);
-
 CREATE TABLE participation_end (
   "tenant" TEXT COLLATE "C" NOT NULL,
   "id" TEXT COLLATE "C" NOT NULL,
@@ -279,6 +244,147 @@ CREATE TABLE representation_revocation (
   "updated_at" TEXT COLLATE "C" NOT NULL,
   PRIMARY KEY ("tenant", "id"),
   FOREIGN KEY ("tenant", "representation") REFERENCES principal_representation ("tenant", "id")
+);
+
+CREATE TABLE locator_kind (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "key_" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  "personal" BIGINT NOT NULL,
+  PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE locator_purpose (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "key_" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE locator_set (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "label" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id")
+);
+
+CREATE TABLE contact_point (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "locator_set" TEXT COLLATE "C" NOT NULL,
+  "kind" TEXT COLLATE "C" NOT NULL,
+  "purpose" TEXT COLLATE "C" NOT NULL,
+  "value_" TEXT COLLATE "C" NOT NULL,
+  "preference" BIGINT NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C",
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "locator_set") REFERENCES locator_set ("tenant", "id"),
+  FOREIGN KEY ("tenant", "kind") REFERENCES locator_kind ("tenant", "id"),
+  FOREIGN KEY ("tenant", "purpose") REFERENCES locator_purpose ("tenant", "id")
+);
+
+CREATE TABLE contact_point_disposition (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "contact_point" TEXT COLLATE "C" NOT NULL,
+  "replacement" TEXT COLLATE "C",
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "contact_point") REFERENCES contact_point ("tenant", "id"),
+  FOREIGN KEY ("tenant", "replacement") REFERENCES contact_point ("tenant", "id")
+);
+
+CREATE TABLE contact_point_verification (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "contact_point" TEXT COLLATE "C" NOT NULL,
+  "verified_at" TEXT COLLATE "C" NOT NULL,
+  "method" TEXT COLLATE "C" NOT NULL,
+  "evidence" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "contact_point") REFERENCES contact_point ("tenant", "id")
+);
+
+CREATE TABLE endpoint (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "locator_set" TEXT COLLATE "C" NOT NULL,
+  "kind" TEXT COLLATE "C" NOT NULL,
+  "purpose" TEXT COLLATE "C" NOT NULL,
+  "value_" TEXT COLLATE "C" NOT NULL,
+  "preference" BIGINT NOT NULL,
+  "valid_from" TEXT COLLATE "C" NOT NULL,
+  "valid_until" TEXT COLLATE "C",
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "locator_set") REFERENCES locator_set ("tenant", "id"),
+  FOREIGN KEY ("tenant", "kind") REFERENCES locator_kind ("tenant", "id"),
+  FOREIGN KEY ("tenant", "purpose") REFERENCES locator_purpose ("tenant", "id")
+);
+
+CREATE TABLE notification_endpoint_link (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "recipient" TEXT COLLATE "C" NOT NULL,
+  "destination" TEXT COLLATE "C" NOT NULL,
+  "contact_point" TEXT COLLATE "C",
+  "service_endpoint" TEXT COLLATE "C",
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "recipient") REFERENCES participation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "destination") REFERENCES delivery_destination ("tenant", "id"),
+  FOREIGN KEY ("tenant", "contact_point") REFERENCES contact_point ("tenant", "id"),
+  FOREIGN KEY ("tenant", "service_endpoint") REFERENCES endpoint ("tenant", "id")
+);
+
+CREATE TABLE notification_subscription (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "topic" TEXT COLLATE "C" NOT NULL,
+  "recipient" TEXT COLLATE "C" NOT NULL,
+  "endpoint" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "topic") REFERENCES notification_topic ("tenant", "id"),
+  FOREIGN KEY ("tenant", "recipient") REFERENCES participation ("tenant", "id"),
+  FOREIGN KEY ("tenant", "endpoint") REFERENCES notification_endpoint_link ("tenant", "id")
+);
+
+CREATE TABLE notification_preference (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "subscription" TEXT COLLATE "C" NOT NULL,
+  "revision" BIGINT NOT NULL,
+  "previous" TEXT COLLATE "C",
+  "enabled" BIGINT NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "subscription") REFERENCES notification_subscription ("tenant", "id"),
+  FOREIGN KEY ("tenant", "previous") REFERENCES notification_preference ("tenant", "id")
+);
+
+CREATE TABLE endpoint_disposition (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "endpoint" TEXT COLLATE "C" NOT NULL,
+  "replacement" TEXT COLLATE "C",
+  "effective_at" TEXT COLLATE "C" NOT NULL,
+  "reason" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "endpoint") REFERENCES endpoint ("tenant", "id"),
+  FOREIGN KEY ("tenant", "replacement") REFERENCES endpoint ("tenant", "id")
+);
+
+CREATE TABLE endpoint_verification (
+  "tenant" TEXT COLLATE "C" NOT NULL,
+  "id" TEXT COLLATE "C" NOT NULL,
+  "endpoint" TEXT COLLATE "C" NOT NULL,
+  "verified_at" TEXT COLLATE "C" NOT NULL,
+  "method" TEXT COLLATE "C" NOT NULL,
+  "evidence" TEXT COLLATE "C" NOT NULL,
+  PRIMARY KEY ("tenant", "id"),
+  FOREIGN KEY ("tenant", "endpoint") REFERENCES endpoint ("tenant", "id")
 );
 
 CREATE TABLE repository (
@@ -604,6 +710,21 @@ CREATE UNIQUE INDEX principal_representation_uq_principal_party_validFrom ON pri
 CREATE INDEX principal_representation_ix_by_party ON principal_representation ("tenant", "party", "id");
 CREATE INDEX principal_representation_ix_by_principal ON principal_representation ("tenant", "principal", "id");
 CREATE UNIQUE INDEX representation_revocation_uq_representation ON representation_revocation ("tenant", "representation");
+CREATE UNIQUE INDEX contact_point_uq_locatorSet_kind_purpose_preference ON contact_point ("tenant", "locator_set", "kind", "purpose", "preference");
+CREATE UNIQUE INDEX contact_point_uq_locatorSet_kind_purpose_value ON contact_point ("tenant", "locator_set", "kind", "purpose", "value_");
+CREATE INDEX contact_point_ix_by_locator_set ON contact_point ("tenant", "locator_set", "id");
+CREATE INDEX contact_point_ix_by_locator_set_kind_purpose ON contact_point ("tenant", "locator_set", "kind", "purpose", "preference", "id");
+CREATE UNIQUE INDEX contact_point_disposition_uq_contactPoint ON contact_point_disposition ("tenant", "contact_point");
+CREATE UNIQUE INDEX contact_point_verification_uq_contactPoint ON contact_point_verification ("tenant", "contact_point");
+CREATE UNIQUE INDEX endpoint_uq_locatorSet_kind_purpose_preference ON endpoint ("tenant", "locator_set", "kind", "purpose", "preference");
+CREATE UNIQUE INDEX endpoint_uq_locatorSet_kind_purpose_value ON endpoint ("tenant", "locator_set", "kind", "purpose", "value_");
+CREATE INDEX endpoint_ix_by_locator_set ON endpoint ("tenant", "locator_set", "id");
+CREATE INDEX endpoint_ix_by_locator_set_kind_purpose ON endpoint ("tenant", "locator_set", "kind", "purpose", "preference", "id");
+CREATE UNIQUE INDEX endpoint_disposition_uq_endpoint ON endpoint_disposition ("tenant", "endpoint");
+CREATE UNIQUE INDEX endpoint_verification_uq_endpoint ON endpoint_verification ("tenant", "endpoint");
+CREATE UNIQUE INDEX locator_kind_uq_key ON locator_kind ("tenant", "key_");
+CREATE INDEX locator_kind_ix_by_personal ON locator_kind ("tenant", "personal", "id");
+CREATE UNIQUE INDEX locator_purpose_uq_key ON locator_purpose ("tenant", "key_");
 CREATE UNIQUE INDEX realization_uq_pin_buildHash_manifestDigest ON realization ("tenant", "pin", "build_hash", "manifest_digest");
 CREATE INDEX realization_ix_by_pin ON realization ("tenant", "pin", "id");
 CREATE UNIQUE INDEX repository_uq_key ON repository ("tenant", "key_");

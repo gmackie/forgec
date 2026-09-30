@@ -1,6 +1,7 @@
 import participation
 import delivery
 import artifact
+import reachability
 export resource NotificationTopic
   @tenant
   @appendOnly
@@ -16,6 +17,11 @@ export resource NotificationEndpointLink
   id : id
   recipient : participation.Participation
   destination : delivery.DeliveryDestination
+  contactPoint : reachability.ContactPoint?
+  serviceEndpoint : reachability.Endpoint?
+  rules {
+    (contactPoint != null && serviceEndpoint == null) || (contactPoint == null && serviceEndpoint != null)
+  }
   unique recipient, destination
 }
 export resource NotificationSubscription
