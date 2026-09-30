@@ -31,8 +31,9 @@ The service binds loopback and uses an explicitly test-only password and tempora
 ## Configured local setup and Forgejo job
 
 The 2026-09-30 setup uses AWS account `637291210764` in `us-east-1`, Cloudflare
-account `c07a7e704db1808e1fff91bed2b1cd49`, and the Compose project
-`forge-provider-20260930` on local PostgreSQL port 55479. All resources are test-only.
+account `c07a7e704db1808e1fff91bed2b1cd49`, and a native Homebrew PostgreSQL17
+instance on loopback port 55480. All resources are test-only. The native instance
+replaces the initial Compose service after the local Docker VM became unavailable.
 The DynamoDB table is `forge-foundation-test-20260930`; the core D1 database is
 `forge-foundation-test-core-20260930`. Older test resources are untouched.
 
@@ -72,3 +73,29 @@ fail the job until a newly built dedicated harness is deployed and its URL/token
 references updated. Neither this workflow nor the local runner deletes cloud
 resources. Rotate the dedicated IAM key and D1 bearer token through their Forgejo
 secret references. Database receipts do not certify hosted object storage.
+
+### Local PostgreSQL lifecycle and verification evidence
+
+The configured native instance keeps its data and random password in the private
+state directory. Its URL is in `postgres-url`; the runner reads it without
+printing it. It is currently running, but is not registered as a login service.
+Use the versioned PostgreSQL17 binaries (the unqualified local binaries may be
+PostgreSQL14):
+
+```sh
+provider_state="$HOME/.local/state/forgegraph/providers/20260930"
+/opt/homebrew/opt/postgresql@17/bin/pg_ctl -D "$provider_state/postgres-data" status
+# Start after a reboot or an explicit stop:
+/opt/homebrew/opt/postgresql@17/bin/pg_ctl -D "$provider_state/postgres-data" \
+  -l "$provider_state/postgres-server.log" -o '-h 127.0.0.1 -p 55480' -w start
+# Stop when finished, retaining test data:
+/opt/homebrew/opt/postgresql@17/bin/pg_ctl -D "$provider_state/postgres-data" -m fast -w stop
+```
+
+On 2026-09-30, all five core traces passed on each of native PostgreSQL17,
+hosted Cloudflare D1 and hosted AWS DynamoDB, with passing local receipts.
+[Forgejo run 29](https://git.forgegraf.com/gmackie/forge/actions/runs/29)
+also succeeded on `hetzner-bob`, including the 17 setup tooling tests and the
+three-provider core verification. This establishes the initial core setup;
+the 16-profile package matrix still requires its separate D1 deployments and
+certification runs.
