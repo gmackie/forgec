@@ -53,8 +53,8 @@ The runner verifies private ownership/permissions, requires ready test receipts,
 and loads credentials only into the verifier's environment. It rejects ambient
 AWS static credentials when using a named profile and refuses endpoint overrides.
 `--profile all` requires a separate D1 deployment for every profile in profiles.json;
-it preflights all requested state before running. Only core is provisioned by
-this initial setup. Source-bound receipts are written inside the state directory.
+it preflights all requested state before running. Core and all 16 package profiles are provisioned by
+the 2026-09-30 setup. Source-bound receipts are written inside the state directory.
 
 Forgejo configuration is `.forgejo/workflows/provider-certification.yml` in
 `https://git.forgegraf.com/gmackie/forge`. It uses the existing `hetzner-bob`
@@ -62,13 +62,16 @@ instance runner through `[forgegraph-ci, heavy]`, a per-job PostgreSQL service,
 and hosted D1/DynamoDB. It runs manually and weekly on Monday at 05:17 UTC.
 The branch trigger exists to verify setup before merging. Secrets are scoped to
 this repository: `FOUNDATION_AWS_ACCESS_KEY_ID`, `FOUNDATION_AWS_SECRET_ACCESS_KEY`,
-and `FOUNDATION_D1_TOKEN`. The dedicated IAM user
+and `FOUNDATION_D1_PROFILES` (a JSON map from profile to harness URL/token).
+`FOUNDATION_D1_TOKEN` remains available for the original core-only job. The dedicated IAM user
 `forge-foundation-certification-20260930` can read/write only this table and its
 indexes; it cannot provision infrastructure. CI does not receive the personal AWS
 profile or Wrangler OAuth credential.
 
-The core job checks five traces per provider, not the full package certification
-matrix. D1's bundle identity is pinned: a schema/compiler change can intentionally
+The certification job runs core and all 16 package profiles on each provider,
+then rebuilds artifacts and validates all 48 package receipts with
+`verify-foundation-certification.mjs`. It publishes receipts and raw test reports
+as the `foundation-provider-certification` artifact. D1's bundle identity is pinned: a schema/compiler change can intentionally
 fail the job until a newly built dedicated harness is deployed and its URL/token
 references updated. Neither this workflow nor the local runner deletes cloud
 resources. Rotate the dedicated IAM key and D1 bearer token through their Forgejo
@@ -97,5 +100,30 @@ hosted Cloudflare D1 and hosted AWS DynamoDB, with passing local receipts.
 [Forgejo run 29](https://git.forgegraf.com/gmackie/forge/actions/runs/29)
 also succeeded on `hetzner-bob`, including the 17 setup tooling tests and the
 three-provider core verification. This establishes the initial core setup;
-the 16-profile package matrix still requires its separate D1 deployments and
-certification runs.
+the package matrix is checked separately as described below.
+
+### Full package certification
+
+Each package has private deployment state in `d1-<profile>/`, referenced by
+`setup.json`. PostgreSQL uses isolated schemas and DynamoDB uses per-run tenants
+on the existing dedicated test table. Run and aggregate the complete matrix:
+
+```sh
+provider_state="$HOME/.local/state/forgegraph/providers/20260930"
+node scripts/run-foundation-providers.mjs --state-dir "$provider_state" \
+  --provider all --profile all
+node scripts/verify-foundation-certification.mjs \
+  --receipt-dir "$provider_state/receipts" --out "$provider_state/certification.json"
+```
+
+The aggregate accepts exactly 16 profiles × 3 providers. Every receipt must match
+the current source fingerprint, rebuilt artifacts, exact required trace set,
+raw test report digest, and observed provider identity. Missing, skipped, failed,
+or stale cells prevent certification. The Forgejo job uses the same verifier and
+aggregate check, with a 120-minute timeout and serialized workflow runs.
+
+When rotating a package harness, update its private infrastructure receipt and
+the corresponding `FOUNDATION_D1_PROFILES` JSON entry in Forgejo. The secret has
+entries shaped as `"<profile>": {"url": "https://…workers.dev", "token": "…"}`
+for `core` and every profile in `profiles.json`. Credential values must never be
+committed. Provisioning and resource deletion remain explicit operator actions.
