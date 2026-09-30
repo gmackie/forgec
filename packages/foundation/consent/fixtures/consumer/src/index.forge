@@ -1,0 +1,46 @@
+import consent
+
+/// The application's own subject, attaching a consent sidecar. Consent belongs to whatever
+/// the application treats as a person, not to a Party type this package would have to define.
+resource PersonRecord @tenant @versioned {
+  id : id
+  name : text length 1..200
+  consents : consent.ConsentSubject @immutable @unique
+}
+
+/// Intake-shaped: a submitted form that *produced* a grant and owns none of it. The
+/// submission keeps its own identity and answers; the permission itself is the grant, which
+/// this resource can only point at. That is the whole of "produce without owning".
+resource ResearchIntakeSubmission @tenant @appendOnly {
+  id : id
+  person : PersonRecord
+  formVersion : text length 1..32
+  submittedAt : datetime
+  produced : consent.ConsentGrant @unique
+  list by person
+}
+
+/// A notification preference, kept deliberately adjacent and deliberately unlinked. It has no
+/// reference to a grant, because muting a newsletter is not withdrawing research consent and
+/// a model that conflates them will eventually treat one as the other.
+resource MarketingPreference @tenant @versioned {
+  id : id
+  person : PersonRecord
+  channel : text trim lowercase length 1..32
+  enabled : boolean
+  unique person, channel
+  find by person, channel
+}
+
+/// A decision log: what a policy engine concluded, when, and on which grant. The engine reads
+/// consent as one input among several; recording the grant it relied on is what makes the
+/// decision explainable later, when the grant may since have been withdrawn.
+resource AccessDecision @tenant @appendOnly {
+  id : id
+  person : PersonRecord
+  relied : consent.ConsentGrant?
+  permitted : boolean
+  decidedAt : datetime
+  reason : text length 1..200
+  list by person
+}

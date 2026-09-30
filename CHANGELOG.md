@@ -21,7 +21,29 @@
   and resolve to that reference. This package cannot dereference a binding, and a
   test scans the compiled contract for any field that could hold secret material.
 
-  All eight criteria on #94 have executable local evidence.
+  Seven criteria have local evidence; scalar type validation remains tracked in #94.
+
+- `@forgegraph/foundation/consent` (experimental): consent grants, withdrawal,
+  supersession and evidence as durable facts, with purpose, processing activity and
+  data scope as three independent axes. `Consent` in `@forgegraph/runtime` grants,
+  evidences, withdraws, supersedes and answers `effectiveAt`.
+
+  Valid time and knowledge time are recorded separately, which is the point of the
+  package. A withdrawal recorded on 1 March but backdated to 1 February gives three
+  different correct answers: asked on 20 February about 15 February, consent held,
+  because the withdrawal was not yet known; asked on 5 March about the same moment,
+  it did not; asked on 5 March about 15 January, it held, because a backdated
+  withdrawal reaches back only as far as it says. A decision made last Tuesday has to
+  stay explainable with what was known last Tuesday.
+
+  Consent is not authorization: these facts are one input to a decision, and a null
+  result means no permission was recorded rather than a denial. Notification
+  preference, agreement and entitlement are different facts with different lifecycles,
+  and a test asserts structurally that none of them has appeared in this contract.
+
+  This is a bounded valid/knowledge interpretation built from ordinary fields, not an
+  L0 temporal facet; ConceptIR #75 is what would make those axes language-level.
+  All eight criteria on #93 have executable local evidence.
 
 ## 0.4.0 (2026-09-24)
 
