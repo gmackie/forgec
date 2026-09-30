@@ -24,10 +24,16 @@ for(const adapter of foundationAdapters)it(`${adapter}: findings, dispositions, 
   expect(await Effect.runPromise(service.findingPhase(String(finding.id),ctx))).toBe('Open');
   expect(await Effect.runPromise(evaluations.phase(String(original.run.id),ctx))).toBe('Completed');
   for(const [name,field] of [['Vulnerability','advisory'],['ManufacturingCAPA','lot'],['AccessReview','account'],['ModelAssurance','modelDigest']])expect(await call(d+name+'.create',{finding:finding.id,[field!]:'typed-detail'})).toMatchObject({finding:finding.id});
-  const dispositions=await Promise.allSettled(['Remediate','Waived'].map(kind=>Effect.runPromise(service.disposition(String(finding.id),kind as 'Remediate'|'Waived','Reviewed',ctx))));
+  // Hosted requests may arrive in either order; uniqueness must hold for either winner.
+  const racedFinding=await call(p+'Finding.create',{finish:original.finish.id,run:original.run.id,specification:pin.id,summary:'Concurrent disposition'});
+  const dispositions=await Promise.allSettled(['Remediate','Waived'].map(kind=>Effect.runPromise(service.disposition(String(racedFinding.id),kind as 'Remediate'|'Waived','Reviewed',ctx))));
   expect(dispositions.filter(x=>x.status==='fulfilled')).toHaveLength(1);
-  const disposition=(dispositions.find(x=>x.status==='fulfilled') as PromiseFulfilledResult<Record<string,unknown>>).value;
-  // First synchronous plan is deliberately Remediate; assert rather than weaken the expected lifecycle.
+  const winner=(dispositions.find(x=>x.status==='fulfilled') as PromiseFulfilledResult<Record<string,unknown>>).value;
+  expect(['Remediate','Waived']).toContain(winner.kind);
+  expect(await Effect.runPromise(service.findingPhase(String(racedFinding.id),ctx))).toBe(winner.kind);
+  await expect(Effect.runPromise(service.disposition(String(racedFinding.id),'Accepted','Late competing disposition',ctx))).rejects.toThrow();
+  // Exercise the full remediation lifecycle regardless of the unrelated race winner.
+  const disposition=await Effect.runPromise(service.disposition(String(finding.id),'Remediate','Reviewed',ctx));
   expect(disposition.kind).toBe('Remediate');
   const remediation=await call(p+'Remediation.create',{disposition:disposition.id,finding:finding.id,intendedAction:'Correct condition'});
   await call(d+'CorrectiveWork.create',{remediation:remediation.id,instruction:'Domain-owned forward work'});
