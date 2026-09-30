@@ -298,6 +298,16 @@ impl ConceptIR {
                     "selector context must be a process or policy",
                 );
             }
+            if self.processes.contains_key(&selection.context)
+                && self.policies.contains_key(&selection.context)
+            {
+                problem(
+                    &mut errors,
+                    "E-L0-TEMPORAL",
+                    id,
+                    "selector context is ambiguous between process and policy",
+                );
+            }
             let selected_type = self
                 .processes
                 .get(&selection.context)
@@ -719,6 +729,10 @@ impl ConceptIR {
                 }
             }
         }
+        scope
+    }
+    fn policy_scope(&self, id: &str) -> BTreeMap<String, ValueType> {
+        let mut scope = BTreeMap::new();
         if let Some(p) = self.policies.get(id) {
             if let Ok(ty) = value_type(&p.resource) {
                 scope.insert("resource".into(), ty);
@@ -755,7 +769,11 @@ impl ConceptIR {
             }
         }
         for (id, selection) in &self.semantics.selections {
-            let scope = self.process_scope(&selection.context, false);
+            let scope = if self.processes.contains_key(&selection.context) {
+                self.process_scope(&selection.context, false)
+            } else {
+                self.policy_scope(&selection.context)
+            };
             let expressions = match &selection.relation {
                 TemporalRelation::At { instant } => vec![instant],
                 TemporalRelation::During { from, to } => vec![from, to],
@@ -855,7 +873,7 @@ impl ConceptIR {
             );
         }
         for (id, contract) in &self.semantics.contracts {
-            let hash = crate::ir::hash_hex(&serde_json::to_string(contract).unwrap());
+            let hash = contract.content_hash();
             match evidence.claims.get(id) {
                 Some(claim)
                     if claim.contract_hash == hash

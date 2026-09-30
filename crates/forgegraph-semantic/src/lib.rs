@@ -26,3 +26,5 @@ pub use compiler::{Compilation, compile};
 pub use diagnostics::{Diagnostic, Severity};
 pub use ir::DomainIR;
 pub use package::{LoadError, Package, SourceFile, load_package};
+
+mod concept_contract_canonical;

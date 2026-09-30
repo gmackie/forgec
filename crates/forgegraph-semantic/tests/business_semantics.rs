@@ -332,3 +332,93 @@ fn percent_literals_cannot_bypass_quantity_type_checks() {
         json!({"kind":"literal", "literal":{"type":"percent", "value":"50"}});
     assert!(ConceptIR::load(&v).is_err_and(|e| e.contains("E-L0-CONTRACT")));
 }
+
+#[test]
+fn equivalent_contract_spelling_has_one_identity_and_assurance_binding() {
+    let mut first = fixture("commerce");
+    first["semantics"]["contracts"][id("BoundedContribution")]["predicate"] = json!({
+        "kind":"binary","op":"and",
+        "lhs":{"kind":"unary","op":"not","operand":{"kind":"literal","literal":{"type":"bool","value":false}}},
+        "rhs":{"kind":"binary","op":"==","lhs":{"kind":"literal","literal":{"type":"int","value":"1"}},"rhs":{"kind":"literal","literal":{"type":"int","value":"1"}}}
+    });
+    let mut second = first.clone();
+    let predicate = &mut second["semantics"]["contracts"][id("BoundedContribution")]["predicate"];
+    predicate["op"] = json!("&&");
+    predicate["lhs"]["op"] = json!("!");
+    predicate["rhs"]["lhs"]["literal"] = json!({"type":"decimal","value":"1.00"});
+    let a = ConceptIR::load(&first).unwrap();
+    let b = ConceptIR::load(&second).unwrap();
+    assert_eq!(a.content_hash(), b.content_hash());
+    assert!(a.semantic_changes(&b).is_empty());
+    let evidence = Assurance {
+        concept_hash: a.content_hash(),
+        mechanism: "test".into(),
+        claims: a
+            .semantics
+            .contracts
+            .iter()
+            .map(|(id, c)| {
+                (
+                    id.clone(),
+                    AssuranceClaim {
+                        contract_hash: forgegraph_semantic::ir::hash_hex(
+                            &serde_json::to_string(c).unwrap(),
+                        ),
+                        status: AssuranceStatus::RuntimeEnforced,
+                        evidence: BTreeSet::from(["test:equivalence".into()]),
+                    },
+                )
+            })
+            .collect(),
+    };
+    assert!(b.check_assurance(&evidence).is_empty());
+    // Programmatically constructed IR uses the same identity before load normalization.
+    let raw: ConceptIR = serde_json::from_value(second).unwrap();
+    assert_eq!(a.content_hash(), raw.content_hash());
+    assert!(a.semantic_changes(&raw).is_empty());
+    assert_eq!(
+        a.registry_definition_digest(&id("BoundedContribution")),
+        raw.registry_definition_digest(&id("BoundedContribution"))
+    );
+    assert!(raw.check_assurance(&evidence).is_empty());
+}
+
+#[test]
+fn process_contract_cannot_read_a_same_named_policys_attributes() {
+    let mut v = fixture("commerce");
+    v["principals"][id("Operator")] = json!({"name":"Operator","attributes":{"policyOnly":{"base":{"kind":"scalar","name":"boolean"},"optional":false}}});
+    v["policies"][id("Settle")] = json!({"name":"Settle","principal":id("Operator"),"resource":{"base":{"kind":"entity","id":id("SettlementPosition")},"optional":false},"purpose":null,"requiredAttributes":[],"effect":"permit","predicate":{"kind":"literal","literal":{"type":"bool","value":true}}});
+    let mut boolean = v["entities"][id("SettlementPosition")]["fields"]["amount"]["ty"].clone();
+    boolean["base"]["name"] = json!("boolean");
+    v["principals"][id("Operator")]["attributes"]["policyOnly"] = boolean;
+    v["policies"][id("Settle")]["resource"] =
+        v["processes"][id("Settle")]["inputs"]["current"]["ty"].clone();
+    v["semantics"]["contracts"][id("Available")]["predicate"] =
+        json!({"kind":"name","path":["policyOnly"]});
+    let error = ConceptIR::load(&v).unwrap_err();
+    assert!(error.contains("E-L0-CONTRACT"), "{error}");
+}
+
+#[test]
+fn contract_numeric_identity_is_exact_and_bounded() {
+    use forgegraph_semantic::ir::{Expr, Literal};
+    let base = commerce().semantics.contracts[&id("BoundedContribution")].clone();
+    let hash = |value: &str| {
+        let mut contract = base.clone();
+        contract.predicate = Expr::Literal {
+            literal: Literal::Decimal(value.into()),
+        };
+        contract.content_hash()
+    };
+    for (left, right) in [
+        ("001.2500", "125e-2"),
+        ("-0.0", "0"),
+        ("0.001", "1e-3"),
+        ("1e-10000", "10e-10001"),
+        ("9007199254740993.00", "9007199254740993"),
+    ] {
+        assert_eq!(hash(left), hash(right), "{left} vs {right}");
+    }
+    assert_ne!(hash("9007199254740993"), hash("9007199254740992"));
+    assert_ne!(hash("1e-10000"), hash("0"));
+}
