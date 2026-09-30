@@ -475,7 +475,7 @@ impl ConceptIR {
         graph
     }
     pub fn canonical_json(&self) -> String {
-        serde_json::to_string(self).expect("ConceptIR serialization")
+        serde_json::to_string(&self.canonical_contracts()).expect("ConceptIR serialization")
     }
     pub fn content_hash(&self) -> String {
         ir::hash_hex(&self.canonical_json())
@@ -489,7 +489,7 @@ impl ConceptIR {
         if !errors.is_empty() {
             return Err(serde_json::to_string(&errors).unwrap());
         }
-        Ok(concept)
+        Ok(concept.canonical_contracts())
     }
     /// Authoritative producer ownership applies only to explicit produce/emit contracts.
     /// Legacy permissions are not proof of ownership and are never turned into producers.

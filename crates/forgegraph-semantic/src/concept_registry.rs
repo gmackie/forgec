@@ -167,7 +167,7 @@ fn normalize(value: &Value, bindings: &BTreeMap<String, String>, slot: &str) -> 
 }
 impl ConceptIR {
     fn registry_declarations(&self) -> BTreeMap<String, (String, Value)> {
-        let raw = serde_json::to_value(self).unwrap();
+        let raw = serde_json::to_value(self.canonical_contracts()).unwrap();
         let mut out = BTreeMap::new();
         for (prefix, families, root) in [
             ("", FAMILIES, &raw),
@@ -275,7 +275,7 @@ impl ConceptIR {
             }
         }
         let declarations = self.registry_declarations();
-        let raw = serde_json::to_value(self).unwrap();
+        let raw = serde_json::to_value(self.canonical_contracts()).unwrap();
         let mut anchors = BTreeSet::new();
         for (families, root) in [(FAMILIES, &raw), (SEMANTICS, &raw["semantics"])] {
             for family in families {
@@ -354,7 +354,7 @@ impl ConceptIR {
     /// Permanent IDs align declarations across source moves. Registry metadata still diffs.
     pub(crate) fn registry_diff_value(&self) -> Value {
         let mut raw = normalize(
-            &serde_json::to_value(self).unwrap(),
+            &serde_json::to_value(self.canonical_contracts()).unwrap(),
             &self.registry.bindings,
             "",
         );
