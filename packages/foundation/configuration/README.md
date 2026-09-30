@@ -12,10 +12,10 @@ package generates no HTTP routes.
 
 **Configuration is not arbitrary JSON.** Every value is an assignment to a parameter declared by
 a `specification.SpecificationPin`, so an unknown key cannot be set and a key cannot be assigned
-twice in one configuration. Pinning is what makes "typed" mean anything: the same key may be a
-boolean in one revision and an integer in the next, and a configuration authored against the old
-revision must not silently retype. An assignment whose parameter belongs to a different pin is
-refused, as is an inheritance edge across revisions.
+twice in one configuration. An assignment whose parameter belongs to a different pin is
+refused, as is an inheritance edge across revisions. Parameter types currently provide named
+identities and secret/literal separation. Literal values remain text: integer and boolean
+syntax validation is still required for F94-01 and issue #94.
 
 ## Deterministic resolution
 
@@ -28,10 +28,15 @@ parameter with neither is an error rather than a silent gap.
 Every resolved value records the configuration it actually came from. Without that, a surprising
 value is unattributable and the only way to explain it is to re-derive the whole chain by hand.
 
-A resolution is identified by a digest over its resolved values in key order, so the same
-desired state has the same identity on any machine, and resolving twice is one fact rather than
-two rows — `(configuration, digest)` is unique and the service returns the existing resolution
-rather than fighting it. A reconciler can then compare identities instead of values.
+A resolution's digest binds its specification pin, parameter identities, effective values
+and their sources in key order. Moving the same value to a different supplying layer changes
+that identity. `(configuration, digest)` is unique and repeat resolution verifies stored values.
+
+Queries that exceed the requested bound fail with `BudgetExceeded`. Resolution supports up to
+32 values: a preparation header records the expected count, then all values commit atomically.
+After interruption, `listValues` refuses incomplete snapshots and `resolve` retries the value
+write. Direct CRUD readers must not treat header existence as completion. Resolution rejects
+per-operation idempotency keys; its durable command identity is `(configuration, digest)`.
 
 ## Secrets
 
@@ -52,8 +57,9 @@ generated bundles on memory and SQLite, covering pinning, snapshot validation, l
 overrides, defaults, secret handling, digest stability, provenance, required-parameter failure
 and tenant isolation. The consumer fixture parameterizes four shapes that share no vocabulary —
 a workspace agent, an industrial process unit, a SaaS tenant plan and a deployment — through one
-model, and shows a reconciler consuming a resolution while holding no values of its own. All
-eight issue criteria have executable local evidence in `contract.json`.
+model, and shows a reconciler consuming a resolution while holding no values of its own.
+Seven issue criteria have local evidence; F94-01 remains planned until scalar validation is
+implemented. `contract.json` records this distinction.
 
 Fixtures are synthetic, not production adoption. Hosted provider certification is separate and
 is not claimed.

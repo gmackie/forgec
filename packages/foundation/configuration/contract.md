@@ -33,7 +33,7 @@ These are required semantic operations, not a claim that callable implementation
 - Configuration is not arbitrary JSON: every assignment names a parameter declared by the same pinned specification revision, so an unknown key cannot be set and a retyped key cannot be silently inherited
 - Precedence is a total order along the inheritance chain: a child's layer ordinal is strictly greater than its parent's, so resolution is deterministic and independent of traversal direction
 - Secret parameters carry a reference and never a literal, and may not carry a default; this package stores no secret material
-- A resolution is identified by a digest over its resolved values, so the same desired state has the same identity and resolving twice is one fact
+- A resolution is identified by a digest over its pin, parameter identities, effective values and sources, so repeat resolution of that snapshot is one fact
 - Every resolved value records the configuration it came from, so a surprising value is attributable without re-deriving the chain
 - Configuration is authored and resolved independently of anything observing it; desired-versus-observed reconciliation is a separate lifecycle owned elsewhere
 - Tenant isolation, declared capabilities and normal governance apply to every operation, reference and read surface.
