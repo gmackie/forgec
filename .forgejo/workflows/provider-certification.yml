@@ -1,0 +1,60 @@
+name: Foundation provider certification
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * 1'
+  push:
+    branches: [provider-certification]
+
+concurrency:
+  group: foundation-provider-certification
+  cancel-in-progress: false
+
+jobs:
+  core:
+    # Existing instance-scoped container runner on hetzner-bob.
+    runs-on: [forgegraph-ci, heavy]
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: forge
+          POSTGRES_PASSWORD: foundation-test-only
+          POSTGRES_DB: forge_foundation
+        options: >-
+          --health-cmd "pg_isready -U forge -d forge_foundation"
+          --health-interval 3s --health-timeout 3s --health-retries 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      FORGE_FOUNDATION_PG_URL: postgres://forge:foundation-test-only@postgres:5432/forge_foundation
+      AWS_REGION: us-east-1
+      FORGE_FOUNDATION_DYNAMO_TABLE: forge-foundation-test-20260930
+      FORGE_FOUNDATION_D1_URL: https://forge-foundation-test-core-20260930-81f057650b04f3d0.gmac.workers.dev
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/pnpm/action-setup@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: https://github.com/dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.97.1'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @forgegraph/capability-manifest build
+      - name: Verify setup tooling
+        run: node --test scripts/test/run-foundation-providers.test.mjs scripts/test/foundation-test-infra.test.mjs scripts/test/verify-foundation-providers.test.mjs
+      - name: Verify PostgreSQL, hosted D1 and hosted DynamoDB
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.FOUNDATION_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.FOUNDATION_AWS_SECRET_ACCESS_KEY }}
+          FORGE_FOUNDATION_D1_TOKEN: ${{ secrets.FOUNDATION_D1_TOKEN }}
+        run: node scripts/verify-foundation-providers.mjs --provider all --profile core
+      - uses: https://code.forgejo.org/forgejo/upload-artifact@v4
+        if: always()
+        with:
+          name: foundation-core-provider-receipts
+          path: conformance/reports/foundation/providers/
+          if-no-files-found: warn

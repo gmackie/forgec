@@ -27,3 +27,48 @@ export FORGE_FOUNDATION_PG_URL=postgres://forge:foundation-test-only@127.0.0.1:5
 ```
 
 The service binds loopback and uses an explicitly test-only password and temporary memory-backed data. Set `FORGE_FOUNDATION_PG_PORT` if the port is occupied, and match it in the URL. Stop the disposable service with the same Compose project/file and `down`. This is separate from hosted D1/DynamoDB resources.
+
+## Configured local setup and Forgejo job
+
+The 2026-09-30 setup uses AWS account `637291210764` in `us-east-1`, Cloudflare
+account `c07a7e704db1808e1fff91bed2b1cd49`, and the Compose project
+`forge-provider-20260930` on local PostgreSQL port 55479. All resources are test-only.
+The DynamoDB table is `forge-foundation-test-20260930`; the core D1 database is
+`forge-foundation-test-core-20260930`. Older test resources are untouched.
+
+Private setup state lives at `~/.local/state/forgegraph/providers/20260930/`.
+`setup.json` references the AWS CLI `default` profile, the PostgreSQL URL file,
+and each provider's infrastructure receipt. Wrangler's local OAuth login is the
+provisioning credential; each D1 harness has a separate random bearer token.
+Run without exporting or printing tokens:
+
+```sh
+node scripts/run-foundation-providers.mjs \
+  --state-dir "$HOME/.local/state/forgegraph/providers/20260930" \
+  --provider all --profile core
+```
+
+The runner verifies private ownership/permissions, requires ready test receipts,
+and loads credentials only into the verifier's environment. It rejects ambient
+AWS static credentials when using a named profile and refuses endpoint overrides.
+`--profile all` requires a separate D1 deployment for every profile in profiles.json;
+it preflights all requested state before running. Only core is provisioned by
+this initial setup. Source-bound receipts are written inside the state directory.
+
+Forgejo configuration is `.forgejo/workflows/provider-certification.yml` in
+`https://git.forgegraf.com/gmackie/forge`. It uses the existing `hetzner-bob`
+instance runner through `[forgegraph-ci, heavy]`, a per-job PostgreSQL service,
+and hosted D1/DynamoDB. It runs manually and weekly on Monday at 05:17 UTC.
+The branch trigger exists to verify setup before merging. Secrets are scoped to
+this repository: `FOUNDATION_AWS_ACCESS_KEY_ID`, `FOUNDATION_AWS_SECRET_ACCESS_KEY`,
+and `FOUNDATION_D1_TOKEN`. The dedicated IAM user
+`forge-foundation-certification-20260930` can read/write only this table and its
+indexes; it cannot provision infrastructure. CI does not receive the personal AWS
+profile or Wrangler OAuth credential.
+
+The core job checks five traces per provider, not the full package certification
+matrix. D1's bundle identity is pinned: a schema/compiler change can intentionally
+fail the job until a newly built dedicated harness is deployed and its URL/token
+references updated. Neither this workflow nor the local runner deletes cloud
+resources. Rotate the dedicated IAM key and D1 bearer token through their Forgejo
+secret references. Database receipts do not certify hosted object storage.
