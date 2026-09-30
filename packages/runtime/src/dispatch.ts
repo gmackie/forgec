@@ -4,6 +4,8 @@
  * At-least-once: a transport may be told twice; consumers dedup by messageId.
  * Poison rows park as `dead` after maxAttempts and can be redriven.
  */
+import { sha256, stableJson } from "./engine.js";
+import { SubscriptionDelivery } from "./subscription-delivery.js";
 import { Effect } from "effect";
 import type { Model } from "./model.js";
 import type { OutboxRow, StorageAdapter } from "./services.js";
@@ -105,12 +107,23 @@ export class Dispatcher {
     return this.storage.outboxRedrive({ tenant, opId, ordinal });
   }
 
-  /** Wrap a handler with the consumer-side dedup ledger (processed once per subscription per messageId). */
+  /** Wrap an opaque callback. Its effects cannot join our transaction, so a failure or crash
+   * after callback intent is recorded requires reconciliation. Prefer Engine.consume for
+   * declared handlers whose local writes can commit atomically with completion. */
   consumer(subscription: string, handler: (env: Envelope) => Promise<void>): (env: Envelope) => Promise<"processed" | "duplicate"> {
     return async (env) => {
-      const fresh = await Effect.runPromise(this.storage.markProcessed(env.tenant, subscription, env.messageId));
-      if (!fresh) return "duplicate";
-      await handler(env);
+      const hash = await sha256(stableJson({channel: env.channel, message: env.message, payload: env.payload}));
+      const delivery = await SubscriptionDelivery.claim(this.storage, env.tenant, subscription, env.messageId, hash, Date.now);
+      if (!delivery) return "duplicate";
+      try {
+        await Effect.runPromise(delivery.beforeExternal());
+        await handler(env);
+        const w = delivery.completion();
+        await Effect.runPromise(this.storage.putDocument(env.tenant, w.kind, w.id, w.doc, w.expectedVersion));
+      } catch (e) {
+        await delivery.failed();
+        throw e;
+      }
       return "processed";
     };
   }

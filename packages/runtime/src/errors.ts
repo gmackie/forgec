@@ -43,6 +43,7 @@ export const ERROR_STATUS: Record<string, { status: number; retryable: boolean; 
   RateLimited: { status: 429, retryable: true, title: "Rate limited" },
   TransientConflict: { status: 503, retryable: true, title: "Transient conflict" },
   StorageUnavailable: { status: 503, retryable: true, title: "Storage unavailable" },
+  DeliveryOutcomeUnknown: { status: 409, retryable: false, title: "Delivery outcome unknown" },
   DependencyUnavailable: { status: 503, retryable: true, title: "Dependency unavailable" },
   Internal: { status: 500, retryable: false, title: "Internal error" },
 };

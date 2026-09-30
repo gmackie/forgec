@@ -14,6 +14,7 @@ import type { AtomicAbsenceGuard, DocumentWrite, AuditEntry, CommitPlan, Interva
 export class MemoryStorage implements StorageAdapter {
   readonly name = "memory";
   readonly atomicAbsenceGuards = true;
+  readonly atomicCompletion = true;
   private tables = new Map<string, Map<string, StoredRecord>>(); // key: tenant|resource
   private claims = new Map<string, string>(); // tenant|claimKey -> record id
   private audits: AuditEntry[] = [];
@@ -143,6 +144,9 @@ export class MemoryStorage implements StorageAdapter {
     o.attempts = 0;
     return Effect.succeed(true);
   }
+  hasProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
+    return Effect.sync(() => this.processed.has(`${tenant}|${subscription}|${messageId}`));
+  }
   markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
     const k = `${tenant}|${subscription}|${messageId}`;
     if (this.processed.has(k)) return Effect.succeed(false);
@@ -152,7 +156,7 @@ export class MemoryStorage implements StorageAdapter {
 
   budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
     // The reference model has no physical ceiling; report the portable default so previews are comparable.
-    return { actions: absent.length + plans.reduce((n, p) => n + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
+    return { actions: absent.length + plans.reduce((n, p) => n + (p.completion ? 1 : 0) + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
   }
 
   exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
@@ -195,7 +199,7 @@ export class MemoryStorage implements StorageAdapter {
       const conflict = absenceWriteConflict(plans, absent);
       if (conflict) return Effect.fail(conflict);
       for (const guard of absent) if (this.claims.has(`${guard.tenant}|${guard.claimKey}`)) return Effect.fail(err("VersionConflict", "Atomic absence guard failed"));
-      const snapshot = { tables: structuredClone(this.tables), claims: new Map(this.claims), audits: [...this.audits], outbox: [...this.outbox], receipts: new Map(this.receipts) };
+      const snapshot = { tables: structuredClone(this.tables), claims: new Map(this.claims), audits: [...this.audits], outbox: [...this.outbox], receipts: new Map(this.receipts), documents: new Map(this.documents) };
       for (const p of plans) {
         const r = this.commitSync(p);
         if (r) {
@@ -204,6 +208,7 @@ export class MemoryStorage implements StorageAdapter {
           this.audits = snapshot.audits;
           this.outbox = snapshot.outbox;
           this.receipts = snapshot.receipts;
+          this.documents = snapshot.documents;
           return Effect.fail(r);
         }
       }
@@ -212,11 +217,19 @@ export class MemoryStorage implements StorageAdapter {
   }
 
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError> {
+    if (plan.completion) return this.commitAll([plan]);
     const e = this.commitSync(plan);
     return e ? Effect.fail(e) : Effect.void;
   }
 
   private commitSync(plan: CommitPlan): ForgeError | null {
+    if (plan.completion) {
+      const w = plan.completion;
+      const key = `${plan.tenant}|${w.kind}|${w.id}`;
+      if ((this.documents.get(key)?.version ?? null) !== w.expectedVersion) return err("VersionConflict", "subscription claim changed");
+      const { _version, ...doc } = w.doc; void _version;
+      this.documents.set(key, {version: (w.expectedVersion ?? 0) + 1, doc: structuredClone(doc)});
+    }
     if (plan.receipt) {
       const key = `${plan.tenant}|${plan.receipt.operation}|${plan.receipt.key}`;
       if (this.receipts.has(key)) return err("UniqueConflict", "idempotency receipt already committed", { constraint: "forge_receipt" });

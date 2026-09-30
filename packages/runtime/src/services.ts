@@ -100,6 +100,8 @@ export interface CommitPlan {
   audit: AuditEntry;
   outbox: OutboxEntry[];
   receipt?: Receipt;
+  /** Document CAS committed atomically with every write; fences subscription completion. */
+  completion?: DocumentWrite;
 }
 
 export interface ListQuery {
@@ -124,6 +126,7 @@ export interface AtomicAbsenceGuard {
 export interface StorageAdapter {
   readonly name: string;
   readonly atomicAbsenceGuards?: true;
+  readonly atomicCompletion?: true;
   get(tenant: string, resource: Resource, id: string): Effect.Effect<StoredRecord | null, ForgeError>;
   findUnique(tenant: string, resource: Resource, unique: Unique, claimKey: string, values: Record<string, unknown>): Effect.Effect<StoredRecord | null, ForgeError>;
   list(tenant: string, resource: Resource, q: ListQuery, sortKeys: (r: StoredRecord) => string[]): Effect.Effect<{ records: StoredRecord[]; hasMore: boolean }, ForgeError>;
@@ -151,7 +154,9 @@ export interface StorageAdapter {
   outboxProgress(row: { tenant: string; opId: string; ordinal: number }, owner: string, update: { delivered: string[]; done?: boolean; dead?: boolean; releaseLease?: boolean }): Effect.Effect<boolean, ForgeError>;
   outboxDead(tenant: string): Effect.Effect<OutboxRow[], ForgeError>;
   outboxRedrive(row: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError>;
-  /** Consumer-side processed-message ledger (per subscription). Returns false when already recorded. */
+  /** Read historical consumer completions without acknowledging new work. */
+  hasProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError>;
+  /** Legacy ledger only. Returns false if already recorded; new consumers use fenced completion. */
   markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError>;
   /** Opaque JSON documents keyed by (tenant, kind, id): changesets, jobs, import staging. */
   /** Admin export scan (plan §22): every stored row including soft-deleted ones, paged by an opaque cursor. */
