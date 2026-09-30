@@ -1,0 +1,410 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
+[
+  {
+    "name": "cloudflare",
+    "exit": 0,
+    "seconds": 0.45856391615234315,
+    "stdout": "",
+    "stderr": "@research/cloudflare: imported 2 operations (0 skipped), 50 unsupported features, 0 foreign identifiers, 0 callbacks/webhooks -> /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-cloudflare\nreview /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-cloudflare/import-report.json and /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-cloudflare/FOREIGN_IDS.md\n",
+    "operations": [
+      {
+        "operation_id": "dns-records-for-a-zone-list-dns-records",
+        "function": "DnsRecordsForAZoneListDnsRecords",
+        "method": "GET",
+        "path": "/zones/{zone_id}/dns_records"
+      },
+      {
+        "operation_id": "dns-records-for-a-zone-create-dns-record",
+        "function": "DnsRecordsForAZoneCreateDnsRecord",
+        "method": "POST",
+        "path": "/zones/{zone_id}/dns_records"
+      }
+    ],
+    "unsupportedCount": 50,
+    "check": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "error[E-TYPE-004]: src/index.forge:320:23: unrecognized refinement\nerror[E-SYN-001]: src/index.forge:320:26: expected a literal, found `-`\nerror[E-SYN-001]: src/index.forge:320:26: expected end of line, found `-`\n@research/cloudflare: 3 error(s), 0 warning(s)\n"
+    }
+  },
+  {
+    "name": "github",
+    "exit": 0,
+    "seconds": 0.025568458018824458,
+    "stdout": "",
+    "stderr": "@research/github: imported 2 operations (0 skipped), 23 unsupported features, 52 foreign identifiers, 0 callbacks/webhooks -> /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-github\nreview /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-github/import-report.json and /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-github/FOREIGN_IDS.md\n",
+    "operations": [
+      {
+        "operation_id": "issues/list-for-repo",
+        "function": "IssuesListForRepo",
+        "method": "GET",
+        "path": "/repos/{owner}/{repo}/issues"
+      },
+      {
+        "operation_id": "issues/create",
+        "function": "IssuesCreate",
+        "method": "POST",
+        "path": "/repos/{owner}/{repo}/issues"
+      }
+    ],
+    "unsupportedCount": 23,
+    "check": {
+      "exit": 0,
+      "stdout": "@research/github: ok (1 file(s), 0 dependency(ies), 0 warning(s))\n",
+      "stderr": ""
+    }
+  }
+]
+[('string', 0, 0, 0), ('optional-null-31', 0, 0, 0), ('nullable-30', 0, 0, 0), ('array', 0, 0, 1), ('map', 0, 0, 0), ('union', 0, 0, 1), ('negative-minimum', 0, 1, 0), ('decimal', 0, 0, 0), ('enum', 0, 0, 0), ('recursive', -6, None, 0), ('binary', 0, 0, 1)]
+[
+  "listItems"
+]
+[
+  {
+    "name": "plain OpenAPI resolves operations but has no command surface",
+    "status": "observed",
+    "route": "GET /items",
+    "commands": 0
+  },
+  {
+    "name": "overlay names surface methods without changing operation identity",
+    "status": "pass",
+    "sourceUnchanged": true,
+    "normalizedHash": "ef9fc9e860e8b0de4f88251f162cad9d2bee7188e16ce8e9c1b0d16df4be9039",
+    "methodMap": [
+      {
+        "items": [
+          "list"
+        ]
+      }
+    ],
+    "generated": [
+      {
+        "path": "binding-map.json",
+        "content": "{\"id\":\"listItems\",\"route\":\"GET /items\",\"surface\":[{\"items\":[\"list\"]}]}"
+      }
+    ]
+  },
+  {
+    "name": "independent Forge instances preserve their response metadata",
+    "status": "fail",
+    "before": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "ref": null,
+          "isArray": false,
+          "itemRef": null
+        }
+      },
+      "description": "first API"
+    },
+    "after": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "ref": null,
+          "isArray": false,
+          "itemRef": null
+        }
+      },
+      "description": "second API"
+    }
+  },
+  {
+    "name": "generic business response must remain intact",
+    "status": "fail",
+    "input": {
+      "success": true,
+      "result": {
+        "id": "issue-1"
+      },
+      "audit": "business-data"
+    },
+    "output": {
+      "id": "issue-1"
+    }
+  },
+  {
+    "name": "generic negative business result is not transport failure",
+    "status": "fail",
+    "input": {
+      "success": false,
+      "result": null,
+      "reason": "not-yet-complete"
+    },
+    "error": "CloudflareApiEnvelopeError",
+    "message": "Cloudflare API request failed"
+  },
+  {
+    "name": "duplicate canonical operation IDs are rejected",
+    "status": "pass",
+    "error": "Duplicate operation ids found listItems"
+  },
+  {
+    "name": "cloudflare real selected API surface",
+    "status": "pass",
+    "methodStats": {
+      "total": 2,
+      "byMethod": {
+        "create": 1,
+        "list": 1
+      }
+    },
+    "operations": [
+      {
+        "id": "dns-records-for-a-zone-list-dns-records",
+        "route": "GET /zones/{zone_id}/dns_records"
+      },
+      {
+        "id": "dns-records-for-a-zone-create-dns-record",
+        "route": "POST /zones/{zone_id}/dns_records"
+      }
+    ]
+  },
+  {
+    "name": "github real selected API surface",
+    "status": "pass",
+    "methodStats": {
+      "total": 0,
+      "byMethod": {}
+    },
+    "operations": [
+      {
+        "id": "issues/list-for-repo",
+        "route": "GET /repos/{owner}/{repo}/issues"
+      },
+      {
+        "id": "issues/create",
+        "route": "POST /repos/{owner}/{repo}/issues"
+      }
+    ]
+  }
+]
+[
+  {
+    "name": "failed inbound handler must remain retryable",
+    "status": "fail",
+    "first": {
+      "error": "DependencyUnavailable"
+    },
+    "second": "duplicate",
+    "handlerAttempts": 1,
+    "note": "MemoryStorage; this is not a live queue certification."
+  },
+  {
+    "name": "our OpenAPI metadata accepted by fern-forge docs",
+    "status": "fail",
+    "total": 55,
+    "rejected": 55,
+    "example": {
+      "id": "@acme/commerce/_/Customer.create",
+      "issues": [
+        {
+          "code": "custom",
+          "path": [
+            "x-forge-kind"
+          ],
+          "message": "unknown Forge extension"
+        },
+        {
+          "code": "custom",
+          "path": [
+            "x-forge-slo"
+          ],
+          "message": "unknown Forge extension"
+        }
+      ]
+    }
+  }
+]
+
+> @cloudflare/forge-transformer-sdk-ts@0.1.0 build /Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-forge-transformer-sdk-ts
+> tsx scripts/build-package.ts
+
+note: baseline generated SDK not found at /Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-forge-sdk-ts/src/_generated; skipping baseline-sdk.tar packaging
+==> Packaged OpenAPI spec from /Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-fern-config/fern/openapi.json with metadata from /Volumes/dev/.worktrees/cf_forge/investigation/openapi.json
+==> Built self-contained @cloudflare/forge-transformer-sdk-ts generator
+Docker version 29.3.1, build c2be9ccfc3
+Fern CLI already supports canonical IR capture
+reusing cached Cloudflare wrapper fernapi/fern-typescript-sdk:3.80.1
+==> Capturing Fern canonical TypeScript IR
+[api]: typescript-sdk Started.
+[api]: typescript-sdk fernapi/fern-typescript-sdk Started.
+[api]: typescript-sdk ✓ All checks passed
+[api]: typescript-sdk fernapi/fern-typescript-sdk Executing generator fernapi/fern-typescript-sdk using container image: fernapi/fern-typescript-sdk:3.80.1
+[api]: typescript-sdk fernapi/fern-typescript-sdk Forwarding CLOUDFLARE_FERN_CAPTURE_DIR=/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp.FHWkjQKNd3/capture into the generator container
+[api]: typescript-sdk fernapi/fern-typescript-sdk Generator logs here: /private/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp-64678-h3XWXpQM6uVK
+[api]: typescript-sdk fernapi/fern-typescript-sdk Wrote files to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-2VMd49/sdk
+[api]: typescript-sdk fernapi/fern-typescript-sdk Finished.
+[api]: typescript-sdk Finished.
+==> Canonical IR captured in 2s
+==> TypeScript shard 1/3
+==> TypeScript shard 2/3
+==> TypeScript shard 3/3
+[TIMING] code generation took 443ms
+[TIMING] fixPackageJson took 140ms
+[TIMING] checkFix took 4495ms
+[TIMING] code generation took 121ms
+[TIMING] fixPackageJson took 153ms
+[TIMING] checkFix took 3926ms
+[TIMING] code generation took 124ms
+[TIMING] fixPackageJson took 155ms
+[TIMING] checkFix took 5028ms
+==> 3 TypeScript shards finished in 6s
+merged 86 Fern files from 3 canonical-IR shards
+Finished in 41ms on 87 files using 12 threads.
+==> typescript-sdk: wrote /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-2VMd49/sdk from 3 canonical-IR shards
+generate-sdk-map: wrote 2 entr(ies) to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-2VMd49/sdk/sdk-map.json
+  endpoints parsed: 2
+  expected non-ignored ops: 2
+  alias collisions resolved: 0
+  unmatched generated methods: 0
+  unresolved spec ops: 0
+forge-transformer-sdk-ts: generated 2 operations from /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/fixtures/github.json in /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-sdk
+Docker version 29.3.1, build c2be9ccfc3
+Fern CLI already supports canonical IR capture
+reusing cached Cloudflare wrapper fernapi/fern-typescript-sdk:3.80.1
+==> Capturing Fern canonical TypeScript IR
+[api]: typescript-sdk Started.
+[api]: typescript-sdk fernapi/fern-typescript-sdk Started.
+[api]: typescript-sdk ✓ All checks passed
+[api]: typescript-sdk fernapi/fern-typescript-sdk Executing generator fernapi/fern-typescript-sdk using container image: fernapi/fern-typescript-sdk:3.80.1
+[api]: typescript-sdk fernapi/fern-typescript-sdk Forwarding CLOUDFLARE_FERN_CAPTURE_DIR=/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp.FzOFWsMx4M/capture into the generator container
+[api]: typescript-sdk fernapi/fern-typescript-sdk Generator logs here: /private/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp-65648-I6A398UvSLi8
+[api]: typescript-sdk fernapi/fern-typescript-sdk Wrote files to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-PEG4hQ/sdk
+[api]: typescript-sdk fernapi/fern-typescript-sdk Finished.
+[api]: typescript-sdk Finished.
+==> Canonical IR captured in 1s
+==> TypeScript shard 1/3
+==> TypeScript shard 2/3
+==> TypeScript shard 3/3
+[TIMING] code generation took 450ms
+[TIMING] fixPackageJson took 136ms
+[TIMING] checkFix took 4960ms
+[TIMING] code generation took 98ms
+[TIMING] fixPackageJson took 130ms
+[TIMING] checkFix took 4512ms
+[TIMING] code generation took 99ms
+[TIMING] fixPackageJson took 130ms
+[TIMING] checkFix took 4509ms
+==> 3 TypeScript shards finished in 7s
+merged 131 Fern files from 3 canonical-IR shards
+Finished in 44ms on 132 files using 12 threads.
+==> typescript-sdk: wrote /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-PEG4hQ/sdk from 3 canonical-IR shards
+generate-sdk-map: wrote 2 entr(ies) to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-PEG4hQ/sdk/sdk-map.json
+  endpoints parsed: 2
+  expected non-ignored ops: 2
+  alias collisions resolved: 0
+  unmatched generated methods: 0
+  unresolved spec ops: 0
+forge-transformer-sdk-ts: generated 2 operations from /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/fixtures/cloudflare.json in /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/cloudflare-sdk
+Docker version 29.3.1, build c2be9ccfc3
+Fern CLI already supports canonical IR capture
+reusing cached Cloudflare wrapper fernapi/fern-typescript-sdk:3.80.1
+==> Capturing Fern canonical TypeScript IR
+[api]: typescript-sdk Started.
+[api]: typescript-sdk fernapi/fern-typescript-sdk Started.
+[api]: typescript-sdk ✓ All checks passed
+[api]: typescript-sdk fernapi/fern-typescript-sdk Executing generator fernapi/fern-typescript-sdk using container image: fernapi/fern-typescript-sdk:3.80.1
+[api]: typescript-sdk fernapi/fern-typescript-sdk Forwarding CLOUDFLARE_FERN_CAPTURE_DIR=/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp.9QNGKlzI6T/capture into the generator container
+[api]: typescript-sdk fernapi/fern-typescript-sdk Generator logs here: /private/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp-66706-W8HjU39SAP13
+[api]: typescript-sdk fernapi/fern-typescript-sdk Wrote files to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-hWAApi/sdk
+[api]: typescript-sdk fernapi/fern-typescript-sdk Finished.
+[api]: typescript-sdk Finished.
+==> Canonical IR captured in 2s
+==> TypeScript shard 1/3
+==> TypeScript shard 2/3
+==> TypeScript shard 3/3
+[TIMING] code generation took 461ms
+[TIMING] fixPackageJson took 122ms
+[TIMING] checkFix took 6316ms
+[TIMING] code generation took 114ms
+[TIMING] fixPackageJson took 144ms
+[TIMING] checkFix took 6109ms
+[TIMING] code generation took 126ms
+[TIMING] fixPackageJson took 154ms
+[TIMING] checkFix took 4840ms
+==> 3 TypeScript shards finished in 9s
+merged 86 Fern files from 3 canonical-IR shards
+Finished in 104ms on 87 files using 12 threads.
+==> typescript-sdk: wrote /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-hWAApi/sdk from 3 canonical-IR shards
+generate-sdk-map: wrote 2 entr(ies) to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-hWAApi/sdk/sdk-map.json
+  endpoints parsed: 2
+  expected non-ignored ops: 2
+  alias collisions resolved: 0
+  unmatched generated methods: 0
+  unresolved spec ops: 0
+forge-transformer-sdk-ts: generated 2 operations from /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/fixtures/github.json in /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-sdk-repeat
+Docker version 29.3.1, build c2be9ccfc3
+Fern CLI already supports canonical IR capture
+reusing cached Cloudflare wrapper fernapi/fern-typescript-sdk:3.80.1
+==> Capturing Fern canonical TypeScript IR
+[api]: typescript-sdk Started.
+[api]: typescript-sdk fernapi/fern-typescript-sdk Started.
+[api]: typescript-sdk ✓ All checks passed
+[api]: typescript-sdk fernapi/fern-typescript-sdk Executing generator fernapi/fern-typescript-sdk using container image: fernapi/fern-typescript-sdk:3.80.1
+[api]: typescript-sdk fernapi/fern-typescript-sdk Forwarding CLOUDFLARE_FERN_CAPTURE_DIR=/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp.VeKkMOpKI6/capture into the generator container
+[api]: typescript-sdk fernapi/fern-typescript-sdk Generator logs here: /private/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp-74591-DszWNcNQDdHI
+[api]: typescript-sdk fernapi/fern-typescript-sdk Wrote files to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-2kk1MM/sdk
+[api]: typescript-sdk fernapi/fern-typescript-sdk Finished.
+[api]: typescript-sdk Finished.
+==> Canonical IR captured in 5s
+==> TypeScript shard 1/3
+==> TypeScript shard 2/3
+==> TypeScript shard 3/3
+[TIMING] code generation took 1676ms
+[TIMING] fixPackageJson took 235ms
+[TIMING] checkFix took 5963ms
+[TIMING] code generation took 297ms
+[TIMING] fixPackageJson took 669ms
+[TIMING] checkFix took 5211ms
+[TIMING] code generation took 184ms
+[TIMING] fixPackageJson took 653ms
+[TIMING] checkFix took 5548ms
+==> 3 TypeScript shards finished in 11s
+merged 88 Fern files from 3 canonical-IR shards
+Finished in 59ms on 89 files using 12 threads.
+==> typescript-sdk: wrote /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-2kk1MM/sdk from 3 canonical-IR shards
+generate-sdk-map: wrote 2 entr(ies) to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-2kk1MM/sdk/sdk-map.json
+  endpoints parsed: 2
+  expected non-ignored ops: 2
+  alias collisions resolved: 0
+  unmatched generated methods: 0
+  unresolved spec ops: 0
+forge-transformer-sdk-ts: generated 2 operations from /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-next.json in /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-next-sdk
+✔ generated SDK supplies transport behind an external binding (22.027708ms)
+✔ connection rejects another tenant before resolving credentials or sending traffic (1.868333ms)
+✔ uncertain writes return an explicit outcome without retry or credential leakage (3.688084ms)
+✔ invalid success data is rejected at the binding boundary (1.922833ms)
+✔ HTTP failures distinguish rejected input, credentials, throttling, and unavailable reads (5.546459ms)
+✔ GitHub list preserves pagination input, path encoding and response headers (2.315208ms)
+✔ Cloudflare map identifies wrapped create payload and list envelope (36.876542ms)
+✔ connection resolves rotated credentials on each call and preserves explicit null (2.557542ms)
+✔ real ForgeGraph function invokes the binding; undeclared dependencies never reach the vendor (353.933333ms)
+✔ stable operation ID survives a generated SDK method rename (224.815375ms)
+✔ credential-provider failures stay local and do not expose secrets (0.322792ms)
+✔ same binding interface supports Cloudflare with explicit domain mapping (1.911542ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 808.874333
+Both operation maps cover the selected operations; repeated GitHub generation is byte-identical.

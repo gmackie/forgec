@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-28",
+  "decision": "narrow-adopt-for-isolated-pilot-only",
+  "productionMigrationApproved": false,
+  "primarySeam": "Build-time generated vendor SDK plus versioned operation map behind explicit ForgeGraph ExternalBinding",
+  "recommendations": {
+    "outboundBindings": "Promising: local HTTP tests and a real ForgeGraph function prove the seam; retain explicit credential, input/output and error mappings.",
+    "genericCore": "Use one API per generation process until resolver instance isolation is corrected.",
+    "automaticVendorImport": "Defer: real specs produce unsupported schemas; recursion aborts, negative bounds fail compilation, typed maps silently widen.",
+    "inboundSources": "Defer recovery claims: failed subscription handlers are currently deduplicated before successful completion.",
+    "ownSdkReplacement": "Defer: no evidence that existing discovery, purpose, version and domain conventions are preserved.",
+    "documentation": "Separate optional projection: current canonical x-forge-* metadata is rejected by fern-forge.",
+    "controlPlane": "Excluded. Connection configuration remains host-neutral."
+  },
+  "verified": {
+    "upstreamCoreTests": 36,
+    "existingImporterTests": 5,
+    "existingRuntimeFunctionTests": 6,
+    "bindingTests": 12,
+    "realVendorSpecs": [
+      "Cloudflare DNS list/create",
+      "GitHub issue list/create"
+    ],
+    "sdkMapCoverage": "2/2 selected operations per vendor",
+    "node": "24.14.0; local HTTP fixture servers",
+    "workers": "Local workerd 2026-09-25; generated SDK calls with injected Fetch, not full-runtime certification",
+    "repeatability": "GitHub generation byte-identical across 91 files on this machine",
+    "generationSeconds": {
+      "githubCold": 64.17,
+      "githubWarm": 11.52,
+      "cloudflareWarm": 16.88,
+      "githubSyntheticUpgrade": 11.21
+    },
+    "syntheticUpgrade": "Stable issues/create operation ID still invokes the endpoint after SDK method rename and additive optional field",
+    "typecheck": "Both generated SDKs pass strict Node+DOM typecheck; browser-only ambient typecheck requires Node declarations"
+  },
+  "unverifiedOrDeferred": [
+    "Live vendor authentication, writes, throttling and credential refresh",
+    "AWS Lambda and deployed Workers or full-runtime multi-host parity",
+    "Cancellation propagation and persisted reconciliation of uncertain writes",
+    "Webhook signature/replay handling and durable polling checkpoint recovery",
+    "Previous/current Cloudflare Forge \u00d7 previous/current ForgeGraph release matrix",
+    "Synthetic operation-removal, pagination and error-contract upgrade rehearsals",
+    "Cross-machine reproducibility and digest-pinned base generator image",
+    "Full generated SDK/license distribution review and npm publication",
+    "Production-grade typed connector package and complete schema validation"
+  ],
+  "rollout": [
+    "Resolve correctness prerequisites with regression tests before broadening imports or inbound adapters.",
+    "Keep generated vendor SDKs disposable and pinned; keep application capability identity independent of accessor names.",
+    "Select one real application capability for an isolated sandbox pilot; current runtime test deliberately reuses an existing dependency fixture.",
+    "Keep the existing transport backend available; shadow reads only, never duplicate writes.",
+    "Roll back the connector artifact and transport implementation together; reconcile unknown writes before any replay."
+  ],
+  "planState": "Local outbound feasibility demonstrated; broader plan gates remain deferred after concrete correctness failures. This is not completion of all 26 tasks.",
+  "followupIssues": {
+    "importer": "https://github.com/gmackie/forgec/issues/187",
+    "redelivery": "https://github.com/gmackie/forgec/issues/188",
+    "pilot": "https://github.com/gmackie/forgec/issues/189"
+  }
+}

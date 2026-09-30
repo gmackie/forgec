@@ -1,0 +1,112 @@
+{
+  "version": "cf-forge-investigation/1",
+  "date": "2026-09-28",
+  "forgegraph": {
+    "revision": "de65061f3f57b3c099c72b3eb1989615b7b9bf4e",
+    "baseline": "integrated main; isolated research workspace; production sources unchanged",
+    "hashes": {
+      "Cargo.lock": "19f904aa1af2e276e049ad56537d3ef93c390acf7244b25eabc515131d775794",
+      "pnpm-lock.yaml": "822e7377f8fb1c3e64deb4cc3c3bb51a825a8c20127cf3e4083c6978f44d715f",
+      "crates/forgegraph-codegen/src/openapi_import.rs": "48a2729e546255fdccd7f00fe5a03b0c216a3c7b7fae0c5f32aac37830f18a5b",
+      "packages/runtime/src/functions.ts": "a7083a69cda1f46cecf3ba5ae0af43bdeac55d916a919919da2891a02d2bf260"
+    }
+  },
+  "cloudflareForge": {
+    "upstreamRevision": "cfe397c296a5e6d9fce01eb335ed805821e5547c",
+    "localRevision": "633f13c76beb0ac9f8f81ad98445e9cf0b0a3a6f",
+    "trackedDelta": "",
+    "hashes": {
+      "pnpm-lock.yaml": "a53b7904f81461aa0772fe24434c36985d3537a57a1be45afb5cda39d539f91b",
+      "packages/forge/openapi-resolver.ts": "127f3adff03a45ceadd384c68307693318d395b2b5fe0aa3f19598542896ba77",
+      "packages/cloudflare-forge-transformer-sdk-ts/scripts/generate-from-openapi.ts": "d3dfb307fbe10cb007c90b4a9a9607312628df3bcf601929f3f290166ce88c6c",
+      "packages/cloudflare-forge-sdk-ts/custom/core/fetcher/unwrapCloudflareEnvelope.ts": "12e5fe508e3277271934b2461047c86650ccb5a57aa087f83dee53f463defcf9"
+    }
+  },
+  "tools": {
+    "node": {
+      "exit": 0,
+      "stdout": "v24.14.0",
+      "stderr": ""
+    },
+    "rustc": {
+      "exit": 0,
+      "stdout": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+      "stderr": ""
+    },
+    "pnpm": {
+      "exit": 0,
+      "stdout": "10.32.1",
+      "stderr": ""
+    },
+    "docker": {
+      "exit": 0,
+      "stdout": "29.4.0",
+      "stderr": ""
+    },
+    "generatorImage": {
+      "exit": 0,
+      "stdout": "sha256:cbccf7f0c98d893068fb36bc408e6742358b665a1a52cec480a7da8ab3ce2b4a",
+      "stderr": ""
+    }
+  },
+  "packageAvailability": {
+    "@cloudflare/forge": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "npm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@cloudflare%2fforge - Not found\nnpm error 404\nnpm error 404  The requested resource '@cloudflare/forge@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/mackieg/.npm/_logs/2026-09-28T17_24_24_542Z-debug-0.log"
+    },
+    "@cloudflare/forge-transformer-sdk-ts": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "npm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/@cloudflare%2fforge-transformer-sdk-ts - Not found\nnpm error 404\nnpm error 404  The requested resource '@cloudflare/forge-transformer-sdk-ts@*' could not be found or you do not have permission to access it.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.\nnpm error A complete log of this run can be found in: /Users/mackieg/.npm/_logs/2026-09-28T17_24_25_181Z-debug-0.log"
+    }
+  },
+  "buildWorkaround": "Pinned public Cloudflare release staged as both openapi.json inputs; no source patches. Missing optional baseline SDK skipped by builder. Fern 5.112.0 / TS generator 3.80.1, wrapper image patched by upstream build script.",
+  "workerdCompatibilityDate": "2026-09-25",
+  "fixtureProvenance": [
+    {
+      "name": "cloudflare",
+      "url": "https://github.com/cloudflare/forge/releases/download/openapi%40e934edf0cddfc816c0a06cec0fabbff479424a1a/openapi.forge.json",
+      "sourceSha256": "d7319145abc348e0e2f02c9d0d2532f095f8f68cfb7cdb4f92cb4bd402870db7",
+      "fixtureSha256": "0ee04fed2bbc7cfa99af1d81fa53ca34bae3bf8795d3e16706e060ff452d596f",
+      "selection": {
+        "/zones/{zone_id}/dns_records": [
+          "get",
+          "post"
+        ]
+      },
+      "localRefs": 61,
+      "license": {
+        "name": "BSD-3-Clause",
+        "url": "https://opensource.org/licenses/BSD-3-Clause"
+      },
+      "transformation": "select paths/methods and transitive local refs; retain schemas unchanged",
+      "operations": [
+        "dns-records-for-a-zone-list-dns-records",
+        "dns-records-for-a-zone-create-dns-record"
+      ]
+    },
+    {
+      "name": "github",
+      "url": "https://raw.githubusercontent.com/github/rest-api-description/1d567e953615d18fc53cd847036489bcd8f7f00c/descriptions/api.github.com/api.github.com.json",
+      "sourceSha256": "072595660cbe07c91b8320f826c3a54762df1a1a6a0656d8653de8940b61f55f",
+      "fixtureSha256": "852275f0af38ba7d48a3b73b40ca2879ff0e481b9d882e4d88d09fe0b551e218",
+      "selection": {
+        "/repos/{owner}/{repo}/issues": [
+          "get",
+          "post"
+        ]
+      },
+      "localRefs": 37,
+      "license": {
+        "name": "MIT",
+        "url": "https://spdx.org/licenses/MIT"
+      },
+      "transformation": "select paths/methods and transitive local refs; retain schemas unchanged",
+      "operations": [
+        "issues/list-for-repo",
+        "issues/create"
+      ]
+    }
+  ]
+}

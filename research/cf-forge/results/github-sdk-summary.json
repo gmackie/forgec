@@ -1,0 +1,34 @@
+{
+  "sourceBytes": 138441,
+  "files": 91,
+  "map": {
+    "issues/create": {
+      "accessor": [
+        "issues"
+      ],
+      "method": "create",
+      "httpMethod": "POST",
+      "path": "/repos/{owner}/{repo}/issues",
+      "requestType": "IssuesCreateRequest",
+      "responseType": "Issue",
+      "requiredRequestProperties": [
+        "owner",
+        "repo",
+        "title"
+      ]
+    },
+    "issues/list-for-repo": {
+      "accessor": [
+        "issues"
+      ],
+      "method": "listForRepo",
+      "httpMethod": "GET",
+      "path": "/repos/{owner}/{repo}/issues",
+      "requestType": "IssuesListForRepoRequest",
+      "requiredRequestProperties": [
+        "owner",
+        "repo"
+      ]
+    }
+  }
+}

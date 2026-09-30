@@ -1,0 +1,39 @@
+✔ generated SDK supplies transport behind an external binding (24.348334ms)
+✖ connection rejects another tenant before resolving credentials or sending traffic (8.609292ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 174.094417
+
+✖ failing tests:
+
+test at research/cf-forge/bindings.test.mjs:13:1
+✖ connection rejects another tenant before resolving credentials or sending traffic (8.609292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   ok: true,
+  +   value: {
+  +     externalId: '17'
+  +   }
+  -   code: 'ConnectionScopeMismatch',
+  -   ok: false
+    }
+  
+      at <anonymous> (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:13:229)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async vendor (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:9:505)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { ok: true, value: { externalId: '17' } },
+    expected: { ok: false, code: 'ConnectionScopeMismatch' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

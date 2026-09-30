@@ -1,0 +1,40 @@
+Docker version 29.3.1, build c2be9ccfc3
+Fern CLI already supports canonical IR capture
+reusing cached Cloudflare wrapper fernapi/fern-typescript-sdk:3.80.1
+==> Capturing Fern canonical TypeScript IR
+[api]: typescript-sdk Started.
+[api]: typescript-sdk fernapi/fern-typescript-sdk Started.
+[api]: typescript-sdk ✓ All checks passed
+[api]: typescript-sdk fernapi/fern-typescript-sdk Executing generator fernapi/fern-typescript-sdk using container image: fernapi/fern-typescript-sdk:3.80.1
+[api]: typescript-sdk fernapi/fern-typescript-sdk Forwarding CLOUDFLARE_FERN_CAPTURE_DIR=/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp.sdg1t6w3UC/capture into the generator container
+[api]: typescript-sdk fernapi/fern-typescript-sdk Generator logs here: /private/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp-62198-iQdjdUsAUyfI
+[api]: typescript-sdk fernapi/fern-typescript-sdk Wrote files to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-ZOaqv7/sdk
+[api]: typescript-sdk fernapi/fern-typescript-sdk Finished.
+[api]: typescript-sdk Finished.
+==> Canonical IR captured in 3s
+==> TypeScript shard 1/3
+==> TypeScript shard 2/3
+==> TypeScript shard 3/3
+[TIMING] code generation took 667ms
+[TIMING] fixPackageJson took 186ms
+[TIMING] checkFix took 5379ms
+[TIMING] code generation took 207ms
+[TIMING] fixPackageJson took 196ms
+[TIMING] checkFix took 4865ms
+[TIMING] code generation took 169ms
+[TIMING] fixPackageJson took 209ms
+[TIMING] checkFix took 4989ms
+==> 3 TypeScript shards finished in 7s
+merged 86 Fern files from 3 canonical-IR shards
+Finished in 75ms on 87 files using 12 threads.
+==> typescript-sdk: wrote /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-ZOaqv7/sdk from 3 canonical-IR shards
+generate-sdk-map: wrote 2 entr(ies) to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-ZOaqv7/sdk/sdk-map.json
+  endpoints parsed: 2
+  expected non-ignored ops: 2
+  alias collisions resolved: 0
+  unmatched generated methods: 0
+  unresolved spec ops: 0
+forge-transformer-sdk-ts: generated 2 operations from /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/fixtures/github.json in /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-sdk-repeat
+real 11.52
+user 2.67
+sys 0.59
