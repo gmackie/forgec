@@ -113,7 +113,10 @@ a file read succeeded. These are preserved in evidence, with bounded read-only
 probe retries; the underlying cause is unresolved. This is functional evidence
 from one beta account/run, not an availability or general concurrency guarantee.
 
-Runtime publication with expected-head preconditions, durable receipts, fork/merge
-APIs, import verification, compiler syntax and Bob wiring remain. `reader.capabilities` explicitly marks publish/merge/fork false.
+The separate [journaled publisher](artifact-publication.md) now provides single-ref
+expected-head publication, durable receipts and conservative read-only recovery
+through a Node Git transport. Its journal has SQLite coverage and
+[end-to-end live Artifacts/D1 evidence](../conformance/artifacts/publication-live-2026-10-01.json). Fork/merge APIs, import verification, compiler
+syntax and Bob wiring remain. `reader.capabilities` explicitly marks publish/merge/fork false.
 These read tests make no D1/Turso metadata or write-concurrency claim. Existing
 sealed ArtifactRevision and Specification APIs are unchanged.

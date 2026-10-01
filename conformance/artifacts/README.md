@@ -44,6 +44,36 @@ successful run is functional evidence, not production availability certification
 
 Concurrent pushes use one Git ref and `--force-with-lease` with the same explicit
 old OID. Exactly one succeeds, and a subsequent stale push leaves the winner
-unchanged. This does not prove multi-ref atomicity, durable receipts, ambiguous
-write recovery, or a Forge runtime publication implementation. A mirror clone
+unchanged. This reader/provider run does not prove multi-ref atomicity or journaled
+publication; the separate publication run below covers receipts and recovery. A mirror clone
 and fsck verify export of reachable history; reimport is not yet qualified.
+
+
+## Journaled publication
+
+The publisher qualification uses the actual Node `ArtifactPublisher`, Git
+transport and SQL journal with disposable live Artifacts and D1 resources:
+
+```sh
+python3 scripts/qualify-artifact-publication.py \
+  --account "$CF_TEST_ACCOUNT_ID" \
+  --credential-file "$HOME/.wrangler/config/default.toml" \
+  --state-dir "$HOME/.local/state/forgegraph/publication-unique-run" \
+  --evidence /tmp/publication-evidence.json
+```
+
+Requires Node 24+, Python 3.11+, Git, pnpm, installed workspace dependencies, and
+Artifacts plus D1 management scopes. The script builds the runtime before use.
+Credentials are delivered to the child runner through stdin and Git's environment;
+never commit the private state directory. Normal success/failure cleans up the
+owned repository and database. After interruption, repeat with `--cleanup-only`
+and a different evidence path to retain the original run evidence. Resource
+ownership is recorded before creation; uncertain D1 creation is reconciled by
+its unique generated name. Cloudflare deletion acceptance is the cleanup boundary.
+
+`publication-live-2026-10-01.json` records 11 passing checks, runtime/runner source
+hashes, tool versions and no remaining disposable resources. The run exercises
+live D1 SQL over REST; it does not run the Node Git transport inside a Worker.
+Lost acknowledgements and failed terminal persistence are deliberately injected
+after real pushes. Recovery remains read-only and never resends uncertain writes.
+This is functional evidence from a disposable run, not an availability guarantee.

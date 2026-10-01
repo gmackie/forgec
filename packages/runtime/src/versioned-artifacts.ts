@@ -1,5 +1,5 @@
-/** Read-only versioned artifact contract. Publication and merge are not supported
- * until a provider's expected-head guarantees have been qualified. */
+/** Read-only versioned artifact contract. Journaled publication is a separate
+ * capability in artifact-publication.ts; this reader never mutates repositories. */
 import type { CallContext } from './engine.js';
 import { err } from './errors.js';
 
