@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-01",
+  "scope": "Runtime preflight and per-call input snapshots for Bob, KanBanger, LatchFlow and Stream Conductor; no deployment or production adoption",
+  "regressions": {
+    "failedBeforeFix": 29,
+    "focusedPassed": 30
+  },
+  "runtimeSuite": {
+    "passed": 649,
+    "skipped": 127
+  },
+  "typecheck": "passed",
+  "build": "passed",
+  "generatedTraces": {
+    "profiles": [
+      "memory",
+      "sqlite",
+      "postgresql17"
+    ],
+    "bob": 3,
+    "kanbanger": 3,
+    "latchflow": 6,
+    "stream-conductor": 6,
+    "postgresScope": "Temporary per-test schemas in dedicated Bob Foundation staging database; removed by fixture cleanup",
+    "streamSource": "Actual standalone projection module extracted from immutable revision 6783448b79460ad15050b588c92a3cbff31c59bf; no full application checkout certification"
+  },
+  "limits": [
+    "Preflight does not provide a transaction across native and Foundation stores",
+    "Storage or authorization failures after earlier writes still require explicit same-fact replay",
+    "ForgeGraph assessment and LevelForge job mirroring are outside this change"
+  ]
+}

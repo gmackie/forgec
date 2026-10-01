@@ -59,3 +59,26 @@ or application rollout. Keep those boundaries explicit when updating #25 and #71
 This work did not merge or deploy an integration branch; Bob’s independent main integration was already present when inspected. `application-verification.json` and `application-evidence/` retain final receipts and raw assertion reports at the Forge implementation checkpoint. All six execute memory, SQLite and PostgreSQL cases; descriptor-required assertions and total executed assertions are recorded separately.
 
 Current rollout checks: KanBanger full19-task typecheck,11-task lint and3-task build pass after frozen dependency restoration; Stream draft75 reports13 successful CI statuses. Optional adapters now ship through `@forgegraph/runtime/foundation/apps/<app>`, verified as JavaScript and typed consumers of actual tarballs. Selecting a staging environment and installing trusted bindings remain explicit deployment steps.
+
+
+## Runtime adapter preflight, 2026-10-01
+
+Bob, KanBanger, LatchFlow and Stream Conductor now validate native fields before
+starting their durable projection. This includes generated key bounds for
+LatchFlow and acknowledged command timing/type for Stream Conductor. Malformed
+satellite data is rejected before it can strand an earlier terminal/submission
+fact or other projection records. These checks reuse the runtime's text and
+datetime codecs and the corresponding application schema bounds.
+
+Each call snapshots native scalar input and call context before asynchronous
+work. Bob and KanBanger also snapshot their trusted binding. Stream Conductor
+serializes and hashes its nested payload before any writes, so later caller
+mutation cannot change the published digest. Bob accepts optional server-owned
+session, planning-item, user and workspace identities in its binding; supplied
+values must match, while existing minimal bindings remain supported.
+
+This is preflight validation, not a distributed transaction or a durable inbox.
+Provider failures and authorization failures during a later stage still require
+explicit replay of the same persisted native fact. The final typed link remains
+the completion marker. These changes do not attest native execution or enable an
+automatic synchronization worker, and do not certify the other two adapters.
