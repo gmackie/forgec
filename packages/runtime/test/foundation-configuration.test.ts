@@ -136,3 +136,52 @@ for (const adapter of foundationAdapters)
       await f.close();
     }
   });
+
+for (const adapter of foundationAdapters)
+  it(`${adapter}: scalar resolution validates defaults and shadowed assignments without losing exact integers`, async () => {
+    const f = await foundation("configuration", adapter);
+    const call = (op: string, input: Record<string, unknown>) => Effect.runPromise(f.engine.call(prefix + op, input, ctx));
+    try {
+      const repository = await Effect.runPromise(f.engine.call(spec + "Repository.create", { key: "scalars", provider: "git", locator: "https://example.test/scalars" }, ctx));
+      const pin = await Effect.runPromise(f.engine.call(spec + "SpecificationPin.create", { repository: repository.id, anchor: "main", revision: REVISION }, ctx));
+      const base = await call("ConfigurationLayer.create", { key: "base", label: "Base", ordinal: 1 });
+      const upper = await call("ConfigurationLayer.create", { key: "upper", label: "Upper", ordinal: 2 });
+      const service = new Configuration(f.engine);
+      const opaque = await call("ParameterType.create", { key: "opaque", label: "Opaque", secret: false });
+      const invalidPin = await Effect.runPromise(f.engine.call(spec + "SpecificationPin.create", { repository: repository.id, anchor: "unsupported", revision: REVISION }, ctx));
+      await call("ParameterDefinition.create", { pin: invalidPin.id, key: "opaque", valueType: opaque.id, secret: false, required: false, defaultValue: null });
+      const invalidConfig = await call("Configuration.create", { pin: invalidPin.id, key: "unsupported", layer: base.id, layerOrdinal: 1 });
+      await expect(Effect.runPromise(service.resolve(String(invalidConfig.id), AT, ctx))).rejects.toMatchObject({ code: "ValidationFailed" });
+      let sequence = 0;
+      for (const [kind, valid, invalid] of [
+        ["integer", "9007199254740993123456789", ["1.5", "1e3", "+1", "01", "-0", " 1", "NaN"]],
+        ["boolean", "false", ["False", "0", "yes", "true "]],
+      ] as const) {
+        const type = await call("ParameterType.create", { key: kind, label: kind, secret: false });
+        for (const value of invalid) {
+          const n = ++sequence;
+          const casePin = await Effect.runPromise(f.engine.call(spec + "SpecificationPin.create", { repository: repository.id, anchor: `case-${n}`, revision: REVISION }, ctx));
+          const parameter = await call("ParameterDefinition.create", { pin: casePin.id, key: "value", valueType: type.id, secret: false, required: true, defaultValue: value });
+          const root = await call("Configuration.create", { pin: casePin.id, key: `case-${n}`, layer: base.id, layerOrdinal: 1 });
+          const service = new Configuration(f.engine);
+          await expect(Effect.runPromise(service.resolve(String(root.id), AT, ctx))).rejects.toMatchObject({ code: "ValidationFailed" });
+          expect((await call("ResolvedConfiguration.list.byConfiguration", { params: { configuration: root.id } })).items).toHaveLength(0);
+          // Even a valid override cannot launder an invalid definition default.
+          await call("ParameterAssignment.create", { configuration: root.id, parameter: parameter.id, value: valid });
+          await expect(Effect.runPromise(service.resolve(String(root.id), AT, ctx))).rejects.toMatchObject({ code: "ValidationFailed" });
+        }
+        const parameter = await call("ParameterDefinition.create", { pin: pin.id, key: kind, valueType: type.id, secret: false, required: true, defaultValue: valid });
+        const root = await call("Configuration.create", { pin: pin.id, key: kind, layer: base.id, layerOrdinal: 1 });
+        const service = new Configuration(f.engine);
+        const resolved = await Effect.runPromise(service.resolve(String(root.id), AT, ctx));
+        expect(resolved.entries.find(x => x.key === kind)?.value).toBe(valid);
+        const forged = await call("ResolvedConfiguration.create", { configuration: root.id, digest: `sha256:${"f".repeat(64)}`, resolvedAt: AT, entryCount: 1 });
+        await call("ResolvedValue.create", { resolved: forged.id, parameter: parameter.id, source: root.id, value: invalid[0] });
+        await expect(Effect.runPromise(service.listValues(String(forged.id), ctx))).rejects.toMatchObject({ code: "ValidationFailed" });
+        await call("ParameterAssignment.create", { configuration: root.id, parameter: parameter.id, value: invalid[0] });
+        const leaf = await call("Configuration.create", { pin: pin.id, key: kind, layer: upper.id, layerOrdinal: 2, parent: root.id });
+        await call("ParameterAssignment.create", { configuration: leaf.id, parameter: parameter.id, value: valid });
+        await expect(Effect.runPromise(service.resolve(String(leaf.id), AT, ctx))).rejects.toMatchObject({ code: "ValidationFailed" });
+      }
+    } finally { await f.close(); }
+  });

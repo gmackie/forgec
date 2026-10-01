@@ -43,6 +43,15 @@ export class Configuration {
     return this.engine.call(prefix + operation, input, ctx);
   }
 
+  private validateLiteral(type: Wire, value: unknown): Effect.Effect<void, ForgeError> {
+    const kind = type["key"];
+    const valid = typeof value === "string" && (kind === "text" ||
+      kind === "integer" && /^(?:0|-[1-9][0-9]*|[1-9][0-9]*)$/.test(value) ||
+      kind === "boolean" && (value === "true" || value === "false"));
+    // Do not echo authored literals: callers may have accidentally supplied a secret.
+    return valid ? Effect.void : Effect.fail(err("ValidationFailed", "Invalid configuration scalar literal"));
+  }
+
   /** The configuration chain, root first. */
   private chain(configuration: string, ctx: CallContext): Effect.Effect<Wire[], ForgeError> {
     const self = this;
@@ -79,6 +88,22 @@ export class Configuration {
       if (definitionPage["next"] != null) return yield* Effect.fail(err("BudgetExceeded", "Parameter definitions exceed the lookup bound"));
       const definitions = (definitionPage["items"] ?? []) as Wire[];
 
+      // Validate the complete pinned definition and every authored layer before choosing
+      // winners. An override must not hide malformed input in an inherited layer.
+      const types = new Map<string, Wire>();
+      const byId = new Map(definitions.map(definition => [String(definition["id"]), definition]));
+      for (const definition of definitions) {
+        const id = String(definition["valueType"]);
+        if (!types.has(id)) types.set(id, yield* self.call("ParameterType.get", { id }, ctx));
+        const type = types.get(id)!;
+        if (!["text", "integer", "boolean", "secret"].includes(String(type["key"])) ||
+            (type["key"] === "secret") !== (type["secret"] === true) ||
+            definition["secret"] !== type["secret"])
+          return yield* Effect.fail(err("ValidationFailed", "Unsupported or inconsistent configuration parameter type"));
+        if (definition["defaultValue"] != null)
+          yield* self.validateLiteral(type, definition["defaultValue"]);
+      }
+
       // Nearest-wins: walking the chain root-first lets a later (higher) layer overwrite.
       const winner = new Map<string, { assignment: Wire; source: string }>();
       for (const node of chain) {
@@ -87,8 +112,13 @@ export class Configuration {
         }, ctx);
         if (assignmentPage["next"] != null) return yield* Effect.fail(err("BudgetExceeded", "Parameter assignments exceed the lookup bound"));
         const assignments = (assignmentPage["items"] ?? []) as Wire[];
-        for (const assignment of assignments)
+        for (const assignment of assignments) {
+          const definition = byId.get(String(assignment["parameter"]));
+          if (!definition) return yield* Effect.fail(err("ValidationFailed", "Assignment is outside the pinned definition"));
+          if (assignment["value"] != null)
+            yield* self.validateLiteral(types.get(String(definition["valueType"]))!, assignment["value"]);
           winner.set(String(assignment["parameter"]), { assignment, source: String(node["id"]) });
+        }
       }
 
       const entries: ResolvedEntry[] = [];
@@ -158,6 +188,11 @@ export class Configuration {
       const all = yield* self.call("ResolvedValue.list.byResolved", { params: { resolved }, limit: 33 }, ctx);
       if (all["next"] || (all["items"] as Wire[]).length !== header["entryCount"])
         return yield* Effect.fail(err("TransientConflict", "Configuration resolution is not complete; retry resolve"));
+      for (const row of all["items"] as Wire[]) {
+        const definition = yield* self.call("ParameterDefinition.get", { id: row["parameter"] }, ctx);
+        const type = yield* self.call("ParameterType.get", { id: definition["valueType"] }, ctx);
+        if (row["value"] != null) yield* self.validateLiteral(type, row["value"]);
+      }
       return yield* self.call("ResolvedValue.list.byResolved", { params: { resolved }, ...page }, ctx);
     });
   }

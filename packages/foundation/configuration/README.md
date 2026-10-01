@@ -13,9 +13,15 @@ package generates no HTTP routes.
 **Configuration is not arbitrary JSON.** Every value is an assignment to a parameter declared by
 a `specification.SpecificationPin`, so an unknown key cannot be set and a key cannot be assigned
 twice in one configuration. An assignment whose parameter belongs to a different pin is
-refused, as is an inheritance edge across revisions. Parameter types currently provide named
-identities and secret/literal separation. Literal values remain text: integer and boolean
-syntax validation is still required for F94-01 and issue #94.
+refused, as is an inheritance edge across revisions. Supported parameter type keys are `text`, `integer`, `boolean`, and `secret`.
+`Configuration.resolve` validates every pinned default and every inherited assignment
+before publishing a snapshot, including values shadowed by overrides. Integer literals
+use canonical decimal spelling (`0`, positive digits without leading zeroes, or a minus
+followed by nonzero digits); booleans are exactly `true` or `false`. Integers remain text
+so values beyond JavaScript number precision are preserved. Unknown type keys and
+inconsistent secret flags fail closed. Diagnostics never echo rejected literals.
+Raw authoring CRUD stores candidate text; callers must use `resolve` as the publication
+boundary. `listValues` also validates scalar syntax in stored rows, including raw candidates.
 
 ## Deterministic resolution
 
@@ -58,8 +64,7 @@ overrides, defaults, secret handling, digest stability, provenance, required-par
 and tenant isolation. The consumer fixture parameterizes four shapes that share no vocabulary —
 a workspace agent, an industrial process unit, a SaaS tenant plan and a deployment — through one
 model, and shows a reconciler consuming a resolution while holding no values of its own.
-Seven issue criteria have local evidence; F94-01 remains planned until scalar validation is
-implemented. `contract.json` records this distinction.
+All eight issue criteria have local evidence. `contract.json` records that evidence.
 
 Fixtures are synthetic, not production adoption. Hosted provider certification is separate and
 is not claimed.
