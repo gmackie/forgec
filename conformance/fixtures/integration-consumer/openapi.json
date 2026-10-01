@@ -60,6 +60,45 @@
           }
         }
       },
+      "CompanyRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "key": {
+            "type": "string",
+            "x-forge-type": "text"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "key"
+        ]
+      },
+      "CompanyCreate": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "x-forge-type": "text"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "key"
+        ]
+      },
+      "CompanyPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
       "GitHubIssueRecord": {
         "type": "object",
         "properties": {
@@ -215,6 +254,130 @@
         ]
       },
       "LinearIssuePatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "NeutralTransferRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "seller": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/Company"
+          },
+          "buyer": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/Company"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "seller",
+          "buyer",
+          "quantity"
+        ]
+      },
+      "NeutralTransferCreate": {
+        "type": "object",
+        "properties": {
+          "seller": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/Company"
+          },
+          "buyer": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/Company"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "x-forge-type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "seller",
+          "buyer",
+          "quantity"
+        ]
+      },
+      "NeutralTransferPatch": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "TransferDocumentRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-forge-type": "id",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "readOnly": true
+          },
+          "mapping": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/integration/_/ExternalMapping"
+          },
+          "transfer": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/NeutralTransfer"
+          },
+          "observer": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/Company"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "mapping",
+          "transfer",
+          "observer"
+        ]
+      },
+      "TransferDocumentCreate": {
+        "type": "object",
+        "properties": {
+          "mapping": {
+            "type": "string",
+            "x-forge-reference": "@forgegraph/foundation/integration/_/ExternalMapping"
+          },
+          "transfer": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/NeutralTransfer"
+          },
+          "observer": {
+            "type": "string",
+            "x-forge-reference": "@fixture/integration-consumer/_/Company"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "mapping",
+          "transfer",
+          "observer"
+        ]
+      },
+      "TransferDocumentPatch": {
         "type": "object",
         "properties": {},
         "additionalProperties": false

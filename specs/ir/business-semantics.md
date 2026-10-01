@@ -77,3 +77,19 @@ packages each retain a `fixtures/subject-semantics.json` overlay checked against
 actual generated bundles. These authored overlays declare meaning; projection does
 not infer actor roles from names. The legacy Party package's text principal locator
 remains an L1 identifier and is not itself a typed L0 representation declaration.
+
+### Participant views and external representations
+
+A perspective observer must be an Entity participant, never an authentication Principal.
+Credential fields are rejected with a credential-specific diagnostic. A projected field's
+purpose must match the view's purpose; purpose-bound policies must agree as well.
+`ConceptIR::perspective_fields` exposes the filtered schema while preserving each source
+field's classification and purpose metadata. This is inspection, not an authorization grant.
+
+`business-semantics/cross-company.json` declares organizations behind the participating
+Parties, one neutral SettlementPosition and purpose/policy-bound Receivable/Payable views.
+The Integration consumer demonstrates a second composition: seller sales documents and
+buyer purchase documents each use real `integration.ExternalMapping` records and typed
+`TransferDocument` links to one `NeutralTransfer`. Runtime tests reject outsiders and
+cross-tenant references. Company identity is distinct from the collaboration's storage
+tenant; this does not authorize cross-tenant database access.

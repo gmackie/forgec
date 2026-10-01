@@ -170,6 +170,18 @@ export const operations: Record<string, OperationSpec> = {
   "@fixture/integration-consumer/_/imports.stage": { method: "POST", path: "/v1/imports/stage", kind: "import.stage", resource: "imports" },
 };
 
+export interface CompanyRecord {
+  id: string;
+  key: string;
+}
+
+export interface CompanyCreate {
+  key: string;
+}
+
+export interface CompanyPatch {
+}
+
 export interface GitHubIssueRecord {
   id: string;
   mapping: string;
@@ -210,6 +222,38 @@ export interface LinearIssueCreate {
 }
 
 export interface LinearIssuePatch {
+}
+
+export interface NeutralTransferRecord {
+  id: string;
+  seller: string;
+  buyer: string;
+  quantity: number;
+}
+
+export interface NeutralTransferCreate {
+  seller: string;
+  buyer: string;
+  quantity: number;
+}
+
+export interface NeutralTransferPatch {
+}
+
+export interface TransferDocumentRecord {
+  id: string;
+  mapping: string;
+  transfer: string;
+  observer: string;
+}
+
+export interface TransferDocumentCreate {
+  mapping: string;
+  transfer: string;
+  observer: string;
+}
+
+export interface TransferDocumentPatch {
 }
 
 export interface ArtifactRecord {
@@ -1330,6 +1374,9 @@ export interface SpecificationPinCreate {
 export interface SpecificationPinPatch {
 }
 
+export interface CompanyApi {
+}
+
 export interface GitHubIssueApi {
 }
 
@@ -1337,6 +1384,12 @@ export interface IndustrialDeviceApi {
 }
 
 export interface LinearIssueApi {
+}
+
+export interface NeutralTransferApi {
+}
+
+export interface TransferDocumentApi {
 }
 
 export interface ArtifactApi {
@@ -1540,9 +1593,12 @@ export interface ForgeClient {
   changesets: ChangesetsApi;
   imports: ImportsApi;
   admin: AdminApi;
+  companys: CompanyApi;
   gitHubIssues: GitHubIssueApi;
   industrialDevices: IndustrialDeviceApi;
   linearIssues: LinearIssueApi;
+  neutralTransfers: NeutralTransferApi;
+  transferDocuments: TransferDocumentApi;
   artifacts: ArtifactApi;
   artifactComponents: ArtifactComponentApi;
   artifactContents: ArtifactContentApi;
@@ -1649,11 +1705,17 @@ export function createClient(options: ClientOptions): ForgeClient {
     },
     workflows: {
     },
+    companys: {
+    },
     gitHubIssues: {
     },
     industrialDevices: {
     },
     linearIssues: {
+    },
+    neutralTransfers: {
+    },
+    transferDocuments: {
     },
     artifacts: {
     },

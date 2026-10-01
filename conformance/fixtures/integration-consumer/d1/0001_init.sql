@@ -66,6 +66,13 @@ CREATE TABLE forge_receipt (
   PRIMARY KEY (tenant, operation, key)
 );
 
+CREATE TABLE company (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "key_" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id)
+);
+
 CREATE TABLE git_hub_issue (
   "tenant" TEXT NOT NULL,
   "id" TEXT NOT NULL,
@@ -91,6 +98,29 @@ CREATE TABLE linear_issue (
   "team" TEXT NOT NULL,
   PRIMARY KEY (tenant, id),
   FOREIGN KEY (tenant, mapping) REFERENCES external_mapping (tenant, id)
+);
+
+CREATE TABLE neutral_transfer (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "seller" TEXT NOT NULL,
+  "buyer" TEXT NOT NULL,
+  "quantity" INTEGER NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, seller) REFERENCES company (tenant, id),
+  FOREIGN KEY (tenant, buyer) REFERENCES company (tenant, id)
+);
+
+CREATE TABLE transfer_document (
+  "tenant" TEXT NOT NULL,
+  "id" TEXT NOT NULL,
+  "mapping" TEXT NOT NULL,
+  "transfer" TEXT NOT NULL,
+  "observer" TEXT NOT NULL,
+  PRIMARY KEY (tenant, id),
+  FOREIGN KEY (tenant, mapping) REFERENCES external_mapping (tenant, id),
+  FOREIGN KEY (tenant, transfer) REFERENCES neutral_transfer (tenant, id),
+  FOREIGN KEY (tenant, observer) REFERENCES company (tenant, id)
 );
 
 CREATE TABLE artifact (
@@ -862,6 +892,10 @@ CREATE TABLE specification_pin (
 );
 
 CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);
+CREATE UNIQUE INDEX company_uq_key ON company (tenant, key_);
+CREATE INDEX neutral_transfer_ix_by_seller ON neutral_transfer (tenant, seller, id);
+CREATE UNIQUE INDEX transfer_document_uq_mapping ON transfer_document (tenant, mapping);
+CREATE INDEX transfer_document_ix_by_transfer ON transfer_document (tenant, transfer, id);
 CREATE UNIQUE INDEX artifact_uq_key ON artifact (tenant, key_);
 CREATE UNIQUE INDEX artifact_revision_uq_content ON artifact_revision (tenant, content);
 CREATE INDEX artifact_revision_ix_by_artifact ON artifact_revision (tenant, artifact, id);

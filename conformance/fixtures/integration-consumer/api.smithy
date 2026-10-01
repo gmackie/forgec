@@ -11,6 +11,21 @@ structure Problem {
     detail: String
 }
 
+structure CompanyRecord {
+    @required
+    id: String
+    @required
+    key: String
+}
+
+structure CompanyCreateInput {
+    @required
+    key: String
+}
+
+structure CompanyPatchInput {
+}
+
 structure GitHubIssueRecord {
     @required
     id: String
@@ -66,6 +81,52 @@ structure LinearIssueCreateInput {
 }
 
 structure LinearIssuePatchInput {
+}
+
+structure NeutralTransferRecord {
+    @required
+    id: String
+    @required
+    seller: String
+    @required
+    buyer: String
+    @required
+    quantity: Long
+}
+
+structure NeutralTransferCreateInput {
+    @required
+    seller: String
+    @required
+    buyer: String
+    @required
+    quantity: Long
+}
+
+structure NeutralTransferPatchInput {
+}
+
+structure TransferDocumentRecord {
+    @required
+    id: String
+    @required
+    mapping: String
+    @required
+    transfer: String
+    @required
+    observer: String
+}
+
+structure TransferDocumentCreateInput {
+    @required
+    mapping: String
+    @required
+    transfer: String
+    @required
+    observer: String
+}
+
+structure TransferDocumentPatchInput {
 }
 
 structure ArtifactRecord {

@@ -195,6 +195,23 @@ fn timestamp(field: &Field) -> bool {
 }
 
 impl ConceptIR {
+    /// A projection retains the source field's classification/purpose, never a declassified copy.
+    /// This is schema inspection, not authorization or runtime data access.
+    pub fn perspective_fields(&self, id: &str) -> Option<BTreeMap<String, Field>> {
+        let view = self.semantics.views.get(id)?;
+        let source = fields(self, &view.fact)?;
+        view.fields
+            .iter()
+            .map(|name| {
+                let field = source.get(name)?;
+                if field.secret || (field.ty.purpose.is_some() && field.ty.purpose != view.purpose)
+                {
+                    return None;
+                }
+                Some((name.clone(), field.clone()))
+            })
+            .collect()
+    }
     pub(crate) fn valid_external_applicability(
         &self,
         applicability: &crate::concept_governance::Applicability,
@@ -546,39 +563,49 @@ impl ConceptIR {
                 problem(&mut errors, "E-L0-VIEW", id, "unknown neutral fact/entity");
                 continue;
             };
-            if fs
-                .get(&view.observer_role)
-                .and_then(|f| target(&f.ty.base))
-                .is_none()
-            {
+            if !fs.get(&view.observer_role).is_some_and(
+                |f| matches!(&f.ty.base, Type::Entity { id, .. } if self.entities.contains_key(id)),
+            ) {
                 problem(
                     &mut errors,
                     "E-L0-VIEW",
                     id,
-                    "observer role must reference a typed participant",
+                    "observer role must reference a typed business participant entity, not a Principal",
                 );
             }
             for field in &view.fields {
-                if !fs.get(field).is_some_and(|f| !f.secret) {
-                    problem(
+                match fs.get(field) {
+                    None => problem(
                         &mut errors,
                         "E-L0-VIEW",
                         id,
                         format!("unknown projected field {field}"),
-                    );
+                    ),
+                    Some(f) if f.secret => problem(
+                        &mut errors,
+                        "E-L0-VIEW",
+                        id,
+                        format!("credential field {field} cannot be projected"),
+                    ),
+                    Some(f) if f.ty.purpose.is_some() && f.ty.purpose != view.purpose => problem(
+                        &mut errors,
+                        "E-L0-VIEW",
+                        id,
+                        format!("field {field} requires its declared view purpose"),
+                    ),
+                    _ => {}
                 }
             }
             for auth in &view.authorizations {
-                if !self
-                    .policies
-                    .get(auth)
-                    .is_some_and(|p| target(&p.resource.base) == Some(view.fact.as_str()))
-                {
+                if !self.policies.get(auth).is_some_and(|p| {
+                    target(&p.resource.base) == Some(view.fact.as_str())
+                        && (p.purpose.is_none() || p.purpose == view.purpose)
+                }) {
                     problem(
                         &mut errors,
                         "E-L0-VIEW",
                         id,
-                        "view policy must authorize the neutral fact type",
+                        "view policy must authorize the neutral fact type under the view purpose",
                     );
                 }
             }

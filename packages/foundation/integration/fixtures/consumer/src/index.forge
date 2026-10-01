@@ -23,3 +23,27 @@ export resource IndustrialDevice
   mapping : integration.ExternalMapping
   serial : text length 1..128
 }
+
+/// Organization identities stay distinct from the collaboration's storage tenant.
+export resource Company @tenant @appendOnly {
+  id : id
+  key : text @unique
+}
+/// One authoritative transfer, independently of either company's vocabulary.
+export resource NeutralTransfer @tenant @appendOnly {
+  id : id
+  seller : Company
+  buyer : Company
+  quantity : integer > 0
+  rules { seller != buyer }
+  list by seller
+}
+/// A provider document is a representation of a transfer, never a second transfer.
+export resource TransferDocument @tenant @appendOnly {
+  id : id
+  mapping : integration.ExternalMapping @unique
+  transfer : NeutralTransfer
+  observer : Company
+  rules { observer == transfer.seller || observer == transfer.buyer }
+  list by transfer
+}

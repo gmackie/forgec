@@ -422,3 +422,83 @@ fn contract_numeric_identity_is_exact_and_bounded() {
     assert_ne!(hash("9007199254740993"), hash("9007199254740992"));
     assert_ne!(hash("1e-10000"), hash("0"));
 }
+
+#[test]
+fn perspective_views_preserve_purpose_and_business_observer_boundaries() {
+    let base = fixture("commerce");
+    let mut secret = base.clone();
+    secret["entities"][id("SettlementPosition")]["fields"]["amount"]["secret"] = json!(true);
+    assert!(ConceptIR::load(&secret).unwrap_err().contains("credential"));
+    let mut principal = base.clone();
+    principal["principals"][id("Login")] = json!({"name":"Login","attributes":{}});
+    principal["entities"][id("SettlementPosition")]["fields"]["creditor"]["ty"]["base"] =
+        json!({"kind":"principal","id":id("Login")});
+    let error = ConceptIR::load(&principal).unwrap_err();
+    assert!(error.contains("business participant"), "{error}");
+    let mut purpose = base;
+    purpose["entities"][id("SettlementPosition")]["fields"]["amount"]["ty"]["purpose"] =
+        json!("@test/purpose/_/Billing");
+    let error = ConceptIR::load(&purpose).unwrap_err();
+    assert!(error.contains("view purpose"), "{error}");
+}
+
+#[test]
+fn cross_company_views_retain_classification_without_duplicate_positions() {
+    let raw = fixture("cross-company");
+    let c = ConceptIR::load_closed(&raw).unwrap();
+    assert_eq!(
+        c.semantics.views[&id("Receivable")].fact,
+        c.semantics.views[&id("Payable")].fact
+    );
+    let fields = c.perspective_fields(&id("Receivable")).unwrap();
+    assert_eq!(
+        fields["amount"],
+        c.entities[&id("SettlementPosition")].fields["amount"]
+    );
+    assert_eq!(
+        fields["amount"].ty.purpose.as_deref(),
+        Some(id("Billing").as_str())
+    );
+    assert_eq!(
+        fields["amount"].ty.data_class.as_deref(),
+        Some(id("Financial").as_str())
+    );
+    assert!(!fields.contains_key("creditor"));
+    let mut changed = raw.clone();
+    changed["semantics"]["views"][id("Receivable")]["purpose"] = json!(null);
+    assert!(ConceptIR::load(&changed).unwrap_err().contains("E-L0-VIEW"));
+    let mut changed = c.clone();
+    changed
+        .semantics
+        .views
+        .get_mut(&id("Receivable"))
+        .unwrap()
+        .fields
+        .remove("amount");
+    assert_eq!(c.entities, changed.entities);
+    assert!(
+        c.semantic_changes(&changed)
+            .iter()
+            .all(|change| change.path.starts_with("/semantics/views/"))
+    );
+}
+
+#[test]
+fn neutral_fact_changes_have_entity_paths_separate_from_views() {
+    let c = ConceptIR::load_closed(&fixture("cross-company")).unwrap();
+    let mut changed = c.clone();
+    changed
+        .entities
+        .get_mut(&id("SettlementPosition"))
+        .unwrap()
+        .fields
+        .remove("amount");
+    let changes = c.semantic_changes(&changed);
+    assert!(!changes.is_empty());
+    assert!(
+        changes
+            .iter()
+            .all(|change| change.path.starts_with("/entities/"))
+    );
+    assert_eq!(c.semantics.views, changed.semantics.views);
+}
