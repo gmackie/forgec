@@ -1,0 +1,11 @@
+import provider
+function VerifyRelease {
+  input provider.ReleaseMarker
+  output provider.MarkerResult
+  uses {
+    provider.CheckRelease
+  }
+  errors {
+    ProviderUnavailable
+  }
+}

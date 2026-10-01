@@ -1,0 +1,706 @@
+{
+  "components": {
+    "schemas": {
+      "workers_api-response-common-failure": {
+        "properties": {
+          "errors": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/workers_messages"
+              }
+            ],
+            "example": [
+              {
+                "code": 7003,
+                "message": "No route for the URI"
+              }
+            ],
+            "minLength": 1
+          },
+          "messages": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/workers_messages"
+              }
+            ],
+            "example": []
+          },
+          "result": {
+            "enum": [
+              null
+            ],
+            "nullable": true,
+            "type": "object",
+            "x-fern-enum": {
+              "null": {
+                "name": "V_null"
+              }
+            }
+          },
+          "success": {
+            "description": "Whether the API call was successful.",
+            "enum": [
+              false
+            ],
+            "example": false,
+            "type": "boolean",
+            "x-fern-enum": {
+              "false": {
+                "name": "V_false"
+              }
+            }
+          }
+        },
+        "required": [
+          "success",
+          "errors",
+          "messages",
+          "result"
+        ],
+        "type": "object"
+      },
+      "workers_exports_reconciliation_error": {
+        "description": "A single blocking reconciliation error. Returned in the v4 error\nenvelope under `meta.details` on the exports reconciliation\nfailure error (code 100402). All per-class failures are reported\ntogether, sorted by class name.\n",
+        "properties": {
+          "class": {
+            "description": "The class name the error is about.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Human-readable explanation.",
+            "type": "string"
+          },
+          "namespace_id": {
+            "description": "The provisioned namespace the error relates to, when applicable.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "referencing_scripts": {
+            "description": "Other Workers in the account whose bindings block the\noperation (e.g. a `deleted` tombstone blocked by external\nbindings).\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scenario": {
+            "$ref": "#/components/schemas/workers_exports_reconciliation_scenario"
+          },
+          "suggestion": {
+            "description": "An actionable hint for resolving the error, when available.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "class",
+          "scenario",
+          "message"
+        ],
+        "type": "object"
+      },
+      "workers_exports_reconciliation_error_response": {
+        "description": "The v4 error envelope returned with HTTP 400 when one or more\ndeclared `exports` entries fail reconciliation (error code\n100402). The top-level error `message` aggregates the per-class\nfailures as human-readable prose; the structured per-class payload\nis carried in `errors[].meta.details`, sorted by class name.\n",
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/workers_exports_reconciliation_error_response_errorsItem"
+            },
+            "type": "array"
+          },
+          "messages": {
+            "$ref": "#/components/schemas/workers_messages"
+          },
+          "result": {
+            "enum": [
+              null
+            ],
+            "nullable": true,
+            "type": "object",
+            "x-fern-enum": {
+              "null": {
+                "name": "V_null"
+              }
+            }
+          },
+          "success": {
+            "enum": [
+              false
+            ],
+            "example": false,
+            "type": "boolean",
+            "x-fern-enum": {
+              "false": {
+                "name": "V_false"
+              }
+            }
+          }
+        },
+        "required": [
+          "success",
+          "errors",
+          "messages",
+          "result"
+        ],
+        "type": "object"
+      },
+      "workers_exports_reconciliation_error_response_errorsItem": {
+        "properties": {
+          "code": {
+            "enum": [
+              100402
+            ],
+            "example": 100402,
+            "type": "integer",
+            "x-fern-enum": {
+              "100402": {
+                "name": "V_100402"
+              }
+            }
+          },
+          "message": {
+            "description": "Aggregate, multi-line, human-readable summary of every\nper-class reconciliation failure.\n",
+            "type": "string"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/workers_exports_reconciliation_error_response_errorsItem_meta"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "meta"
+        ],
+        "type": "object"
+      },
+      "workers_exports_reconciliation_error_response_errorsItem_meta": {
+        "properties": {
+          "details": {
+            "description": "Structured per-class reconciliation failures, sorted\nby class name.\n",
+            "items": {
+              "$ref": "#/components/schemas/workers_exports_reconciliation_error"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "details"
+        ],
+        "type": "object"
+      },
+      "workers_exports_reconciliation_scenario": {
+        "description": "Stable, machine-readable tag identifying which reconciliation\nscenario produced an error, warning, or info entry. Clients may\nbranch on this value instead of parsing `message`.\n",
+        "enum": [
+          "code_class_not_in_exports",
+          "provisioned_class_missing_from_config",
+          "config_export_not_in_code",
+          "config_references_nonexistent_class",
+          "orphaned_provisioned_namespace",
+          "storage_type_mismatch",
+          "free_tier_requires_sqlite",
+          "invalid_export",
+          "tombstone_delete_class_still_in_code",
+          "tombstone_delete_blocked_by_external_bindings",
+          "tombstone_renamed_to_occupied",
+          "transferred_pending_not_found",
+          "transferred_target_missing",
+          "transferred_target_mismatch",
+          "phase_one_transfer_source_missing",
+          "phase_one_transfer_source_namespace_missing",
+          "phase_one_transfer_target_class_provisioned",
+          "phase_one_transfer_after_commit_mismatch",
+          "phase_one_transfer_duplicate",
+          "phase_one_transfer_target_in_dispatch_namespace",
+          "phase_one_transfer_source_in_dispatch_namespace",
+          "transferred_source_in_dispatch_namespace",
+          "transferred_target_in_dispatch_namespace",
+          "container_undeclared_reference",
+          "container_class_not_durable_object",
+          "container_wiring_inconsistent",
+          "container_multiple_durable_objects",
+          "transfer_container_parity_mismatch",
+          "transfer_container_parity_mismatch_on_commit",
+          "tombstone_class_still_in_code",
+          "stale_tombstone",
+          "transfer_receive_already_applied",
+          "transfer_receive_cleanup_complete"
+        ],
+        "type": "string"
+      },
+      "workers_logpush": {
+        "default": false,
+        "description": "Whether Logpush is turned on for the Worker.",
+        "example": false,
+        "type": "boolean",
+        "x-auditable": true
+      },
+      "workers_messages": {
+        "example": [],
+        "items": {
+          "properties": {
+            "code": {
+              "minimum": 1000,
+              "type": "integer"
+            },
+            "documentation_url": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "source": {
+              "properties": {
+                "pointer": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "type": "object",
+          "uniqueItems": true
+        },
+        "type": "array"
+      },
+      "workers_observability-2": {
+        "description": "Observability settings for the Worker.",
+        "properties": {
+          "enabled": {
+            "description": "Whether observability is enabled for the Worker.",
+            "example": true,
+            "type": "boolean",
+            "x-auditable": true
+          },
+          "head_sampling_rate": {
+            "description": "The sampling rate for incoming requests. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.",
+            "example": 0.1,
+            "nullable": true,
+            "type": "number",
+            "x-auditable": true
+          },
+          "issues": {
+            "$ref": "#/components/schemas/workers_observability-2_issues"
+          },
+          "logs": {
+            "$ref": "#/components/schemas/workers_observability-2_logs"
+          },
+          "redact_query_string": {
+            "default": false,
+            "description": "Whether query strings are removed from request URLs in logs and traces.",
+            "example": false,
+            "type": "boolean",
+            "x-auditable": true
+          },
+          "traces": {
+            "$ref": "#/components/schemas/workers_observability-2_traces"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "workers_observability-2_issues": {
+        "description": "Real-time Issues settings for the Worker.",
+        "nullable": true,
+        "properties": {
+          "enabled": {
+            "description": "Whether real-time Issues are enabled for the Worker.",
+            "example": true,
+            "type": "boolean",
+            "x-auditable": true
+          }
+        },
+        "type": "object"
+      },
+      "workers_observability-2_logs": {
+        "description": "Log settings for the Worker.",
+        "nullable": true,
+        "properties": {
+          "destinations": {
+            "description": "A list of destinations where logs will be exported to.",
+            "example": [
+              "cloudflare"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "x-auditable": true
+          },
+          "enabled": {
+            "description": "Whether logs are enabled for the Worker.",
+            "example": true,
+            "type": "boolean",
+            "x-auditable": true
+          },
+          "head_sampling_rate": {
+            "description": "The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.",
+            "example": 0.1,
+            "nullable": true,
+            "type": "number",
+            "x-auditable": true
+          },
+          "invocation_logs": {
+            "description": "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+            "example": true,
+            "type": "boolean",
+            "x-auditable": true
+          },
+          "persist": {
+            "default": true,
+            "description": "Whether log persistence is enabled for the Worker.",
+            "example": true,
+            "type": "boolean",
+            "x-auditable": true
+          }
+        },
+        "required": [
+          "enabled",
+          "invocation_logs"
+        ],
+        "type": "object"
+      },
+      "workers_observability-2_traces": {
+        "description": "Trace settings for the Worker.",
+        "nullable": true,
+        "properties": {
+          "destinations": {
+            "description": "A list of destinations where traces will be exported to.",
+            "example": [
+              "cloudflare"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "x-auditable": true
+          },
+          "enabled": {
+            "description": "Whether traces are enabled for the Worker.",
+            "example": true,
+            "type": "boolean",
+            "x-auditable": true
+          },
+          "head_sampling_rate": {
+            "description": "The sampling rate for traces. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.",
+            "example": 0.1,
+            "nullable": true,
+            "type": "number",
+            "x-auditable": true
+          },
+          "persist": {
+            "default": true,
+            "description": "Whether trace persistence is enabled for the Worker.",
+            "example": true,
+            "type": "boolean",
+            "x-auditable": true
+          },
+          "propagation_policy": {
+            "description": "Controls how inbound trace context (traceparent/tracestate) headers on incoming requests are handled. \"authenticated\" honors inbound trace context only when accompanied by a valid trace auth token. \"accept\" unconditionally accepts inbound trace context. Requires the trace propagation feature to be enabled. Returns null when the trace propagation feature is not enabled for the account.",
+            "enum": [
+              "authenticated",
+              "accept",
+              null
+            ],
+            "nullable": true,
+            "type": "string",
+            "x-auditable": true,
+            "x-fern-enum": {
+              "null": {
+                "name": "V_null"
+              }
+            }
+          }
+        },
+        "type": "object"
+      },
+      "workers_script-settings-item": {
+        "properties": {
+          "logpush": {
+            "$ref": "#/components/schemas/workers_logpush"
+          },
+          "observability": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/workers_observability-2"
+              },
+              {
+                "nullable": true,
+                "type": "object",
+                "x-auditable": true
+              }
+            ]
+          },
+          "tags": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/workers_tags"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/workers_tag"
+                },
+                "nullable": true,
+                "type": "array",
+                "x-auditable": true
+              }
+            ]
+          },
+          "tail_consumers": {
+            "description": "List of Workers that will consume logs from the attached Worker.",
+            "items": {
+              "$ref": "#/components/schemas/workers_tail_consumers_script"
+            },
+            "nullable": true,
+            "type": "array",
+            "x-stainless-collection-type": "set"
+          }
+        },
+        "type": "object"
+      },
+      "workers_tag": {
+        "example": "my-tag",
+        "maxLength": 1024,
+        "pattern": "^[^,&]*$",
+        "type": "string"
+      },
+      "workers_tags": {
+        "description": "Tags associated with the Worker.",
+        "example": [
+          "my-team",
+          "my-public-api"
+        ],
+        "items": {
+          "$ref": "#/components/schemas/workers_tag"
+        },
+        "maxItems": 10,
+        "nullable": true,
+        "type": "array",
+        "x-auditable": true,
+        "x-stainless-collection-type": "set"
+      },
+      "workers_tail_consumers_script": {
+        "description": "A reference to a script that will consume logs from the attached Worker.",
+        "properties": {
+          "environment": {
+            "description": "Optional environment if the Worker utilizes one.",
+            "example": "production",
+            "type": "string",
+            "x-auditable": true
+          },
+          "namespace": {
+            "description": "Optional dispatch namespace the script belongs to.",
+            "example": "my-namespace",
+            "type": "string",
+            "x-auditable": true
+          },
+          "service": {
+            "description": "Name of Worker that is to be the consumer.",
+            "example": "my-log-consumer",
+            "type": "string",
+            "x-auditable": true
+          }
+        },
+        "required": [
+          "service"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "api_token": {
+        "scheme": "bearer",
+        "type": "http",
+        "x-fern-bearer": {
+          "env": "CLOUDFLARE_API_TOKEN",
+          "name": "apiToken"
+        }
+      }
+    }
+  },
+  "info": {
+    "description": "Welcome to Cloudflare's API documentation site. We are experimenting with an updated version of our API documentation - check out [developers.cloudflare.com/api-next/](https://developers.cloudflare.com/api-next/) to test out the new experience.\n\nTo get started using Cloudflare's products and services via the API, refer to [how to interact with Cloudflare](https://developers.cloudflare.com/fundamentals/basic-tasks/interact-with-cloudflare/), which covers using tools like [Terraform](https://developers.cloudflare.com/terraform/#cloudflare-terraform) and the [official SDKs](https://developers.cloudflare.com/fundamentals/api/reference/sdks/) to maintain your Cloudflare resources.\n\nUsing the Cloudflare API requires authentication so that Cloudflare knows who is making requests and what permissions you have. Create an API token to grant access to the API to perform actions. You can also authenticate with [API keys](https://developers.cloudflare.com/fundamentals/api/get-started/keys/), but these keys have [several limitations](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations) that make them less secure than API tokens. Whenever possible, use API tokens to interact with the Cloudflare API.\n\nTo create an API token, from the Cloudflare dashboard, go to My Profile > API Tokens and select Create Token. For more information on how to create and troubleshoot API tokens, refer to\nour [API fundamentals](https://developers.cloudflare.com/fundamentals/api/).\n\nFor information regarding rate limits, refer to our [API Rate Limits](https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/platform/limits/#api-rate-limits).\n\nTotally new to Cloudflare? [Start here](https://developers.cloudflare.com/fundamentals/get-started/).",
+    "license": {
+      "name": "BSD-3-Clause",
+      "url": "https://opensource.org/licenses/BSD-3-Clause"
+    },
+    "title": "Cloudflare API",
+    "version": "4.0.0"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/accounts/{account_id}/workers/scripts/{script_name}/script-settings": {
+      "get": {
+        "description": "Get Worker script-level settings when using [Worker Versions](https://developers.cloudflare.com/api/operations/worker-versions-list-versions). Includes Logpush and Tail Consumers.",
+        "operationId": "worker-script-settings-get-settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "description": "Identifier.",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "script_name",
+            "required": true,
+            "schema": {
+              "description": "Name of the script, used in URLs and route configuration.",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/workers_script-settings-item"
+                }
+              }
+            },
+            "description": "Fetch script settings."
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/workers_api-response-common-failure"
+                }
+              }
+            },
+            "description": "Fetch script settings failure."
+          }
+        },
+        "security": [
+          {
+            "api_token": []
+          }
+        ],
+        "summary": "Get Worker Script Settings",
+        "tags": [
+          "Worker Script"
+        ],
+        "x-api-token-group": [
+          "Workers Tail Read",
+          "Workers Scripts Write",
+          "Workers Scripts Read"
+        ],
+        "x-fern-audiences": [
+          "sdk"
+        ],
+        "x-fern-availability": "deprecated",
+        "x-fern-sdk-group-name": [
+          "workers",
+          "legacy",
+          "scripts",
+          "settings"
+        ],
+        "x-fern-sdk-method-name": "get"
+      },
+      "patch": {
+        "description": "Patch Worker script-level settings when using [Worker Versions](https://developers.cloudflare.com/api/operations/worker-versions-list-versions). Including but not limited to Logpush and Tail Consumers.",
+        "operationId": "worker-script-settings-patch-settings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "description": "Identifier.",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "script_name",
+            "required": true,
+            "schema": {
+              "description": "Name of the script, used in URLs and route configuration.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/workers_script-settings-item"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/workers_script-settings-item"
+                }
+              }
+            },
+            "description": "Patch script settings."
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/workers_api-response-common-failure"
+                    },
+                    {
+                      "$ref": "#/components/schemas/workers_exports_reconciliation_error_response"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Patch script settings failure. When the patch uses the\ndeclarative `exports` field and one or more entries fail\nreconciliation, the response is the exports reconciliation\nerror envelope (error code 100402) with per-class detail in\n`errors[].meta.details`.\n"
+          }
+        },
+        "security": [
+          {
+            "api_token": []
+          }
+        ],
+        "summary": "Patch Worker Script Settings",
+        "tags": [
+          "Worker Script"
+        ],
+        "x-api-token-group": [
+          "Workers Scripts Write"
+        ],
+        "x-fern-audiences": [
+          "sdk"
+        ],
+        "x-fern-availability": "deprecated",
+        "x-fern-sdk-group-name": [
+          "workers",
+          "legacy",
+          "scripts",
+          "settings"
+        ],
+        "x-fern-sdk-method-name": "edit"
+      }
+    }
+  },
+  "security": [
+    {
+      "api_token": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Client API",
+      "url": "https://api.cloudflare.com/client/v4"
+    }
+  ]
+}

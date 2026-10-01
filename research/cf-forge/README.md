@@ -62,6 +62,4 @@ pre-fix baseline. Run that historical pipeline at the research revision; do not
 replace its hashes to imply the same experiment ran on different source. The new
 importer tests and delivery fault scenarios qualify the fixes separately.
 
-The maintainer has deferred #189: no disposable live sandbox exists yet. The live
-pilot, application capability choice, connector-specific reconciliation, historical
-compatibility matrix and remaining host/vendor gates are still open.
+The maintainer authorized a disposable Cloudflare Worker for #189. The [live pilot](pilot/README.md) records a typed deployment-verification capability, live API read/write reconciliation, a pinned runtime/SDK snapshot matrix, and cleanup. Its bounded Node host and distribution scope are explicit; production adoption and a distinct future generator release remain unqualified.
