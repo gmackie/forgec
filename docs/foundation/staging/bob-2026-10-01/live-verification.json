@@ -1,0 +1,54 @@
+{
+  "at": "2026-10-01T07:29:43.457Z",
+  "scope": "Isolated synthetic Bob staging; real HTTP and PostgreSQL",
+  "tests": [
+    {
+      "name": "Revoked key rejected immediately",
+      "status": "passed"
+    },
+    {
+      "name": "Expired key rejected immediately",
+      "status": "passed"
+    },
+    {
+      "name": "Viewer downgrade rejected immediately",
+      "status": "passed"
+    },
+    {
+      "name": "Removed workspace membership rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Nonterminal persisted run rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Changed completion time cannot rewrite terminal fact",
+      "status": "passed"
+    },
+    {
+      "name": "Changed persisted session cannot bypass binding",
+      "status": "passed"
+    },
+    {
+      "name": "Changed persisted planning item cannot bypass binding",
+      "status": "passed"
+    },
+    {
+      "name": "Receiver rejects invalid service credential",
+      "status": "passed"
+    },
+    {
+      "name": "Receiver rejects caller-supplied fulfillment",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent replays return original IDs",
+      "status": "passed"
+    },
+    {
+      "name": "Rejected mutations and concurrent retries preserve exact target rows",
+      "status": "passed"
+    }
+  ]
+}
