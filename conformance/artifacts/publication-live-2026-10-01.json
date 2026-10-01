@@ -1,0 +1,68 @@
+{
+  "status": "passed",
+  "tests": [
+    {
+      "name": "Live D1 journal provisioned idempotently",
+      "status": "passed"
+    },
+    {
+      "name": "Runtime publisher accepts expected-absent push and persists D1 receipt",
+      "status": "passed"
+    },
+    {
+      "name": "Fresh Node process replays durable D1 receipt without Git dispatch",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent runtime instances claim one D1 dispatch for one key",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent journaled expected-head writers admit exactly one accepted update",
+      "status": "passed"
+    },
+    {
+      "name": "Stale expected head persists rejection without overwriting winner",
+      "status": "passed"
+    },
+    {
+      "name": "Live Git no-op cannot certify a stale precondition",
+      "status": "passed"
+    },
+    {
+      "name": "Injected lost acknowledgement after real push recovers by observation without resend",
+      "status": "passed"
+    },
+    {
+      "name": "Durable claim without dispatch remains pending without automatic takeover",
+      "status": "passed"
+    },
+    {
+      "name": "Injected terminal persistence failure after real push recovers from D1 intent",
+      "status": "passed"
+    },
+    {
+      "name": "Live receipt replay enforces authorization tenant and immutable intent",
+      "status": "passed"
+    }
+  ],
+  "dispatches": 8,
+  "concurrentOutcomes": [
+    "rejected",
+    "accepted"
+  ],
+  "at": "2026-10-01T21:29:32Z",
+  "scope": "Actual Node ArtifactPublisher and Git transport with live Cloudflare Artifacts plus live D1 SQL journal over REST",
+  "sourceSha256": {
+    "conformance/artifacts/publish-live.mjs": "b75db1140df8f3b58de82df2b759628260192ca9e73561af8da5a246ab31f016",
+    "packages/runtime/src/artifact-publication.ts": "ce5135cebd1893b1d2dbf34ef5ee61e10f720f2129e2a266eb0dcff947df0b8a",
+    "packages/runtime/src/adapters/artifact-publication-git.ts": "a43629153c42df92339ba4055d367b02cc59bf6ca726af1202c828b321a64684",
+    "packages/runtime/src/adapters/artifact-publication-sql.ts": "477e8f152f9523d3e137addbe620a2796c4659e1a6df07d314106b4fa4e66e16"
+  },
+  "cleanup": {
+    "remainingResources": [],
+    "errors": []
+  },
+  "nodeVersion": "v24.14.0",
+  "gitVersion": "git version 2.51.1"
+}
