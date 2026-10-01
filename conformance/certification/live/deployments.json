@@ -1,0 +1,20 @@
+{
+  "scope": "Isolated Acme certification sandboxes; no production rollout",
+  "aws": {
+    "stack": "forge-acme-cert1001",
+    "region": "us-east-1",
+    "lambda": "forge-acme-cert1001-ApiF70053CD-wkw6dRHjbLel",
+    "codeSha256": "BrOUtU/4ccDp49mrWHS2s9ZQ8o8f4SyslM+5oGJdhcQ=",
+    "lastModified": "2026-10-01T05:06:48.207+0000",
+    "runtime": "nodejs24.x",
+    "version": "$LATEST",
+    "cleanup": "CloudFormation stack, retained DynamoDB table and S3 objects/bucket deleted after certification"
+  },
+  "cloudflare": {
+    "account": "c07a7e704db1808e1fff91bed2b1cd49",
+    "worker": "forge-release-cert-1001",
+    "databaseId": "74792b7b-29b3-459a-a8e0-24940c69497a",
+    "cleanup": "Worker, workflow instances, queue consumers/queues, D1 and R2 objects/bucket deleted after certification"
+  },
+  "bundleHash": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab"
+}

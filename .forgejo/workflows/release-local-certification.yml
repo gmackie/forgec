@@ -1,0 +1,54 @@
+name: Local release profile certification
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 5 * * 1'
+  push:
+    branches: [release-live-closeout]
+
+concurrency:
+  group: release-local-certification
+  cancel-in-progress: false
+
+jobs:
+  certification:
+    runs-on: [forgegraph-ci, heavy]
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: forge
+          POSTGRES_PASSWORD: disposable-certification-only
+          POSTGRES_DB: forge_release
+        options: >-
+          --health-cmd "pg_isready -U forge -d forge_release"
+          --health-interval 3s --health-timeout 3s --health-retries 30
+    env:
+      FORGE_PG_URL: postgres://forge:disposable-certification-only@postgres:5432/forge_release
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/pnpm/action-setup@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: '24.14.0'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @forgegraph/adapters... build
+      - run: pnpm --filter @forgegraph/registry... build
+      - run: pnpm --filter @forgegraph/conformance typecheck
+      - run: pnpm --filter @forgegraph/conformance exec vitest run test/certification-gates.test.ts test/release-manifest.test.ts test/differential-publication.test.ts
+      - run: node --test scripts/test/release-signature.test.mjs
+      - run: pnpm differential
+      - name: Render bounded manifest from this invocation
+        run: |
+          cp conformance/reports/differential.json conformance/certification/differential.json
+          cp conformance/reports/differential-suite.json conformance/certification/differential-suite.json
+          pnpm release:manifest
+          cp RELEASE_MANIFEST.json conformance/reports/RELEASE_MANIFEST.json
+      - uses: https://code.forgejo.org/forgejo/upload-artifact@v4
+        if: always()
+        with:
+          name: local-release-certification
+          path: conformance/reports/
+          if-no-files-found: warn

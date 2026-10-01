@@ -1,0 +1,64 @@
+{
+  "target": "cloudflare-d1",
+  "url": "https://forge-release-cert-1001.gmac.workers.dev",
+  "at": "2026-10-01T05:09:58.932Z",
+  "samplesPerOp": 20,
+  "latencyMs": {
+    "crud-write:create": {
+      "n": 20,
+      "p50": 203,
+      "p95": 3312,
+      "max": 3312
+    },
+    "crud-read:get": {
+      "n": 20,
+      "p50": 62,
+      "p95": 255,
+      "max": 255
+    },
+    "crud-read:list": {
+      "n": 20,
+      "p50": 79,
+      "p95": 284,
+      "max": 284
+    },
+    "crud-write:update": {
+      "n": 20,
+      "p50": 226,
+      "p95": 3356,
+      "max": 3356
+    },
+    "function:SubmitOrder": {
+      "n": 20,
+      "p50": 203,
+      "p95": 3297,
+      "max": 3297
+    }
+  },
+  "atomicBudget": [
+    {
+      "operations": 1,
+      "physicalActions": 5,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    },
+    {
+      "operations": 2,
+      "physicalActions": 10,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    },
+    {
+      "operations": 5,
+      "physicalActions": 25,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    },
+    {
+      "operations": 10,
+      "physicalActions": 50,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    }
+  ]
+}

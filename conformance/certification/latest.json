@@ -1,7 +1,27 @@
 {
+  "buildHash": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+  "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
+  "node": "v24.14.0",
+  "scenarioIds": [
+    "m2.concurrency",
+    "m2.customer-crud",
+    "m2.idempotency",
+    "m2.pagination",
+    "m2.site-references",
+    "m3.changesets",
+    "m3.integrity",
+    "m4.blobs",
+    "m4.csv-import",
+    "m5.messaging",
+    "m6.temporal-hierarchy",
+    "m6.views-projections-cache",
+    "m7.schedules",
+    "m7.workflows",
+    "m8.limits"
+  ],
   "version": "certification/1",
-  "at": "2026-09-21T09:32:37.268Z",
-  "commit": "797e485a41475837808205662be7549a4dab2404",
+  "at": "2026-10-01T05:09:13.964Z",
+  "commit": "29b2db6a9390aaa6c0f5483347bdbe12c1eadbbd",
   "package": {
     "name": "@acme/commerce",
     "version": "0.1.0",
@@ -33,9 +53,61 @@
       ]
     }
   },
-  "buildHash": "cfc8286aa3a7ea75e84034aa4955a449eeb879e94c685bf7685ab95bae994c3d",
   "contractsVersion": "contracts/1",
   "profile": "portable-v1",
+  "invocations": [
+    {
+      "ref": "conformance/certification/live/suite-1.json",
+      "ok": true,
+      "files": [
+        "test/runner.test.ts",
+        "test/vectors.test.ts",
+        "test/migrations.test.ts"
+      ]
+    },
+    {
+      "ref": "conformance/certification/live/suite-2.json",
+      "ok": true,
+      "files": [
+        "test/remote.test.ts"
+      ]
+    },
+    {
+      "ref": "conformance/certification/live/suite-3.json",
+      "ok": true,
+      "files": [
+        "test/realtime.test.ts"
+      ]
+    },
+    {
+      "ref": "conformance/certification/live/suite-4.json",
+      "ok": true,
+      "files": [
+        "test/remote.test.ts"
+      ]
+    },
+    {
+      "ref": "conformance/certification/live/suite-5.json",
+      "ok": true,
+      "files": [
+        "test/realtime.test.ts"
+      ]
+    },
+    {
+      "ref": "conformance/certification/live/suite-6.json",
+      "ok": true,
+      "files": [
+        "test/switch.test.ts"
+      ]
+    },
+    {
+      "ref": "conformance/certification/live/suite-7.json",
+      "ok": true,
+      "files": [
+        "test/switch.test.ts"
+      ]
+    }
+  ],
   "suites": {
     "reference": true,
     "switch": {
@@ -45,7 +117,8 @@
   },
   "targets": {
     "cloudflare-d1": {
-      "url": "https://<worker>.<subdomain>.workers.dev",
+      "endpointBuild": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+      "url": "https://forge-release-cert-1001.gmac.workers.dev",
       "stack": "Workers + D1 + R2 + Queues + Workflows + Cron Triggers + Durable Objects",
       "scenarios": {
         "ok": true,
@@ -75,33 +148,33 @@
         "latencyMs": {
           "crud-write:create": {
             "n": 20,
-            "p50": 200,
-            "p95": 371,
-            "max": 371
+            "p50": 203,
+            "p95": 3312,
+            "max": 3312
           },
           "crud-read:get": {
             "n": 20,
-            "p50": 81,
-            "p95": 351,
-            "max": 351
+            "p50": 62,
+            "p95": 255,
+            "max": 255
           },
           "crud-read:list": {
             "n": 20,
-            "p50": 68,
-            "p95": 287,
-            "max": 287
+            "p50": 79,
+            "p95": 284,
+            "max": 284
           },
           "crud-write:update": {
             "n": 20,
-            "p50": 210,
-            "p95": 291,
-            "max": 291
+            "p50": 226,
+            "p95": 3356,
+            "max": 3356
           },
           "function:SubmitOrder": {
             "n": 20,
-            "p50": 214,
-            "p95": 343,
-            "max": 343
+            "p50": 203,
+            "p95": 3297,
+            "max": 3297
           }
         },
         "atomicBudget": [
@@ -130,11 +203,11 @@
             "atomicAllowed": true
           }
         ]
-      },
-      "urlRedacted": "certified against a private account endpoint; the host is withheld, the run is not"
+      }
     },
     "aws-dynamodb": {
-      "url": "https://<api-id>.execute-api.<region>.amazonaws.com",
+      "endpointBuild": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+      "url": "https://5pk1s4feje.execute-api.us-east-1.amazonaws.com",
       "stack": "HTTP API + Lambda + DynamoDB + S3 + SQS + Step Functions + EventBridge + API Gateway WebSocket",
       "scenarios": {
         "ok": true,
@@ -164,63 +237,62 @@
         "latencyMs": {
           "crud-write:create": {
             "n": 20,
-            "p50": 157,
-            "p95": 417,
-            "max": 417
+            "p50": 147,
+            "p95": 363,
+            "max": 363
           },
           "crud-read:get": {
             "n": 20,
             "p50": 65,
-            "p95": 205,
-            "max": 205
+            "p95": 207,
+            "max": 207
           },
           "crud-read:list": {
             "n": 20,
-            "p50": 67,
-            "p95": 161,
-            "max": 161
+            "p50": 66,
+            "p95": 209,
+            "max": 209
           },
           "crud-write:update": {
             "n": 20,
-            "p50": 182,
-            "p95": 284,
-            "max": 284
+            "p50": 164,
+            "p95": 465,
+            "max": 465
           },
           "function:SubmitOrder": {
             "n": 20,
-            "p50": 244,
-            "p95": 468,
-            "max": 468
+            "p50": 274,
+            "p95": 395,
+            "max": 395
           }
         },
         "atomicBudget": [
           {
             "operations": 1,
-            "physicalActions": 6,
+            "physicalActions": 7,
             "physicalLimit": 100,
             "atomicAllowed": true
           },
           {
             "operations": 2,
-            "physicalActions": 12,
+            "physicalActions": 13,
             "physicalLimit": 100,
             "atomicAllowed": true
           },
           {
             "operations": 5,
-            "physicalActions": 30,
+            "physicalActions": 31,
             "physicalLimit": 100,
             "atomicAllowed": true
           },
           {
             "operations": 10,
-            "physicalActions": 60,
+            "physicalActions": 61,
             "physicalLimit": 100,
             "atomicAllowed": true
           }
         ]
-      },
-      "urlRedacted": "certified against a private account endpoint; the host is withheld, the run is not"
+      }
     }
   },
   "certified": true

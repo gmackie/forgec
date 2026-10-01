@@ -15,7 +15,8 @@ the existing comparator; this is not arbitrary application equivalence.
 The report records the bundle hash, source fingerprint, Node version and exact
 scenario IDs. Manifest generation rejects mismatched, incomplete, failed,
 future-dated or expired evidence. The CDK pin comes from the dependency lock.
-The manifest remains an unsigned draft, with both cloud profiles unverified.
+The accompanying live evidence now certifies both cloud profiles; see `RELEASE.md`
+for the complete signed manifest and its verification command.
 Foundation run 34 remains historical evidence for its recorded source; it was
 not rerun for this release-tooling change.
 
