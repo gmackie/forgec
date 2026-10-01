@@ -90,7 +90,8 @@ Unit tests cover moving refs, merge ancestry, missing/cyclic histories, limits,
 tenant/current authorization, purpose, binding replacement, mutable input,
 malformed discovery, redaction and RPC disposal. A real bare Git fixture tests
 pinned binary bytes and both parents of a merge through the binding contract.
-These are local contract tests, **not live Cloudflare certification**.
+These local contract tests are complemented by the disposable live qualification
+below.
 
 Provider shapes were checked against the Workers binding documentation and current
 Workers type declarations on 2026-10-01:
@@ -99,8 +100,20 @@ Workers type declarations on 2026-10-01:
 - https://developers.cloudflare.com/artifacts/concepts/how-artifacts-works/
 - https://developers.cloudflare.com/artifacts/platform/limits/
 
-Live disposable-repo qualification, publication with expected-head preconditions,
-durable receipts, forks, merges, export/import verification, compiler syntax and
-Bob wiring remain. `reader.capabilities` explicitly marks publish/merge/fork false.
+The [2026-10-01 live evidence](../conformance/artifacts/live-2026-10-01.json)
+records 17 passing checks using the actual Workers binding and Git smart HTTP.
+These include exact binary reads, all-parent merge history, authorization and
+budgets, concurrent expected-head pushes (one winner), stale-head rejection,
+read-token restrictions and revocation, fork identity/isolation, mirror export
+with Git fsck, and deletion/recreation fencing. Cleanup left no test repositories
+or Workers. See [reproduction instructions](../conformance/artifacts/README.md).
+
+The run encountered four HTTP 404 responses containing platform error 1042 before
+a file read succeeded. These are preserved in evidence, with bounded read-only
+probe retries; the underlying cause is unresolved. This is functional evidence
+from one beta account/run, not an availability or general concurrency guarantee.
+
+Runtime publication with expected-head preconditions, durable receipts, fork/merge
+APIs, import verification, compiler syntax and Bob wiring remain. `reader.capabilities` explicitly marks publish/merge/fork false.
 These read tests make no D1/Turso metadata or write-concurrency claim. Existing
 sealed ArtifactRevision and Specification APIs are unchanged.
