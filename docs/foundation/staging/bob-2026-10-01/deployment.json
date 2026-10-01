@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "host": "hetzner-bob",
+  "scope": "Isolated deployed native Bob reconciliation operation; synthetic seeded records; production untouched",
+  "bobSourceRevision": "340cd4d865014ba6e8df0f78bf22a07f083e561a",
+  "bobPR": "https://git.forgegraf.com/gmackie/bob/pulls/216",
+  "runtimeBaseRevision": "65b0a5837aacd309a5ac250961c7826751e677a1",
+  "artifacts": {
+    "bob-server.mjs": "de769870801dc604ec2513923e5912a95c12aaaf3c52f2075033bce1b28fe81d",
+    "foundation-server.mjs": "6e8b67bf65132d4b8b43fe436caa622ba1d62582caa77b047541483c597bf82d",
+    "bob.sql": "7c8b4708d4d3da0eca84b7fd91c82b1034403bb73b71758764e62d05edc73fc5",
+    "foundation/app.json": "7ac0d0f69deffc520d78e8ed5332e546af5adbaaa2128d9c7b013d4817dc0d8c"
+  },
+  "images": {
+    "node": "node@sha256:5a593d74b632d1c6f816457477b6819760e13624455d587eef0fa418c8d0777b",
+    "postgres": "postgres@sha256:67f41722b7a8cbdb868a44a4995c846eddfdc2973bccb291ce937dce88ad5675"
+  },
+  "privateCredentialReferences": [
+    "/opt/forge-bob-staging-20261001/config.json",
+    "/opt/forge-bob-staging-20261001/stage.env"
+  ]
+}

@@ -1,0 +1,24 @@
+# Place beside private stage.env/config.json and bundled entrypoints.
+services:
+  db:
+    image: postgres:17
+    container_name: forge-bob-stage-db-1001
+    env_file: stage.env
+    ports: ['127.0.0.1:55491:5432']
+    volumes: ['./pgdata:/var/lib/postgresql/data']
+  foundation:
+    image: node:24.14.0
+    container_name: forge-bob-stage-foundation-1001
+    network_mode: host
+    env_file: stage.env
+    volumes: ['.:/stage']
+    working_dir: /stage
+    command: ['node', 'foundation-server.mjs']
+  bob:
+    image: node:24.14.0
+    container_name: forge-bob-stage-api-1001
+    network_mode: host
+    env_file: stage.env
+    volumes: ['.:/stage']
+    working_dir: /stage
+    command: ['node', 'bob-server.mjs']
