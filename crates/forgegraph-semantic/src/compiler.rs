@@ -143,8 +143,48 @@ struct Symbol {
     decl: Declaration,
 }
 
+#[derive(Default)]
+pub(crate) struct DeclarationCache {
+    entries: BTreeMap<String, CachedDeclaration>,
+    pub hits: u64,
+    pub misses: u64,
+}
+#[derive(Clone)]
+struct CachedDeclaration {
+    key: String,
+    module: Module,
+    diagnostics: Vec<Diagnostic>,
+    references: Vec<SourceReference>,
+    scopes: Vec<WorkflowScope>,
+    fields: BTreeMap<String, Vec<(String, TypeSpec)>>,
+    origins: BTreeMap<String, SourceSpan>,
+    facets: BTreeMap<String, String>,
+}
+fn append_module(target: &mut Module, mut source: Module) {
+    target.id = source.id;
+    target.enums.append(&mut source.enums);
+    target.types.append(&mut source.types);
+    target.shapes.append(&mut source.shapes);
+    target.facets.append(&mut source.facets);
+    target.facet_origins.append(&mut source.facet_origins);
+    target.resources.append(&mut source.resources);
+    target.functions.append(&mut source.functions);
+    target.channels.append(&mut source.channels);
+    target.sources.append(&mut source.sources);
+    target.subscriptions.append(&mut source.subscriptions);
+    target.views.append(&mut source.views);
+    target.projections.append(&mut source.projections);
+    target.caches.append(&mut source.caches);
+    target.workflows.append(&mut source.workflows);
+    target.work_queues.append(&mut source.work_queues);
+    target.actors.append(&mut source.actors);
+    target.purposes.append(&mut source.purposes);
+    target.data_classes.append(&mut source.data_classes);
+}
+
 struct Ctx<'a> {
     pkg: &'a Package,
+    declaration_cache: Option<&'a mut DeclarationCache>,
     deps: BTreeMap<String, &'a DomainIR>,
     diags: Vec<Diagnostic>,
     files: Vec<ParsedFile>,
@@ -182,19 +222,21 @@ enum Resolved {
 }
 
 pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
-    compile_with_parser(pkg, deps, &mut |text| parse(text))
+    compile_with_parser(pkg, deps, &mut |text| parse(text), None)
 }
 
 pub(crate) fn compile_with_parser(
     pkg: &Package,
     deps: &[&DomainIR],
     parser: &mut impl FnMut(&str) -> Parse,
+    declaration_cache: Option<&mut DeclarationCache>,
 ) -> Compilation {
     let mut files: Vec<&SourceFile> = pkg.files.iter().collect();
     files.sort_by_key(|a| norm_path(&a.path));
 
     let mut ctx = Ctx {
         pkg,
+        declaration_cache,
         deps: BTreeMap::new(),
         diags: Vec::new(),
         files: Vec::new(),
@@ -5010,8 +5052,97 @@ impl<'a> Ctx<'a> {
         }
     }
 
+    /// Conservative syntax dependency closure. Every identifier matching a local
+    /// declaration participates, including names in recovery trees. False positives
+    /// cost a miss; missing edges would make cached semantic output unsafe.
+    fn declaration_keys(&self) -> BTreeMap<(String, String), String> {
+        let mut metadata = self.pkg.clone();
+        metadata.files.clear();
+        let header = format!(
+            "{:?}|{:?}|{:?}|{:?}|{:?}",
+            metadata,
+            self.imports,
+            self.files
+                .iter()
+                .map(|f| (&f.path, &f.module))
+                .collect::<Vec<_>>(),
+            self.symbols.keys().collect::<Vec<_>>(),
+            self.deps
+                .iter()
+                .map(|(name, ir)| (name, ir.content_hash()))
+                .collect::<Vec<_>>()
+        );
+        let header = hash_hex(&header);
+        let mut by_name: BTreeMap<&str, Vec<_>> = BTreeMap::new();
+        for key in self.symbols.keys() {
+            by_name.entry(&key.1).or_default().push(key.clone());
+        }
+        let mut edges = BTreeMap::new();
+        let mut material = BTreeMap::new();
+        for (key, symbol) in &self.symbols {
+            let words: BTreeSet<_> = symbol
+                .decl
+                .syntax()
+                .descendants_with_tokens()
+                .filter_map(|e| e.into_token())
+                .filter(|t| t.kind() == forgegraph_syntax::SyntaxKind::IDENT)
+                .map(|t| t.text().to_string())
+                .collect();
+            edges.insert(
+                key.clone(),
+                words
+                    .iter()
+                    .filter_map(|name| by_name.get(name.as_str()))
+                    .flatten()
+                    .cloned()
+                    .collect::<Vec<_>>(),
+            );
+            let id = self.id(&key.0, &key.1);
+            material.insert(
+                key.clone(),
+                format!(
+                    "{}|{:?}|{}|{:?}",
+                    self.files[symbol.file].path,
+                    symbol.decl.syntax().text_range(),
+                    symbol.decl.syntax(),
+                    self.source_http.get(&id)
+                ),
+            );
+        }
+        self.symbols
+            .keys()
+            .map(|key| {
+                let mut seen = BTreeSet::new();
+                let mut pending = vec![key.clone()];
+                while let Some(next) = pending.pop() {
+                    if seen.insert(next.clone()) {
+                        pending.extend(edges[&next].iter().cloned());
+                    }
+                }
+                let mut text = header.clone();
+                for dependency in seen {
+                    text.push_str(&material[&dependency]);
+                }
+                (key.clone(), hash_hex(&text))
+            })
+            .collect()
+    }
+
     fn build(&mut self) -> DomainIR {
         self.collect_source_http();
+        let cache_keys = if self.declaration_cache.is_some() {
+            self.declaration_keys()
+        } else {
+            BTreeMap::new()
+        };
+        if let Some(cache) = &mut self.declaration_cache {
+            let ids: BTreeSet<_> = self
+                .symbols
+                .keys()
+                .map(|(m, n)| format!("{}/{m}/{n}", self.pkg.name))
+                .collect();
+            cache.entries.retain(|id, _| ids.contains(id));
+        }
         let mut modules: BTreeMap<String, Module> = BTreeMap::new();
         let keys: Vec<(String, String)> = self.symbols.keys().cloned().collect();
         for (module, name) in keys {
@@ -5019,11 +5150,50 @@ impl<'a> Ctx<'a> {
                 let s = &self.symbols[&(module.clone(), name.clone())];
                 (s.kind, s.exported, s.file, s.decl.clone())
             };
-            let m = modules.entry(module.clone()).or_insert_with(|| Module {
+            let mut m = Module {
                 id: module.clone(),
                 ..Default::default()
-            });
+            };
             let id = format!("{}/{}/{}", self.pkg.name, module, name);
+            let cache_id = id.clone();
+            // Lowering memoizes editor type/origin data across declarations. Include
+            // that input state so removing an earlier producer cannot leave a
+            // later cached consumer without its shared metadata.
+            let cache_key = cache_keys.get(&(module.clone(), name.clone())).map(|key| {
+                hash_hex(&format!(
+                    "{key}|{:?}|{:?}|{:?}",
+                    self.workflow_fields, self.workflow_origins, self.facet_origins
+                ))
+            });
+            if let Some(cache) = &mut self.declaration_cache {
+                if let Some(entry) = cache
+                    .entries
+                    .get(&id)
+                    .filter(|entry| Some(&entry.key) == cache_key.as_ref())
+                    .cloned()
+                {
+                    cache.hits += 1;
+                    append_module(modules.entry(module.clone()).or_default(), entry.module);
+                    self.diags.extend(entry.diagnostics);
+                    self.references.extend(entry.references);
+                    self.workflow_scopes.extend(entry.scopes);
+                    self.workflow_fields.extend(entry.fields);
+                    self.workflow_origins.extend(entry.origins);
+                    self.facet_origins.extend(entry.facets);
+                    continue;
+                }
+                cache.misses += 1;
+            }
+            let before = self.declaration_cache.as_ref().map(|_| {
+                (
+                    self.diags.len(),
+                    self.references.len(),
+                    self.workflow_scopes.len(),
+                    self.workflow_fields.clone(),
+                    self.workflow_origins.clone(),
+                    self.facet_origins.clone(),
+                )
+            });
             let mut extra_enums = Vec::new();
             match (kind, &decl) {
                 (SymKind::Enum, Declaration::Enum(e)) => {
@@ -5463,8 +5633,43 @@ impl<'a> Ctx<'a> {
                 }
                 _ => {}
             }
-            let m = modules.get_mut(&module).unwrap();
             m.enums.extend(extra_enums);
+            if let (Some(cache), Some(key), Some(before)) =
+                (&mut self.declaration_cache, cache_key, before)
+            {
+                // Failed elaboration is never reused: recovery/suggestion context may change.
+                if !self.diags[before.0..].iter().any(Diagnostic::is_error) {
+                    cache.entries.insert(
+                        cache_id,
+                        CachedDeclaration {
+                            key,
+                            module: m.clone(),
+                            diagnostics: self.diags[before.0..].to_vec(),
+                            references: self.references[before.1..].to_vec(),
+                            scopes: self.workflow_scopes[before.2..].to_vec(),
+                            fields: self
+                                .workflow_fields
+                                .iter()
+                                .filter(|(k, v)| before.3.get(*k) != Some(*v))
+                                .map(|(k, v)| (k.clone(), v.clone()))
+                                .collect(),
+                            origins: self
+                                .workflow_origins
+                                .iter()
+                                .filter(|(k, v)| before.4.get(*k) != Some(*v))
+                                .map(|(k, v)| (k.clone(), v.clone()))
+                                .collect(),
+                            facets: self
+                                .facet_origins
+                                .iter()
+                                .filter(|(k, v)| before.5.get(*k) != Some(*v))
+                                .map(|(k, v)| (k.clone(), v.clone()))
+                                .collect(),
+                        },
+                    );
+                }
+            }
+            append_module(modules.entry(module).or_default(), m);
         }
         // subscriptions
         for fi in 0..self.files.len() {

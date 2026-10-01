@@ -1,5 +1,9 @@
 //! Bounded in-memory analysis caches. Full compilation remains the correctness oracle.
-use crate::{Compilation, DomainIR, Package, compiler::compile_with_parser, ir::hash_hex};
+use crate::{
+    Compilation, DomainIR, Package,
+    compiler::{DeclarationCache, compile_with_parser},
+    ir::hash_hex,
+};
 use forgegraph_syntax::Parse;
 use serde::Serialize;
 use std::{collections::BTreeMap, rc::Rc};
@@ -12,8 +16,11 @@ pub struct AnalysisStats {
     pub package_hits: u64,
     pub package_misses: u64,
     pub evictions: u64,
+    pub declaration_hits: u64,
+    pub declaration_misses: u64,
 }
 struct PackageEntry {
+    declarations: DeclarationCache,
     package: Package,
     dependencies: BTreeMap<String, String>,
     compilation: Rc<Compilation>,
@@ -27,7 +34,9 @@ struct ParseEntry {
 
 /// Keys identify workspace package roots, not names (two checkouts may have the same name).
 /// Package fingerprints include full manifests/text/paths and declared dependency IR hashes.
-/// A local edit re-elaborates that package; unrelated packages and unchanged trees are reused.
+/// Local edits re-elaborate changed declarations and their conservative syntax dependency
+/// closure. Symbol/import/manifest and external dependency changes invalidate broadly.
+/// Collection, subscriptions, and global validation still run on each changed package.
 pub struct AnalysisCache {
     packages: BTreeMap<String, PackageEntry>,
     parses: BTreeMap<String, ParseEntry>,
@@ -84,34 +93,47 @@ impl AnalysisCache {
             return Rc::clone(&entry.compilation);
         }
         self.stats.package_misses += 1;
-        let compilation = Rc::new(compile_with_parser(&package, deps, &mut |text| {
-            let hash = hash_hex(text);
-            if let Some(entry) = self.parses.get_mut(&hash) {
-                self.stats.parse_hits += 1;
-                entry.used = self.tick;
-                return entry.parsed.clone();
-            }
-            self.stats.parse_misses += 1;
-            let parsed = forgegraph_syntax::parse(text);
-            if self.parses.len() >= self.parse_limit {
-                let oldest = self
-                    .parses
-                    .iter()
-                    .min_by_key(|(_, e)| e.used)
-                    .map(|(k, _)| k.clone())
-                    .unwrap();
-                self.parses.remove(&oldest);
-                self.stats.evictions += 1;
-            }
-            self.parses.insert(
-                hash,
-                ParseEntry {
-                    parsed: parsed.clone(),
-                    used: self.tick,
-                },
-            );
-            parsed
-        }));
+        let mut declarations = self
+            .packages
+            .remove(key)
+            .map(|entry| entry.declarations)
+            .unwrap_or_default();
+        let before = (declarations.hits, declarations.misses);
+        let compilation = Rc::new(compile_with_parser(
+            &package,
+            deps,
+            &mut |text| {
+                let hash = hash_hex(text);
+                if let Some(entry) = self.parses.get_mut(&hash) {
+                    self.stats.parse_hits += 1;
+                    entry.used = self.tick;
+                    return entry.parsed.clone();
+                }
+                self.stats.parse_misses += 1;
+                let parsed = forgegraph_syntax::parse(text);
+                if self.parses.len() >= self.parse_limit {
+                    let oldest = self
+                        .parses
+                        .iter()
+                        .min_by_key(|(_, e)| e.used)
+                        .map(|(k, _)| k.clone())
+                        .unwrap();
+                    self.parses.remove(&oldest);
+                    self.stats.evictions += 1;
+                }
+                self.parses.insert(
+                    hash,
+                    ParseEntry {
+                        parsed: parsed.clone(),
+                        used: self.tick,
+                    },
+                );
+                parsed
+            },
+            Some(&mut declarations),
+        ));
+        self.stats.declaration_hits += declarations.hits - before.0;
+        self.stats.declaration_misses += declarations.misses - before.1;
         if !self.packages.contains_key(key) && self.packages.len() >= self.package_limit {
             let oldest = self
                 .packages
@@ -125,6 +147,7 @@ impl AnalysisCache {
         self.packages.insert(
             key.into(),
             PackageEntry {
+                declarations,
                 package,
                 dependencies,
                 compilation: Rc::clone(&compilation),
