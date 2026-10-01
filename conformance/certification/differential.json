@@ -1,0 +1,1997 @@
+{
+  "buildHash": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+  "sourceFingerprint": "584a2ce3b322a93b8e7e7adcd61e18fbd903e156b2ddfcd23986972da58e8a87",
+  "node": "v24.14.0",
+  "scenarioIds": [
+    "m2.concurrency",
+    "m2.customer-crud",
+    "m2.idempotency",
+    "m2.pagination",
+    "m2.site-references",
+    "m3.changesets",
+    "m3.integrity",
+    "m4.blobs",
+    "m4.csv-import",
+    "m5.messaging",
+    "m6.temporal-hierarchy",
+    "m6.views-projections-cache",
+    "m7.schedules",
+    "m7.workflows",
+    "m8.limits"
+  ],
+  "version": "differential/1",
+  "at": "2026-10-01T03:51:07.934Z",
+  "profiles": [
+    {
+      "name": "runtime-memory",
+      "ran": true,
+      "scenarios": 15,
+      "failures": 0
+    },
+    {
+      "name": "sqlite-node",
+      "ran": true,
+      "scenarios": 15,
+      "failures": 0
+    },
+    {
+      "name": "node-postgres",
+      "ran": true,
+      "scenarios": 15,
+      "failures": 0
+    }
+  ],
+  "pairs": [
+    {
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "compared": 221,
+      "explained": 78,
+      "unexplained": 0
+    },
+    {
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "compared": 221,
+      "explained": 78,
+      "unexplained": 0
+    },
+    {
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "compared": 221,
+      "explained": 58,
+      "unexplained": 0
+    }
+  ],
+  "differences": [
+    {
+      "scenario": "m4.blobs",
+      "step": "notReady",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "badType",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "tooBig",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "finalizeEmpty",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "rejected",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "stillServesSealed",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "preview",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "commitUnapproved",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "approveStale",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "approve",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "commit",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "atomicPreview",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "atomicApprove",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "atomicCommit",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "nothingLeaked",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumablePreview",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumableApprove",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumableCommit",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumableAgain",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m4.csv-import",
+      "step": "preview",
+      "path": "value.budget.physicalActions",
+      "a": 8,
+      "b": 10,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m4.csv-import",
+      "step": "approve",
+      "path": "value.budget.physicalActions",
+      "a": 8,
+      "b": 10,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m4.csv-import",
+      "step": "commit",
+      "path": "value.budget.physicalActions",
+      "a": 8,
+      "b": 10,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "dup",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "bad",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "unknownField",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "stale",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "noPrecondition",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "immutable",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "findMissing",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "readDeleted",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "deleteAgain",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "claimRetained",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "restoreAgain",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.idempotency",
+      "step": "mismatch",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "blocked",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "childGone",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "noChildUnderDeleted",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceDeleteVsCreates",
+      "path": "value.successes",
+      "a": 1,
+      "b": 4,
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceDeleteVsCreates",
+      "path": "value.failureCodes",
+      "a": 4,
+      "b": 1,
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceInvariant",
+      "path": "value.items",
+      "a": 0,
+      "b": 4,
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenPreview",
+      "path": "value.budget.physicalActions",
+      "a": 44,
+      "b": 55,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenApprove",
+      "path": "value.budget.physicalActions",
+      "a": 44,
+      "b": 55,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenCommit",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenCommit",
+      "path": "detail.budget.physicalActions",
+      "a": 44,
+      "b": 55,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "none",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "threePreview",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "threeApprove",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "threeCommit",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "badCursor",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "longName",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "longNotes",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "badId",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "idempotentReuse",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "stale",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "declined",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "disabled",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "notFromSubmitted",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "p1",
+      "path": "value.next",
+      "a": "eyJxIjoiQGFjbWUvY29tbWVyY2UvXy9DdXN0b21lci5saXN0LmJ5VGllciIsInYiOjEsInQiOiJkaWZmLXJ1bnRpbWUtbWVtb3J5LW0yLnBhZ2luYXRpb24iLCJrIjpbIkFteSIsImN1c18wMDA0Il0sInIiOlsiQW15IiwiY3VzXzAwMDQiXSwiaWQiOiJjdXNfMDAwNCJ9.aCeBweyZQg9nnCB3bgZ32DC1wuQ0L0Eo",
+      "b": "eyJxIjoiQGFjbWUvY29tbWVyY2UvXy9DdXN0b21lci5saXN0LmJ5VGllciIsInYiOjEsInQiOiJkaWZmLXNxbGl0ZS1ub2RlLW0yLnBhZ2luYXRpb24iLCJrIjpbIkFteSIsImN1c18wMDA0Il0sInIiOlsiQW15IiwiY3VzXzAwMDQiXSwiaWQiOiJjdXNfMDAwNCJ9.7HGnPE9NF-GKj0Ah2_ivKa81gAMeJRIW",
+      "explained": true,
+      "key": "next"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "badCursor",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "badParam",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "missingRef",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "dupWithin",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "otherTenantRead",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "otherTenantRef",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "empty",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "overlap",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "later",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "effNone",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "grow",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "badParent",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "selfParent",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "cycle",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "restrict",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "notReady",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "viewNeedsKey",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "cacheNeedsKey",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m7.workflows",
+      "step": "cancelTwice",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m7.workflows",
+      "step": "missing",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "sqlite-node",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "notReady",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "badType",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "tooBig",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "finalizeEmpty",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "rejected",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "stillServesSealed",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "preview",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "commitUnapproved",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "approveStale",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "approve",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "commit",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "atomicPreview",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "atomicApprove",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "atomicCommit",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "nothingLeaked",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumablePreview",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumableApprove",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumableCommit",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "resumableAgain",
+      "path": "value.budget.physicalActions",
+      "a": 4,
+      "b": 5,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m4.csv-import",
+      "step": "preview",
+      "path": "value.budget.physicalActions",
+      "a": 8,
+      "b": 10,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m4.csv-import",
+      "step": "approve",
+      "path": "value.budget.physicalActions",
+      "a": 8,
+      "b": 10,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m4.csv-import",
+      "step": "commit",
+      "path": "value.budget.physicalActions",
+      "a": 8,
+      "b": 10,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "dup",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "bad",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "unknownField",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "stale",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "noPrecondition",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "immutable",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "findMissing",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "readDeleted",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "deleteAgain",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "claimRetained",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "restoreAgain",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.idempotency",
+      "step": "mismatch",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "blocked",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "childGone",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "noChildUnderDeleted",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceDeleteVsCreates",
+      "path": "value.successes",
+      "a": 1,
+      "b": 4,
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceDeleteVsCreates",
+      "path": "value.failureCodes",
+      "a": 4,
+      "b": 1,
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceInvariant",
+      "path": "value.items",
+      "a": 0,
+      "b": 4,
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenPreview",
+      "path": "value.budget.physicalActions",
+      "a": 44,
+      "b": 55,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenApprove",
+      "path": "value.budget.physicalActions",
+      "a": 44,
+      "b": 55,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenCommit",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenCommit",
+      "path": "detail.budget.physicalActions",
+      "a": 44,
+      "b": 55,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "none",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "threePreview",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "threeApprove",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "threeCommit",
+      "path": "value.budget.physicalActions",
+      "a": 12,
+      "b": 15,
+      "explained": true,
+      "key": "physicalActions"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "badCursor",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "longName",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "longNotes",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "badId",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "idempotentReuse",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "stale",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "declined",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "disabled",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "notFromSubmitted",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "p1",
+      "path": "value.next",
+      "a": "eyJxIjoiQGFjbWUvY29tbWVyY2UvXy9DdXN0b21lci5saXN0LmJ5VGllciIsInYiOjEsInQiOiJkaWZmLXJ1bnRpbWUtbWVtb3J5LW0yLnBhZ2luYXRpb24iLCJrIjpbIkFteSIsImN1c18wMDA0Il0sInIiOlsiQW15IiwiY3VzXzAwMDQiXSwiaWQiOiJjdXNfMDAwNCJ9.aCeBweyZQg9nnCB3bgZ32DC1wuQ0L0Eo",
+      "b": "eyJxIjoiQGFjbWUvY29tbWVyY2UvXy9DdXN0b21lci5saXN0LmJ5VGllciIsInYiOjEsInQiOiJkaWZmLW5vZGUtcG9zdGdyZXMtbTIucGFnaW5hdGlvbiIsImsiOlsiQW15IiwiY3VzXzAwMDQiXSwiciI6WyJBbXkiLCJjdXNfMDAwNCJdLCJpZCI6ImN1c18wMDA0In0.up1JRfwO9kR4Sk7MGVQ1rYpqiX_H1Eo7",
+      "explained": true,
+      "key": "next"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "badCursor",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "badParam",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "missingRef",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "dupWithin",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "otherTenantRead",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "otherTenantRef",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "empty",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "overlap",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "later",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "effNone",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "grow",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "badParent",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "selfParent",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "cycle",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "restrict",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "notReady",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "viewNeedsKey",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "cacheNeedsKey",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m7.workflows",
+      "step": "cancelTwice",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m7.workflows",
+      "step": "missing",
+      "path": "detail.requestId",
+      "a": "runtime-memory",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "notReady",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "badType",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "tooBig",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "finalizeEmpty",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "rejected",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m4.blobs",
+      "step": "stillServesSealed",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "commitUnapproved",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "approveStale",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.changesets",
+      "step": "nothingLeaked",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "dup",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "bad",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "unknownField",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "stale",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "noPrecondition",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "immutable",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "findMissing",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "readDeleted",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "deleteAgain",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "claimRetained",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.customer-crud",
+      "step": "restoreAgain",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.idempotency",
+      "step": "mismatch",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "blocked",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "childGone",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "noChildUnderDeleted",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceInvariant",
+      "path": "value.items[2].id",
+      "a": "sit_0006",
+      "b": "sit_0007",
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m3.integrity",
+      "step": "raceInvariant",
+      "path": "value.items[3].id",
+      "a": "sit_0007",
+      "b": "sit_0006",
+      "explained": true,
+      "key": "race"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "elevenCommit",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "none",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "badCursor",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "longName",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "longNotes",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "badId",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m8.limits",
+      "step": "idempotentReuse",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "stale",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "declined",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "disabled",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m5.messaging",
+      "step": "notFromSubmitted",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "p1",
+      "path": "value.next",
+      "a": "eyJxIjoiQGFjbWUvY29tbWVyY2UvXy9DdXN0b21lci5saXN0LmJ5VGllciIsInYiOjEsInQiOiJkaWZmLXNxbGl0ZS1ub2RlLW0yLnBhZ2luYXRpb24iLCJrIjpbIkFteSIsImN1c18wMDA0Il0sInIiOlsiQW15IiwiY3VzXzAwMDQiXSwiaWQiOiJjdXNfMDAwNCJ9.7HGnPE9NF-GKj0Ah2_ivKa81gAMeJRIW",
+      "b": "eyJxIjoiQGFjbWUvY29tbWVyY2UvXy9DdXN0b21lci5saXN0LmJ5VGllciIsInYiOjEsInQiOiJkaWZmLW5vZGUtcG9zdGdyZXMtbTIucGFnaW5hdGlvbiIsImsiOlsiQW15IiwiY3VzXzAwMDQiXSwiciI6WyJBbXkiLCJjdXNfMDAwNCJdLCJpZCI6ImN1c18wMDA0In0.up1JRfwO9kR4Sk7MGVQ1rYpqiX_H1Eo7",
+      "explained": true,
+      "key": "next"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "badCursor",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.pagination",
+      "step": "badParam",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "missingRef",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "dupWithin",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "otherTenantRead",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m2.site-references",
+      "step": "otherTenantRef",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "empty",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "overlap",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "later",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "effNone",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "grow",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "badParent",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "selfParent",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "cycle",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.temporal-hierarchy",
+      "step": "restrict",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "notReady",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "viewNeedsKey",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m6.views-projections-cache",
+      "step": "cacheNeedsKey",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m7.workflows",
+      "step": "cancelTwice",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    },
+    {
+      "scenario": "m7.workflows",
+      "step": "missing",
+      "path": "detail.requestId",
+      "a": "sqlite-node",
+      "b": "node-postgres",
+      "explained": true,
+      "key": "requestId"
+    }
+  ],
+  "drift": "none",
+  "suitePassed": true
+}

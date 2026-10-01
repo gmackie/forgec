@@ -11,6 +11,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { certificationIdentity } from "../../scripts/certification-identity.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const targets = [
@@ -42,7 +43,9 @@ const commit = (() => {
   return "unknown";
 })();
 
+const identity = certificationIdentity(resolve(root, ".."));
 const report: Record<string, unknown> = {
+  ...identity,
   version: "certification/1",
   at: new Date().toISOString(),
   commit,
@@ -77,7 +80,7 @@ suites["switch"] = {
 report["suites"] = suites;
 report["targets"] = perTarget;
 const all = [suites["reference"] as boolean, ...Object.values(suites["switch"] as Record<string, boolean>), ...Object.values(perTarget).map((t) => (t as { scenarios: { ok: boolean }; realtime: boolean }).scenarios.ok && (t as { realtime: boolean }).realtime)];
-report["certified"] = all.every(Boolean);
+report["certified"] = all.every(Boolean) && JSON.stringify(identity) === JSON.stringify(certificationIdentity(resolve(root, "..")));
 
 mkdirSync(resolve(root, "certification"), { recursive: true });
 writeFileSync(resolve(root, "certification", "latest.json"), JSON.stringify(report, null, 2) + "\n");

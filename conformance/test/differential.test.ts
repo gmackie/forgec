@@ -45,7 +45,7 @@ describe("PAR-172: cross-profile differential", () => {
     for (const d of report.differences) expect(d.key).toBeDefined();
     // the report is retained as a certification artifact
     mkdirSync(resolve(import.meta.dirname, "..", "reports"), { recursive: true });
-    writeFileSync(resolve(import.meta.dirname, "..", "reports", "differential.json"), JSON.stringify(report, null, 2) + "\n");
+    writeFileSync(resolve(import.meta.dirname, "..", "reports", "differential-candidate.json"), JSON.stringify(report, null, 2) + "\n");
   }, 300_000);
 
   it("purpose surfaces: the same minimized fields and the same typed denials on every profile", async () => {

@@ -1,3 +1,5 @@
+import { certificationIdentity } from "../../scripts/certification-identity.mjs";
+import { readFileSync } from "node:fs";
 /** FORGE-091 / PAR-176, PAR-179: the release manifest is honest about scope. */
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -46,4 +48,60 @@ describe("release manifest", () => {
     expect(String(m["disclaimer"])).toMatch(/not a statement of regulatory compliance/);
     expect(JSON.stringify(m)).not.toMatch(/universal|fully compliant/i);
   });
+});
+
+it("rejects malformed dates, empty live evidence and unbound local results", () => {
+  const build = JSON.parse(readFileSync(resolve(root, "conformance/fixtures/acme.app.json"), "utf8")).buildHash;
+  for (const at of ["invalid", "2028-01-01T00:00:00Z"]) {
+    const manifest = buildManifest({ root, now: "2026-10-01T00:00:00Z", certification: { certified: true, buildHash: build, at, targets: { "cloudflare-d1": { scenarios: { ok: true, count: 15, steps: 221 }, realtime: true } } } });
+    expect((manifest.combinations as any[]).find(c => c.profile === "cloudflare-d1").status).toBe("unverified");
+  }
+  const manifest = buildManifest({ root, now: "2026-10-01T00:00:00Z", differential: { drift: "none", profiles: [{ name: "runtime-memory", ran: true, failures: 0 }] } });
+  expect((manifest.combinations as any[]).find(c => c.profile === "runtime-memory")).toMatchObject({ status: "unverified", reason: expect.any(String) });
+});
+
+it("records the locked CDK version from its development dependency", () => {
+  const manifest = buildManifest({ root });
+  expect((manifest.pins as any).iac.cdk).toBe("2.270.0");
+});
+
+it("accepts complete current differential evidence and rejects each stale or partial binding", () => {
+  const identity = certificationIdentity(root);
+  const now = "2026-10-01T00:00:00Z";
+  const evidence = {
+    ...identity, at: now, drift: "none", suitePassed: true,
+    profiles: ["runtime-memory", "sqlite-node", "node-postgres"].map(name => ({ name, ran: true, failures: 0, scenarios: identity.scenarioIds.length })),
+    pairs: [{ a: "runtime-memory", b: "sqlite-node", compared: 221, unexplained: 0 }, { a: "runtime-memory", b: "node-postgres", compared: 221, unexplained: 0 }],
+  };
+  const profiles = (d: typeof evidence) => (buildManifest({ root, now, differential: d }).combinations as { profile: string; status: string }[]).filter(c => ["runtime-memory", "sqlite-node", "node-postgres"].includes(c.profile));
+  expect(profiles(evidence).every(c => c.status === "certified")).toBe(true);
+  for (const patch of [{ suitePassed: false }, { buildHash: "0".repeat(64) }, { sourceFingerprint: "0".repeat(64) }, { node: "v0" }, { at: "invalid" }, { at: "2026-01-01T00:00:00Z" }, { at: "2027-01-01T00:00:00Z" }, { scenarioIds: [] }, { pairs: [] }]) {
+    expect(profiles({ ...evidence, ...patch }).every(c => c.status === "unverified")).toBe(true);
+  }
+  expect(profiles({ ...evidence, profiles: evidence.profiles.map(p => ({ ...p, scenarios: 0 })) }).every(c => c.status === "unverified")).toBe(true);
+});
+
+
+it("does not certify comparisons with missing participants or advertise unrelated local coverage", () => {
+  const identity = certificationIdentity(root);
+  const evidence = { ...identity, at: "2026-10-01T00:00:00Z", suitePassed: true, drift: "none",
+    profiles: [{ name: "node-postgres", ran: true, failures: 0, scenarios: identity.scenarioIds.length }],
+    pairs: [{ a: "node-postgres", b: "missing", compared: 221, unexplained: 0 }] };
+  const manifest = buildManifest({ root, now: evidence.at, differential: evidence });
+  const pg = (manifest.combinations as any[]).find(c => c.profile === "node-postgres");
+  expect(pg.status).toBe("unverified");
+  expect(pg.features).not.toContain("realtime");
+  expect(pg.features).not.toContain("durable restart (PAR-153)");
+  expect(pg.evidence).toHaveLength(1);
+});
+
+it("rejects incomplete live scenario coverage even with current identity", () => {
+  const identity = certificationIdentity(root);
+  for (const count of [0, identity.scenarioIds.length - 1]) {
+    const manifest = buildManifest({ root, now: "2026-10-01T00:00:00Z", certification: {
+      ...identity, at: "2026-10-01T00:00:00Z", certified: true,
+      targets: { "cloudflare-d1": { scenarios: { ok: true, count, steps: 221 }, realtime: true } },
+    } });
+    expect((manifest.combinations as any[]).find(c => c.profile === "cloudflare-d1").status).toBe("unverified");
+  }
 });

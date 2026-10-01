@@ -1,14 +1,11 @@
 {
   "version": "release-manifest/1",
-  "generatedAt": "2026-09-24T12:56:20.957Z",
+  "generatedAt": "2026-10-01T03:51:20.624Z",
   "allRequiredProfilesCertified": false,
   "incomplete": {
     "requiredNotCertified": [
       "cloudflare-d1",
-      "aws-dynamodb",
-      "node-postgres",
-      "sqlite-node",
-      "runtime-memory"
+      "aws-dynamodb"
     ],
     "note": "this release does not claim full profile support; see each entry's reason"
   },
@@ -29,7 +26,7 @@
       "version": "0.4.0",
       "effect": "4.0.0-rc.116",
       "typescript": "^5.9.0",
-      "node": "v25.2.1",
+      "node": "v24.14.0",
       "pg": "^8.23.0",
       "drizzle": "^0.45.2",
       "awsSdk": "^3.1136.0"
@@ -64,9 +61,31 @@
         "cloudflare": "5.4.0",
         "aws": "5.100.0"
       },
-      "cdk": null,
+      "cdk": "2.270.0",
       "wrangler": "^4.83.0"
     }
+  },
+  "identity": {
+    "buildHash": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+    "sourceFingerprint": "584a2ce3b322a93b8e7e7adcd61e18fbd903e156b2ddfcd23986972da58e8a87",
+    "node": "v24.14.0",
+    "scenarioIds": [
+      "m2.concurrency",
+      "m2.customer-crud",
+      "m2.idempotency",
+      "m2.pagination",
+      "m2.site-references",
+      "m3.changesets",
+      "m3.integrity",
+      "m4.blobs",
+      "m4.csv-import",
+      "m5.messaging",
+      "m6.temporal-hierarchy",
+      "m6.views-projections-cache",
+      "m7.schedules",
+      "m7.workflows",
+      "m8.limits"
+    ]
   },
   "combinations": [
     {
@@ -147,22 +166,51 @@
         "runtime": "node-24",
         "deployment": "local/self-hosted"
       },
-      "status": "unverified",
+      "status": "certified",
       "features": [
-        "crud",
-        "changesets",
-        "blobs",
-        "imports",
-        "messaging",
-        "views/projections/caches",
-        "workflows",
-        "schedules",
-        "portability",
-        "interfaces",
-        "realtime",
-        "durable restart (PAR-153)"
+        "local scenario semantics",
+        "storage adapter differential"
       ],
-      "evidence": []
+      "scope": {
+        "scenarios": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ],
+        "objectStore": "memory",
+        "transport": "in-process",
+        "purposeSurfaces": false,
+        "excludes": [
+          "hosted object bytes",
+          "HTTP/WebSocket endpoints",
+          "realtime",
+          "durable restart",
+          "production migration"
+        ]
+      },
+      "evidence": [
+        {
+          "suite": "differential",
+          "failures": 0,
+          "drift": "none",
+          "at": "2026-10-01T03:51:07.934Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+          "sourceFingerprint": "584a2ce3b322a93b8e7e7adcd61e18fbd903e156b2ddfcd23986972da58e8a87",
+          "ref": "conformance/certification/differential.json"
+        }
+      ]
     },
     {
       "profile": "sqlite-node",
@@ -172,29 +220,100 @@
         "runtime": "node-24",
         "deployment": "self-hosted"
       },
-      "status": "unverified",
+      "status": "certified",
       "features": [
-        "crud",
-        "changesets",
-        "blobs",
-        "imports",
-        "messaging",
-        "views/projections/caches",
-        "workflows",
-        "schedules",
-        "portability",
-        "interfaces"
+        "local scenario semantics",
+        "storage adapter differential"
       ],
-      "evidence": []
+      "scope": {
+        "scenarios": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ],
+        "objectStore": "memory",
+        "transport": "in-process",
+        "purposeSurfaces": true,
+        "excludes": [
+          "hosted object bytes",
+          "HTTP/WebSocket endpoints",
+          "realtime",
+          "durable restart",
+          "production migration"
+        ]
+      },
+      "evidence": [
+        {
+          "suite": "differential",
+          "failures": 0,
+          "drift": "none",
+          "at": "2026-10-01T03:51:07.934Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+          "sourceFingerprint": "584a2ce3b322a93b8e7e7adcd61e18fbd903e156b2ddfcd23986972da58e8a87",
+          "ref": "conformance/certification/differential.json"
+        }
+      ]
     },
     {
       "profile": "runtime-memory",
       "tuple": null,
-      "status": "unverified",
+      "status": "certified",
       "features": [
-        "semantic reference"
+        "local scenario semantics",
+        "storage adapter differential"
       ],
-      "evidence": []
+      "scope": {
+        "scenarios": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ],
+        "objectStore": "memory",
+        "transport": "in-process",
+        "purposeSurfaces": true,
+        "excludes": [
+          "hosted object bytes",
+          "HTTP/WebSocket endpoints",
+          "realtime",
+          "durable restart",
+          "production migration"
+        ]
+      },
+      "evidence": [
+        {
+          "suite": "differential",
+          "failures": 0,
+          "drift": "none",
+          "at": "2026-10-01T03:51:07.934Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+          "sourceFingerprint": "584a2ce3b322a93b8e7e7adcd61e18fbd903e156b2ddfcd23986972da58e8a87",
+          "ref": "conformance/certification/differential.json"
+        }
+      ]
     }
   ],
   "notCertified": [

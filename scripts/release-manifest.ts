@@ -11,13 +11,14 @@
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { certificationIdentity, lockedVersion, type CertificationIdentity } from "./certification-identity.mjs";
 
 export interface ManifestInput {
   root: string;
   now?: string;
   /** Override retained artifacts (tests). */
   certification?: Record<string, unknown> | null;
-  differential?: { drift: string; profiles: { name: string; ran: boolean; reason?: string; failures: number }[] } | null;
+  differential?: Partial<CertificationIdentity> & { at?: string; suitePassed?: boolean; drift: string; profiles: { name: string; ran: boolean; reason?: string; failures: number; scenarios?: number }[]; pairs?: { a: string; b: string; compared: number; unexplained: number }[] } | null;
   matrix?: { profiles: { id: string; tuple: Record<string, string>; status: string; evidence?: unknown[]; reason?: string; contract?: string }[] } | null;
   benchmarks?: Record<string, unknown> | null;
 }
@@ -28,7 +29,7 @@ const toml = (p: string, key: string): string | null => { const m = new RegExp(`
 export function buildManifest(i: ManifestInput): Record<string, unknown> {
   const root = i.root;
   const certification = i.certification === undefined ? read<Record<string, unknown>>(resolve(root, "conformance", "certification", "latest.json")) : i.certification;
-  const differential = i.differential === undefined ? read<NonNullable<ManifestInput["differential"]>>(resolve(root, "conformance", "reports", "differential.json")) : i.differential;
+  const differential = i.differential === undefined ? read<NonNullable<ManifestInput["differential"]>>(resolve(root, "conformance", "certification", "differential.json")) : i.differential;
   const matrix = i.matrix === undefined ? read<NonNullable<ManifestInput["matrix"]>>(resolve(root, "specs", "profiles", "matrix.json")) : i.matrix;
   const benchmarks = i.benchmarks === undefined ? read<Record<string, unknown>>(resolve(root, "conformance", "benchmarks", "governance-overhead.json")) : i.benchmarks;
   const pkg = (p: string) => read<{ version?: string; dependencies?: Record<string, string>; devDependencies?: Record<string, string> }>(resolve(root, p));
@@ -41,9 +42,12 @@ export function buildManifest(i: ManifestInput): Record<string, unknown> {
     runtime: { package: "@forgegraph/runtime", version: runtimePkg?.version ?? null, effect: runtimePkg?.dependencies?.["effect"] ?? null, typescript: runtimePkg?.devDependencies?.["typescript"] ?? null, node: process.version, pg: runtimePkg?.dependencies?.["pg"] ?? null, drizzle: runtimePkg?.dependencies?.["drizzle-orm"] ?? null, awsSdk: runtimePkg?.dependencies?.["@aws-sdk/client-dynamodb"] ?? null },
     interfaces: { package: "@forgegraph/interfaces", version: interfacesPkg?.version ?? null, openapi: "3.1.0", smithy: "2.0", mcp: ["2025-06-18", "2025-03-26"], discovery: "forge-discovery/1", sdks: { python: "stdlib (>= 3.10)", go: "module forge.dev/interfaces/sdk-go (go 1.22)" } },
     governance: { taxonomy: read<{ version: string }>(resolve(root, "packages", "contracts", "data-core", "taxonomy.json"))?.version ?? null, capabilityManifests: ["d1", "dynamodb"], policy: "forge-policies (local authorizer) / opaque bundles compared by digest", grants: "dependency-grant/1", snapshots: "snapshot/1" },
-    iac: { terraform: { cloudflare: "5.4.0", aws: "5.100.0" }, cdk: read<{ dependencies?: Record<string, string> }>(resolve(root, "examples", "acme", "package.json"))?.dependencies?.["aws-cdk-lib"] ?? null, wrangler: runtimePkg?.devDependencies?.["wrangler"] ?? null },
+    iac: { terraform: { cloudflare: "5.4.0", aws: "5.100.0" }, cdk: lockedVersion(root, "examples/acme", "aws-cdk-lib"), wrangler: runtimePkg?.devDependencies?.["wrangler"] ?? null },
   };
 
+  const identity = certificationIdentity(root);
+  const fresh = (at: unknown) => typeof at === "string" && Number.isFinite(Date.parse(at)) && Number.isFinite(Date.parse(now)) && Date.parse(at) <= Date.parse(now) + 60_000 && Date.parse(now) - Date.parse(at) <= 90 * 86_400_000;
+  const bound = (report: Partial<CertificationIdentity> | null) => report?.buildHash === identity.buildHash && report?.sourceFingerprint === identity.sourceFingerprint && report?.node === identity.node && JSON.stringify(report?.scenarioIds) === JSON.stringify(identity.scenarioIds);
   const required = ["cloudflare-d1", "aws-dynamodb", "node-postgres", "sqlite-node", "runtime-memory"];
   const combos: Record<string, unknown>[] = [];
   const targets = (certification?.["targets"] ?? {}) as Record<string, { scenarios: { ok: boolean; count: number; steps: number }; realtime: boolean; bench?: unknown }>;
@@ -52,20 +56,21 @@ export function buildManifest(i: ManifestInput): Record<string, unknown> {
   const currentBuild = read<{ buildHash: string }>(resolve(root, "conformance", "fixtures", "acme.app.json"))?.buildHash ?? null;
   const certBuild = (certification?.["buildHash"] as string | undefined) ?? null;
   const buildMatches = currentBuild !== null && certBuild === currentBuild;
-  const expired = certAt ? Date.parse(now) - Date.parse(certAt) > 90 * 86_400_000 : true;
+  const expired = !fresh(certAt);
   for (const name of ["cloudflare-d1", "aws-dynamodb"]) {
     const t = targets[name];
     const m = matrix?.profiles.find((p) => p.tuple["engine"] === name || p.id.startsWith(name));
-    const passed = Boolean(t && t.scenarios.ok && t.realtime && certification?.["certified"]);
-    const reason = !t ? "no live certification run retained for this target" : !passed ? "the retained live run did not pass" : !buildMatches ? `live certification is for build ${certBuild?.slice(0, 12)}; the current build is ${currentBuild?.slice(0, 12)}: re-run pnpm certify` : expired ? "live certification is older than the 90-day retest window" : null;
+    const passed = Boolean(t && t.scenarios.ok && t.scenarios.count === identity.scenarioIds.length && t.scenarios.steps > 0 && t.realtime && certification?.["certified"]);
+    const reason = !t ? "no live certification run retained for this target" : !passed ? "the retained live run did not pass" : !buildMatches ? `live certification is for build ${certBuild?.slice(0, 12)}; the current build is ${currentBuild?.slice(0, 12)}: re-run pnpm certify` : expired ? "live certification timestamp is invalid, future-dated or older than the 90-day retest window" : !bound(certification as Partial<CertificationIdentity> | null) ? "live certification lacks matching current source, runtime and scenario identity" : null;
     combos.push({ profile: name, tuple: m?.tuple ?? null, status: reason ? "unverified" : "certified", features: ["crud", "changesets", "blobs", "imports", "messaging", "views/projections/caches", "workflows", "schedules", "realtime", "portability", "interfaces"], evidence: t ? [{ suite: "conformance (live)", scenarios: t.scenarios.count, steps: t.scenarios.steps, realtime: t.realtime, at: certAt, build: certBuild, ref: "conformance/certification/latest.json" }] : [], ...(reason ? { reason } : {}) });
   }
   const diffProfile = (name: string) => differential?.profiles.find((p) => p.name === name);
   for (const name of ["node-postgres", "sqlite-node", "runtime-memory"]) {
     const d = diffProfile(name);
     const m = matrix?.profiles.find((p) => p.id.startsWith(name === "node-postgres" ? "postgres-17" : name));
-    const ok = Boolean(d && d.ran && d.failures === 0 && differential?.drift === "none");
-    combos.push({ profile: name, tuple: m?.tuple ?? null, status: ok ? "certified" : "unverified", features: name === "runtime-memory" ? ["semantic reference"] : ["crud", "changesets", "blobs", "imports", "messaging", "views/projections/caches", "workflows", "schedules", "portability", "interfaces", ...(name === "node-postgres" ? ["realtime", "durable restart (PAR-153)"] : [])], evidence: d && d.ran ? [{ suite: "differential", failures: d.failures, drift: differential?.drift, ref: "conformance/reports/differential.json" }, ...(m?.evidence ?? [])] : [], ...(d && !d.ran ? { reason: d.reason } : {}), ...(m?.contract ? { contract: m.contract } : {}) });
+    const reason = !d ? "no differential evidence retained for this profile" : !d.ran ? d.reason ?? "profile did not run" : d.failures !== 0 || differential?.drift !== "none" ? "differential run failed or reported drift" : differential?.suitePassed !== true ? "complete differential test invocation has not passed" : !bound(differential) ? "differential evidence lacks matching current build, source, runtime and scenario identity" : !fresh(differential?.at) ? "differential evidence timestamp is invalid, future-dated or expired" : d.scenarios !== identity.scenarioIds.length ? "differential scenario coverage is incomplete" : !(differential?.pairs?.some(p => (p.a === name || p.b === name) && p.a !== p.b && [p.a, p.b].every(n => differential.profiles.some(other => other.name === n && other.ran && other.failures === 0 && other.scenarios === identity.scenarioIds.length)) && p.compared > 0 && p.unexplained === 0)) ? "no completed differential comparison for this profile" : null;
+    const ok = reason === null;
+    combos.push({ profile: name, tuple: m?.tuple ?? null, status: ok ? "certified" : "unverified", features: ["local scenario semantics", "storage adapter differential"], scope: { scenarios: identity.scenarioIds, objectStore: "memory", transport: "in-process", purposeSurfaces: name !== "node-postgres", excludes: ["hosted object bytes", "HTTP/WebSocket endpoints", "realtime", "durable restart", "production migration"] }, evidence: d && d.ran ? [{ suite: "differential", failures: d.failures, drift: differential?.drift, at: differential?.at, build: differential?.buildHash, sourceFingerprint: differential?.sourceFingerprint, ref: "conformance/certification/differential.json" }] : [], ...(reason ? { reason } : {}), ...(m?.contract ? { contract: m.contract } : {}) });
   }
   // everything else in the matrix that is not certified is listed as such, with its reason
   const notCertified = (matrix?.profiles ?? []).filter((p) => p.status !== "certified").map((p) => ({ profile: p.id, status: p.status, reason: p.reason ?? null }));
@@ -77,6 +82,7 @@ export function buildManifest(i: ManifestInput): Record<string, unknown> {
     allRequiredProfilesCertified: requiredMissing.length === 0,
     ...(requiredMissing.length ? { incomplete: { requiredNotCertified: requiredMissing, note: "this release does not claim full profile support; see each entry's reason" } } : {}),
     pins,
+    identity,
     combinations: combos,
     notCertified,
     benchmarks: benchmarks ? { ref: "conformance/benchmarks/governance-overhead.json", at: benchmarks["at"], note: "per-profile measurements with workload definitions and limits; no cross-machine or parity claim" } : null,
