@@ -344,11 +344,13 @@ module.exports = grammar({
         repeat($.decorator),
         block(
           choice(
+            $.source_exposure,
             seq(choice("cron", "timezone"), $.string),
             seq("->", $.qualified_name),
           ),
         ),
       ),
+    source_exposure: ($) => seq($.decorator, choice("resource", "function"), $.qualified_name),
     actor_declaration: ($) => seq("actor",field("name",$.identifier),"keyed","by",$.identifier,"{",repeat(choice(seq("state",$.qualified_name),seq("on",$.identifier,"->",$.qualified_name))),"}"),
     work_queue_declaration: ($) => seq("workQueue", field("name", $.identifier), "{", repeat(choice(seq("execute",$.qualified_name),seq("lease",$.duration),seq(choice("retry","capacity","runners"),$.integer))), "}"),
     workflow_declaration: ($) =>

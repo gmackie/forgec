@@ -20,9 +20,7 @@ Structural facets and their applications are covered by the shared valid corpus.
 Bounded collections, work queues, actors, conditional uniqueness, exact search
 and workflow map/collect are covered by the grammar and example drift tests.
 The shared runtime-construct fixture and capture tests also cover declaration
-tags, folding, keywords and map-item locals for these newer constructs. Source fixtures use the
-canonical `source ... { -> Function }` form; proposed resource exposure syntax
-must land in the compiler before entering the valid corpus.
+tags, folding, keywords and map-item locals for these newer constructs. Source fixtures cover both scheduled `source ... { -> Function }` targets and compiler-supported `@http` resource/function exposures.
 
 The editor parser deliberately tolerates whitespace/newline placement more
 broadly than Rowan. An error-free Tree-sitter tree is not proof of a valid Forge

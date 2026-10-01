@@ -18,7 +18,9 @@ Resource operations use `<resource>#op:<operation-suffix>`, with a `generated-op
 
 Actor clauses use `<actor>#state` and `<actor>#handler:<command>`. WorkQueue clauses use `<queue>#execute` and `<queue>#config:<lease|retry|capacity|runners>`. These anchors retain identity when their values or function targets change, and their spans cover the individual clause. Handler and execution anchors have `actor-handler` and `queue-execute` edges to their resolved function identifiers, including imported execution functions for queues. Actor handlers currently require local functions.
 
-Future language constructs can add kinds such as `expose`, `binding`, `alarm`, `requirement`, and `search`. Source blocks currently support schedules and function targets; HTTP exposure blocks are not yet accepted by the parser. Physical SQL/SDK output maps and complete lowering provenance are outside this initial implementation.
+Source HTTP blocks support `@http("/items") resource Item` and `@http(POST, "/ping") function Ping`. Exposures bind local declarations and lower through the existing resource/function HTTP machinery. `Source#expose:Item` identifies the exposure; its `/binding:http` child identifies the binding. Generated operation derivations link both the resource declaration and source exposure. Duplicate bindings, conflicts with declaration-level bindings, wrong target kinds, and mixing HTTP with schedule targets fail closed. Source exposures do not expand authority: existing purpose, capability and runtime authorization rules still apply.
+
+Future language constructs can add `alarm`, `requirement`, and `search` anchors. Physical SQL/SDK output maps and complete lowering provenance are outside this initial implementation.
 
 ## Resolution and trust
 

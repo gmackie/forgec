@@ -2827,6 +2827,10 @@
                 "type": "CHOICE",
                 "members": [
                   {
+                    "type": "SYMBOL",
+                    "name": "source_exposure"
+                  },
+                  {
                     "type": "SEQ",
                     "members": [
                       {
@@ -2869,6 +2873,32 @@
               "value": "}"
             }
           ]
+        }
+      ]
+    },
+    "source_exposure": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "decorator"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "resource"
+            },
+            {
+              "type": "STRING",
+              "value": "function"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "qualified_name"
         }
       ]
     },

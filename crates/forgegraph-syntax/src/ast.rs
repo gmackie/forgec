@@ -959,7 +959,23 @@ impl MessageDecl {
 }
 
 node!(SourceDecl, SOURCE_DECL);
+node!(SourceExposure, SOURCE_EXPOSURE);
+impl SourceExposure {
+    pub fn decorator(&self) -> Option<Decorator> {
+        child(&self.0)
+    }
+    pub fn target(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+    pub fn kind(&self) -> Option<String> {
+        idents(&self.0).next().map(|t| t.text().into())
+    }
+}
 impl SourceDecl {
+    pub fn exposures(&self) -> impl Iterator<Item = SourceExposure> + '_ {
+        children(&self.0)
+    }
+
     pub fn name(&self) -> Option<SyntaxToken> {
         idents(&self.0).find(|t| !matches!(t.text(), "export" | "source"))
     }

@@ -159,6 +159,7 @@ struct Ctx<'a> {
     workflow_fields: BTreeMap<String, Vec<(String, TypeSpec)>>,
     workflow_origins: BTreeMap<String, SourceSpan>,
     type_depth: usize,
+    source_http: BTreeMap<String, HttpBinding>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -206,6 +207,7 @@ pub(crate) fn compile_with_parser(
         workflow_fields: BTreeMap::new(),
         workflow_origins: BTreeMap::new(),
         type_depth: 0,
+        source_http: BTreeMap::new(),
     };
     for (alias, name) in &pkg.dependencies {
         match deps.iter().find(|d| &d.package.name == name) {
@@ -2261,7 +2263,24 @@ impl<'a> Ctx<'a> {
                 );
             }
         }
-        let decorators = self.decorators_of(r);
+        let mut decorators = self.decorators_of(r);
+        if let Some(binding) = self.source_http.get(&id).cloned() {
+            if decorators.crud.is_some() {
+                self.err(
+                    "E-SRC-004",
+                    file,
+                    range_of(r),
+                    "resource HTTP exposure conflicts with @crud",
+                    None,
+                );
+            } else {
+                decorators.crud = Some(CrudBinding {
+                    path: binding.path,
+                    operations: None,
+                    actions: vec![],
+                });
+            }
+        }
 
         // fields
         let mut fields: Vec<Field> = Vec::new();
@@ -2461,7 +2480,6 @@ impl<'a> Ctx<'a> {
                 );
             }
         }
-        let mut decorators = decorators;
         if blob.is_some() {
             decorators.timestamps = true;
             decorators.versioned = true;
@@ -3472,11 +3490,20 @@ impl<'a> Ctx<'a> {
         let output = f
             .output()
             .and_then(|n| self.type_ref_spec(&n, module, file));
-        let mut http = None;
+        let mut http = self.source_http.get(&id).cloned();
         for d in f.decorators() {
             let Some(n) = d.name() else { continue };
             match n.text() {
                 "http" => {
+                    if self.source_http.contains_key(&id) {
+                        self.err(
+                            "E-SRC-004",
+                            file,
+                            range_of(&d),
+                            "function HTTP exposure conflicts with @http",
+                            None,
+                        );
+                    }
                     let args = d.args();
                     let method = args.first().and_then(|a| a.value()).and_then(|v| {
                         if let ArgValue::Name(m) = v {
@@ -4878,7 +4905,113 @@ impl<'a> Ctx<'a> {
     }
 
     // ------------------------------------------------------------ build
+    fn collect_source_http(&mut self) {
+        let sources: Vec<_> = self
+            .symbols
+            .iter()
+            .filter_map(|((module, _), symbol)| {
+                if let Declaration::Source(source) = &symbol.decl {
+                    Some((module.clone(), symbol.file, source.clone()))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        for (module, file, source) in sources {
+            for exposure in source.exposures() {
+                let (Some(decorator), Some(target)) = (exposure.decorator(), exposure.target())
+                else {
+                    continue;
+                };
+                let args: Vec<_> = decorator.args().iter().filter_map(|a| a.value()).collect();
+                let resource = exposure.kind().as_deref() == Some("resource");
+                let binding = match args.as_slice() {
+                    [ArgValue::Literal(path)] if resource => Some(HttpBinding {
+                        method: String::new(),
+                        path: unq(path),
+                    }),
+                    [ArgValue::Name(method), ArgValue::Literal(path)]
+                        if !resource
+                            && method.len() == 1
+                            && HTTP_METHODS.contains(&method[0].as_str()) =>
+                    {
+                        Some(HttpBinding {
+                            method: method[0].clone(),
+                            path: unq(path),
+                        })
+                    }
+                    _ => None,
+                };
+                let Some(binding) = binding.filter(|b| {
+                    b.path.starts_with('/')
+                        && !b.path.contains(['?', '#'])
+                        && (!resource || !b.path.contains(['{', '}']))
+                }) else {
+                    self.err("E-SRC-004", file, range_of(&exposure), "resource exposure requires @http(absolutePath); function exposure requires @http(METHOD, absolutePath)", None);
+                    continue;
+                };
+                if decorator.name().is_none_or(|n| n.text() != "http") {
+                    self.err(
+                        "E-SRC-004",
+                        file,
+                        range_of(&exposure),
+                        "source exposures require @http",
+                        None,
+                    );
+                    continue;
+                }
+                let id = match self.resolve(&target.segments(), &module, file, range_of(&target)) {
+                    Some(Resolved::Type(TypeBase::Reference { resource: id })) if resource => id,
+                    Some(Resolved::Function(id)) if !resource => id,
+                    _ => {
+                        self.err(
+                            "E-SRC-004",
+                            file,
+                            range_of(&target),
+                            "exposure target kind does not match declaration",
+                            None,
+                        );
+                        continue;
+                    }
+                };
+                if !id.starts_with(&format!("{}/", self.pkg.name)) {
+                    self.err(
+                        "E-SRC-004",
+                        file,
+                        range_of(&target),
+                        "source exposures require a local declaration",
+                        None,
+                    );
+                    continue;
+                }
+                if !resource {
+                    let fields = self.function_input_types(&id, &module);
+                    for param in binding
+                        .path
+                        .split('{')
+                        .skip(1)
+                        .filter_map(|p| p.split('}').next())
+                    {
+                        if !fields.iter().any(|(name, _)| name == param) {
+                            self.err("E-HTTP-001", file, range_of(&exposure), format!("path parameter `{{{param}}}` is not a field of the function input"), None);
+                        }
+                    }
+                }
+                if self.source_http.insert(id, binding).is_some() {
+                    self.err(
+                        "E-SRC-004",
+                        file,
+                        range_of(&exposure),
+                        "duplicate HTTP exposure for declaration",
+                        None,
+                    );
+                }
+            }
+        }
+    }
+
     fn build(&mut self) -> DomainIR {
+        self.collect_source_http();
         let mut modules: BTreeMap<String, Module> = BTreeMap::new();
         let keys: Vec<(String, String)> = self.symbols.keys().cloned().collect();
         for (module, name) in keys {
@@ -5275,6 +5408,18 @@ impl<'a> Ctx<'a> {
                     }
                 }
                 (SymKind::Source, Declaration::Source(s)) => {
+                    if s.exposures().next().is_some() {
+                        if s.target().is_some() || s.cron().is_some() || s.timezone().is_some() {
+                            self.err(
+                                "E-SRC-004",
+                                file,
+                                range_of(s),
+                                "HTTP exposures cannot share a scheduled source",
+                                None,
+                            );
+                        }
+                        continue;
+                    }
                     let target = s.target();
                     let Some(t) = target else {
                         self.err(

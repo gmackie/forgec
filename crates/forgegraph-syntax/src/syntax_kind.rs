@@ -125,6 +125,7 @@ pub enum SyntaxKind {
     CRON_DECL,
     TIMEZONE_DECL,
     TARGET_DECL,
+    SOURCE_EXPOSURE,
     WORKFLOW_DECL,
     ACTOR_DECL,
     ACTOR_ITEM,

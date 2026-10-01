@@ -1,5 +1,6 @@
 //! Build-bound source sidecar. No file location participates in DomainIR identity.
 use crate::{Compilation, compiler::SourceSpan, ir::hash_hex};
+use forgegraph_syntax::ast::AstNode;
 use forgegraph_syntax::{SyntaxKind as K, SyntaxNode};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
@@ -14,6 +15,7 @@ impl Compilation {
         let mut sources = BTreeMap::new();
         let mut anchors = self.source_index.clone();
         let mut derivations: BTreeMap<String, Vec<Value>> = BTreeMap::new();
+        let mut exposures = Vec::new();
         for file in &self.files {
             sources.insert(file.path.clone(),json!({"digest":format!("sha256:{}",hash_hex(&file.text)),"byteLength":file.text.len()}));
             let parsed = self
@@ -46,6 +48,23 @@ impl Compilation {
                     start: u32::from(decl.syntax().text_range().start()) as usize,
                     end: u32::from(decl.syntax().text_range().end()) as usize,
                 });
+                if let forgegraph_syntax::ast::Declaration::Source(source) = &decl {
+                    for exposure in source.exposures() {
+                        if let Some(target) = exposure.target() {
+                            let span = target.syntax().text_range();
+                            if let Some(reference) = self.references.iter().find(|r| {
+                                r.span.file == file.path
+                                    && r.span.start == u32::from(span.start()) as usize
+                                    && r.span.end == u32::from(span.end()) as usize
+                            }) {
+                                exposures.push((
+                                    reference.target.clone(),
+                                    format!("{id}#expose:{}", target.text()),
+                                ));
+                            }
+                        }
+                    }
+                }
                 for node in decl.syntax().descendants().skip(1) {
                     let Some(component) = anchor_component(&node) else {
                         continue;
@@ -123,6 +142,26 @@ impl Compilation {
                 }
             }
         }
+        for (target, exposure) in exposures {
+            let generated: Vec<_> = derivations
+                .keys()
+                .filter(|id| id.starts_with(&format!("{target}#op:")))
+                .cloned()
+                .collect();
+            if generated.is_empty() {
+                derivations
+                    .entry(target)
+                    .or_default()
+                    .push(json!({"kind":"source-exposure","from":exposure}));
+            } else {
+                for operation in generated {
+                    derivations
+                        .entry(operation)
+                        .or_default()
+                        .push(json!({"kind":"source-exposure","from":exposure}));
+                }
+            }
+        }
         let mut out = json!({"version":"forge-source-map/1","package":self.ir.as_ref().map(|ir|&ir.package.name),"buildHash":build_hash,"compilerVersion":compiler_version,"sources":sources,"anchors":anchors,"derivations":derivations});
         if let Some(revision) = revision {
             out["revision"] = json!(revision);
@@ -142,6 +181,19 @@ fn normalized_key(node: &SyntaxNode) -> String {
     hash_hex(&material)
 }
 fn anchor_component(node: &SyntaxNode) -> Option<String> {
+    if node.kind() == K::SOURCE_EXPOSURE {
+        return forgegraph_syntax::ast::SourceExposure::cast(node.clone())?
+            .target()
+            .map(|target| format!("expose:{}", target.text()));
+    }
+    if node.kind() == K::DECORATOR
+        && node
+            .parent()
+            .is_some_and(|p| p.kind() == K::SOURCE_EXPOSURE)
+    {
+        return Some("binding:http".into());
+    }
+
     if matches!(node.kind(), K::ACTOR_ITEM | K::WORK_QUEUE_ITEM) {
         let mut tokens = node
             .children_with_tokens()

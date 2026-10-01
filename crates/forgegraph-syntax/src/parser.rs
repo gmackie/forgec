@@ -1326,7 +1326,19 @@ impl<'a> Parser<'a> {
         self.expect_ident("source name");
         self.header_decorators();
         self.block(|p| {
-            if p.at_kw("cron") {
+            if p.at(TokenKind::At) {
+                p.start(K::SOURCE_EXPOSURE);
+                p.decorator();
+                p.eat_lines();
+                if p.at_kw("resource") || p.at_kw("function") {
+                    p.bump();
+                } else {
+                    p.error("expected resource or function exposure");
+                }
+                p.qualified_name("exposed declaration");
+                p.finish();
+                p.end_item();
+            } else if p.at_kw("cron") {
                 p.start(K::CRON_DECL);
                 p.bump();
                 p.expect(TokenKind::String, "cron expression");

@@ -411,6 +411,30 @@ impl Server {
                 }
             }
         }
+        for a in &analysis {
+            if let Some(ir) = &a.compiled.ir {
+                if let Some(resource) = ir.find_resource(&target) {
+                    for operation in &resource.operations {
+                        if let Some(http) = &operation.http {
+                            description.push_str(&format!(
+                                "\n{} {} -> {}",
+                                http.method, http.path, operation.id
+                            ));
+                        }
+                    }
+                }
+                for function in ir.modules.iter().flat_map(|m| &m.functions) {
+                    if function.id == target
+                        && let Some(http) = &function.http
+                    {
+                        description.push_str(&format!(
+                            "\n{} {} -> {}",
+                            http.method, http.path, function.id
+                        ));
+                    }
+                }
+            }
+        }
         json!({"contents":{"kind":"plaintext","value":description}})
     }
 
@@ -466,6 +490,17 @@ impl Server {
             return vec![];
         };
         let parsed = forgegraph_syntax::parse(&source.text);
+        let exposure_kind = parsed
+            .syntax()
+            .descendants()
+            .filter_map(forgegraph_syntax::ast::SourceExposure::cast)
+            .find(|exposure| {
+                let range = exposure.syntax().text_range();
+                u32::from(range.start()) as usize <= offset
+                    && offset <= u32::from(range.end()) as usize
+            })
+            .and_then(|exposure| exposure.kind());
+
         let module_of = |p: &forgegraph_syntax::Parse| {
             p.root()
                 .declarations()
@@ -511,7 +546,7 @@ impl Server {
                     && offset <= u32::from(range.end()) as usize
             });
         let in_type = type_name.is_some();
-        if !in_uses && workflow.is_none() && !in_type {
+        if !in_uses && workflow.is_none() && !in_type && exposure_kind.is_none() {
             return vec![];
         }
         let in_wait = parsed.syntax().descendants().any(|n| {
@@ -620,6 +655,17 @@ impl Server {
                 }
                 for decl in parsed.root().declarations() {
                     if !local && !decl.is_exported() {
+                        continue;
+                    }
+                    if let Some(kind) = &exposure_kind {
+                        if local
+                            && ((kind == "resource"
+                                && matches!(decl, Declaration::Resource(_) | Declaration::Blob(_)))
+                                || (kind == "function" && matches!(decl, Declaration::Function(_))))
+                            && let Some(name) = decl.name()
+                        {
+                            result.push(json!({"label":name.text(), "kind":if kind == "function" {3} else {7}, "detail":"local HTTP exposure"}));
+                        }
                         continue;
                     }
                     if in_type {
@@ -927,6 +973,51 @@ pub fn run() -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn http_exposures_navigate_complete_and_explain_generated_routes() {
+        let root = std::env::temp_dir().join(format!("forge-source-lsp-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("forge.toml"),
+            "[package]\nname = \"@test/exposure\"\nversion = \"0.1.0\"\n",
+        )
+        .unwrap();
+        let model = root.join("src/model.forge");
+        std::fs::write(
+            &model,
+            "resource Item { id : id }\nfunction Ping {}\nshape Payload { value : text }",
+        )
+        .unwrap();
+        let path = root.join("src/api.forge");
+        let source = "source Api {\n @http(\"/items\") resource Item\n}";
+        std::fs::write(&path, source).unwrap();
+        let server = Server {
+            open: BTreeMap::new(),
+            roots: vec![root.clone()],
+            cache: RefCell::new(AnalysisCache::default()),
+        };
+        assert!(server.diagnostics_for(&path).is_empty());
+        assert_eq!(
+            server.definition(&path, 1, 27)[0]["uri"],
+            path_to_uri(&model)
+        );
+        assert!(!server.references(&model, 0, 10, false).is_empty());
+        let completion = server.completion(&path, 1, 28);
+        assert!(completion.iter().any(|item| item["label"] == "Item"));
+        assert!(
+            !completion
+                .iter()
+                .any(|item| item["label"] == "Ping" || item["label"] == "Payload")
+        );
+        assert!(
+            server.hover(&path, 1, 27)["contents"]["value"]
+                .as_str()
+                .unwrap()
+                .contains("/items")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn facet_navigation_uses_unsaved_buffers_and_utf16_positions() {
         let root = std::env::temp_dir().join(format!("forge facet lsp {}", std::process::id()));
