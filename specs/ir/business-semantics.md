@@ -62,3 +62,18 @@ Applicability is a boolean expression checked in its declared process's input sc
 `check_trace_witness` binds supplied reconstruction evidence to the ConceptIR hash and requirement. It checks every ordered record/link against the typed path, field-presence obligations, observed retention bounds, temporal intervals, and effective time. Link role bindings must connect the consecutive record IDs. Failures report `E-L0-TRACE-WITNESS`; the CLI exposes the same checker through `concept check-trace`. This is a finite evidence check, not automatic retention enforcement or a proof of evidence authenticity. Applicability is not evaluated by witness checking.
 
 Lineage graphs and evidence journals are independent L1 realization strategies illustrated by `examples/concept/traceability`. Neither storage layout nor mechanism enters the L0 identity. These declarations are requirements to reconstruct a chain; they do not themselves provide the chain or evidence.
+
+### Required actor roles
+
+A relationship may declare `subjectRoles`, a set of endpoint role names. Every named
+role must exist and target a declared Subject carrier; failures report `E-L0-SUBJECT`.
+Omitting the set preserves ordinary typed relationships, including non-actor resource
+and evidence endpoints. This does not turn every Entity into an actor or grant authority.
+
+`examples/concept/interactions/subject-roles.json` demonstrates a Party profile, a
+software-agent Subject, a distinct service Principal, scoped representation, delegator/
+delegate roles and attestation issuer/subject roles. The Delegation and Attestation
+packages each retain a `fixtures/subject-semantics.json` overlay checked against their
+actual generated bundles. These authored overlays declare meaning; projection does
+not infer actor roles from names. The legacy Party package's text principal locator
+remains an L1 identifier and is not itself a typed L0 representation declaration.

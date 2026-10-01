@@ -141,6 +141,9 @@ pub enum ContractKind {
 pub struct Relationship {
     pub carrier: Option<String>,
     pub endpoints: BTreeMap<String, Endpoint>,
+    /// Roles whose endpoint must be a declared durable actor Subject carrier.
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub subject_roles: BTreeSet<String>,
     #[serde(default)]
     pub evidence: BTreeSet<String>,
 }

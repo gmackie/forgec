@@ -1,0 +1,30 @@
+{
+  "subjects": {
+    "@forgegraph/foundation/delegation/_/ActorIdentity": {
+      "carrier": "@forgegraph/foundation/delegation/_/DelegationSubject",
+      "profiles": [
+        "actor"
+      ]
+    }
+  },
+  "relationships": {
+    "@forgegraph/foundation/delegation/_/ActorRoles": {
+      "carrier": "@forgegraph/foundation/delegation/_/Delegation",
+      "endpoints": {
+        "delegator": {
+          "target": "@forgegraph/foundation/delegation/_/DelegationSubject",
+          "field": "delegator"
+        },
+        "delegate": {
+          "target": "@forgegraph/foundation/delegation/_/DelegationSubject",
+          "field": "delegate"
+        }
+      },
+      "subjectRoles": [
+        "delegator",
+        "delegate"
+      ],
+      "evidence": []
+    }
+  }
+}

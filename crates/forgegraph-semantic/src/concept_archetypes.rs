@@ -278,6 +278,7 @@ impl ConceptIR {
                             Relationship {
                                 carrier: None,
                                 endpoints: bound,
+                                subject_roles: BTreeSet::new(),
                                 evidence: BTreeSet::new(),
                             },
                         )

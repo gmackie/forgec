@@ -127,3 +127,85 @@ fn compiled_foundation_participation_accepts_subject_and_interaction_facets() {
     raw["semantics"]["interactions"] = json!({"Engagement":{"carrier":context,"participation":["Participants"],"events":{},"processes":{},"parent":null,"purpose":null}});
     ConceptIR::load_closed(&raw).unwrap();
 }
+
+#[test]
+fn committed_actor_roles_require_subjects_and_scoped_representation() {
+    let raw: Value = serde_json::from_str(include_str!(
+        "../../../examples/concept/interactions/subject-roles.json"
+    ))
+    .unwrap();
+    let c = ConceptIR::load_closed(&raw).unwrap();
+    let p = "@interaction/support/_/";
+    for (relation, roles) in [
+        ("DelegationRoles", vec!["delegator", "delegate"]),
+        ("AttestationRoles", vec!["issuer", "subject"]),
+    ] {
+        for role in roles {
+            let endpoint = &c.semantics.relationships[&format!("{p}{relation}")].endpoints[role];
+            assert!(
+                c.semantics
+                    .subjects
+                    .values()
+                    .any(|s| s.carrier == endpoint.target)
+            );
+        }
+    }
+    let mut missing = raw.clone();
+    missing["semantics"]["subjects"]
+        .as_object_mut()
+        .unwrap()
+        .remove(&format!("{p}AgentIdentity"));
+    let errors = ConceptIR::load(&missing).unwrap_err();
+    assert!(
+        errors.contains("DelegationRoles") && errors.contains("AttestationRoles"),
+        "{errors}"
+    );
+    let mut unknown_role = raw.clone();
+    unknown_role["semantics"]["relationships"][format!("{p}DelegationRoles")]["subjectRoles"] =
+        json!(["missing"]);
+    assert!(
+        ConceptIR::load(&unknown_role)
+            .unwrap_err()
+            .contains("E-L0-SUBJECT")
+    );
+    let mut scope = raw;
+    scope["semantics"]["representations"][format!("{p}ScopedRepresentation")]["scopeRoles"] =
+        json!(["actor"]);
+    assert!(
+        ConceptIR::load(&scope)
+            .unwrap_err()
+            .contains("E-L0-SUBJECT")
+    );
+}
+
+#[test]
+fn foundation_delegation_and_attestation_bind_actual_subject_carriers() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    for slug in ["delegation", "attestation"] {
+        let bundle: Value = serde_json::from_str(
+            &std::fs::read_to_string(root.join(format!("conformance/fixtures/{slug}/app.json")))
+                .unwrap(),
+        )
+        .unwrap();
+        let ir = serde_json::from_value(bundle["ir"].clone()).unwrap();
+        let mut raw = serde_json::to_value(project(&ir).concept).unwrap();
+        raw["semantics"] = serde_json::from_str(
+            &std::fs::read_to_string(root.join(format!(
+                "packages/foundation/{slug}/fixtures/subject-semantics.json"
+            )))
+            .unwrap(),
+        )
+        .unwrap();
+        let c = ConceptIR::load_closed(&raw).unwrap();
+        let relation =
+            &c.semantics.relationships[&format!("@forgegraph/foundation/{slug}/_/ActorRoles")];
+        assert_eq!(relation.subject_roles.len(), 2);
+        for role in &relation.subject_roles {
+            let carrier = &relation.endpoints[role].target;
+            assert!(c.entities.contains_key(carrier));
+            assert!(c.semantics.subjects.values().any(|s| &s.carrier == carrier));
+        }
+        raw["semantics"]["subjects"] = json!({});
+        assert!(ConceptIR::load(&raw).unwrap_err().contains("E-L0-SUBJECT"));
+    }
+}

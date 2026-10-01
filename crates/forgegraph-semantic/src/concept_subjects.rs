@@ -22,6 +22,21 @@ impl ConceptIR {
                 fail("subject requires nonempty domain profiles");
             }
         }
+        for (id, relationship) in &self.semantics.relationships {
+            for role in &relationship.subject_roles {
+                if !relationship
+                    .endpoints
+                    .get(role)
+                    .is_some_and(|endpoint| carriers.contains(&endpoint.target))
+                {
+                    errors.push(Violation {
+                        code: "E-L0-SUBJECT".into(),
+                        subject: id.clone(),
+                        message: format!("role {role} must target a declared Subject carrier"),
+                    });
+                }
+            }
+        }
         for (id, representation) in &self.semantics.representations {
             let mut fail = |message: &str| {
                 errors.push(Violation {
