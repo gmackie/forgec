@@ -223,9 +223,30 @@ in the private provider state directory; the retained aggregate selects only
 complete passing runs.
 
 This satisfies the previously outstanding provider-only gates for issues #34,
-#36 and #39–#50. The STORE gates for #79/#80 also pass, but their ConceptIR
-bridges (`F79-SEMANTIC`, `F80-SEMANTIC`) remain open. #71/#25 retain broader
+#36 and #39–#50. At that checkpoint the STORE gates for #79/#80 passed, while their ConceptIR
+bridges were still open. Those bridges subsequently landed in Forgejo PR #7. #71/#25 retain broader
 release, migration and application-adoption gates. Foundation database evidence
 does not certify the release manifest's deployed HTTP/WebSocket profiles or
 hosted object bytes. Contract-local statuses stay unchanged: hosted acceptance
 is established by the separate source-bound aggregate, not by changing its inputs.
+
+## Current compiler and hosted checkpoint — 2026-10-01 UTC
+
+At `be8e98f244931df316e25f25c356d162bc457fdb`,
+[Forgejo run 34](https://git.forgegraf.com/gmackie/forge/actions/runs/34) passed
+all 48 package/provider cells (144 assertions), all 15 core assertions, the
+aggregate gate and artifact upload. The Integration D1 harness was freshly
+provisioned for its changed consumer schema; scheduled credentials now reference
+that deployment. `test-infrastructure.json` records the current test resources.
+
+The [retained evidence](provider-evidence/2026-10-01/README.md) includes every
+receipt/raw report, the published CI aggregate and an independently rebuilt local
+aggregate. Both compiler bridges are implemented and their local verifiers pass.
+The [temporal evidence](temporal-realization-evidence.md) connects those checked
+bindings to the SQL/Dynamo runtime observations used for #75/#79/#80.
+
+The same broader #71/#25 release and deployment gates remain: current-build
+HTTP/WebSocket certification, signing/CDK pins, hosted object bytes, production
+migration and application/staging adoption. Database certification does not
+satisfy those gates. #189's disposable connector pilot passed and was cleaned up;
+its distinct upstream generator release qualification remains separate.

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-assurance-invariants/1",
+  "coverageCriteria": [
+    "F40-STORE"
+  ],
+  "status": "passing",
+  "runId": "49285e5a-5cd8-4969-bc1a-1474e125a470",
+  "provider": "postgres",
+  "topology": "native-postgres-remote",
+  "targetHash": "26659ddadba4e07c6aa3fdad2b293ccd69bf3ad419e93292c8cf45ab3d4be951",
+  "sourceFingerprint": "b4de08d7ddb2237ed066b70fb095b92b45e54704221d064bb17bcd89bc32a31b",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "cbe4807a55afc45ad1bfc276b7019f33e4a4177f5cd7d911008a4a93b1522326"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "857f72a34a72ffdadcfbe726fc56fe3d1fda7067eb009536a011259e2268e2b5"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "06ba4d194dc6c6705636f48bdeb7d685a8dc3b866ce5adfb00b27b346b572702"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: findings, dispositions, corrective work and pinned attestations retain separate history"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-10-01T02:25:44.704Z",
+  "passedTraces": [
+    "hosted: findings, dispositions, corrective work and pinned attestations retain separate history"
+  ],
+  "testReportSha256": "6fe68522a7bb5b7187ddc38028f6307ab89a415c3e69d9c93ada2a9986b28e4d",
+  "identity": {
+    "provider": "postgres",
+    "runId": "49285e5a-5cd8-4969-bc1a-1474e125a470",
+    "tenantPrefix": "foundation-cert-49285e5a-5cd8-4969-bc1a-1474e125a470",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.11 (Debian 17.11-1.pgdg13+2)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

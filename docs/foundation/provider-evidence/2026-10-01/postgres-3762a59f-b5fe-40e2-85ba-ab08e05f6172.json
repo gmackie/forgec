@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-ledger-invariants/1",
+  "coverageCriteria": [
+    "F36-06"
+  ],
+  "status": "passing",
+  "runId": "3762a59f-b5fe-40e2-85ba-ab08e05f6172",
+  "provider": "postgres",
+  "topology": "native-postgres-remote",
+  "targetHash": "26659ddadba4e07c6aa3fdad2b293ccd69bf3ad419e93292c8cf45ab3d4be951",
+  "sourceFingerprint": "6fbec44f950664442d87d171da7de02b2bdd7c715c946884116fed58c7931d58",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "03e83b28b8feaea706aa2e2f4a9b5b79328a44c01e8f3aa35d57e0a0075143db"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "e98c2683f7fc01f04e51e0e0ba0fed2b502137b746f258e49e46b527a2e8c217"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "1ee008ea95f4b52f2858d7b025a2b943419053416ef7e8d8b5b7b948f92ab7a2"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: exact ledger, atomic groups, concurrent reversals and rebuilds"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-10-01T02:24:47.660Z",
+  "passedTraces": [
+    "hosted: exact ledger, atomic groups, concurrent reversals and rebuilds"
+  ],
+  "testReportSha256": "33873e23ebd5bed4dde7bd82beb450076d67a84dc4f498452632c18d39b80150",
+  "identity": {
+    "provider": "postgres",
+    "runId": "3762a59f-b5fe-40e2-85ba-ab08e05f6172",
+    "tenantPrefix": "foundation-cert-3762a59f-b5fe-40e2-85ba-ab08e05f6172",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.11 (Debian 17.11-1.pgdg13+2)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

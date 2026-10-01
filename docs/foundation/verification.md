@@ -40,7 +40,7 @@ The composed legacy migration rehearsal passes actual Engine export → reviewed
 
 All CI jobs pass in [run 35879253526](https://github.com/gmackie/forgec/actions/runs/35879253526), including Node22/24, compiler, packaging, differential and console acceptance. The pre-existing workflow idempotency race (#72 / draft #73) remains fixed. Earlier source receipts remain historical evidence.
 
-Hosted database certification passes all 42 cells at the current implementation checkpoint. `provider-evidence/certification.json` retains the validated source/artifact/identity/raw-report index. One initial D1 Operations transport failure is retained alongside the successful full-profile retry; see the retry notes.
+At the earlier 9c92db7b implementation checkpoint, hosted database certification passed all 42 cells. `provider-evidence/certification.json` retains the validated source/artifact/identity/raw-report index. One initial D1 Operations transport failure is retained alongside the successful full-profile retry; see the retry notes.
 
 ## Resource relations and settlement checkpoint
 
@@ -48,6 +48,17 @@ Implementation `f98cee96eabc499ac170acfd475a4590011ff062` adds #79 resource rela
 
 Resource relations has 18 independently executed tests covering typed domain relations, provenance, atomic handoff, temporal knowledge, hostile evidence and authorization. Settlement has 27 independently executed tests covering three domains, exact partial materialization/settlement, source uniqueness, multi-position atomicity, reversals, effective-time bounds, actual Agreement issuance, Ledger association and late proof rejection.
 
-Both packages use explicit package-owned temporal fields and publication knowledge. The ConceptIR temporal/relationship bridges remain planned (`F79-SEMANTIC`, `F80-SEMANTIC`); those gates require actual #75/#77 compiler semantics. See `resource-settlement-semantics.md` and package READMEs. Historical economic/relation queries still require current read authority and valid upstream authority; they fail closed when that authority becomes unreadable rather than returning a recomputed partial balance.
+Both packages use explicit package-owned temporal fields and publication knowledge. The ConceptIR temporal/relationship bridges were subsequently implemented in Forgejo PR #7 (`d59f75a5`): `project_with_semantics` validates authored overlays against the compiled package closure, including server-generated knowledge timestamps. The package-local verifier now executes `foundation_semantic_bridges` for `F79-SEMANTIC` and `F80-SEMANTIC`. See `resource-settlement-semantics.md` and package READMEs. Historical economic/relation queries still require current read authority and valid upstream authority; they fail closed when that authority becomes unreadable rather than returning a recomputed partial balance.
 
-CI run35894158062 passes after retrying the Node22 job. The initial unchanged PostgreSQL contention test exhausted retries for2/64 independent writes; #82 and `postgres-contention-f98cee96.md` retain that failure, eleven successful focused reproductions and the successful identical-source CI retry. No assertions or adapter behavior were weakened. All 48 expanded provider cells pass the final aggregate gate, which rebuilt all16 bundles and validated source fingerprints, exact assertions, raw report hashes and provider identity. The current retained index is `provider-evidence/certification.json`; previous42-cell evidence is archived as `certification-9c92db7b.json`.
+CI run35894158062 passes after retrying the Node22 job. The initial unchanged PostgreSQL contention test exhausted retries for2/64 independent writes; #82 and `postgres-contention-f98cee96.md` retain that failure, eleven successful focused reproductions and the successful identical-source CI retry. No assertions or adapter behavior were weakened. All 48 expanded provider cells pass the final aggregate gate, which rebuilt all16 bundles and validated source fingerprints, exact assertions, raw report hashes and provider identity. The retained index for that historical checkpoint is `provider-evidence/certification.json`; previous42-cell evidence is archived as `certification-9c92db7b.json`.
+
+## Compiler bindings and provider refresh — 2026-10-01 UTC
+
+Implementation `be8e98f2` passes the Rust workspace, Clippy, and fixture refresh
+with no generated artifact drift. Resource-relations and settlement package-local
+verifiers pass compiler bridge checks, deterministic builds and 12 / 20 memory-
+SQLite tests. Forgejo run 34 passes the current 48-cell hosted database aggregate,
+144 package assertions and 15 core assertions. Every published receipt/raw report
+was recovered and independently validated against freshly rebuilt bundles.
+See `provider-evidence/2026-10-01/README.md` and
+`temporal-realization-evidence.md`; the earlier counts above remain historical.

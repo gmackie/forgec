@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-agreement-catalog-invariants/1",
+  "coverageCriteria": [
+    "F43-STORE"
+  ],
+  "status": "passing",
+  "runId": "b12def9b-459e-4503-873b-47279359720f",
+  "provider": "postgres",
+  "topology": "native-postgres-remote",
+  "targetHash": "26659ddadba4e07c6aa3fdad2b293ccd69bf3ad419e93292c8cf45ab3d4be951",
+  "sourceFingerprint": "ca23535fcb749f7c3c716a97d1fc921c0ebb326ab2144e7d185b9a62daf2eaf8",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "93911a58ed16b0368f151a24ee8ae331d1872a4ec0b1e791bcf2b0faf0f5b03e"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "5f560c37267902ea47867a96222ea740501291a37c19b170497e456b2e4095c3"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "083e8d343a1bc1b715b3c932fa55130ae53d9e5fe1ce8eec7e48bb6054ce74b7"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: pinned acceptance, resumable exactly-once issuance and four typed domains",
+    "hosted: missing signers, expired offers and lifecycle history",
+    "hosted: independent successor agreements, denied issuance and hidden lifecycle",
+    "hosted: interrupted issuance resumes without duplicate grants",
+    "hosted: concurrent issuance receipt misses cannot duplicate raw entitlement grants"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-10-01T02:29:59.177Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: pinned acceptance, resumable exactly-once issuance and four typed domains",
+    "hosted: missing signers, expired offers and lifecycle history",
+    "hosted: independent successor agreements, denied issuance and hidden lifecycle",
+    "hosted: interrupted issuance resumes without duplicate grants",
+    "hosted: concurrent issuance receipt misses cannot duplicate raw entitlement grants"
+  ],
+  "testReportSha256": "8ded549dede84b4daf79639866f72b2161835dd74d20202650c13bf0bf0bf2fb",
+  "identity": {
+    "provider": "postgres",
+    "runId": "b12def9b-459e-4503-873b-47279359720f",
+    "tenantPrefix": "foundation-cert-b12def9b-459e-4503-873b-47279359720f",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.11 (Debian 17.11-1.pgdg13+2)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

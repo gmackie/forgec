@@ -29,7 +29,7 @@ Queries combine both axes: first restrict to facts published by the selected kno
 
 Publication, authorization, and concurrency remain independent checks. A valid historical fact is not permission to disclose it. A pre-read followed by an unfenced write is not sufficient to preserve a concurrent quantity or exclusive-custody invariant.
 
-The authored bridge now binds these package fields to compiler-level temporal facets. It does not establish a generic runtime temporal selector or prove that two L1 strategies satisfy the same L0 contract.
+The authored bridge binds these package fields to compiler-level temporal facets. By itself it does not establish runtime equivalence. The bounded SQL/Dynamo example combines these checked bindings with identical historical-query assertions across providers; see [temporal realization evidence](temporal-realization-evidence.md) and the source-bound provider certification. A generic runtime executor for arbitrary ConceptIR selectors remains outside this package scope.
 
 ## Package ownership and dependency order
 
@@ -40,7 +40,7 @@ The authored bridge now binds these package fields to compiler-level temporal fa
 
 #79 and #80 may be implemented and verified in parallel after their imported packages' contracts are frozen. Neither needs to depend on the other merely because both mention Party or time. Declare every directly imported package in the package manifest and contract dependency list. Do not add dependencies on issue numbers that are not package slugs; #30 is `entitlement`, not an `obligation` package.
 
-For future ConceptIR integration, freeze the temporal axis/selector contract (#75) before attaching it to relationship validity (#77), effect timing (#76), or time-sensitive invariants (#74). The core contract and relationship representations can be developed independently, but their temporal integration tests need the shared #75 contract. Event/effect integration then composes those typed targets and contracts. Neutral perspectives (#78) consume these contracts without creating duplicate authoritative facts. #81's complete transaction corpus validates the combined model; its scenario skeletons can be developed earlier. These are semantic integration dependencies, not a reason to block package-level implementation now.
+The checked ConceptIR model composes explicit temporal axes (#75), carrier relationship validity (#77), optional effect timing (#76), and time-sensitive contracts (#74). Neutral perspectives (#78) preserve one authoritative fact. The ten-scenario REA-inspired corpus (#81) checks their combined modeling without claiming ISO conformance or automatic runtime enforcement. Package-owned handoff/publication behavior remains independently tested.
 
 ## Required contract tests
 

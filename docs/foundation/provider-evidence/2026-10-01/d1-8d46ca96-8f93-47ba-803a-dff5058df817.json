@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-resource-relations-invariants/1",
+  "coverageCriteria": [
+    "F79-STORE"
+  ],
+  "status": "passing",
+  "runId": "8d46ca96-8f93-47ba-803a-dff5058df817",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "de22ae476ccf1fc2e766c95631c7d32a8dda56a03191b6174429da6f4956553d",
+  "sourceFingerprint": "c7a8ede21275300434587284aa05532d395288654794edb4dadff63c789cb93c",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "5dcdebc1ef4a0411b70624350ad1f95ef5ffbb86fabaed4553d766de627ab376"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "f8386cad2c49bce881799081b6483836014e9b6ed0afd74f00ed81bc6e76fa1a"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "5907011ecda0255296db14e14a6cd231ee2aae06c8cb7b27375519ec6d115101"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: typed leased equipment, consignment and cloud relations remain distinct with extensible exact extent",
+    "hosted: atomic custody handoff has one winner, inert loser, historical knowledge and restart replay",
+    "hosted: future ends and backdated termination preserve half-open valid time and inclusive knowledge boundaries",
+    "hosted: denied successor Party cannot partially end custody and empty evidence cannot publish",
+    "hosted: equal knowledge timestamps are inclusive and staged successors stay inert",
+    "hosted: denied dependency reads and mismatched or future provenance cannot publish a relation"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-10-01T02:51:02.461Z",
+  "passedTraces": [
+    "hosted: typed leased equipment, consignment and cloud relations remain distinct with extensible exact extent",
+    "hosted: atomic custody handoff has one winner, inert loser, historical knowledge and restart replay",
+    "hosted: future ends and backdated termination preserve half-open valid time and inclusive knowledge boundaries",
+    "hosted: denied successor Party cannot partially end custody and empty evidence cannot publish",
+    "hosted: equal knowledge timestamps are inclusive and staged successors stay inert",
+    "hosted: denied dependency reads and mismatched or future provenance cannot publish a relation"
+  ],
+  "testReportSha256": "82d15a51ff929ddfa40240f66d3e8077249ad88dc38961320c86630a5f555bf5",
+  "identity": {
+    "provider": "d1",
+    "runId": "8d46ca96-8f93-47ba-803a-dff5058df817",
+    "tenantPrefix": "foundation-cert-8d46ca96-8f93-47ba-803a-dff5058df817",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "5dcdebc1ef4a0411b70624350ad1f95ef5ffbb86fabaed4553d766de627ab376",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "PDX"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}
