@@ -144,7 +144,7 @@ identity before switching profiles. The runner never provisions or migrates D1.
 DynamoDB uses the same adapter key layout for all profiles, with a unique run and
 test tenant namespace, and performs no table schema mutation or remote cleanup.
 
-All fourteen profiles have passed on all three providers at the checkpoints
+All sixteen profiles have passed on all three providers at the checkpoints
 recorded below. Any source change requires fresh matching receipts; core-only
 receipts are insufficient.
 
@@ -179,10 +179,53 @@ The earlier checkpoint aggregate is retained as `provider-evidence/certification
 
 The previous implementation aggregate is retained as `provider-evidence/certification-f64c1b81.json`. That earlier refresh had one D1 Operations transport failure, followed by a passing full-profile run in a fresh tenant. Its failed receipt/raw report and `retry-notes-9c92db7b.md` are retained; the aggregate selects the passing retry and validates all 42 cells.
 
-## Expanded verified checkpoint
+## Earlier expanded verified checkpoint
 
-At `f98cee96eabc499ac170acfd475a4590011ff062`, all 16 profiles pass on PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every consumer bundle and accepted all 48 cells with matching source, artifacts, exact assertions, raw reports and observed provider identity. No failed receipts occurred in this matrix. Resource relations adds six hosted assertions and settlement adds nine, including real Agreement issuance and independent Ledger association. The current index is `provider-evidence/certification.json`.
+At `f98cee96eabc499ac170acfd475a4590011ff062`, all 16 profiles pass on PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The aggregate gate rebuilt every consumer bundle and accepted all 48 cells with matching source, artifacts, exact assertions, raw reports and observed provider identity. No failed receipts occurred in this matrix. Resource relations adds six hosted assertions and settlement adds nine, including real Agreement issuance and independent Ledger association. The index for that historical checkpoint is `provider-evidence/certification.json`.
 
 The previous 42-cell aggregate is retained as `provider-evidence/certification-9c92db7b.json`. Older checkpoint references remain historical evidence only.
 
 The expanded contracts contain 330 criteria: 312 local passes, 16 provider criteria whose acceptance is established separately by this aggregate, and two deferred ConceptIR integration criteria. Provider evidence does not imply delivery of #75/#77 compiler temporal/relationship semantics, hosted object durability, or application deployment adoption.
+
+## Scheduled Forgejo checkpoint — 2026-09-30
+
+At `6e2f23240e992dd8857de4fd632e83c77615d830`, all 16 package profiles passed
+on native PostgreSQL17, hosted Cloudflare D1 and hosted AWS DynamoDB. The
+aggregate rebuilt all consumer bundles and accepted all 48 cells with matching
+source fingerprints, artifact hashes, exact assertions and observed identities.
+There are 141 package assertions across the providers, plus 15 core traces.
+
+The retained local aggregate is
+[`provider-evidence/2026-09-30/certification.json`](provider-evidence/2026-09-30/certification.json).
+Its 48 referenced receipts and 48 raw Vitest reports are retained alongside it.
+Validate this checkpoint from matching source with:
+
+```sh
+node scripts/verify-foundation-certification.mjs \
+  --receipt-dir docs/foundation/provider-evidence/2026-09-30 \
+  --out /tmp/forge-retained-certification.json
+```
+
+[Forgejo run 33](https://git.forgegraf.com/gmackie/forge/actions/runs/33) independently
+passed the same matrix, aggregate gate and artifact step on `hetzner-bob` using
+repository-scoped credentials. The weekly/manual workflow is on Forgejo `main`;
+its `foundation-provider-certification` artifact contains the CI evidence.
+See the [setup and credential references](../../conformance/foundation/providers/README.md).
+
+The Assurance test previously assumed the first submitted concurrent disposition
+would win. Hosted D1 disproved that assumption. The corrected test requires one
+winner, verifies its persisted phase, rejects later competitors, and uses a
+separate explicit Remediate disposition for complete lifecycle assertions.
+A local Settlement D1 attempt failed after TCP connection timeouts; the complete
+retry passed with `NODE_OPTIONS=--network-family-autoselection-attempt-timeout=2000`.
+CI passed with its normal network configuration. Failed local attempts remain
+in the private provider state directory; the retained aggregate selects only
+complete passing runs.
+
+This satisfies the previously outstanding provider-only gates for issues #34,
+#36 and #39–#50. The STORE gates for #79/#80 also pass, but their ConceptIR
+bridges (`F79-SEMANTIC`, `F80-SEMANTIC`) remain open. #71/#25 retain broader
+release, migration and application-adoption gates. Foundation database evidence
+does not certify the release manifest's deployed HTTP/WebSocket profiles or
+hosted object bytes. Contract-local statuses stay unchanged: hosted acceptance
+is established by the separate source-bound aggregate, not by changing its inputs.

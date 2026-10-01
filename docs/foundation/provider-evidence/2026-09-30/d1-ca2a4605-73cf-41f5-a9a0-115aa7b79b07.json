@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-publication-invariants/1",
+  "coverageCriteria": [
+    "F48-STORE"
+  ],
+  "status": "passing",
+  "runId": "ca2a4605-73cf-41f5-a9a0-115aa7b79b07",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "c4c1a529f699fbb285b568100cb160b5d06d31cd662d181ba3c68bf0a8ea78dd",
+  "sourceFingerprint": "f96e0ffcd821dbb92e7813546d779c404b91ec2f486c961c0d184abd3ae2c079",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "0575afcd092161952effe569378e610d7633020b0fc32ffb41c78c102e9ed3de"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "35537e104697527dd7b3ce8981b52db80a92d7bf89cc267cac5db2331febdeef"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "b40a6106a4c033a8e52c4fdec93ca22981a04815daaa011795caeb12a77fc284"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous Decision timestamps cannot prove prior candidate binding",
+    "hosted: post-hoc evaluation binding cannot be laundered through future business timestamps",
+    "hosted: all qualification policies, exact release pins and four domain satellites",
+    "hosted: failed gates reject publication and promotion races preserve the journal",
+    "hosted: deprecation history, hidden journal and denied writes fail closed"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T23:03:46.928Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous Decision timestamps cannot prove prior candidate binding",
+    "hosted: post-hoc evaluation binding cannot be laundered through future business timestamps",
+    "hosted: all qualification policies, exact release pins and four domain satellites",
+    "hosted: failed gates reject publication and promotion races preserve the journal",
+    "hosted: deprecation history, hidden journal and denied writes fail closed"
+  ],
+  "testReportSha256": "3f18b7b62cdf77b5d461a45dbb3a75f070d4881f566a30f82de9f2d94c381498",
+  "identity": {
+    "provider": "d1",
+    "runId": "ca2a4605-73cf-41f5-a9a0-115aa7b79b07",
+    "tenantPrefix": "foundation-cert-ca2a4605-73cf-41f5-a9a0-115aa7b79b07",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "0575afcd092161952effe569378e610d7633020b0fc32ffb41c78c102e9ed3de",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ORD"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

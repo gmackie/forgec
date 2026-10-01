@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-reconciliation-invariants/1",
+  "coverageCriteria": [
+    "F46-STORE"
+  ],
+  "status": "passing",
+  "runId": "4a1c07b6-d7f9-4c83-8808-523e04e62831",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "096510bdc82a7e6efe4dee3d480e1b02b6d4b9c2112388335cfdafef621872bb",
+  "sourceFingerprint": "9fd99c1d49724d7b80d26dd3ac9022916a3e4ece785fe649cd11a62d55cd9954",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "319a6eb2e018c002950a75644040ac74aba11bbea57d34839b4921a72f93320d"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "371e5a88bdebbfb4f660154dab54a1fcc3e36e9a5e2375b278d5dc6e0ef38d76"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "9ec471efd789ded3944e5e1a139613a4b4b06acef2dc7f1425f0b8da0bb74d8e"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: desired journal fences attempts/results and real keyed actor resumes effects without rewriting newer intent"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T22:57:08.950Z",
+  "passedTraces": [
+    "hosted: desired journal fences attempts/results and real keyed actor resumes effects without rewriting newer intent"
+  ],
+  "testReportSha256": "faaa6880ca09e24dd877413dc33adc9537048e099708dadda14d3cc4c7f1ede9",
+  "identity": {
+    "provider": "d1",
+    "runId": "4a1c07b6-d7f9-4c83-8808-523e04e62831",
+    "tenantPrefix": "foundation-cert-4a1c07b6-d7f9-4c83-8808-523e04e62831",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "319a6eb2e018c002950a75644040ac74aba11bbea57d34839b4921a72f93320d",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ORD"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

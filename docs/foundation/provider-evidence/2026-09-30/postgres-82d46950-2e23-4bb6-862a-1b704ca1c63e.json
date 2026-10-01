@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-operations-invariants/1",
+  "coverageCriteria": [
+    "F45-STORE"
+  ],
+  "status": "passing",
+  "runId": "82d46950-2e23-4bb6-862a-1b704ca1c63e",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "739090c2c588a57cb9e58152ff163f647dce1007473b8166b199eeead17b281a",
+  "sourceFingerprint": "b2d8f1d1c22c5d84a5483cd52467301ba87fbc95b48c9407254985ba2aba1db2",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "c3c903d8c27fbc15f6c58afb7aa5d7a396f98eb9c356afe92623f26389b58236"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "467704fc4143bfaebce7ef70049ee31f0e54ccdc14642022e132f8c76a62d2b7"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "15794029172aa15995daea3841fec324617db356126a8cf4b5aeb3248bb2083a"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: operation usage replay, real task linkage, lineage and terminal cleanup races"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T22:56:23.587Z",
+  "passedTraces": [
+    "hosted: operation usage replay, real task linkage, lineage and terminal cleanup races"
+  ],
+  "testReportSha256": "6f2b6f1a58e5647b97dd431e93c3efc0d656d578e0d3c878a920095e870ed4e8",
+  "identity": {
+    "provider": "postgres",
+    "runId": "82d46950-2e23-4bb6-862a-1b704ca1c63e",
+    "tenantPrefix": "foundation-cert-82d46950-2e23-4bb6-862a-1b704ca1c63e",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

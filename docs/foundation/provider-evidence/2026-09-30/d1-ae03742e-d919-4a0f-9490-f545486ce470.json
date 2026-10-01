@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-decision-invariants/1",
+  "coverageCriteria": [
+    "F39-STORE"
+  ],
+  "status": "passing",
+  "runId": "ae03742e-d919-4a0f-9490-f545486ce470",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "3c49219231cf51de68c75e354e33de440222dfa4c8971e74ac76a6d090f2e812",
+  "sourceFingerprint": "66f3133ca78fb4e15cc3e26914dfe7c5a360ac7ecb40aa2ffbc98b6e3c5cc31b",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "cd53fd02ee49b1265dcd46a52385faec299a1db4821799d2a5f3e773bd761400"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "775a21f258023b45c29c610848abfb3324bbec648381573bacde0cf5a1dedc38"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "ee49c6f9403e82bc9bf8deab653c9add1b4eeba80f49db3947943e83d88e3395"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: six pinned rules and immutable outcomes",
+    "hosted: journal serializes finalize versus withdrawal and rejects raw forks",
+    "hosted: duplicates, eligibility snapshots and denied journal reads fail closed",
+    "hosted: expiry, reconsideration, support and typed applications",
+    "hosted: malformed raw terminal candidates fail closed and denied writes stay denied"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T22:49:21.699Z",
+  "passedTraces": [
+    "hosted: six pinned rules and immutable outcomes",
+    "hosted: journal serializes finalize versus withdrawal and rejects raw forks",
+    "hosted: duplicates, eligibility snapshots and denied journal reads fail closed",
+    "hosted: expiry, reconsideration, support and typed applications",
+    "hosted: malformed raw terminal candidates fail closed and denied writes stay denied"
+  ],
+  "testReportSha256": "2bee494c1f6846f3911f7f118e32c5352bb932d4753962788ea782dbf83b8b5f",
+  "identity": {
+    "provider": "d1",
+    "runId": "ae03742e-d919-4a0f-9490-f545486ce470",
+    "tenantPrefix": "foundation-cert-ae03742e-d919-4a0f-9490-f545486ce470",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "cd53fd02ee49b1265dcd46a52385faec299a1db4821799d2a5f3e773bd761400",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ORD"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

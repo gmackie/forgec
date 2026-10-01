@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-change-invariants/1",
+  "coverageCriteria": [
+    "F41-STORE"
+  ],
+  "status": "passing",
+  "runId": "9430ebf8-3cc5-4cd2-98d7-b788b3a8d1f5",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "155aae73662279ee994efd266e1ec45991a56053bb0452892052e9db40781c4a",
+  "sourceFingerprint": "a71a97a38c766620166199f18c8c5e532e5b0a335ee19b4718c8c3fdaabbea0e",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "0ed98b1cd1b324d30ccbb6fdefc642af4fd89d7d813cd853e7bebbf517732429"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "a3178060fd213a9fe47197847a3fff878327a051361c2ee9b396ab537e91bcb1"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "2b0ddd020d4ce88b55f06f4f060b13edca9283522708e3a101948440ac15be04"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: pinned gates, validated approval, verification, rollback and supersession"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T22:43:20.758Z",
+  "passedTraces": [
+    "hosted: pinned gates, validated approval, verification, rollback and supersession"
+  ],
+  "testReportSha256": "1c8e402cc7f88867428b1140aa54f50e2d64ec12bd6a9efb267b13f75a84f364",
+  "identity": {
+    "provider": "d1",
+    "runId": "9430ebf8-3cc5-4cd2-98d7-b788b3a8d1f5",
+    "tenantPrefix": "foundation-cert-9430ebf8-3cc5-4cd2-98d7-b788b3a8d1f5",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "0ed98b1cd1b324d30ccbb6fdefc642af4fd89d7d813cd853e7bebbf517732429",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ORD"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

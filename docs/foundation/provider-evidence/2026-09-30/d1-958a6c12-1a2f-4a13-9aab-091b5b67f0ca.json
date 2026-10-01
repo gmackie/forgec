@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-adjudication-invariants/1",
+  "coverageCriteria": [
+    "F44-STORE"
+  ],
+  "status": "passing",
+  "runId": "958a6c12-1a2f-4a13-9aab-091b5b67f0ca",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "1571918089364552c4bab4fe1d0cfa378020e6c33b934e80f35f997e5d4082c3",
+  "sourceFingerprint": "d61efc765624f392e48059a35c063bd77d5a3e186cc24821cca9b07f4828d475",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "190fd218f691fb039d5ead565b53b79e9da7540874380453faff7ab2c8a4ea35"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "7f3aef4782ab091e1eb7cb5700a792a185539ac7784969561972f7208e53dc60"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "6364e7be653079521abd6896082c60e42be7870793470a5318c2f45e23e903c6"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous item timestamps cannot prove prior Decision binding",
+    "hosted: determination, source reasons, exact idempotent settlement and three domains",
+    "hosted: fulfillment and explanation intents remain distinct from execution",
+    "hosted: rejected Decision cannot authorize a positive award or settlement"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T23:01:01.113Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous item timestamps cannot prove prior Decision binding",
+    "hosted: determination, source reasons, exact idempotent settlement and three domains",
+    "hosted: fulfillment and explanation intents remain distinct from execution",
+    "hosted: rejected Decision cannot authorize a positive award or settlement"
+  ],
+  "testReportSha256": "51452a833cdf51426973dacdd8ac1d41cc1f71b51ac8a6d4fe602aeb409fa7b7",
+  "identity": {
+    "provider": "d1",
+    "runId": "958a6c12-1a2f-4a13-9aab-091b5b67f0ca",
+    "tenantPrefix": "foundation-cert-958a6c12-1a2f-4a13-9aab-091b5b67f0ca",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "190fd218f691fb039d5ead565b53b79e9da7540874380453faff7ab2c8a4ea35",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ORD"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}
