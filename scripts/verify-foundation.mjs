@@ -36,7 +36,7 @@ export function validateContracts(contracts, { complete = true, expectedScope = 
       if (!a || typeof a.id !== 'string' || !a.id.trim() || cases.has(a.id)) fail(s, 'invalid or duplicate acceptance id');
       if (a) cases.add(a.id);
       if (!a || typeof a.description !== 'string' || !a.description.trim() || !kinds.has(a.kind) || !statuses.has(a.status)) fail(s, 'invalid acceptance case');
-      if (a?.status === 'passing' && (a.verification !== 'local' || !existsSync(join(root, `packages/foundation/${s}/verification.json`)) || !Array.isArray(a.evidence) || !a.evidence.length || a.evidence.some(path => typeof path !== 'string' || !/^(packages\/runtime\/test\/foundation-[a-z-]+\.test\.ts|packages\/runtime\/test\/blobs\.test\.ts|crates\/forgegraph-semantic\/tests\/append_only\.rs)$/.test(path) || !existsSync(join(root, path))))) fail(s, `${a.id}: passing requires evidence and a supported local verification suite`);
+      if (a?.status === 'passing' && (a.verification !== 'local' || !existsSync(join(root, `packages/foundation/${s}/verification.json`)) || !Array.isArray(a.evidence) || !a.evidence.length || a.evidence.some(path => typeof path !== 'string' || !/^(packages\/runtime\/test\/foundation-[a-z-]+\.test\.ts|packages\/runtime\/test\/blobs\.test\.ts|crates\/forgegraph-semantic\/tests\/(append_only|foundation_semantic_bridges)\.rs)$/.test(path) || !existsSync(join(root, path))))) fail(s, `${a.id}: passing requires evidence and a supported local verification suite`);
     }
   }
   const visiting = new Set(), visited = new Set(), order = [];
@@ -136,7 +136,8 @@ function main() {
     if (verifier.version !== 1 || !Array.isArray(verifier.tests) || !verifier.tests.length || verifier.tests.some(t => typeof t !== 'string' || !/^test\/[a-z0-9-]+\.test\.ts$/.test(t))) throw new Error('Invalid package verifier');
     const out = mkdtempSync(join(tmpdir(), 'forge-foundation-'));
     try {
-      if (slug === 'specification') run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', 'append_only']);
+      const semanticSuite = slug === 'specification' ? 'append_only' : ['resource-relations', 'settlement'].includes(slug) ? 'foundation_semantic_bridges' : undefined;
+      if (semanticSuite) run('cargo', ['test', '-p', 'forgegraph-semantic', '--test', semanticSuite]);
       run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'check', `packages/foundation/${slug}/fixtures/consumer`]);
       for (const name of ['first', 'second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}`, '--out', join(out, name)]);
       for (const name of ['consumer-first', 'consumer-second']) run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', `packages/foundation/${slug}/fixtures/consumer`, '--out', join(out, name)]);
@@ -155,7 +156,7 @@ function main() {
         run('cargo', ['run', '--quiet', '-p', 'forgegraph-cli', '--', 'build', 'packages/foundation/artifact/fixtures/consumer', '--out', join(out, 'artifact-consumer')]);
         run('pnpm', ['--filter', '@forgegraph/runtime', 'exec', 'vitest', 'run', 'test/foundation-artifact-consumer.test.ts'], { FORGE_FOUNDATION_CONSUMER: join(out, 'artifact-consumer') });
       }
-      const receipt = { version: 1, package: slug, suite: 'local', status: 'passing', fingerprint: fingerprint(root, slug, readContracts()), verifiedAt: new Date().toISOString(), commands: [`cargo check/build ${slug} and consumer; deterministic double build`, `vitest run ${verifier.tests.join(' ')}`], artifacts: pairs.flatMap(([dir]) => ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts', 'openapi.json', 'api.smithy', 'source-map.json', 'README.md'].map(file => ({path: `${dir}/${file}`, sha256: createHash('sha256').update(readFileSync(join(out, dir, file))).digest('hex')}))), providers: 'live certification not run' };
+      const receipt = { version: 1, package: slug, suite: 'local', status: 'passing', fingerprint: fingerprint(root, slug, readContracts()), verifiedAt: new Date().toISOString(), commands: [...(semanticSuite ? [`cargo test -p forgegraph-semantic --test ${semanticSuite}`] : []), `cargo check/build ${slug} and consumer; deterministic double build`, `vitest run ${verifier.tests.join(' ')}`], artifacts: pairs.flatMap(([dir]) => ['app.json', 'd1/0001_init.sql', 'postgres/0001_init.sql', 'client.ts', 'openapi.json', 'api.smithy', 'source-map.json', 'README.md'].map(file => ({path: `${dir}/${file}`, sha256: createHash('sha256').update(readFileSync(join(out, dir, file))).digest('hex')}))), providers: 'live certification not run' };
       const reportDir = join(root, 'conformance/reports/foundation'); mkdirSync(reportDir, {recursive: true}); writeFileSync(join(reportDir, `${slug}.json`), JSON.stringify(receipt, null, 2)+'\n');
       console.log(JSON.stringify({...receipt, deterministic: true, scope: 'local generated-bundle tests; package requirement acceptance and provider evidence remain separate'}));
     } finally { rmSync(out, { recursive: true, force: true }); }

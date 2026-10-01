@@ -1,20 +1,23 @@
 # Resource relations and settlement: semantic boundaries
 
-Audit baseline: `466efe47` (23 September 2026). This document records the integration contract for Foundation issues #79 and #80. It does not claim delivery of ConceptIR issues #74–78 or completion of the REA validation corpus in #81. Application integrations remain deferred.
+Updated 30 September 2026. This document records the integration contract for Foundation issues #79 and #80. Application integrations remain deferred.
 
-## What the existing compiler supports
+## Checked compiler bindings
 
-`crates/forgegraph-semantic/src/concept.rs` defines `concept-ir/1` with Entity, Fact, Process, typed fields, policy, purpose, activation, and process input/output contracts. It provides deterministic serialization and conservative realization comparison. The existing relationship building blocks are typed references and independently addressable resource records.
+ConceptIR `concept-ir/2` supports temporal axes, typed relationships, event/effect declarations, contracts, and participant views. These are semantic declarations; their presence does not prove that an arbitrary implementation enforces them.
 
-The following limitations are material:
+Both packages now ship `fixtures/semantics.json`. Inspect the bindings against the compiled package and its dependencies:
 
-- `Entity.invariants` contains uniqueness declarations, not #74 business preconditions, postconditions, or arbitrary cross-output invariants. Legacy projection does not preserve resource row rules as those business contracts.
-- `Selection.during` and `Selection.as_of` exist, but do not bind selection to occurrence, valid, or knowledge axes. `Cardinality::Latest` does not declare a temporal axis or a complete tie-breaking contract.
-- Legacy projection does not preserve `@effectiveDated` as an L0 temporal facet. It filters synthesized fields, including storage timestamps. Runtime effective dating provides a grouped, zero-or-one valid-at query and overlap guards; it is not general knowledge-time history.
-- There is no first-class relationship specification/reification model (#77), event-to-effect model (#76), or Party-parameterized perspective model (#78). Resource references and ordinary projections are useful implementation mechanisms, but do not establish those semantic contracts.
-- Legacy message projection explicitly warns that a message contract does not prove an immutable business occurrence. Append-only Foundation resources remain projected Entities; their existence alone does not establish the Event/Effect distinction.
+```sh
+forgec inspect packages/foundation/resource-relations --concept --semantics packages/foundation/resource-relations/fixtures/semantics.json
+forgec inspect packages/foundation/settlement --concept --semantics packages/foundation/settlement/fixtures/semantics.json
+```
 
-Consequently no new compiler feature blocks a narrowly described package implementation of #79/#80. Full acceptance of their ConceptIR integration does require additional compiler work.
+The compiler checks temporal timestamp types and relationship endpoint types in a closed graph. Explicit bindings expose server-generated `createdAt` as knowledge time without modifying executable DomainIR or its hash. Invalid fields, missing targets, and conflicting effective-dated validity declarations fail validation. Ordinary legacy projection still omits unrequested synthesized fields.
+
+Resource relations binds Party, ResourceSubject, RelationKind, and RelationScope to the authoritative relation carrier, and distinguishes source occurrence, relation validity, and commit knowledge. Settlement binds creditor/debtor Party and Obligation to one position; it distinguishes source/event occurrence, event validity, and commit knowledge. Package runtime tests separately establish publication seals, authorization, concurrency, and historical queries.
+
+The bridge deliberately does not infer general knowledge-history storage, business contracts from row rules, or immutable business events from messages. Legacy `Selection.during`/`as_of` do not by themselves identify a temporal axis. Event/effect custody declarations and broader cross-output realization proofs remain independently scoped compiler work.
 
 ## Accepted package temporal contract
 
@@ -26,14 +29,14 @@ Queries combine both axes: first restrict to facts published by the selected kno
 
 Publication, authorization, and concurrency remain independent checks. A valid historical fact is not permission to disclose it. A pre-read followed by an unfenced write is not sufficient to preserve a concurrent quantity or exclusive-custody invariant.
 
-This is an explicit package-owned bridge to #75. It is not a compiler-level temporal facet, generic temporal selector, or proof that two L1 strategies satisfy the same L0 contract.
+The authored bridge now binds these package fields to compiler-level temporal facets. It does not establish a generic runtime temporal selector or prove that two L1 strategies satisfy the same L0 contract.
 
 ## Package ownership and dependency order
 
 | Work | Existing dependencies and ownership | Deferred semantic integration |
 | --- | --- | --- |
-| #79 resource relations | Party; immutable relationship-kind SpecificationPin; typed package Resource identity or domain-owned typed resource satellite; evidence and provenance where used. Ownership, control, custody, operation, hosting, and payer roles remain distinct. Allocation is a separate reservation contract. | #75 temporal facets and #77 typed semantic relationship specifications. #76 for compiler-recognized event/effect custody handoffs. |
-| #80 settlement | `entitlement.Obligation` (#30), Fulfillment (#31), Agreement/`AgreementObligationLink` (#43), Party, and explicit Ledger (#36) bridge. Position, materialization, settlement allocation, reversal, source occurrence, invoice representation, and ledger posting retain distinct identities. | #75 temporal selectors; #74 cross-output contracts; #76 occurrence/effect semantics; #78 neutral perspective declarations. |
+| #79 resource relations | Party; immutable relationship-kind SpecificationPin; typed package Resource identity or domain-owned typed resource satellite; evidence and provenance where used. Ownership, control, custody, operation, hosting, and payer roles remain distinct. Allocation is a separate reservation contract. | Temporal and typed relationship bindings are checked. #76 event/effect custody handoffs remain separate. |
+| #80 settlement | `entitlement.Obligation` (#30), Fulfillment (#31), Agreement/`AgreementObligationLink` (#43), Party, and explicit Ledger (#36) bridge. Position, materialization, settlement allocation, reversal, source occurrence, invoice representation, and ledger posting retain distinct identities. | Temporal bindings are checked. General temporal selectors, cross-output contracts, occurrence/effect realization, and neutral perspective declarations remain independently scoped. |
 
 #79 and #80 may be implemented and verified in parallel after their imported packages' contracts are frozen. Neither needs to depend on the other merely because both mention Party or time. Declare every directly imported package in the package manifest and contract dependency list. Do not add dependencies on issue numbers that are not package slugs; #30 is `entitlement`, not an `obligation` package.
 

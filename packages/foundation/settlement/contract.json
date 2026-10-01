@@ -137,7 +137,11 @@
       "id": "F80-SEMANTIC",
       "description": "Semantic compiler / ConceptIR temporal bridge with #75; package-level temporal fields alone do not satisfy this integration.",
       "kind": "compile",
-      "status": "planned"
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "crates/forgegraph-semantic/tests/foundation_semantic_bridges.rs"
+      ]
     }
   ]
 }

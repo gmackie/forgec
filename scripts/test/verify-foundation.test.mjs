@@ -59,3 +59,9 @@ test('expanded scope includes new Foundation packages but excludes PR51 and does
     assert.match(validateContracts([], {}).errors.join(), new RegExp(`missing issue #${issue}`));
   }
 });
+
+test('compiled semantic bridge evidence is supported for Foundation acceptance', () => {
+  const c = contract('resource-relations', 79);
+  Object.assign(c.acceptance[0], {status: 'passing', verification: 'local', evidence: ['crates/forgegraph-semantic/tests/foundation_semantic_bridges.rs']});
+  assert.deepEqual(validate([c]).errors, []);
+});

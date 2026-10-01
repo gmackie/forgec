@@ -48,6 +48,9 @@ enum Cmd {
         /// Project business semantics without runtime/provider details.
         #[arg(long)]
         concept: bool,
+        /// Validate authored business semantics against the compiled package and dependencies.
+        #[arg(long, requires = "concept")]
+        semantics: Option<PathBuf>,
         /// Limit the concept graph to a neighborhood of this semantic ID.
         #[arg(long, requires = "concept")]
         focus: Option<String>,
@@ -739,6 +742,7 @@ fn main() -> Result<()> {
         Cmd::Inspect {
             path,
             concept,
+            semantics,
             focus,
             hops,
             relations,
@@ -749,7 +753,23 @@ fn main() -> Result<()> {
                 std::process::exit(1)
             };
             if concept {
-                let projection = forgegraph_semantic::concept::project(&ir);
+                let projection = if let Some(path) = semantics {
+                    let semantics = serde_json::from_slice(
+                        &std::fs::read(&path)
+                            .with_context(|| format!("reading {}", path.display()))?,
+                    )?;
+                    let dependencies = loaded
+                        .deps
+                        .iter()
+                        .map(|(_, ir)| ir.clone())
+                        .collect::<Vec<_>>();
+                    let assembled = forgegraph_semantic::assembly::assemble(&ir, &dependencies)
+                        .map_err(|e| anyhow!(e))?;
+                    forgegraph_semantic::concept::project_with_semantics(&assembled, &semantics)
+                        .map_err(|errors| anyhow!(serde_json::to_string_pretty(&errors).unwrap()))?
+                } else {
+                    forgegraph_semantic::concept::project(&ir)
+                };
                 let graph = projection.concept.graph();
                 let graph = match focus {
                     Some(anchor) => {

@@ -1302,3 +1302,37 @@ fn foundation_challenge_context_uses_compiled_interaction_and_subject_semantics(
             .contains("ChallengeParticipation")
     );
 }
+
+#[test]
+fn inspect_binds_foundation_semantics_to_compiled_fields() {
+    let root = examples().parent().unwrap().to_path_buf();
+    for slug in ["resource-relations", "settlement"] {
+        let out = forgec()
+            .arg("inspect")
+            .arg(root.join(format!("packages/foundation/{slug}")))
+            .arg("--concept")
+            .arg("--semantics")
+            .arg(root.join(format!(
+                "packages/foundation/{slug}/fixtures/semantics.json"
+            )))
+            .output()
+            .unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+        assert!(
+            !value["projection"]["concept"]["semantics"]["relationships"]
+                .as_object()
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            value["projection"]["concept"]["semantics"]["temporal"]
+                .to_string()
+                .contains("createdAt")
+        );
+    }
+}

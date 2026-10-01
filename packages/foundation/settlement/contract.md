@@ -129,7 +129,7 @@ atomic admission against every concurrent external policy/Agreement revocation.
 The domain admission bridge owns such additional constraints where needed.
 
 These explicit package-level times do not implement #75 semantic compiler or
-ConceptIR integration. `F80-SEMANTIC` remains planned, as does `F80-STORE` until
+ConceptIR integration. `F80-SEMANTIC` is checked by the compiled temporal-binding suite. `F80-STORE` remains a separate hosted gate until
 source-bound full-profile receipts pass on PostgreSQL, hosted D1 and DynamoDB.
 Local memory/SQLite/PostgreSQL traces are not hosted certification or deployment.
 

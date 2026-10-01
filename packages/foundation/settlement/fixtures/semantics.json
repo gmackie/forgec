@@ -1,0 +1,38 @@
+{
+  "temporal": {
+    "@forgegraph/foundation/settlement/_/SettlementCommit": {
+      "knowledge": {
+        "from": "createdAt"
+      }
+    },
+    "@forgegraph/foundation/settlement/_/SettlementSource": {
+      "occurrence": "occurredAt"
+    },
+    "@forgegraph/foundation/settlement/_/SettlementEvent": {
+      "occurrence": "occurredAt",
+      "valid": {
+        "from": "effectiveAt"
+      }
+    }
+  },
+  "relationships": {
+    "@forgegraph/foundation/settlement/_/PositionParties": {
+      "carrier": "@forgegraph/foundation/settlement/_/SettlementPosition",
+      "endpoints": {
+        "creditor": {
+          "field": "creditor",
+          "target": "@forgegraph/foundation/party/_/Party"
+        },
+        "debtor": {
+          "field": "debtor",
+          "target": "@forgegraph/foundation/party/_/Party"
+        },
+        "obligation": {
+          "field": "obligation",
+          "target": "@forgegraph/foundation/entitlement/_/Obligation"
+        }
+      },
+      "evidence": []
+    }
+  }
+}

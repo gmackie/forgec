@@ -904,6 +904,64 @@ fn process(
     p
 }
 
+/// Project explicitly authored semantics and validate all bindings against compiled types.
+/// This validates declarations; it does not infer runtime enforcement.
+pub fn project_with_semantics(
+    ir: &DomainIR,
+    semantics: &crate::concept_semantics::BusinessSemantics,
+) -> Result<Projection, Vec<Violation>> {
+    // Explicit bindings can promote generated timestamps to business knowledge fields.
+    // Work on a copy: neither executable IR nor its content hash is changed.
+    let mut annotated = ir.clone();
+    for module in &mut annotated.modules {
+        for resource in &mut module.resources {
+            if let Some(temporal) = semantics.temporal.get(&resource.id) {
+                let names: BTreeSet<&str> = temporal
+                    .occurrence
+                    .iter()
+                    .map(String::as_str)
+                    .chain(
+                        [&temporal.valid, &temporal.knowledge]
+                            .into_iter()
+                            .flatten()
+                            .flat_map(|binding| {
+                                std::iter::once(binding.from.as_str()).chain(binding.to.as_deref())
+                            }),
+                    )
+                    .collect();
+                for field in &mut resource.fields {
+                    if names.contains(field.name.as_str()) && !field.hidden {
+                        field.synthesized = false;
+                    }
+                }
+            }
+        }
+    }
+    let mut projection = project(&annotated);
+    let inferred = projection.concept.semantics.temporal.clone();
+    projection.concept.semantics = semantics.clone();
+    for (id, binding) in inferred {
+        if let Some(authored) = projection.concept.semantics.temporal.get(&id) {
+            if authored.valid != binding.valid {
+                return Err(vec![Violation {
+                    code: "E-L0-TEMPORAL".into(),
+                    subject: id,
+                    message: "authored validity conflicts with effective-dated realization".into(),
+                }]);
+            }
+        } else {
+            projection.concept.semantics.temporal.insert(id, binding);
+        }
+    }
+    let errors = projection.concept.validate_closed();
+    if !errors.is_empty() {
+        return Err(errors);
+    }
+    projection.coverage.entry(ir.package.name.clone()).or_default().insert(
+        "authored business bindings validated against compiled types; runtime enforcement is not inferred".into());
+    Ok(projection)
+}
+
 /// Conservative legacy projection. No guessed logical owners, ABAC, external systems, or
 /// execution-derived read selections. Every omitted family is visible in coverage.
 pub fn project(ir: &DomainIR) -> Projection {
