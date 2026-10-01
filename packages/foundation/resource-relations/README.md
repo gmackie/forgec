@@ -12,4 +12,4 @@ Live selection is bounded to 100 candidates per subject, including unpublished c
 
 The consumer fixture independently exercises leased equipment owner/operator/custodian, consigned inventory controller/custodian, cloud host/operator/payer and a typed custody event. Tests run through foundationAdapters on memory, SQLite, and PostgreSQL when configured.
 
-F79-SEMANTIC is deferred: this package's bounded valid/known interpretation is a seam for ConceptIR #75 and relationship facets #77; it does not implement those language features. F79-STORE remains planned until the integrated hosted adapter receipt covers this package. Local provider-compatible tests are not hosted deployment proof.
+F79-SEMANTIC is checked by the compiled temporal/relationship bridge and fixtures/semantics.json; runtime enforcement is separately exercised by package tests. F79-STORE remains planned until the integrated hosted adapter receipt covers this package. Local provider-compatible tests are not hosted deployment proof.

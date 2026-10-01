@@ -14,7 +14,7 @@ Contract identity normalizes `and`/`&&`, `or`/`||`, `not`/`!`, and equivalent in
 
 Assurance is a separate L1 sidecar bound to the concept hash and each contract hash. It records declared staticallyProven/runtimeEnforced/externallyAssumed/observed/unknown status, implementation mechanism and evidence references. `check_assurance` checks binding and completeness only: a claim with an evidence identifier is not verified proof. `check_realization` remains fail-closed and reports unproven business requirements that legacy compiler evidence cannot establish. Changing a storage or execution strategy does not change ConceptIR.
 
-`relationships` define domain-named roles with typed endpoints. Structural edges have no carrier or field binding. Reified relationships bind each role to a typed field on a declared Entity/Fact; all additional quantity, status, evidence and lifecycle fields belong to that carrier. Temporal bindings attach to the same carrier. A `principal` ConceptType allows typed Principal → Party representation. No untyped relatedTo or universal entity reference is introduced.
+`relationships` define domain-named roles with typed endpoints. Structural edges have no carrier or field binding. Reified relationships bind each role to a typed field on a declared Entity/Fact; additional quantity, status and lifecycle fields belong to that carrier; the relationship evidence set names supporting declarations. Temporal bindings attach to the same carrier. A `principal` ConceptType allows typed Principal → Party representation. No untyped relatedTo or universal entity reference is introduced.
 
 `events` identify occurrence Facts. `effects` identify distinct typed consequence Facts and bind their causal event fields and target fields to declared types. One event may cause multiple effects; repeated occurrences can contribute to the same target. Relationship carriers can be effect targets. Effects can carry typed quantities and time fields and participate in contracts. No event-sourcing, mutation-patch, or automatic state-update runtime is implied.
 
@@ -93,3 +93,26 @@ buyer purchase documents each use real `integration.ExternalMapping` records and
 `TransferDocument` links to one `NeutralTransfer`. Runtime tests reject outsiders and
 cross-tenant references. Company identity is distinct from the collaboration's storage
 tenant; this does not authorize cross-tenant database access.
+
+
+## Legacy temporal selections and realization diagnostics
+
+`Selection.during` and `Selection.as_of` are retained as legacy/partial projection
+metadata. New authored temporal requirements use `semantics.selections`, which
+names an axis and typed input binding and requires deterministic latest ordering.
+No axis is inferred for legacy fields; realization checking reports them as
+unproven. This preserves existing artifacts without treating ambiguous legacy
+metadata as a new temporal contract.
+
+Missing business realization evidence is reported per declaration under
+`/semantics/contracts/<id>` (and the corresponding temporal/effect families),
+not collapsed into one opaque `/semantics` diagnostic. `E-L0-RELATIONSHIP`
+rejects insufficient endpoint arity, unknown carriers/targets, mismatched bound
+field types, and unknown evidence declarations. Validity belongs to a reified
+carrier's temporal facet; structural edges without a carrier have no independent
+lifecycle. Relationship `evidence` names supporting declarations; assertion-level
+provenance, timestamps and quantities belong to the carrier or typed evidence
+records. No proof authenticity is inferred from the evidence set.
+
+See `examples/concept/business-semantics/rea-validation.md` for finite instance
+scenarios, typed inventory effects and distinct SQL/Dynamo plan evidence.

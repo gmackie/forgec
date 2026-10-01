@@ -209,3 +209,54 @@ fn foundation_delegation_and_attestation_bind_actual_subject_carriers() {
         assert!(ConceptIR::load(&raw).unwrap_err().contains("E-L0-SUBJECT"));
     }
 }
+
+#[test]
+fn authored_principal_representation_reuses_compiled_foundation_party_identity() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let bundle: Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join("conformance/fixtures/party/app.json")).unwrap(),
+    )
+    .unwrap();
+    let ir = serde_json::from_value(bundle["ir"].clone()).unwrap();
+    let mut model = serde_json::to_value(project(&ir).concept).unwrap();
+    let authored: Value = serde_json::from_str(include_str!(
+        "../../../examples/concept/interactions/subject-roles.json"
+    ))
+    .unwrap();
+    // The authored representation stays separate from Party.PrincipalPartyBinding's
+    // legacy text field. It reuses the real compiled Party endpoint without coercion.
+    let prefix = "@interaction/support/_/";
+    for family in [
+        "entities",
+        "principals",
+        "facts",
+        "processes",
+        "shapes",
+        "externals",
+        "policies",
+    ] {
+        for (id, value) in authored[family].as_object().unwrap() {
+            model[family][id] = value.clone();
+        }
+    }
+    model["semantics"] = authored["semantics"].clone();
+    let party = "@forgegraph/foundation/party/_/Party";
+    let old = format!("{prefix}Customer");
+    model["entities"].as_object_mut().unwrap().remove(&old);
+    let compiled_party = model["entities"][party].clone();
+    // Rewrite only the authored customer identity to the compiled Party identity.
+    let text = serde_json::to_string(&model).unwrap().replace(&old, party);
+    let model = ConceptIR::load_closed(&serde_json::from_str(&text).unwrap()).unwrap();
+    assert_eq!(
+        serde_json::to_value(&model.entities[party]).unwrap(),
+        compiled_party
+    );
+    assert!(!model.semantics.representations.is_empty());
+    assert!(
+        model
+            .semantics
+            .relationships
+            .values()
+            .any(|r| r.endpoints.values().any(|e| e.target == party))
+    );
+}

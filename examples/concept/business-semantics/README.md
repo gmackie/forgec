@@ -19,7 +19,7 @@ Commerce also models reciprocal obligations under an agreement, specification-co
 
 ## Standards provenance and remaining REA validation (#81)
 
-The candidate mappings below are **Forge modeling choices inspired by REA literature**. No normative claim about ISO/IEC 15944-4:2015 has been verified here; these fixtures do not establish ISO conformance. A standards review and executable instance-level scenarios remain necessary before #81 is complete.
+The candidate mappings below are **Forge modeling choices inspired by REA literature**. No normative claim about ISO/IEC 15944-4:2015 has been verified here; these fixtures do not establish ISO conformance. The linked [transaction corpus](rea-validation.md) now supplies ten typed scenarios and exact instance arithmetic. A normative standards review remains outside this non-conformance exercise.
 
 | Literature concept | Forge choice | Classification |
 | --- | --- | --- |
@@ -34,4 +34,4 @@ The candidate mappings below are **Forge modeling choices inspired by REA litera
 | Duality | reciprocal obligations under the same Agreement | derived; deliberately not primitive |
 | Invoice / sale / purchase | shape / participant view | projection |
 
-Non-economic validation includes configuration reconciliation and manufacturing release; the effect distinction does not depend on accounting. These are declaration checks, not proof that 400 + 300 + 300 units fulfill a 1,000-unit obligation or that $2,000 + $3,000 settle $5,000. That instance-level arithmetic and the complete ten-scenario REA corpus remain open.
+Non-economic validation includes configuration reconciliation and manufacturing release; the effect distinction does not depend on accounting. These are declaration checks, not proof that 400 + 300 + 300 units fulfill a 1,000-unit obligation or that $2,000 + $3,000 settle $5,000. The linked REA corpus and the generated Foundation settlement suite now execute those exact quantities; their modeling, local runtime, and hosted scopes are stated separately.

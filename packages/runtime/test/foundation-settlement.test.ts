@@ -166,3 +166,26 @@ for(const adapter of foundationAdapters){
   }finally{await x.close();}
  });
 }
+
+for (const adapter of foundationAdapters) it(`${adapter}: REA exact partial fulfillment and settlement preserve invoice balances`, async () => {
+  const stock = await setup(adapter, "UNIT");
+  try {
+    const position = await stock.position("1000.000000"), id = String(position.id);
+    for (const [ordinal, quantity] of ["400.000000", "300.000000", "300.000000"].entries()) {
+      await stock.command("Materialize", [{ position: id, quantity }], `delivery-${ordinal}`);
+    }
+    expect(await run(stock.api.inspect(id, { asOf: at }, stock.ctx))).toMatchObject({ materialized: "1000.000000", remaining: "1000.000000" });
+    await expect(stock.command("Materialize", [{ position: id, quantity: "0.000001" }], "excess-delivery")).rejects.toThrow();
+  } finally { await stock.close(); }
+  const money = await setup(adapter, "USD");
+  try {
+    const position = await money.position("5000.000000"), id = String(position.id);
+    await money.call(c + "InvoiceRepresentation.create", { invoiceNumber: "REA-5000", position: id });
+    await money.command("Materialize", [{ position: id, quantity: "5000.000000" }], "earned");
+    await money.command("Settle", [{ position: id, quantity: "2000.000000" }], "payment-1");
+    expect(await run(money.api.inspect(id, { asOf: at, party: String(money.creditor.id) }, money.ctx))).toMatchObject({ remaining: "3000.000000", perspective: "receivable" });
+    await money.command("Settle", [{ position: id, quantity: "3000.000000" }], "payment-2");
+    expect(await run(money.api.inspect(id, { asOf: at, party: String(money.debtor.id) }, money.ctx))).toMatchObject({ remaining: "0.000000", perspective: "payable" });
+    await expect(money.command("Settle", [{ position: id, quantity: "0.000001" }], "excess-payment")).rejects.toThrow();
+  } finally { await money.close(); }
+});

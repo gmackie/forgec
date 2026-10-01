@@ -688,6 +688,16 @@ fn compare_contract(
         compare_contract(expected, Some(&empty), path, report);
         return;
     }
+    // Missing business catalogs must identify each unproven declaration, rather than
+    // hiding all contracts/time/effects behind a single opaque /semantics diagnostic.
+    if path.first().is_some_and(|p| p == "semantics")
+        && path.len() < 3
+        && actual.is_none()
+        && expected.is_object()
+    {
+        compare_contract(expected, Some(&serde_json::json!({})), path, report);
+        return;
+    }
     let meaningful = !expected.is_null()
         && expected.as_array().is_none_or(|v| !v.is_empty())
         && expected.as_object().is_none_or(|v| !v.is_empty());

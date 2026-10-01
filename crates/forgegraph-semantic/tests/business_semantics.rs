@@ -167,7 +167,7 @@ fn realization_claims_are_separate_bound_and_not_a_proof() {
         c.realization_report(&ir)
             .unproven
             .iter()
-            .any(|e| e.subject == "/semantics")
+            .any(|e| e.subject.starts_with("/semantics/contracts/"))
     );
 }
 
@@ -501,4 +501,26 @@ fn neutral_fact_changes_have_entity_paths_separate_from_views() {
             .all(|change| change.path.starts_with("/entities/"))
     );
     assert_eq!(c.semantics.views, changed.semantics.views);
+}
+
+#[test]
+fn missing_business_realization_reports_each_requirement_not_one_opaque_family() {
+    let c = commerce();
+    let package = forgegraph_semantic::Package::inline(
+        "@semantics/commerce",
+        vec![("empty.forge".into(), "resource Other { id : id }".into())],
+    );
+    let ir = forgegraph_semantic::compile(&package, &[]).ir.unwrap();
+    let report = c.realization_report(&ir);
+    for id in c.semantics.contracts.keys() {
+        let escaped = id.replace('~', "~0").replace('/', "~1");
+        assert!(
+            report
+                .unproven
+                .iter()
+                .any(|v| v.subject == format!("/semantics/contracts/{escaped}")),
+            "missing contract diagnostic for {id}: {:?}",
+            report.unproven
+        );
+    }
 }
