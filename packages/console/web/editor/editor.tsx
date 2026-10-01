@@ -43,6 +43,14 @@ const businessLabels: Partial<Record<Category, string>> = {
   Events: "Events",
   "Data classes": "Data classifications",
 };
+/**
+ * How long to wait for the compiler before treating silence as a fault.
+ *
+ * Analysis is single-digit milliseconds — the seven-file demo takes about 4 ms warm, and 200k
+ * characters still measures near 1 ms — so this is not a budget for large sources. It is how
+ * long to wait before concluding the worker is not going to answer at all.
+ */
+const COMPILE_TIMEOUT_MS = 4000;
 const storageKey = "forge.visual-editor.v1";
 function initial(): Project {
   try {
@@ -149,6 +157,9 @@ export function ForgeEditor({
     [newName, setNewName] = useState("");
   const worker = useRef<Worker | null>(null),
     seq = useRef(0),
+    // Whether the compiler has already been restarted once for the current trouble, so a
+    // worker that dies repeatedly is reported rather than restarted forever.
+    restarted = useRef(false),
     fileInput = useRef<HTMLInputElement>(null);
   const current = useRef(project);
   current.current = project;
@@ -209,6 +220,7 @@ export function ForgeEditor({
       if (requested) {
         setAnalysis({ result: e.data.analysis, id: e.data.id, ...requested });
         setError("");
+        restarted.current = false;
       }
     };
     w.onerror = () =>
@@ -222,22 +234,43 @@ export function ForgeEditor({
   }, [workerEpoch]);
   useEffect(() => {
     const id = ++seq.current;
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
     const timer = setTimeout(() => {
+      const w = worker.current;
+      // Without a worker there is nothing to wait for. Recording the request anyway is what
+      // made a missing compiler report itself as a time limit ten seconds later.
+      if (!w) {
+        setError(
+          "The compiler is not running. Restart it to continue; your draft is preserved.",
+        );
+        return;
+      }
       requestSources.current.clear();
       requestSources.current.set(id, { text: file.text, path: file.path });
-      worker.current?.postMessage({ id, project });
-    }, 160);
-    const watchdog = setTimeout(() => {
-      if (requestSources.current.has(id)) {
-        worker.current?.terminate();
+      w.postMessage({ id, project });
+      // Timed from the request, not from the keystroke that scheduled it. Analysis of this
+      // project takes single-digit milliseconds, so seconds of silence means the compiler has
+      // stopped answering rather than that it needs longer.
+      watchdog = setTimeout(() => {
+        if (!requestSources.current.has(id)) return;
+        requestSources.current.clear();
+        w.terminate();
+        if (worker.current === w) worker.current = null;
+        // Restart once on its own. A worker that dies should cost a redraw, not leave the
+        // editor inert until someone notices a button.
+        if (!restarted.current) {
+          restarted.current = true;
+          setWorkerEpoch((n) => n + 1);
+          return;
+        }
         setError(
-          "Compiler time limit reached. Your draft is preserved; shorten the source or restart the compiler.",
+          "The compiler stopped responding twice. Your draft is preserved; restart the compiler to continue.",
         );
-      }
-    }, 10000);
+      }, COMPILE_TIMEOUT_MS);
+    }, 160);
     return () => {
       clearTimeout(timer);
-      clearTimeout(watchdog);
+      if (watchdog !== undefined) clearTimeout(watchdog);
     };
   }, [project, workerEpoch]);
   useEffect(() => {
