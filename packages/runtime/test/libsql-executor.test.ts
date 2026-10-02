@@ -85,3 +85,14 @@ it("persists an immutable journal terminal outcome through the libSQL executor",
     client.close();
   }
 });
+
+it('Foundation fixture actually uses libSQL rather than the SQLite fallback', async () => {
+ const {foundation}=await import('./helpers/foundation.js');
+ const {Storage}=await import('../src/services.js');
+ const {Effect}=await import('effect');
+ const f=await foundation('allocation','libsql',true);
+ try {
+  const storage=await Effect.runPromise(Storage.pipe(Effect.provide(f.engine.layer)));
+  expect(storage.name).toBe('d1/libsql');
+ } finally {await f.close();}
+});

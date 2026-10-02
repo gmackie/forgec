@@ -36,3 +36,5 @@ concurrent journal claims and immutable terminal receipts. Hosted Turso credenti
 are not configured in this session, so remote concurrency, reference/absence
 guards, replica consistency and production failover remain unqualified. This
 export does not add a compiler target or advertise D1-equivalent certification.
+
+The shared Foundation fixture now runs the same suites with a real native libSQL client and `D1Storage(libsqlExecutor(client), model)`. This includes reference rules, atomic absence guards, concurrent claims, application adapters and rollback behavior. The full runtime run on 2026-10-02 passed 840 tests (127 unrelated/hosted tests skipped), including 140 additional Foundation cases on libSQL and an explicit check that the fixture did not fall back to SQLite. This strengthens local semantic coverage; remote Turso transport, credentials and production operating behavior remain unqualified.

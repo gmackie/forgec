@@ -1,3 +1,5 @@
+import { createClient, type Client } from "@libsql/client";
+import { libsqlExecutor } from "../../src/adapters/libsql-executor.js";
 import pg from "pg";
 import { randomUUID } from "node:crypto";
 import { PostgresStorage, rawPgExecutor } from "../../src/adapters/postgres.js";
@@ -12,7 +14,7 @@ import { D1Storage } from "../../src/adapters/d1.js";
 import type { SqlExecutor, SqlStatement } from "../../src/adapters/sql-executor.js";
 import { MemoryObjectStore } from "../../src/adapters/memory-objects.js";
 import { testLayer } from "../../src/testing.js";
-export const foundationAdapters = process.env["FORGE_FOUNDATION_PG_URL"] ? ["memory", "sqlite", "postgres"] : ["memory", "sqlite"];
+export const foundationAdapters = process.env["FORGE_FOUNDATION_PG_URL"] ? ["memory", "sqlite", "libsql", "postgres"] : ["memory", "sqlite", "libsql"];
 export async function foundation(slug: string, adapter: string, consumer = false) {
   const fixture = process.env[consumer ? "FORGE_FOUNDATION_CONSUMER" : "FORGE_FOUNDATION_FIXTURE"] ?? resolve(import.meta.dirname, `../../../../conformance/fixtures/${slug}${consumer ? '-consumer' : ''}`);
   const model = new Model(JSON.parse(readFileSync(resolve(fixture, 'app.json'), 'utf8')) as AppBundle);
@@ -35,9 +37,15 @@ export async function foundation(slug: string, adapter: string, consumer = false
       await pool.query(readFileSync(resolve(fixture, 'postgres/0001_init.sql'), 'utf8'));
     } catch(error) { await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`); await pool.end(); db.close(); throw error; }
   }
-  const storage = pool ? new PostgresStorage(rawPgExecutor(pool),model) : adapter==='memory'?new MemoryStorage():new D1Storage(executor,model);
+  let libsql: Client | undefined;
+  if (adapter === 'libsql') {
+    libsql = createClient({ url: 'file::memory:' });
+    try { await libsql.executeMultiple(readFileSync(resolve(fixture, 'd1/0001_init.sql'), 'utf8')); }
+    catch (error) { libsql.close(); db.close(); throw error; }
+  }
+  const storage = libsql ? new D1Storage(libsqlExecutor(libsql),model) : pool ? new PostgresStorage(rawPgExecutor(pool),model) : adapter==='memory'?new MemoryStorage():new D1Storage(executor,model);
   const engine = new Engine(model, testLayer(storage,{objects}));
   const ctx={tenant:'acme',actor:'operator',requestId:'foundation'};
   const call=(op:string,input:Record<string,unknown>,context:CallContext=ctx)=>Effect.runPromise(engine.call(op,input,context));
-  return {engine,ctx,call,objects,close:async()=>{db.close();if(pool){try{await pool.query(`DROP SCHEMA ${schema} CASCADE`);}finally{await pool.end();}}}};
+  return {engine,ctx,call,objects,close:async()=>{db.close();libsql?.close();if(pool){try{await pool.query(`DROP SCHEMA ${schema} CASCADE`);}finally{await pool.end();}}}};
 }
