@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Qualify the runtime publisher against disposable Cloudflare Artifacts and D1."""
 
+from artifact_journal_worker import deploy as deploy_journal_worker
 import argparse
 import hashlib
 import json
@@ -23,7 +24,14 @@ parser.add_argument(
     "--bob-root",
     help="Optional trusted Bob workspace for the real vault composition pilot",
 )
+parser.add_argument(
+    "--workers-journal",
+    action="store_true",
+    help="Use a deployed native Workers D1 journal",
+)
 args = parser.parse_args()
+if args.workers_journal and args.bob_root:
+    parser.error("Workers journal and Bob pilot are separate qualification modes")
 root = pathlib.Path(__file__).resolve().parent.parent
 state_dir = pathlib.Path(args.state_dir).expanduser()
 state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -51,15 +59,15 @@ def save():
         json.dump(state, out)
 
 
-def api(path, method="GET", body=None):
+def api(path, method="GET", body=None, raw=None, content_type="application/json"):
     request = urllib.request.Request(
         base + path,
         method=method,
         headers={
             "Authorization": "Bearer " + credential,
-            "Content-Type": "application/json",
+            "Content-Type": content_type,
         },
-        data=json.dumps(body).encode() if body is not None else None,
+        data=json.dumps(body).encode() if body is not None else raw,
     )
     try:
         with urllib.request.urlopen(request, timeout=60) as response:
@@ -75,7 +83,9 @@ def cleanup():
     failures = []
     for kind in reversed(state["resources"][:]):
         try:
-            if kind == "repo":
+            if kind == "worker":
+                api("/workers/scripts/" + state["name"], "DELETE")
+            elif kind == "repo":
                 api(
                     "/artifacts/namespaces/forge-runtime-cert/repos/" + state["name"],
                     "DELETE",
@@ -145,6 +155,28 @@ try:
             "database": database["uuid"],
             "directory": str(state_dir / "fixture.git"),
         }
+        if args.workers_journal:
+            state["resources"].append("worker")
+            save()
+            state["transportEvents"] = []
+
+            def record_transport(event):
+                state["transportEvents"].append(event)
+                save()
+
+            config["journalWorker"], state["workerSha256"] = deploy_journal_worker(
+                root,
+                state_dir,
+                state["name"],
+                database["uuid"],
+                secrets.token_urlsafe(32),
+                api,
+                record_transport,
+            )
+            save()
+            print(
+                "Disposable Worker deployed with native D1 journal binding", flush=True
+            )
         runner = root / "conformance/artifacts/publish-live.mjs"
         runner_env = dict(os.environ)
         if args.bob_root:
@@ -205,11 +237,23 @@ finally:
             p: hashlib.sha256((bob_root / p).read_bytes()).hexdigest()
             for p in bob_files
         }
+    if args.workers_journal:
+        sources.extend(
+            [
+                "conformance/artifacts/journal-worker.ts",
+                "scripts/artifact_journal_worker.py",
+            ]
+        )
+        result["journalHost"] = "deployed Workers native D1 binding"
+        result["workerSha256"] = state.get("workerSha256")
+        result["transportEvents"] = state.get("transportEvents", [])
     result.update(
         at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         scope=(
             "Actual Bob vault composed with Forge publisher, Cloudflare Artifacts and live D1 journal"
             if args.bob_root
+            else "Actual Node ArtifactPublisher and Git transport with live Cloudflare Artifacts plus deployed Workers D1 journal"
+            if args.workers_journal
             else "Actual Node ArtifactPublisher and Git transport with live Cloudflare Artifacts plus live D1 SQL journal over REST"
         ),
         sourceSha256={

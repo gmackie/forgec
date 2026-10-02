@@ -92,3 +92,31 @@ skipped and makes no certification claim. Interactive Wrangler OAuth is not an
 unattended credential. Only redacted evidence is uploaded; private resource state
 and credentials remain excluded. Always-run cleanup handles ordinary job failure;
 a forcibly lost runner still requires cleanup using its retained ownership state.
+
+## Native Workers D1 publication journal
+
+Add `--workers-journal` to `qualify-artifact-publication.py` to deploy a disposable
+secret-authenticated Worker with a real D1 binding. The actual Node Git publisher
+uses the Worker's `SqlArtifactPublicationJournal(rawD1Executor(DB))`; it does not
+substitute the D1 REST query API. Git dispatch still runs in Node. This mode is
+separate from `--bob-root` and does not deploy the full Bob application.
+
+`workers-journal-live-2026-10-02.json` records all eleven checks passing, including
+fresh-process receipt replay, concurrent claims/writers, stale/no-op preconditions,
+lost acknowledgement, claim-without-dispatch, failed terminal persistence and
+revoked authorization. All disposable resources were removed.
+
+This success does not resolve platform instability. Earlier disposable attempts
+returned non-JSON 404/500 responses; one retained failure is
+`workers-journal-failure-2026-10-02.json`. The read-only authenticated GET readiness
+probe observed exact Cloudflare error 1042 and records response hashes and bounded
+retries. No journal write or Git publication is retried by the transport. A later
+full run passed; the platform cause remains unproven. The qualification fails on
+ambiguous write transport instead of treating a subsequent observed head as proof
+of acceptance. User-Agent matches the established reader harness because the
+unidentified Python client received a non-JSON 403 at the edge.
+
+The Forgejo live job now selects this journal mode, but remains disabled until its
+dedicated management credential is provisioned. Local regression tests exercise
+Worker authentication and journal invariants through a D1-shaped SQLite fixture;
+these are explicitly separate from the deployed evidence above.
