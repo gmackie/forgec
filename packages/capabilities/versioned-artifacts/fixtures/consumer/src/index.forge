@@ -1,0 +1,25 @@
+import artifacts
+export function ResolveArtifact @http(POST, "/v1/artifacts/resolve") {
+  input artifacts.ResolveInput
+  output artifacts.Revision
+  uses { artifacts.Resolve }
+  errors { ArtifactUnavailable }
+}
+export function PublishArtifact @http(POST, "/v1/artifacts/publish") {
+  input artifacts.PublicationInput
+  output artifacts.PublicationResult
+  uses { artifacts.Publish }
+  errors { ArtifactUnavailable }
+}
+export function RecoverArtifact @http(POST, "/v1/artifacts/recover") {
+  input artifacts.PublicationInput
+  output artifacts.PublicationResult
+  uses { artifacts.Recover }
+  errors { ArtifactUnavailable }
+}
+export function ReadArtifactFile @http(POST, "/v1/artifacts/read") {
+  input artifacts.ReadFileInput
+  output artifacts.FileContent
+  uses { artifacts.ReadFile }
+  errors { ArtifactUnavailable }
+}
