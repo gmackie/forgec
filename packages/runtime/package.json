@@ -204,6 +204,12 @@
       "source": "./src/adapters/artifact-workspace-git.ts",
       "import": "./dist/adapters/artifact-workspace-git.js",
       "default": "./dist/adapters/artifact-workspace-git.js"
+    },
+    "./libsql-executor": {
+      "types": "./dist/adapters/libsql-executor.d.ts",
+      "source": "./src/adapters/libsql-executor.ts",
+      "import": "./dist/adapters/libsql-executor.js",
+      "default": "./dist/adapters/libsql-executor.js"
     }
   },
   "scripts": {
@@ -221,14 +227,15 @@
     "@aws-sdk/lib-dynamodb": "^3.1136.0",
     "@aws-sdk/s3-request-presigner": "^3.1136.0",
     "@aws-sdk/util-dynamodb": "3.996.9",
+    "@forgegraph/capability-manifest": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "effect": "4.0.0-rc.116",
     "pg": "^8.23.0",
-    "ws": "^8.21.3",
-    "@forgegraph/capability-manifest": "workspace:*"
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250920.0",
+    "@libsql/client": "0.18.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.23.1",
     "@types/ws": "^8.18.1",
