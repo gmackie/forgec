@@ -1,0 +1,74 @@
+{
+  "observedAt": "2026-10-02",
+  "method": "Read-only filesystem, Git metadata and allowlisted service configuration inspection; no fetch, source writes, note content or credentials retained.",
+  "candidate": "/Users/mackieg/obsidian",
+  "basis": "Bob docs/ooda/integration-only-runner-macos.md identifies this as canonical local integration data; installed integration-only LaunchAgent was not found. Candidate for rehearsal, not an approved production cutover.",
+  "repository": "gmackie/obsidian",
+  "sources": [
+    {
+      "location": "Mac",
+      "path": "/Users/mackieg/obsidian",
+      "head": "80fbbbed6ae07f6b88b7179c060409c8640eb5d6",
+      "reachableCommits": 131,
+      "trackedFiles": 512,
+      "workingTreeChanges": 68,
+      "shallow": false,
+      "modes": [
+        "100644",
+        "100755",
+        "120000"
+      ],
+      "remotes": [
+        "github.com/gmackie/obsidian",
+        "git.gmac.io/gmackie/obsidian"
+      ]
+    },
+    {
+      "location": "Bob host",
+      "path": "/opt/obsidian",
+      "head": "3104d3bafc5bc1e1d1456477fae77f90c9f75e85",
+      "reachableCommits": 15,
+      "trackedFiles": 69,
+      "workingTreeChanges": 8,
+      "shallow": false,
+      "modes": [
+        "100644",
+        "120000"
+      ],
+      "remotes": [
+        "github.com/gmackie/obsidian"
+      ]
+    },
+    {
+      "location": "Bob host",
+      "path": "/home/bob/hermes-workspace/obsidian",
+      "head": "49a22a6f15e3ba10a41dd406ce3202601c8712dd",
+      "reachableCommits": 206,
+      "trackedFiles": 357,
+      "workingTreeChanges": 0,
+      "modes": [
+        "100644",
+        "120000"
+      ],
+      "remotes": [
+        "github.com/gmackie/obsidian"
+      ],
+      "service": "hermes-vault-sync.service",
+      "serviceState": "failed"
+    },
+    {
+      "location": "Bob host",
+      "path": "/var/lib/ooda-research-backend/vault",
+      "exists": false,
+      "configuredBy": "RESEARCH_VAULT_PATH in active ooda-research-backend.service process"
+    }
+  ],
+  "limits": [
+    "Counts and HEADs are observations of live, unfenced sources; not a consistent backup.",
+    "Different HEADs do not establish whether histories diverge; compare complete retained refs before choosing the import boundary.",
+    "Working-tree changes require a separate private snapshot, including untracked and ignored files; Git history alone does not preserve them.",
+    "Symlinks are present. The current workspace materializer rejects them; preserve history and define an explicit materialization policy before import.",
+    "Remote-tracking refs may be stale; no network fetch was performed.",
+    "No import, writer fencing, rollback rehearsal or production change performed."
+  ]
+}

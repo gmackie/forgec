@@ -15,6 +15,8 @@ on:
       - 'packages/runtime/src/adapters/*artifact*'
       - 'packages/runtime/test/*artifact*'
       - 'conformance/artifacts/**'
+      - 'conformance/turso/**'
+      - 'scripts/*turso*'
       - 'packages/capabilities/versioned-artifacts/**'
       - 'scripts/*artifact*'
       - 'scripts/test/*artifact*'
@@ -45,7 +47,7 @@ jobs:
       - run: cargo build --locked -p forgegraph-cli
       - run: pnpm --filter @forgegraph/runtime typecheck
       - run: pnpm --filter @forgegraph/runtime exec vitest run test/versioned-artifacts.test.ts test/versioned-artifacts-git.test.ts test/artifact-publication.test.ts test/artifact-publication-git.test.ts test/artifact-workspace.test.ts test/artifact-functions.test.ts test/artifact-journal-worker.test.ts test/libsql-executor.test.ts test/atomic-absence-guards.test.ts test/foundation-allocation.test.ts test/foundation-quota.test.ts
-      - run: python3 -m unittest discover -s scripts -p 'test_artifact*.py'
+      - run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - run: node scripts/check-workflows.mjs
       - run: node --test scripts/test/check-workflows.test.mjs scripts/test/artifact-history.test.mjs
 
