@@ -16,7 +16,7 @@ callback, then pass prepared pins to the separate journaled publisher.
   Exhausted budgets fail rather than returning a truncated diff.
 - `merge({base, left, right, message, at}, context)` requires the sole Git merge
   base to equal the supplied base. A clean result is a prepared commit preserving
-  both ordered parents; conflicts return explicit paths and never publish a ref.
+  both distinct ordered parents (identical heads are rejected); conflicts return explicit paths and never publish a ref.
 
 These operations reauthorize each request and reject foreign tenant/artifact,
 changed generation/repository/format, or substituted trees. The local directory
@@ -35,10 +35,29 @@ Limits: 1,024 changes, 32 MiB changed bytes, 1,024 diff/conflict paths, bounded
 subprocess output, and 30-second Git command timeouts. Changes reject traversal,
 control characters, backslashes and `.git` path components. New symlinks and
 submodules are unsupported; unchanged base entries retain Git's existing modes.
-There is no filesystem materialization or arbitrary merge-driver sandbox here.
+There is no arbitrary merge-driver sandbox here.
 Git and dedicated repository configuration must remain trusted.
 
 Real Git tests cover deterministic pins, binary bytes, executable modes,
 deletions, unchanged refs, ancestry-preserving merges, explicit conflicts,
 incorrect merge bases, caller mutation, authorization and budgets. This is local
 object preparation; the live Artifacts publication evidence remains separate.
+
+## Isolated materialization
+
+`materialize(pin, destination, context, {maxFiles, maxBytes})` creates a new
+absolute destination exclusively and writes the exact pinned tree. The host owns
+the destination's parent directory and must prevent other processes from replacing
+paths during the operation. It must not expose the directory until success. An
+existing directory or symlink is never overwritten or removed. On a caught write
+failure, only the newly created directory is removed; abrupt host loss may leave
+an incomplete directory which must not be activated.
+
+Authorization runs with action `materialize`; generation, repository identity,
+commit and tree are checked again. Limits default to 1,024 files and 32 MiB total,
+with 8 MiB per file. All blobs are read and validated before directory creation.
+Regular/executable files preserve bytes and executable mode. Git hooks, checkout
+filters and working-tree configuration are not used. Symlinks, gitlinks,
+non-UTF-8/unsafe paths and LFS pointers fail explicitly. Filesystem name collisions
+fail the operation and remove the incomplete output. This writes no `.git`
+metadata and does not grant a task lease or provision a remote fork.

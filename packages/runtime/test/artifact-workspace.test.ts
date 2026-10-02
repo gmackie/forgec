@@ -241,3 +241,92 @@ it("rejects the wrong merge base before creating a result", async () => {
     await f.close();
   }
 });
+
+it("materializes exact pinned bytes and modes into a new directory without overwriting", async () => {
+  const { readFile, stat, mkdir } = await import("node:fs/promises");
+  const f = await fixture();
+  try {
+    const revision = await f.prepare(null, [
+      {
+        path: "nested/binary",
+        bytes: new Uint8Array([0, 128, 255]),
+        mode: "100755",
+      },
+      f.change("readme", "hello"),
+    ]);
+    const destination = join(f.dir, "materialized");
+    const result = await f.workspace.materialize(revision, destination, ctx, {
+      maxFiles: 2,
+      maxBytes: 8,
+    });
+    expect(result).toEqual({ files: 2, bytes: 8 });
+    expect(
+      new Uint8Array(await readFile(join(destination, "nested/binary"))),
+    ).toEqual(new Uint8Array([0, 128, 255]));
+    expect((await stat(join(destination, "nested/binary"))).mode & 0o111).toBe(
+      0o111,
+    );
+    await expect(
+      f.workspace.materialize(revision, destination, ctx),
+    ).rejects.toMatchObject({ code: "VersionConflict" });
+    expect(await readFile(join(destination, "readme"), "utf8")).toBe("hello");
+    const budget = join(f.dir, "over-budget");
+    await expect(
+      f.workspace.materialize(revision, budget, ctx, { maxFiles: 1 }),
+    ).rejects.toMatchObject({ code: "BudgetExceeded" });
+    await expect(stat(budget)).rejects.toMatchObject({ code: "ENOENT" });
+    const foreign = join(f.dir, "foreign");
+    await expect(
+      f.workspace.materialize(revision, foreign, { ...ctx, tenant: "other" }),
+    ).rejects.toMatchObject({ code: "NotPermitted" });
+    await expect(stat(foreign)).rejects.toMatchObject({ code: "ENOENT" });
+    await mkdir(join(f.dir, "existing"));
+    await expect(
+      f.workspace.materialize(revision, join(f.dir, "existing"), ctx),
+    ).rejects.toMatchObject({ code: "VersionConflict" });
+  } finally {
+    await f.close();
+  }
+});
+it("refuses symlink materialization and identical merge parents", async () => {
+  const { stat } = await import("node:fs/promises");
+  const f = await fixture();
+  try {
+    const base = await f.prepare(null, [f.change("file", "content")]);
+    await expect(
+      f.workspace.merge(
+        {
+          base,
+          left: base,
+          right: base,
+          message: "duplicate parents",
+          at: "2026-10-02T00:00:00Z",
+        },
+        ctx,
+      ),
+    ).rejects.toMatchObject({ code: "ValidationFailed" });
+    const git = (args: string[], input?: string) =>
+      execFileSync("git", ["-C", f.dir, ...args], {
+        input,
+        encoding: "utf8",
+        stdio: "pipe",
+        env: {
+          ...process.env,
+          GIT_AUTHOR_NAME: "Fixture",
+          GIT_AUTHOR_EMAIL: "test@example.invalid",
+          GIT_COMMITTER_NAME: "Fixture",
+          GIT_COMMITTER_EMAIL: "test@example.invalid",
+        },
+      }).trim();
+    const blob = git(["hash-object", "-w", "--stdin"], "../../outside");
+    const tree = git(["mktree"], `120000 blob ${blob}\tlink\n`);
+    const oid = git(["commit-tree", tree], "link\n");
+    const dest = join(f.dir, "symlink");
+    await expect(
+      f.workspace.materialize({ ...base, oid, tree }, dest, ctx),
+    ).rejects.toMatchObject({ code: "ValidationFailed" });
+    await expect(stat(dest)).rejects.toMatchObject({ code: "ENOENT" });
+  } finally {
+    await f.close();
+  }
+});
