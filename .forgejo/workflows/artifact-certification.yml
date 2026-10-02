@@ -1,0 +1,94 @@
+name: Versioned artifact certification
+
+on:
+  workflow_dispatch:
+    inputs:
+      live:
+        description: Run disposable live Artifacts and D1 qualification
+        type: boolean
+        default: false
+  schedule:
+    - cron: '29 6 * * 2'
+  pull_request:
+    paths:
+      - 'packages/runtime/src/*artifact*'
+      - 'packages/runtime/src/adapters/*artifact*'
+      - 'packages/runtime/test/*artifact*'
+      - 'conformance/artifacts/**'
+      - 'scripts/*artifact*'
+      - '.forgejo/workflows/artifact-certification.yml'
+
+concurrency:
+  group: artifact-certification
+  cancel-in-progress: false
+
+jobs:
+  contracts:
+    runs-on: [forgegraph-ci, heavy]
+    timeout-minutes: 20
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/pnpm/action-setup@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @forgegraph/capability-manifest build
+      - run: pnpm --filter @forgegraph/runtime typecheck
+      - run: pnpm --filter @forgegraph/runtime exec vitest run test/versioned-artifacts.test.ts test/versioned-artifacts-git.test.ts test/artifact-publication.test.ts test/artifact-publication-git.test.ts test/artifact-workspace.test.ts
+      - run: python3 -m unittest discover -s scripts -p test_artifact_probe.py
+      - run: node scripts/check-workflows.mjs
+      - run: node --test scripts/test/check-workflows.test.mjs
+
+  live:
+    # Never expose management credentials to PR source. Activation is explicit;
+    # until credential provisioning this job is visibly skipped, not certified.
+    if: ${{ forgejo.event_name != 'pull_request' && (inputs.live == true || vars.ARTIFACT_LIVE_CERTIFICATION_ENABLED == 'true') }}
+    needs: contracts
+    runs-on: [forgegraph-ci, heavy]
+    timeout-minutes: 30
+    env:
+      CF_TEST_ACCOUNT_ID: c07a7e704db1808e1fff91bed2b1cd49
+      CF_ARTIFACT_CERT_TOKEN: ${{ secrets.ARTIFACT_CERT_CLOUDFLARE_TOKEN }}
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/pnpm/action-setup@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @forgegraph/capability-manifest build
+      - name: Prepare private credential reference
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          token = os.environ.get('CF_ARTIFACT_CERT_TOKEN')
+          if not token:
+              raise SystemExit('ARTIFACT_CERT_CLOUDFLARE_TOKEN is required for live certification')
+          private = pathlib.Path('.artifact-cert-private')
+          private.mkdir(mode=0o700)
+          fd = os.open(private / 'credential.toml', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+          with os.fdopen(fd, 'w') as out:
+              out.write('oauth_token = ' + json.dumps(token) + '\n')
+          PY
+      - name: Qualify native Workers reads
+        run: python3 scripts/qualify-artifacts.py --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/reader --evidence conformance/reports/artifacts/reader.json
+      - name: Qualify Node publication and D1 receipts
+        run: python3 scripts/qualify-artifact-publication.py --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/publisher --evidence conformance/reports/artifacts/publisher.json
+      - name: Reconcile cleanup after failure or interruption
+        if: always()
+        run: |
+          failed=0
+          if test -f .artifact-cert-private/reader/state.json; then
+            python3 scripts/qualify-artifacts.py --cleanup-only --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/reader --evidence conformance/reports/artifacts/reader-cleanup.json || failed=1
+          fi
+          if test -f .artifact-cert-private/publisher/state.json; then
+            python3 scripts/qualify-artifact-publication.py --cleanup-only --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/publisher --evidence conformance/reports/artifacts/publisher-cleanup.json || failed=1
+          fi
+          exit "$failed"
+      - uses: https://code.forgejo.org/forgejo/upload-artifact@v4
+        if: always()
+        with:
+          name: artifact-certification
+          path: conformance/reports/artifacts/
+          if-no-files-found: warn

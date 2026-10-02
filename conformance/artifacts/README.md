@@ -77,3 +77,18 @@ live D1 SQL over REST; it does not run the Node Git transport inside a Worker.
 Lost acknowledgements and failed terminal persistence are deliberately injected
 after real pushes. Recovery remains read-only and never resends uncertain writes.
 This is functional evidence from a disposable run, not an availability guarantee.
+
+## Forgejo certification
+
+`.forgejo/workflows/artifact-certification.yml` runs the focused contracts on the
+existing `forgegraph-ci, heavy` runner for relevant PRs, manual dispatch and a
+weekly schedule. Live management credentials are never exposed to PR source.
+
+Live runs require `ARTIFACT_CERT_CLOUDFLARE_TOKEN` with Artifacts, Workers and D1
+management access limited to the disposable test account. Enable scheduled live
+runs with repository variable `ARTIFACT_LIVE_CERTIFICATION_ENABLED=true`, or
+explicitly select the manual `live` input. Until configured, the live job is
+skipped and makes no certification claim. Interactive Wrangler OAuth is not an
+unattended credential. Only redacted evidence is uploaded; private resource state
+and credentials remain excluded. Always-run cleanup handles ordinary job failure;
+a forcibly lost runner still requires cleanup using its retained ownership state.

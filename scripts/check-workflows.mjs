@@ -11,11 +11,8 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const dir = ".github/workflows";
-if (!existsSync(dir)) {
-  console.error(`${dir} does not exist`);
-  process.exit(0);
-}
+const dirs = [".github/workflows", ".forgejo/workflows"].filter(existsSync);
+const files = dirs.flatMap(dir => readdirSync(dir).filter(f => /\.ya?ml$/.test(f)).map(name => join(dir, name)));
 
 let failed = false;
 const fail = (file, line, msg) => {
@@ -23,8 +20,7 @@ const fail = (file, line, msg) => {
   failed = true;
 };
 
-for (const name of readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))) {
-  const file = join(dir, name);
+for (const file of files) {
   const lines = readFileSync(file, "utf8").split("\n");
   lines.forEach((text, i) => {
     // A flow mapping on this line, with an expression inside it that is not quoted.
@@ -44,8 +40,7 @@ for (const name of readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))) {
 // The parse itself, via the same library Actions uses in spirit: js-yaml if present, else node's own check.
 const { load } = await import("js-yaml").catch(() => ({ load: null }));
 if (load) {
-  for (const name of readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))) {
-    const file = join(dir, name);
+  for (const file of files) {
     try {
       const doc = load(readFileSync(file, "utf8"));
       if (!doc || typeof doc !== "object") fail(file, 1, "does not parse to a mapping");
