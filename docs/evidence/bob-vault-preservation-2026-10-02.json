@@ -1,0 +1,123 @@
+{
+  "sources": {
+    "mac": {
+      "head": "80fbbbed6ae07f6b88b7179c060409c8640eb5d6",
+      "reachableCommits": 131,
+      "refs": 5,
+      "symbolicNonHeadRefs": 2,
+      "unreachableObjects": {
+        "commit": 1,
+        "tree": 4,
+        "blob": 209,
+        "tag": 0
+      }
+    },
+    "server": {
+      "head": "3104d3bafc5bc1e1d1456477fae77f90c9f75e85",
+      "reachableCommits": 15,
+      "refs": 3,
+      "symbolicNonHeadRefs": 1,
+      "unreachableObjects": {
+        "commit": 1,
+        "tree": 1,
+        "blob": 0,
+        "tag": 0
+      }
+    },
+    "hermes": {
+      "head": "49a22a6f15e3ba10a41dd406ce3202601c8712dd",
+      "reachableCommits": 206,
+      "refs": 3,
+      "symbolicNonHeadRefs": 1,
+      "unreachableObjects": {
+        "commit": 0,
+        "tree": 0,
+        "blob": 0,
+        "tag": 0
+      }
+    }
+  },
+  "pairs": [
+    {
+      "left": "mac",
+      "right": "server",
+      "sharedCommits": 14,
+      "leftOnlyCommits": 117,
+      "rightOnlyCommits": 1
+    },
+    {
+      "left": "mac",
+      "right": "hermes",
+      "sharedCommits": 125,
+      "leftOnlyCommits": 6,
+      "rightOnlyCommits": 81
+    },
+    {
+      "left": "server",
+      "right": "hermes",
+      "sharedCommits": 14,
+      "leftOnlyCommits": 1,
+      "rightOnlyCommits": 192
+    }
+  ],
+  "at": "2026-10-02",
+  "scope": "Private snapshot history comparison; no live vault writes, fetching remotes, Artifacts upload, or cutover.",
+  "snapshots": {
+    "mac": {
+      "version": "forge-vault-snapshot/1",
+      "status": "verified-copy",
+      "at": "2026-10-02T22:04:17Z",
+      "scope": "All regular files, directories, modes and symlink text, including ignored files and .git; excludes xattrs/ACLs/hardlink topology. Not a fenced backup or proof against concurrent ABA writes.",
+      "bytes": 1192661806,
+      "entryCount": 2187
+    },
+    "server": {
+      "status": "verified-copy",
+      "bytes": 4730286,
+      "entryCount": 1085
+    },
+    "hermes": {
+      "status": "verified-copy",
+      "bytes": 2157482,
+      "entryCount": 1091
+    }
+  },
+  "combined": {
+    "retainedUnreferencedCommits": {
+      "mac": 1,
+      "server": 1,
+      "hermes": 0
+    },
+    "combinedCommits": 215,
+    "objects": 1420,
+    "totalObjectBytes": 3393910,
+    "largestObjectBytes": 232540,
+    "headPolicy": "Mac head retained as rehearsal default only; every source ref mapped into refs/migration; original symbolic-ref mappings remain in private snapshots.",
+    "archiveStatus": "export-import-and-post-switch-rollback-passed"
+  },
+  "historyBundleSha256": "d920885fd7ae57744fbdca5bc5bfdba8a9114139b5e0c134576baae47799be1c",
+  "preservationScriptSha256": "2fb3bb889b545522dcab82fd18ef5d5ba9fdee5213d08edbff09a427e4025290",
+  "limitations": [
+    "Private filename inventories, ignored files, credentials, unreachable objects and notes remain only in private snapshots; none are committed or uploaded.",
+    "Snapshot comparisons do not fence writers or guarantee atomicity against concurrent ABA writes.",
+    "Combined history maps each source ref under refs/migration and retains two otherwise unreferenced commits; source symbolic-ref maps and unreachable non-commit objects remain in raw snapshots.",
+    "Committed history interchange preserves symlinks; runtime materialization still rejects them.",
+    "Local committed-history rollback passed with a synthetic post-switch write. Production host-loss, writer fencing, cloud import and application-route recovery remain unqualified."
+  ],
+  "rollback": {
+    "status": "passed",
+    "sourceCommits": 215,
+    "restoredCommits": 216,
+    "sourceRefs": 14,
+    "sourceObjects": 1420,
+    "historyBundleSha256": "d920885fd7ae57744fbdca5bc5bfdba8a9114139b5e0c134576baae47799be1c",
+    "rollbackBundleSha256": "4de1c3ffe5cf698f29b3e22b6ccb53f007b0a586e78372c807d51612bd9580ea",
+    "tests": [
+      "Combined retained source refs and object graph export/import verified",
+      "Synthetic post-switch write retained through rollback export and restore"
+    ],
+    "scope": "Private local committed-history rehearsal. Worktrees preserved separately; no live vault cutover, Artifacts upload, writer fencing, or application-route recovery."
+  },
+  "preservationSourceRevision": "55c5712d4ab1a2cf839e8ea1c772c9f7ab8c621b",
+  "diskSpaceIncident": "Rollback first stopped on ENOSPC; redundant derived object stores were removed, preserving all source snapshots and the verified bundle. Resume verified the already-written sentinel and completed rollback. The current tool adds space preflight."
+}
