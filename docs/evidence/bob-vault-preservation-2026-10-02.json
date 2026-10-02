@@ -102,7 +102,8 @@
     "Snapshot comparisons do not fence writers or guarantee atomicity against concurrent ABA writes.",
     "Combined history maps each source ref under refs/migration and retains two otherwise unreferenced commits; source symbolic-ref maps and unreachable non-commit objects remain in raw snapshots.",
     "Committed history interchange preserves symlinks; runtime materialization still rejects them.",
-    "Local committed-history rollback passed with a synthetic post-switch write. Production host-loss, writer fencing, cloud import and application-route recovery remain unqualified."
+    "Local committed-history rollback passed with a synthetic post-switch write. Production host-loss, writer fencing, cloud import and application-route recovery remain unqualified.",
+    "Each source HEAD contains one absolute symlink; the other tracked links are lexically inside the vault. Target contents and portability still require explicit policy; no link targets were followed into the preserved snapshots."
   ],
   "rollback": {
     "status": "passed",
@@ -119,5 +120,25 @@
     "scope": "Private local committed-history rehearsal. Worktrees preserved separately; no live vault cutover, Artifacts upload, writer fencing, or application-route recovery."
   },
   "preservationSourceRevision": "55c5712d4ab1a2cf839e8ea1c772c9f7ab8c621b",
-  "diskSpaceIncident": "Rollback first stopped on ENOSPC; redundant derived object stores were removed, preserving all source snapshots and the verified bundle. Resume verified the already-written sentinel and completed rollback. The current tool adds space preflight."
+  "diskSpaceIncident": "Rollback first stopped on ENOSPC; redundant derived object stores were removed, preserving all source snapshots and the verified bundle. Resume verified the already-written sentinel and completed rollback. The current tool adds space preflight.",
+  "symlinkSummary": {
+    "mac": {
+      "trackedSymlinks": 9,
+      "absoluteTargets": 1,
+      "relativeInsideVault": 8,
+      "relativeOutsideVault": 0
+    },
+    "server": {
+      "trackedSymlinks": 7,
+      "absoluteTargets": 1,
+      "relativeInsideVault": 6,
+      "relativeOutsideVault": 0
+    },
+    "hermes": {
+      "trackedSymlinks": 9,
+      "absoluteTargets": 1,
+      "relativeInsideVault": 8,
+      "relativeOutsideVault": 0
+    }
+  }
 }
