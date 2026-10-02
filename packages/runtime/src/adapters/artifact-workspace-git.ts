@@ -1,8 +1,8 @@
 /** Node-only object preparation. Writes objects, never refs or a working tree. */
 import { execFile } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, mkdir, writeFile, chmod } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { isAbsolute, join } from "node:path";
+import { isAbsolute, join, dirname } from "node:path";
 import type { CallContext } from "../engine.js";
 import type {
   ArtifactRevisionPin,
@@ -31,7 +31,7 @@ export interface ArtifactDifference {
   readonly afterMode: string;
 }
 export interface ArtifactWorkspaceAuthorization {
-  readonly action: "prepare" | "diff" | "merge";
+  readonly action: "prepare" | "diff" | "merge" | "materialize";
   readonly tenant: string;
   readonly actor: string;
   readonly artifact: string;
@@ -343,6 +343,114 @@ export class GitArtifactWorkspace {
     }
     return Object.freeze(out);
   }
+  /** Trusted host destination under an exclusively owned parent. Consumers must
+   * not activate it until success; no hooks, checkout filters or Git config run. */
+  async materialize(
+    revision: ArtifactRevisionPin,
+    destination: string,
+    context: CallContext,
+    options: { maxFiles?: number; maxBytes?: number } = {},
+  ): Promise<{ files: number; bytes: number }> {
+    const pin = Object.freeze({ ...revision });
+    const maxFiles = options.maxFiles ?? 1024,
+      maxBytes = options.maxBytes ?? 32 * 1024 * 1024;
+    if (
+      !isAbsolute(destination) ||
+      !Number.isSafeInteger(maxFiles) ||
+      maxFiles < 1 ||
+      maxFiles > 1024 ||
+      !Number.isSafeInteger(maxBytes) ||
+      maxBytes < 1 ||
+      maxBytes > 32 * 1024 * 1024
+    )
+      throw err(
+        "ValidationFailed",
+        "Invalid materialization destination or budget",
+      );
+    await this.admit(context, "materialize");
+    await this.pin(pin);
+    const raw = await this.checked([
+      "ls-tree",
+      "-r",
+      "-z",
+      "--full-tree",
+      pin.tree,
+    ]);
+    const listing = raw.toString("utf8");
+    if (!Buffer.from(listing).equals(raw))
+      throw err("ValidationFailed", "Artifact paths must be UTF-8");
+    const entries = listing.split("\0").filter(Boolean);
+    if (entries.length > maxFiles)
+      throw err(
+        "BudgetExceeded",
+        "Artifact materialization exceeds file budget",
+      );
+    const files: { path: string; mode: number; bytes: Buffer }[] = [];
+    let total = 0;
+    for (const entry of entries) {
+      const match = /^(100644|100755) blob ([a-f0-9]+)\t(.+)$/.exec(entry);
+      if (!match || !this.oid(match[2]) || !safePath(match[3]!))
+        throw err("ValidationFailed", "Unsupported artifact tree entry");
+      const size = Number(
+        (await this.checked(["cat-file", "-s", match[2]!])).toString(),
+      );
+      total += size;
+      if (
+        !Number.isSafeInteger(size) ||
+        size < 0 ||
+        size > 8 * 1024 * 1024 ||
+        total > maxBytes
+      )
+        throw err(
+          "BudgetExceeded",
+          "Artifact materialization exceeds byte budget",
+        );
+      const bytes = await this.checked(["cat-file", "blob", match[2]!]);
+      if (bytes.length !== size)
+        throw err("ValidationFailed", "Artifact blob size changed");
+      if (
+        bytes
+          .subarray(0, 80)
+          .toString()
+          .startsWith("version https://git-lfs.github.com/spec/v1\n")
+      )
+        throw err(
+          "ValidationFailed",
+          "LFS materialization requires external payload support",
+        );
+      files.push({
+        path: match[3]!,
+        mode: match[1] === "100755" ? 0o755 : 0o644,
+        bytes,
+      });
+    }
+    // Exclusive creation is the ownership boundary: never remove an existing target.
+    try {
+      await mkdir(destination, { recursive: false, mode: 0o700 });
+    } catch (error) {
+      if ((error as { code?: string }).code === "EEXIST")
+        throw err(
+          "VersionConflict",
+          "Materialization destination already exists",
+        );
+      throw err(
+        "DependencyUnavailable",
+        "Materialization destination unavailable",
+      );
+    }
+    try {
+      for (const file of files) {
+        const target = join(destination, file.path);
+        await mkdir(dirname(target), { recursive: true, mode: 0o700 });
+        await writeFile(target, file.bytes, { flag: "wx", mode: file.mode });
+        await chmod(target, file.mode);
+      }
+      return { files: files.length, bytes: total };
+    } catch {
+      await rm(destination, { recursive: true, force: true });
+      throw err("DependencyUnavailable", "Artifact materialization failed");
+    }
+  }
   async merge(
     input: {
       base: ArtifactRevisionPin;
@@ -363,6 +471,8 @@ export class GitArtifactWorkspace {
     this.metadata(message, at);
     await this.admit(context, "merge");
     for (const p of [base, left, right]) await this.pin(p);
+    if (left.oid === right.oid)
+      throw err("ValidationFailed", "Merge requires two distinct parents");
     const bases = (
       await this.checked(["merge-base", "--all", left.oid, right.oid])
     )
