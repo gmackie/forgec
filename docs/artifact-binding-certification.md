@@ -44,3 +44,8 @@ node scripts/check-workflows.mjs
 Forgejo run 48 passed with the existing credential on 2026-10-02. This proves
 the bounded binding-management and Git flow only. The REST token still lacks
 working Artifacts authorization.
+
+Retained evidence: `docs/evidence/artifacts-binding-live-2026-10-02.json`.
+One initial GET readiness probe received platform 1042 and was retried by the
+existing bounded read-only policy. Repository creation and Git writes were not
+retried. The intermittent 1042 cause remains unresolved.
