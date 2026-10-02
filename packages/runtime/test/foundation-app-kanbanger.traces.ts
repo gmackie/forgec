@@ -22,6 +22,10 @@ for (const adapter of foundationAdapters) it(`${adapter}: Kanbanger persisted is
     // adapter, generated model, runtime validation and storage all execute.
     const query: any = { from:()=>query,innerJoin:()=>query,where:()=>query,limit:async()=>rows };
     const db = { select:()=>query };
+    rows=[{...source,teamId:'x'.repeat(129)}];
+    await expect(reconcileIssueFoundationIntake(db,f.ctx.tenant,source.issueId,port)).rejects.toThrow();
+    await expect(f.call(p+'Submission.find.byFormSourceKey',{params:{form:form.id,sourceKey:source.issueId}})).rejects.toMatchObject({code:'NotFound'});
+    rows=[source];
     let writes = 0;
     const interrupted = kanbangerIntake(f.engine,f.ctx,{creatorId:'user-01',formId:String(form.id),submitterId:String(party.id)}, async effect => {
       if (++writes === 2) throw new Error('link transport interrupted');

@@ -17,6 +17,8 @@ for (const adapter of foundationAdapters) {
     const f = await foundation("stream-conductor", adapter);
     try {
       const port = streamConductorFoundation(f.engine, (tenant, actor) => ({ ...f.ctx, tenant, actor }));
+      expect(await projectAcknowledgedProduction(port, "acme", session, { ...command, completedAt: new Date('2025-12-31T23:59:59Z') })).toMatchObject({ status: 'pending' });
+      await expect(f.call(app + 'Broadcast.find.byNativeId', {params:{nativeId:session.broadcastId}})).rejects.toMatchObject({code:'NotFound'});
       const lostResponse = await projectAcknowledgedProduction({ recordAcknowledgedCommand: async (event: Parameters<typeof port.recordAcknowledgedCommand>[0]) => { await port.recordAcknowledgedCommand(event); throw new Error("Lost projection response"); } }, "acme", session, command);
       expect(lostResponse).toEqual({ status: "pending", commandId: command.id });
       const result = await projectAcknowledgedProduction(port, "acme", session, command);

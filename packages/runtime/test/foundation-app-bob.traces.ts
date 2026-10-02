@@ -23,6 +23,15 @@ for(const adapter of foundationAdapters) it(`${adapter}: Bob persisted completio
   const port=bobCompletion(f.engine,f.ctx,{taskRunId:source.id,fulfillmentId:String(fulfillment.id)},Effect.runPromise);
   await expect(reconcileRunFoundationCompletion(db,auth,source.id,port)).rejects.toThrow();
   await Effect.runPromise(api.start(String(fulfillment.id),'2026-01-01T01:00:00Z',f.ctx));
+  // Invalid satellite data must not leave a terminal fact behind.
+  row={...source,sessionId:'x'.repeat(129)};
+  await expect(reconcileRunFoundationCompletion(db,auth,source.id,port)).rejects.toThrow();
+  expect(await Effect.runPromise(api.status(String(fulfillment.id),f.ctx))).toMatchObject({phase:'running',end:null});
+  const pinned=bobCompletion(f.engine,f.ctx,{taskRunId:source.id,fulfillmentId:String(fulfillment.id),sessionId:source.sessionId,planningItemId:source.planningItemId},Effect.runPromise);
+  row={...source,sessionId:'different-session'};
+  await expect(reconcileRunFoundationCompletion(db,auth,source.id,pinned)).rejects.toThrow('binding');
+  expect(await Effect.runPromise(api.status(String(fulfillment.id),f.ctx))).toMatchObject({phase:'running',end:null});
+  row=source;
   let writes=0;
   const interrupted=bobCompletion(f.engine,f.ctx,{taskRunId:source.id,fulfillmentId:String(fulfillment.id)},async effect=>{
    if(++writes===2)throw new Error('link interrupted');

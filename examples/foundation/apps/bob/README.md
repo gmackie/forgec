@@ -27,6 +27,19 @@ keys recover interruptions between the terminal fact and its satellite. Changed
 completion timestamps are rejected. No background outbox or automatic deployed
 synchronization is claimed.
 
+The packaged adapter validates all native identity fields and the completion
+timestamp before either write, so malformed run-link data cannot strand a
+terminal fact. Each invocation snapshots its input, context and binding before
+awaiting storage; caller mutation cannot change the identity between writes.
+The binding may also include `sessionId`, `planningItemId`, `userId` and
+`workspaceId`. Any supplied identity must match the persisted fact before writes.
+Prefer these complete server-owned bindings when available, as in the staging
+receiver. Existing `{taskRunId, fulfillmentId}` bindings remain supported and
+still require the authorized workspace/user context; callers remain responsible
+for reading and authorizing the native run. Preflight does not make the two writes
+atomic: storage failures still require explicit retry with the same persisted
+fact.
+
 The explicit Foundation app trace imports the real source service, controls only
 the app DB read, and executes the generated Foundation runtime on memory, SQLite
 and native PostgreSQL. It checks missing-start rejection, partial-write recovery,

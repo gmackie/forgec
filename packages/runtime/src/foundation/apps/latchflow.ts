@@ -2,6 +2,7 @@ import { Effect } from "../app-runtime.js";
 import type { Engine, CallContext } from "../../engine.js";
 import { sha256 } from "../../engine.js";
 import type { Wire } from "../../decode.js";
+import { checkLength, decodeDatetime, decodeText } from "../../codecs.js";
 import { Operations } from "../operations.js";
 export interface LatchFlowRun {
   buildingId: string; roomId: string; runId: string; operatorId: string;
@@ -16,8 +17,15 @@ export function latchFlowFoundation(engine: Engine, options: {
   definition(input: { buildingId: string; flowId: string; compiledFlowId: string; contentDigest: string }): Promise<string>;
 }) {
   return {
-    async recordRun(event: LatchFlowRun): Promise<{ run: string; phase: "Planned" | "Running" }> {
-      const ctx = options.context(event.buildingId, event.operatorId);
+    async recordRun(input: LatchFlowRun): Promise<{ run: string; phase: "Planned" | "Running" }> {
+      const event = { ...input };
+      for (const key of ['buildingId','roomId','runId','operatorId','flowId','compiledFlowId'] as const) checkLength(decodeText(event[key]), 1, 128);
+      if (event.runnerId !== null) checkLength(decodeText(event.runnerId), 1, 128);
+      // The generated Operation key includes this prefix in its 128-character bound.
+      checkLength(decodeText('latchflow:' + event.runId), 1, 128);
+      decodeDatetime(event.startedAt);
+      if (typeof event.compiledJson !== 'string') throw new Error('Compiled flow content must be a string');
+      const ctx = { ...options.context(event.buildingId, event.operatorId) };
       if (ctx.tenant !== event.buildingId) throw new Error("Foundation tenant must equal the authorized building");
       if (!event.runId || !event.roomId || !event.compiledFlowId || !["idle", "running"].includes(event.status)) throw new Error("Invalid native Run identity");
       const contentDigest = await sha256(event.compiledJson);

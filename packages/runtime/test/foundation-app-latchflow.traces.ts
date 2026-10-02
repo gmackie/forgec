@@ -20,6 +20,8 @@ for (const adapter of foundationAdapters) {
       const repository = await f.call(spec + "Repository.create", { key: "latchflow", provider: "git", locator: "https://github.com/gmackie/latchflow" });
       const pin = await f.call(spec + "SpecificationPin.create", { repository: repository.id, anchor: compiled.id, revision: "e3b2b96954b811e8a990c43d6369b8169c1ecf9f" });
       const port = latchFlowFoundation(f.engine, { context: (tenant, actor) => ({ ...f.ctx, tenant, actor }), definition: async () => String(pin.id) });
+      expect(await projectStartedRun(port, "acme", "operator", room, { ...nativeRun, runnerId: 'x'.repeat(129) }, compiled)).toMatchObject({ status: 'pending' });
+      await expect(f.call(app + 'CompiledFlow.find.byNativeId', {params:{nativeId:compiled.id}})).rejects.toMatchObject({code:'NotFound'});
       const lostResponse = await projectStartedRun({ recordRun: async (event: Parameters<typeof port.recordRun>[0]) => { await port.recordRun(event); throw new Error("Lost projection response"); } }, "acme", "operator", room, nativeRun, compiled);
       expect(lostResponse).toEqual({ status: "pending", runId: nativeRun.id });
       const result = await projectStartedRun(port, "acme", "operator", room, nativeRun, compiled);
