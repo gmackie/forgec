@@ -19,6 +19,10 @@ parser.add_argument("--credential-file", required=True)
 parser.add_argument("--state-dir", required=True)
 parser.add_argument("--evidence", required=True)
 parser.add_argument("--cleanup-only", action="store_true")
+parser.add_argument(
+    "--bob-root",
+    help="Optional trusted Bob workspace for the real vault composition pilot",
+)
 args = parser.parse_args()
 root = pathlib.Path(__file__).resolve().parent.parent
 state_dir = pathlib.Path(args.state_dir).expanduser()
@@ -141,13 +145,24 @@ try:
             "database": database["uuid"],
             "directory": str(state_dir / "fixture.git"),
         }
+        runner = root / "conformance/artifacts/publish-live.mjs"
+        runner_env = dict(os.environ)
+        if args.bob_root:
+            runner = (
+                pathlib.Path(args.bob_root).resolve()
+                / "packages/ooda/scripts/verify-forge-vault.mjs"
+            )
+            runner_env.update(
+                FORGE_RUNTIME_ROOT=str(root), FORGE_VAULT_LIVE_CONFIG="stdin"
+            )
         run = subprocess.run(
-            ["node", str(root / "conformance/artifacts/publish-live.mjs")],
+            ["node", str(runner)],
             input=json.dumps(config),
             capture_output=True,
             text=True,
             timeout=600,
             cwd=root,
+            env=runner_env,
         )
         try:
             result = json.loads(run.stdout)
@@ -172,14 +187,31 @@ finally:
     if failures:
         result["status"] = "cleanup_failed"
     sources = [
-        "conformance/artifacts/publish-live.mjs",
         "packages/runtime/src/artifact-publication.ts",
         "packages/runtime/src/adapters/artifact-publication-git.ts",
         "packages/runtime/src/adapters/artifact-publication-sql.ts",
     ]
+    if not args.bob_root:
+        sources.append("conformance/artifacts/publish-live.mjs")
+    if args.bob_root:
+        bob_root = pathlib.Path(args.bob_root).resolve()
+        bob_files = [
+            "packages/ooda/scripts/verify-forge-vault.mjs",
+            "packages/ooda/src/vault/forge-publication-storage.ts",
+            "packages/ooda/src/vault/vault-service.ts",
+            "packages/ooda/src/vault/git.ts",
+        ]
+        result["bobSourceSha256"] = {
+            p: hashlib.sha256((bob_root / p).read_bytes()).hexdigest()
+            for p in bob_files
+        }
     result.update(
         at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        scope="Actual Node ArtifactPublisher and Git transport with live Cloudflare Artifacts plus live D1 SQL journal over REST",
+        scope=(
+            "Actual Bob vault composed with Forge publisher, Cloudflare Artifacts and live D1 journal"
+            if args.bob_root
+            else "Actual Node ArtifactPublisher and Git transport with live Cloudflare Artifacts plus live D1 SQL journal over REST"
+        ),
         sourceSha256={
             p: hashlib.sha256((root / p).read_bytes()).hexdigest() for p in sources
         },
