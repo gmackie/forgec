@@ -120,3 +120,11 @@ The Forgejo live job now selects this journal mode, but remains disabled until i
 dedicated management credential is provisioned. Local regression tests exercise
 Worker authentication and journal invariants through a D1-shaped SQLite fixture;
 these are explicitly separate from the deployed evidence above.
+
+For the reviewed Bob HTTP pilot bundle, `--runner-host`, `--remote-pilot-bundle`
+and `--local-pilot-bundle` select an existing SSH host. All three and `--bob-root`
+are required. The host/path references are validated and the local/remote SHA-256
+must match before configuration is passed on stdin to a disposable Node 24
+container. No host port is published; the pilot uses loopback HTTP inside the
+isolated host fixture. The host must already have the reviewed bundle, Docker and
+Git in the chosen Node image. No production service is reconfigured.

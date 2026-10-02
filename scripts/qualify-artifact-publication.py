@@ -3,6 +3,7 @@
 
 from artifact_journal_worker import deploy as deploy_journal_worker
 import argparse
+import re
 import hashlib
 import json
 import os
@@ -29,7 +30,26 @@ parser.add_argument(
     action="store_true",
     help="Use a deployed native Workers D1 journal",
 )
+parser.add_argument(
+    "--runner-host", help="Existing SSH host for isolated Bob HTTP qualification"
+)
+parser.add_argument(
+    "--remote-pilot-bundle", help="Absolute path to the reviewed bundle on that host"
+)
+parser.add_argument(
+    "--local-pilot-bundle", help="Local copy used to verify the deployed bundle digest"
+)
 args = parser.parse_args()
+remote_options = [args.runner_host, args.remote_pilot_bundle, args.local_pilot_bundle]
+if any(remote_options):
+    if not all(remote_options) or not args.bob_root or args.workers_journal:
+        parser.error("Remote pilot requires Bob root, host and both bundle references")
+    if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.@-]*", args.runner_host):
+        parser.error("Invalid SSH host reference")
+    if not re.fullmatch(
+        r"/[A-Za-z0-9_./-]+", args.remote_pilot_bundle
+    ) or ".." in args.remote_pilot_bundle.split("/"):
+        parser.error("Invalid remote bundle path")
 if args.workers_journal and args.bob_root:
     parser.error("Workers journal and Bob pilot are separate qualification modes")
 root = pathlib.Path(__file__).resolve().parent.parent
@@ -187,8 +207,52 @@ try:
             runner_env.update(
                 FORGE_RUNTIME_ROOT=str(root), FORGE_VAULT_LIVE_CONFIG="stdin"
             )
+        command = ["node", str(runner)]
+        if args.runner_host:
+            local_digest = hashlib.sha256(
+                pathlib.Path(args.local_pilot_bundle).read_bytes()
+            ).hexdigest()
+            remote_digest = subprocess.check_output(
+                [
+                    "ssh",
+                    "-o",
+                    "BatchMode=yes",
+                    args.runner_host,
+                    "sha256sum",
+                    args.remote_pilot_bundle,
+                ],
+                text=True,
+                timeout=30,
+            ).split()[0]
+            if remote_digest != local_digest:
+                raise RuntimeError("Remote pilot bundle digest mismatch")
+            state["pilotBundleSha256"] = local_digest
+            save()
+            command = [
+                "ssh",
+                "-o",
+                "BatchMode=yes",
+                args.runner_host,
+                "docker",
+                "run",
+                "--rm",
+                "-i",
+                "--network",
+                "host",
+                "-e",
+                "FORGE_RUNTIME_ROOT=bundled",
+                "-e",
+                "FORGE_VAULT_LIVE_CONFIG=stdin",
+                "-e",
+                "FORGE_VAULT_HTTP=true",
+                "-v",
+                args.remote_pilot_bundle + ":/pilot.mjs:ro",
+                "node:24.14.0",
+                "node",
+                "/pilot.mjs",
+            ]
         run = subprocess.run(
-            ["node", str(runner)],
+            command,
             input=json.dumps(config),
             capture_output=True,
             text=True,
@@ -228,6 +292,8 @@ finally:
     if args.bob_root:
         bob_root = pathlib.Path(args.bob_root).resolve()
         bob_files = [
+            "packages/ooda/scripts/forge-vault-http-host.ts",
+            "packages/ooda/scripts/build-forge-vault-pilot.mjs",
             "packages/ooda/scripts/verify-forge-vault.mjs",
             "packages/ooda/src/vault/forge-publication-storage.ts",
             "packages/ooda/src/vault/vault-service.ts",
@@ -236,6 +302,7 @@ finally:
         result["bobSourceSha256"] = {
             p: hashlib.sha256((bob_root / p).read_bytes()).hexdigest()
             for p in bob_files
+            if (bob_root / p).exists()
         }
     if args.workers_journal:
         sources.extend(
@@ -247,6 +314,11 @@ finally:
         result["journalHost"] = "deployed Workers native D1 binding"
         result["workerSha256"] = state.get("workerSha256")
         result["transportEvents"] = state.get("transportEvents", [])
+    if args.runner_host:
+        result["pilotHost"] = (
+            "isolated existing runner host, Node 24 container, loopback HTTP"
+        )
+        result["pilotBundleSha256"] = state.get("pilotBundleSha256")
     result.update(
         at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         scope=(
