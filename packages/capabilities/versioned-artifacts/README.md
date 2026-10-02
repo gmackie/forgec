@@ -1,0 +1,11 @@
+# Versioned artifact capability (experimental)
+
+This package exposes typed Forge external dependencies for `Resolve`, `ReadFile`, `Publish` and `Recover`. Import it through a path dependency, declare the required functions under `uses`, and provide `artifactFunctionBindings({ reader, publisher })` to the runtime Engine. Trusted hosts construct both services with repository bindings and per-operation authorization. Callers never supply provider URLs, local directories or credentials.
+
+The consumer fixture generates an HTTP contract and TypeScript client for these operations. Revision pins carry tenant, artifact, generation, repository identity, object format, commit and tree IDs. Publication requires an idempotency key, an exact branch and expected head (explicit null means absent). The application must distinguish all four outcomes: `pending`, `accepted`, `rejected`, and `observed`. Observation is not acceptance; recovery does not resend.
+
+The JSON file-read contract uses base64 to preserve arbitrary bytes and requires a caller budget up to 1 MiB. The lower-level reader supports its own larger bounded binary reads. External bindings validate their inputs because the Engine does not decode external calls; errors expose codes only. Missing host capabilities return `DependencyUnavailable` before provider access.
+
+This is an ordinary Forge capability package, separate from Foundation's sealed blob artifacts. It introduces no new syntax, target profile or Cloudflare SDK generator support. The runtime history, prepare, diff and merge APIs remain host-level APIs; typed collection contracts, fork leases, remote materialization and capability negotiation are not yet included. Publication side effects are not atomic with an application's SQL writes: use a durable application workflow and recover the stable publication key after interruption.
+
+Verification compiles the consumer with `forgec`, inspects the generated client and invokes actual Engine functions. It checks authorization revocation, binary reads, budgets, and durable lost-acknowledgement recovery through a real libSQL journal. Reference transport behavior is tested here; live provider evidence is maintained separately.

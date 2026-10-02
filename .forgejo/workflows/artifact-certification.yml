@@ -15,7 +15,9 @@ on:
       - 'packages/runtime/src/adapters/*artifact*'
       - 'packages/runtime/test/*artifact*'
       - 'conformance/artifacts/**'
+      - 'packages/capabilities/versioned-artifacts/**'
       - 'scripts/*artifact*'
+      - 'scripts/test/*artifact*'
       - '.forgejo/workflows/artifact-certification.yml'
 
 concurrency:
@@ -25,7 +27,10 @@ concurrency:
 jobs:
   contracts:
     runs-on: [forgegraph-ci, heavy]
-    timeout-minutes: 20
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_PROFILE_DEV_DEBUG: '0'
     steps:
       - uses: https://github.com/actions/checkout@v4
       - uses: https://github.com/pnpm/action-setup@v4
@@ -34,11 +39,15 @@ jobs:
           node-version: '24'
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @forgegraph/capability-manifest build
+      - uses: https://github.com/dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.97.1'
+      - run: cargo build --locked -p forgegraph-cli
       - run: pnpm --filter @forgegraph/runtime typecheck
-      - run: pnpm --filter @forgegraph/runtime exec vitest run test/versioned-artifacts.test.ts test/versioned-artifacts-git.test.ts test/artifact-publication.test.ts test/artifact-publication-git.test.ts test/artifact-workspace.test.ts
+      - run: pnpm --filter @forgegraph/runtime exec vitest run test/versioned-artifacts.test.ts test/versioned-artifacts-git.test.ts test/artifact-publication.test.ts test/artifact-publication-git.test.ts test/artifact-workspace.test.ts test/artifact-functions.test.ts test/libsql-executor.test.ts
       - run: python3 -m unittest discover -s scripts -p test_artifact_probe.py
       - run: node scripts/check-workflows.mjs
-      - run: node --test scripts/test/check-workflows.test.mjs
+      - run: node --test scripts/test/check-workflows.test.mjs scripts/test/artifact-history.test.mjs
 
   live:
     # Never expose management credentials to PR source. Activation is explicit;
