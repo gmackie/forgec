@@ -1,0 +1,26 @@
+{
+  "scope": "Additional live checks on isolated synthetic Bob staging; no production deployment",
+  "runtimeRevision": "26e7f5fd87211ef65c419e2fd5f8c3572719c361",
+  "bobDeployedRevision": "340cd4d865014ba6e8df0f78bf22a07f083e561a",
+  "liveChecksPassed": 16,
+  "originalFixtureDatabaseCheck": "passed",
+  "faultTriggerRemoved": true,
+  "serviceRestarts": "both Bob and Foundation restarted before recovery replay",
+  "scripts": {
+    "verify-live.mjs": "2daf5b940bb9c6c6e767ddadf67c47b02e7276c58ae4e45132d8ffa6a8206f66",
+    "verify-recovery.mjs": "97e5324421cb30195a21ed6896a6d1f50ccf8bb0c2206e95a46a92c109461a97"
+  },
+  "ci": {
+    "run": 1204,
+    "task": 33671,
+    "status": "failed",
+    "cause": "Six lint errors in new Bob Foundation HTTP/transport tests; no runtime change required",
+    "followup": "Test-only fixes pushed to Bob PR216; broader CI rerun pending. Deployed application and runtime bytes unchanged.",
+    "fixedBobRevision": "bbd55c0d92515a282633176286603617f2cf86c5",
+    "localVerification": {
+      "apiLint": "passed; 4 existing warnings, 0 errors",
+      "apiTypecheck": "passed",
+      "foundationTests": "20 passed"
+    }
+  }
+}

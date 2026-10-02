@@ -78,3 +78,31 @@ this explicit request path with synthetic native records and real PostgreSQL
 writes. It does not establish automatic task-completion hooks, real agent
 execution, full web UI rollout, arbitrary tenant onboarding or production
 migration completeness. Those remain in #195.
+
+## Extended live verification
+
+Run `verify-live.mjs` inside the staging Node container with the same private
+mount, host network and `stage.env` as `db-check.mjs`. It checks key revocation and
+expiry, membership downgrade/removal, changed persisted run facts, receiver
+credentials/input shape and 12 simultaneous duplicate requests. Native mutations
+are restored in `finally`; exact Foundation rows must remain unchanged.
+
+For recovery, run `verify-recovery.mjs prepare` once on the dedicated staging
+databases. It retains two additional synthetic bindings in private config and
+`recovery-fixtures.json`: one with an independently seeded start, one without.
+Restart the Foundation staging service to load the bindings, then run
+`verify-recovery.mjs exercise`. A temporary PostgreSQL trigger rejects only the
+new test run's link insert, after its terminal fact commits. The script requires
+503 with a redacted error, exactly one terminal and zero links, removes the
+trigger in `finally`, and verifies that retry repairs the missing link. It also
+requires the unstarted fixture to fail without manufacturing any start/end/link.
+Restart both staging services and run `verify-recovery.mjs replay` to verify
+stable IDs under 12 concurrent retries. Keep the synthetic records for replay;
+do not rerun `prepare` against the same fixture state.
+
+Both scripts check database names before mutations. They are for this disposable
+staging deployment only. Output is credential-free JSON (`live-verification.json`,
+`recovery-exercise.json`, `recovery-replay.json`). Run `db-check.mjs` afterward to
+confirm that the original fixture remains intact. An externally killed process
+can bypass JavaScript cleanup; if that occurs, restore native fixture state or
+remove `staging_fail_run_link` on the staging database before resuming.
