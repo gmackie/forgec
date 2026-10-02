@@ -1,5 +1,6 @@
 /** Disposable opt-in qualification; secrets arrive over stdin, never argv/output. */
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { execFile, execFileSync, spawnSync } from "node:child_process";
 import { readFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -38,7 +39,45 @@ const sql = {
     throw Error("Qualification does not use batch");
   },
 };
-const journal = () => new SqlArtifactPublicationJournal(sql);
+async function workerJournal(action, intent, outcome) {
+  const response = await fetch(config.journalWorker.url, {
+    method: "POST",
+    headers: {
+      authorization: "Bearer " + config.journalWorker.secret,
+      "content-type": "application/json",
+      "user-agent": "Mozilla/5.0 ForgeArtifactQualification",
+    },
+    body: JSON.stringify({ action, intent, outcome }),
+    signal: AbortSignal.timeout(45000),
+  });
+  const payload = await response.text();
+  let reply;
+  try {
+    reply = JSON.parse(payload);
+  } catch {
+    throw Object.assign(Error("Worker returned non-JSON"), {
+      code: "WorkerNonJson",
+      httpStatus: response.status,
+      platformCode: /^error code: (\d+)\s*$/.exec(payload)?.[1],
+      bodySha256: createHash("sha256").update(payload).digest("hex"),
+    });
+  }
+  if (!response.ok)
+    throw Object.assign(Error("Workers journal request failed"), {
+      code: reply.code,
+      httpStatus: response.status,
+    });
+  return reply.value;
+}
+const journal = () =>
+  config.journalWorker
+    ? {
+        initialize: () => workerJournal("initialize"),
+        claim: (intent) => workerJournal("claim", intent),
+        get: (intent) => workerJournal("get", intent),
+        finish: (intent, outcome) => workerJournal("finish", intent, outcome),
+      }
+    : new SqlArtifactPublicationJournal(sql);
 const gitEnv = {
   ...process.env,
   GIT_CONFIG_NOSYSTEM: "1",
@@ -190,7 +229,23 @@ try {
         timeout: 60000,
       },
     );
-    assert.equal(child.status, 0);
+    if (child.status !== 0) {
+      let failure;
+      try {
+        failure = JSON.parse(child.stdout);
+      } catch {
+        failure = {};
+      }
+      throw Object.assign(Error("Fresh-process replay failed"), {
+        code:
+          typeof failure.errorCode === "string"
+            ? failure.errorCode
+            : "ReplayFailed",
+        httpStatus: failure.httpStatus,
+        platformCode: failure.platformCode,
+        bodySha256: failure.bodySha256,
+      });
+    }
     assert.equal(JSON.parse(child.stdout).replayed, true);
     record(
       "Fresh Node process replays durable D1 receipt without Git dispatch",
@@ -326,6 +381,13 @@ try {
     JSON.stringify({
       status: "failed",
       tests,
+      ...(Number.isInteger(error?.httpStatus)
+        ? {
+            httpStatus: error.httpStatus,
+            platformCode: error.platformCode,
+            bodySha256: error.bodySha256,
+          }
+        : {}),
       errorCode:
         typeof error?.code === "string" && /^[A-Za-z_]+$/.test(error.code)
           ? error.code

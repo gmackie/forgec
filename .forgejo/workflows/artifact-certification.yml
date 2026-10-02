@@ -44,8 +44,8 @@ jobs:
           toolchain: '1.97.1'
       - run: cargo build --locked -p forgegraph-cli
       - run: pnpm --filter @forgegraph/runtime typecheck
-      - run: pnpm --filter @forgegraph/runtime exec vitest run test/versioned-artifacts.test.ts test/versioned-artifacts-git.test.ts test/artifact-publication.test.ts test/artifact-publication-git.test.ts test/artifact-workspace.test.ts test/artifact-functions.test.ts test/libsql-executor.test.ts test/atomic-absence-guards.test.ts test/foundation-allocation.test.ts test/foundation-quota.test.ts
-      - run: python3 -m unittest discover -s scripts -p test_artifact_probe.py
+      - run: pnpm --filter @forgegraph/runtime exec vitest run test/versioned-artifacts.test.ts test/versioned-artifacts-git.test.ts test/artifact-publication.test.ts test/artifact-publication-git.test.ts test/artifact-workspace.test.ts test/artifact-functions.test.ts test/artifact-journal-worker.test.ts test/libsql-executor.test.ts test/atomic-absence-guards.test.ts test/foundation-allocation.test.ts test/foundation-quota.test.ts
+      - run: python3 -m unittest discover -s scripts -p 'test_artifact*.py'
       - run: node scripts/check-workflows.mjs
       - run: node --test scripts/test/check-workflows.test.mjs scripts/test/artifact-history.test.mjs
 
@@ -82,8 +82,8 @@ jobs:
           PY
       - name: Qualify native Workers reads
         run: python3 scripts/qualify-artifacts.py --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/reader --evidence conformance/reports/artifacts/reader.json
-      - name: Qualify Node publication and D1 receipts
-        run: python3 scripts/qualify-artifact-publication.py --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/publisher --evidence conformance/reports/artifacts/publisher.json
+      - name: Qualify Node publication and Workers D1 receipts
+        run: python3 scripts/qualify-artifact-publication.py --workers-journal --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/publisher --evidence conformance/reports/artifacts/publisher.json
       - name: Reconcile cleanup after failure or interruption
         if: always()
         run: |
@@ -92,7 +92,7 @@ jobs:
             python3 scripts/qualify-artifacts.py --cleanup-only --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/reader --evidence conformance/reports/artifacts/reader-cleanup.json || failed=1
           fi
           if test -f .artifact-cert-private/publisher/state.json; then
-            python3 scripts/qualify-artifact-publication.py --cleanup-only --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/publisher --evidence conformance/reports/artifacts/publisher-cleanup.json || failed=1
+            python3 scripts/qualify-artifact-publication.py --workers-journal --cleanup-only --account "$CF_TEST_ACCOUNT_ID" --credential-file .artifact-cert-private/credential.toml --state-dir .artifact-cert-private/publisher --evidence conformance/reports/artifacts/publisher-cleanup.json || failed=1
           fi
           exit "$failed"
       - uses: https://code.forgejo.org/forgejo/upload-artifact@v4
