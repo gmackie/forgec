@@ -4,7 +4,8 @@ export default defineConfig({
   resolve: {
     conditions: ["source"],
     alias: {
-      "@forgegraph/runtime": fileURLToPath(
+      // Exact match so subpath exports such as /compose keep resolving.
+      "@forgegraph/runtime$": fileURLToPath(
         new URL("../runtime/src/index.ts", import.meta.url),
       ),
     },
