@@ -32,6 +32,10 @@ import {
 } from "@phosphor-icons/react";
 import type { App, Environment, ViewState } from "../src/model.js";
 import type { PackageSummary } from "../src/oci.js";
+import type { AppBundle } from "@forgegraph/runtime";
+import type { PlaygroundDocument } from "../src/playground-document.js";
+import type { OpenedPackage } from "./playground.js";
+import { draftPlaygroundDocument } from "./editor/playground-session.js";
 import { PackageGovernance } from "./governance.js";
 import { RegistryCredentials } from "./credentials.js";
 
@@ -44,7 +48,7 @@ type Api = <T>(
 const ForgeEditor = lazy(() => import("./editor/editor.js").then(m => ({ default: m.ForgeEditor })));
 
 const DeploymentWorkspace=lazy(()=>import('./operations.js').then(m=>({default:m.DeploymentWorkspace})));
-const FunctionPlayground=lazy(()=>import('./operations.js').then(m=>({default:m.FunctionPlayground})));
+const PlaygroundPage=lazy(()=>import('./playground.js').then(m=>({default:m.PlaygroundPage})));
 type Page = "Editor" | "Apps" | "Deployments" | "Playground" | "Registry" | "Activity" | "Settings";
 const pages = [
   { name: "Editor", icon: SquaresFourIcon },
@@ -351,7 +355,7 @@ function PublishEditor({
   return (
     <Modal
       title="Publish a package"
-      description="Upload a compiled app.json bundle. Forge signs the package and publishes its artifacts and metadata to your OCI registry."
+      description="Upload a compiled app.json bundle. Forge signs the package and publishes its artifacts and metadata to your OCI registry. The current browser draft is attached as an unsigned playground layer. An existing version stays immutable."
       close={close}
       label="Publish package"
       submit={async () => {
@@ -364,12 +368,17 @@ function PublishEditor({
         } catch {
           throw new Error("The bundle is not valid JSON.");
         }
+        const playground = draftPlaygroundDocument();
+        if (playground && new TextEncoder().encode(JSON.stringify(playground)).length > 8_000_000) {
+          throw new Error("The playground draft must be smaller than 8 MB.");
+        }
         await api("/packages", "POST", {
           name,
           version,
           owner,
           commit,
           bundle,
+          ...(playground ? { playground } : {}),
         });
         await saved();
       }}
@@ -411,7 +420,7 @@ function PublishEditor({
       />
       <Banner
         variant="secondary"
-        description="Review the bundle before publishing. Environment secrets and implementation code do not belong in a package."
+        description="Review the bundle before publishing. Environment secrets and implementation code do not belong in the signed package. The unsigned playground layer stores the open draft, node positions, and source samples."
       />
     </Modal>
   );
@@ -484,6 +493,8 @@ export function Console({
   const [dialog, setDialogState] = useState<DialogState | null>(null);
   const [runtimeTarget,setRuntimeTarget]=useState<string|undefined>();
   const [deploymentTarget,setDeploymentTarget]=useState<string|undefined>();
+  const [openedPackage, setOpenedPackage] = useState<OpenedPackage | null>(null);
+  const [openingPackage, setOpeningPackage] = useState(false);
   const session = useRef(0);
   // Distinct from refresh(): a failed probe is the normal unauthenticated case, not an error to
   // show. Painting "Enter this instance's administrator token" on a virgin card would be wrong.
@@ -778,7 +789,7 @@ export function Console({
         </header>
         <main className="content">
           {page==='Deployments'&&<Suspense fallback={<p>Loading deployments…</p>}><DeploymentWorkspace api={api} initialTarget={deploymentTarget} onTest={id=>{setRuntimeTarget(id);setPage('Playground');}}/></Suspense>}
-          {page==='Playground'&&<Suspense fallback={<p>Loading playground…</p>}><FunctionPlayground api={api} initialTarget={runtimeTarget}/></Suspense>}
+          {page==='Playground'&&<Suspense fallback={<p>Loading playground…</p>}><PlaygroundPage api={api} initialTarget={runtimeTarget} opened={openedPackage} onUseDraft={() => setOpenedPackage(null)}/></Suspense>}
           <div hidden={page !== "Editor"}><Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} api={api} /></Suspense></div>
           <ErrorMessage error={error} />
           {notice ? (
@@ -1100,30 +1111,57 @@ export function Console({
                 eyebrow="PACKAGE CONTRACT"
                 title={selectedPackage.entry.name}
                 action={
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const result = await api<{
-                          pulled: { bundle: unknown };
-                        }>(`/packages/${selectedPackage.ociDigest}`);
-                        const url = URL.createObjectURL(
-                          new Blob(
-                            [JSON.stringify(result.pulled.bundle, null, 2)],
-                            { type: "application/json" },
-                          ),
-                        );
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = "app.json";
-                        a.click();
-                        setTimeout(() => URL.revokeObjectURL(url), 1000);
-                      } catch (e) {
-                        setError((e as Error).message);
-                      }
-                    }}
-                  >
-                    Download bundle
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      disabled={openingPackage}
+                      onClick={async () => {
+                        setOpeningPackage(true);
+                        try {
+                          const result = await api<{
+                            pulled: { bundle: AppBundle };
+                            playground: PlaygroundDocument | null;
+                          }>(`/packages/${selectedPackage.ociDigest}`);
+                          setOpenedPackage({
+                            token: Date.now(),
+                            bundle: result.pulled.bundle,
+                            playground: result.playground ?? null,
+                          });
+                          setPage("Playground");
+                        } catch (e) {
+                          setError((e as Error).message);
+                        } finally {
+                          setOpeningPackage(false);
+                        }
+                      }}
+                    >
+                      {openingPackage ? "Opening…" : "Open in Playground"}
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const result = await api<{
+                            pulled: { bundle: unknown };
+                          }>(`/packages/${selectedPackage.ociDigest}`);
+                          const url = URL.createObjectURL(
+                            new Blob(
+                              [JSON.stringify(result.pulled.bundle, null, 2)],
+                              { type: "application/json" },
+                            ),
+                          );
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = "app.json";
+                          a.click();
+                          setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        } catch (e) {
+                          setError((e as Error).message);
+                        }
+                      }}
+                    >
+                      Download bundle
+                    </Button>
+                  </>
                 }
               >
                 Version {selectedPackage.entry.version} ·{" "}

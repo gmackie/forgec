@@ -11,6 +11,13 @@ import { entryFrom, type PackageEntry } from "@forgegraph/registry/catalog";
 import type { AppBundle, CapabilitiesPlan, DataClassDecl, PurposeDecl } from "@forgegraph/runtime";
 import { Problem } from "./model.js";
 import { HttpOci, type OciBackend } from "./oci-backend.js";
+import {
+  PLAYGROUND_BYTES,
+  PLAYGROUND_MEDIA,
+  parsePlayground,
+  type PlaygroundAttachment,
+  type PlaygroundDocument,
+} from "./playground-document.js";
 const MEDIA = "application/vnd.oci.image.manifest.v1+json";
 const TYPE = "application/vnd.forgegraph.package.v1";
 interface Descriptor {
@@ -50,6 +57,8 @@ export interface PublishInput {
   bundle: AppBundle;
   owner: string;
   commit: string;
+  /** Unsigned draft layer. Omitted publishes keep the previous five-or-six layer manifest. */
+  playground?: PlaygroundAttachment | undefined;
 }
 export interface OciOptions {
   /** Supply a backend directly, or the HTTP fields below to build the default one. */
@@ -64,6 +73,47 @@ export interface OciOptions {
   fetch?: typeof fetch;
 }
 const bytes = (text: string) => new TextEncoder().encode(text).length;
+
+function playgroundText(bundle: AppBundle, input: PlaygroundAttachment): string {
+  if (input.version !== "playground/1") throw new Problem(400, "Unsupported playground document.");
+  if (!Array.isArray(input.files) || input.files.length < 1 || input.files.length > 50) {
+    throw new Problem(400, "Playground document is not a Forge draft.");
+  }
+  if (
+    typeof input.name !== "string" ||
+    typeof input.currentFile !== "string" ||
+    !input.files.every((file) => file && typeof file.path === "string" && typeof file.text === "string" && file.path.length > 0 && file.path.length <= 500) ||
+    !input.files.some((file) => file.path === input.currentFile)
+  ) {
+    throw new Problem(400, "Playground document is not a Forge draft.");
+  }
+  const document: PlaygroundDocument = {
+    version: "playground/1",
+    bundleDigest: digestOf(canonical(bundle)),
+    name: input.name,
+    currentFile: input.currentFile,
+    files: input.files.map((file) => ({ path: file.path, text: file.text })),
+    positions: (input.positions ?? []).flatMap((item) =>
+      item &&
+      typeof item.path === "string" &&
+      typeof item.name === "string" &&
+      Number.isFinite(item.x) &&
+      Number.isFinite(item.y)
+        ? [{ path: item.path, name: item.name, x: item.x, y: item.y }]
+        : [],
+    ),
+    samples: (input.samples ?? []).flatMap((item) =>
+      item && typeof item.path === "string" && typeof item.name === "string" && typeof item.clock === "string"
+        ? [{ path: item.path, name: item.name, clock: item.clock, payload: item.payload ?? null }]
+        : [],
+    ),
+  };
+  const text = canonical(document);
+  if (bytes(text) > PLAYGROUND_BYTES) {
+    throw new Problem(400, "Playground document must be smaller than 8 MB.");
+  }
+  return text;
+}
 export class OciRegistry {
   readonly url: string;
   readonly repository: string;
@@ -135,6 +185,7 @@ export class OciRegistry {
     const reservation = digestOf(
       `${this.url}/${this.repository}\n${this.options.authority}\n${input.name}\n${input.version}`,
     );
+    const playground = input.playground ? playgroundText(input.bundle, input.playground) : null;
     const layers: Descriptor[] = [];
     for (const [digest, text] of store.blobs)
       layers.push(
@@ -145,6 +196,9 @@ export class OciRegistry {
             : "application/vnd.forgegraph.layer.v1+json",
         ),
       );
+    // One extra unsigned layer. It is not named by the signed Forge manifest,
+    // so a layout or sample change does not change the signed package digest.
+    if (playground) layers.push(await this.upload(playground, PLAYGROUND_MEDIA));
     const config = await this.upload(
       canonical({
         version: "forge-oci/1",
@@ -187,7 +241,9 @@ export class OciRegistry {
       throw new Error("OCI blob digest or size mismatch");
     return text;
   }
-  async pull(reference: string): Promise<PackageSummary & { pulled: Pulled }> {
+  async pull(
+    reference: string,
+  ): Promise<PackageSummary & { pulled: Pulled; playground: PlaygroundDocument | null }> {
     if (
       !/^sha256:[a-f0-9]{64}$/.test(reference) &&
       !/^forge-[a-f0-9]{64}$/.test(reference)
@@ -215,8 +271,21 @@ export class OciRegistry {
     if (config.version !== "forge-oci/1")
       throw new Error("Unsupported Forge OCI config");
     const store = new MemoryArtifactStore();
-    for (const layer of manifest.layers)
+    let playground: PlaygroundDocument | null = null;
+    for (const layer of manifest.layers) {
+      if (layer.mediaType === PLAYGROUND_MEDIA) {
+        // A missing, oversized, or damaged playground layer never blocks the signed package.
+        try {
+          if (layer.size <= PLAYGROUND_BYTES) {
+            playground = parsePlayground(await this.blob(layer)) ?? playground;
+          }
+        } catch {
+          playground = playground ?? null;
+        }
+        continue;
+      }
       await store.putBlob(layer.digest, await this.blob(layer));
+    }
     await store.putSignature(config.manifest, config.signature);
     const pulled = await this.registry(store).pull(config.manifest);
     return {
@@ -224,6 +293,7 @@ export class OciRegistry {
       entry: entryFrom(this.options.authority, pulled),
       governance: governanceFrom(pulled.bundle),
       pulled,
+      playground,
     };
   }
   async list(): Promise<PackageSummary[]> {

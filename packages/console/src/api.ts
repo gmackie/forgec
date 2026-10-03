@@ -12,6 +12,7 @@ import type { RuntimeConnection } from "./runtime-control.js";
 import { gitCommitSchema, type GitRepository } from "./git.js";
 import type { Studio } from "./studio.js";
 import type { OciRegistry } from "./oci.js";
+import type { PlaygroundAttachment } from "./playground-document.js";
 import { tokenAuth, type AuthAdapter } from "./auth.js";
 import type { CredentialStore } from "./credentials.js";
 const name = z.string().trim().min(1).max(120);
@@ -47,6 +48,48 @@ const environmentInput = z
     secretRefs: record,
   })
   .strict();
+const playgroundFile = z
+  .object({
+    path: z.string().min(1).max(500),
+    text: z.string().max(8_000_000),
+  })
+  .strict();
+const playgroundInput = z
+  .object({
+    version: z.literal("playground/1"),
+    bundleDigest: z
+      .string()
+      .regex(/^sha256:[a-f0-9]{64}$/)
+      .optional(),
+    name: z.string().min(1).max(200),
+    currentFile: z.string().min(1).max(500),
+    files: z.array(playgroundFile).min(1).max(50),
+    positions: z
+      .array(
+        z
+          .object({
+            path: z.string().min(1).max(500),
+            name: z.string().min(1).max(200),
+            x: z.number(),
+            y: z.number(),
+          })
+          .strict(),
+      )
+      .max(400),
+    samples: z
+      .array(
+        z
+          .object({
+            path: z.string().min(1).max(500),
+            name: z.string().min(1).max(200),
+            clock: z.string().max(80),
+            payload: z.unknown(),
+          })
+          .strict(),
+      )
+      .max(400),
+  })
+  .strict();
 const publishInput = z
   .object({
     name: z
@@ -60,6 +103,7 @@ const publishInput = z
     owner: z.string().max(120),
     commit: z.string().max(200),
     bundle: z.record(z.string(), z.unknown()),
+    playground: playgroundInput.optional(),
   })
   .strict();
 const credentialInput = z
@@ -298,7 +342,16 @@ function route(request: Request) {
       );
       const result = yield* attempt(() =>
         o.registry!.publish(
-          { ...input, bundle: input.bundle as unknown as AppBundle },
+          {
+            name: input.name,
+            version: input.version,
+            owner: input.owner,
+            commit: input.commit,
+            bundle: input.bundle as unknown as AppBundle,
+            ...(input.playground
+              ? { playground: input.playground as PlaygroundAttachment }
+              : {}),
+          },
           (key) => o.store.reservePublication(key),
         ),
       );

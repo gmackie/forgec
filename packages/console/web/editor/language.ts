@@ -35,6 +35,8 @@ export interface FieldSemantics {
   completeness: string;
 }
 export interface Analysis {
+  /** Present only when the inspect request set `emit` to `"ir"`. */
+  ir?: import("@forgegraph/runtime").DomainIR;
   dataClasses?: {
     id: string;
     name: string;
@@ -70,7 +72,7 @@ export async function language(bytes: BufferSource) {
     editor_free(p: number, n: number): void;
     editor_inspect(p: number, n: number): bigint;
   };
-  return (project: Project): Analysis => {
+  return (project: Project & { emit?: "ir" }): Analysis => {
     const input = new TextEncoder().encode(JSON.stringify(project));
     const ptr = wasm.editor_alloc(input.length);
     let result: bigint;

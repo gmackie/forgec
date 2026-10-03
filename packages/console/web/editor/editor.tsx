@@ -25,6 +25,7 @@ import { ReadDocument } from "./read-document.js";
 import { patch } from "./model.js";
 import type { GitProject, GitSnapshot } from "../../src/git.js";
 import { example } from "./example.js";
+import { draftChanged, readDraft, writeDraft } from "./draft.js";
 import "./editor.css";
 import { RepositoryWorkspace } from "./reviews.js";
 import { SourceEditor } from "./source-editor.js";
@@ -43,25 +44,14 @@ const businessLabels: Partial<Record<Category, string>> = {
   Events: "Events",
   "Data classes": "Data classifications",
 };
-const storageKey = "forge.visual-editor.v1";
 function initial(): Project {
-  try {
-    const stored = JSON.parse(localStorage.getItem(storageKey) || "null");
-    const p = stored?.project ?? stored;
-    if (
-      p &&
-      typeof p.name === "string" &&
-      Array.isArray(p.files) &&
-      p.files.length &&
-      p.files.length <= 50 &&
-      p.files.every(
-        (f: any) => typeof f.path === "string" && typeof f.text === "string",
-      ) &&
-      p.files.some((f: any) => f.path === p.currentFile)
-    )
-      return p;
-  } catch {}
-  return structuredClone(example);
+  return readDraft()?.project ?? structuredClone(example);
+}
+function storedRepository(): GitSnapshot | null {
+  const saved = readDraft()?.repository;
+  if (!saved || typeof saved !== "object") return null;
+  const repository = saved as GitSnapshot;
+  return repository.revision && Array.isArray(repository.files) ? repository : null;
 }
 export function ForgeEditor({
   token = "",
@@ -76,17 +66,7 @@ export function ForgeEditor({
   const label = (c: Category) => (developer ? c : businessLabels[c] || c);
   const [editing, setEditing] = useState(false);
   const [repositories, setRepositories] = useState<GitProject[]>([]);
-  const [repository, setRepository] = useState<GitSnapshot | null>(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
-      return saved?.repository?.revision &&
-        Array.isArray(saved.repository.files)
-        ? saved.repository
-        : null;
-    } catch {
-      return null;
-    }
-  });
+  const [repository, setRepository] = useState<GitSnapshot | null>(storedRepository);
   const [connectOpen, setConnectOpen] = useState(false);
   const [repoId, setRepoId] = useState("");
   const [gitBusy, setGitBusy] = useState(false);
@@ -242,7 +222,7 @@ export function ForgeEditor({
   }, [project, workerEpoch]);
   useEffect(() => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify({ project, repository }));
+      writeDraft(project, repository);
       setSaved("Draft saved in this browser");
     } catch {
       setSaved(
@@ -250,6 +230,25 @@ export function ForgeEditor({
       );
     }
   }, [project, repository]);
+  useEffect(() => {
+    const sync = () => {
+      const saved = readDraft();
+      if (!saved) return;
+      setHistory((h) =>
+        JSON.stringify(h.present) === JSON.stringify(saved.project)
+          ? h
+          : { past: [], present: saved.project, future: [] },
+      );
+      const next = saved.repository as GitSnapshot | null;
+      if (next?.revision && Array.isArray(next.files)) {
+        setRepository((prev) =>
+          JSON.stringify(prev) === JSON.stringify(next) ? prev : next,
+        );
+      }
+    };
+    window.addEventListener(draftChanged, sync);
+    return () => window.removeEventListener(draftChanged, sync);
+  }, []);
   const download = (path: string, text: string) => {
     const url = URL.createObjectURL(
       new Blob([text], { type: "text/plain;charset=utf-8" }),
