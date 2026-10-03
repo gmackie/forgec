@@ -30,7 +30,7 @@ import {
 } from "./editor/workspace.js";
 import { VisualDocument } from "./editor/document.js";
 import { named, patch } from "./editor/model.js";
-import { deleteDeclaration, snapTargets, snapWire } from "./editor/playground-wires.js";
+import { cutWire, deleteDeclaration, snapTargets, snapWire } from "./editor/playground-wires.js";
 import { Edit } from "./editor/document.js";
 import "./editor/editor.css";
 import "./playground.css";
@@ -204,7 +204,16 @@ export function PlaygroundEditor({
   const [snapTo, setSnapTo] = useState("");
   const session = useRef<PlaygroundSession | null>(null);
   const pending = useRef<string | null>(null);
-  const dragging = useRef<{ path: string; name: string; dx: number; dy: number } | null>(null);
+  const dragging = useRef<{
+    path: string;
+    name: string;
+    dx: number;
+    dy: number;
+    x: number;
+    y: number;
+    moved: boolean;
+  } | null>(null);
+  const skipClick = useRef(false);
   const fingerprint = project.files.map((file) => `${file.path}\0${file.text}`).join("\0");
 
   useEffect(() => {
@@ -390,9 +399,7 @@ export function PlaygroundEditor({
     setSamples((items) => items.filter((item) => item.path !== node.path || item.name !== node.name));
   }
 
-  function connect(from: GraphNode) {
-    const to = draftGraph.nodes.find((node) => node.id === snapTo);
-    if (!to) return;
+  function connectNodes(from: GraphNode, to: GraphNode) {
     try {
       const next = snapWire(
         from.entry.source,
@@ -400,6 +407,34 @@ export function PlaygroundEditor({
         { kind: to.kind, name: to.name, path: to.path, node: to.entry.node },
       );
       replaceFile(from.path, next.text);
+      setError("");
+      return true;
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason));
+      return false;
+    }
+  }
+
+  function connect(from: GraphNode) {
+    const to = draftGraph.nodes.find((node) => node.id === snapTo);
+    if (!to) return;
+    connectNodes(from, to);
+  }
+
+  function cutEdge(edge: { from: string; to: string; label: string }) {
+    const from = draftGraph.nodes.find((node) => node.id === edge.from);
+    const to = draftGraph.nodes.find((node) => node.id === edge.to);
+    if (!from || !to) return;
+    try {
+      replaceFile(
+        from.path,
+        cutWire(
+          from.entry.source,
+          { kind: from.kind, name: from.name, path: from.path, node: from.entry.node },
+          { kind: to.kind, name: to.name, path: to.path, node: to.entry.node },
+          edge.label,
+        ),
+      );
       setError("");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
@@ -480,6 +515,30 @@ export function PlaygroundEditor({
           (node) => node.path === editable.path && node.id !== editable.id && snapTargets(editable.kind, node.kind),
         );
   const snapValue = snapChoices.some((node) => node.id === snapTo) ? snapTo : "";
+  const touching =
+    editable == null
+      ? []
+      : draftGraph.edges.filter(
+          (edge) =>
+            (edge.from === editable.id || edge.to === editable.id) &&
+            (edge.label === "runs" || edge.label === "uses" || edge.label === "sends" || edge.label === "on"),
+        );
+
+  function openNode(id: string) {
+    const node = graph.nodes.find((item) => item.id === id);
+    if (
+      editable &&
+      node &&
+      isGraphNode(node) &&
+      node.id !== editable.id &&
+      node.path === editable.path &&
+      snapTargets(editable.kind, node.kind)
+    ) {
+      if (connectNodes(editable, node)) choose(node.id);
+      return;
+    }
+    choose(id);
+  }
 
   return (
     <div className="playground-editor">
@@ -488,10 +547,10 @@ export function PlaygroundEditor({
           <p className="eyebrow">PLAYGROUND</p>
           <h1>Forge graph</h1>
           <p className="muted">
-            Click a block to add it. Snap a wire to connect two declarations in the same file.
-            Each block is a Forge declaration, and the canvas draws the wires the source
-            actually declares. Firing a schedule runs the draft in this browser and does not
-            touch a deployment.
+            Click a block to add it. Click one block, then another in the same file, to snap
+            a wire. Click a wire to remove it. Each block is a Forge declaration, and the
+            canvas draws the wires the source actually declares. Firing a schedule runs the
+            draft in this browser and does not touch a deployment.
           </p>
         </div>
         {readonly ? null : (
@@ -565,13 +624,34 @@ export function PlaygroundEditor({
                 if (!from || !to) return null;
                 const a = from.at;
                 const b = to.at;
+                const d = `M${a.x + 130} ${a.y + 72} C${a.x + 130} ${a.y + 108},${b.x + 130} ${b.y - 28},${b.x + 130} ${b.y}`;
+                const cuttable =
+                  !readonly &&
+                  isGraphNode(from.node) &&
+                  isGraphNode(to.node) &&
+                  (edge.label === "runs" || edge.label === "uses" || edge.label === "sends" || edge.label === "on");
                 return (
                   <g key={`${edge.from}-${edge.label}-${edge.to}`}>
+                    {cuttable ? (
+                      <path
+                        className="playground-edge-hit"
+                        role="button"
+                        aria-label={`Cut ${from.node.name} ${edge.label} ${to.node.name}`}
+                        d={d}
+                        fill="none"
+                        stroke="transparent"
+                        strokeWidth={14}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          cutEdge(edge);
+                        }}
+                      />
+                    ) : null}
                     <path
                       data-from-name={from.node.name}
                       data-to-name={to.node.name}
                       data-label={edge.label}
-                      d={`M${a.x + 130} ${a.y + 72} C${a.x + 130} ${a.y + 108},${b.x + 130} ${b.y - 28},${b.x + 130} ${b.y}`}
+                      d={d}
                       fill="none"
                       stroke="#8791a6"
                       markerEnd="url(#playground-arrow)"
@@ -591,29 +671,55 @@ export function PlaygroundEditor({
                     tabIndex={0}
                     aria-label={`Open ${node.name}`}
                     aria-pressed={node.id === selected}
-                    className={`playground-node kind-${node.kind}${node.id === selected ? " selected" : ""}`}
+                    className={`playground-node kind-${node.kind}${node.id === selected ? " selected" : ""}${
+                      editable &&
+                      node.id !== editable.id &&
+                      node.path === editable.path &&
+                      snapTargets(editable.kind, node.kind)
+                        ? " snap-target"
+                        : ""
+                    }`}
                     data-outcome={outcome}
                     data-x={at.x}
                     data-y={at.y}
-                    onClick={() => choose(node.id)}
+                    onClick={() => {
+                      if (skipClick.current) {
+                        skipClick.current = false;
+                        return;
+                      }
+                      openNode(node.id);
+                    }}
                     onPointerDown={(event) => {
                       if (readonly || event.button !== 0) return;
                       const svg = event.currentTarget.ownerSVGElement;
                       if (!svg) return;
                       const start = pointInSvg(svg, event.clientX, event.clientY);
-                      dragging.current = { path: node.path, name: node.name, dx: start.x - at.x, dy: start.y - at.y };
+                      dragging.current = {
+                        path: node.path,
+                        name: node.name,
+                        dx: start.x - at.x,
+                        dy: start.y - at.y,
+                        x: event.clientX,
+                        y: event.clientY,
+                        moved: false,
+                      };
                       event.currentTarget.setPointerCapture?.(event.pointerId);
                     }}
                     onPointerMove={(event) => {
                       const drag = dragging.current;
                       if (!drag || drag.path !== node.path || drag.name !== node.name) return;
+                      if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 4) drag.moved = true;
                       const svg = event.currentTarget.ownerSVGElement;
                       if (!svg) return;
                       const point = pointInSvg(svg, event.clientX, event.clientY);
                       rememberPosition(node, Math.round(point.x - drag.dx), Math.round(point.y - drag.dy));
                     }}
                     onPointerUp={() => {
-                      if (dragging.current?.path === node.path && dragging.current.name === node.name) dragging.current = null;
+                      const drag = dragging.current;
+                      if (drag?.path === node.path && drag.name === node.name) {
+                        if (drag.moved) skipClick.current = true;
+                        dragging.current = null;
+                      }
                     }}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
@@ -709,6 +815,20 @@ export function PlaygroundEditor({
                     <p className="muted small">Add another declaration in this file to snap a wire.</p>
                   )
                 ) : null}
+                {touching.map((edge) => {
+                  const from = draftGraph.nodes.find((node) => node.id === edge.from);
+                  const to = draftGraph.nodes.find((node) => node.id === edge.to);
+                  if (!from || !to) return null;
+                  return (
+                    <button
+                      key={`${edge.from}-${edge.label}-${edge.to}`}
+                      type="button"
+                      onClick={() => cutEdge(edge)}
+                    >
+                      {`Cut ${from.name} ${edge.label} ${to.name}`}
+                    </button>
+                  );
+                })}
               </div>
               {analysis && editable.kind === "resource" ? (
                 <ResourceWorkspace

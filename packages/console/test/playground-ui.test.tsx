@@ -104,6 +104,7 @@ it("opens a package without source as a read-only contract graph", async () => {
   expect(screen.queryByRole("button", { name: "New program" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Delete declaration" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Snap wire" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Cut DailySupportDigest runs BuildSupportDigest" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Open DailySupportDigest" }));
   expect(screen.queryByLabelText("Declaration name")).toBeNull();
   expect(screen.queryByRole("button", { name: "Delete declaration" })).toBeNull();
@@ -184,6 +185,31 @@ it("starts a blank program, snaps a uses wire, and deletes the declaration", asy
   expect(screen.getByRole("button", { name: "Open Resource" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Open example" }));
   expect(await screen.findByRole("button", { name: "Open DailySupportDigest" })).toBeTruthy();
+});
+
+it("snaps a wire by clicking the next block and cuts that wire", async () => {
+  const blank: Project = {
+    name: "@playground/program",
+    currentFile: "main.forge",
+    files: [{ path: "main.forge", text: "// Click a block to start a Forge program.\n" }],
+  };
+  const { container } = render(<PlaygroundEditor initialProject={blank} inspect={inspect} />);
+  fireEvent.click(await screen.findByRole("button", { name: "Resource" }));
+  fireEvent.click(screen.getByRole("button", { name: "Function" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Open Function" }));
+  fireEvent.click(screen.getByRole("button", { name: "Open Resource" }));
+  expect((await screen.findAllByRole("button", { name: "Cut Function uses Resource" })).length).toBeGreaterThan(0);
+  expect(
+    container.querySelector('[data-from-name="Function"][data-to-name="Resource"][data-label="uses"]'),
+  ).toBeTruthy();
+  fireEvent.click(screen.getAllByRole("button", { name: "Cut Function uses Resource" })[0]!);
+  await waitFor(() => {
+    expect(
+      container.querySelector('[data-from-name="Function"][data-to-name="Resource"][data-label="uses"]'),
+    ).toBeNull();
+  });
+  expect(screen.getByRole("button", { name: "Open Function" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Open Resource" })).toBeTruthy();
 });
 
 it("adds a source block that is already wired to a function", async () => {
