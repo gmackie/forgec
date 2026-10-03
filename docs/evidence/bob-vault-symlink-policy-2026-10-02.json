@@ -1,0 +1,34 @@
+{
+  "scope": "Read-only inspection of preserved HEAD trees; no symlink followed or source rewritten",
+  "policy": "Explicit internal symlinks; direct targets only and acyclic directory graph",
+  "sources": {
+    "mac": {
+      "symlinks": 9,
+      "internalDirectoryTargets": 8,
+      "internalFileTargets": 0,
+      "absoluteRejected": 1,
+      "otherRejected": 0,
+      "internalDirectoryGraphAcyclic": true,
+      "wholeTreeMaterializationEligible": false
+    },
+    "server": {
+      "symlinks": 7,
+      "internalDirectoryTargets": 6,
+      "internalFileTargets": 0,
+      "absoluteRejected": 1,
+      "otherRejected": 0,
+      "internalDirectoryGraphAcyclic": true,
+      "wholeTreeMaterializationEligible": false
+    },
+    "hermes": {
+      "symlinks": 9,
+      "internalDirectoryTargets": 8,
+      "internalFileTargets": 0,
+      "absoluteRejected": 1,
+      "otherRejected": 0,
+      "internalDirectoryGraphAcyclic": true,
+      "wholeTreeMaterializationEligible": false
+    }
+  },
+  "gate": "blocked: each source retains one absolute link requiring explicit disposition"
+}

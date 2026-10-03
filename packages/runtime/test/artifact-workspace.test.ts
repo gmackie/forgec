@@ -330,3 +330,181 @@ it("refuses symlink materialization and identical merge parents", async () => {
     await f.close();
   }
 });
+
+it("materializes explicitly opted-in internal file symlinks without changing target text", async () => {
+  const { readFile, readlink, lstat } = await import("node:fs/promises");
+  const f = await fixture();
+  try {
+    const base = await f.prepare(null, [f.change("file", "content")]);
+    const git = (args: string[], input?: string) =>
+      execFileSync("git", ["-C", f.dir, ...args], {
+        input,
+        encoding: "utf8",
+        stdio: "pipe",
+        env: {
+          ...process.env,
+          GIT_AUTHOR_NAME: "Fixture",
+          GIT_AUTHOR_EMAIL: "test@example.invalid",
+          GIT_COMMITTER_NAME: "Fixture",
+          GIT_COMMITTER_EMAIL: "test@example.invalid",
+        },
+      }).trim();
+    const blob = git(["hash-object", "-w", "--stdin"], "../file");
+    const nested = git(["mktree"], `120000 blob ${blob}\tlink\n`);
+    const file = git(["rev-parse", `${base.oid}:file`]);
+    const tree = git(
+      ["mktree"],
+      `100644 blob ${file}\tfile\n040000 tree ${nested}\tnested\n`,
+    );
+    const oid = git(["commit-tree", tree], "internal link\n");
+    const pin = { ...base, tree, oid };
+    await expect(
+      f.workspace.materialize(pin, join(f.dir, "default"), ctx),
+    ).rejects.toMatchObject({ code: "ValidationFailed" });
+    const destination = join(f.dir, "opted-in");
+    const result = await f.workspace.materialize(pin, destination, ctx, {
+      symlinks: "internal",
+    });
+    expect(result).toEqual({ files: 2, bytes: 14 });
+    expect(
+      (await lstat(join(destination, "nested/link"))).isSymbolicLink(),
+    ).toBe(true);
+    expect(await readlink(join(destination, "nested/link"))).toBe("../file");
+    expect(await readFile(join(destination, "nested/link"), "utf8")).toBe(
+      "content",
+    );
+  } finally {
+    await f.close();
+  }
+});
+
+it.each([
+  "/etc/passwd",
+  "../../outside",
+  "../missing",
+  "../link",
+  "../.git/config",
+  "..\\file",
+  "../file\0suffix",
+])(
+  "rejects unsafe, dangling or chained symlink target %j before creating output",
+  async (target) => {
+    const { lstat } = await import("node:fs/promises");
+    const f = await fixture();
+    try {
+      const base = await f.prepare(null, [f.change("file", "content")]);
+      const git = (args: string[], input?: string) =>
+        execFileSync("git", ["-C", f.dir, ...args], {
+          input,
+          encoding: "utf8",
+          stdio: "pipe",
+          env: {
+            ...process.env,
+            GIT_AUTHOR_NAME: "Fixture",
+            GIT_AUTHOR_EMAIL: "test@example.invalid",
+            GIT_COMMITTER_NAME: "Fixture",
+            GIT_COMMITTER_EMAIL: "test@example.invalid",
+          },
+        }).trim();
+      const blob = git(["hash-object", "-w", "--stdin"], target);
+      const nested = git(["mktree"], `120000 blob ${blob}\tlink\n`);
+      const direct = git(["hash-object", "-w", "--stdin"], "file");
+      const file = git(["rev-parse", `${base.oid}:file`]);
+      const tree = git(
+        ["mktree"],
+        `100644 blob ${file}\tfile\n120000 blob ${direct}\tlink\n040000 tree ${nested}\tnested\n`,
+      );
+      const oid = git(["commit-tree", tree], "unsafe link\n");
+      const destination = join(f.dir, "rejected");
+      await expect(
+        f.workspace.materialize({ ...base, tree, oid }, destination, ctx, {
+          symlinks: "internal",
+        }),
+      ).rejects.toMatchObject({ code: "ValidationFailed" });
+      await expect(lstat(destination)).rejects.toMatchObject({
+        code: "ENOENT",
+      });
+    } finally {
+      await f.close();
+    }
+  },
+);
+
+async function directoryLinkFixture(
+  f: Awaited<ReturnType<typeof fixture>>,
+  links: { a: string; b?: string },
+) {
+  const git = (args: string[], input?: string) =>
+    execFileSync("git", ["-C", f.dir, ...args], {
+      input,
+      encoding: "utf8",
+      stdio: "pipe",
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: "Fixture",
+        GIT_AUTHOR_EMAIL: "test@example.invalid",
+        GIT_COMMITTER_NAME: "Fixture",
+        GIT_COMMITTER_EMAIL: "test@example.invalid",
+      },
+    }).trim();
+  const base = await f.prepare(null, [f.change("file", "content")]);
+  const file = git(["rev-parse", `${base.oid}:file`]);
+  const subtree = (target?: string) => {
+    const blob =
+      target === undefined
+        ? null
+        : git(["hash-object", "-w", "--stdin"], target);
+    return git(
+      ["mktree"],
+      `100644 blob ${file}\tfile\n` +
+        (blob ? `120000 blob ${blob}\tlink\n` : ""),
+    );
+  };
+  const tree = git(
+    ["mktree"],
+    `040000 tree ${subtree(links.a)}\ta\n040000 tree ${subtree(links.b)}\tb\n`,
+  );
+  return {
+    ...base,
+    tree,
+    oid: git(["commit-tree", tree], "directory links\n"),
+  };
+}
+it("preserves an internal directory alias after validating the full tree", async () => {
+  const { readFile, readlink } = await import("node:fs/promises");
+  const f = await fixture();
+  try {
+    const pin = await directoryLinkFixture(f, { a: "../b" });
+    const destination = join(f.dir, "directory-alias");
+    await f.workspace.materialize(pin, destination, ctx, {
+      symlinks: "internal",
+    });
+    expect(await readlink(join(destination, "a/link"))).toBe("../b");
+    expect(await readFile(join(destination, "a/link/file"), "utf8")).toBe(
+      "content",
+    );
+  } finally {
+    await f.close();
+  }
+});
+it.each([{ a: "../a" }, { a: ".." }, { a: "../b", b: "../a" }])(
+  "rejects recursive directory aliases %j before creating output",
+  async (links) => {
+    const { lstat } = await import("node:fs/promises");
+    const f = await fixture();
+    try {
+      const pin = await directoryLinkFixture(f, links);
+      const destination = join(f.dir, "directory-cycle");
+      await expect(
+        f.workspace.materialize(pin, destination, ctx, {
+          symlinks: "internal",
+        }),
+      ).rejects.toMatchObject({ code: "ValidationFailed" });
+      await expect(lstat(destination)).rejects.toMatchObject({
+        code: "ENOENT",
+      });
+    } finally {
+      await f.close();
+    }
+  },
+);

@@ -1,6 +1,13 @@
 /** Node-only object preparation. Writes objects, never refs or a working tree. */
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, mkdir, writeFile, chmod } from "node:fs/promises";
+import {
+  mkdtemp,
+  rm,
+  mkdir,
+  writeFile,
+  chmod,
+  symlink,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { isAbsolute, join, dirname } from "node:path";
 import type { CallContext } from "../engine.js";
@@ -349,13 +356,19 @@ export class GitArtifactWorkspace {
     revision: ArtifactRevisionPin,
     destination: string,
     context: CallContext,
-    options: { maxFiles?: number; maxBytes?: number } = {},
+    options: {
+      maxFiles?: number;
+      maxBytes?: number;
+      /** Opt-in preserves only relative links directly to files or directories in this tree. */
+      symlinks?: "reject" | "internal";
+    } = {},
   ): Promise<{ files: number; bytes: number }> {
     const pin = Object.freeze({ ...revision });
     const maxFiles = options.maxFiles ?? 1024,
       maxBytes = options.maxBytes ?? 32 * 1024 * 1024;
     if (
       !isAbsolute(destination) ||
+      ![undefined, "reject", "internal"].includes(options.symlinks) ||
       !Number.isSafeInteger(maxFiles) ||
       maxFiles < 1 ||
       maxFiles > 1024 ||
@@ -388,8 +401,15 @@ export class GitArtifactWorkspace {
     const files: { path: string; mode: number; bytes: Buffer }[] = [];
     let total = 0;
     for (const entry of entries) {
-      const match = /^(100644|100755) blob ([a-f0-9]+)\t(.+)$/.exec(entry);
-      if (!match || !this.oid(match[2]) || !safePath(match[3]!))
+      const match = /^(100644|100755|120000) blob ([a-f0-9]+)\t(.+)$/.exec(
+        entry,
+      );
+      if (
+        !match ||
+        !this.oid(match[2]) ||
+        !safePath(match[3]!) ||
+        (match[1] === "120000" && options.symlinks !== "internal")
+      )
         throw err("ValidationFailed", "Unsupported artifact tree entry");
       const size = Number(
         (await this.checked(["cat-file", "-s", match[2]!])).toString(),
@@ -420,10 +440,89 @@ export class GitArtifactWorkspace {
         );
       files.push({
         path: match[3]!,
-        mode: match[1] === "100755" ? 0o755 : 0o644,
+        mode:
+          match[1] === "120000"
+            ? 0o120000
+            : match[1] === "100755"
+              ? 0o755
+              : 0o644,
         bytes,
       });
     }
+    // Validate every link against the complete pinned tree before any writes.
+    // Intermediate components must be real directories; no chained links or
+    // normalization through a symlink can hide an escape from this workspace.
+    const regular = new Set(
+      files.filter((file) => file.mode !== 0o120000).map((file) => file.path),
+    );
+    const directories = new Set<string>([""]);
+    for (const file of files) {
+      const parts = file.path.split("/");
+      for (let n = 1; n < parts.length; n++)
+        directories.add(parts.slice(0, n).join("/"));
+    }
+    const edges = new Map(
+      [...directories].map((directory) => [directory, new Set<string>()]),
+    );
+    for (const directory of directories) {
+      if (directory)
+        edges.get(directory.split("/").slice(0, -1).join("/"))!.add(directory);
+    }
+    for (const file of files.filter((entry) => entry.mode === 0o120000)) {
+      const target = file.bytes.toString("utf8");
+      const invalid = () =>
+        err(
+          "ValidationFailed",
+          "Symlink must point directly to an internal file or directory",
+        );
+      if (
+        !Buffer.from(target).equals(file.bytes) ||
+        !identity(target) ||
+        isAbsolute(target) ||
+        target.includes("\\")
+      )
+        throw invalid();
+      const resolved = file.path.split("/").slice(0, -1);
+      const parts = target.split("/");
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]!;
+        if (!part || part === "." || part.toLowerCase() === ".git")
+          throw invalid();
+        if (part === "..") {
+          if (!resolved.length) throw invalid();
+          resolved.pop();
+        } else {
+          resolved.push(part);
+          if (i < parts.length - 1 && !directories.has(resolved.join("/")))
+            throw invalid();
+        }
+      }
+      const targetPath = resolved.join("/");
+      if (directories.has(targetPath)) {
+        edges.get(file.path.split("/").slice(0, -1).join("/"))!.add(targetPath);
+      } else if (!regular.has(targetPath)) throw invalid();
+    }
+    // Include ordinary directory containment edges so aliases to ancestors or
+    // mutually aliased directories cannot create recursive traversal cycles.
+    const incoming = new Map(
+      [...directories].map((directory) => [directory, 0]),
+    );
+    for (const targets of edges.values()) {
+      for (const target of targets)
+        incoming.set(target, incoming.get(target)! + 1);
+    }
+    const ready = [...directories].filter(
+      (directory) => incoming.get(directory) === 0,
+    );
+    for (let i = 0; i < ready.length; i++) {
+      for (const target of edges.get(ready[i]!)!) {
+        const count = incoming.get(target)! - 1;
+        incoming.set(target, count);
+        if (count === 0) ready.push(target);
+      }
+    }
+    if (ready.length !== directories.size)
+      throw err("ValidationFailed", "Recursive artifact directory symlink");
     // Exclusive creation is the ownership boundary: never remove an existing target.
     try {
       await mkdir(destination, { recursive: false, mode: 0o700 });
@@ -439,11 +538,16 @@ export class GitArtifactWorkspace {
       );
     }
     try {
-      for (const file of files) {
+      for (const file of files.filter((entry) => entry.mode !== 0o120000)) {
         const target = join(destination, file.path);
         await mkdir(dirname(target), { recursive: true, mode: 0o700 });
         await writeFile(target, file.bytes, { flag: "wx", mode: file.mode });
         await chmod(target, file.mode);
+      }
+      for (const file of files.filter((entry) => entry.mode === 0o120000)) {
+        const target = join(destination, file.path);
+        await mkdir(dirname(target), { recursive: true, mode: 0o700 });
+        await symlink(file.bytes.toString("utf8"), target);
       }
       return { files: files.length, bytes: total };
     } catch {
