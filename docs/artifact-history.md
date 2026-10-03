@@ -65,3 +65,40 @@ shared process-local close-and-drain host. Its local route qualification does no
 establish deployed route behavior, legacy-writer fencing, process-kill recovery
 or acceptance of uncertain provider writes. These remain cutover gates alongside
 external-link disposition, runner completion wiring and fresh source snapshots.
+
+## Approved external draft import (2026-10-03)
+
+The owner selected importing `Blog Drafts` into the vault as ordinary files.
+The website drafts were privately snapshotted and verified before import:
+36 files, 210,705 bytes. A new commit replaces the absolute alias in a derived
+migration repository; original history and all source snapshots retain it.
+No source vault or website file was changed. All 215 prior commits and 14 refs
+remain, with the import adding the 216th commit.
+
+Forge's actual materializer accepted this derived head with `symlinks: internal`:
+547 entries, 2,402,366 bytes. Every imported draft's SHA-256 matched its private
+snapshot. The verified bundle and full filename manifests remain private;
+`docs/evidence/bob-vault-drafts-import-2026-10-03.json` contains aggregate evidence.
+This resolves the external-link policy for the migration copy. Fresh working-tree
+changes and ignored data still need their own disposition before live cutover.
+
+Bob PR #231 adds a persistent SQLite admission gate shared by cooperating local
+processes, fail-closed process-kill recovery, and selected-provider runner
+promotion wiring. Its deployed HTTP fixture passed eight live Artifacts/D1
+checks using actual vault procedures with a fixture identity. Production session
+authentication and routing are not configured by that qualification. Hosts on
+other machines and legacy Git writers must be fenced independently; no expiring
+lease or automatic orphan takeover permits the old generation to resume.
+
+The preserved Mac/Hermes committed-tree comparison found 320 equal paths,
+191 changed only on Mac and 36 changed only on Hermes relative to their common
+ancestor, with no path changed differently on both sides. This is an aggregate
+comparison, not a merged active tree; unpublished edits and the old server copy
+remain separate reconciliation inputs. See the content-comparison evidence.
+
+The exact draft-import bundle also passed a fresh disposable Cloudflare roundtrip:
+216 commits, 14 refs and 1,460 objects matched on readback. A synthetic later
+write survived export and an independent rollback restore: 217 commits and
+1,463 objects. Cleanup confirmed zero remaining cloud resources. See
+`docs/evidence/bob-vault-drafts-cloud-roundtrip-2026-10-03.json`. Full content
+and method scripts remain in the private migration state directory.
