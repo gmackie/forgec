@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# labnuc's act runner provides ubuntu-latest. The console build needs the wasm32 target.
+jobs:
+  console:
+    name: console
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - name: Ensure a C toolchain for Rust build scripts
+        run: |
+          if ! command -v cc >/dev/null 2>&1 && ! command -v gcc >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential pkg-config curl ca-certificates
+          fi
+      - uses: https://github.com/pnpm/action-setup@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: https://github.com/dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.97.1'
+          targets: wasm32-unknown-unknown
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @forgegraph/console... build
+      - run: pnpm --filter @forgegraph/console typecheck
+      - run: pnpm --filter @forgegraph/console test

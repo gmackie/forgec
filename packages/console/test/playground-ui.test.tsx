@@ -101,8 +101,13 @@ it("opens a package without source as a read-only contract graph", async () => {
   expect(screen.queryByRole("button", { name: "Fire source" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Add declaration" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Source" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "New program" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Delete declaration" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Snap wire" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Open DailySupportDigest" }));
   expect(screen.queryByLabelText("Declaration name")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Delete declaration" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Snap wire" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Use the browser draft" }));
   expect(screen.getByRole("button", { name: "Add declaration" })).toBeTruthy();
 });
@@ -149,6 +154,36 @@ it("continues a published draft whose source matches the bundle", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Open DailySupportDigest" }));
   expect((screen.getByLabelText("Sample payload") as HTMLTextAreaElement).value).toBe("{\"note\":\"kept\"}");
   expect(screen.queryByRole("status")).toBeNull();
+});
+
+it("starts a blank program, snaps a uses wire, and deletes the declaration", async () => {
+  const { container } = render(
+    <PlaygroundEditor initialProject={structuredClone(example)} inspect={inspect} />,
+  );
+  fireEvent.click(await screen.findByRole("button", { name: "New program" }));
+  await waitFor(() => {
+    expect(screen.queryByRole("button", { name: "Open DailySupportDigest" })).toBeNull();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Resource" }));
+  fireEvent.click(screen.getByRole("button", { name: "Function" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Open Function" }));
+  const select = (await screen.findByLabelText("Snap to")) as HTMLSelectElement;
+  const option = [...select.options].find((item) => item.textContent === "resource Resource");
+  expect(option, [...select.options].map((item) => item.textContent).join(", ")).toBeTruthy();
+  fireEvent.change(select, { target: { value: option?.value } });
+  fireEvent.click(screen.getByRole("button", { name: "Snap wire" }));
+  await waitFor(() => {
+    expect(
+      container.querySelector('[data-from-name="Function"][data-to-name="Resource"][data-label="uses"]'),
+    ).toBeTruthy();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Delete declaration" }));
+  await waitFor(() => {
+    expect(screen.queryByRole("button", { name: "Open Function" })).toBeNull();
+  });
+  expect(screen.getByRole("button", { name: "Open Resource" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Open example" }));
+  expect(await screen.findByRole("button", { name: "Open DailySupportDigest" })).toBeTruthy();
 });
 
 it("adds a source block that is already wired to a function", async () => {

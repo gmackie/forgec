@@ -30,6 +30,7 @@ import {
 } from "./editor/workspace.js";
 import { VisualDocument } from "./editor/document.js";
 import { named, patch } from "./editor/model.js";
+import { deleteDeclaration, snapTargets, snapWire } from "./editor/playground-wires.js";
 import { Edit } from "./editor/document.js";
 import "./editor/editor.css";
 import "./playground.css";
@@ -80,6 +81,12 @@ function sourceBlock(name: string, target: string, createTarget: boolean) {
 }
 
 const defaultClock = "2026-10-03T08:00:00.000Z";
+
+const blankProgram: Project = {
+  name: "@playground/program",
+  currentFile: "main.forge",
+  files: [{ path: "main.forge", text: "// Click a block to start a Forge program.\n" }],
+};
 
 function resultFor(node: CanvasNode, results: TickResult[] | null) {
   return results?.find(
@@ -194,6 +201,7 @@ export function PlaygroundEditor({
   const [busy, setBusy] = useState(false);
   const [kind, setKind] = useState("source");
   const [name, setName] = useState("");
+  const [snapTo, setSnapTo] = useState("");
   const session = useRef<PlaygroundSession | null>(null);
   const pending = useRef<string | null>(null);
   const dragging = useRef<{ path: string; name: string; dx: number; dy: number } | null>(null);
@@ -358,6 +366,46 @@ export function PlaygroundEditor({
     }));
   }
 
+  function loadProject(next: Project) {
+    session.current = null;
+    pending.current = null;
+    setResults(null);
+    setError("");
+    setSelected("");
+    setSnapTo("");
+    setPositions([]);
+    setSamples([]);
+    setClock(defaultClock);
+    setPayload("{}");
+    setName("");
+    setProject(structuredClone(next));
+  }
+
+  function removeSelected(node: GraphNode) {
+    replaceFile(node.path, deleteDeclaration(node.entry.source, node.entry.node));
+    setSelected("");
+    setSnapTo("");
+    setError("");
+    setPositions((items) => items.filter((item) => item.path !== node.path || item.name !== node.name));
+    setSamples((items) => items.filter((item) => item.path !== node.path || item.name !== node.name));
+  }
+
+  function connect(from: GraphNode) {
+    const to = draftGraph.nodes.find((node) => node.id === snapTo);
+    if (!to) return;
+    try {
+      const next = snapWire(
+        from.entry.source,
+        { kind: from.kind, name: from.name, path: from.path, node: from.entry.node },
+        { kind: to.kind, name: to.name, path: to.path, node: to.entry.node },
+      );
+      replaceFile(from.path, next.text);
+      setError("");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason));
+    }
+  }
+
   function addBlock(nextKind: string) {
     const file = project.files.find((item) => item.path === project.currentFile);
     const create = templates[nextKind];
@@ -425,6 +473,13 @@ export function PlaygroundEditor({
       }
     : { minX: 0, minY: 0, width: 640, height: 160 };
   const editable = current && isGraphNode(current) && !readonly ? current : null;
+  const snapChoices =
+    editable == null
+      ? []
+      : draftGraph.nodes.filter(
+          (node) => node.path === editable.path && node.id !== editable.id && snapTargets(editable.kind, node.kind),
+        );
+  const snapValue = snapChoices.some((node) => node.id === snapTo) ? snapTo : "";
 
   return (
     <div className="playground-editor">
@@ -433,22 +488,31 @@ export function PlaygroundEditor({
           <p className="eyebrow">PLAYGROUND</p>
           <h1>Forge graph</h1>
           <p className="muted">
-            Click a block to add it. Each block is a Forge declaration, and the canvas draws
-            the wires the source actually declares. Firing a schedule runs the draft in this
-            browser and does not touch a deployment.
+            Click a block to add it. Snap a wire to connect two declarations in the same file.
+            Each block is a Forge declaration, and the canvas draws the wires the source
+            actually declares. Firing a schedule runs the draft in this browser and does not
+            touch a deployment.
           </p>
         </div>
         {readonly ? null : (
-          <button
-            type="button"
-            onClick={() => {
-              session.current = null;
-              setResults(null);
-              setError("");
-            }}
-          >
-            Reset runtime
-          </button>
+          <div className="playground-actions">
+            <button type="button" onClick={() => loadProject(blankProgram)}>
+              New program
+            </button>
+            <button type="button" onClick={() => loadProject(example)}>
+              Open example
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                session.current = null;
+                setResults(null);
+                setError("");
+              }}
+            >
+              Reset runtime
+            </button>
+          </div>
         )}
       </header>
       {readonly ? (
@@ -615,6 +679,37 @@ export function PlaygroundEditor({
                 <h2>{editable.name}</h2>
               )}
               <p className="muted small">{editable.path}</p>
+              <div className="playground-snap">
+                <button type="button" onClick={() => removeSelected(editable)}>
+                  Delete declaration
+                </button>
+                {editable.kind === "source" || editable.kind === "function" || editable.kind === "channel" ? (
+                  snapChoices.length ? (
+                    <>
+                      <label>
+                        Snap to
+                        <select
+                          aria-label="Snap to"
+                          value={snapValue}
+                          onChange={(event) => setSnapTo(event.target.value)}
+                        >
+                          <option value="">Choose a declaration</option>
+                          {snapChoices.map((node) => (
+                            <option key={node.id} value={node.id}>
+                              {node.kind} {node.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button type="button" disabled={!snapValue} onClick={() => connect(editable)}>
+                        Snap wire
+                      </button>
+                    </>
+                  ) : (
+                    <p className="muted small">Add another declaration in this file to snap a wire.</p>
+                  )
+                ) : null}
+              </div>
               {analysis && editable.kind === "resource" ? (
                 <ResourceWorkspace
                   entry={editable.entry}

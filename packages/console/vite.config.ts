@@ -7,8 +7,9 @@ export default defineConfig({
   resolve: {
     alias: {
       // Bundle the runtime from TypeScript. The package export points at dist,
-      // which a console-only dev server has not built.
-      "@forgegraph/runtime": fileURLToPath(
+      // which a console-only dev server has not built. The trailing $ keeps
+      // subpath exports such as /compose on the package map.
+      "@forgegraph/runtime$": fileURLToPath(
         new URL("../runtime/src/index.ts", import.meta.url),
       ),
     },
