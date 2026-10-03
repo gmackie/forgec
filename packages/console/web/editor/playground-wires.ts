@@ -75,6 +75,51 @@ export function deleteDeclaration(text: string, node: { start: number; end: numb
   return text.slice(0, start) + text.slice(end);
 }
 
+function useHead(text: string, decl: SyntaxNode) {
+  return textOf(text, decl).trim().split(/\s+/)[0] ?? "";
+}
+
+function namesResource(text: string, decl: SyntaxNode, name: string) {
+  const head = useHead(text, decl);
+  return head === name || head.endsWith(`.${name}`);
+}
+
+function namesChannel(text: string, decl: SyntaxNode, channel: string) {
+  const raw = textOf(text, decl).trim();
+  return raw.endsWith(` ${channel}`) || raw.endsWith(`.${channel}`);
+}
+
+function dropOnly(text: string, block: SyntaxNode, kind: string, decl: SyntaxNode) {
+  return children(block, kind).length === 1 ? deleteDeclaration(text, block) : deleteDeclaration(text, decl);
+}
+
+/** Remove one language wire. The declarations stay. */
+export function cutWire(text: string, from: WireEnd, to: WireEnd, label: string): string {
+  if (from.path !== to.path) throw new Error("Snap wires between declarations in the same file.");
+  if (label === "calls") throw new Error("Workflow steps stay in the workflow source.");
+  const expected = labelFor(normalize(from.kind), normalize(to.kind));
+  if (expected !== label) throw new Error("This wire is not a Forge connection.");
+  if (label === "runs") {
+    const target = children(from.node, "TARGET_DECL")[0];
+    return target ? deleteDeclaration(text, target) : text;
+  }
+  if (label === "uses") {
+    const block = children(from.node, "USES_BLOCK")[0];
+    const decl = block && children(block, "USE_DECL").find((item) => namesResource(text, item, to.name));
+    return block && decl ? dropOnly(text, block, "USE_DECL", decl) : text;
+  }
+  if (label === "sends") {
+    const block = children(from.node, "SENDS_BLOCK")[0];
+    const decl = block && children(block, "SEND_DECL").find((item) => namesChannel(text, item, to.name));
+    return block && decl ? dropOnly(text, block, "SEND_DECL", decl) : text;
+  }
+  const pattern = new RegExp(
+    `(^|\\n)[^\\n]*\\bon\\s+${escapeRegExp(from.name)}\\.[A-Za-z_][A-Za-z0-9_]*\\s*->\\s*${escapeRegExp(to.name)}\\s*(?=\\n|$)`,
+    "g",
+  );
+  return text.replace(pattern, "").replace(/\n{3,}/g, "\n\n");
+}
+
 /** Patch a real language wire between two declarations. Both must live in one file. */
 export function snapWire(text: string, from: WireEnd, to: WireEnd): { text: string; label: string } {
   if (from.path !== to.path) throw new Error("Snap wires between declarations in the same file.");
