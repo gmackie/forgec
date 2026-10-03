@@ -1,0 +1,40 @@
+{
+  "scope": "Private snapshot reconciliation; no source mutation, cloud upload or active routing",
+  "sourceChanges": {
+    "mac": {
+      "untrackedFilesIncluded": 64,
+      "trackedWorkingChanges": 8,
+      "ignoredFilesRetainedSeparately": 218
+    },
+    "server": {
+      "untrackedFilesIncluded": 6,
+      "trackedWorkingChanges": 2,
+      "ignoredFilesRetainedSeparately": 739
+    }
+  },
+  "conflicts": {
+    "committed-mac-hermes": 0,
+    "committed-server": 3,
+    "unpublished-mac": 0,
+    "unpublished-server": 0
+  },
+  "priorImportedHead": "5a2dac6e3afae75d869fa73febce99980428176a",
+  "automaticallyMergedTextFiles": {
+    "unpublished-server": 1
+  },
+  "status": "candidate-with-retained-alternatives",
+  "reconciledHead": "79754159e97bf8e8dfc6d6e4e3f5fec30eb62005",
+  "entries": 655,
+  "commits": 219,
+  "materialization": {
+    "files": 655,
+    "bytes": 3118825,
+    "status": "passed",
+    "regularFilesVerified": 647
+  },
+  "limits": [
+    "Private candidate only; not uploaded or activated.",
+    "Templates use Mac/Hermes version at original paths and preserve server alternatives under Migration Review.",
+    "Ignored files remain in original snapshots; fresh fenced snapshots are still required for cutover."
+  ]
+}

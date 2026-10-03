@@ -102,3 +102,26 @@ write survived export and an independent rollback restore: 217 commits and
 1,463 objects. Cleanup confirmed zero remaining cloud resources. See
 `docs/evidence/bob-vault-drafts-cloud-roundtrip-2026-10-03.json`. Full content
 and method scripts remain in the private migration state directory.
+
+## Reconciled private candidate
+
+`docs/evidence/bob-vault-reconciliation-2026-10-03.json` records a private
+219-commit candidate combining the preserved Mac, Hermes and old-server
+histories, ten tracked working-tree changes, seventy non-ignored untracked
+files, and the approved website draft import. All source trees remain unchanged.
+The ignored payloads remain separately preserved in their original snapshots.
+
+Three old-server template edits overlap the Mac/Hermes versions. The candidate
+uses the Mac/Hermes templates at their existing paths and retains all three
+server alternatives under `Migration Review/committed-server/Templates/`.
+A project-note conflict merged cleanly using the original three-way base.
+Snapshot worktree commits are pinned under `refs/migration/worktree/` and are
+parents of the candidate; the imported draft head is also a parent. The previous
+import remains the default main ref; the candidate is `refs/heads/reconciled`.
+
+The actual Forge materializer accepted all 655 entries (3,118,825 bytes), and
+all 647 regular files were compared byte-for-byte with their Git objects.
+Eight internal symlinks satisfy the materializer policy. This candidate has not
+been uploaded or activated; the earlier cloud roundtrip certifies the separate
+216-commit draft-import bundle, not this new reconciled head. Fresh fenced
+snapshots and production host activation remain necessary before cutover.
