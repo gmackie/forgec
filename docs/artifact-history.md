@@ -125,3 +125,24 @@ Eight internal symlinks satisfy the materializer policy. This candidate has not
 been uploaded or activated; the earlier cloud roundtrip certifies the separate
 216-commit draft-import bundle, not this new reconciled head. Fresh fenced
 snapshots and production host activation remain necessary before cutover.
+
+## Reconciled cloud roundtrip and Node activation wiring
+
+The reconciled candidate passed a full Cloudflare roundtrip from an isolated
+Node 24.14.0 runner container: 219 commits, 17 refs and 1,565 objects matched.
+A new write survived export and independent rollback restore (220 commits,
+1,568 objects). The rollback bundle was returned to private local storage and
+its SHA-256 verified. Cloud cleanup reports zero remaining resources. See
+`docs/evidence/bob-vault-reconciled-cloud-2026-10-03.json`. The initial Mac run
+stopped at readback during local disk exhaustion and also cleaned up its resource;
+it is not counted as passing evidence.
+
+Bob #233 connects the optional configured host to normal Node web and runner
+startup. The exact Node application revision built under webpack in an isolated
+runner container; built-server smoke tests rejected anonymous access (401) and
+invalid configured startup (500). This does not enable the edge app's absent
+filesystem routes or provide a production credential/client module.
+Live OODA stores runner threads at `/home/bob/.ooda/threads`, separate from the
+personal vault, so changing that root is not part of personal-vault activation.
+Fresh fenced snapshots, deployment of a qualified client and routing to a Node
+vault host remain operational requirements.
