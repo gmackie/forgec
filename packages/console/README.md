@@ -99,6 +99,7 @@ Workers connects to a reachable OCI registry chosen by its operator.
 OCI image manifest with `artifactType: application/vnd.forgegraph.package.v1`, containing:
 
 - Content-addressed Forge bundle, IR, contracts, OpenAPI and signed Forge manifest layers.
+- An optional unsigned layer, `application/vnd.forgegraph.playground.v1+json`, with the open draft, node positions, and source samples. It is not named by the signed Forge manifest, so layout and samples do not change the signed Forge digest. A missing or non-matching layer opens read-only.
 - An OCI config blob containing the authority-bound Ed25519 signature and Forge digest.
 - Discoverable title/version/source-revision annotations. These annotations are informative;
   trusted names, versions, ownership and dependencies come from the verified Forge manifest.

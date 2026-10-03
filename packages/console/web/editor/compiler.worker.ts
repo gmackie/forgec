@@ -6,13 +6,16 @@ const ready = fetch(new URL("../../generated/editor.wasm", import.meta.url))
   })
   .then(language);
 self.onmessage = async (
-  event: MessageEvent<{ id: number; project: Project }>,
+  event: MessageEvent<{ id: number; project: Project; emit?: "ir" }>,
 ) => {
   try {
     const inspect = await ready;
+    const project = event.data.emit
+      ? { ...event.data.project, emit: event.data.emit }
+      : event.data.project;
     self.postMessage({
       id: event.data.id,
-      analysis: inspect(event.data.project),
+      analysis: inspect(project),
     });
   } catch (error) {
     self.postMessage({ id: event.data.id, error: String(error) });

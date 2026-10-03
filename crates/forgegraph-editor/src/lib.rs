@@ -11,6 +11,9 @@ struct Input {
     name: String,
     current_file: String,
     files: Vec<File>,
+    /// `"ir"` asks for the compiled domain IR. Ordinary editor checks omit it.
+    #[serde(default)]
+    emit: Option<String>,
 }
 #[derive(Deserialize)]
 struct File {
@@ -149,9 +152,15 @@ pub fn inspect(input: &str) -> Value {
             diagnostic
         })
         .collect();
-    json!({"tree":syntax,"documents":documents,"dataSemantics":data_semantics,"dataClasses":data_classes,"symbols":symbols,"diagnostics":diagnostics,
+    let mut result = json!({"tree":syntax,"documents":documents,"dataSemantics":data_semantics,"dataClasses":data_classes,"symbols":symbols,"diagnostics":diagnostics,
         "taxonomy":serde_json::from_str::<Value>(forgegraph_semantic::taxonomy::TAXONOMY_JSON).expect("built-in taxonomy"),
-        "scalars":forgegraph_semantic::compiler::SCALARS})
+        "scalars":forgegraph_semantic::compiler::SCALARS});
+    if input.emit.as_deref() == Some("ir")
+        && let Some(ir) = &compilation.ir
+    {
+        result["ir"] = serde_json::to_value(ir).expect("domain IR serializes");
+    }
+    result
 }
 
 // A small owned-buffer ABI avoids a generated JS dependency. Only the browser worker calls it.
@@ -211,6 +220,26 @@ mod tests {
                 .any(|n| n["kind"] == "FIELD_DECL")
         );
         assert_eq!(result["taxonomy"]["version"], "data-taxonomy/1");
+        assert!(result.get("ir").is_none());
+    }
+
+    #[test]
+    fn emits_domain_ir_for_a_scheduled_source_when_asked() {
+        let result = inspect(
+            &json!({"name":"@local/test","currentFile":"main.forge","emit":"ir","files":[{"path":"main.forge","text":"function Build {\n}\nsource Nightly {\n  cron \"0 8 * * *\"\n  timezone \"UTC\"\n  -> Build\n}\n"}]}).to_string(),
+        );
+        assert_eq!(result["diagnostics"], json!([]));
+        assert_eq!(result["ir"]["modules"][0]["sources"][0]["name"], "Nightly");
+        assert_eq!(
+            result["ir"]["modules"][0]["sources"][0]["cron"],
+            "0 8 * * *"
+        );
+        assert!(
+            result["ir"]["modules"][0]["sources"][0]["target"]
+                .as_str()
+                .unwrap()
+                .ends_with("/Build")
+        );
     }
 
     #[test]
