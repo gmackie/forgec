@@ -32,3 +32,36 @@ security boundary against malicious concurrent filesystem changes, a writer
 fence, or an atomic filesystem snapshot. ACLs, xattrs and hardlink relationships
 are outside its verification scope. Before a production cutover, fence writers
 and take a fresh preservation copy using the host's backup requirements.
+
+## Cloud history rehearsal and workspace links
+
+The private-source roundtrip in
+`docs/evidence/bob-vault-cloud-roundtrip-2026-10-02.json` verified 215 commits,
+14 refs and 1,420 objects through a disposable Cloudflare Artifacts repository.
+An additional synthetic commit survived cloud readback, bundle export and local
+rollback restore (216 commits). The disposable repository was deleted. This
+operator-run rehearsal used Wrangler OAuth and did not change Bob routing,
+source refs, source working trees or scheduled credential permissions.
+
+`GitArtifactWorkspace.materialize` still rejects symlinks by default. A trusted
+host can opt into `{ symlinks: "internal" }`. This preserves original link text
+only when every target resolves through real directories to an existing regular
+file or directory in the pinned tree. Absolute paths, root escapes, backslashes,
+control characters, invalid UTF-8, `.git`, empty/dot path components, dangling
+targets and chained links are rejected. Directory containment plus alias edges
+must form an acyclic graph; self-links, ancestor links and mutually recursive
+aliases fail before destination creation. Normal files are written before links.
+Link target bytes and link entries count against the existing byte/file budgets.
+The trusted, exclusively owned destination-parent requirement still applies.
+
+`docs/evidence/bob-vault-symlink-policy-2026-10-02.json` records aggregate inspection
+of preserved HEAD trees. Their relative directory links satisfy the policy, but
+each source has one absolute link. Whole-tree materialization remains blocked
+until that external payload has an explicit disposition; no link is silently
+omitted, rewritten or followed by history interchange.
+
+Bob PR #229 adds authenticated, actor-bound application route composition and a
+shared process-local close-and-drain host. Its local route qualification does not
+establish deployed route behavior, legacy-writer fencing, process-kill recovery
+or acceptance of uncertain provider writes. These remain cutover gates alongside
+external-link disposition, runner completion wiring and fresh source snapshots.
