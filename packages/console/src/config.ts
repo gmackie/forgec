@@ -25,6 +25,41 @@ export interface Config {
   SIGNING_KEY_JWK?: string;
   SIGNING_KEY_ID?: string;
 }
+/**
+ * Configuration this instance's own settings imply, but which is absent.
+ *
+ * A health check that cannot fail is not a health check. This deployment reported `ok` on
+ * every probe while answering 503 to every authenticated request, because `/healthz` returned
+ * a constant and the configuration was only read further down the request path. The two stores
+ * involved are easy to confuse — `wrangler secret put` writes Cloudflare's, `fg secret set`
+ * writes ForgeGraph's — so "deployed with no secrets" is a routine mistake, not an exotic one.
+ *
+ * This reports what is *absent*, never whether a present value is valid: an unparseable
+ * signing key is a different failure, and claiming to have checked it here would be the same
+ * kind of lie. Only names are returned, never values.
+ */
+export function missingConfiguration(
+  config: Config,
+  bindings?: { BLOBS?: R2Like },
+): string[] {
+  const missing: string[] = [];
+  if (!config.INSTANCE_AUTHORITY) missing.push("INSTANCE_AUTHORITY");
+  if ((config.OCI_BACKEND || "http") === "r2") {
+    if (!bindings?.BLOBS) missing.push("BLOBS");
+    if (!config.REGISTRY_TOKEN_SECRET) missing.push("REGISTRY_TOKEN_SECRET");
+    if (!config.OCI_REPOSITORY) missing.push("OCI_REPOSITORY");
+    if (!config.SIGNING_KEY_JWK) missing.push("SIGNING_KEY_JWK");
+  }
+  if (config.AUTH_MODE === "cloudflare-access") {
+    if (!config.ACCESS_TEAM_DOMAIN) missing.push("ACCESS_TEAM_DOMAIN");
+    // Without the per-application AUD tag, a token minted for any other application in the
+    // same Access team authenticates here.
+    if (!config.ACCESS_AUD) missing.push("ACCESS_AUD");
+  } else if (!config.ADMIN_TOKEN || config.ADMIN_TOKEN.length < 32)
+    missing.push("ADMIN_TOKEN");
+  return missing;
+}
+
 export async function registryFrom(
   config: Config,
   bindings?: { BLOBS?: R2Like },
