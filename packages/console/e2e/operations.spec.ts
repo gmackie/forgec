@@ -212,6 +212,7 @@ test('keeps function drafts and restores a request from session history',async({
  await page.route('**/api/runtime/targets/workers/invoke',r=>{invocations++;expect(r.request().postDataJSON()).toMatchObject({operationId:'Estimate',input:{hours:2},deploymentRevision:'deployment-1'});return r.fulfill({json:{status:200,durationMs:12,at:'2026-09-27T00:00:00Z',outcome:{kind:'ok',value:{total:300}}}})});
  await page.goto('/');await page.getByLabel('Administrator token').fill('local-console-test-token-1234567890');await page.getByRole('button',{name:'Connect to instance'}).click();
  await page.getByRole('button',{name:'Playground',exact:true}).click();
+ await page.getByRole('tab',{name:'Deployed environment'}).click();
  await page.getByLabel('Sample input').fill('{"hours":2}');
  await page.getByLabel('Idempotency key').fill('request-1');
  await page.getByRole('button',{name:/Validate.*POST/}).click();
