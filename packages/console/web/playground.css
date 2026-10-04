@@ -140,3 +140,35 @@
 .muted.small {
   font-size: 13px;
 }
+.playground-openapi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e5ec;
+}
+.playground-openapi h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.playground-openapi-samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.playground-openapi input,
+.playground-openapi textarea,
+.playground-openapi button {
+  font: inherit;
+}
+.playground-openapi textarea {
+  min-height: 96px;
+}
+.playground-openapi ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.playground-node[data-external="true"] rect {
+  stroke: #6b4c9a;
+}

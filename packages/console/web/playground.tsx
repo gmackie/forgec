@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { AppBundle, DomainIR, TickResult } from "@forgegraph/runtime";
-import type { Analysis, Project } from "./editor/language.js";
+import type { Analysis, OpenApiImport, OpenApiImportRequest, Project } from "./editor/language.js";
 import { example } from "./editor/example.js";
 import { draftChanged, readDraft, writeDraft } from "./editor/draft.js";
 import type { PlaygroundDocument, PlaygroundPosition } from "../src/playground-document.js";
@@ -29,13 +29,16 @@ import {
   SourceWorkspace,
 } from "./editor/workspace.js";
 import { VisualDocument } from "./editor/document.js";
-import { named, patch } from "./editor/model.js";
+import { named, patch, textOf } from "./editor/model.js";
+import { OpenApiOnboarding, type DiscoveredApi } from "./openapi-onboarding.js";
 import { cutWire, deleteDeclaration, snapTargets, snapWire } from "./editor/playground-wires.js";
 import { Edit } from "./editor/document.js";
 import "./editor/editor.css";
 import "./playground.css";
 
-type Inspect = (project: Project & { emit?: "ir" }) => Analysis | Promise<Analysis>;
+type Inspect = ((project: Project & { emit?: "ir" }) => Analysis | Promise<Analysis>) & {
+  importOpenApi?: (request: OpenApiImportRequest) => OpenApiImport | Promise<OpenApiImport>;
+};
 
 export interface OpenedPackage {
   token: number;
@@ -101,6 +104,17 @@ function isGraphNode(node: CanvasNode): node is GraphNode {
   return "entry" in node;
 }
 
+function kindLabel(node: CanvasNode) {
+  if (
+    isGraphNode(node) &&
+    node.kind === "function" &&
+    textOf(node.entry.source, node.entry.node).includes("@http")
+  ) {
+    return "external";
+  }
+  return node.kind;
+}
+
 function pointInSvg(svg: SVGSVGElement, clientX: number, clientY: number) {
   const matrix = typeof svg.getScreenCTM === "function" ? svg.getScreenCTM() : null;
   if (matrix && typeof svg.createSVGPoint === "function") {
@@ -120,6 +134,13 @@ function pointInSvg(svg: SVGSVGElement, clientX: number, clientY: number) {
   };
 }
 
+interface CompilerReply {
+  id: number;
+  analysis?: Analysis;
+  imported?: OpenApiImport;
+  error?: string;
+}
+
 function useCompiler(inspect: Inspect | undefined) {
   const worker = useRef<Worker | null>(null);
   const [epoch, setEpoch] = useState(0);
@@ -137,27 +158,54 @@ function useCompiler(inspect: Inspect | undefined) {
       worker.current = null;
     };
   }, [inspect, epoch]);
-  return useCallback((project: Project, emit?: "ir") => {
-    const current = inspectRef.current;
-    if (current) return Promise.resolve(current(emit ? { ...project, emit } : project));
-    const id = ++seq.current;
-    return new Promise<Analysis>((resolve, reject) => {
-      const timer = window.setTimeout(() => {
-        worker.current?.terminate();
-        setEpoch((value) => value + 1);
-        reject(Error("Compiler time limit reached. Your draft is preserved."));
-      }, 10000);
-      const onMessage = (event: MessageEvent<{ id: number; analysis?: Analysis; error?: string }>) => {
-        if (event.data.id !== id) return;
-        window.clearTimeout(timer);
-        worker.current?.removeEventListener("message", onMessage);
-        if (event.data.error || !event.data.analysis) reject(Error(event.data.error || "Compiler failed"));
-        else resolve(event.data.analysis);
-      };
-      worker.current?.addEventListener("message", onMessage);
-      worker.current?.postMessage({ id, project, ...(emit ? { emit } : {}) });
-    });
-  }, []);
+  const callWorker = useCallback(
+    <T,>(message: object, read: (reply: CompilerReply) => T | undefined, timeoutMessage: string) => {
+      const id = ++seq.current;
+      return new Promise<T>((resolve, reject) => {
+        const timer = window.setTimeout(() => {
+          worker.current?.terminate();
+          setEpoch((value) => value + 1);
+          reject(Error(timeoutMessage));
+        }, 10000);
+        const onMessage = (event: MessageEvent<CompilerReply>) => {
+          if (event.data.id !== id) return;
+          window.clearTimeout(timer);
+          worker.current?.removeEventListener("message", onMessage);
+          const value = read(event.data);
+          if (event.data.error || value === undefined) reject(Error(event.data.error || "Compiler failed"));
+          else resolve(value);
+        };
+        worker.current?.addEventListener("message", onMessage);
+        worker.current?.postMessage({ ...message, id });
+      });
+    },
+    [],
+  );
+  const compile = useCallback(
+    (project: Project, emit?: "ir") => {
+      const current = inspectRef.current;
+      if (current) return Promise.resolve(current(emit ? { ...project, emit } : project));
+      return callWorker<Analysis>(
+        { project, ...(emit ? { emit } : {}) },
+        (reply) => reply.analysis,
+        "Compiler time limit reached. Your draft is preserved.",
+      );
+    },
+    [callWorker],
+  );
+  const importSpec = useCallback(
+    (request: OpenApiImportRequest) => {
+      const current = inspectRef.current;
+      if (current?.importOpenApi) return Promise.resolve(current.importOpenApi(request));
+      return callWorker<OpenApiImport>(
+        { kind: "import", request },
+        (reply) => reply.imported,
+        "OpenAPI import time limit reached.",
+      );
+    },
+    [callWorker],
+  );
+  return { compile, importSpec };
 }
 
 export function PlaygroundEditor({
@@ -175,7 +223,8 @@ export function PlaygroundEditor({
   opened?: OpenedPackage | null;
   onUseDraft?: (() => void) | undefined;
 }) {
-  const compile = useCompiler(inspect);
+  const { compile, importSpec } = useCompiler(inspect);
+  const openApi = !inspect || inspect.importOpenApi ? importSpec : null;
   const skipStorage = initialProject !== undefined || readonlyView != null;
   const [project, setProject] = useState<Project>(
     () => initialProject ?? readDraft()?.project ?? structuredClone(example),
@@ -375,9 +424,9 @@ export function PlaygroundEditor({
     }));
   }
 
-  function loadProject(next: Project) {
+  function loadProject(next: Project, focus?: string) {
     session.current = null;
-    pending.current = null;
+    pending.current = focus ?? null;
     setResults(null);
     setError("");
     setSelected("");
@@ -388,6 +437,28 @@ export function PlaygroundEditor({
     setPayload("{}");
     setName("");
     setProject(structuredClone(next));
+  }
+
+  function addExternal(api: DiscoveredApi) {
+    pending.current = api.focus;
+    setSelected("");
+    setSnapTo("");
+    setError("");
+    setProject((currentProject) => ({
+      ...currentProject,
+      currentFile: api.path,
+      files: [
+        ...currentProject.files.filter((file) => file.path !== api.path),
+        { path: api.path, text: api.text },
+      ],
+    }));
+  }
+
+  function useExternal(api: DiscoveredApi) {
+    loadProject(
+      { name: api.packageName, currentFile: api.path, files: [{ path: api.path, text: api.text }] },
+      api.focus,
+    );
   }
 
   function removeSelected(node: GraphNode) {
@@ -548,7 +619,8 @@ export function PlaygroundEditor({
           <h1>Forge graph</h1>
           <p className="muted">
             Click a block to add it. Click one block, then another in the same file, to snap
-            a wire. Click a wire to remove it. Each block is a Forge declaration, and the
+            a wire. Click a wire to remove it. Discover a sample API to place its operations
+            on the graph as external functions. Each block is a Forge declaration, and the
             canvas draws the wires the source actually declares. Firing a schedule runs the
             draft in this browser and does not touch a deployment.
           </p>
@@ -605,6 +677,9 @@ export function PlaygroundEditor({
               ))}
             </div>
           )}
+          {openApi && !readonly ? (
+            <OpenApiOnboarding importSpec={openApi} onUse={useExternal} onAdd={addExternal} />
+          ) : null}
           {!ready ? <p>Checking source…</p> : null}
           {ready && !graph.nodes.length ? <p>No runnable declarations yet.</p> : null}
           {ready && graph.nodes.length ? (
@@ -680,6 +755,7 @@ export function PlaygroundEditor({
                         : ""
                     }`}
                     data-outcome={outcome}
+                    data-external={kindLabel(node) === "external" ? "true" : undefined}
                     data-x={at.x}
                     data-y={at.y}
                     onClick={() => {
@@ -730,7 +806,7 @@ export function PlaygroundEditor({
                   >
                     <rect x={at.x} y={at.y} width="250" height="78" rx="10" />
                     <text className="playground-kind" x={at.x + 14} y={at.y + 22}>
-                      {node.kind}
+                      {kindLabel(node)}
                     </text>
                     <text x={at.x + 14} y={at.y + 46}>
                       {node.name}
@@ -758,7 +834,7 @@ export function PlaygroundEditor({
         <aside className="playground-inspector" aria-label="Declaration">
           {readonly && current ? (
             <>
-              <p className="eyebrow">{current.kind}</p>
+              <p className="eyebrow">{kindLabel(current)}</p>
               <h2>{current.name}</h2>
               <p className="muted small">{current.path}</p>
               {current.cron ? <p>Schedule {current.cron}</p> : null}
@@ -767,7 +843,7 @@ export function PlaygroundEditor({
           ) : null}
           {editable ? (
             <>
-              <p className="eyebrow">{editable.kind}</p>
+              <p className="eyebrow">{kindLabel(editable)}</p>
               {named(editable.entry.source, editable.entry.node) ? (
                 <Edit
                   label="Declaration name"
