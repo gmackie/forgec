@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 # labnuc's act runner provides ubuntu-latest. The console build needs the wasm32 target.
 jobs:
