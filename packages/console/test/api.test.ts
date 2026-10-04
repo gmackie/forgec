@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { DatabaseSync } from "node:sqlite";
 import { createApi } from "../src/api.js";
 import { SqliteState } from "../src/sqlite.js";
+import { readFileSync } from "node:fs";
+import { credentialStore, type SqlLike } from "../src/credentials.js";
 const token = "a-test-administrator-token-that-is-long";
 function setup() {
   const db = new DatabaseSync(":memory:");
@@ -198,4 +200,49 @@ it('requires console authentication before exposing runtime and deployment conne
   expect(await (await call(path)).json()).toEqual({targets:[]});
  }
  expect((await call('/runtime/targets/missing/invoke','POST',{operationId:'x',input:{},buildHash:'b'})).status).toBe(404);
+});
+
+it("keeps configuration edits valid across audit-only writes such as issuing a registry credential", async () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(readFileSync(new URL("../migrations/0003_registry_credentials.sql", import.meta.url), "utf8"));
+  const sql: SqlLike = {
+    async all(text, params) {
+      return db.prepare(text).all(...(params as never[])) as Record<string, unknown>[];
+    },
+    async run(text, params) {
+      return { changes: Number(db.prepare(text).run(...(params as never[])).changes) };
+    },
+  };
+  const api = createApi({
+    store: new SqliteState(db), token, authority: "standalone.example", name: "My Forge",
+    runtime: "node", registry: null, credentials: credentialStore(sql),
+  });
+  const call = (path: string, method = "GET", body?: unknown, revision?: number) =>
+    api(new Request(`http://localhost/api${path}`, {
+      method,
+      headers: {
+        authorization: `Bearer ${token}`,
+        ...(body ? { "content-type": "application/json" } : {}),
+        ...(revision !== undefined ? { "if-match": String(revision) } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    }));
+  // A fresh (legacy-shaped) state: an audit entry first must not invalidate revision 0.
+  expect((await call("/registry/credentials", "POST", { label: "first", scopes: ["pull"] })).status).toBe(201);
+  expect((await (await call("/state")).json()).revision).toBe(0);
+  const created = await (await call("/apps", "POST", { name: "Commerce", description: "" }, 0)).json();
+  const editorRevision = created.revision;
+  // Another tab issues a credential: an audit entry, no configuration change.
+  expect((await call("/registry/credentials", "POST", { label: "ci", scopes: ["pull"] })).status).toBe(201);
+  expect((await (await call("/state")).json()).revision).toBe(editorRevision);
+  const saved = await call(`/apps/${created.apps[0].id}`, "PATCH",
+    { name: "Commerce", description: "Orders", archived: false }, editorRevision);
+  expect(saved.status).toBe(200);
+  const after = await saved.json();
+  expect(after.revision).toBe(editorRevision + 1);
+  expect(after.audit.map((a: { action: string }) => a.action).slice(0, 3))
+    .toEqual(["App updated", "Registry credential issued", "App registered"]);
+  // A real configuration change still makes the old revision stale.
+  expect((await call(`/apps/${created.apps[0].id}`, "PATCH",
+    { name: "Commerce", description: "Stale", archived: false }, editorRevision)).status).toBe(409);
 });
