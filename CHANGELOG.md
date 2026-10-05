@@ -65,8 +65,36 @@
   L0 temporal facet; ConceptIR #75 is what would make those axes language-level.
   All eight criteria on #93 have executable local evidence.
 
+### Changed
+
+- **Breaking:** a projection's `latest` aggregate now names its ordering field:
+  `latest <field> by <orderField>`. `latest` previously returned the greatest value
+  of the field, so it was `max`; it now returns the value from the contribution with
+  the greatest ordering field (a required integer, decimal, money, date or datetime
+  field), with the record id breaking ties. Write order is never inferred. Bare
+  `latest x` is `E-PROJ-006` with the fix-it `latest x by <field>`. Bundles from
+  older compilers keep their previous behaviour. Migrate with, for example,
+  `latest remainingFraction by observedAt`. (#198, #207)
+
+### Added
+
+- A reference to a record's own resource accepts `"$self"` on create and update,
+  resolved to the id of the record being written, so a required self-reference
+  (`root : Thread @immutable`) can be created. Admin import orders a
+  self-referencing resource's records so in-snapshot targets come first. (#200, #206)
+- `floor` and `datetime` arithmetic in resource expressions evaluate at runtime
+  (`hour := floor(at / 3600) * 3600`), and the compiler accepts exactly the
+  expression functions the runtime implements (`E-EXPR-004`); a parity test keeps
+  the two lists equal. Previously any call compiled and then failed every create.
+  (#196, #205)
+
 ### Fixed
 
+- `D1Storage.list` omits `WHERE` when there are no predicates; a resource with
+  neither `@tenant` nor `@softDelete` listed without filters failed with a SQLite
+  syntax error. (#197, #203)
+- OpenAPI contracts include `null` in the `enum` of a nullable enum field, so
+  generated validators accept the null the API returns. (#199, #204)
 - `/healthz` can now fail. Both hosts return 503 with the names of the absent
   settings when the instance's own configuration implies something it does not
   have — an R2 bucket, `REGISTRY_TOKEN_SECRET`, `INSTANCE_AUTHORITY`, the Access
