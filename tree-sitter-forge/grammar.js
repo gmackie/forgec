@@ -273,8 +273,11 @@ module.exports = grammar({
     aggregate: ($) =>
       prec.right(
         seq(
-          choice("count", "sum", "min", "max", "latest", "exists", "notExists"),
-          $.identifier,
+          choice(
+            seq(choice("count", "sum", "min", "max", "exists", "notExists"), $.identifier),
+            // `latest x by t`: the ordering field (#198).
+            seq("latest", $.identifier, optional(seq("by", $.identifier))),
+          ),
           optional(seq("as", $.identifier)),
           optional(seq("where", $._expression)),
         ),

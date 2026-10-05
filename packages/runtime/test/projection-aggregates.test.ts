@@ -143,3 +143,28 @@ for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapte
     expect(await call(`${P}.get`,{id:"forge"})).toMatchObject({issues:1,openEstimate:2,generation:4});
   } finally { await close(); }
 });
+
+// #198: `latest x by t` is the most recent value by `t`, not the maximum of `x`.
+for (const adapter of featureAdapters) it.skipIf(unavailable(adapter))(`${adapter}: latest follows the ordering field, through removal and rebuild`,async()=>{
+  const model=new Model(bundle);
+  const {storage,close}=await featureStorage("project-portfolio",model,adapter);
+  try {
+    const engine=new Engine(model,testLayer(storage));
+    const call=(operation:string,body:Record<string,unknown>)=>Effect.runPromise(engine.call(operation,body,ctx));
+    let ordinal=0;
+    const apply=(record:Record<string,unknown>)=>engine.applyProjectionEvent(P,{channel:`${R}.changes`,message:"Updated",messageId:`l${++ordinal}`,tenant:"test",opId:`lo${ordinal}`,ordinal:0,payload:record,createdAt:"2026-01-01T00:00:00Z"});
+    await call(`${P}.rebuild`,{});
+    // Written out of time order: the newest observation has the smallest value.
+    const rows=[];
+    for (const [estimate,updated] of [[95,"2026-03-01T22:10:00Z"],[60,"2026-03-01T22:15:00Z"],[90,"2026-03-01T22:05:00Z"]] as const)
+      rows.push(await call(`${R}.create`,{project:"window",estimate,updated}));
+    for (const row of rows) await apply(row);
+    expect(await call(`${P}.get`,{id:"window"})).toMatchObject({largest:95,latestEstimate:60,lastUpdate:"2026-03-01T22:15:00.000Z"});
+    await call(`${P}.rebuild`,{});
+    expect(await call(`${P}.get`,{id:"window"})).toMatchObject({largest:95,latestEstimate:60});
+    // Retracting the most recent observation falls back to the next most recent, not the maximum.
+    await call(`${R}.delete`,{id:rows[1]!["id"],expectedVersion:1});
+    await apply({id:rows[1]!["id"],version:2});
+    expect(await call(`${P}.get`,{id:"window"})).toMatchObject({largest:95,latestEstimate:95,lastUpdate:"2026-03-01T22:10:00.000Z"});
+  } finally { await close(); }
+});

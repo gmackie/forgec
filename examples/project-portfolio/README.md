@@ -2,7 +2,7 @@
 
 `Issue` changes maintain a per-project portfolio with conditional count/sum, existence/not-existence, numeric extrema and latest update time. Build with `forgec build examples/project-portfolio`.
 
-Each aggregate can append `where <predicate>` after its alias. `exists` and `notExists` return booleans over the matching contribution count. `min`, `max` and `latest` support numeric/date/datetime fields; `latest` means maximum field value, not the entire record associated with it. Empty extrema return null. Money and decimal arithmetic uses exact minor units.
+Each aggregate can append `where <predicate>` after its alias. `exists` and `notExists` return booleans over the matching contribution count. `min` and `max` support numeric/date/datetime fields. `latest x by t` is the value of `x` from the contribution with the greatest required ordering field `t` (record id breaks ties); the ordering is always explicit and write order is never inferred. A group supports at most 256 contributions per `latest` aggregate. Empty extrema return null. Money and decimal arithmetic uses exact minor units.
 
 The runtime maintains a bounded value-count multiset for extrema, allowing deletions and decreases without source scans. Each aggregate supports 256 distinct values per group; the group document supports at most 256 KiB. Exceeding either limit returns `BudgetExceeded` before committing an event. This is an explicit portable limit, not an approximate result.
 

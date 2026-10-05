@@ -394,6 +394,10 @@ pub struct Aggregate {
     pub alias: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scale: Option<u32>,
+    /// Ordering field for `latest`: the value of the contribution with the greatest `by`
+    /// (record id breaks ties). Physical write order is never inferred (#198).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub by: Option<String>,
 }
 
 /// A persistent, rebuildable read model maintained from source change events (plan §17).

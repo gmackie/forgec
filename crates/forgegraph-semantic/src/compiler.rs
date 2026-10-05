@@ -6085,7 +6085,7 @@ impl<'a> Ctx<'a> {
             let aggregates: Vec<Aggregate> = q
                 .aggregates()
                 .into_iter()
-                .map(|(function, field, alias, predicate)| {
+                .map(|(function, field, alias, predicate, order)| {
                     if !matches!(function.as_str(), "count" | "exists" | "notExists") {
                         check(self, &field, &function);
                     }
@@ -6100,8 +6100,17 @@ impl<'a> Ctx<'a> {
                     if matches!(function.as_str(),"min"|"max"|"latest") && !fields.iter().any(|f|f.name == field && matches!(&f.ty.base,TypeBase::Scalar {name,..} if matches!(name.as_str(),"integer"|"decimal"|"money"|"date"|"datetime"))) {
                         self.err("E-PROJ-004",file,range_of(q),"min/max/latest requires a numeric, date or datetime field",None);
                     }
+                    // `latest` is the value of the contribution with the greatest ordering field;
+                    // insertion order is never inferred, so the ordering is always explicit (#198).
+                    match (&order, function.as_str()) {
+                        (None, "latest") => self.err("E-PROJ-006",file,range_of(q),format!("latest requires an ordering field: `latest {field} by <field>` (e.g. a datetime such as `observedAt`)"),None),
+                        (Some(o), _) if !fields.iter().any(|f|&f.name == o && !f.ty.optional && matches!(&f.ty.base,TypeBase::Scalar {name,..} if matches!(name.as_str(),"integer"|"decimal"|"money"|"date"|"datetime"))) => {
+                            self.err("E-PROJ-006",file,range_of(q),format!("latest orders by `{o}`, which must be a required integer, decimal, money, date or datetime field"),None)
+                        }
+                        _ => {}
+                    }
                     let filter = predicate.as_ref().and_then(|e|self.expr(e,module,file,Some(&source)));
-                    Aggregate { function, field, alias, scale, filter }
+                    Aggregate { function, field, alias, scale, filter, by: order }
                 })
                 .collect();
             let mut aliases = BTreeSet::new();
