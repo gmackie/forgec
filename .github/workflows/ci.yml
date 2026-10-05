@@ -88,6 +88,8 @@ jobs:
       # the Node-host and cutover suites need a second database on the same server
       - run: PGPASSWORD=forge psql -h localhost -U forge -d postgres -c "CREATE DATABASE forge_node" -c "CREATE DATABASE forge_temporal"
       - run: pnpm install --frozen-lockfile
+      # scripts/test/release-signature.test.mjs imports @forgegraph/registry's built output.
+      - run: pnpm --filter @forgegraph/registry... build
       - run: node --test scripts/test/*.test.mjs
       - run: node scripts/verify-foundation.mjs --suite contracts --all
       # generated fixtures must match what the compiler emits from the sources in this commit
