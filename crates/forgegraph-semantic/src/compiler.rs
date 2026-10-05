@@ -1851,9 +1851,7 @@ impl<'a> Ctx<'a> {
             purpose: None,
             data_class: None,
         };
-        let is_datetime = |t: &Option<TypeSpec>| {
-            matches!(t, Some(TypeSpec { base: TypeBase::Scalar { name, .. }, .. }) if name == "datetime")
-        };
+        let is_datetime = |t: &Option<TypeSpec>| matches!(t, Some(TypeSpec { base: TypeBase::Scalar { name, .. }, .. }) if name == "datetime");
         Some(match e {
             Expr::Binary { op, lhs, rhs } => match op.as_str() {
                 "+" | "-" | "*" | "/" => {
@@ -1904,7 +1902,9 @@ impl<'a> Ctx<'a> {
                 }
                 ty?
             }
-            Expr::Call { callee, .. } if callee.len() == 1 && callee[0] == "floor" => scalar("integer"),
+            Expr::Call { callee, .. } if callee.len() == 1 && callee[0] == "floor" => {
+                scalar("integer")
+            }
             Expr::Call { .. } => scalar("json"),
         })
     }
