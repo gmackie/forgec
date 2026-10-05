@@ -721,10 +721,10 @@ fn collection_element_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> 
 /// `enum` is exhaustive in JSON Schema, so a nullable enumerated value must list `null` too;
 /// otherwise a strict validator rejects the `null` that `type: [.., "null"]` allows (#199).
 fn allow_null_in_enum(obj: &mut serde_json::Map<String, Value>) {
-    if let Some(Value::Array(values)) = obj.get_mut("enum") {
-        if !values.iter().any(Value::is_null) {
-            values.push(Value::Null);
-        }
+    if let Some(Value::Array(values)) = obj.get_mut("enum")
+        && !values.iter().any(Value::is_null)
+    {
+        values.push(Value::Null);
     }
 }
 fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
