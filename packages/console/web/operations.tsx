@@ -47,6 +47,20 @@ export function FunctionPlayground({
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(false),
     [history, setHistory] = useState<any[]>([]);
+  const drafts = useRef(new Map<string, { input: string; purpose: string; key: string }>());
+  const draftId = (runtime: string, fn: string) => JSON.stringify([runtime, fn]);
+  function remember() {
+    if (target && operation) drafts.current.set(draftId(target, operation), { input, purpose, key });
+  }
+  function selectFunction(runtime: string, op: RuntimeCatalog["operations"][number] | undefined) {
+    const draft = drafts.current.get(draftId(runtime, op?.id || ""));
+    setOperation(op?.id || "");
+    setInput(draft?.input ?? JSON.stringify(op?.sample ?? {}, null, 2));
+    setPurpose(draft?.purpose ?? "");
+    setKey(draft?.key ?? "");
+    setResult(null);
+    setError("");
+  }
   const epoch = useRef(0);
   useEffect(() => {
     let alive = true;
@@ -79,8 +93,7 @@ export function FunctionPlayground({
       if (ticket !== epoch.current) return;
       setCatalog(next);
       const op = next.operations[0];
-      setOperation(op?.id || "");
-      setInput(JSON.stringify(op?.sample ?? {}, null, 2));
+      selectFunction(target, op);
     } catch (e) {
       if (ticket === epoch.current) setError((e as Error).message);
     } finally {
@@ -118,10 +131,11 @@ export function FunctionPlayground({
         },
       );
       if (ticket !== epoch.current) return;
-      setResult(reply);
-      setHistory((h) =>
-        [{ ...reply, operation, name: selected.summary }, ...h].slice(0, 10),
-      );
+      const entry = { ...reply, operation, name: selected.summary, input, purpose,
+        target, targetName: targets.find(t => t.id === target)?.name ?? target,
+        buildHash: catalog.buildHash, deploymentRevision: catalog.deploymentRevision };
+      setResult(entry);
+      setHistory((h) => [entry, ...h].slice(0, 10));
     } catch (e) {
       if (ticket === epoch.current) setError((e as Error).message);
     } finally {
@@ -147,13 +161,13 @@ export function FunctionPlayground({
           value={target}
           items={choices(targets)}
           placeholder="Choose environment"
-          disabled={busy}
-          onValueChange={(v) => setTarget(String(v))}
+          disabled={busy || loading}
+          onValueChange={(v) => { remember(); setTarget(String(v)); }}
         />
         <Button
           icon={<ArrowClockwiseIcon />}
           disabled={!target || busy || loading}
-          onClick={() => void load()}
+          onClick={() => { remember(); void load(); }}
         >
           Reload contract
         </Button>
@@ -192,10 +206,8 @@ export function FunctionPlayground({
                     className={o.id === operation ? "selected" : ""}
                     disabled={busy}
                     onClick={() => {
-                      setOperation(o.id);
-                      setInput(JSON.stringify(o.sample ?? {}, null, 2));
-                      setResult(null);
-                      setError("");
+                      remember();
+                      selectFunction(target, o);
                     }}
                   >
                     <span>{o.summary}</span>
@@ -290,6 +302,20 @@ export function FunctionPlayground({
                       </Badge>
                     )}
                   </header>
+                  {result && <div className="ops-request-context">
+                    <p><strong>{result.name}</strong> · {result.targetName}</p>
+                    <p className="muted small">Build {result.buildHash?.slice(0, 16)} · {new Date(result.at).toLocaleString()}</p>
+                    <details><summary>Original request</summary>
+                      <pre className="ops-result" aria-label="Original request">{result.input}</pre>
+                      {result.purpose && <p>Purpose: {result.purpose}</p>}
+                    </details>
+                    <Button size="sm" variant="secondary" disabled={busy || result.target !== target || result.buildHash !== catalog.buildHash || result.deploymentRevision !== catalog.deploymentRevision || !catalog.operations.some(o => o.id === result.operation)}
+                      onClick={() => {
+                        remember(); setOperation(result.operation); setInput(result.input);
+                        setPurpose(result.purpose); setKey(""); setError("");
+                      }}>Restore input</Button>
+                    <p className="muted small">Restores this request for editing without sending it. The idempotency key is cleared. Requires the same environment and contract revision.</p>
+                  </div>}
                   <pre className="ops-result" aria-label="Invocation response">
                     {result
                       ? JSON.stringify(result.outcome, null, 2)
@@ -301,7 +327,9 @@ export function FunctionPlayground({
           )}
           {history.length > 0 && (
             <section className="panel">
-              <h2>Recent invocations</h2>
+              <div className="ops-section"><h2>Recent invocations</h2>
+                <Button size="sm" variant="ghost" onClick={() => { setHistory([]); setResult(null); }}>Clear history</Button>
+              </div>
               <p className="muted small">
                 This session only. Inputs and responses are not written to the
                 activity log.
@@ -312,7 +340,7 @@ export function FunctionPlayground({
                   key={i}
                   onClick={() => setResult(h)}
                 >
-                  <strong>{h.name}</strong>
+                  <strong>{h.name}<small className="ops-history-context">{h.targetName} · {h.buildHash?.slice(0, 12)}</small></strong>
                   <span>{h.status}</span>
                   <span>{h.durationMs} ms</span>
                   <time>{new Date(h.at).toLocaleTimeString()}</time>
