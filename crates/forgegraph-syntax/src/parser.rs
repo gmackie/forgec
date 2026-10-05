@@ -1132,9 +1132,16 @@ impl<'a> Parser<'a> {
                 "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"
                     if p.nth(1) == TokenKind::Ident =>
                 {
+                    let latest = p.current_text() == "latest";
                     p.start(K::AGGREGATE_DECL);
                     p.bump();
                     p.bump();
+                    // `latest x by t`: the field that orders contributions (#198). Only `latest` takes
+                    // one, so `by` after any other aggregate stays a projection grouping clause.
+                    if latest && p.at_kw("by") {
+                        p.bump();
+                        p.expect_ident("ordering field");
+                    }
                     if p.at_kw("as") {
                         p.bump();
                         p.expect_ident("alias");

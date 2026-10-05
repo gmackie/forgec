@@ -5,6 +5,7 @@
  */
 import { Cause, Effect } from "effect";
 import { formatMinor, toMinor } from "./codecs.js";
+import { scaleOf } from "./model.js";
 import type { Wire } from "./decode.js";
 import { canonicalize, evalExpr } from "./decode.js";
 import type { Envelope, Transport } from "./dispatch.js";
@@ -90,9 +91,25 @@ export class ReadModels {
     for (const a of p.aggregates) {
       if (a.filter && !evalExpr(this.engine.model,this.engine.model.resource(p.source),a.filter,rec)) continue;
       if (["count","exists","notExists"].includes(a.function)) out[a.alias] = "1";
-      else if (rec[a.field] !== null && rec[a.field] !== undefined) out[a.alias] = a.scale !== undefined ? toMinor(String(rec[a.field]),a.scale).toString() : String(rec[a.field]);
+      else if (rec[a.field] !== null && rec[a.field] !== undefined) {
+        const value = a.scale !== undefined ? toMinor(String(rec[a.field]),a.scale).toString() : String(rec[a.field]);
+        // `latest x by t`: one entry per record, keyed by its ordering value and id, so a removal
+        // retracts exactly that record and the greatest entry is the most recent value (#198).
+        out[a.alias] = a.function === "latest" && a.by ? JSON.stringify([this.orderKey(p, a.by, rec[a.by]), String(rec["id"]), value]) : value;
+      }
     }
     return out;
+  }
+  /** Sortable form of a `latest ... by` ordering value: minor units for numbers, ISO text for dates. */
+  private orderKey(p: ProjectionDecl, by: string, raw: unknown): string {
+    const field = this.engine.model.resource(p.source).fields.find((f) => f.name === by);
+    const base = field?.type.base;
+    if (base?.kind === "scalar" && ["integer","decimal","money"].includes(base.name)) return toMinor(String(raw), base.name === "integer" ? 0 : scaleOf(field!.type)).toString();
+    return String(raw);
+  }
+  private orderNumeric(p: ProjectionDecl, by: string): boolean {
+    const base = this.engine.model.resource(p.source).fields.find((f) => f.name === by)?.type.base;
+    return base?.kind === "scalar" && ["integer","decimal","money"].includes(base.name);
   }
   private adjust(p:ProjectionDecl, doc:Doc, values:Record<string,string>, sign:1|-1): void {
     for (const a of p.aggregates) {
@@ -123,7 +140,14 @@ export class ReadModels {
     p.by.forEach((f, i) => (out[f] = parts[i] ?? null));
     for (const a of p.aggregates) {
       if (["min","max","latest"].includes(a.function)) {
-        const values = Object.keys((doc?.[`__values:${a.alias}`] ?? {}) as Record<string,number>);
+        let values = Object.keys((doc?.[`__values:${a.alias}`] ?? {}) as Record<string,number>);
+        if (a.function === "latest" && a.by) {
+          const numeric = this.orderNumeric(p, a.by);
+          const cmp = (x: string, y: string) => numeric ? (BigInt(x) < BigInt(y) ? -1 : BigInt(x) > BigInt(y) ? 1 : 0) : x < y ? -1 : x > y ? 1 : 0;
+          const entries = values.map((v) => JSON.parse(v) as [string, string, string]);
+          entries.sort((x, y) => cmp(x[0], y[0]) || (x[1] < y[1] ? -1 : x[1] > y[1] ? 1 : 0));
+          values = entries.length ? [entries.at(-1)![2]] : [];
+        }
         const resource = this.engine.model.resource(p.source);
         const field = resource.fields.find(f=>f.name===a.field);
         const numeric = a.scale !== undefined || (field?.type.base.kind === "scalar" && field.type.base.name === "integer");

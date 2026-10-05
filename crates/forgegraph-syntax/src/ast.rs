@@ -625,14 +625,23 @@ impl QueryDecl {
             .unwrap_or_default()
     }
     /// (function, field, alias)
-    pub fn aggregates(&self) -> Vec<(String, String, String, Option<Expr>)> {
+    /// `(function, field, alias, where, by)`; `by` is the ordering field of `latest x by t`.
+    #[allow(clippy::type_complexity)]
+    pub fn aggregates(&self) -> Vec<(String, String, String, Option<Expr>, Option<String>)> {
         children::<AggregateDecl>(&self.0)
             .filter_map(|a| {
                 let toks: Vec<String> = idents(&a.0).map(|t| t.text().to_string()).collect();
                 let f = toks.first()?.clone();
                 let field = toks.get(1)?.clone();
-                let alias = if toks.get(2).map(|s| s.as_str()) == Some("as") {
-                    toks.get(3)?.clone()
+                let mut rest = 2;
+                let by = if toks.get(rest).map(|s| s.as_str()) == Some("by") {
+                    rest += 2;
+                    Some(toks.get(rest - 1)?.clone())
+                } else {
+                    None
+                };
+                let alias = if toks.get(rest).map(|s| s.as_str()) == Some("as") {
+                    toks.get(rest + 1)?.clone()
                 } else {
                     field.clone()
                 };
@@ -641,6 +650,7 @@ impl QueryDecl {
                     field,
                     alias,
                     child::<WhereDecl>(&a.0).and_then(|w| w.0.children().find_map(Expr::cast)),
+                    by,
                 ))
             })
             .collect()

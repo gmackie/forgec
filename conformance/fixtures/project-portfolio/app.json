@@ -1,11 +1,11 @@
 {
   "version": "app-bundle/1",
-  "buildHash": "1b1593ce0303d2fc0622ea0d10ec1946d22a576f6d3ecf22c7fe0bb86c71a1f6",
+  "buildHash": "f7212bfa9aca301dd2e1fa98e356ad3398e621ce27240b1317af742f3b4008d2",
   "digests": {
-    "source": "fa6b41079d33c74e1dcb43a506cc7a988e6b5e94c13a8038f38bdbb7d832fc3c",
-    "wire": "1185bd0512f9012a8b4c6289bf5dfd4082fb7cd900c8a7870046a8fdf0072ea9",
+    "source": "656a3c9a965163df8f27cf34161de7de6b5f80468c630dcd8bf280702ab81acc",
+    "wire": "bb7b466fa99ea8d27b454f6a7c0ad8e2efd9c1ee003a9865fe12a0e1bb393bcd",
     "docs": "04cc8c306e694e10fa2f817e97f730761a2f3a511f977b15e2d2848355f4b13a",
-    "security": "9db663160cc30791d56ebb32a55d7652435e88830b668c6098c278e82eb9bcf7"
+    "security": "f409509d6fbd08ba41b58f79d2e285edeed5b77ba8764f9061062ab23836b0f9"
   },
   "ir": {
     "version": "domain-ir/1",
@@ -308,7 +308,14 @@
               {
                 "function": "latest",
                 "field": "updated",
-                "alias": "lastUpdate"
+                "alias": "lastUpdate",
+                "by": "updated"
+              },
+              {
+                "function": "latest",
+                "field": "estimate",
+                "alias": "latestEstimate",
+                "by": "updated"
               },
               {
                 "filter": {
@@ -625,6 +632,19 @@
                 }
               ]
             },
+            "latestEstimate": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "anyOpen": {
               "type": "boolean"
             },
@@ -644,6 +664,7 @@
             "smallest",
             "largest",
             "lastUpdate",
+            "latestEstimate",
             "anyOpen",
             "allDone",
             "generation"
@@ -1781,6 +1802,7 @@
           "estimate",
           "estimate",
           "updated",
+          "estimate",
           "anyOpen",
           "allDone"
         ],
@@ -2042,6 +2064,19 @@
                 }
               ]
             },
+            "latestEstimate": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "x-forge-type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "anyOpen": {
               "type": "boolean"
             },
@@ -2062,6 +2097,7 @@
             "smallest",
             "largest",
             "lastUpdate",
+            "latestEstimate",
             "anyOpen",
             "allDone",
             "generation"

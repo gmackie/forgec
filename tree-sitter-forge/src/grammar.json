@@ -2200,38 +2200,78 @@
             "type": "CHOICE",
             "members": [
               {
-                "type": "STRING",
-                "value": "count"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": "count"
+                      },
+                      {
+                        "type": "STRING",
+                        "value": "sum"
+                      },
+                      {
+                        "type": "STRING",
+                        "value": "min"
+                      },
+                      {
+                        "type": "STRING",
+                        "value": "max"
+                      },
+                      {
+                        "type": "STRING",
+                        "value": "exists"
+                      },
+                      {
+                        "type": "STRING",
+                        "value": "notExists"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  }
+                ]
               },
               {
-                "type": "STRING",
-                "value": "sum"
-              },
-              {
-                "type": "STRING",
-                "value": "min"
-              },
-              {
-                "type": "STRING",
-                "value": "max"
-              },
-              {
-                "type": "STRING",
-                "value": "latest"
-              },
-              {
-                "type": "STRING",
-                "value": "exists"
-              },
-              {
-                "type": "STRING",
-                "value": "notExists"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "latest"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": "by"
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "identifier"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  }
+                ]
               }
             ]
-          },
-          {
-            "type": "SYMBOL",
-            "name": "identifier"
           },
           {
             "type": "CHOICE",

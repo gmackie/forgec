@@ -18,7 +18,8 @@ export projection ProjectPortfolio {
   sum estimate as openEstimate where state == State.Open
   min estimate as smallest
   max estimate as largest
-  latest updated as lastUpdate
+  latest updated by updated as lastUpdate
+  latest estimate by updated as latestEstimate
   exists anyOpen where state == State.Open
   notExists allDone where state == State.Open
 }

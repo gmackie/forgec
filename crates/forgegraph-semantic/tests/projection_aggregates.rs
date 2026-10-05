@@ -50,3 +50,40 @@ fn changes_require_a_new_generation() {
                 && f.needs.contains(&"rebuild-projection-generation"))
     );
 }
+
+/// `latest` always names its ordering; write order is never inferred (#198).
+#[test]
+fn latest_requires_an_explicit_orderable_ordering_field() {
+    let compile_with = |aggregate: &str| {
+        let src = format!(
+            "resource R @versioned {{ id : id\n group : text\n value : integer\n at : datetime\n maybe : datetime?\n label : text }}\nprojection P {{ from R\n by group\n {aggregate}\n}}"
+        );
+        compile(
+            &Package::inline("@test/projection", vec![("src/a.forge".into(), src)]),
+            &[],
+        )
+    };
+    let ok = compile_with("latest value by at as current");
+    assert!(ok.ir.is_some(), "{}", ok.render());
+    let ir = ok.ir.unwrap();
+    let aggregate = &ir.modules[0].projections[0].aggregates[0];
+    assert_eq!(
+        (aggregate.alias.as_str(), aggregate.by.as_deref()),
+        ("current", Some("at"))
+    );
+    for bad in [
+        "latest value as current",
+        "latest value by label as current",
+        "latest value by maybe as current",
+        "latest value by missing as current",
+    ] {
+        let c = compile_with(bad);
+        assert!(
+            c.diagnostics.iter().any(|d| d.code == "E-PROJ-006"),
+            "{bad}: {}",
+            c.render()
+        );
+    }
+    // Only `latest` takes an ordering field; elsewhere `by` is not part of an aggregate.
+    assert!(compile_with("max value by at as top").ir.is_none());
+}

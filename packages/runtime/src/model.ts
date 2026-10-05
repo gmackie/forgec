@@ -89,7 +89,7 @@ export interface FunctionDecl {
 export interface WebSocketBinding { path: string }
 export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; websocket?: WebSocketBinding; messages: { name: string; fields: Field[] }[] }
 export interface ViewDecl { id: string; name: string; source: string; by: string[]; where?: Expr; order: OrderKey[]; fields: string[] }
-export interface AggregateDecl { function: "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"; field: string; alias: string; scale?: number; filter?: Expr }
+export interface AggregateDecl { function: "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"; field: string; alias: string; scale?: number; filter?: Expr; /** `latest x by t`: ordering field (#198). */ by?: string }
 export interface ProjectionDecl { id: string; name: string; source: string; by: string[]; where?: Expr; aggregates: AggregateDecl[]; crud?: { path: string; operations?: string[]; actions: string[] } }
 export interface CacheDecl { id: string; name: string; keys: Field[]; loader: Expr; freshUntil: Expr; staleUntil?: Expr }
 export type WorkflowTerminal = { kind: "return"; value: Expr } | { kind: "fail"; error: string };
