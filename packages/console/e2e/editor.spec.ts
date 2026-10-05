@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loadServiceDesk } from "./service-desk.js";
+import { loadServiceDesk, openProjectTools } from "./service-desk.js";
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/");
   await page
@@ -89,7 +89,7 @@ test("loads demo safely and keeps a default edit through undo, redo and reload",
   page,
 }) => {
   await login(page);
-  await page.locator("summary").filter({ hasText: "Project tools" }).click();
+  await openProjectTools(page);
   await page.getByRole("button", { name: "Load service desk", exact: true }).click();
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await page.getByRole("button", { name: "Load service desk", exact: true }).click();
