@@ -7,6 +7,9 @@ export interface Config {
   DEPLOYMENT_TARGETS_JSON?: string;
   GIT_PROJECTS_JSON?: string;
   GITHUB_TOKEN?: string;
+  /** Forgejo origin for `provider: "forgejo"` Git projects, e.g. https://git.forgegraf.com. */
+  FORGEJO_URL?: string;
+  FORGEJO_TOKEN?: string;
   ADMIN_TOKEN?: string;
   /** "token" (default) or "cloudflare-access". */
   AUTH_MODE?: string;
@@ -57,6 +60,19 @@ export function missingConfiguration(
     if (!config.ACCESS_AUD) missing.push("ACCESS_AUD");
   } else if (!config.ADMIN_TOKEN || config.ADMIN_TOKEN.length < 32)
     missing.push("ADMIN_TOKEN");
+  // Each configured Git provider needs its credential; without it every request fails.
+  let providers: unknown[] = [];
+  try {
+    const projects = JSON.parse(config.GIT_PROJECTS_JSON || "[]");
+    if (Array.isArray(projects)) providers = projects.map((p) => p?.provider ?? "github");
+  } catch {
+    // Malformed JSON is invalid, not absent; gitRepositories reports it.
+  }
+  if (providers.includes("github") && !config.GITHUB_TOKEN) missing.push("GITHUB_TOKEN");
+  if (providers.includes("forgejo")) {
+    if (!config.FORGEJO_URL) missing.push("FORGEJO_URL");
+    if (!config.FORGEJO_TOKEN) missing.push("FORGEJO_TOKEN");
+  }
   return missing;
 }
 

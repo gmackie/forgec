@@ -9,6 +9,8 @@ export const gitProjectSchema = z
   .object({
     id: z.string().regex(/^[a-z0-9-]+$/),
     name: z.string().min(1).max(120),
+    /** Where the repository is hosted. Forgejo uses FORGEJO_URL and FORGEJO_TOKEN. */
+    provider: z.enum(["github", "forgejo"]).optional(),
     repository: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
     branch: z
       .string()
@@ -87,13 +89,16 @@ const decode = (s: string) =>
 export class GitRepository {
   constructor(
     readonly project: GitProject,
-    private readonly token: string,
-    private readonly fetcher: typeof fetch = fetch,
+    protected readonly token: string,
+    protected readonly fetcher: typeof fetch = fetch,
   ) {}
   onBranch(branch: string) {
     const parsed=gitProjectSchema.safeParse({...this.project,branch});
     if(!parsed.success)throw new Problem(400,"Enter a valid Git branch name.");
-    return new GitRepository(parsed.data,this.token,this.fetcher);
+    return this.with(parsed.data);
+  }
+  protected with(project: GitProject): GitRepository {
+    return new GitRepository(project,this.token,this.fetcher);
   }
   async head(): Promise<string> {
     const ref=await this.request(`/repos/${this.project.repository}/git/ref/heads/${this.project.branch.split("/").map(encodeURIComponent).join("/")}`);
@@ -118,46 +123,40 @@ export class GitRepository {
     await this.request(`/repos/${this.project.repository}/git/refs`,{ref:`refs/heads/${name}`,sha:revision});
     return {name,revision};
   }
-  private async request(path: string, body?: unknown): Promise<any> {
-    const response = await this.fetcher(`https://api.github.com${path}`, {
+  protected apiUrl(path: string) {
+    return `https://api.github.com${path}`;
+  }
+  protected headers(): Record<string, string> {
+    return {
+      authorization: `Bearer ${this.token}`,
+      accept: "application/vnd.github+json",
+      "content-type": "application/json",
+      "user-agent": "Forge-Studio",
+      "x-github-api-version": "2022-11-28",
+    };
+  }
+  protected async request(path: string, body?: unknown): Promise<any> {
+    const response = await this.fetcher(this.apiUrl(path), {
       method: body ? "POST" : "GET",
       redirect: "manual",
       signal: AbortSignal.timeout(20000),
-      headers: {
-        authorization: `Bearer ${this.token}`,
-        accept: "application/vnd.github+json",
-        "content-type": "application/json",
-        "user-agent": "Forge-Studio",
-        "x-github-api-version": "2022-11-28",
-      },
+      headers: this.headers(),
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
     if (!response.ok)
       throw new Problem(
-        response.status === 404 ? 404 : response.status === 422 ? 409 : 502,
+        response.status === 404 ? 404 : [409, 422].includes(response.status) ? 409 : 502,
         "Git request failed. Check repository access and branch protection.",
       );
     return response.json();
   }
   async snapshot(revision?: string): Promise<GitSnapshot> {
     const base = `/repos/${this.project.repository}`;
-    if (!revision) {
-      const ref = await this.request(
-        `${base}/git/ref/heads/${this.project.branch.split("/").map(encodeURIComponent).join("/")}`,
-      );
-      revision = ref.object?.sha;
-    }
+    if (!revision) revision = await this.head();
     if (!revision || !/^[a-f0-9]{40}$/.test(revision))
       throw new Problem(502, "Git returned an invalid revision.");
-    const tree = await this.request(
-      `${base}/git/trees/${revision}?recursive=1`,
-    );
-    if (tree.truncated)
-      throw new Problem(413, "Repository tree is too large to load safely.");
+    const entries = await this.forgeEntries(revision);
     const prefix = this.project.root ? this.project.root + "/" : "";
-    const entries = (tree.tree as any[]).filter(
-      (f) => f.path.startsWith(prefix) && f.path.endsWith(".forge"),
-    );
     if (
       entries.length > 50 ||
       entries.some(
@@ -181,6 +180,18 @@ export class GitRepository {
       files.push({ path: f.path.slice(prefix.length), text });
     }
     return { ...this.project, revision, files };
+  }
+  /** Tree entries for the `.forge` files under the source root at `revision`. */
+  protected async forgeEntries(revision: string): Promise<any[]> {
+    const tree = await this.request(
+      `/repos/${this.project.repository}/git/trees/${revision}?recursive=1`,
+    );
+    if (tree.truncated)
+      throw new Problem(413, "Repository tree is too large to load safely.");
+    const prefix = this.project.root ? this.project.root + "/" : "";
+    return (tree.tree as any[]).filter(
+      (f) => f.path.startsWith(prefix) && f.path.endsWith(".forge"),
+    );
   }
   async commit(input: GitCommit): Promise<{ revision: string; url: string }> {
     const parsed = gitCommitSchema.safeParse(input);
@@ -231,18 +242,162 @@ export class GitRepository {
     return { revision: commit.oid, url: commit.url };
   }
 }
+/**
+ * A repository on a Forgejo (or Gitea) instance, such as git.forgegraf.com.
+ *
+ * Forgejo has no equivalent of GitHub's `expectedHeadOid`, so a commit first checks that the
+ * branch is still at the draft's base, then sends every change in one `POST /contents` with
+ * the base blob sha of each updated or deleted file. Forgejo rejects the commit if any of those
+ * files changed in between; a concurrent commit touching only other files is not detected.
+ */
+export class ForgejoRepository extends GitRepository {
+  constructor(
+    project: GitProject,
+    token: string,
+    private readonly url: string,
+    fetcher: typeof fetch = fetch,
+  ) {
+    super(project, token, fetcher);
+  }
+  protected with(project: GitProject): GitRepository {
+    return new ForgejoRepository(project, this.token, this.url, this.fetcher);
+  }
+  protected apiUrl(path: string) {
+    return `${this.url}/api/v1${path}`;
+  }
+  protected headers(): Record<string, string> {
+    return {
+      authorization: `token ${this.token}`,
+      accept: "application/json",
+      "content-type": "application/json",
+      "user-agent": "Forge-Studio",
+    };
+  }
+  /**
+   * Forgejo pages recursive trees at 1000 entries, which a monorepo exceeds. Walk down to the
+   * source root one level at a time and list only that subtree.
+   */
+  protected async forgeEntries(revision: string): Promise<any[]> {
+    const trees = `/repos/${this.project.repository}/git/trees`;
+    let sha = revision;
+    for (const segment of this.project.root ? this.project.root.split("/") : []) {
+      const level = await this.request(`${trees}/${sha}?per_page=1000`);
+      const dir = (level.tree as any[]).find((e) => e.path === segment && e.type === "tree");
+      if (!dir) {
+        if (level.truncated)
+          throw new Problem(413, "Repository tree is too large to load safely.");
+        return [];
+      }
+      sha = dir.sha;
+    }
+    const tree = await this.request(`${trees}/${sha}?recursive=1&per_page=1000`);
+    if (tree.truncated)
+      throw new Problem(413, "Repository tree is too large to load safely.");
+    const prefix = this.project.root ? this.project.root + "/" : "";
+    return (tree.tree as any[])
+      .filter((f) => f.path.endsWith(".forge"))
+      .map((f) => ({ ...f, path: prefix + f.path }));
+  }
+  async head(): Promise<string> {
+    const refs = await this.request(`/repos/${this.project.repository}/git/refs/heads/${this.project.branch.split("/").map(encodeURIComponent).join("/")}`);
+    // Forgejo matches refs by prefix, so `main` also returns `main-old`.
+    const ref = Array.isArray(refs) ? refs.find((r: any) => r.ref === `refs/heads/${this.project.branch}`) : null;
+    if(!/^[a-f0-9]{40}$/.test(ref?.object?.sha || ""))throw new Problem(502,"Git returned an invalid branch revision.");
+    return ref.object.sha;
+  }
+  async branches(page=1) {
+    const rows=await this.request(`/repos/${this.project.repository}/branches?limit=50&page=${page}`);
+    if(!Array.isArray(rows))throw new Problem(502,"Git returned an invalid branch list.");
+    return {items:rows.map((r:any)=>({name:r.name,revision:r.commit.id,protected:!!r.protected})),hasMore:rows.length===50};
+  }
+  async history(page=1) {
+    const rows=await this.request(`/repos/${this.project.repository}/commits?sha=${encodeURIComponent(this.project.branch)}&limit=30&page=${page}&stat=false&verification=false&files=false`);
+    if(!Array.isArray(rows))throw new Problem(502,"Git returned an invalid commit list.");
+    return {items:rows.map((r:any)=>({revision:r.sha,message:String(r.commit.message).slice(0,4000),url:r.html_url,author:r.commit.author?.name || "Unknown",at:r.commit.author?.date || ""})),hasMore:rows.length===30};
+  }
+  async createBranch(name: string, revision: string) {
+    this.onBranch(name);
+    if(!/^[a-f0-9]{40}$/.test(revision))throw new Problem(400,"Invalid base revision.");
+    await this.snapshot(revision);
+    await this.request(`/repos/${this.project.repository}/branches`,{new_branch_name:name,old_ref_name:revision});
+    return {name,revision};
+  }
+  async commit(input: GitCommit): Promise<{ revision: string; url: string }> {
+    const parsed = gitCommitSchema.safeParse(input);
+    if (!parsed.success)
+      throw new Problem(
+        400,
+        parsed.error.issues.map((i) => i.message).join("; "),
+      );
+    const moved = new Problem(
+      409,
+      "Git rejected the commit. The branch may have changed or require a pull request. Your draft is preserved; reload the repository to compare changes.",
+    );
+    if ((await this.head()) !== input.base) throw moved;
+    const before = await this.snapshot(input.base);
+    const prefix = this.project.root ? this.project.root + "/" : "";
+    const shas = new Map(
+      (await this.forgeEntries(input.base)).map((e) => [e.path, e.sha]),
+    );
+    const files = [
+      ...input.files.flatMap((f) => {
+        const old = before.files.find((b) => b.path === f.path);
+        if (old?.text === f.text) return [];
+        return [
+          old
+            ? { operation: "update", path: prefix + f.path, sha: shas.get(prefix + f.path), content: encode(f.text) }
+            : { operation: "create", path: prefix + f.path, content: encode(f.text) },
+        ];
+      }),
+      ...before.files
+        .filter((f) => !input.files.some((n) => n.path === f.path))
+        .map((f) => ({ operation: "delete", path: prefix + f.path, sha: shas.get(prefix + f.path) })),
+    ];
+    if (!files.length) throw new Problem(400, "There are no changes to commit.");
+    let result: any;
+    try {
+      result = await this.request(`/repos/${this.project.repository}/contents`, {
+        branch: this.project.branch,
+        message: input.message.trim(),
+        files,
+      });
+    } catch (e) {
+      if (e instanceof Problem && e.status === 409) throw moved;
+      throw e;
+    }
+    const commit = result?.commit;
+    if (!commit?.sha || !/^[a-f0-9]{40}$/.test(commit.sha))
+      throw new Problem(
+        502,
+        "Git did not confirm a commit. Reload the repository before retrying.",
+      );
+    return { revision: commit.sha, url: commit.html_url };
+  }
+}
 export function gitRepositories(config: {
   GIT_PROJECTS_JSON?: string;
   GITHUB_TOKEN?: string;
+  FORGEJO_URL?: string;
+  FORGEJO_TOKEN?: string;
 }): GitRepository[] {
   if (!config.GIT_PROJECTS_JSON) return [];
   const projects = z
     .array(gitProjectSchema)
     .max(50)
     .parse(JSON.parse(config.GIT_PROJECTS_JSON));
-  if (!config.GITHUB_TOKEN)
-    throw new Error("GITHUB_TOKEN is required for configured Git projects.");
   if (new Set(projects.map((p) => p.id)).size !== projects.length)
     throw new Error("Duplicate Git project IDs.");
-  return projects.map((p) => new GitRepository(p, config.GITHUB_TOKEN!));
+  return projects.map((p) => {
+    if (p.provider === "forgejo") {
+      if (!config.FORGEJO_URL || !config.FORGEJO_TOKEN)
+        throw new Error("FORGEJO_URL and FORGEJO_TOKEN are required for Forgejo Git projects.");
+      const url = new URL(config.FORGEJO_URL);
+      if (url.protocol !== "https:" || url.pathname.replace(/\/$/, "") !== "" || url.search)
+        throw new Error("FORGEJO_URL must be an https origin, e.g. https://git.example.com.");
+      return new ForgejoRepository(p, config.FORGEJO_TOKEN, url.origin);
+    }
+    if (!config.GITHUB_TOKEN)
+      throw new Error("GITHUB_TOKEN is required for GitHub Git projects.");
+    return new GitRepository(p, config.GITHUB_TOKEN);
+  });
 }

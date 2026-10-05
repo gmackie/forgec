@@ -44,23 +44,33 @@ that source token; it does not automatically rename references in other location
 
 ### Git-backed applications
 
-Configure GitHub projects on the instance with `GIT_PROJECTS_JSON` and a server-side
-`GITHUB_TOKEN`. The token needs repository contents read/write permission. For example:
+Configure projects on the instance with `GIT_PROJECTS_JSON`. A project is on GitHub unless it
+sets `"provider": "forgejo"`. GitHub projects use a server-side `GITHUB_TOKEN`; Forgejo (or
+Gitea) projects use `FORGEJO_URL` (an https origin) and `FORGEJO_TOKEN`. Either token needs
+repository contents read/write permission. `/healthz` reports the credential a configured
+project is missing. For example:
 
 ```json
-[{"id":"desk","name":"Service desk","repository":"your-org/your-app","branch":"studio","root":"src"}]
+[{"id":"desk","name":"Service desk","repository":"your-org/your-app","branch":"studio","root":"src"},
+ {"id":"forgejo-desk","name":"Desk on Forgejo","provider":"forgejo","repository":"your-org/your-app","branch":"studio","root":"src"}]
 ```
+
+On a ForgeGraph-managed Forgejo, mint the token with
+`forge forgejo-token --name <name> --no-store --scopes write:repository` and store it with
+`forge secret set FORGEJO_TOKEN --stage <stage> --stdin`.
 
 The source root is relative to the repository; only regular `.forge` files under it can be
 changed. `Connect Git` loads a snapshot of the configured branch. Browse, choose **Edit draft**,
 then **Review changes** to inspect committed and draft source, enter a message, and create a
 real Git commit. All file changes are committed together. GitHub's atomic `expectedHeadOid`
-check rejects a commit if the branch has moved; the draft and its base revision remain saved
-in the browser. Branch protection may require committing on a working branch instead of main.
+check rejects a commit if the branch has moved. Forgejo has no equivalent: the console checks
+the branch head first, then commits with each changed file's base blob, so Forgejo rejects the
+commit if any of those files changed; a concurrent commit touching only other files is not
+detected. On a rejection the draft and its base revision remain saved in the browser. Branch protection may require committing on a working branch instead of main.
 Commit success returns to read view and clears the undo history at the new revision.
 
 Credentials stay on the server. Both Docker and Cloudflare Workers use the same provider API;
-no local Git executable or central Forge service is needed. The initial provider is GitHub.
+no local Git executable or central Forge service is needed. The providers are GitHub and Forgejo.
 Other independently hosted instances can omit Git entirely. This does not publish OCI artifacts
 or deploy running apps. After a conflict, export your draft before loading a fresh repository
 snapshot to reconcile it; automatic merging is not implemented.
