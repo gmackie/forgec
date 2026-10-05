@@ -29,6 +29,9 @@ done
 # Reserved SQL table and reference names must execute on both SQL adapters.
 cargo run -q -p forgegraph-cli -- build examples/sql-identifiers --out conformance/fixtures/sql-identifiers
 
+# Required self-references: `$self` on create and dependency-ordered import (#200).
+cargo run -q -p forgegraph-cli -- build examples/self-reference --out conformance/fixtures/self-reference
+
 feature_out=$(mktemp -d)
 trap 'rm -rf "$foundation_out" "$feature_out"' EXIT
 for feature_slug in collections credentials search issue-numbers project-portfolio deployment-lanes; do
