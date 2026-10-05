@@ -75,11 +75,10 @@ export function OpenApiOnboarding({
   const foreign = preview ? fieldsOf(preview.report) : [];
 
   return (
-    <section className="playground-openapi" aria-label="External APIs">
-      <h2>External APIs</h2>
+    <details className="playground-openapi">
+      <summary>Import OpenAPI</summary>
       <p className="muted small">
-        Discover operations from a sample OpenAPI document. The import stays in this browser
-        and does not call the host.
+        Import an OpenAPI 3 document in this browser. Forge does not call the host.
       </p>
       <div className="playground-openapi-samples">
         {openApiSamples.map((sample) => (
@@ -134,7 +133,7 @@ export function OpenApiOnboarding({
             ))}
           </ul>
           <p className="muted small">
-            Hosts {preview.report.hosts.join(", ") || "none"}. The browser did not call it.
+            Hosts {preview.report.hosts.join(", ") || "none"}. Forge did not call this host.
           </p>
           {foreign.length ? (
             <p className="muted small">Foreign ids stay text: {foreign.join(", ")}.</p>
@@ -157,6 +156,6 @@ export function OpenApiOnboarding({
           </div>
         </div>
       ) : null}
-    </section>
+    </details>
   );
 }

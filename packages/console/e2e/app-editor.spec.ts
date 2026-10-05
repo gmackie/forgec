@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { loadServiceDesk } from "./service-desk.js";
 test("browses the whole app by declaration kind and only edits explicitly", async ({
   page,
 }) => {
@@ -8,6 +9,7 @@ test("browses the whole app by declaration kind and only edits explicitly", asyn
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
   await page.getByRole("button", { name: /^Developer/ }).click();
+  await loadServiceDesk(page);
   await expect(
     page.getByRole("tab", { name: "Resources", exact: false }),
   ).toBeVisible();
@@ -150,6 +152,7 @@ test("types a complete source change without losing focus and shows immutable fi
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
   await page.getByRole("button", { name: /^Developer/ }).click();
+  await loadServiceDesk(page);
   await page.getByRole("button", { name: "Organization", exact: true }).click();
   await expect(
     page.getByRole("row").filter({ hasText: "OrganizationCode" }),

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { loadServiceDesk } from "./service-desk.js";
 test("business design, developer details and live use are distinct and preserve the draft", async ({
   page,
 }) => {
@@ -7,6 +8,7 @@ test("business design, developer details and live use are distinct and preserve 
     .getByLabel("Administrator token")
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
+  await loadServiceDesk(page);
   await expect(page.getByRole("tab", { name: /^Data \d/ })).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Source", exact: true }),

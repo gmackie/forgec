@@ -53,7 +53,11 @@ const businessLabels: Partial<Record<Category, string>> = {
  */
 const COMPILE_TIMEOUT_MS = 4000;
 function initial(): Project {
-  return readDraft()?.project ?? structuredClone(example);
+  return readDraft()?.project ?? {
+    name: "@local/draft",
+    currentFile: "main.forge",
+    files: [{ path: "main.forge", text: "\n" }],
+  };
 }
 function storedRepository(): GitSnapshot | null {
   const saved = readDraft()?.repository;
@@ -504,7 +508,7 @@ export function ForgeEditor({
               ? developer
                 ? `${repository.branch} · ${repository.revision.slice(0, 8)}`
                 : `${changedFiles.length ? "Draft changes" : "Saved design"} · Not deployed`
-              : "Local demo / draft"}
+              : "Browser draft"}
           </Badge>
         </div>
         <div className="editor-toolbar">
@@ -559,7 +563,7 @@ export function ForgeEditor({
             <summary>{developer ? "Project tools" : "Draft options"}</summary>
             <div className="editor-row">
               <Button disabled={gitBusy} onClick={() => setShowDemo(true)}>
-                Load demo
+                Load service desk
               </Button>
               <Button
                 disabled={gitBusy || !!repository}
@@ -593,7 +597,7 @@ export function ForgeEditor({
         <Dialog.Root open={showDemo} onOpenChange={setShowDemo}>
           <Dialog className="editor">
             <Dialog.Title className="dialog-title">
-              Load the service desk demo?
+              Load the service desk?
             </Dialog.Title>
             <Dialog.Description>
               This replaces your browser draft, disconnects Git, and clears undo
@@ -616,7 +620,7 @@ export function ForgeEditor({
                   setEditing(false);
                 }}
               >
-                Replace draft with demo
+                Replace draft
               </Button>
             </footer>
           </Dialog>
