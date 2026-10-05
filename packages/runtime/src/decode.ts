@@ -242,6 +242,23 @@ function expressionDecimalScale(model: Model, resource: Resource, expr: import("
   return null;
 }
 
+/** Whether an expression names a `datetime` field (directly or through one reference). */
+function expressionIsDatetime(model: Model, resource: Resource, expr: import("./model.js").Expr): boolean {
+  if (expr.kind !== "name") return false;
+  let current = resource;
+  for (let i = 0; i < expr.path.length; i++) {
+    const field = current.fields.find(f => f.name === expr.path[i]);
+    if (!field) return false;
+    if (i === expr.path.length - 1) return field.type.base.kind === "scalar" && field.type.base.name === "datetime";
+    if (field.type.base.kind !== "reference") return false;
+    current = model.resource(field.type.base.resource);
+  }
+  return false;
+}
+
+/** Functions an expression may call. The compiler accepts exactly these (E-EXPR-004). */
+export const EXPRESSION_FUNCTIONS = ["floor"] as const;
+
 /** Minimal expression evaluation for derived fields and rules. */
 export function evalExpr(model: Model, r: Resource, e: import("./model.js").Expr, rec: Wire, hint?: TypeSpec, refs: Record<string, Wire | null> = {}): unknown {
   switch (e.kind) {
@@ -295,6 +312,15 @@ export function evalExpr(model: Model, r: Resource, e: import("./model.js").Expr
         case "-":
         case "*":
         case "/": {
+          // A datetime operand is its Unix time in whole seconds, so `floor(at / 3600)` buckets by hour.
+          const lt = expressionIsDatetime(model, r, e.lhs), rt = expressionIsDatetime(model, r, e.rhs);
+          if (lt || rt) {
+            if (l == null || rr == null) return null;
+            const seconds = (v: unknown, datetime: boolean) => datetime ? Math.floor(Date.parse(String(v)) / 1000) : Number(v);
+            const a = seconds(l, lt), b = seconds(rr, rt);
+            if (!Number.isFinite(a) || !Number.isFinite(b)) throw new Error("datetime arithmetic needs a valid datetime");
+            return e.op === "+" ? a + b : e.op === "-" ? a - b : e.op === "*" ? a * b : Math.trunc(a / b);
+          }
           if (typeof l === "number" && typeof rr === "number") {
             return e.op === "+" ? l + rr : e.op === "-" ? l - rr : e.op === "*" ? l * rr : Math.trunc(l / rr);
           }
@@ -309,7 +335,15 @@ export function evalExpr(model: Model, r: Resource, e: import("./model.js").Expr
       }
       return null;
     }
-    case "call":
+    case "call": {
+      if (e.callee.length === 1 && e.callee[0] === "floor" && e.args.length === 1) {
+        const v = evalExpr(model, r, e.args[0]!, rec, hint, refs);
+        if (v === null || v === undefined) return null;
+        const n = typeof v === "number" ? v : Number(v);
+        if (!Number.isFinite(n)) throw new Error("floor needs a number");
+        return Math.floor(n);
+      }
       throw new Error(`function calls are not supported in expressions: ${e.callee.join(".")}`);
+    }
   }
 }
