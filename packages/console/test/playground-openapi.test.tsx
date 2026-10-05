@@ -16,10 +16,11 @@ it("discovers Vendor Billing operations as external functions", async () => {
   const { container } = render(
     <PlaygroundEditor initialProject={structuredClone(example)} inspect={inspect} />,
   );
+  fireEvent.click(await screen.findByText("Import OpenAPI"));
   fireEvent.click(await screen.findByRole("button", { name: "Vendor Billing" }));
   expect(await screen.findByText(/POST\s+\/invoices/)).toBeTruthy();
   expect(screen.getByText(/Foreign ids stay text:.*customer_id/)).toBeTruthy();
-  expect(screen.getByText(/The browser did not call it/)).toBeTruthy();
+  expect(screen.getByText(/Forge did not call this host/)).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Use this API" }));
   const created = await screen.findByRole("button", { name: "Open CreateInvoice" });
   expect(created.getAttribute("data-external")).toBe("true");
@@ -34,6 +35,7 @@ it("discovers Vendor Billing operations as external functions", async () => {
 
 it("adds a discovered API beside the current program", async () => {
   render(<PlaygroundEditor initialProject={structuredClone(example)} inspect={inspect} />);
+  fireEvent.click(await screen.findByText("Import OpenAPI"));
   fireEvent.click(await screen.findByRole("button", { name: "Support Directory" }));
   expect(await screen.findByText(/GET\s+\/contacts\/\{contactId\}/)).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Add to this program" }));
@@ -48,6 +50,7 @@ it("refuses a pasted spec whose server is a private host", async () => {
     "https://billing.vendor.example/v1",
     "http://127.0.0.1/",
   );
+  fireEvent.click(await screen.findByText("Import OpenAPI"));
   fireEvent.change(screen.getByLabelText("OpenAPI document"), { target: { value: spec } });
   fireEvent.click(screen.getByRole("button", { name: "Discover pasted spec" }));
   expect((await screen.findByRole("alert")).textContent).toMatch(/private|forbidden/i);

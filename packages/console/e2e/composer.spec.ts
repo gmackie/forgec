@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { loadServiceDesk } from "./service-desk.js";
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/");
   await page
@@ -6,6 +7,7 @@ async function login(page: import("@playwright/test").Page) {
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
   await page.getByRole("button", { name: /^Developer/ }).click();
+  await loadServiceDesk(page);
   await expect(page.getByRole("tab", { name: /^Resources/ })).toBeVisible();
 }
 test("composes resources with a focused field editor and native data catalog", async ({

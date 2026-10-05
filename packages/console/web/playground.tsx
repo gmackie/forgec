@@ -86,9 +86,9 @@ function sourceBlock(name: string, target: string, createTarget: boolean) {
 const defaultClock = "2026-10-03T08:00:00.000Z";
 
 const blankProgram: Project = {
-  name: "@playground/program",
+  name: "@local/draft",
   currentFile: "main.forge",
-  files: [{ path: "main.forge", text: "// Click a block to start a Forge program.\n" }],
+  files: [{ path: "main.forge", text: "\n" }],
 };
 
 function resultFor(node: CanvasNode, results: TickResult[] | null) {
@@ -227,12 +227,13 @@ export function PlaygroundEditor({
   const openApi = !inspect || inspect.importOpenApi ? importSpec : null;
   const skipStorage = initialProject !== undefined || readonlyView != null;
   const [project, setProject] = useState<Project>(
-    () => initialProject ?? readDraft()?.project ?? structuredClone(example),
+    () => initialProject ?? readDraft()?.project ?? structuredClone(blankProgram),
   );
   const projectRef = useRef(project);
   projectRef.current = project;
   const external = useRef(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [analysisKey, setAnalysisKey] = useState("");
   const [selected, setSelected] = useState("");
   const [clock, setClock] = useState(defaultClock);
   const [payload, setPayload] = useState("{}");
@@ -308,12 +309,14 @@ export function PlaygroundEditor({
 
   useEffect(() => {
     if (readonlyRef.current) return;
+    const key = fingerprint;
     let live = true;
     const timer = window.setTimeout(() => {
       void Promise.resolve(compile(project))
         .then((next) => {
           if (!live || readonlyRef.current) return;
           setAnalysis(next);
+          setAnalysisKey(key);
           setError(next.error || "");
         })
         .catch((reason: unknown) => {
@@ -324,7 +327,7 @@ export function PlaygroundEditor({
       live = false;
       window.clearTimeout(timer);
     };
-  }, [project, compile, inspect, readonly]);
+  }, [project, compile, inspect, readonly, fingerprint]);
 
   useEffect(() => {
     if (!opened) return;
@@ -368,13 +371,20 @@ export function PlaygroundEditor({
     };
   }, [opened, compile, skipStorage]);
 
-  const draftGraph = !readonly && analysis?.documents ? playgroundGraph(project, analysis) : { nodes: [], edges: [] };
+  // A compile for the previous draft must not drop this draft's layout. Keep the last
+  // matching graph on screen until the compile for the current source arrives.
+  const currentAnalysis = analysisKey === fingerprint ? analysis : null;
+  const freshGraph =
+    !readonly && currentAnalysis?.documents ? playgroundGraph(project, currentAnalysis) : null;
+  const shownGraph = useRef(freshGraph);
+  if (freshGraph) shownGraph.current = freshGraph;
+  const draftGraph = freshGraph ?? shownGraph.current ?? { nodes: [], edges: [] };
   const graph = readonly ? contractGraph(readonly.ir) : draftGraph;
   const current = graph.nodes.find((node) => node.id === selected) ?? null;
 
   useEffect(() => {
-    if (readonly || !analysis?.documents) return;
-    const nodes = playgroundGraph(project, analysis).nodes;
+    if (readonly || !currentAnalysis?.documents) return;
+    const nodes = playgroundGraph(project, currentAnalysis).nodes;
     setPositions((items) => {
       const next = matchingPositions(nodes, items);
       return next.length === items.length ? items : next;
@@ -383,7 +393,7 @@ export function PlaygroundEditor({
       const next = matchingSamples(nodes, items);
       return next.length === items.length ? items : next;
     });
-  }, [analysis, project, readonly]);
+  }, [currentAnalysis, project, readonly]);
 
   useEffect(() => {
     if (!pending.current) return;
@@ -542,7 +552,7 @@ export function PlaygroundEditor({
   }
 
   async function fire() {
-    if (readonly || !current || !isGraphNode(current) || !canFire(analysis, current)) return;
+    if (readonly || !current || !isGraphNode(current) || !canFire(currentAnalysis, current)) return;
     if (Number.isNaN(Date.parse(clock))) {
       setError("Enter an ISO-8601 clock time.");
       return;
@@ -553,7 +563,10 @@ export function PlaygroundEditor({
     try {
       const compiled = await compile(project, "ir");
       if (hasCompilerErrors(compiled) || !compiled.ir) {
-        if (compiled.documents) setAnalysis(compiled);
+        if (compiled.documents) {
+          setAnalysis(compiled);
+          setAnalysisKey(fingerprint);
+        }
         setError(compiled.error || "Fix compiler errors before firing a source.");
         return;
       }
@@ -567,8 +580,8 @@ export function PlaygroundEditor({
   }
 
   const fired = current ? resultFor(current, results) : undefined;
-  const ready = readonly ? true : Boolean(analysis?.documents);
-  const errors = readonly ? [] : (analysis?.diagnostics.filter((diagnostic) => diagnostic.severity === "error") ?? []);
+  const ready = readonly ? true : Boolean(currentAnalysis?.documents) || shownGraph.current !== null;
+  const errors = readonly ? [] : (currentAnalysis?.diagnostics.filter((diagnostic) => diagnostic.severity === "error") ?? []);
   const placed = graph.nodes.map((node, index) => ({ node, at: readonly ? place(index) : positionFor(node, index, positions) }));
   const bounds = placed.length
     ? {
@@ -613,25 +626,22 @@ export function PlaygroundEditor({
 
   return (
     <div className="playground-editor">
-      <header className="playground-heading">
+      <header className="heading">
         <div>
-          <p className="eyebrow">PLAYGROUND</p>
-          <h1>Forge graph</h1>
+          <p className="eyebrow">APPLICATION</p>
+          <h1>{project.name}</h1>
           <p className="muted">
-            Click a block to add it. Click one block, then another in the same file, to snap
-            a wire. Click a wire to remove it. Discover a sample API to place its operations
-            on the graph as external functions. Each block is a Forge declaration, and the
-            canvas draws the wires the source actually declares. Firing a schedule runs the
-            draft in this browser and does not touch a deployment.
+            Declarations in this browser draft. Wires follow the source. A schedule runs here
+            and does not call a deployment.
           </p>
         </div>
         {readonly ? null : (
           <div className="playground-actions">
             <button type="button" onClick={() => loadProject(blankProgram)}>
-              New program
+              New draft
             </button>
             <button type="button" onClick={() => loadProject(example)}>
-              Open example
+              Service desk
             </button>
             <button
               type="button"
@@ -669,7 +679,7 @@ export function PlaygroundEditor({
       <div className="playground-layout">
         <div className="playground-canvas">
           {readonly ? null : (
-            <div className="playground-palette" role="toolbar" aria-label="Blocks">
+            <div className="playground-palette" role="toolbar" aria-label="Declarations">
               {blocks.map((block) => (
                 <button key={block} type="button" onClick={() => addBlock(block)}>
                   {blockLabels[block]}
@@ -681,7 +691,12 @@ export function PlaygroundEditor({
             <OpenApiOnboarding importSpec={openApi} onUse={useExternal} onAdd={addExternal} />
           ) : null}
           {!ready ? <p>Checking source…</p> : null}
-          {ready && !graph.nodes.length ? <p>No runnable declarations yet.</p> : null}
+          {ready && !graph.nodes.length ? (
+            <div className="blank">
+              <h2>No declarations</h2>
+              <p>Add a declaration, or import an OpenAPI document. The graph shows the source.</p>
+            </div>
+          ) : null}
           {ready && graph.nodes.length ? (
             <svg
               role="img"
@@ -906,43 +921,43 @@ export function PlaygroundEditor({
                   );
                 })}
               </div>
-              {analysis && editable.kind === "resource" ? (
+              {currentAnalysis && editable.kind === "resource" ? (
                 <ResourceWorkspace
                   entry={editable.entry}
                   entries={draftGraph.nodes.map((node) => node.entry)}
-                  analysis={analysis}
+                  analysis={currentAnalysis}
                   editing
                   onChange={(text) => replaceFile(editable.path, text)}
                   onError={setError}
                   onSelect={choose}
                 />
               ) : null}
-              {analysis && editable.kind === "function" ? (
+              {currentAnalysis && editable.kind === "function" ? (
                 <FunctionWorkspace
                   entry={editable.entry}
                   entries={draftGraph.nodes.map((node) => node.entry)}
-                  analysis={analysis}
+                  analysis={currentAnalysis}
                   editing
                   onChange={(text) => replaceFile(editable.path, text)}
                   onError={setError}
                   onSelect={choose}
                 />
               ) : null}
-              {analysis && editable.kind === "source" ? (
+              {currentAnalysis && editable.kind === "source" ? (
                 <SourceWorkspace
                   entry={editable.entry}
                   entries={draftGraph.nodes.map((node) => node.entry)}
-                  analysis={analysis}
+                  analysis={currentAnalysis}
                   editing
                   onChange={(text) => replaceFile(editable.path, text)}
                   onError={setError}
                   onSelect={choose}
                 />
               ) : null}
-              {analysis && (editable.kind === "workflow" || editable.kind === "channel") ? (
+              {currentAnalysis && (editable.kind === "workflow" || editable.kind === "channel") ? (
                 <VisualDocument
                   source={editable.entry.source}
-                  analysis={analysis}
+                  analysis={currentAnalysis}
                   selection={editable.entry}
                   onChange={(text) => replaceFile(editable.path, text)}
                   onError={setError}
@@ -978,12 +993,10 @@ export function PlaygroundEditor({
                     }}
                   />
                   <p className="muted small">
-                    The scheduler calls the target with the occurrence and source id. A function
-                    without an impl/ body records a playground stand-in and writes no records.
-                    The sample payload is saved with the package. A schedule fires from the clock
-                    and does not send that JSON.
+                    Runs in memory at this clock. The payload stays with the draft. A function
+                    without an impl records a stand-in and writes no records.
                   </p>
-                  <button type="submit" disabled={!canFire(analysis, editable) || busy}>
+                  <button type="submit" disabled={!canFire(currentAnalysis, editable) || busy}>
                     {busy ? "Firing…" : "Fire source"}
                   </button>
                   {fired ? (

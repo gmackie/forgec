@@ -147,10 +147,10 @@ export function FunctionPlayground({
       <header className="heading">
         <div>
           <p className="eyebrow">LIVE RUNTIME</p>
-          <h1>Function playground</h1>
+          <h1>Deployed functions</h1>
           <p className="muted">
-            Explore a running contract, prepare an input, and inspect what comes
-            back.
+            Call a function on a running deployment. The request uses that environment
+            and can change its data.
           </p>
         </div>
         <TerminalIcon size={34} />
