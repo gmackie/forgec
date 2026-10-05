@@ -101,7 +101,7 @@ it("opens a package without source as a read-only contract graph", async () => {
   expect(screen.queryByRole("button", { name: "Fire source" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Add declaration" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Source" })).toBeNull();
-  expect(screen.queryByRole("button", { name: "New program" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "New draft" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Delete declaration" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Snap wire" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Cut DailySupportDigest runs BuildSupportDigest" })).toBeNull();
@@ -161,7 +161,7 @@ it("starts a blank program, snaps a uses wire, and deletes the declaration", asy
   const { container } = render(
     <PlaygroundEditor initialProject={structuredClone(example)} inspect={inspect} />,
   );
-  fireEvent.click(await screen.findByRole("button", { name: "New program" }));
+  fireEvent.click(await screen.findByRole("button", { name: "New draft" }));
   await waitFor(() => {
     expect(screen.queryByRole("button", { name: "Open DailySupportDigest" })).toBeNull();
   });
@@ -183,7 +183,7 @@ it("starts a blank program, snaps a uses wire, and deletes the declaration", asy
     expect(screen.queryByRole("button", { name: "Open Function" })).toBeNull();
   });
   expect(screen.getByRole("button", { name: "Open Resource" })).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Open example" }));
+  fireEvent.click(screen.getByRole("button", { name: "Service desk" }));
   expect(await screen.findByRole("button", { name: "Open DailySupportDigest" })).toBeTruthy();
 });
 

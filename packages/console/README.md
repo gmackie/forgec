@@ -67,11 +67,11 @@ snapshot to reconcile it; automatic merging is not implemented.
 
 ### Service desk demo
 
-New browser drafts start with [`examples/studio-desk`](../../examples/studio-desk), a seven-file
-Forge package: organizations and contacts, tickets and replies, service plans, shared types,
+A new browser draft is empty. **Load service desk** replaces it with [`examples/studio-desk`](../../examples/studio-desk),
+a seven-file Forge package: organizations and contacts, tickets and replies, service plans, shared types,
 native data classes and purposes, events, functions, a scheduled source and an escalation workflow.
-The editor imports those exact sources; the example and the UI cannot drift apart.
-Use **Load demo** to replace an existing draft after confirmation. Export first to retain a copy;
+The editor imports those exact sources; the application and the UI cannot drift apart.
+Use **Load service desk** to replace an existing draft after confirmation. Export first to retain a copy;
 loading clears the undo history and any Git connection. Existing drafts are never silently migrated.
 
 Try changing a plan's default allowance, inspecting its calculated balance, editing a ticket's

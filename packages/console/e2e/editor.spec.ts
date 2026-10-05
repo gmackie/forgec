@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { loadServiceDesk, openProjectTools } from "./service-desk.js";
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/");
   await page
@@ -6,6 +7,7 @@ async function login(page: import("@playwright/test").Page) {
     .fill("local-console-test-token-1234567890");
   await page.getByRole("button", { name: "Connect to instance" }).click();
   await page.getByRole("button", { name: /^Developer/ }).click();
+  await loadServiceDesk(page);
   await expect(page.getByRole("tab", { name: /Resources/ })).toBeVisible();
 }
 test("edits a resource explicitly, preserves source, undoes and downloads", async ({
@@ -87,11 +89,11 @@ test("loads demo safely and keeps a default edit through undo, redo and reload",
   page,
 }) => {
   await login(page);
-  await page.locator("summary").filter({ hasText: "Project tools" }).click();
-  await page.getByRole("button", { name: "Load demo", exact: true }).click();
+  await openProjectTools(page);
+  await page.getByRole("button", { name: "Load service desk", exact: true }).click();
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
-  await page.getByRole("button", { name: "Load demo", exact: true }).click();
-  await page.getByRole("button", { name: "Replace draft with demo" }).click();
+  await page.getByRole("button", { name: "Load service desk", exact: true }).click();
+  await page.getByRole("button", { name: "Replace draft", exact: true }).click();
   await page.getByRole("button", { name: "ServicePlan", exact: true }).click();
   await page.getByRole("button", { name: "Edit draft", exact: true }).click();
   await page
