@@ -106,7 +106,9 @@ export class D1Storage implements StorageAdapter {
       where.push(`(${clauses.join(" OR ")})`);
     }
     const orderBy = order.map((o) => `${col(o.field)} ${o.direction === "desc" ? "DESC" : "ASC"}`).join(", ");
-    const sql = `SELECT * FROM ${t.name} WHERE ${where.join(" AND ")} ORDER BY ${orderBy} LIMIT ?`;
+    // A resource with neither @tenant nor @softDelete, listed without filters, has no predicates.
+    const filter = where.length ? ` WHERE ${where.join(" AND ")}` : "";
+    const sql = `SELECT * FROM ${t.name}${filter} ORDER BY ${orderBy} LIMIT ?`;
     binds.push(q.limit + 1);
     return this.wrap(async () => {
       const results = await this.db.all(st(sql, ...binds));
