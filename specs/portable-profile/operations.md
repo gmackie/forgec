@@ -86,6 +86,13 @@ building -> validating -> active -> retired
 Exactly one active generation per projection; reads report generation,
 checkpoint, and freshness.
 
+Resource expressions (derived fields and rules) may call only `floor(number)`,
+which returns an integer; the compiler reports `E-EXPR-004` for any other call,
+because the runtime evaluates exactly that set (`EXPRESSION_FUNCTIONS` in
+`packages/runtime/src/decode.ts`, kept in parity by a compiler test). A `datetime`
+operand of `+`, `-`, `*` or `/` is its Unix time in whole seconds and the result is
+an integer, so `hour := floor(at / 3600)` buckets by hour.
+
 Resource expressions support at most one reference hop (`record.field`). The
 compiler reports `E-EXPR-003` for paths that dereference another stored identity
 such as `record.parent.field`. Runtime bundle loading rejects these paths in

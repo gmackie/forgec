@@ -5,7 +5,7 @@ import {deploymentConnections} from "./deployment-control.js";
 import type { D1Database } from "@cloudflare/workers-types";
 import { gitRepositories } from "./git.js";
 import { createApi } from "./api.js";
-import { authFrom, registryFrom, secure, type Config } from "./config.js";
+import { authFrom, missingConfiguration, registryFrom, secure, type Config } from "./config.js";
 import { stateText, type State, type StateStore } from "./model.js";
 import { credentialStore, type SqlLike } from "./credentials.js";
 import { R2Oci, type R2Like } from "./r2-oci.js";
@@ -59,19 +59,35 @@ export class D1State implements StateStore {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path = new URL(request.url).pathname;
-    if (path === "/healthz")
+    const authMode =
+      env.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token";
+    if (path === "/healthz") {
+      // The deployment's health check points here (`.forgegraph.yaml`), so this has to be able
+      // to fail: a probe that cannot report an unconfigured instance cannot detect the only
+      // failure this deployment has actually had.
+      const missing = missingConfiguration(env, env);
       return secure(
-        Response.json({
-          status: "ok",
-          authMode:
-            env.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token",
-        }),
+        Response.json(
+          missing.length
+            ? { status: "unconfigured", missing, authMode }
+            : { status: "ok", authMode },
+          { status: missing.length ? 503 : 200 },
+        ),
         env,
       );
+    }
     // The OCI endpoints answer before the asset handler, and deliberately without the console's
     // CSP: these are protocol responses for container clients, not pages for a browser.
     if (path === "/v2" || path.startsWith("/v2/")) {
-      if (!env.BLOBS || env.OCI_BACKEND !== "r2" || !env.INSTANCE_AUTHORITY)
+      // REGISTRY_TOKEN_SECRET belongs in this guard, not below it. Without it there is no
+      // `/v2/token`, so challenging the client with a realm naming that endpoint sends
+      // `docker login` into a loop it cannot exit. Refusing is the honest answer.
+      if (
+        !env.BLOBS ||
+        env.OCI_BACKEND !== "r2" ||
+        !env.INSTANCE_AUTHORITY ||
+        !env.REGISTRY_TOKEN_SECRET
+      )
         return Response.json(
           {
             errors: [
@@ -89,22 +105,17 @@ export default {
         url: `https://${env.INSTANCE_AUTHORITY}`,
       });
       const store = credentialStore(d1Sql(env.DB));
-      const secret = env.REGISTRY_TOKEN_SECRET || "";
+      const secret = env.REGISTRY_TOKEN_SECRET;
       return createRegistryHttp({
         registry,
         service: env.INSTANCE_AUTHORITY,
-        ...(secret
-          ? {
-              issueToken: createTokenEndpoint({
-                store,
-                secret,
-                service: env.INSTANCE_AUTHORITY,
-                repository: registry.repository,
-              }),
-            }
-          : {}),
+        issueToken: createTokenEndpoint({
+          store,
+          secret,
+          service: env.INSTANCE_AUTHORITY,
+          repository: registry.repository,
+        }),
         authorize: async (incoming) => {
-          if (!secret) return null;
           const header = incoming.headers.get("authorization") ?? "";
           if (!header.startsWith("Bearer ")) return null;
           const claims = await verifyRegistryToken(
@@ -132,7 +143,7 @@ export default {
         studio: new Studio(env.DB as unknown as D1Like, env.ADMIN_TOKEN || env.REGISTRY_TOKEN_SECRET || ""),
         auth: authFrom(env),
         credentials: env.OCI_BACKEND === "r2" ? credentialStore(d1Sql(env.DB)) : null,
-        authMode: env.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token",
+        authMode,
         identityAuthority: env.ACCESS_TEAM_DOMAIN ?? null,
         authority: env.INSTANCE_AUTHORITY,
         name: env.INSTANCE_NAME || "Forge",

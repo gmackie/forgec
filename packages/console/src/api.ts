@@ -6,6 +6,7 @@ import {
   type State,
   type StateStore,
   type ViewState,
+  configRevision,
 } from "./model.js";
 import { deploymentAction, type DeploymentConnection } from "./deployment-control.js";
 import type { RuntimeConnection } from "./runtime-control.js";
@@ -202,8 +203,10 @@ const json = (value: unknown, status = 200) =>
     },
   });
 function view(state: State, o: ApiOptions): ViewState {
+  const { configRevision: _stored, ...rest } = state;
   return {
-    ...state,
+    ...rest,
+    revision: configRevision(state),
     instance: {
       name: o.name,
       authority: o.authority,
@@ -419,16 +422,18 @@ function route(request: Request) {
     if (!/^\d+$/.test(header) || !Number.isSafeInteger(Number(header)))
       return yield* Effect.fail(new Problem(400, "Invalid revision."));
     const expected = Number(header);
-    const state = yield* attempt(() => o.store.read());
-    if (state.revision !== expected)
-      return yield* Effect.fail(
-        new Problem(
-          409,
-          "Configuration changed in another session. Refresh before saving again.",
-        ),
-      );
     const data =
       method === "DELETE" ? null : yield* attempt(() => body(request));
+    const changed = new Problem(
+      409,
+      "Configuration changed in another session. Refresh before saving again.",
+    );
+    // `If-Match` names a configuration revision. A storage write that changed no configuration
+    // (an audit entry, e.g. a registry credential being issued) can still win the CAS race
+    // below; then re-read and re-apply rather than reporting a conflict the user cannot see.
+    for (let tries = 0; ; tries++) {
+    const state = yield* attempt(() => o.store.read());
+    if (configRevision(state) !== expected) return yield* Effect.fail(changed);
     const now = new Date().toISOString();
     let action = "";
     let subject = "";
@@ -526,7 +531,9 @@ function route(request: Request) {
       }
       app.updatedAt = now;
     });
+    const stored = state.revision;
     state.revision++;
+    state.configRevision = expected + 1;
     state.audit.unshift({
       id: crypto.randomUUID(),
       at: now,
@@ -535,14 +542,10 @@ function route(request: Request) {
       actor: identity.actor,
     });
     state.audit = state.audit.slice(0, 200);
-    if (!(yield* attempt(() => o.store.save(expected, state))))
-      return yield* Effect.fail(
-        new Problem(
-          409,
-          "Configuration changed in another session. Refresh before saving again.",
-        ),
-      );
-    return json(view(state, o), status);
+    if (yield* attempt(() => o.store.save(stored, state)))
+      return json(view(state, o), status);
+    if (tries >= 2) return yield* Effect.fail(changed);
+    }
   });
 }
 /**
@@ -562,6 +565,8 @@ async function appendAudit(
   for (let attempt = 0; attempt < 3; attempt++) {
     const state = await o.store.read();
     const expected = state.revision;
+    // Pin the configuration revision first: legacy states derive it from `revision`.
+    state.configRevision = configRevision(state);
     state.revision++;
     state.audit.unshift({
       id: crypto.randomUUID(),

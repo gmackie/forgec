@@ -1304,6 +1304,9 @@ impl<'a> Ctx<'a> {
                 );
             }
             let ir = self.expr(&expr, module, file, scope);
+            if let Some(e) = &ir {
+                self.check_expression_calls(e, file, range_of(fd));
+            }
             let ty = ir
                 .as_ref()
                 .and_then(|e| self.infer(e, module, scope))
@@ -1848,9 +1851,18 @@ impl<'a> Ctx<'a> {
             purpose: None,
             data_class: None,
         };
+        let is_datetime = |t: &Option<TypeSpec>| matches!(t, Some(TypeSpec { base: TypeBase::Scalar { name, .. }, .. }) if name == "datetime");
         Some(match e {
-            Expr::Binary { op, lhs, .. } => match op.as_str() {
-                "+" | "-" | "*" | "/" => self.infer(lhs, module, scope)?,
+            Expr::Binary { op, lhs, rhs } => match op.as_str() {
+                "+" | "-" | "*" | "/" => {
+                    let l = self.infer(lhs, module, scope);
+                    // A datetime operand is its Unix time in whole seconds (runtime decode.ts).
+                    if is_datetime(&l) || is_datetime(&self.infer(rhs, module, scope)) {
+                        scalar("integer")
+                    } else {
+                        l?
+                    }
+                }
                 _ => scalar("boolean"),
             },
             Expr::Unary { op, operand } => {
@@ -1890,8 +1902,42 @@ impl<'a> Ctx<'a> {
                 }
                 ty?
             }
+            Expr::Call { callee, .. } if callee.len() == 1 && callee[0] == "floor" => {
+                scalar("integer")
+            }
             Expr::Call { .. } => scalar("json"),
         })
+    }
+
+    /// Resource expressions run in the portable runtime, which evaluates only these functions
+    /// (`EXPRESSION_FUNCTIONS` in runtime decode.ts). Anything else would compile and then fail
+    /// every create at runtime (#196).
+    fn check_expression_calls(&mut self, e: &Expr, file: usize, range: (usize, usize)) {
+        match e {
+            Expr::Call { callee, args } => {
+                if !(callee.len() == 1 && callee[0] == "floor" && args.len() == 1) {
+                    self.err(
+                        "E-EXPR-004",
+                        file,
+                        range,
+                        format!(
+                            "`{}` is not available in resource expressions; supported: floor(number)",
+                            callee.join(".")
+                        ),
+                        None,
+                    );
+                }
+                for a in args {
+                    self.check_expression_calls(a, file, range);
+                }
+            }
+            Expr::Binary { lhs, rhs, .. } => {
+                self.check_expression_calls(lhs, file, range);
+                self.check_expression_calls(rhs, file, range);
+            }
+            Expr::Unary { operand, .. } => self.check_expression_calls(operand, file, range),
+            _ => {}
+        }
     }
 
     /// Validate templates even when unused. Facets cannot supply derived fields or uniqueness.
@@ -2779,6 +2825,7 @@ impl<'a> Ctx<'a> {
             for rule in rb.rules() {
                 let Some(e) = rule.expr() else { continue };
                 if let Some(ir) = self.expr(&e, module, file, Some(&id)) {
+                    self.check_expression_calls(&ir, file, range_of(&rule));
                     if !matches!(&ir, Expr::Binary { op, .. } if matches!(op.as_str(), "==" | "!=" | "<" | "<=" | ">" | ">=" | "&&" | "||"))
                         && !matches!(&ir, Expr::Unary { op, .. } if op == "!")
                     {

@@ -1,5 +1,7 @@
 import { sqliteStudio } from "./studio-sqlite.js";
 import studioMigration from "../migrations/0003_studio.sql";
+import credentialsMigration from "../migrations/0003_registry_credentials.sql";
+import { credentialStore, type SqlLike } from "./credentials.js";
 import {runtimeConnections} from "./runtime-control.js";
 import {deploymentConnections} from "./deployment-control.js";
 import { createServer } from "node:http";
@@ -11,7 +13,7 @@ import { Readable } from "node:stream";
 import { gitRepositories } from "./git.js";
 import { createApi } from "./api.js";
 import { SqliteState } from "./sqlite.js";
-import { registryFrom, secure, type Config } from "./config.js";
+import { missingConfiguration, registryFrom, secure, type Config } from "./config.js";
 const config = process.env as Config;
 if (
   !config.ADMIN_TOKEN ||
@@ -25,9 +27,23 @@ const dbPath = resolve(process.env.DATA_PATH || "./data/console.sqlite");
 await mkdir(dirname(dbPath), { recursive: true });
 const db = new DatabaseSync(dbPath);
 const store = new SqliteState(db);
+// Registry credentials are not Workers-only. A self-hosted instance mints them for exactly the
+// same reason: `docker login` cannot authenticate any other way. Leaving this unwired made the
+// credentials panel answer 503 on every Docker deployment, and on the Playwright suite, which
+// runs this host rather than the Worker.
+db.exec(credentialsMigration);
+const credentialSql: SqlLike = {
+  async all(text, params) {
+    return db.prepare(text).all(...(params as never[])) as Record<string, unknown>[];
+  },
+  async run(text, params) {
+    return { changes: Number(db.prepare(text).run(...(params as never[])).changes) };
+  },
+};
 const api = createApi({
   store,
   studio: sqliteStudio(db,studioMigration,config.ADMIN_TOKEN),
+  credentials: credentialStore(credentialSql),
   token: config.ADMIN_TOKEN,
   authority: config.INSTANCE_AUTHORITY,
   name: config.INSTANCE_NAME || "Forge",
@@ -57,7 +73,16 @@ const server = createServer(async (req, res) => {
       `${scheme}//${req.headers.host || "localhost"}`,
     );
     let response: Response;
-    if (url.pathname === "/healthz") response = Response.json({ status: "ok", authMode: (config.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token") });
+    if (url.pathname === "/healthz") {
+      // Same contract as the Worker: a probe that cannot fail cannot report an instance that
+      // came up without its configuration.
+      const missing = missingConfiguration(config);
+      const authMode = config.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token";
+      response = Response.json(
+        missing.length ? { status: "unconfigured", missing, authMode } : { status: "ok", authMode },
+        { status: missing.length ? 503 : 200 },
+      );
+    }
     else if (url.pathname.startsWith("/api/")) {
       const headers = new Headers();
       for (const [key, value] of Object.entries(req.headers))
