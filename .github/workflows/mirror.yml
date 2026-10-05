@@ -1,13 +1,15 @@
 name: Mirror to Forgejo
 
-# Replays GitHub main and release tags onto git.forgegraf.com. Pushes to Forgejo main
+# Replays GitHub main onto git.forgegraf.com. Pushes to Forgejo main
 # deploy forge.gmac.io, and PRs are also merged on Forgejo, so this never forces: if
 # Forgejo main has commits GitHub lacks, the push is rejected and the job fails rather
 # than erasing them. Merge Forgejo main into GitHub, then re-run this workflow.
+#
+# Tags are not mirrored: ForgeGraph deploys any pushed ref, so mirroring v0.4.0 on
+# 2026-10-05 rolled production back to that release. Releases are published from GitHub.
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   workflow_dispatch:
 
 concurrency:
@@ -40,4 +42,3 @@ jobs:
             echo "::error::Forgejo main has commits that GitHub main lacks. Merge them into GitHub, then re-run this workflow."
             exit 1
           fi
-          git push "$remote" --tags
