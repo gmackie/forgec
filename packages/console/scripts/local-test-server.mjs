@@ -11,7 +11,7 @@ const settings = {
   ADMIN_TOKEN: "local-console-test-token-1234567890",
   INSTANCE_AUTHORITY: "local-forge.test",
   INSTANCE_NAME: "Forge Local",
-  OCI_URL: "http://127.0.0.1:15000",
+  OCI_URL: process.env.OCI_TEST_URL ?? "http://127.0.0.1:15000",
   OCI_REPOSITORY: `console-${Date.now()}`,
   OCI_ALLOW_HTTP: "true",
   SIGNING_KEY_JWK: JSON.stringify(
