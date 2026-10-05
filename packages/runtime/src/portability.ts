@@ -121,6 +121,31 @@ export class Portability {
     return Effect.succeed(snap);
   }
 
+  /**
+   * Records of a self-referencing resource (e.g. a thread's `root`) in dependency order, so each
+   * record's in-snapshot targets are imported before it. A record referencing itself has no
+   * prerequisite (#200); a cycle through other records keeps snapshot order and fails its guard.
+   */
+  private selfReferenceOrder(r: Resource, records: Wire[]): Wire[] {
+    const fields = r.fields.filter((f) => f.type.base.kind === "reference" && f.type.base.resource === r.id).map((f) => f.name);
+    if (!fields.length) return records;
+    const byId = new Map(records.map((rec) => [String(rec["id"]), rec]));
+    const out: Wire[] = [], state = new Map<string, "visiting" | "done">();
+    const visit = (rec: Wire) => {
+      const id = String(rec["id"]);
+      if (state.get(id)) return;
+      state.set(id, "visiting");
+      for (const f of fields) {
+        const target = rec[f];
+        if (typeof target === "string" && target !== id && byId.has(target) && !state.get(target)) visit(byId.get(target)!);
+      }
+      state.set(id, "done");
+      out.push(rec);
+    };
+    records.forEach(visit);
+    return out;
+  }
+
   /** Records go through the adapter's own commit so claims, access items and integrity guards are rebuilt natively. */
   import(input: Snapshot | undefined, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
     const self = this;
@@ -140,7 +165,7 @@ export class Portability {
         imported[r.id] = 0;
         skipped[r.id] = 0;
         if (!ex) continue;
-        for (const rec of ex.records) {
+        for (const rec of self.selfReferenceOrder(r, ex.records)) {
           const id = String(rec["id"]);
           const existing = yield* storage.get(ctx.tenant, r, id);
           if (existing) { skipped[r.id]!++; continue; } // idempotent re-run: identity already present

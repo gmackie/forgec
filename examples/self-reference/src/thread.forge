@@ -1,0 +1,10 @@
+/// A root thread references itself; replies reference their root (#200).
+export resource Thread @tenant @versioned {
+ id : id
+ title : text length 1..200
+ root : Thread @immutable
+}
+export resource Note @tenant @versioned {
+ id : id
+ thread : Thread
+}

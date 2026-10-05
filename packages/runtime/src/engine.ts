@@ -6,7 +6,7 @@
 import { Cause, Effect, Layer } from "effect";
 import { encodeIdentity, sortKey } from "./codecs.js";
 import { decodeCursor, encodeCursor } from "./cursor.js";
-import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
+import { canonicalize, decodeObject, evalExpr, SELF_REFERENCE, type Wire } from "./decode.js";
 import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Operation, type Resource, type Transition, type Unique } from "./model.js";
 import { Clock, CursorSecret, IdGen, Storage, type AtomicAbsenceGuard, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
@@ -419,6 +419,19 @@ export class Engine {
     return r.uniques.map((unique) => ({ unique, before: before ? self.claimKey(r, unique, before) : null, after: self.claimKey(r, unique, after) }));
   }
 
+  /** Resolve `$self` reference inputs to the written record's id; only a same-resource reference may use it. */
+  private resolveSelfReferences(r: Resource, after: Wire, id: string): ForgeError | null {
+    const invalid: string[] = [];
+    for (const f of r.fields) {
+      if (f.type.base.kind !== "reference" || after[f.name] !== SELF_REFERENCE) continue;
+      if (f.type.base.resource === r.id) after[f.name] = id;
+      else invalid.push(f.name);
+    }
+    return invalid.length
+      ? err("ValidationFailed", `${SELF_REFERENCE} may only reference the record being written`, { fields: invalid.map((path) => ({ path, code: "InvalidSelfReference", message: `${path} does not reference ${r.name}` })) })
+      : null;
+  }
+
   private referenceGuards(r: Resource, after: Wire, changed: Set<string> | null): ReferenceGuard[] {
     const self = this;
     const out: ReferenceGuard[] = [];
@@ -426,6 +439,8 @@ export class Engine {
       if (f.type.base.kind !== "reference" || (f.synthesized && f.name !== "parent")) continue;
       if (changed && !changed.has(f.name)) continue;
       const id = after[f.name];
+      // A record referencing itself is written by this same plan, so there is nothing to look up.
+      if (typeof id === "string" && f.type.base.resource === r.id && id === after["id"]) continue;
       if (typeof id === "string") out.push({ field: f.name, resource: self.model.resource(f.type.base.resource), id });
     }
     return out;
@@ -556,6 +571,8 @@ export class Engine {
         }
         if (!allocated) return yield* Effect.fail(err("TransientConflict","sequence contention; retry the operation"));
       }
+      const selfReference = self.resolveSelfReferences(r, after, id);
+      if (selfReference) return yield* Effect.fail(selfReference);
       yield* self.sealSecrets(r,after,value,ctx);
       const guards = self.referenceGuards(r, after, null);
       const refs = yield* self.loadReferences(r, after, ctx, guards);
@@ -681,6 +698,8 @@ export class Engine {
       const after: Wire = { ...before, ...patch };
       if (r.decorators.versioned) after["version"] = (before["version"] as number) + 1;
       if (r.decorators.timestamps) after["updatedAt"] = now;
+      const selfReference = self.resolveSelfReferences(r, after, id);
+      if (selfReference) return yield* Effect.fail(selfReference);
       yield* self.sealSecrets(r,after,patch,ctx);
       const guards = self.referenceGuards(r, after, new Set(Object.keys(patch)));
       const refs = yield* self.loadReferences(r, after, ctx, guards);

@@ -144,6 +144,8 @@ export function decodeValue(model: Model, t: TypeSpec, input: unknown, depth = 0
   }
   if (b.kind === "reference" || b.kind === "identity") {
     const s = decodeText(input);
+    // The engine resolves `$self` to the written record's own id (same-resource references only).
+    if (b.kind === "reference" && s === SELF_REFERENCE) return s;
     if (!/^[A-Za-z0-9_-]{1,64}$/.test(s)) throw new CodecError("InvalidId");
     return s;
   }
@@ -241,6 +243,9 @@ function expressionDecimalScale(model: Model, resource: Resource, expr: import("
   }
   return null;
 }
+
+/** Input value for a reference to the record being written, whose id is server-assigned (#200). */
+export const SELF_REFERENCE = "$self";
 
 /** Whether an expression names a `datetime` field (directly or through one reference). */
 function expressionIsDatetime(model: Model, resource: Resource, expr: import("./model.js").Expr): boolean {

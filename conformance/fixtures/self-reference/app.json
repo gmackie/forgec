@@ -1,0 +1,2048 @@
+{
+  "version": "app-bundle/1",
+  "buildHash": "94e8703e844e51ed31090d88ecd0076c7eb34a911d2783a8b97255792d967f37",
+  "digests": {
+    "source": "f73c8f89409386f2a93e50bb4ef7af9711094cea67c73615fee392ec6cf0382d",
+    "wire": "573cf2c0548eb8ad3ae3586e54feb13210f2eec8825cc16df006056cf762e67b",
+    "docs": "6d8ea927c60dedd23b732501778c94dfee310f6f14acd984f04312cdf9c249fa",
+    "security": "c728979178050494c4036b58570daee956a3f480cbf37b4f82a8019524a2d4e0"
+  },
+  "ir": {
+    "version": "domain-ir/1",
+    "package": {
+      "name": "@fixture/self-reference",
+      "version": "0.1.0",
+      "edition": "2027",
+      "profile": "",
+      "targets": [],
+      "observability": {
+        "window": "28d",
+        "slo": []
+      }
+    },
+    "imports": [],
+    "modules": [
+      {
+        "id": "_",
+        "enums": [],
+        "types": [],
+        "shapes": [],
+        "resources": [
+          {
+            "id": "@fixture/self-reference/_/Note",
+            "name": "Note",
+            "kind": "resource",
+            "exported": true,
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "thread",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@fixture/self-reference/_/Thread"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@fixture/self-reference/_/Note.create",
+                "kind": "create"
+              },
+              {
+                "id": "@fixture/self-reference/_/Note.get",
+                "kind": "get"
+              },
+              {
+                "id": "@fixture/self-reference/_/Note.update",
+                "kind": "update"
+              },
+              {
+                "id": "@fixture/self-reference/_/Note.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@fixture/self-reference/_/Note.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          },
+          {
+            "id": "@fixture/self-reference/_/Thread",
+            "name": "Thread",
+            "kind": "resource",
+            "exported": true,
+            "doc": "A root thread references itself; replies reference their root (#200).",
+            "decorators": {
+              "tenant": true,
+              "timestamps": false,
+              "softDelete": false,
+              "versioned": true,
+              "audited": false,
+              "hierarchical": false,
+              "purposeScoped": false
+            },
+            "fields": [
+              {
+                "name": "id",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "id",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": true,
+                "synthesized": false
+              },
+              {
+                "name": "title",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "text",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": [
+                    {
+                      "kind": "length",
+                      "min": 1,
+                      "max": 200
+                    }
+                  ]
+                },
+                "immutable": false,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "root",
+                "type": {
+                  "base": {
+                    "kind": "reference",
+                    "resource": "@fixture/self-reference/_/Thread"
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": true,
+                "serverOwned": false,
+                "synthesized": false
+              },
+              {
+                "name": "version",
+                "type": {
+                  "base": {
+                    "kind": "scalar",
+                    "name": "integer",
+                    "args": []
+                  },
+                  "optional": false,
+                  "normalizers": [],
+                  "constraints": []
+                },
+                "immutable": false,
+                "serverOwned": true,
+                "synthesized": true
+              }
+            ],
+            "uniques": [],
+            "finds": [],
+            "lists": [
+              {
+                "name": "all",
+                "fields": [],
+                "order": [
+                  {
+                    "field": "id",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "rules": [],
+            "operations": [
+              {
+                "id": "@fixture/self-reference/_/Thread.create",
+                "kind": "create"
+              },
+              {
+                "id": "@fixture/self-reference/_/Thread.get",
+                "kind": "get"
+              },
+              {
+                "id": "@fixture/self-reference/_/Thread.update",
+                "kind": "update"
+              },
+              {
+                "id": "@fixture/self-reference/_/Thread.delete",
+                "kind": "delete"
+              },
+              {
+                "id": "@fixture/self-reference/_/Thread.list.all",
+                "kind": "list",
+                "query": "all"
+              }
+            ],
+            "capabilities": [],
+            "purposeBindings": []
+          }
+        ],
+        "functions": [],
+        "channels": [],
+        "sources": [],
+        "subscriptions": [],
+        "views": [],
+        "projections": [],
+        "caches": [],
+        "workflows": [],
+        "purposes": [],
+        "dataClasses": []
+      }
+    ],
+    "requires": []
+  },
+  "contracts": {
+    "version": "contracts/1",
+    "package": "@fixture/self-reference",
+    "resources": [
+      {
+        "id": "@fixture/self-reference/_/Note",
+        "name": "Note",
+        "wireName": "note",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "thread": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "thread"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "thread": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "required": [
+            "thread"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "thread": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@fixture/self-reference/_/Note.create",
+            "kind": "create"
+          },
+          {
+            "id": "@fixture/self-reference/_/Note.get",
+            "kind": "get"
+          },
+          {
+            "id": "@fixture/self-reference/_/Note.update",
+            "kind": "update"
+          },
+          {
+            "id": "@fixture/self-reference/_/Note.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@fixture/self-reference/_/Note.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      },
+      {
+        "id": "@fixture/self-reference/_/Thread",
+        "name": "Thread",
+        "wireName": "thread",
+        "tenantScoped": true,
+        "softDelete": false,
+        "versioned": true,
+        "record": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "root": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "title",
+            "root"
+          ],
+          "additionalProperties": false
+        },
+        "create": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "root": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "required": [
+            "title",
+            "root"
+          ],
+          "additionalProperties": false
+        },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "queries": [
+          {
+            "name": "all",
+            "kind": "list",
+            "params": [],
+            "order": [
+              {
+                "field": "id",
+                "direction": "asc"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "id": "@fixture/self-reference/_/Thread.create",
+            "kind": "create"
+          },
+          {
+            "id": "@fixture/self-reference/_/Thread.get",
+            "kind": "get"
+          },
+          {
+            "id": "@fixture/self-reference/_/Thread.update",
+            "kind": "update"
+          },
+          {
+            "id": "@fixture/self-reference/_/Thread.delete",
+            "kind": "delete"
+          },
+          {
+            "id": "@fixture/self-reference/_/Thread.list.all",
+            "kind": "list",
+            "query": "all"
+          }
+        ]
+      }
+    ],
+    "functions": [],
+    "views": [],
+    "projections": [],
+    "caches": [],
+    "workflows": [],
+    "schedules": [],
+    "surfaces": []
+  },
+  "sql": {
+    "version": "sql-schema/1",
+    "dialect": "sqlite",
+    "tables": [
+      {
+        "name": "note",
+        "resource": "@fixture/self-reference/_/Note",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "thread",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "thread",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "thread"
+            ],
+            "references": "thread",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      },
+      {
+        "name": "thread",
+        "resource": "@fixture/self-reference/_/Thread",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "id",
+            "storage": "text"
+          },
+          {
+            "name": "title",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "title",
+            "storage": "text"
+          },
+          {
+            "name": "root",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "field": "root",
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "field": "version",
+            "storage": "integer"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "id"
+        ],
+        "foreignKeys": [
+          {
+            "columns": [
+              "tenant",
+              "root"
+            ],
+            "references": "thread",
+            "referencedColumns": [
+              "tenant",
+              "id"
+            ]
+          }
+        ],
+        "checks": []
+      }
+    ],
+    "indexes": [],
+    "systemTables": [
+      {
+        "name": "_forge_assert",
+        "columns": [
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "satisfied",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": [
+          {
+            "name": "forge_precondition",
+            "expression": "satisfied = 1"
+          }
+        ]
+      },
+      {
+        "name": "forge_audit",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "resource",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "record_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "new_version",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "actor",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_outbox",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "op_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "ordinal",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "channel",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "payload",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "lease_owner",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "lease_until",
+            "sqlType": "INTEGER",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "attempts",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "delivered",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          },
+          {
+            "name": "trace",
+            "sqlType": "TEXT",
+            "nullable": true,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "op_id",
+          "ordinal"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_processed",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "subscription",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "message_id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "subscription",
+          "message_id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_document",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "kind",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "id",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "version",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "body",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "kind",
+          "id"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      },
+      {
+        "name": "forge_receipt",
+        "columns": [
+          {
+            "name": "tenant",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "operation",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "key",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "request_hash",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "status",
+            "sqlType": "INTEGER",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "response",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          },
+          {
+            "name": "created_at",
+            "sqlType": "TEXT",
+            "nullable": false,
+            "storage": "text"
+          }
+        ],
+        "primaryKey": [
+          "tenant",
+          "operation",
+          "key"
+        ],
+        "foreignKeys": [],
+        "checks": []
+      }
+    ]
+  },
+  "dynamo": {
+    "version": "dynamo-plan/1",
+    "identityCodec": "identity.v1",
+    "sortCodec": "sort.v1",
+    "table": "data",
+    "pendingIndex": "pending-index",
+    "resources": [
+      {
+        "id": "@fixture/self-reference/_/Note",
+        "name": "Note",
+        "wireName": "note",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "thread",
+            "target": "@fixture/self-reference/_/Thread"
+          }
+        ],
+        "createActions": 5
+      },
+      {
+        "id": "@fixture/self-reference/_/Thread",
+        "name": "Thread",
+        "wireName": "thread",
+        "tenantScoped": true,
+        "claims": [],
+        "access": [
+          {
+            "name": "all",
+            "kind": "list",
+            "partitionFields": [],
+            "sortFields": [
+              "id"
+            ],
+            "sortDirections": [
+              "asc"
+            ],
+            "projection": [
+              "id",
+              "version"
+            ]
+          }
+        ],
+        "references": [
+          {
+            "field": "root",
+            "target": "@fixture/self-reference/_/Thread"
+          }
+        ],
+        "createActions": 5
+      }
+    ]
+  },
+  "ui": {
+    "version": "ui/1",
+    "package": "@fixture/self-reference",
+    "resources": [
+      {
+        "id": "@fixture/self-reference/_/Note",
+        "name": "Note",
+        "kind": "resource",
+        "label": "Note",
+        "plural": "Notes",
+        "route": "notes",
+        "titleField": "id",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "thread",
+            "label": "Thread",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": false,
+            "reference": {
+              "resource": "@fixture/self-reference/_/Thread",
+              "route": "thread",
+              "titleField": "title",
+              "lookup": "@fixture/self-reference/_/Thread.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "id",
+          "thread"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@fixture/self-reference/_/Note.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      },
+      {
+        "id": "@fixture/self-reference/_/Thread",
+        "name": "Thread",
+        "kind": "resource",
+        "label": "Thread",
+        "plural": "Threads",
+        "route": "threads",
+        "titleField": "title",
+        "fields": [
+          {
+            "name": "id",
+            "label": "Id",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          },
+          {
+            "name": "title",
+            "label": "Title",
+            "widget": "text",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": true,
+            "sortable": true,
+            "minLength": 1,
+            "maxLength": 200
+          },
+          {
+            "name": "root",
+            "label": "Root",
+            "widget": "reference",
+            "required": true,
+            "editableOnCreate": true,
+            "editableOnUpdate": false,
+            "sortable": false,
+            "reference": {
+              "resource": "@fixture/self-reference/_/Thread",
+              "route": "thread",
+              "titleField": "title",
+              "lookup": "@fixture/self-reference/_/Thread.list.all",
+              "lookupParams": []
+            }
+          },
+          {
+            "name": "version",
+            "label": "Version",
+            "widget": "readonly",
+            "required": false,
+            "editableOnCreate": false,
+            "editableOnUpdate": false,
+            "sortable": true
+          }
+        ],
+        "tableColumns": [
+          "title",
+          "root"
+        ],
+        "lists": [
+          {
+            "name": "all",
+            "op": "@fixture/self-reference/_/Thread.list.all",
+            "params": [],
+            "label": "All"
+          }
+        ],
+        "finds": [],
+        "actions": [],
+        "softDelete": false,
+        "versioned": true
+      }
+    ]
+  },
+  "messaging": {
+    "version": "messaging/1",
+    "channels": [],
+    "subscriptions": [],
+    "senders": []
+  },
+  "workflows": {
+    "version": "workflows/1",
+    "workflows": []
+  },
+  "schedules": {
+    "version": "schedules/1",
+    "schedules": [],
+    "cloudflareCrons": []
+  },
+  "realtime": {
+    "version": "realtime/1",
+    "profile": {
+      "frame": "text/json",
+      "maxFrameBytes": 65536,
+      "replayDepth": 256,
+      "delivery": "at-least-once",
+      "heartbeatSeconds": 30
+    },
+    "streams": [],
+    "cloudflare": {
+      "binding": "REALTIME",
+      "className": "ForgeRealtime"
+    },
+    "aws": {
+      "apiName": "forge-fixture-self-reference-realtime",
+      "routes": [
+        "$connect",
+        "$disconnect",
+        "$default"
+      ]
+    }
+  },
+  "observability": {
+    "version": "observability/1",
+    "dimensions": [
+      "forge.operation",
+      "forge.kind",
+      "forge.resource",
+      "forge.outcome",
+      "forge.target"
+    ],
+    "classification": {
+      "good": "status < 400",
+      "excluded": "4xx client errors except TransientConflict",
+      "bad": "5xx, TransientConflict, timeouts, undeclared failures",
+      "business": "declared domain errors: served, counted separately",
+      "counting": "one event per logical operation; retries are attempts on the same event, never new events"
+    },
+    "window": "28d",
+    "operations": [
+      {
+        "operation": "@fixture/self-reference/_/Note.create",
+        "kind": "create",
+        "resource": "@fixture/self-reference/_/Note",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.get",
+        "kind": "get",
+        "resource": "@fixture/self-reference/_/Note",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.update",
+        "kind": "update",
+        "resource": "@fixture/self-reference/_/Note",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.delete",
+        "kind": "delete",
+        "resource": "@fixture/self-reference/_/Note",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.list.all",
+        "kind": "list",
+        "resource": "@fixture/self-reference/_/Note",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.create",
+        "kind": "create",
+        "resource": "@fixture/self-reference/_/Thread",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.get",
+        "kind": "get",
+        "resource": "@fixture/self-reference/_/Thread",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.update",
+        "kind": "update",
+        "resource": "@fixture/self-reference/_/Thread",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.delete",
+        "kind": "delete",
+        "resource": "@fixture/self-reference/_/Thread",
+        "class": "crud-write",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 1000,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.list.all",
+        "kind": "list",
+        "resource": "@fixture/self-reference/_/Thread",
+        "class": "crud-read",
+        "slo": {
+          "availability": "99.9%",
+          "latencyGood": "99%",
+          "latencyWithinMs": 500,
+          "window": "28d"
+        },
+        "histogramBoundariesMs": [
+          5,
+          10,
+          25,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2500,
+          5000,
+          10000
+        ],
+        "businessErrors": []
+      }
+    ]
+  },
+  "dataSemantics": {
+    "version": "data-semantics/1",
+    "taxonomy": "data-taxonomy/1",
+    "fields": [
+      {
+        "resource": "@fixture/self-reference/_/Note",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/self-reference/_/Note",
+        "field": "thread",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/self-reference/_/Note",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/self-reference/_/Thread",
+        "field": "id",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/self-reference/_/Thread",
+        "field": "title",
+        "class": "data.unknown",
+        "ancestors": [
+          "data.unknown",
+          "data"
+        ],
+        "kinds": [
+          "unknown"
+        ],
+        "identifiability": "unknown",
+        "handling": "restricted",
+        "personal": "unknown",
+        "evidence": "none",
+        "completeness": "unclassified"
+      },
+      {
+        "resource": "@fixture/self-reference/_/Thread",
+        "field": "root",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      },
+      {
+        "resource": "@fixture/self-reference/_/Thread",
+        "field": "version",
+        "class": "data.structural",
+        "ancestors": [
+          "data.structural",
+          "data"
+        ],
+        "kinds": [
+          "structural"
+        ],
+        "identifiability": "none",
+        "handling": "internal",
+        "personal": "no",
+        "evidence": "structural",
+        "completeness": "structural"
+      }
+    ],
+    "subjects": [],
+    "summary": {
+      "structural": 6,
+      "unclassified": 1
+    }
+  },
+  "lineage": {
+    "version": "lineage/1",
+    "operations": [
+      {
+        "operation": "@fixture/self-reference/_/Note.create",
+        "kind": "create",
+        "resource": "@fixture/self-reference/_/Note",
+        "outputs": [
+          "id",
+          "thread",
+          "version"
+        ],
+        "writes": [
+          "thread"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.get",
+        "kind": "get",
+        "resource": "@fixture/self-reference/_/Note",
+        "outputs": [
+          "id",
+          "thread",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.update",
+        "kind": "update",
+        "resource": "@fixture/self-reference/_/Note",
+        "outputs": [
+          "id",
+          "thread",
+          "version"
+        ],
+        "writes": [
+          "thread"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.delete",
+        "kind": "delete",
+        "resource": "@fixture/self-reference/_/Note",
+        "outputs": [
+          "id",
+          "thread",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Note.list.all",
+        "kind": "list",
+        "resource": "@fixture/self-reference/_/Note",
+        "outputs": [
+          "id",
+          "thread",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.create",
+        "kind": "create",
+        "resource": "@fixture/self-reference/_/Thread",
+        "outputs": [
+          "id",
+          "title",
+          "root",
+          "version"
+        ],
+        "writes": [
+          "title",
+          "root"
+        ],
+        "filters": [],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.get",
+        "kind": "get",
+        "resource": "@fixture/self-reference/_/Thread",
+        "outputs": [
+          "id",
+          "title",
+          "root",
+          "version"
+        ],
+        "writes": [],
+        "filters": [
+          "id"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.update",
+        "kind": "update",
+        "resource": "@fixture/self-reference/_/Thread",
+        "outputs": [
+          "id",
+          "title",
+          "root",
+          "version"
+        ],
+        "writes": [
+          "title"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.delete",
+        "kind": "delete",
+        "resource": "@fixture/self-reference/_/Thread",
+        "outputs": [
+          "id",
+          "title",
+          "root",
+          "version"
+        ],
+        "writes": [
+          "deletedAt",
+          "version"
+        ],
+        "filters": [
+          "id",
+          "version"
+        ],
+        "orders": [],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      },
+      {
+        "operation": "@fixture/self-reference/_/Thread.list.all",
+        "kind": "list",
+        "resource": "@fixture/self-reference/_/Thread",
+        "outputs": [
+          "id",
+          "title",
+          "root",
+          "version"
+        ],
+        "writes": [],
+        "filters": [],
+        "orders": [
+          "id"
+        ],
+        "groups": [],
+        "externalSinks": [],
+        "publishes": [],
+        "coverage": "modeled"
+      }
+    ]
+  },
+  "capabilities": {
+    "version": "capabilities/1",
+    "surfaces": []
+  },
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "@fixture/self-reference",
+      "version": "contracts/1",
+      "description": "Generated by forgec build; a projection of the same contracts the runtime enforces on every target.",
+      "x-forge-contracts": "contracts/1"
+    },
+    "servers": [],
+    "components": {
+      "schemas": {
+        "Problem": {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "status",
+            "code"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "format": "uri"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+            },
+            "detail": {
+              "type": "string"
+            },
+            "requestId": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "NoteRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "thread": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "thread"
+          ]
+        },
+        "NoteCreate": {
+          "type": "object",
+          "properties": {
+            "thread": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "thread"
+          ]
+        },
+        "NotePatch": {
+          "type": "object",
+          "properties": {
+            "thread": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ThreadRecord": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-forge-type": "id",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "readOnly": true
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "x-forge-type": "integer",
+              "readOnly": true
+            },
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "root": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "title",
+            "root"
+          ]
+        },
+        "ThreadCreate": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "root": {
+              "type": "string",
+              "x-forge-reference": "@fixture/self-reference/_/Thread"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "root"
+          ]
+        },
+        "ThreadPatch": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "x-forge-type": "text",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false
+        },
+        "WorkflowInstance": {
+          "type": "object",
+          "required": [
+            "id",
+            "workflow",
+            "version",
+            "status"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workflow": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "running",
+                "waiting",
+                "sleeping",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "history": {
+              "type": "array"
+            },
+            "output": {},
+            "error": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearer": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "bearer": []
+      }
+    ],
+    "paths": {}
+  }
+}
