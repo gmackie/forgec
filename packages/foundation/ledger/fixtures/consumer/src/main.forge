@@ -1,0 +1,19 @@
+import ledger
+resource Money
+  @tenant
+{
+  id : id
+  account : ledger.Account
+}
+resource Inventory
+  @tenant
+{
+  id : id
+  account : ledger.Account
+}
+resource ComputeCredits
+  @tenant
+{
+  id : id
+  account : ledger.Account
+}

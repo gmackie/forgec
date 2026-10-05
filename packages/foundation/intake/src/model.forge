@@ -1,0 +1,44 @@
+import specification
+import artifact
+import evaluation
+import party
+export enum ValidationVerdict {
+  Accepted
+  Rejected
+}
+export resource IntakeForm @tenant @appendOnly {
+  id : id
+  definition : specification.SpecificationPin
+  label : text length 1..200
+  anonymousAllowed : boolean
+}
+export resource Submission @tenant @timestamps @appendOnly {
+  id : id
+  form : IntakeForm
+  definition : specification.SpecificationPin
+  submitter : party.Party?
+  sourceKey : text length 1..128
+  submittedAt : datetime
+  raw : artifact.ArtifactRevision?
+  rules {
+    definition == form.definition
+    submitter != null || form.anonymousAllowed
+  }
+  unique form, sourceKey
+  find by form, sourceKey
+  list by form
+}
+export resource SubmissionValidation @tenant @appendOnly {
+  id : id
+  submission : Submission @unique
+  run : evaluation.EvaluationRun
+  finish : evaluation.EvaluationFinish
+  verdict : ValidationVerdict
+  reason : text length 1..500
+  rules {
+    finish.run == run
+    finish.outcome == "Completed"
+    run.definition == submission.definition
+  }
+  find by submission
+}

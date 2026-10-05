@@ -10,7 +10,11 @@ import {
 import { deploymentAction, type DeploymentConnection } from "./deployment-control.js";
 import type { RuntimeConnection } from "./runtime-control.js";
 import { gitCommitSchema, type GitRepository } from "./git.js";
+import type { Studio } from "./studio.js";
 import type { OciRegistry } from "./oci.js";
+import type { PlaygroundAttachment } from "./playground-document.js";
+import { tokenAuth, type AuthAdapter } from "./auth.js";
+import type { CredentialStore } from "./credentials.js";
 const name = z.string().trim().min(1).max(120);
 const appInput = z
   .object({ name, description: z.string().max(2000).default("") })
@@ -44,6 +48,48 @@ const environmentInput = z
     secretRefs: record,
   })
   .strict();
+const playgroundFile = z
+  .object({
+    path: z.string().min(1).max(500),
+    text: z.string().max(8_000_000),
+  })
+  .strict();
+const playgroundInput = z
+  .object({
+    version: z.literal("playground/1"),
+    bundleDigest: z
+      .string()
+      .regex(/^sha256:[a-f0-9]{64}$/)
+      .optional(),
+    name: z.string().min(1).max(200),
+    currentFile: z.string().min(1).max(500),
+    files: z.array(playgroundFile).min(1).max(50),
+    positions: z
+      .array(
+        z
+          .object({
+            path: z.string().min(1).max(500),
+            name: z.string().min(1).max(200),
+            x: z.number(),
+            y: z.number(),
+          })
+          .strict(),
+      )
+      .max(400),
+    samples: z
+      .array(
+        z
+          .object({
+            path: z.string().min(1).max(500),
+            name: z.string().min(1).max(200),
+            clock: z.string().max(80),
+            payload: z.unknown(),
+          })
+          .strict(),
+      )
+      .max(400),
+  })
+  .strict();
 const publishInput = z
   .object({
     name: z
@@ -57,11 +103,26 @@ const publishInput = z
     owner: z.string().max(120),
     commit: z.string().max(200),
     bundle: z.record(z.string(), z.unknown()),
+    playground: playgroundInput.optional(),
+  })
+  .strict();
+const credentialInput = z
+  .object({
+    label: z.string().min(1).max(120),
+    scopes: z.array(z.enum(["pull", "push"])).min(1),
+    expiresAt: z.string().datetime().optional(),
   })
   .strict();
 export interface ApiOptions {
+  studio?: Studio;
   store: StateStore;
-  token: string;
+  /** Supply an adapter, or `token` below to use the shared-administrator scheme. */
+  auth?: AuthAdapter;
+  token?: string;
+  authMode?: "token" | "cloudflare-access";
+  identityAuthority?: string | null;
+  /** Registry credentials, when this instance serves its own /v2 endpoints. */
+  credentials?: CredentialStore | null;
   authority: string;
   name: string;
   runtime: string;
@@ -132,16 +193,6 @@ function decode<T>(schema: z.ZodType<T>, data: unknown): T {
     );
   return parsed.data;
 }
-async function equalToken(actual: string, expected: string): Promise<boolean> {
-  const hash = async (s: string) =>
-    new Uint8Array(
-      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)),
-    );
-  const [a, b] = await Promise.all([hash(actual), hash(expected)]);
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a[i]! ^ b[i]!;
-  return diff === 0;
-}
 const json = (value: unknown, status = 200) =>
   Response.json(value, {
     status,
@@ -160,66 +211,95 @@ function view(state: State, o: ApiOptions): ViewState {
       registry: o.registry
         ? { url: o.registry.url, repository: o.registry.repository }
         : null,
+      authMode: o.authMode ?? "token",
+      identityAuthority: o.identityAuthority ?? null,
     },
   };
 }
 function route(request: Request) {
   return Effect.gen(function* () {
     const o = yield* Management;
-    if (o.token.length < 32)
-      return yield* Effect.fail(
-        new Problem(
-          503,
-          "Configure an administrator token of at least 32 characters.",
-        ),
-      );
-    if (
-      !(yield* attempt(() =>
-        equalToken(
-          request.headers.get("authorization") ?? "",
-          `Bearer ${o.token}`,
-        ),
-      ))
-    )
-      return yield* Effect.fail(
-        new Problem(401, "Enter this instance’s administrator token."),
-      );
+    // Before routing, so an unauthenticated caller cannot learn which paths exist.
+    const auth = o.auth ?? tokenAuth(o.token ?? "");
+    const identity = yield* attempt(() => auth.authenticate(request));
     const url = new URL(request.url);
     const method = request.method;
     const path = url.pathname.slice(4);
     if (method !== "GET") {
       const origin = request.headers.get("origin");
-      if (origin && origin !== url.origin)
+      // A header-borne token is only ever sent deliberately, so a missing Origin is tolerated
+      // for CLI callers. A cookie rides along on cross-site requests, so there it is required.
+      if (origin ? origin !== url.origin : auth.cookieBorne)
         return yield* Effect.fail(
           new Problem(403, "Cross-origin writes are not allowed."),
         );
     }
     if (path === "/git/projects" && method === "GET")
       return json({ projects: (o.git ?? []).map((g) => g.project) });
-    const gitRoute = path.match(/^\/git\/projects\/([a-z0-9-]+)(\/commits)?$/);
-    if (gitRoute) {
-      const repository = o.git?.find((g) => g.project.id === gitRoute[1]);
-      if (!repository)
-        return yield* Effect.fail(
-          new Problem(404, "Git project is not configured on this instance."),
-        );
-      if (method === "GET" && !gitRoute[2])
-        return json(yield* attempt(() => repository.snapshot()));
-      if (method === "POST" && gitRoute[2]) {
-        const input = yield* attempt(async () =>
-          decode(gitCommitSchema, await body(request)),
-        );
-        return json(yield* attempt(() => repository.commit(input)), 201);
+    const gitRoute = path.match(/^\/git\/projects\/([a-z0-9-]+)(?:\/(commits|branches|reviews|artifacts)(?:\/([A-Za-z0-9_-]+)(?:\/(decisions|comments))?)?)?$/);
+    if(gitRoute) {
+      const configured=o.git?.find(g=>g.project.id===gitRoute[1]);
+      if(!configured)return yield* Effect.fail(new Problem(404,"Git project is not configured on this instance."));
+      const repository=yield* attempt(async()=>configured.onBranch(url.searchParams.get("branch")||configured.project.branch));
+      const section=gitRoute[2],id=gitRoute[3],action=gitRoute[4];
+      const page=yield* attempt(async()=>decode(z.coerce.number().int().min(1).max(1000),url.searchParams.get("page")||1));
+      if(!section&&method==="GET")return json(yield* attempt(()=>repository.snapshot()));
+      if(section==="commits"&&!id&&method==="POST") {
+        const input=yield* attempt(async()=>decode(gitCommitSchema,await body(request)));
+        return json(yield* attempt(()=>repository.commit(input)),201);
+      }
+      if(section==="branches"&&!id&&method==="POST") {
+        const input=yield* attempt(async()=>decode(z.object({name:z.string().min(1).max(200),revision:z.string().regex(/^[a-f0-9]{40}$/)}).strict(),await body(request)));
+        return json(yield* attempt(()=>repository.createBranch(input.name,input.revision)),201);
+      }
+      if(section==="branches"&&!id&&method==="GET") {
+        const result=yield* attempt(()=>repository.branches(page));
+        if(o.studio)yield* attempt(()=>o.studio!.observe(configured,result.items,[]));
+        return json(result);
+      }
+      if(section==="commits"&&!id&&method==="GET") {
+        const result=yield* attempt(()=>repository.history(page));
+        if(o.studio)yield* attempt(()=>o.studio!.observe(configured,[],result.items));
+        return json(result);
+      }
+      if(section==="reviews"||section==="artifacts") {
+        if(!o.studio)return yield* Effect.fail(new Problem(503,"Studio metadata storage is not configured."));
+        const studio=o.studio;
+        if(!id&&method==="GET")return json(yield* attempt(()=>studio.list(configured,section==="reviews"?"ChangeReview":"IRArtifact",url.searchParams.get("cursor")||undefined)));
+        if(section==="reviews") {
+          if(!id&&method==="POST") {
+            const input=yield* attempt(async()=>decode(z.object({title:z.string().trim().min(1).max(200),description:z.string().max(4000),baseBranch:z.string().min(1).max(200),headBranch:z.string().min(1).max(200),headRevision:z.string().regex(/^[a-f0-9]{40}$/)}).strict(),await body(request)));
+            return json(yield* attempt(()=>studio.submit(configured,input)),201);
+          }
+          if(id&&!action&&method==="GET")return json(yield* attempt(()=>studio.detail(configured,id)));
+          if(id&&action==="decisions"&&method==="POST") {
+            const input=yield* attempt(async()=>decode(z.object({action:z.enum(["approve","requestChanges","close"]),expectedVersion:z.number().int().positive()}).strict(),await body(request)));
+            return json(yield* attempt(()=>studio.decide(configured,id,input.action,input.expectedVersion)));
+          }
+          if(id&&action==="comments"&&method==="POST") {
+            const input=yield* attempt(async()=>decode(z.object({body:z.string().trim().min(1).max(4000)}).strict(),await body(request)));
+            yield* attempt(()=>studio.review(configured,id));
+            return json(yield* attempt(()=>studio.call("ReviewComment","create",{review:id,body:input.body,author:"console-administrator"})),201);
+          }
+        }
+        if(section==="artifacts"&&!id&&method==="POST") {
+          const input=yield* attempt(async()=>decode(z.object({revision:z.string().regex(/^[a-f0-9]{40}$/),digest:z.string().regex(/^sha256:[a-f0-9]{64}$/),location:z.string().min(1).max(2000).refine(s=>{try{const u=new URL(s);return ["https:","oci:"].includes(u.protocol)&&!u.username&&!u.password;}catch{return false;}}),byteCount:z.number().int().nonnegative(),compilerVersion:z.string().min(1).max(100),irVersion:z.string().min(1).max(100)}).strict(),await body(request)));
+          yield* attempt(()=>configured.snapshot(input.revision));
+          const record=yield* attempt(()=>studio.repository(configured));
+          return json(yield* attempt(()=>studio.call("IRArtifact","create",{...input,repository:record.id,key:`${record.id}:${input.revision}:${input.digest}`})),201);
+        }
       }
     }
     if(path==='/runtime/targets'&&method==='GET')return json({targets:(o.runtimes||[]).map(t=>t.public)});
-    const runtimeRoute=path.match(/^\/runtime\/targets\/([a-z0-9-]+)\/(catalog|invoke)$/);
+    const runtimeRoute=path.match(/^\/runtime\/targets\/([a-z0-9-]+)\/(catalog|invoke|workspace|record)$/);
     if(runtimeRoute){
       const target=o.runtimes?.find(t=>t.public.id===runtimeRoute[1]);
       if(!target)return yield* Effect.fail(new Problem(404,'Runtime is not configured on this instance.'));
       if(method==='GET'&&runtimeRoute[2]==='catalog')return json(yield* attempt(()=>target.catalog()));
-      if(method==='POST'&&runtimeRoute[2]==='invoke'){
+      if(method==='GET'&&runtimeRoute[2]==='workspace')return json(yield* attempt(()=>target.workspace()));
+      if(method==='POST'&&['invoke','record'].includes(runtimeRoute[2]!)){
         const input=yield* attempt(async()=>decode(z.object({operationId:z.string().min(1).max(300),input:z.record(z.string(),z.unknown()),buildHash:z.string().min(1).max(200),deploymentRevision:z.string().max(200).optional(),purpose:z.string().max(200).optional(),idempotencyKey:z.string().max(200).optional()}).strict(),await body(request)));
+        if(runtimeRoute[2] === "record") return json(yield* attempt(()=>target.record(input)));
         return json(yield* attempt(()=>target.invoke(input)));
       }
     }
@@ -262,11 +342,63 @@ function route(request: Request) {
       );
       const result = yield* attempt(() =>
         o.registry!.publish(
-          { ...input, bundle: input.bundle as unknown as AppBundle },
+          {
+            name: input.name,
+            version: input.version,
+            owner: input.owner,
+            commit: input.commit,
+            bundle: input.bundle as unknown as AppBundle,
+            ...(input.playground
+              ? { playground: input.playground as PlaygroundAttachment }
+              : {}),
+          },
           (key) => o.store.reservePublication(key),
         ),
       );
       return json(result, 201);
+    }
+    // Registry credentials: minted by a human through this API, used by container clients that
+    // cannot authenticate the way a human does.
+    if (path === "/registry/credentials" || path.startsWith("/registry/credentials/")) {
+      if (!o.credentials)
+        return yield* Effect.fail(
+          new Problem(503, "This instance does not issue registry credentials."),
+        );
+      if (path === "/registry/credentials" && method === "GET")
+        return json({ credentials: yield* attempt(() => o.credentials!.list()) });
+      if (path === "/registry/credentials" && method === "POST") {
+        const input = yield* attempt(async () =>
+          decode(credentialInput, await body(request)),
+        );
+        const created = yield* attempt(() =>
+          o.credentials!.create({
+            label: input.label,
+            scopes: input.scopes,
+            createdBy: identity.actor,
+            ...(input.expiresAt ? { expiresAt: input.expiresAt } : {}),
+          }),
+        );
+        yield* attempt(() =>
+          appendAudit(o, `Registry credential issued`, `${created.credential.label} (${created.credential.id})`, identity.actor),
+        );
+        // The secret is returned exactly once and never stored in the clear.
+        return json(created, 201);
+      }
+      if (path.startsWith("/registry/credentials/") && method === "DELETE") {
+        const id = path.slice("/registry/credentials/".length);
+        const revoked = yield* attempt(() =>
+          o.credentials!.revoke(id, new Date().toISOString()),
+        );
+        if (!revoked)
+          return yield* Effect.fail(
+            new Problem(404, "No active credential with that id."),
+          );
+        yield* attempt(() =>
+          appendAudit(o, `Registry credential revoked`, id, identity.actor),
+        );
+        return json({ revoked: true });
+      }
+      return yield* Effect.fail(new Problem(405, "Method not allowed."));
     }
     const segments = path.split("/").filter(Boolean);
     const appRoute =
@@ -395,7 +527,13 @@ function route(request: Request) {
       app.updatedAt = now;
     });
     state.revision++;
-    state.audit.unshift({ id: crypto.randomUUID(), at: now, action, subject });
+    state.audit.unshift({
+      id: crypto.randomUUID(),
+      at: now,
+      action,
+      subject,
+      actor: identity.actor,
+    });
     state.audit = state.audit.slice(0, 200);
     if (!(yield* attempt(() => o.store.save(expected, state))))
       return yield* Effect.fail(
@@ -406,6 +544,36 @@ function route(request: Request) {
       );
     return json(view(state, o), status);
   });
+}
+/**
+ * Record an action in the audit log.
+ *
+ * Issuing or revoking a registry credential is the only trail for who granted push access, so a
+ * lost CAS race is retried rather than dropped. It is still best-effort: the credential change
+ * itself has already committed, and failing the request afterwards would be worse than an
+ * unrecorded entry.
+ */
+async function appendAudit(
+  o: ApiOptions,
+  action: string,
+  subject: string,
+  actor: string,
+): Promise<void> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const state = await o.store.read();
+    const expected = state.revision;
+    state.revision++;
+    state.audit.unshift({
+      id: crypto.randomUUID(),
+      at: new Date().toISOString(),
+      action,
+      subject,
+      actor,
+    });
+    state.audit = state.audit.slice(0, 200);
+    if (await o.store.save(expected, state)) return;
+  }
+  console.warn("console: could not record an audit entry", { action, subject });
 }
 export function createApi(
   options: ApiOptions,

@@ -1,0 +1,174 @@
+.playground-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.playground-tabs {
+  display: flex;
+  gap: 8px;
+}
+.playground-tabs button[aria-selected="true"] {
+  font-weight: 700;
+}
+.playground-heading,
+.playground-layout,
+.playground-fire,
+.playground-create {
+  display: flex;
+  gap: 16px;
+}
+.playground-heading {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.playground-actions,
+.playground-snap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.playground-snap {
+  margin: 12px 0;
+}
+.playground-snap select {
+  margin-left: 8px;
+}
+.playground-heading h1 {
+  margin: 4px 0 8px;
+  font-size: 30px;
+}
+.playground-layout {
+  align-items: flex-start;
+}
+.playground-canvas,
+.playground-inspector {
+  border: 1px solid #e0e5ec;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0;
+}
+.playground-canvas {
+  flex: 1.4;
+  overflow: auto;
+}
+.playground-inspector {
+  flex: 1;
+}
+.playground-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.playground-palette button {
+  font: inherit;
+  border: 1px solid #c5ceda;
+  border-radius: 999px;
+  background: #f6f8fb;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.playground-node {
+  cursor: grab;
+  touch-action: none;
+}
+.playground-node.snap-target rect {
+  stroke: #2f7d4a;
+  stroke-dasharray: 4 3;
+}
+.playground-edge-hit {
+  cursor: pointer;
+}
+.playground-readonly {
+  background: #f6f8fb;
+  border: 1px solid #e0e5ec;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.playground-readonly button,
+.playground-fire textarea {
+  margin-top: 8px;
+  font: inherit;
+}
+.playground-node rect {
+  fill: #fff;
+  stroke: #c5ceda;
+}
+.playground-node.selected rect,
+.playground-node:focus rect {
+  stroke: #4375c9;
+  stroke-width: 2;
+}
+.playground-node text {
+  font-size: 14px;
+  fill: #1c2430;
+}
+.playground-kind,
+.playground-edge,
+.playground-outcome {
+  font-size: 11px;
+  fill: #687990;
+}
+.playground-node[data-outcome="ran"] rect {
+  stroke: #238b78;
+}
+.playground-node[data-outcome="failed"] rect {
+  stroke: #a33b3b;
+}
+.playground-fire,
+.playground-create {
+  flex-direction: column;
+  margin-top: 16px;
+}
+.playground-fire input,
+.playground-create input,
+.playground-create select {
+  font: inherit;
+  padding: 8px;
+}
+.playground-result pre,
+.playground-diagnostics {
+  background: #f6f8fb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  overflow: auto;
+}
+.playground-error {
+  color: #8d2f2f;
+}
+.muted.small {
+  font-size: 13px;
+}
+.playground-openapi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e5ec;
+}
+.playground-openapi h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.playground-openapi-samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.playground-openapi input,
+.playground-openapi textarea,
+.playground-openapi button {
+  font: inherit;
+}
+.playground-openapi textarea {
+  min-height: 96px;
+}
+.playground-openapi ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.playground-node[data-external="true"] rect {
+  stroke: #6b4c9a;
+}

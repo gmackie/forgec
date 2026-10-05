@@ -1,0 +1,79 @@
+{
+  "slug": "demand",
+  "layer": "system",
+  "issue": 104,
+  "dependencies": [
+    "party",
+    "specification",
+    "evidence",
+    "place",
+    "intake",
+    "fulfillment",
+    "allocation",
+    "scheduling",
+    "routing"
+  ],
+  "facts": [
+    "ServiceRequest",
+    "ReplenishmentSignal",
+    "StaffingRequest",
+    "ComputeRequest"
+  ],
+  "operations": [
+    "demand authorized runtime services"
+  ],
+  "invariants": [
+    "Explicit and inferred provenance with domain-owned typed payloads",
+    "Compatible aggregation without duplicate authoritative demand",
+    "Unique cancellation, supersession or fulfillment conversion",
+    "Typed allocation, scheduling and routing planning links"
+  ],
+  "acceptance": [
+    {
+      "id": "F104-01",
+      "description": "Explicit and inferred provenance with domain-owned typed payloads",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-demand.test.ts"
+      ]
+    },
+    {
+      "id": "F104-02",
+      "description": "Compatible aggregation without duplicate authoritative demand",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-demand.test.ts"
+      ]
+    },
+    {
+      "id": "F104-03",
+      "description": "Unique cancellation, supersession or fulfillment conversion",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-demand.test.ts"
+      ]
+    },
+    {
+      "id": "F104-04",
+      "description": "Typed allocation, scheduling and routing planning links",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-demand.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ServiceRequest",
+    "ReplenishmentSignal",
+    "StaffingRequest",
+    "ComputeRequest"
+  ]
+}

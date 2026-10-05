@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "slug": "packaging-line",
+  "outcomes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "coordination",
+      "description": "Recipe and batch identity, requested mode changes, interlock observations and immutable scan decisions",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/packaging-line/_/ApprovedRecipe",
+        "@boundary/packaging-line/_/LineMode",
+        "@boundary/packaging-line/_/ReactToScan",
+        "@boundary/packaging-line/_/ScanDecision"
+      ],
+      "pressures": [
+        "sensor-actuator"
+      ],
+      "rationale": "Typed contracts and one logical producer express discrete responsibility without prescribing the control implementation."
+    },
+    {
+      "id": "reaction-budget",
+      "description": "Periodic release and reaction deadline change acceptable system behavior",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/packaging-line/_/ReactToScan"
+      ],
+      "pressures": [
+        "fixed-period",
+        "deadlines",
+        "wcet"
+      ],
+      "rationale": "Activation admits a reaction but does not constrain clock, release jitter, sample age or completion time."
+    },
+    {
+      "id": "safe-modes",
+      "description": "Explicit inhibited/startup behavior and nonautomatic recovery",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/packaging-line/_/ReactToScan",
+        "@boundary/packaging-line/_/LineMode"
+      ],
+      "pressures": [
+        "modes",
+        "fail-safe"
+      ],
+      "rationale": "Modes can be domain data; hazard-specific transition and recovery obligations need contracts beyond a graph."
+    },
+    {
+      "id": "execution-strategy",
+      "description": "A cyclic IEC 61131-3 task may realize ReactToScan. A distributed IEC 61499 network is an alternative realization only after event/data and scheduling semantics are specified; it is not equivalent merely because arrows match.",
+      "layer": "L1",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/packaging-line/_/ReactToScan"
+      ],
+      "pressures": [
+        "deterministic-execution",
+        "platform-mapping"
+      ],
+      "rationale": "A thread, synchronous node or PLC task is a realization of the same responsibility; the mechanism alone does not discharge requirements."
+    },
+    {
+      "id": "deployment",
+      "description": "PLC task periods, remote I/O bus budgets, sealer controller assignment and safety-controller separation are L2 deployment analysis inputs.",
+      "layer": "L2",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/packaging-line/_/ReactToScan",
+        "@boundary/packaging-line/_/LineIO"
+      ],
+      "pressures": [
+        "hardware-placement",
+        "platform-mapping"
+      ],
+      "rationale": "Physical mapping and latency budgets need deployment-specific evidence, separate from logical ownership."
+    },
+    {
+      "id": "specialized-semantics",
+      "description": "IEC 61131 task execution and input/output-image semantics; IEC 61499 execution-control charts and event/data association; physical stopping-distance analysis",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/packaging-line/_/ReactToScan",
+        "@boundary/packaging-line/_/LineIO"
+      ],
+      "pressures": [
+        "formal-verification",
+        "simulation-artifacts"
+      ],
+      "rationale": "A matching typed interface cannot define the external tool model of computation, prove safety, or solve physical equations."
+    }
+  ],
+  "facets": [
+    {
+      "id": "reaction-budget",
+      "kind": "timing",
+      "status": "proposed",
+      "targets": [
+        "@boundary/packaging-line/_/ReactToScan"
+      ],
+      "parameters": {
+        "periodUs": 20000,
+        "deadlineUs": 10000,
+        "wcetBudgetUs": 4000
+      },
+      "meaning": "Illustrative release-to-command requirement measured on one monotonic clock; period changes require domain review.",
+      "obligations": [
+        "Offline inequality validation is not a WCET proof, schedulability analysis, timer implementation or runtime safety proof.",
+        "Specify release jitter, clock error, sample-age bound, execution platform and interrupt/bus interference before analysis.",
+        "Deadline is measured from scheduled release to command acceptance at the I/O boundary, not merely process return; include communication delay.",
+        "Missed releases and expired outputs require independently assessed monitoring; do not queue unbounded catch-up reactions."
+      ]
+    },
+    {
+      "id": "safe-modes",
+      "kind": "mode",
+      "status": "proposed",
+      "targets": [
+        "@boundary/packaging-line/_/ReactToScan",
+        "@boundary/packaging-line/_/LineMode"
+      ],
+      "parameters": {
+        "modes": [
+          "stopped",
+          "ready",
+          "running",
+          "faulted"
+        ],
+        "restartMode": "stopped",
+        "automaticRecovery": false
+      },
+      "meaning": "Modes and reset semantics remain domain vocabulary; this sidecar proposes obligations, not executable transition logic.",
+      "obligations": [
+        "Define transition priority and handling of simultaneous reset/fault inputs in the specialized model.",
+        "Assess safe outputs and monitor independence against domain hazards; neither naming a mode nor parsing this file proves safety."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "A cyclic IEC 61131-3 task may realize ReactToScan. A distributed IEC 61499 network is an alternative realization only after event/data and scheduling semantics are specified; it is not equivalent merely because arrows match.",
+    "placement": "PLC task periods, remote I/O bus budgets, sealer controller assignment and safety-controller separation are L2 deployment analysis inputs.",
+    "limitations": [
+      "No executable control law, hardware binding or analyzer result is included.",
+      "Single logical owner does not provide physical redundancy, mutual exclusion or exactly-once actuation.",
+      "Policy and clinical/operator authorization are implementation prerequisites, not asserted by these policy-free interface sketches."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "controller-model",
+      "path": "specialized-model/controller.st-sketch.txt",
+      "format": "IEC 61131-3 Structured Text inspired sketch",
+      "status": "sketch",
+      "process": "@boundary/packaging-line/_/ReactToScan",
+      "inputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#input:sample",
+        "@boundary/packaging-line/_/ReactToScan#input:approval",
+        "@boundary/packaging-line/_/ReactToScan#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#output:state",
+        "@boundary/packaging-line/_/ReactToScan#output:decision",
+        "@boundary/packaging-line/_/ReactToScan#output:command"
+      ],
+      "claim": "Interface and explanatory pseudocode only; no control analyzer, code generator or hardware test executed."
+    },
+    {
+      "id": "deployment-model",
+      "path": "specialized-model/deployment.aadl-sketch.txt",
+      "format": "AADL-inspired deployment/analysis sketch",
+      "status": "sketch",
+      "process": "@boundary/packaging-line/_/ReactToScan",
+      "inputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#input:sample",
+        "@boundary/packaging-line/_/ReactToScan#input:approval",
+        "@boundary/packaging-line/_/ReactToScan#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/packaging-line/_/ReactToScan#output:state",
+        "@boundary/packaging-line/_/ReactToScan#output:decision",
+        "@boundary/packaging-line/_/ReactToScan#output:command"
+      ],
+      "claim": "Analysis inputs and mapping questions only; not an executable AADL model or schedulability result."
+    }
+  ],
+  "sources": [
+    {
+      "title": "IEC 61131-3:2013 official catalogue abstract",
+      "url": "https://webstore.iec.ch/en/publication/4552",
+      "supports": "Fetched 2026-09-23. Defines syntax/semantics of PLC languages including Structured Text and Function Block Diagram. This is the 2013 edition reference, not a claim to have reviewed the latest full standard; normative text was not accessed."
+    },
+    {
+      "title": "IEC 61499-1:2012 official catalogue abstract",
+      "url": "https://webstore.iec.ch/en/publication/5506",
+      "supports": "Fetched 2026-09-23. Defines generic function-block architecture for distributed industrial measurement/control, with implementable reference models. Catalogue abstract only; detailed event/data execution rules require the normative standard and selected runtime."
+    },
+    {
+      "title": "SEI: Architecture Analysis and Design Language (AADL)",
+      "url": "https://www.sei.cmu.edu/projects/architecture-analysis-and-design-language-aadl/",
+      "supports": "Fetched 2026-09-23. Architectural component categories include processors, devices and threads; analysis of embedded-system quality attributes is distinct from a typed responsibility graph."
+    },
+    {
+      "title": "AUTOSAR Classic Platform",
+      "url": "https://www.autosar.org/standards/classic-platform",
+      "supports": "Fetched with curl 2026-09-23. Distinguishes application, runtime environment and basic software; mostly hardware-independent application components communicate through RTE. Used as a separation analogy, not an avionics/medical compliance requirement."
+    },
+    {
+      "title": "MathWorks: Stateflow overview",
+      "url": "https://www.mathworks.com/help/stateflow/ug/overview-of-stateflow.html",
+      "supports": "Official documentation URL; retrieval returned HTTP403 on 2026-09-23. State-machine modeling is relevant prior art; exact transition-order semantics must be checked in tool/version-specific documentation before implementation."
+    }
+  ]
+}

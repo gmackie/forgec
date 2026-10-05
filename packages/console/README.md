@@ -91,7 +91,7 @@ central login, automatic federation, or required upstream authority. Each instan
 its own authority string, administrator token, Ed25519 signing key and OCI connection.
 `forge.gmac.io` is one deployment configuration, with no special status in the application.
 
-The shared Effect API runs on Workers with D1, or Node 22 with SQLite. Both use the same
+The shared Effect API runs on Workers with D1, or Node 24 with SQLite. Both use the same
 OCI adapter over HTTP. Docker Compose includes an independent Distribution registry;
 Workers connects to a reachable OCI registry chosen by its operator.
 
@@ -99,6 +99,7 @@ Workers connects to a reachable OCI registry chosen by its operator.
 OCI image manifest with `artifactType: application/vnd.forgegraph.package.v1`, containing:
 
 - Content-addressed Forge bundle, IR, contracts, OpenAPI and signed Forge manifest layers.
+- An optional unsigned layer, `application/vnd.forgegraph.playground.v1+json`, with the open draft, node positions, and source samples. It is not named by the signed Forge manifest, so layout and samples do not change the signed Forge digest. A missing or non-matching layer opens read-only.
 - An OCI config blob containing the authority-bound Ed25519 signature and Forge digest.
 - Discoverable title/version/source-revision annotations. These annotations are informative;
   trusted names, versions, ownership and dependencies come from the verified Forge manifest.
@@ -193,6 +194,71 @@ apply `wrangler d1 migrations apply forge-console --local`, and run `pnpm cf:dev
 migrations must be applied before serving traffic. The actual Worker uses `nodejs_compat`;
 the Node-only filesystem store and server are not invoked in Workers.
 
+## Cloudflare-native: R2 artifacts and Access sign-in
+
+Two optional backends let an instance run entirely on Cloudflare. Both default to off, so a
+Docker or Node deployment is unaffected by their existence.
+
+`OCI_BACKEND=r2` stores artifacts in an R2 bucket bound as `BLOBS` instead of talking to an
+external registry, and serves the OCI Distribution endpoints from this worker at `/v2`. One
+layout backs both: the console reads and writes R2 directly, while `oras`, `crane` and
+`docker pull` reach the same objects over `/v2`. Scope is deliberate — these are Forge
+artifacts, which this client caps at 8 MB and uploads monolithically, so there is no chunked
+upload and a `PATCH` is answered with 405 rather than a confusing failure.
+
+`AUTH_MODE=cloudflare-access` trusts the identity Cloudflare Access asserts at the edge
+instead of a shared administrator token. `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` are both
+required, and a half-configured instance refuses to start rather than quietly accepting
+tokens. `ACCESS_AUD` must be the *application's* AUD tag: Access signs every application in a
+team with one key set, so without pinning it a token minted for any other application in the
+team would authenticate here.
+
+**Access cannot authenticate container clients.** It identifies machines with
+`CF-Access-Client-*` headers, and the Docker CLI reserves `Authorization` for the registry's
+own scheme and sends no custom headers. So `/v2` uses the Distribution Bearer flow with
+credentials this instance issues and stores in D1, and it must sit behind an Access **Bypass**
+application scoped to the `/v2` path. Create that bypass *before* the application covering the
+hostname, so there is never a window in which `/v2` sits behind a login page.
+
+In a workspace managed by ForgeGraph, provision and deploy through it rather than with local
+`wrangler`, so the bindings are recorded where the rest of the fleet can see them:
+
+```sh
+forge db create     --app forge-console --type d1 --stage production
+forge r2 create     --app forge-console --name forge-console-artifacts --prefix FORGE_ARTIFACTS
+forge secret set SIGNING_KEY_JWK       --app forge-console --stage production   # scripts/keygen.mjs
+forge secret set REGISTRY_TOKEN_SECRET --app forge-console --stage production   # openssl rand -hex 32
+forge deploy create --stage production
+node scripts/edge-smoke.mjs https://forge.gmac.io
+```
+
+Elsewhere, the same thing with the Cloudflare tooling directly:
+
+```sh
+wrangler r2 bucket create forge-console-artifacts
+wrangler d1 create forge-console          # put the id into your wrangler config
+wrangler d1 migrations apply forge-console --remote
+wrangler secret put SIGNING_KEY_JWK
+wrangler secret put REGISTRY_TOKEN_SECRET
+wrangler deploy -c wrangler.gmac.jsonc
+```
+
+The Access applications are not provisioned by either: `forge cloudflare access` covers beta
+routes and CI runner identities, not arbitrary path-scoped policies. Create them in Cloudflare
+Zero Trust, bypass first.
+
+`edge-smoke.mjs` checks the thing that is easiest to get wrong and hardest to diagnose: that
+`/v2/` answers with a `WWW-Authenticate` challenge and **not** an Access HTML page. If it
+returns HTML, the bypass is missing or mis-scoped and every container client will fail with a
+parse error far from the cause.
+
+One failure mode deserves naming because it survives manual testing. Under Access, an expired
+session is answered with a redirect to the team login domain, and a browser enforces CSP
+against every hop of a redirect chain — so the console widens `connect-src` and `form-action`
+to the team domain in this mode only, and treats an opaque redirect as "reload and
+re-authenticate". Neither half is sufficient alone, and the failure only appears once a
+session expires.
+
 ## Optional Workers domain for a Docker origin
 
 `src/edge.ts` is a small HTTPS proxy for operators who want a Workers custom domain in front
@@ -214,9 +280,14 @@ Workers/D1 deployments.
 
 | Variable | Purpose |
 |---|---|
-| `ADMIN_TOKEN` | Required shared operator credential, at least 32 characters. Browser keeps it in tab memory only. |
+| `ADMIN_TOKEN` | Shared operator credential, at least 32 characters, required unless `AUTH_MODE=cloudflare-access`. Browser keeps it in tab memory only. |
+| `AUTH_MODE` | `token` (default) or `cloudflare-access`. |
+| `ACCESS_TEAM_DOMAIN` | Access team, e.g. `example.cloudflareaccess.com`. Required with `cloudflare-access`. |
+| `ACCESS_AUD` | The **application's** AUD tag. Required with `cloudflare-access`: a team signs every application with one key set, so without it a token for another application in the team would be accepted. |
 | `INSTANCE_AUTHORITY` | Required stable identity under which manifests are signed. |
 | `INSTANCE_NAME` | Display label; defaults to Forge. |
+| `OCI_BACKEND` | `http` (default) or `r2`. With `r2`, artifacts live in the `BLOBS` bucket and this instance serves `/v2` itself; `OCI_URL`, `OCI_AUTHORIZATION` and `OCI_BLOB_HOSTS` are then unused. |
+| `REGISTRY_TOKEN_SECRET` | Signing secret for the short-lived bearer tokens `/v2/token` issues. Required to serve `/v2`. |
 | `OCI_URL` | OCI registry origin, e.g. `https://registry.example.com`; omit to run app management alone. |
 | `OCI_REPOSITORY` | Repository path inside that registry, e.g. `team/forge`. Required with OCI. |
 | `OCI_AUTHORIZATION` | Optional server-only full Authorization value, `Bearer …` or `Basic …`. |
@@ -230,7 +301,8 @@ Workers/D1 deployments.
 
 Do not change authority or signing key casually: this first version trusts only the configured
 key for the configured authority. Changing either makes older packages fail verification.
-Multi-key rotation and OIDC/team roles are follow-up capabilities. A plain configuration field
+Multi-key rotation is a follow-up capability; `AUTH_MODE=cloudflare-access` now covers team
+sign-in for operators, while container clients use credentials this instance issues. A plain configuration field
 can contain any string; the system cannot identify secret values automatically. Store only
 references under `secretRefs`, never actual credentials.
 
@@ -370,6 +442,86 @@ External runtimes must advertise invocation-preconditions; GET function input bi
 unsupported in the playground. Deployment status records the last action's health check, not
 continuous monitoring.
 
+### Design, Use, and Developer
+
+Studio opens in **Design**, with business labels, a form preview whose fields open
+configuration, familiar field types, and schedule presets. **Developer** shares
+that draft and undo history, and adds source, explicit function routes, HTTP
+settings, and full compiler diagnostics. **Use** opens deployed records only
+after selecting an environment; it does not apply the Design draft. Switching
+between these three views preserves their in-memory edits.
+
+Use connects through the existing `RUNTIME_TARGETS_JSON` configuration and
+instance authentication. Runtime credentials remain on the console server; the
+runtime continues to enforce their tenant, purpose, and authorization context.
+These views are presentation choices, not new authorization roles.
+
+Deploy this runtime version to enable its authenticated
+`GET /forge/workspace.json` endpoint. It serves the compiled UI descriptor and
+record operation bindings. The console's `/api/runtime/targets/:id/workspace`
+and `POST /api/runtime/targets/:id/record` endpoints load that contract and forward
+only its declared operations, preserving build/deployment and record-version
+preconditions. Older runtimes show an upgrade message. Existing preview,
+approval, commit, lifecycle action, and CSV flows are reused.
+
+Design saves still create a repository commit; they do not deploy the app.
+Use record edits are buffered until reviewed and committed; actions execute
+when confirmed. Browser draft storage applies to Design, not live-record edits.
+
+### Purpose-built gizmos
+
+After opening an environment in Use, **Data & forms** always exposes the generated
+record workspace. **Gizmos** lists compatible, purpose-built interfaces. The
+bundled **Customer directory** gives Customer/Contact collections a searchable
+card layout with pagination and a link back to the standard editing forms.
+
+To customize a business workflow, implement a React `GizmoDefinition` and register
+it in `web/gizmos/index.ts`. Each component receives the deployed descriptor, the
+same `ForgeCall` used by the forms, `openForms(route?)`, and `onDirtyChange`.
+Compatibility is declared by `supports(descriptor)`; no executable code is read
+from runtime metadata. See `packages/react/README.md` for the integration contract.
+There is no visual gizmo builder in this implementation.
+
+### Source, repositories, and internal change reviews
+
+Developer Source uses a highlighted editor with line numbers and local undo.
+Enable **Edit draft** to change source; leaving the source editor applies the edit
+to the draft, and Escape cancels the current source edit.
+
+Connect a configured Git project, then open **Repository, branches & reviews**.
+Create a change branch from the loaded commit, open it, edit, and commit the draft.
+The Commits tab shows the selected branch's history. In Reviews, choose a target
+branch and submit the committed changes with a title and description.
+
+Reviews belong to Forge, with pinned base/head commits, source comparisons,
+comments, and Approve / Request changes / Close decisions. Approval neither
+merges nor deploys. If either branch has moved, approval and change requests
+are blocked; close the old review and submit a new one. Decisions describe the
+pinned commits, not any later branch state. All decisions and comments currently
+use the shared instance administrator identity, not individual reviewer accounts.
+GitHub remains the configured source provider; no GitHub pull request is created.
+
+Studio dogfoods `studio/src/studio.forge`. Its generated runtime stores repository
+inventory, observed branches, immutable commit provenance, reviews, comments,
+and IR artifact metadata in the console database. Git remains authoritative for
+branch heads. Reusing a project ID with a different repository or source root is
+rejected to preserve provenance; configure a new ID instead.
+
+IR artifacts register a commit, SHA-256 digest, HTTPS/OCI location, size, and
+compiler/IR versions. This is a provenance catalog: it does not upload, fetch,
+or verify artifact payloads.
+
+Node applies the generated Studio migration transactionally at startup.
+For Cloudflare, apply the configured D1 migrations before deploying this version:
+`pnpm exec wrangler d1 migrations apply forge-console --remote`.
+
+After changing the dogfood schema, run `pnpm studio:generate` and commit the
+compiled bundle and migration together. `pnpm studio:check` recompiles and checks
+that tracked artifacts match. Set `FORGE_COMPILER` to an existing forgec binary
+to avoid rebuilding it. The current generated migration initializes the schema;
+after it has been deployed, schema changes require a new forward migration,
+not replacement of migration 0003.
+
 
 ### Cloudflare Workers targets
 
@@ -403,3 +555,23 @@ disables its workers.dev endpoint and previews, retaining the Worker for resumpt
 the last action health check; the console playground routes to the recorded active deployment.
 Build the included pure-function Worker with `node scripts/build-playground.mjs`; its output
 is `generated/playground/worker.mjs`. Stateful apps require retained storage bindings.
+
+### Business record workspace
+
+Use opens deployed data with create and update controls available directly. Delete appears only when the deployed workspace exposes the resource delete operation; deletion is staged, undoable before saving, and confirmed through the changeset review flow. Browse records switches to a read-only view. That view uses only descriptor-defined list queries, with bounded pages, page-local search/sort, and a record detail panel. Details display the fields returned in the list response; no additional read route or access grant is inferred. Collections are grouped by their source package. Edit records opens the existing changeset buffer and review flow; unsaved changes prevent mode/environment navigation.
+
+The Application foundations gizmo appears when deployed descriptors contain `@forgegraph/foundation/…` resources. It opens their generated collections, including specification pins, artifacts, identifiers, and participation records when available. It does not install packages, fabricate collections, or derive authorization from participation data. Runtime authorization remains authoritative.
+
+In Design, Try form accepts local sample values from the current field draft. It checks required values and native input formats, never calls a runtime, and can open field configuration directly. Cross-field rules, policy enforcement and calculated values still require the compiled application.
+
+Editable record tables support bounded cursor pages and refresh. Pending edits block page changes and refresh. The deployed operation catalog controls available create/update/delete, import, lifecycle action and review controls; a catalog entry is not an authorization grant. Loading disables editing so a late response cannot replace a new local change. Completed saves and actions report their outcome, and failure messages survive the subsequent refresh.
+
+### App environment deployment links
+
+Set `appId` and `environmentId` on a server-configured deployment connection to link it to an
+app environment. The Apps screen shows that target's last deployment result, release and
+configuration differences, with shortcuts to Manage deployment and Test functions (`runtimeId`).
+Identifiers must match exactly; endpoints and names are never used to guess a connection.
+Duplicate connections and unavailable controllers are shown explicitly. Refresh deployments
+reloads the observations. Inventory edits are not deployed automatically; apply configuration
+through the deployment review flow. Health is the result of the last deployment action.

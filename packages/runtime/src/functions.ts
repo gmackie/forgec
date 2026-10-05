@@ -12,6 +12,7 @@ import { sha256, stableJson, type CallContext, type Engine } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
 import type { FunctionDecl, Resource } from "./model.js";
 import { Clock, IdGen, Storage, type CommitPlan, type OutboxEntry, type RuntimeServices } from "./services.js";
+import { SubscriptionDelivery } from "./subscription-delivery.js";
 import type { Envelope } from "./dispatch.js";
 
 export type ExternalResult = { ok: true; value: any } | { ok: false; code: string; detail?: string };
@@ -62,7 +63,7 @@ export class Functions {
     return this.impls.has(id);
   }
 
-  invoke(decl: FunctionDecl, input: unknown, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  invoke(decl: FunctionDecl, input: unknown, ctx: CallContext, delivery?: SubscriptionDelivery): Effect.Effect<Wire, ForgeError, RuntimeServices> {
     const impl = this.impls.get(decl.id);
     if (!impl) return Effect.fail(err("Internal", `no implementation registered for ${decl.id}; add one under impl/ (a production build refuses to deploy without it)`));
     const self = this;
@@ -72,9 +73,9 @@ export class Functions {
       // against current state when the body finishes and committed together, or not at all.
       const pending: OutboxEntry[] = [];
       const plans: CommitPlan[] = [];
-      const deps = self.context(decl, input, ctx, pending, plans);
+      const deps = self.context(decl, input, ctx, pending, plans, delivery);
       const result = yield* impl.body(deps).pipe(Effect.provide(self.engine.layer));
-      if (plans.length || pending.length) {
+      if (plans.length || pending.length || delivery) {
         const storage = yield* Storage;
         const now = (yield* Clock).now();
         const opId = plans[0]?.opId ?? (yield* IdGen).opId();
@@ -86,17 +87,17 @@ export class Functions {
           const receipt = ctx.idempotencyKey
             ? { receipt: { tenant: ctx.tenant, operation: decl.id, key: ctx.idempotencyKey, requestHash: yield* Effect.promise(() => sha256(stableJson((input ?? {}) as Wire))), status: 200, response: (result ?? {}) as Wire, createdAt: now } }
             : {};
-          plans[0] = { ...host, outbox: [...host.outbox, ...outbox], ...receipt };
+          plans[0] = { ...host, outbox: [...host.outbox, ...outbox], ...receipt, ...(delivery ? { completion: delivery.completion() } : {}) };
           yield* storage.commitAll(plans);
         } else {
-          yield* self.commitOutboxOnly(decl, ctx, outbox);
+          yield* self.commitOutboxOnly(decl, ctx, outbox, opId, now, delivery);
         }
       }
       return (result ?? {}) as Wire;
     });
   }
 
-  private context(decl: FunctionDecl, input: unknown, ctx: CallContext, pending: OutboxEntry[], plans: CommitPlan[]): FunctionContext {
+  private context(decl: FunctionDecl, input: unknown, ctx: CallContext, pending: OutboxEntry[], plans: CommitPlan[], delivery?: SubscriptionDelivery): FunctionContext {
     const engine = this.engine;
     const layer = engine.layer;
     const run = <A>(e: Effect.Effect<A, ForgeError, RuntimeServices>): Effect.Effect<A, ForgeError> => e.pipe(Effect.provide(layer));
@@ -151,7 +152,10 @@ export class Functions {
         if (!externalIds.has(id)) return Effect.fail(err("Forbidden", `${decl.name} did not declare a dependency on ${id}`));
         const binding = self.externals[id];
         if (!binding) return Effect.fail(err("DependencyUnavailable", `no binding for external ${id}`));
-        return Effect.tryPromise({ try: () => binding(i, ctx), catch: (e) => err("DependencyUnavailable", String((e as Error).message ?? e)) });
+        return Effect.gen(function* () {
+          if (delivery) yield* delivery.beforeExternal();
+          return yield* Effect.tryPromise({ try: () => binding(i, ctx), catch: (e) => err("DependencyUnavailable", String((e as Error).message ?? e)) });
+        });
       },
       send: (channelRef, message, payload) => {
         const ch = engine.model.channel(channelRef);
@@ -168,34 +172,41 @@ export class Functions {
     };
   }
 
-  private commitOutboxOnly(decl: FunctionDecl, ctx: CallContext, outbox: OutboxEntry[]): Effect.Effect<void, ForgeError, RuntimeServices> {
+  private commitOutboxOnly(decl: FunctionDecl, ctx: CallContext, outbox: OutboxEntry[], opId: string, at: string, delivery?: SubscriptionDelivery): Effect.Effect<void, ForgeError, RuntimeServices> {
     const engine = this.engine;
     return Effect.gen(function* () {
       const storage = yield* Storage;
-      const first = outbox[0]!;
       // A commit with no record change: adapters treat `kind: "publish"` as outbox + audit only.
       const r = engine.model.resources[0] as Resource;
       const plan: CommitPlan = {
-        tenant: ctx.tenant, opId: first.opId, actor: ctx.actor, at: first.createdAt, resource: r, kind: "publish", id: decl.id, expectedVersion: null, before: null, after: {},
+        tenant: ctx.tenant, opId, actor: ctx.actor, at, resource: r, kind: "publish", id: decl.id, expectedVersion: null, before: null, after: {},
         claims: [], references: [], dependents: [], hardDelete: false,
-        audit: { tenant: ctx.tenant, opId: first.opId, resource: decl.id, recordId: decl.id, kind: "function.publish", newVersion: null, actor: ctx.actor, at: first.createdAt },
+        audit: { tenant: ctx.tenant, opId, resource: decl.id, recordId: decl.id, kind: "function.publish", newVersion: null, actor: ctx.actor, at },
         outbox,
+        ...(delivery ? { completion: delivery.completion() } : {}),
       };
       yield* storage.commit(plan);
     });
   }
 
-  /** Subscription consumer: dedup by messageId, then invoke the handler with the message payload as input. */
+  /** Subscription consumer: claim, execute, then atomically complete with the handler writes. */
   async consume(subscription: string, env: Envelope): Promise<"processed" | "duplicate" | "unknown-subscription"> {
     const sub = this.engine.model.subscription(subscription);
     if (!sub) return "unknown-subscription";
     const decl = this.engine.model.function(sub.handler);
     if (!decl) return "unknown-subscription";
     const storage = await Effect.runPromise(Effect.service(Storage).pipe(Effect.provide(this.engine.layer)));
-    const fresh = await Effect.runPromise(storage.markProcessed(env.tenant, subscription, env.messageId));
-    if (!fresh) return "duplicate";
-    const ctx: CallContext = { tenant: env.tenant, actor: `subscription:${subscription}`, requestId: env.messageId };
-    await Effect.runPromise(this.invoke(decl, env.payload, ctx).pipe(Effect.provide(this.engine.layer)));
+    const clock = await Effect.runPromise(Effect.service(Clock).pipe(Effect.provide(this.engine.layer)));
+    const requestHash = await sha256(stableJson({ channel: env.channel, message: env.message, payload: env.payload }));
+    const delivery = await SubscriptionDelivery.claim(storage, env.tenant, sub.name, env.messageId, requestHash, () => Date.parse(clock.now()));
+    if (!delivery) return "duplicate";
+    const ctx: CallContext = { tenant: env.tenant, actor: `subscription:${sub.name}`, requestId: env.messageId };
+    try {
+      await Effect.runPromise(this.invoke(decl, env.payload, ctx, delivery).pipe(Effect.provide(this.engine.layer)));
+    } catch (e) {
+      await delivery.failed();
+      throw e;
+    }
     return "processed";
   }
 }

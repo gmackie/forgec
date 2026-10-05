@@ -1,0 +1,25 @@
+import workforce
+export resource EmployeePosition
+  @tenant
+  @appendOnly
+{
+  id : id
+  position : workforce.Position @unique
+  label : text length 1..200
+}
+export resource ProductionCrewPosition
+  @tenant
+  @appendOnly
+{
+  id : id
+  position : workforce.Position @unique
+  label : text length 1..200
+}
+export resource IncidentCommandPosition
+  @tenant
+  @appendOnly
+{
+  id : id
+  position : workforce.Position @unique
+  label : text length 1..200
+}

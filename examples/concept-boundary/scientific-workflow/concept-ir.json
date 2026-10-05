@@ -1,0 +1,1576 @@
+{
+  "entities": {
+    "@boundary/scientific-workflow/_/Experiment": {
+      "name": "Experiment",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "spec": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/ExperimentSpec"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/scientific-workflow/_/SweepMember": {
+      "name": "SweepMember",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "experiment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/scientific-workflow/_/Experiment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "member": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/MemberSpec"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/scientific-workflow/_/AttemptRecorded": {
+      "name": "AttemptRecorded",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "member": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/SweepMember"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "result": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/JobResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/scientific-workflow/_/ArtifactRegistered": {
+      "name": "ArtifactRegistered",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "attempt": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/AttemptRecorded"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "artifact": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/ArtifactManifest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/scientific-workflow/_/CollectionPublished": {
+      "name": "CollectionPublished",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "experiment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/scientific-workflow/_/Experiment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "verdict": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/CollectionVerdict"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "memberSelectionDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/scientific-workflow/_/HpcExecutor": {
+      "name": "HpcExecutor",
+      "data": {
+        "@boundary/scientific-workflow/_/HpcExecutor#data:result": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/scientific-workflow/_/JobResult"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/scientific-workflow/_/HpcExecutor#accepts:job": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/scientific-workflow/_/JobRequest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "AttemptFinished"
+      ]
+    },
+    "@boundary/scientific-workflow/_/ArtifactStore": {
+      "name": "ArtifactStore",
+      "data": {
+        "@boundary/scientific-workflow/_/ArtifactStore#data:manifest": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/scientific-workflow/_/ArtifactManifest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/scientific-workflow/_/ArtifactStore#accepts:manifest": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/scientific-workflow/_/ArtifactManifest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "ManifestAvailable"
+      ]
+    }
+  },
+  "principals": {
+    "@boundary/scientific-workflow/_/BoundaryOperator": {
+      "name": "BoundaryOperator",
+      "attributes": {
+        "authorized": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@boundary/scientific-workflow/_/MayRegisterExperiment": {
+      "name": "MayRegisterExperiment",
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@boundary/scientific-workflow/_/Experiment",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/scientific-workflow/_/MayExpandSweep": {
+      "name": "MayExpandSweep",
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/scientific-workflow/_/SweepMember"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/scientific-workflow/_/MayExecuteMember": {
+      "name": "MayExecuteMember",
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/scientific-workflow/_/AttemptRecorded"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/scientific-workflow/_/MayRegisterArtifact": {
+      "name": "MayRegisterArtifact",
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/scientific-workflow/_/ArtifactRegistered"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/scientific-workflow/_/MayCollectExperiment": {
+      "name": "MayCollectExperiment",
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/scientific-workflow/_/CollectionPublished"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    }
+  },
+  "processes": {
+    "@boundary/scientific-workflow/_/RegisterExperiment": {
+      "name": "RegisterExperiment",
+      "purpose": null,
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/scientific-workflow/_/MayRegisterExperiment",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/scientific-workflow/_/RegisterExperiment#activation:trigger": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/ExperimentSpec"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@boundary/scientific-workflow/_/RegisterExperiment#input:current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/scientific-workflow/_/Experiment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/scientific-workflow/_/RegisterExperiment#output:experiment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/scientific-workflow/_/Experiment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/scientific-workflow/_/ExpandSweep": {
+      "name": "ExpandSweep",
+      "purpose": null,
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/scientific-workflow/_/MayExpandSweep",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/scientific-workflow/_/ExpandSweep#activation:trigger": {
+          "kind": "change",
+          "entity": "@boundary/scientific-workflow/_/Experiment"
+        }
+      },
+      "inputs": {
+        "@boundary/scientific-workflow/_/ExpandSweep#input:experiment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/scientific-workflow/_/Experiment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/scientific-workflow/_/ExpandSweep#output:member": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/SweepMember"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/scientific-workflow/_/ExecuteMember": {
+      "name": "ExecuteMember",
+      "purpose": null,
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/scientific-workflow/_/MayExecuteMember",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/scientific-workflow/_/ExecuteMember#activation:trigger": {
+          "kind": "fact",
+          "fact": "@boundary/scientific-workflow/_/SweepMember"
+        },
+        "@boundary/scientific-workflow/_/ExecuteMember#activation:finished": {
+          "kind": "externalEvent",
+          "external": "@boundary/scientific-workflow/_/HpcExecutor",
+          "event": "AttemptFinished"
+        },
+        "@boundary/scientific-workflow/_/ExecuteMember#activation:retry": {
+          "kind": "request",
+          "payload": null
+        }
+      },
+      "inputs": {
+        "@boundary/scientific-workflow/_/ExecuteMember#input:member": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/SweepMember"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/scientific-workflow/_/ExecuteMember#input:prior": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/AttemptRecorded"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/scientific-workflow/_/ExecuteMember#input:result": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/JobResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/scientific-workflow/_/HpcExecutor"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/scientific-workflow/_/ExecuteMember#output:attempt": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/AttemptRecorded"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/scientific-workflow/_/ExecuteMember#output:job": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/JobRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/scientific-workflow/_/HpcExecutor"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/scientific-workflow/_/RegisterArtifact": {
+      "name": "RegisterArtifact",
+      "purpose": null,
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/scientific-workflow/_/MayRegisterArtifact",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/scientific-workflow/_/RegisterArtifact#activation:trigger": {
+          "kind": "externalEvent",
+          "external": "@boundary/scientific-workflow/_/ArtifactStore",
+          "event": "ManifestAvailable"
+        }
+      },
+      "inputs": {
+        "@boundary/scientific-workflow/_/RegisterArtifact#input:attempt": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/AttemptRecorded"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/scientific-workflow/_/RegisterArtifact#input:manifest": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/scientific-workflow/_/ArtifactManifest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/scientific-workflow/_/ArtifactStore"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/scientific-workflow/_/RegisterArtifact#output:artifact": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/ArtifactRegistered"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/scientific-workflow/_/CollectExperiment": {
+      "name": "CollectExperiment",
+      "purpose": null,
+      "principal": "@boundary/scientific-workflow/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/scientific-workflow/_/MayCollectExperiment",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/scientific-workflow/_/CollectExperiment#activation:trigger": {
+          "kind": "request",
+          "payload": null
+        }
+      },
+      "inputs": {
+        "@boundary/scientific-workflow/_/CollectExperiment#input:experiment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/scientific-workflow/_/Experiment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/scientific-workflow/_/CollectExperiment#input:members": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/SweepMember"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/scientific-workflow/_/CollectExperiment#input:attempts": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/AttemptRecorded"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/scientific-workflow/_/CollectExperiment#input:artifacts": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/ArtifactRegistered"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/scientific-workflow/_/CollectExperiment#output:collection": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/scientific-workflow/_/CollectionPublished"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/scientific-workflow/_/ExperimentSpec": {
+      "protocolDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "datasetDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "parameterSetDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "expectedMembers": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "comparisonPolicyDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/scientific-workflow/_/MemberSpec": {
+      "experimentId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "memberKey": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "parametersDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "inputArtifactDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/scientific-workflow/_/JobRequest": {
+      "member": {
+        "ty": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/scientific-workflow/_/MemberSpec"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "attemptKey": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "containerDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "checkpointDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": true,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "resourceClass": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/scientific-workflow/_/JobResult": {
+      "memberKey": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "attemptKey": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "state": {
+        "ty": {
+          "base": {
+            "kind": "enum",
+            "id": "@boundary/scientific-workflow/_/AttemptState"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "outputManifestDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": true,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "checkpointDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": true,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "executorBuildDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "finishedAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/scientific-workflow/_/ArtifactManifest": {
+      "uri": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "sha256": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "byteCount": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "mediaType": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/scientific-workflow/_/CollectionVerdict": {
+      "expectedMembers": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "acceptedMembers": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "missingMembersDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "aggregateArtifactDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": true,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "comparisonPolicyDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {
+    "@boundary/scientific-workflow/_/AttemptState": [
+      "Succeeded",
+      "Failed",
+      "Preempted",
+      "Cancelled"
+    ]
+  },
+  "version": "concept-ir/2",
+  "package": "@boundary/scientific-workflow"
+}

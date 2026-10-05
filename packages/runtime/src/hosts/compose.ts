@@ -59,7 +59,7 @@ export function composeRuntime(c: RuntimeComposition): ComposedRuntime {
     Layer.succeed(CursorSecret)({ key: c.cursorSecret }),
     Layer.succeed(Objects)(c.objects ?? new MemoryObjectStore()),
   );
-  const engine = new Engine(model, layer, { ...(c.functions ? { functions: c.functions } : {}), ...(c.externals ? { externals: c.externals } : {}) });
+  const engine = new Engine(model, layer, { ...(c.secrets ? { secrets: c.secrets } : {}), ...(c.functions ? { functions: c.functions } : {}), ...(c.externals ? { externals: c.externals } : {}) });
   if (c.workflowDriver) engine.workflows.driver = c.workflowDriver;
   if (c.realtimeHub) engine.realtime.hub = c.realtimeHub;
   if (c.telemetry) {

@@ -1,0 +1,21 @@
+import composition
+export resource Assembly @tenant @appendOnly {
+ id : id
+ instance : composition.CompositionInstance @unique
+ partNumber : text length 1..128
+}
+export resource ServiceBundle @tenant @appendOnly {
+ id : id
+ instance : composition.CompositionInstance @unique
+ offering : text length 1..128
+}
+export resource SoftwarePackage @tenant @appendOnly {
+ id : id
+ instance : composition.CompositionInstance @unique
+ packageName : text length 1..128
+}
+export resource Curriculum @tenant @appendOnly {
+ id : id
+ instance : composition.CompositionInstance @unique
+ program : text length 1..128
+}

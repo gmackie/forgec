@@ -1,0 +1,14 @@
+resource AutomationDefinition { id : id }
+resource DynamicRecord { id : id }
+resource FieldDefinition { id : id }
+resource ObjectDefinition { id : id }
+resource RelationshipDefinition { id : id }
+resource Tenant { id : id }
+function MutateDynamicRecord @http(POST, "/realization-b/MutateDynamicRecord") { input AutomationDefinition.Record
+ output DynamicRecord.Record }
+function PublishSchema @http(POST, "/realization-b/PublishSchema") { input AutomationDefinition.Record
+ output AutomationDefinition.Record }
+function RegisterTenant @http(POST, "/realization-b/RegisterTenant") { input AutomationDefinition.Record
+ output Tenant.Record }
+function RunAutomation @http(POST, "/realization-b/RunAutomation") { input AutomationDefinition.Record
+ output AutomationDefinition.Record }

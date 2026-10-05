@@ -1,0 +1,12 @@
+NON-EXECUTABLE CWL/SLURM INTERFACE SKETCH
+Logical process ExecuteMember; inputs member, optional prior, optional result.
+Output job: memberKey, attemptKey, parameters/input digests, containerDigest,
+optional checkpointDigest, resourceClass. Output attempt records terminal state.
+CWL correspondence: scatter over explicit members; declared merge/completeness
+policy at CollectExperiment, not scheduler completion order.
+Slurm correspondence: array task maps to stable memberKey; job ID and array
+index remain realization metadata. Requeue creates/retains distinct attempt.
+Preemption: checkpoint is evidence only; no successful artifact inferred.
+Resume requires exact member/protocol/input/build match and verified bytes.
+Missing members or checksum mismatch block complete publication.
+This file has not been interpreted by CWL, Slurm or any numerical executor.

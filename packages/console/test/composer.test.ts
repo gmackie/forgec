@@ -128,3 +128,8 @@ it("recognizes the edited field after a compiler refresh replaces syntax node ob
   expect(fieldNameTaken(source, refreshed, original, "email")).toBe(false);
   expect(fieldNameTaken(source, refreshed, original, "id")).toBe(true);
 });
+
+it("business field type choices compile as Forge scalars", () => {
+  const text = "resource Example {\n id : id\n title : text\n count : integer\n enabled : boolean\n email : email\n day : date\n at : datetime\n}";
+  expect(inspect({name:"@local/types",currentFile:"main.forge",files:[{path:"main.forge",text}]}).diagnostics.filter(d => d.severity === "error")).toEqual([]);
+});

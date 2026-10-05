@@ -1,0 +1,80 @@
+import party
+import participation
+import specification
+import qualification
+import classification
+import place
+export resource OrganizationUnit
+  @tenant
+  @appendOnly
+{
+  id : id
+  organization : party.Party
+  parent : OrganizationUnit?
+  depth : integer >= 1 <= 64
+  label : text length 1..200
+  place : place.Place?
+  classification : classification.ConceptRevision?
+  rules {
+    (parent == null && depth == 1) || (parent != null && parent.organization == organization && depth == parent.depth + 1)
+  }
+}
+export resource PositionSpecification
+  @tenant
+  @appendOnly
+{
+  id : id
+  pin : specification.SpecificationPin
+  requirement : qualification.QualificationRequirement?
+  label : text length 1..200
+}
+export resource Position
+  @tenant
+  @appendOnly
+{
+  id : id
+  unit : OrganizationUnit
+  specification : PositionSpecification
+  participants : participation.ParticipationSet
+  label : text length 1..200
+}
+export resource Incumbency
+  @tenant
+  @appendOnly
+{
+  id : id
+  position : Position
+  membership : participation.Participation
+  partySubject : qualification.PartySubject
+  from : datetime
+  until : datetime
+  rules {
+    membership.participationSet == position.participants && membership.participant == partySubject.party
+    until > from && from >= membership.validFrom && (membership.validUntil == null || until <= membership.validUntil)
+  }
+}
+export enum IncumbencyAction {
+  Appoint
+  End
+}
+export resource IncumbencyEvent
+  @tenant
+  @appendOnly
+{
+  id : id
+  position : Position
+  ordinal : integer >= 1 <= 128
+  previous : IncumbencyEvent?
+  incumbency : Incumbency
+  action : IncumbencyAction
+  at : datetime
+  rules {
+    incumbency.position == position
+    (previous == null && ordinal == 1 && action == "Appoint") || (previous != null && previous.position == position && ordinal == previous.ordinal + 1 && at >= previous.at)
+    at >= incumbency.from && at < incumbency.until
+    action != "Appoint" || at == incumbency.from
+  }
+  unique position, ordinal
+  list by position
+    order by ordinal asc
+}

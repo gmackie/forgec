@@ -1,0 +1,15 @@
+# LatchFlow Run adapter
+
+This opt-in integration uses the real `runtime.startRun`/`roomRuns` domain, named **Run**. `createRuntimeRouter(port)` retains existing scoped building authorization, runner assignment, experiment selection, native Run/event writes and recording behavior. The default exported router has no port and preserves its response shape.
+
+The app calls `projectStartedRun` after persisting the native Run and `run_started` event. `latchFlowFoundation` maps building IDs to tenants, preserves native Room/Run/compiled-flow/runner IDs and pins the exact compiled JSON digest. A trusted server resolver supplies the SpecificationPin for that exact compiled artifact; the adapter never treats an arbitrary payload digest as a Git revision. The generated Run satellite holds typed Operation and OperationRun references constrained to the compiled flow definition.
+
+A runner-assigned idle Run projects as Planned. A native running Run receives an OperationStart and projects as Running. The adapter never starts a physical runner, invents its acknowledgment, records a successful business outcome or writes measured usage. Status reconciliation after this initial observation is outside this bounded profile.
+
+This is a resumable projection, not a transaction spanning the native and Foundation stores. A projection failure returns `foundation.status = pending` with the existing native Run ID. Replay the original persisted row and exact compiled artifact; stable receipts resume stages without creating another native Run. No automatic recovery worker, deployment or production migration is included. The opt-in boundary validates building/room/compiled-flow correspondence before native insertion.
+
+`verification.json` pins the actual app source and local commit. Trace tests execute its actual projection module against generated memory/SQLite engines and PostgreSQL when configured, covering initial idle/running semantics, exact source pins, changed compiled content, lost-response replay, tenant isolation and denied projection. Native tests invoke the real tRPC startRun path and prove building authorization precedes writes. LatchFlow's full API typecheck currently fails with 2,931 existing errors from PostgreSQL database types paired with SQLite schema types and other baseline errors; rerunning against the original runtime source produces the same normalized diagnostics, with no added errors from this integration.
+
+Installable adapter: `@forgegraph/runtime/foundation/apps/latchflow`. The local `adapter.ts` reexports the same implementation used by the packaged runtime. Build the corresponding Forge schema for the selected deployment before wiring the port.
+
+The current-main integration is [draft #169](https://git.forgegraf.com/gmackie/latchflow/pulls/169), pinned at a36ec961a025cf2a7ced1d1cb989f0f3d4e42545. All16 native tests and API typechecking pass; the previous divergent SQLite baseline is no longer used.

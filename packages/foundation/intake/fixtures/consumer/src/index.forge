@@ -1,0 +1,23 @@
+import intake
+resource Expense @tenant @appendOnly {
+  id : id
+  validation : intake.SubmissionValidation @unique
+  amount : decimal<2> >= 0
+  currency : text length 3..3
+  merchant : text length 1..200
+  rules { validation.verdict == "Accepted" }
+}
+resource VendorApplication @tenant @appendOnly {
+  id : id
+  validation : intake.SubmissionValidation @unique
+  legalName : text length 1..200
+  registration : text length 1..100
+  rules { validation.verdict == "Accepted" }
+}
+resource ClinicalQuestionnaire @tenant @appendOnly {
+  id : id
+  validation : intake.SubmissionValidation @unique
+  temperatureC : decimal<2> >= 20 <= 50
+  symptomsReported : boolean
+  rules { validation.verdict == "Accepted" }
+}

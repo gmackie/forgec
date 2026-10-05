@@ -1,0 +1,3312 @@
+{
+  "version": "concept-ir/2",
+  "package": "@fixture/party-relationship-consumer",
+  "entities": {
+    "@fixture/party-relationship-consumer/_/CorporateOwnership": {
+      "name": "CorporateOwnership",
+      "fields": {
+        "definition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationshipDefinition",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "fromParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "ownershipPercent": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": [
+                "4"
+              ]
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "compare",
+                "op": ">=",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "relationship": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationship",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "toParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "relationship",
+          "fields": [
+            "relationship"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@fixture/party-relationship-consumer/_/Employment": {
+      "name": "Employment",
+      "fields": {
+        "definition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationshipDefinition",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "fromParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "jobTitle": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "relationship": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationship",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "toParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "relationship",
+          "fields": [
+            "relationship"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@fixture/party-relationship-consumer/_/Guardianship": {
+      "name": "Guardianship",
+      "fields": {
+        "courtOrder": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "definition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationshipDefinition",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "fromParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "relationship": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationship",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "toParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "relationship",
+          "fields": [
+            "relationship"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@fixture/party-relationship-consumer/_/SupplyRelationship": {
+      "name": "SupplyRelationship",
+      "fields": {
+        "definition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationshipDefinition",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "fromParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "relationship": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationship",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "supplierNumber": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "toParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "relationship",
+          "fields": [
+            "relationship"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/artifact/_/Artifact": {
+      "name": "Artifact",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "key": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "label": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "key",
+          "fields": [
+            "key"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/artifact/_/ArtifactComponent": {
+      "name": "ArtifactComponent",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "name": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "next": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/artifact/_/ArtifactRevision",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/artifact/_/ArtifactContent": {
+      "name": "ArtifactContent",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/artifact/_/ArtifactRevision": {
+      "name": "ArtifactRevision",
+      "fields": {
+        "artifact": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/artifact/_/Artifact",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "byteCount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "compare",
+                "op": ">=",
+                "value": {
+                  "type": "int",
+                  "value": "0"
+                }
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "components": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/artifact/_/ArtifactComponent",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "content": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/artifact/_/ArtifactContent",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "digest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 71,
+                "max": 71
+              },
+              {
+                "kind": "pattern",
+                "value": "^sha256:[0-9a-f]{64}$"
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "mediaType": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "realization": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/specification/_/Realization",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "specificationPin": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/specification/_/SpecificationPin",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "content",
+          "fields": [
+            "content"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/evidence/_/EvidenceBundle": {
+      "name": "EvidenceBundle",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "key": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "label": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "predecessor": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "key",
+          "fields": [
+            "key"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/evidence/_/EvidenceItem": {
+      "name": "EvidenceItem",
+      "fields": {
+        "bundle": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceBundle",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "digest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 71,
+                "max": 71
+              },
+              {
+                "kind": "pattern",
+                "value": "^sha256:[0-9a-f]{64}$"
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "kind": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 100
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "observedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "provenance": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 1000
+              }
+            ],
+            "normalizers": [],
+            "dataClass": "@forgegraph/foundation/evidence/_/EvidenceNarrative",
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/artifact/_/ArtifactRevision",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceSource",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceRecord": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "bundle_source_sourceRecord",
+          "fields": [
+            "bundle",
+            "source",
+            "sourceRecord"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/evidence/_/EvidenceMember": {
+      "name": "EvidenceMember",
+      "fields": {
+        "bundle": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceBundle",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "depth": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "compare",
+                "op": ">=",
+                "value": {
+                  "type": "int",
+                  "value": "1"
+                }
+              },
+              {
+                "kind": "compare",
+                "op": "<=",
+                "value": {
+                  "type": "int",
+                  "value": "128"
+                }
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "item": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceItem",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "next": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceMember",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/evidence/_/EvidenceSeal": {
+      "name": "EvidenceSeal",
+      "fields": {
+        "bundle": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceBundle",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "head": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceMember",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "bundle",
+          "fields": [
+            "bundle"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/evidence/_/EvidenceSource": {
+      "name": "EvidenceSource",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "key": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "label": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "key",
+          "fields": [
+            "key"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/identifiers/_/Identifier": {
+      "name": "Identifier",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "identifierSet": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "issuer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/identifiers/_/Issuer",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "issuerScope": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "namespace": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [
+              "trim",
+              "lowercase"
+            ],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "value": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [
+              "trim"
+            ],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "namespace_issuerScope_value",
+          "fields": [
+            "namespace",
+            "issuerScope",
+            "value"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/identifiers/_/IdentifierDisposition": {
+      "name": "IdentifierDisposition",
+      "fields": {
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "identifier": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/identifiers/_/Identifier",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 500
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "replacement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/identifiers/_/Identifier",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "identifier",
+          "fields": [
+            "identifier"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/identifiers/_/IdentifierSet": {
+      "name": "IdentifierSet",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "label": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/identifiers/_/Issuer": {
+      "name": "Issuer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "key": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "key",
+          "fields": [
+            "key"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/party-relationship/_/PartyRelationship": {
+      "name": "PartyRelationship",
+      "fields": {
+        "definition": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationshipDefinition",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "fromParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "scope": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationshipScope",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 1000
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "support": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/evidence/_/EvidenceSeal",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "toParty": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "definition_fromParty_toParty_validFrom",
+          "fields": [
+            "definition",
+            "fromParty",
+            "toParty",
+            "validFrom"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/party-relationship/_/PartyRelationshipDefinition": {
+      "name": "PartyRelationshipDefinition",
+      "fields": {
+        "forwardLabel": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "inverseLabel": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "key": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "pin": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/specification/_/SpecificationPin",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "key_pin",
+          "fields": [
+            "key",
+            "pin"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/party-relationship/_/PartyRelationshipEnd": {
+      "name": "PartyRelationshipEnd",
+      "fields": {
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 1000
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "relationship": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationship",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "replacement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party-relationship/_/PartyRelationship",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "relationship",
+          "fields": [
+            "relationship"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/party-relationship/_/PartyRelationshipScope": {
+      "name": "PartyRelationshipScope",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "label": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/party/_/Party": {
+      "name": "Party",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "identifiers": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/identifiers/_/IdentifierSet",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "label": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 200
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "identifiers",
+          "fields": [
+            "identifiers"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/party/_/PrincipalRepresentation": {
+      "name": "PrincipalRepresentation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "party": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "principal": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 500
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "principal_party_validFrom",
+          "fields": [
+            "principal",
+            "party",
+            "validFrom"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/party/_/RepresentationRevocation": {
+      "name": "RepresentationRevocation",
+      "fields": {
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 500
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedBy": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "representation": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/party/_/PrincipalRepresentation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "representation",
+          "fields": [
+            "representation"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/specification/_/Realization": {
+      "name": "Realization",
+      "fields": {
+        "buildHash": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 64,
+                "max": 64
+              },
+              {
+                "kind": "pattern",
+                "value": "^[0-9a-f]{64}$"
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "manifestDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 71,
+                "max": 71
+              },
+              {
+                "kind": "pattern",
+                "value": "^sha256:[0-9a-f]{64}$"
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "pin": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/specification/_/SpecificationPin",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "pin_buildHash_manifestDigest",
+          "fields": [
+            "pin",
+            "buildHash",
+            "manifestDigest"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/specification/_/Repository": {
+      "name": "Repository",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "key": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "locator": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 2048
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "provider": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 64
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "key",
+          "fields": [
+            "key"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@forgegraph/foundation/specification/_/SpecificationPin": {
+      "name": "SpecificationPin",
+      "fields": {
+        "anchor": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 1,
+                "max": 128
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "repository": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@forgegraph/foundation/specification/_/Repository",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [
+              {
+                "kind": "length",
+                "min": 40,
+                "max": 64
+              },
+              {
+                "kind": "pattern",
+                "value": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+              }
+            ],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "repository_anchor_revision",
+          "fields": [
+            "repository",
+            "anchor",
+            "revision"
+          ],
+          "within": []
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {},
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {},
+  "purposes": {},
+  "dataClasses": {
+    "@forgegraph/foundation/evidence/_/EvidenceNarrative": {
+      "id": "@forgegraph/foundation/evidence/_/EvidenceNarrative",
+      "name": "EvidenceNarrative",
+      "exported": true,
+      "extends": "data.communication.content"
+    }
+  },
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "relationships": {
+      "@fixture/party-relationship-consumer/_/EmploymentRoles": {
+        "carrier": "@fixture/party-relationship-consumer/_/Employment",
+        "endpoints": {
+          "employer": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "fromParty"
+          },
+          "employee": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "toParty"
+          }
+        },
+        "evidence": []
+      },
+      "@fixture/party-relationship-consumer/_/CorporateOwnershipRoles": {
+        "carrier": "@fixture/party-relationship-consumer/_/CorporateOwnership",
+        "endpoints": {
+          "parent": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "fromParty"
+          },
+          "subsidiary": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "toParty"
+          }
+        },
+        "evidence": []
+      },
+      "@fixture/party-relationship-consumer/_/GuardianshipRoles": {
+        "carrier": "@fixture/party-relationship-consumer/_/Guardianship",
+        "endpoints": {
+          "guardian": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "fromParty"
+          },
+          "dependent": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "toParty"
+          }
+        },
+        "evidence": []
+      },
+      "@fixture/party-relationship-consumer/_/SupplyRelationshipRoles": {
+        "carrier": "@fixture/party-relationship-consumer/_/SupplyRelationship",
+        "endpoints": {
+          "supplier": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "fromParty"
+          },
+          "customer": {
+            "target": "@forgegraph/foundation/party/_/Party",
+            "field": "toParty"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "temporal": {
+      "@fixture/party-relationship-consumer/_/Employment": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": null
+      },
+      "@fixture/party-relationship-consumer/_/CorporateOwnership": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": null
+      },
+      "@fixture/party-relationship-consumer/_/Guardianship": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": null
+      },
+      "@fixture/party-relationship-consumer/_/SupplyRelationship": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": null
+      }
+    }
+  }
+}

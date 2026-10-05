@@ -234,6 +234,14 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     if (req.method === "GET" && path[0] === "forge" && path.length === 2) {
       const meta = { "x-forge-build": model.bundle.buildHash, "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=60", "x-request-id": requestId };
       if (path[1] === "discovery") return new Response(JSON.stringify(discovery(model, options.auth)), { status: 200, headers: meta });
+      if (path[1] === "workspace.json") {
+        if (!model.bundle.ui) return problem(err("NotFound", "This build has no record workspace. Rebuild and deploy the application."), requestId);
+        const operations = routes.filter(({ ref }) =>
+          !!ref.resource || ref.op.kind.startsWith("changeset.") || ref.op.kind.startsWith("import.")
+        ).map(({ ref, method, segments }) => ({ id: ref.op.id, kind: ref.op.kind, method,
+          path: "/" + segments.map(s => s.literal ?? `{${s.param}}`).join("/") }));
+        return new Response(JSON.stringify({ buildHash: model.bundle.buildHash, descriptor: model.bundle.ui, operations }), { headers: meta });
+      }
       if (path[1] === "openapi.json") {
         if (!model.bundle.openapi) return problem(err("NotFound", "this build carries no OpenAPI projection"), requestId);
         return new Response(JSON.stringify(model.bundle.openapi), { status: 200, headers: meta });

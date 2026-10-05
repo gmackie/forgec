@@ -8,6 +8,7 @@ const RESERVED: &[&str] = &[
     "index",
     "select",
     "from",
+    "to",
     "where",
     "key",
     "value",

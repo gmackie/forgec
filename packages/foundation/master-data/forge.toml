@@ -1,0 +1,22 @@
+[package]
+name = "@forgegraph/foundation/master-data"
+version = "0.1.0"
+edition = "2027"
+[source]
+root = "src"
+entry = "src/model.forge"
+[dependencies.identifiers]
+path = "../identifiers"
+deploy = true
+[dependencies.lineage]
+path = "../lineage"
+deploy = true
+[dependencies.evaluation]
+path = "../evaluation"
+deploy = true
+[dependencies.decision]
+path = "../decision"
+deploy = true
+[dependencies.reconciliation]
+path = "../reconciliation"
+deploy = true

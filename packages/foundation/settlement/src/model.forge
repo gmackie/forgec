@@ -1,0 +1,134 @@
+import party
+import entitlement
+import fulfillment
+import agreement
+import ledger
+export resource SettlementBook
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+}
+export resource SettlementPosition
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  book : SettlementBook
+  obligation : entitlement.Obligation @unique
+  creditor : party.Party
+  debtor : party.Party
+  agreement : agreement.Agreement?
+  unit : text length 1..64
+  ceiling : decimal<6> > 0
+  dueAt : datetime?
+  reason : text length 1..500
+  rules {
+    creditor != debtor
+    debtor == obligation.obligatedParty
+    obligation.quantity != null && ceiling == obligation.quantity
+    unit == obligation.unit
+    dueAt == obligation.dueAt
+    agreement == null || agreement.supplier == creditor
+    agreement == null || agreement.customer == debtor
+  }
+  list by book
+}
+export enum SettlementKind {
+  Materialize
+  Settle
+  Reverse
+}
+// Trusted application admission pins one measured payment/performance source.
+export resource SettlementSource
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  book : SettlementBook
+  key : text length 1..128 @unique
+  kind : SettlementKind
+  unit : text length 1..64
+  quantity : decimal<6> > 0
+  occurredAt : datetime
+  fulfillmentEnd : fulfillment.FulfillmentEnd @unique
+  reason : text length 1..500
+  rules {
+    kind != SettlementKind.Reverse
+    kind != SettlementKind.Materialize || fulfillmentEnd != null
+    fulfillmentEnd == null || fulfillmentEnd.outcome == "completed"
+    fulfillmentEnd == null || occurredAt >= fulfillmentEnd.endedAt
+  }
+}
+// Staged lines and events have no economic effect without their commit seal.
+export resource SettlementLine
+  @tenant
+  @appendOnly
+{
+  id : id
+  book : SettlementBook
+  position : SettlementPosition
+  quantity : decimal<6> > 0
+  next : SettlementLine?
+  rules {
+    position.book == book
+    next == null || next.book == book
+  }
+}
+export resource SettlementEvent
+  @tenant
+  @appendOnly
+{
+  id : id
+  book : SettlementBook
+  key : text length 1..128
+  kind : SettlementKind
+  head : SettlementLine
+  source : SettlementSource?
+  occurredAt : datetime
+  effectiveAt : datetime
+  reversalOf : SettlementCommit?
+  reason : text length 1..500
+  rules {
+    head.book == book
+    (kind == SettlementKind.Reverse && source == null) || (kind != SettlementKind.Reverse && source != null)
+    source == null || (source.book == book && source.kind == kind && source.occurredAt == occurredAt)
+    (kind == SettlementKind.Reverse && reversalOf != null) || (kind != SettlementKind.Reverse && reversalOf == null)
+    reversalOf == null || reversalOf.book == book
+  }
+}
+export resource SettlementCommit
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  book : SettlementBook
+  ordinal : integer >= 1 <= 512
+  previous : SettlementCommit?
+  event : SettlementEvent @unique
+  source : SettlementSource? @unique
+  key : text length 1..128
+  rules {
+    event.book == book && event.key == key && source == event.source
+    (ordinal == 1 && previous == null) || (previous != null && previous.book == book && ordinal == previous.ordinal + 1)
+  }
+  unique book, ordinal
+  unique book, key
+  list by book
+    order by ordinal asc
+}
+// Optional association to a separately validated posting, never payment proof.
+export resource SettlementLedgerLink
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  publication : SettlementCommit @unique
+  posting : ledger.PostingGroup @unique
+  reason : text length 1..500
+}

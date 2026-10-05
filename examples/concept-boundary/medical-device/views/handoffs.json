@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "conceptHash": "67051c6d2c2e773f6cb58b8c0f3ea111b7c9a71464f8c94a51e1c77bd6b6e26c",
+  "boundarySemanticHash": "cf2c33695d48c6f7dc5068d5137d9ce280d7ca77c4534d34432f40e207cde123",
+  "artifacts": [
+    {
+      "id": "controller-model",
+      "sha256": "10d8f66bd2455a19d1ebd715dddb18293dc4fa79a29066b879de90ba07089c3c",
+      "path": "specialized-model/supervisor.stateflow-sketch.txt",
+      "process": "@boundary/medical-device/_/ReactToTherapyTick",
+      "inputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#input:sample",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:approval",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#output:state",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:decision",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Interface and explanatory pseudocode only; no control analyzer, code generator or hardware test executed."
+    },
+    {
+      "id": "deployment-model",
+      "sha256": "78304eb3ef9dd4b10396a2c721371223e048409302f40e6c1d67afbd42d04268",
+      "path": "specialized-model/deployment.aadl-sketch.txt",
+      "process": "@boundary/medical-device/_/ReactToTherapyTick",
+      "inputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#input:sample",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:approval",
+        "@boundary/medical-device/_/ReactToTherapyTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/medical-device/_/ReactToTherapyTick#output:state",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:decision",
+        "@boundary/medical-device/_/ReactToTherapyTick#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Analysis inputs and mapping questions only; not an executable AADL model or schedulability result."
+    }
+  ]
+}

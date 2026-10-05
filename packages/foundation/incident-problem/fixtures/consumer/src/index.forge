@@ -1,0 +1,21 @@
+import incident-problem
+export resource ServiceIncident @tenant @appendOnly {
+ id : id
+ incident : incident-problem.Incident @unique
+ service : text length 1..128
+}
+export resource SecurityIncident @tenant @appendOnly {
+ id : id
+ incident : incident-problem.Incident @unique
+ category : text length 1..128
+}
+export resource QualityIncident @tenant @appendOnly {
+ id : id
+ incident : incident-problem.Incident @unique
+ line : text length 1..128
+}
+export resource CustomerProblem @tenant @appendOnly {
+ id : id
+ problem : incident-problem.Problem @unique
+ product : text length 1..128
+}

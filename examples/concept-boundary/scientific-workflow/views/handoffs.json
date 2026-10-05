@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "conceptHash": "974f7cf5f6468ef2e4eeca90bb95059fe046624ca61d754906e8d568f854210d",
+  "boundarySemanticHash": "0fe4aa457081ac946aff3d7c733850b84df0c47d445d92233f905ba25571ee9a",
+  "artifacts": [
+    {
+      "id": "sweep-interface",
+      "sha256": "c124cb3e75c3d213ef63a4bf52fb7c313e432acdefbd72c3313a780a3511fedc",
+      "path": "specialized-model/sweep-interface.txt",
+      "process": "@boundary/scientific-workflow/_/ExecuteMember",
+      "inputPorts": [
+        "@boundary/scientific-workflow/_/ExecuteMember#input:member",
+        "@boundary/scientific-workflow/_/ExecuteMember#input:prior",
+        "@boundary/scientific-workflow/_/ExecuteMember#input:result"
+      ],
+      "outputPorts": [
+        "@boundary/scientific-workflow/_/ExecuteMember#output:attempt",
+        "@boundary/scientific-workflow/_/ExecuteMember#output:job"
+      ],
+      "status": "sketch",
+      "claim": "Port contract only; no scheduler submission or workflow execution."
+    },
+    {
+      "id": "numerical-envelope",
+      "sha256": "44d053b3ebae04cc95a26558e4d28740e80e5a5e113020322612a1c0da462064",
+      "path": "specialized-model/numerical-envelope.json",
+      "process": "@boundary/scientific-workflow/_/CollectExperiment",
+      "inputPorts": [
+        "@boundary/scientific-workflow/_/CollectExperiment#input:experiment",
+        "@boundary/scientific-workflow/_/CollectExperiment#input:members",
+        "@boundary/scientific-workflow/_/CollectExperiment#input:attempts",
+        "@boundary/scientific-workflow/_/CollectExperiment#input:artifacts"
+      ],
+      "outputPorts": [
+        "@boundary/scientific-workflow/_/CollectExperiment#output:collection"
+      ],
+      "status": "sketch",
+      "claim": "Comparison requirements only; no numerical comparator executed."
+    }
+  ]
+}

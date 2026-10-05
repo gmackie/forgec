@@ -1,0 +1,80 @@
+import { Effect } from 'effect';
+import { expect,it } from 'vitest';
+import { foundation,foundationAdapters } from './helpers/foundation.js';
+import { Ledger } from '../src/foundation/ledger.js';
+import { Quotas } from '../src/foundation/quota.js';
+import { Usage } from '../src/foundation/usage.js';
+import { Allocations } from '../src/foundation/allocation.js';
+import { Entitlements } from '../src/foundation/entitlement.js';
+import { Engine } from '../src/engine.js';
+import { localAuthorizer } from '../src/gatekeeper.js';
+const p='@forgegraph/foundation/quota/_/',u='@forgegraph/foundation/usage/_/',e='@forgegraph/foundation/entitlement/_/',a='@forgegraph/foundation/allocation/_/',s='@forgegraph/foundation/specification/_/';
+for(const adapter of foundationAdapters) it(`${adapter}: exact allowances, UTC resets, reservations and enforcement decisions`,async()=>{
+ const f=await foundation('quota',adapter,true),run=Effect.runPromise;
+ try {
+  const {call,engine,ctx}=f,quotas=new Quotas(engine),usage=new Usage(engine),allocations=new Allocations(engine),entitlements=new Entitlements(engine);
+  const holder=await call('@forgegraph/foundation/party/_/Party.create',{label:'Tenant subscriber'});
+  const scope=await call(e+'EntitlementScope.create',{label:'Subscription'}),right=await call(e+'RightDefinition.create',{namespace:'quota',name:'consume'});
+  const validFrom='2026-01-01T00:00:00Z',validUntil='2027-01-01T00:00:00Z';
+  const grant=await run(entitlements.issue({holder:String(holder.id),right:String(right.id),scope:String(scope.id),quantity:'100',unit:'token',validFrom,validUntil,reason:'Contract allowance'},ctx));
+  const repo=await call(s+'Repository.create',{key:'limits',provider:'git',locator:'https://example.test/limits'}),policy=await call(s+'SpecificationPin.create',{repository:repo.id,anchor:'limits',revision:'a'.repeat(40)});
+  const dimension=await call(u+'UsageDimension.create',{key:'tokens',unit:'token'}),stream=await call(u+'UsageStream.create',{label:'Token usage',dimension:dimension.id}),source=await call(u+'UsageSource.create',{key:'meter'});
+  const pool=await call(a+'AllocationPool.create',{key:'token-reservations',mode:'fungible',capacity:'100',unit:'token'});
+  async function allowance(key:string,extra:Record<string,unknown>={}){return call(p+'Allowance.create',{key,grant:grant.id,scope:scope.id,policy:policy.id,dimension:dimension.id,unit:'token',limit:'100',warningAt:'80',window:'Fixed',windowSeconds:null,timezone:'UTC',validFrom,validUntil,measure:'Usage',stream:stream.id,pool:null,enforcement:'Hard',predecessor:null,...extra});}
+  async function ingest(ordinal:number,quantity:string,occurredAt:string){return run(usage.ingest({stream:String(stream.id),dimension:String(dimension.id),unit:'token',source:String(source.id),eventKey:String(ordinal),ordinal,quantity,occurredAt},ctx));}
+  const first=await ingest(1,'60','2026-01-01T00:30:00Z');
+  await ingest(2,'25','2026-01-02T00:30:00Z');
+  await ingest(3,'5','2026-02-01T00:00:00Z');
+  const fixed=await allowance('fixed');
+  expect(await run(quotas.inspect(String(fixed.id),'2026-01-02T01:00:00Z',ctx,'16'))).toMatchObject({used:'85.000000',remaining:'15.000000',projected:'101.000000',decision:'Prohibit'});
+  expect(await run(quotas.inspect(String(fixed.id),'2026-01-02T01:00:00Z',ctx,'15'))).toMatchObject({decision:'Warn',exceeded:false});
+  const lp='@forgegraph/foundation/ledger/_/';
+  const book=await call(lp+'LedgerBook.create',{key:'quota-counter'}),account=await call(lp+'Account.create',{book:book.id,key:'consumed',unit:'token'});
+  await call(p+'QuotaCounter.create',{allowance:fixed.id,account:account.id,sourcePolicy:policy.id});
+  await run(new Ledger(engine).post({book:String(book.id),key:'mirror-first-two',entries:[{account:String(account.id),quantity:'85'}],policy:'unrestricted',reason:'L1 counter mirrors exact usage events 1 and 2'},ctx));
+  expect((await run(new Ledger(engine).balance(String(account.id),ctx))).quantity).toBe((await run(quotas.inspect(String(fixed.id),'2026-01-02T01:00:00Z',ctx))).used);
+  const soft=await allowance('soft',{enforcement:'Soft'});
+  expect(await run(quotas.inspect(String(soft.id),'2026-01-02T01:00:00Z',ctx,'100'))).toMatchObject({decision:'Warn',exceeded:true});
+  const rolling=await allowance('rolling',{window:'Rolling',windowSeconds:86400});
+  expect(await run(quotas.inspect(String(rolling.id),'2026-01-02T01:00:00Z',ctx))).toMatchObject({used:'25.000000',from:'2026-01-01T01:00:00.000Z',until:'2026-01-02T01:00:00.000Z'});
+  const monthly=await allowance('monthly',{window:'CalendarMonth'}),daily=await allowance('daily',{window:'CalendarDay'}),yearly=await allowance('yearly',{window:'CalendarYear'}),tumbling=await allowance('tumbling',{window:'Tumbling',windowSeconds:86400});
+  expect(await run(quotas.inspect(String(monthly.id),'2026-02-01T00:00:00Z',ctx))).toMatchObject({used:'0.000000',from:'2026-02-01T00:00:00.000Z',until:'2026-03-01T00:00:00.000Z'});
+  expect(await run(quotas.inspect(String(monthly.id),'2026-02-01T00:00:01Z',ctx))).toMatchObject({used:'5.000000'});
+  for(const row of [daily,tumbling])expect(await run(quotas.inspect(String(row.id),'2026-01-02T01:00:00Z',ctx))).toMatchObject({used:'25.000000',from:'2026-01-02T00:00:00.000Z',until:'2026-01-03T00:00:00.000Z'});
+  expect(await run(quotas.inspect(String(yearly.id),'2026-02-01T00:00:01Z',ctx))).toMatchObject({used:'90.000000',until:'2027-01-01T00:00:00.000Z'});
+  const reservation=await call(a+'AllocationReservation.create',{pool:pool.id,key:'benefit-hold',quantity:'20',unit:'token',from:validFrom,until:validUntil,holdUntil:validUntil});
+  await run(allocations.act(String(reservation.id),'reserve',ctx));
+  const benefit=await allowance('benefit',{measure:'UsageAndReservations',pool:pool.id});
+  expect(await run(quotas.inspect(String(benefit.id),'2026-01-02T01:00:00Z',ctx))).toMatchObject({used:'85.000000',reserved:'20.000000',remaining:'-5.000000',decision:'Prohibit',reservationIds:[reservation.id]});
+  await run(allocations.act(String(reservation.id),'allocate',ctx));
+  expect(await run(quotas.inspect(String(benefit.id),'2026-01-02T01:00:00Z',ctx))).toMatchObject({reserved:'0.000000'});
+  const seats=await allowance('seats',{measure:'Occupancy',stream:null,pool:pool.id});
+  expect(await run(quotas.inspect(String(seats.id),'2026-01-02T01:00:00Z',ctx))).toMatchObject({used:'0.000000',reserved:'20.000000'});
+  await run(allocations.act(String(reservation.id),'release',ctx));
+  expect(await run(quotas.inspect(String(seats.id),'2026-01-02T01:00:00Z',ctx))).toMatchObject({reserved:'0.000000'});
+  for(const [name,row] of [['ApiTokenBudget',rolling],['SeatAllowance',seats],['BenefitAllowance',benefit],['MachineCapacity',seats]] as const)await call('@fixture/quota-consumer/_/'+name+'.create',{allowance:row.id,key:name});
+  for(const [key,unit,name] of [['licensed-seats','seat','SeatAllowance'],['machine-slots','slot','MachineCapacity']]){
+   const dim=await call(u+'UsageDimension.create',{key,unit});
+   const rightGrant=await run(entitlements.issue({holder:String(holder.id),right:String(right.id),scope:String(scope.id),quantity:'4',unit:unit!,validFrom,validUntil,reason:'Capacity entitlement'},ctx));
+   const capacity=await call(a+'AllocationPool.create',{key,mode:'fungible',capacity:'4',unit});
+   const limit=await allowance(key!,{grant:rightGrant.id,dimension:dim.id,unit,limit:'4',warningAt:'3',measure:'Occupancy',stream:null,pool:capacity.id});
+   const claim=await call(a+'AllocationReservation.create',{pool:capacity.id,key:'assigned',quantity:'2',unit,from:validFrom,until:validUntil,holdUntil:validUntil});
+   await run(allocations.act(String(claim.id),'book',ctx));
+   expect(await run(quotas.inspect(String(limit.id),'2026-01-02T01:00:00Z',ctx,'3'))).toMatchObject({reserved:'2.000000',decision:'Prohibit',unit});
+   await call('@fixture/quota-consumer/_/'+name+'.create',{allowance:limit.id,key});
+  }
+  await run(usage.retract(String(first.id),'Meter correction',ctx));
+  expect(await run(quotas.inspect(String(fixed.id),'2026-01-02T01:00:00Z',ctx))).toMatchObject({used:'25.000000'});
+  await expect(allowance('bad-timezone',{timezone:'America/New_York'})).rejects.toMatchObject({code:'ValidationFailed'});
+  await expect(run(quotas.inspect(String(fixed.id),validUntil,ctx))).rejects.toMatchObject({code:'ValidationFailed'});
+  await expect(run(quotas.inspect(String(fixed.id),'2026-01-02T01:00:00Z',ctx,'-1'))).rejects.toMatchObject({code:'ValidationFailed'});
+  await expect(run(quotas.inspect(String(fixed.id),'2026-01-02T01:00:00Z',{...ctx,tenant:'other'}))).rejects.toThrow();
+  const renewed=await run(entitlements.renew(String(grant.id),{validFrom:'2027-01-01T00:00:00Z',validUntil:'2028-01-01T00:00:00Z',reason:'Renewed'},ctx));
+  const next=await allowance('renewed',{grant:renewed.id,validFrom:'2027-01-01T00:00:00Z',validUntil:'2028-01-01T00:00:00Z',predecessor:fixed.id});
+  expect(await run(quotas.inspect(String(next.id),'2027-01-01T00:00:00Z',ctx))).toMatchObject({used:'0.000000'});
+  await run(entitlements.revoke(String(grant.id),'2026-01-03T00:00:00Z','Contract revoked',ctx));
+  await expect(run(quotas.inspect(String(fixed.id),'2026-01-03T00:00:00Z',ctx))).rejects.toMatchObject({code:'ValidationFailed'});
+  const guarded=new Engine(engine.model,engine.layer);guarded.gatekeeper.authorizer=localAuthorizer({policies:engine.model.resources.filter(r=>r.id!==e+'EntitlementEnd').map(r=>({id:r.id,actions:[r.id+'.*'],requires:[],where:[]})),pips:[],epoch:2,knownObligations:[]});
+  await expect(run(new Quotas(guarded).inspect(String(fixed.id),'2026-01-03T00:00:00Z',ctx))).rejects.toThrow();
+ }finally{await f.close();}
+});

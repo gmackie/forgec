@@ -1,0 +1,9 @@
+[package]
+name = "@fixture/settlement-consumer"
+version = "0.1.0"
+edition = "2027"
+[dependencies]
+settlement = { path = "../..", deploy = true }
+party = { path = "../../../party", deploy = true }
+entitlement = { path = "../../../entitlement", deploy = true }
+fulfillment = { path = "../../../fulfillment", deploy = true }

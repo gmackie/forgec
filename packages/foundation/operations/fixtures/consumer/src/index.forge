@@ -1,0 +1,44 @@
+import operations
+export resource ManufacturingRun
+  @tenant
+  @appendOnly
+{
+  id : id
+  operation : operations.Operation
+  label : text length 1..128
+}
+export resource LabRun
+  @tenant
+  @appendOnly
+{
+  id : id
+  operation : operations.Operation
+  label : text length 1..128
+}
+export resource BobDevelopmentRun
+  @tenant
+  @appendOnly
+{
+  id : id
+  operation : operations.Operation
+  label : text length 1..128
+}
+export resource MediaProduction
+  @tenant
+  @appendOnly
+{
+  id : id
+  operation : operations.Operation
+  label : text length 1..128
+}
+
+shape ExecuteInput {
+  fulfillment : id
+}
+shape ExecuteOutput {
+  accepted : boolean
+}
+function Execute {
+  input ExecuteInput
+  output ExecuteOutput
+}

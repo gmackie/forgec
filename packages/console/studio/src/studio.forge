@@ -1,0 +1,79 @@
+/// Studio's own repository inventory. Credentials remain in host configuration.
+export resource Repository @tenant @timestamps @versioned @audited {
+  id : id
+  projectKey : text length 1..120 @unique @immutable
+  name : text length 1..120
+  locator : text length 1..300
+  defaultBranch : text length 1..200
+  sourceRoot : text length 0..300
+  find by projectKey
+}
+
+/// Last observed branch head; Git remains authoritative.
+export resource Branch @tenant @timestamps @versioned @audited {
+  id : id
+  key : text length 1..400 @unique @immutable
+  repository : Repository @immutable
+  name : text length 1..200 @immutable
+  head : text length 40..40
+  find by key
+  list by repository order by name asc
+}
+
+/// Immutable commit provenance, captured when a branch is inspected.
+export resource RepositoryCommit @tenant @timestamps @versioned {
+  id : id
+  key : text length 1..400 @unique @immutable
+  repository : Repository @immutable
+  revision : text length 40..40 @immutable
+  message : text length 0..4000 @immutable
+  url : text length 0..1000 @immutable
+  find by key
+  list by repository order by createdAt desc
+}
+
+/// Each review is pinned to exact commits. New revisions require a new review.
+export resource ChangeReview @tenant @timestamps @versioned @audited {
+  id : id
+  repository : Repository @immutable
+  title : text length 1..200 @immutable
+  description : text length 0..4000 @immutable
+  baseBranch : text length 1..200 @immutable
+  headBranch : text length 1..200 @immutable
+  baseRevision : text length 40..40 @immutable
+  headRevision : text length 40..40 @immutable
+  lifecycle status {
+    initial Open
+    terminal Approved
+    terminal ChangesRequested
+    terminal Closed
+    approve: Open -> Approved
+    requestChanges: Open -> ChangesRequested
+    close: Open -> Closed
+  }
+  list by repository order by createdAt desc
+}
+
+/// Content-addressed IR metadata. Payloads live in artifact storage, not in Git metadata rows.
+export resource IRArtifact @tenant @timestamps @versioned @audited {
+  id : id
+  key : text length 1..400 @unique @immutable
+  repository : Repository @immutable
+  revision : text length 40..40 @immutable
+  digest : text length 71..71 @immutable
+  location : text length 1..2000 @immutable
+  byteCount : integer >= 0 @immutable
+  compilerVersion : text length 1..100 @immutable
+  irVersion : text length 1..100 @immutable
+  find by key
+  list by repository order by createdAt desc
+}
+
+/// Discussion is append-only and tied to a pinned review.
+export resource ReviewComment @tenant @timestamps @versioned @audited {
+  id : id
+  review : ChangeReview @immutable
+  body : text length 1..4000 @immutable
+  author : text length 1..200 @immutable
+  list by review order by createdAt asc
+}

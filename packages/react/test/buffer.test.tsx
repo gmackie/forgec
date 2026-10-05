@@ -64,3 +64,21 @@ describe("EditBuffer", () => {
     expect(b.createFor(news[0]!)).toEqual({ name: "Beta", email: "ops@beta.co" });
   });
 });
+
+it("stages versioned deletions, preserves edits on undo, and reverts everything", () => {
+  const buffer = new EditBuffer(customer);
+  buffer.load([{id:"c1",version:4,name:"Original",code:"A"}]);
+  buffer.set("c1","name","Updated");
+  buffer.stageDelete("c1");
+  expect(buffer.validate()).toEqual([]);
+  expect(buildChangeset(buffer).operations).toEqual([{op:`${customer.id}.delete`,input:{id:"c1",expectedVersion:4}}]);
+  buffer.restorePending("c1");
+  expect(buildChangeset(buffer).operations[0]?.input.patch).toEqual({name:"Updated"});
+  buffer.stageDelete("c1");
+  buffer.revertAll();
+  expect(buffer.dirty()).toEqual([]);
+  expect(buffer.value("c1","name")).toBe("Original");
+  const id=buffer.addNew();
+  buffer.stageDelete(id);
+  expect(buildChangeset(buffer).operations).toEqual([]);
+});

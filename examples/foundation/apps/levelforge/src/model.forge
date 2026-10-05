@@ -1,0 +1,33 @@
+import evaluation
+import specification
+
+export resource ProductionAttempt
+  @tenant
+  @appendOnly
+{
+  id : id
+  projectId : text length 1..128
+  jobId : text length 1..128
+  attempt : integer >= 1 <= 64
+  graphId : text length 1..128
+  sourceRevision : text length 40..64
+  definition : specification.SpecificationPin
+  run : evaluation.EvaluationRun @unique
+  rules {
+    sourceRevision == definition.revision
+    run.definition == definition
+  }
+  unique projectId, jobId, attempt
+  find by projectId, jobId, attempt
+}
+export resource ProductionExecutor
+  @tenant
+  @appendOnly
+{
+  id : id
+  attempt : ProductionAttempt
+  ordinal : integer >= 0 <= 127
+  executorId : text length 1..200
+  executorVersion : text length 1..128
+  unique attempt, ordinal
+}

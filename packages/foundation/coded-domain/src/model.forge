@@ -1,0 +1,139 @@
+import identifiers
+import classification
+import evidence
+
+/// Authority and context are part of the interchange namespace.
+export resource CodedDomain @tenant @appendOnly {
+ id : id
+ authority : identifiers.Issuer
+ context : text length 1..128
+ key : text length 1..128
+ identifiers : identifiers.IdentifierSet @unique
+ unique authority, context, key
+ find by authority, context, key
+}
+export resource DomainRelease @tenant @appendOnly {
+ id : id
+ domain : CodedDomain
+ version : text length 1..128
+ ordinal : integer >= 1
+ previous : DomainRelease? @unique
+ validFrom : datetime
+ validUntil : datetime?
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ rules {
+  validUntil == null || validUntil > validFrom
+  (ordinal == 1 && previous == null) || (previous != null && previous.domain == domain && ordinal == previous.ordinal + 1 && validFrom > previous.validFrom)
+ }
+ unique domain, version
+ unique domain, ordinal
+}
+export resource ReleaseWithdrawal @tenant @appendOnly {
+ id : id
+ release : DomainRelease @unique
+ effectiveAt : datetime
+ reason : text length 1..1000
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ rules { effectiveAt >= release.validFrom }
+ find by release
+}
+/// Literals are exact, case-sensitive identifiers, never display labels.
+export resource Code @tenant @appendOnly {
+ id : id
+ domain : CodedDomain
+ ordinal : integer >= 1
+ literal : text length 1..128
+ identifiers : identifiers.IdentifierSet @unique
+ unique domain, literal
+ unique domain, ordinal
+ find by domain, literal
+}
+export resource CodeRevision @tenant @appendOnly {
+ id : id
+ code : Code
+ release : DomainRelease
+ releaseOrdinal : integer >= 1
+ revision : integer >= 1
+ previous : CodeRevision? @unique
+ definition : text length 1..4000
+ meaning : classification.ConceptRevision?
+ validFrom : datetime
+ validUntil : datetime?
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ rules {
+  release.domain == code.domain
+  releaseOrdinal == release.ordinal
+  validFrom >= release.validFrom
+  validUntil == null || validUntil > validFrom
+  release.validUntil == null || (validUntil != null && validUntil <= release.validUntil)
+  (revision == 1 && previous == null) || (previous != null && previous.code == code && revision == previous.revision + 1 && releaseOrdinal > previous.releaseOrdinal && validFrom > previous.validFrom)
+ }
+ unique code, revision
+ unique code, release
+}
+/// Label revisions are presentation-only, separate from governed meaning.
+export resource CodeLabel @tenant @appendOnly {
+ id : id
+ code : Code
+ locale : text length 1..64
+ revision : integer >= 1
+ previous : CodeLabel? @unique
+ label : text length 1..200
+ source : text length 1..1000
+ rules {
+  (revision == 1 && previous == null) || (previous != null && previous.code == code && previous.locale == locale && revision == previous.revision + 1)
+ }
+ unique code, locale, revision
+}
+export resource CodeDisposition @tenant @appendOnly {
+ id : id
+ code : Code @unique
+ replacement : CodeRevision?
+ replacementCode : Code?
+ effectiveAt : datetime
+ reason : text length 1..1000
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ rules {
+  (replacement == null && replacementCode == null) || (replacement != null && replacementCode != null && replacement.code == replacementCode && replacementCode.domain == code.domain && replacementCode.ordinal > code.ordinal && effectiveAt >= replacement.validFrom)
+ }
+ find by code
+}
+export enum MappingRelation {
+ Equivalent
+ Narrower
+ Broader
+}
+/// Mapping identity pins both endpoints and the asserting authority.
+export resource ConceptMapping @tenant @appendOnly {
+ id : id
+ code : Code
+ concept : classification.Concept
+ authority : identifiers.Issuer
+ unique code, concept, authority
+}
+export resource MappingRevision @tenant @appendOnly {
+ id : id
+ mapping : ConceptMapping
+ revision : integer >= 1
+ previous : MappingRevision? @unique
+ codeRevision : CodeRevision
+ meaning : classification.ConceptRevision
+ relation : MappingRelation
+ validFrom : datetime
+ validUntil : datetime?
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ rules {
+  codeRevision.code == mapping.code
+  meaning.concept == mapping.concept
+  validUntil == null || validUntil > validFrom
+  validFrom >= codeRevision.validFrom
+  codeRevision.validUntil == null || (validUntil != null && validUntil <= codeRevision.validUntil)
+  (revision == 1 && previous == null) || (previous != null && previous.mapping == mapping && revision == previous.revision + 1 && validFrom > previous.validFrom)
+ }
+ unique mapping, revision
+}

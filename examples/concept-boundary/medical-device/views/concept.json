@@ -1,0 +1,74 @@
+{
+  "nodes": {
+    "@boundary/medical-device/_/ApproveTherapy": "process",
+    "@boundary/medical-device/_/ApprovedTherapy": "entity",
+    "@boundary/medical-device/_/PumpIO": "external",
+    "@boundary/medical-device/_/PumpIntent": "reference",
+    "@boundary/medical-device/_/PumpSample": "reference",
+    "@boundary/medical-device/_/ReactToTherapyTick": "process",
+    "@boundary/medical-device/_/TherapyDecision": "fact",
+    "@boundary/medical-device/_/TherapyMode": "entity"
+  },
+  "edges": [
+    {
+      "from": "@boundary/medical-device/_/ApproveTherapy",
+      "to": "@boundary/medical-device/_/ApprovedTherapy",
+      "port": "@boundary/medical-device/_/ApproveTherapy#output:approval",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/medical-device/_/ApprovedTherapy",
+      "to": "@boundary/medical-device/_/ReactToTherapyTick",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#input:approval",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/medical-device/_/PumpIO",
+      "to": "@boundary/medical-device/_/ReactToTherapyTick",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#activation:tick",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/medical-device/_/PumpIO",
+      "to": "@boundary/medical-device/_/ReactToTherapyTick",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#input:sample",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/medical-device/_/PumpSample",
+      "to": "@boundary/medical-device/_/ReactToTherapyTick",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#input:sample",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/medical-device/_/ReactToTherapyTick",
+      "to": "@boundary/medical-device/_/PumpIO",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/medical-device/_/ReactToTherapyTick",
+      "to": "@boundary/medical-device/_/PumpIntent",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/medical-device/_/ReactToTherapyTick",
+      "to": "@boundary/medical-device/_/TherapyDecision",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#output:decision",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/medical-device/_/ReactToTherapyTick",
+      "to": "@boundary/medical-device/_/TherapyMode",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#output:state",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/medical-device/_/TherapyMode",
+      "to": "@boundary/medical-device/_/ReactToTherapyTick",
+      "port": "@boundary/medical-device/_/ReactToTherapyTick#input:previous",
+      "kind": "input"
+    }
+  ]
+}

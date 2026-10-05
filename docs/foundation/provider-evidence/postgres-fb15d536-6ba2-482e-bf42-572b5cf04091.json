@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-notifications-invariants/1",
+  "coverageCriteria": [
+    "F50-STORE"
+  ],
+  "status": "passing",
+  "runId": "fb15d536-6ba2-482e-bf42-572b5cf04091",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+  "sourceFingerprint": "6a0655f4a32080b70d7a948ec3bc54a8baa4f66ef4bdf9c7618155044e8c88fc",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "592c1599ff1695e5427492fcaff0770437ca53f9a2b043defa5f90408e28cb7a"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "afb1ba6f047372a0539f13f63f1c67706a5e753ad0a633421f515cd154ff1b19"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "4237e76957a2d5c66c893a13a980d856bf075d0bdaf78e42536ad06e3d6be9e4"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: stable logical notices snapshot preferences, resume delivery and preserve suppression"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T17:14:31.987Z",
+  "passedTraces": [
+    "hosted: stable logical notices snapshot preferences, resume delivery and preserve suppression"
+  ],
+  "testReportSha256": "51f5aa42cd34568ec9db2ef675f7036aef3d1d7b9c3b1dc0f92e878b76e51359",
+  "identity": {
+    "provider": "postgres",
+    "runId": "fb15d536-6ba2-482e-bf42-572b5cf04091",
+    "tenantPrefix": "foundation-cert-fb15d536-6ba2-482e-bf42-572b5cf04091",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

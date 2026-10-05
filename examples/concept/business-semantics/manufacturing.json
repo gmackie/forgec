@@ -1,0 +1,642 @@
+{
+  "version": "concept-ir/2",
+  "package": "@semantics/manufacturing",
+  "entities": {
+    "@semantics/manufacturing/_/Batch": {
+      "name": "Batch",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "inspected": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "released": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "producer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/manufacturing/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "customer": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/manufacturing/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@semantics/manufacturing/_/Party": {
+      "name": "Party",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@semantics/manufacturing/_/InspectionCompleted": {
+      "name": "InspectionCompleted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@semantics/manufacturing/_/ReleaseDisposition": {
+      "name": "ReleaseDisposition",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "cause": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/manufacturing/_/InspectionCompleted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "target": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/manufacturing/_/Batch",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@semantics/manufacturing/_/Release": {
+      "name": "Release",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/manufacturing/_/Batch",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "occurrence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/manufacturing/_/InspectionCompleted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "result": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/manufacturing/_/Batch",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "consequence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/manufacturing/_/ReleaseDisposition"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@semantics/manufacturing/_/Batch": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      },
+      "@semantics/manufacturing/_/InspectionCompleted": {
+        "occurrence": "occurredAt",
+        "valid": null,
+        "knowledge": {
+          "from": "knownAt",
+          "to": null
+        }
+      },
+      "@semantics/manufacturing/_/ReleaseDisposition": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      }
+    },
+    "selections": {
+      "@semantics/manufacturing/_/validAtOccurrence": {
+        "context": "@semantics/manufacturing/_/Release",
+        "target": "@semantics/manufacturing/_/Batch",
+        "axis": "valid",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "occurredAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      },
+      "@semantics/manufacturing/_/knownAtDecision": {
+        "context": "@semantics/manufacturing/_/Release",
+        "target": "@semantics/manufacturing/_/Batch",
+        "axis": "knowledge",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "knownAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      }
+    },
+    "contracts": {
+      "@semantics/manufacturing/_/BoundedContribution": {
+        "owner": {
+          "kind": "entity",
+          "id": "@semantics/manufacturing/_/Batch"
+        },
+        "kind": "invariant",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "released"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "inspected"
+            ]
+          }
+        },
+        "selectors": []
+      },
+      "@semantics/manufacturing/_/Available": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/manufacturing/_/Release"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "released"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "inspected"
+            ]
+          }
+        },
+        "selectors": [
+          "@semantics/manufacturing/_/validAtOccurrence",
+          "@semantics/manufacturing/_/knownAtDecision"
+        ]
+      },
+      "@semantics/manufacturing/_/Preserved": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/manufacturing/_/Release"
+        },
+        "kind": "ensures",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "released"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "inspected"
+            ]
+          }
+        },
+        "selectors": []
+      }
+    },
+    "relationships": {
+      "@semantics/manufacturing/_/PositionRoles": {
+        "carrier": "@semantics/manufacturing/_/Batch",
+        "endpoints": {
+          "producer": {
+            "target": "@semantics/manufacturing/_/Party",
+            "field": "producer"
+          },
+          "customer": {
+            "target": "@semantics/manufacturing/_/Party",
+            "field": "customer"
+          }
+        },
+        "evidence": [
+          "@semantics/manufacturing/_/InspectionCompleted"
+        ]
+      }
+    },
+    "events": [
+      "@semantics/manufacturing/_/InspectionCompleted"
+    ],
+    "effects": {
+      "@semantics/manufacturing/_/BusinessConsequence": {
+        "fact": "@semantics/manufacturing/_/ReleaseDisposition",
+        "causes": {
+          "cause": "@semantics/manufacturing/_/InspectionCompleted"
+        },
+        "targets": {
+          "target": "@semantics/manufacturing/_/Batch"
+        }
+      }
+    },
+    "views": {
+      "@semantics/manufacturing/_/ProducerView": {
+        "fact": "@semantics/manufacturing/_/Batch",
+        "observerRole": "producer",
+        "fields": [
+          "id",
+          "inspected",
+          "released"
+        ],
+        "authorizations": [],
+        "purpose": null
+      },
+      "@semantics/manufacturing/_/CustomerView": {
+        "fact": "@semantics/manufacturing/_/Batch",
+        "observerRole": "customer",
+        "fields": [
+          "id",
+          "inspected",
+          "released"
+        ],
+        "authorizations": [],
+        "purpose": null
+      }
+    }
+  }
+}

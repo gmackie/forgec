@@ -1,0 +1,37 @@
+[
+  {
+    "name": "failed inbound handler must remain retryable",
+    "status": "fail",
+    "first": {
+      "error": "DependencyUnavailable"
+    },
+    "second": "duplicate",
+    "handlerAttempts": 1,
+    "note": "MemoryStorage; this is not a live queue certification."
+  },
+  {
+    "name": "our OpenAPI metadata accepted by fern-forge docs",
+    "status": "fail",
+    "total": 55,
+    "rejected": 55,
+    "example": {
+      "id": "@acme/commerce/_/Customer.create",
+      "issues": [
+        {
+          "code": "custom",
+          "path": [
+            "x-forge-kind"
+          ],
+          "message": "unknown Forge extension"
+        },
+        {
+          "code": "custom",
+          "path": [
+            "x-forge-slo"
+          ],
+          "message": "unknown Forge extension"
+        }
+      ]
+    }
+  }
+]

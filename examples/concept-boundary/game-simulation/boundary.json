@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "slug": "game-simulation",
+  "outcomes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "world-authority",
+      "description": "Authoritative world ownership and accepted input history",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/game-simulation/_/WorldState",
+        "@boundary/game-simulation/_/InputBatch",
+        "@boundary/game-simulation/_/TickCommitted"
+      ],
+      "pressures": [
+        "traceability"
+      ],
+      "rationale": "AdvanceWorld is the sole logical world producer; prediction and projections cannot become second owners."
+    },
+    {
+      "id": "tick-replay",
+      "description": "Logical tick duration and exact replay equivalence",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/game-simulation/_/SealInputs",
+        "@boundary/game-simulation/_/AdvanceWorld",
+        "@boundary/game-simulation/_/VerifyReplay"
+      ],
+      "pressures": [
+        "fixed-period",
+        "deterministic-execution",
+        "replay"
+      ],
+      "rationale": "Changing tick duration, accepted ordering or digest equivalence changes intended meaning; timer APIs do not supply these guarantees."
+    },
+    {
+      "id": "server-strategy",
+      "description": "ECS layout, prediction buffers and worker scheduling",
+      "layer": "L1",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/game-simulation/_/AdvanceWorld",
+        "@boundary/game-simulation/_/ProjectClients"
+      ],
+      "pressures": [
+        "discrete-event"
+      ],
+      "rationale": "Implementation uses discrete tick/event handling; the graph does not import a discrete-event simulation director or super-dense time."
+    },
+    {
+      "id": "shard-placement",
+      "description": "Session shard, server region and replica allocation",
+      "layer": "L2",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/game-simulation/_/AdvanceWorld",
+        "@boundary/game-simulation/_/GameClients"
+      ],
+      "pressures": [
+        "hardware-placement",
+        "platform-mapping"
+      ],
+      "rationale": "Server allocation must preserve one logical world owner and any numerical platform restriction."
+    },
+    {
+      "id": "numerical-physics",
+      "description": "Collision integration and numerical equivalence",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/game-simulation/_/PhysicsEngine",
+        "@boundary/game-simulation/_/AdvanceWorld"
+      ],
+      "pressures": [
+        "continuous-time",
+        "simulation-artifacts"
+      ],
+      "rationale": "Contact solvers, integration and precision rules compose differently from durable updates and remain in the specialized physics model."
+    }
+  ],
+  "facets": [
+    {
+      "id": "tick-reproducibility",
+      "kind": "replay",
+      "status": "proposed",
+      "targets": [
+        "@boundary/game-simulation/_/AdvanceWorld",
+        "@boundary/game-simulation/_/VerifyReplay"
+      ],
+      "parameters": {
+        "tickDurationUs": 20000,
+        "equivalence": "exact per-tick state digest",
+        "pins": [
+          "accepted input order",
+          "checkpoint",
+          "rules build",
+          "solver build and configuration",
+          "random state",
+          "numeric platform"
+        ]
+      },
+      "meaning": "Identical pinned envelopes must reproduce committed tick digests.",
+      "obligations": [
+        "Prohibit hidden wall-clock reads and unrecorded randomness.",
+        "Execute hostile replay cases; this sidecar and its JSON sketch are not an implemented replay test.",
+        "Define initialization and missing/mismatched physics-result handling before runtime execution."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "Seal input order, advance authoritative ticks, project clients, and validate pinned replay envelopes.",
+    "placement": "One logical world owner per session, replicated via an explicit authority protocol; solver platform restricted when necessary.",
+    "limitations": [
+      "No physics execution or deterministic replay run is included.",
+      "Logical 20 ms ticks do not establish a real-time scheduling or WCET guarantee."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "replay-envelope",
+      "path": "specialized-model/replay-envelope.json",
+      "format": "Deterministic replay envelope sketch",
+      "status": "sketch",
+      "process": "@boundary/game-simulation/_/VerifyReplay",
+      "inputPorts": [
+        "@boundary/game-simulation/_/VerifyReplay#input:request",
+        "@boundary/game-simulation/_/VerifyReplay#input:verdict",
+        "@boundary/game-simulation/_/VerifyReplay#input:commits"
+      ],
+      "outputPorts": [
+        "@boundary/game-simulation/_/VerifyReplay#output:checked",
+        "@boundary/game-simulation/_/VerifyReplay#output:replayRequest"
+      ],
+      "claim": "Envelope contract only; no replay harness was executed."
+    },
+    {
+      "id": "physics-interface",
+      "path": "specialized-model/physics-interface.txt",
+      "format": "Numerical physics interface sketch",
+      "status": "sketch",
+      "process": "@boundary/game-simulation/_/AdvanceWorld",
+      "inputPorts": [
+        "@boundary/game-simulation/_/AdvanceWorld#input:prior",
+        "@boundary/game-simulation/_/AdvanceWorld#input:batch",
+        "@boundary/game-simulation/_/AdvanceWorld#input:physics"
+      ],
+      "outputPorts": [
+        "@boundary/game-simulation/_/AdvanceWorld#output:world",
+        "@boundary/game-simulation/_/AdvanceWorld#output:committed",
+        "@boundary/game-simulation/_/AdvanceWorld#output:physicsRequest"
+      ],
+      "claim": "No numerical solver or simulation analyzer executed."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Ptolemy II models of computation",
+      "url": "https://ptolemy.berkeley.edu/ptolemyII/",
+      "supports": "Directors define distinct continuous-time, discrete-event, synchronous/reactive and dataflow laws; typed graph edges alone do not supply them."
+    },
+    {
+      "title": "AUTOSAR Classic Platform",
+      "url": "https://www.autosar.org/standards/classic-platform",
+      "supports": "Application, RTE and basic software separation illustrates logical contract versus platform realization; no AUTOSAR conformance claimed."
+    },
+    {
+      "title": "Arcadia method",
+      "url": "https://mbse-capella.org/arcadia.html",
+      "supports": "Logical architecture versus physical architecture supports keeping semantic ownership independent of processor placement."
+    },
+    {
+      "title": "Unity Netcode prediction",
+      "url": "https://docs.unity3d.com/Packages/com.unity.netcode@1.5/manual/intro-to-prediction.html",
+      "supports": "Server authority, local prediction, rollback and resimulation are distinct; the documentation does not establish universal deterministic physics."
+    }
+  ]
+}

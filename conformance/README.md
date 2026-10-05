@@ -124,3 +124,12 @@ of successes and the allowed failure codes — allowed histories, not a fixed
 winner. Volatile fields (`createdAt`, `updatedAt`, `requestId`, `etag`) are
 dropped before comparison; generated ids are normalized to `$id:n` in order
 of first appearance.
+
+Subscription delivery fault scenarios (#188) live in
+`packages/runtime/test/subscription-delivery.test.ts`. The same scenarios run
+against memory, SQLite, PostgreSQL (`FORGE_PG_URL`), local D1
+(`FORGE_D1_HARNESS`), and DynamoDB Local (`FORGE_DYNAMO_ENDPOINT`). They exercise
+failed-handler retry, claim contention/expiry, stale-worker fencing, atomic
+completion with writes/publications, lost commit responses, and persisted unknown
+external outcomes. This evidence covers adapters; it does not certify live queue
+or vendor services. See [recovery and upgrade rules](../docs/subscription-delivery.md).

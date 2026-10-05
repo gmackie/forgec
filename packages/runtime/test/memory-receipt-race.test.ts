@@ -1,0 +1,24 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { Effect } from 'effect';
+import { expect, it } from 'vitest';
+import { Engine } from '../src/engine.js';
+import { Model, type AppBundle } from '../src/model.js';
+import { MemoryStorage } from '../src/adapters/memory.js';
+import { testLayer } from '../src/testing.js';
+it('simultaneous receipt misses cannot commit duplicate business effects', async () => {
+  const model = new Model(JSON.parse(readFileSync(resolve(import.meta.dirname, '../../../conformance/fixtures/participation-consumer/app.json'), 'utf8')) as AppBundle);
+  const storage = new MemoryStorage(), engine = new Engine(model, testLayer(storage));
+  const op = '@forgegraph/foundation/participation/_/ParticipationSet.create';
+  const ctx = { tenant: 'race', actor: 'test', requestId: 'receipt-race', idempotencyKey: 'same-command' };
+  const original = storage.getReceipt.bind(storage);
+  storage.getReceipt = () => Effect.succeed(null);
+  const attempts = await Promise.allSettled([1, 2].map(() => Effect.runPromise(engine.call(op, { label: 'Same command' }, ctx))));
+  storage.getReceipt = original;
+  expect(attempts.filter(a => a.status === 'fulfilled')).toHaveLength(1);
+  const dump = await storage.dump(ctx.tenant);
+  expect(dump.participationset).toHaveLength(1); expect(dump.audit).toHaveLength(1);
+  const winner = (attempts.find(a => a.status === 'fulfilled') as PromiseFulfilledResult<Record<string, unknown>>).value;
+  expect(await Effect.runPromise(engine.call(op, { label: 'Same command' }, ctx))).toEqual(winner);
+  await expect(Effect.runPromise(engine.call(op, { label: 'Different command' }, ctx))).rejects.toMatchObject({ code: 'IdempotencyMismatch' });
+});

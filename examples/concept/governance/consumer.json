@@ -1,0 +1,525 @@
+{
+  "version": "concept-ir/2",
+  "package": "@governance/consumer",
+  "entities": {
+    "@governance/consumer/_/Conversation": {
+      "name": "Conversation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/consumer/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "regulated": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "disclosureRecorded": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@governance/consumer/_/Customer": {
+      "name": "Customer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@governance/consumer/_/ConsumerAuthority": {
+      "name": "ConsumerAuthority",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@governance/consumer/_/MarketJurisdiction": {
+      "name": "MarketJurisdiction",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@governance/consumer/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/consumer/_/Customer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/consumer/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@governance/consumer/_/MessageReceived": {
+      "name": "MessageReceived",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/consumer/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@governance/consumer/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/consumer/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@governance/consumer/_/Respond": {
+      "name": "Respond",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/consumer/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    },
+    "@governance/consumer/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/consumer/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@governance/consumer/_/Conversation": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      }
+    },
+    "relationships": {
+      "@governance/consumer/_/Participants": {
+        "carrier": "@governance/consumer/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@governance/consumer/_/Customer",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@governance/consumer/_/Conversation",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@governance/consumer/_/MessageReceived",
+      "@governance/consumer/_/Closed"
+    ],
+    "interactions": {
+      "@governance/consumer/_/Engagement": {
+        "carrier": "@governance/consumer/_/Conversation",
+        "participation": [
+          "@governance/consumer/_/Participants"
+        ],
+        "events": {
+          "@governance/consumer/_/MessageReceived": "context",
+          "@governance/consumer/_/Closed": "context"
+        },
+        "processes": {
+          "@governance/consumer/_/Respond": "engagement",
+          "@governance/consumer/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    },
+    "subjects": {
+      "@governance/consumer/_/ParticipantIdentity": {
+        "carrier": "@governance/consumer/_/Customer",
+        "profiles": [
+          "party"
+        ]
+      },
+      "@governance/consumer/_/Authority": {
+        "carrier": "@governance/consumer/_/ConsumerAuthority",
+        "profiles": [
+          "authority"
+        ]
+      }
+    },
+    "contracts": {
+      "@governance/consumer/_/RequiredOutcome": {
+        "owner": {
+          "kind": "process",
+          "id": "@governance/consumer/_/Respond"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "name",
+          "path": [
+            "engagement",
+            "disclosureRecorded"
+          ]
+        },
+        "selectors": []
+      }
+    },
+    "externalConstraints": {
+      "@governance/consumer/_/ExternalRule": {
+        "authority": "@governance/consumer/_/Authority",
+        "jurisdiction": "@governance/consumer/_/MarketJurisdiction",
+        "citations": [
+          "illustrative:consumer-rule/revision-1/article-3"
+        ],
+        "applicability": {
+          "process": "@governance/consumer/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [
+          "@governance/consumer/_/RequiredOutcome"
+        ],
+        "prohibitions": [],
+        "validFrom": 0,
+        "validUntil": 1000,
+        "supersedes": [],
+        "evidence": []
+      },
+      "@governance/consumer/_/Suspension": {
+        "authority": "@governance/consumer/_/Authority",
+        "jurisdiction": "@governance/consumer/_/MarketJurisdiction",
+        "citations": [
+          "illustrative:consumer-rule/revision-2/article-3"
+        ],
+        "applicability": {
+          "process": "@governance/consumer/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [],
+        "prohibitions": [
+          "@governance/consumer/_/Respond"
+        ],
+        "validFrom": 1000,
+        "validUntil": null,
+        "supersedes": [
+          "@governance/consumer/_/ExternalRule"
+        ],
+        "evidence": []
+      }
+    }
+  }
+}

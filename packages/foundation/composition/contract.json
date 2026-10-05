@@ -1,0 +1,72 @@
+{
+  "slug": "composition",
+  "layer": "substrate",
+  "issue": 127,
+  "dependencies": [
+    "specification",
+    "resource-relations"
+  ],
+  "facts": [
+    "Assembly",
+    "ServiceBundle",
+    "SoftwarePackage",
+    "Curriculum"
+  ],
+  "operations": [
+    "composition authorized runtime services"
+  ],
+  "invariants": [
+    "Pinned specification slots with quantity cardinality alternatives and ordering",
+    "Complete instance revision sets with immutable swap history",
+    "Effective-time nested conformance and explicit cycle policy",
+    "BOM telecom software and curriculum profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F127-01",
+      "description": "Pinned specification slots with quantity cardinality alternatives and ordering",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-composition.test.ts"
+      ]
+    },
+    {
+      "id": "F127-02",
+      "description": "Complete instance revision sets with immutable swap history",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-composition.test.ts"
+      ]
+    },
+    {
+      "id": "F127-03",
+      "description": "Effective-time nested conformance and explicit cycle policy",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-composition.test.ts"
+      ]
+    },
+    {
+      "id": "F127-04",
+      "description": "BOM telecom software and curriculum profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-composition.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "Assembly",
+    "ServiceBundle",
+    "SoftwarePackage",
+    "Curriculum"
+  ]
+}

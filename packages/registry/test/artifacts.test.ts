@@ -85,3 +85,22 @@ describe("PAR-125: artifact signature and schema verification", () => {
     await expect(registry.pull(fp.digest)).rejects.toThrow(/authority/);
   });
 });
+
+it("signs source maps as separate layers and rejects tampering or mismatched provenance",async()=>{
+  const {verifySourceMap,sourceFor}=await import('../src/source-map.js');
+  const store=new MemoryArtifactStore(),{registry,signer}=await setup(store);
+  const sourceMap=verifySourceMap({version:'forge-source-map/1',package:bundle.ir.package.name,buildHash:bundle.buildHash,compilerVersion:'0.3.0',revision:'commit',sources:{'src/app.forge':{digest:'sha256:'+'a'.repeat(64),byteLength:100}},anchors:{'@acme/commerce/_/Customer#field:name':{file:'src/app.forge',start:10,end:20}},derivations:{}},bundle,'commit');
+  const request={name:bundle.ir.package.name,version:'0.1.0',bundle,sourceMap,signer,provenance:{builder:'ci',commit:'commit',built_at:'2026-09-22'}};
+  const published=await registry.publish(request);
+  expect(published.layers['source-map/1']).toMatch(/^sha256:/);
+  const pulled=await registry.pull(published.digest);
+  expect(pulled.sourceMap).toEqual(sourceMap);
+  expect(sourceFor(pulled.sourceMap!,'@acme/commerce/_/Customer.name')).toEqual({file:'src/app.forge',start:10,end:20});
+  expect(pulled.bundle).not.toHaveProperty('sourceMap');
+  await expect(registry.publish({...request,sourceMap:{...sourceMap,buildHash:'wrong'}})).rejects.toThrow('source map');
+  await expect(registry.publish({...request,sourceMap:{...sourceMap,revision:'wrong'}})).rejects.toThrow('source map');
+  expect(()=>verifySourceMap({...sourceMap,snippet:'secret source'},bundle)).toThrow();
+  expect(()=>verifySourceMap({...sourceMap,anchors:{bad:{file:'src/app.forge',start:1,end:101}}},bundle)).toThrow();
+  store.blobs.set(published.layers['source-map/1']!,JSON.stringify({...sourceMap,revision:'tampered'}));
+  await expect(registry.pull(published.digest)).rejects.toThrow('digest mismatch');
+});

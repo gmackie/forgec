@@ -1,0 +1,10 @@
+flowchart LR
+  RegisterExperiment --> Experiment --> ExpandSweep --> SweepMember
+  SweepMember --> ExecuteMember
+  HpcExecutor <--> ExecuteMember --> AttemptRecorded
+  AttemptRecorded --> RegisterArtifact
+  ArtifactStore --> RegisterArtifact --> ArtifactRegistered
+  Experiment --> CollectExperiment
+  SweepMember --> CollectExperiment
+  AttemptRecorded --> CollectExperiment
+  ArtifactRegistered --> CollectExperiment --> CollectionPublished

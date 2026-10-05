@@ -1,0 +1,119 @@
+import party
+export resource EntitlementScope
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+export resource RightDefinition
+  @tenant
+  @appendOnly
+{
+  id : id
+  namespace : text length 1..128
+  name : text length 1..128
+  unique namespace, name
+  find by namespace, name
+}
+export resource RequirementDefinition
+  @tenant
+  @appendOnly
+{
+  id : id
+  namespace : text length 1..128
+  name : text length 1..128
+  unique namespace, name
+  find by namespace, name
+}
+export resource Entitlement
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  holder : party.Party
+  right : RightDefinition
+  scope : EntitlementScope
+  quantity : decimal<6>? >= 0
+  unit : text? length 1..64
+  validFrom : datetime
+  validUntil : datetime?
+  predecessor : Entitlement? @unique
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    validUntil == null || validUntil > validFrom
+    (quantity == null && unit == null) || (quantity != null && unit != null)
+    predecessor == null || predecessor.holder == holder
+    predecessor == null || predecessor.right == right
+    predecessor == null || predecessor.scope == scope
+    predecessor == null || predecessor.unit == unit
+    predecessor == null || predecessor.validUntil != null
+    predecessor == null || validFrom >= predecessor.validUntil
+  }
+  list by holder, scope
+}
+export enum EntitlementEndKind {
+  Revoked
+  Expired
+}
+export resource EntitlementEnd
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  entitlement : Entitlement @unique
+  kind : EntitlementEndKind
+  effectiveAt : datetime
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    effectiveAt >= entitlement.validFrom
+    kind != EntitlementEndKind.Expired || entitlement.validUntil != null
+    kind != EntitlementEndKind.Expired || effectiveAt == entitlement.validUntil
+  }
+  find by entitlement
+}
+export resource Obligation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  obligatedParty : party.Party
+  requirement : RequirementDefinition
+  scope : EntitlementScope
+  quantity : decimal<6>? >= 0
+  unit : text? length 1..64
+  incurredAt : datetime
+  dueAt : datetime?
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    dueAt == null || dueAt >= incurredAt
+    (quantity == null && unit == null) || (quantity != null && unit != null)
+  }
+  list by obligatedParty, scope
+}
+export enum ObligationEndKind {
+  Discharged
+  Cancelled
+}
+export resource ObligationEnd
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  obligation : Obligation @unique
+  kind : ObligationEndKind
+  effectiveAt : datetime
+  recordedBy : text length 1..128
+  reason : text length 1..500
+  rules {
+    effectiveAt >= obligation.incurredAt
+  }
+  find by obligation
+}

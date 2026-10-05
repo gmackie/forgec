@@ -1,11 +1,11 @@
 {
   "version": "release-manifest/1",
-  "generatedAt": "2026-09-21T10:09:53.688Z",
+  "generatedAt": "2026-10-01T05:12:50.362Z",
   "allRequiredProfilesCertified": true,
   "pins": {
     "compiler": {
       "crate": "forgegraph-cli",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "rustVersion": "1.97",
       "ir": "domain-ir/1",
       "contracts": "contracts/1",
@@ -16,7 +16,7 @@
     },
     "runtime": {
       "package": "@forgegraph/runtime",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "effect": "4.0.0-rc.116",
       "typescript": "^5.9.0",
       "node": "v24.14.0",
@@ -26,7 +26,7 @@
     },
     "interfaces": {
       "package": "@forgegraph/interfaces",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "openapi": "3.1.0",
       "smithy": "2.0",
       "mcp": [
@@ -54,9 +54,31 @@
         "cloudflare": "5.4.0",
         "aws": "5.100.0"
       },
-      "cdk": null,
+      "cdk": "2.270.0",
       "wrangler": "^4.83.0"
     }
+  },
+  "identity": {
+    "buildHash": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+    "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
+    "node": "v24.14.0",
+    "scenarioIds": [
+      "m2.concurrency",
+      "m2.customer-crud",
+      "m2.idempotency",
+      "m2.pagination",
+      "m2.site-references",
+      "m3.changesets",
+      "m3.integrity",
+      "m4.blobs",
+      "m4.csv-import",
+      "m5.messaging",
+      "m6.temporal-hierarchy",
+      "m6.views-projections-cache",
+      "m7.schedules",
+      "m7.workflows",
+      "m8.limits"
+    ]
   },
   "combinations": [
     {
@@ -87,8 +109,8 @@
           "scenarios": 15,
           "steps": 221,
           "realtime": true,
-          "at": "2026-09-21T09:32:37.268Z",
-          "build": "cfc8286aa3a7ea75e84034aa4955a449eeb879e94c685bf7685ab95bae994c3d",
+          "at": "2026-10-01T05:09:13.964Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
           "ref": "conformance/certification/latest.json"
         }
       ]
@@ -121,8 +143,8 @@
           "scenarios": 15,
           "steps": 221,
           "realtime": true,
-          "at": "2026-09-21T09:32:37.268Z",
-          "build": "cfc8286aa3a7ea75e84034aa4955a449eeb879e94c685bf7685ab95bae994c3d",
+          "at": "2026-10-01T05:09:13.964Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
           "ref": "conformance/certification/latest.json"
         }
       ]
@@ -137,29 +159,47 @@
       },
       "status": "certified",
       "features": [
-        "crud",
-        "changesets",
-        "blobs",
-        "imports",
-        "messaging",
-        "views/projections/caches",
-        "workflows",
-        "schedules",
-        "portability",
-        "interfaces",
-        "realtime",
-        "durable restart (PAR-153)"
+        "local scenario semantics",
+        "storage adapter differential"
       ],
+      "scope": {
+        "scenarios": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ],
+        "objectStore": "memory",
+        "transport": "in-process",
+        "purposeSurfaces": false,
+        "excludes": [
+          "hosted object bytes",
+          "HTTP/WebSocket endpoints",
+          "realtime",
+          "durable restart",
+          "production migration"
+        ]
+      },
       "evidence": [
         {
           "suite": "differential",
           "failures": 0,
           "drift": "none",
-          "ref": "conformance/reports/differential.json"
-        },
-        {
-          "suite": "postgres.test.ts contract + node-host.test.ts (15 scenarios over HTTP, restart, PAR-153) + PAR-148 qualification (full contract)",
-          "at": "2026-09-21"
+          "at": "2026-10-01T05:10:35.856Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+          "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
+          "ref": "conformance/certification/differential.json"
         }
       ]
     },
@@ -173,28 +213,47 @@
       },
       "status": "certified",
       "features": [
-        "crud",
-        "changesets",
-        "blobs",
-        "imports",
-        "messaging",
-        "views/projections/caches",
-        "workflows",
-        "schedules",
-        "portability",
-        "interfaces"
+        "local scenario semantics",
+        "storage adapter differential"
       ],
+      "scope": {
+        "scenarios": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ],
+        "objectStore": "memory",
+        "transport": "in-process",
+        "purposeSurfaces": true,
+        "excludes": [
+          "hosted object bytes",
+          "HTTP/WebSocket endpoints",
+          "realtime",
+          "durable restart",
+          "production migration"
+        ]
+      },
       "evidence": [
         {
           "suite": "differential",
           "failures": 0,
           "drift": "none",
-          "ref": "conformance/reports/differential.json"
-        },
-        {
-          "suite": "qualifySqlite (6/6 guarantees) + 15 conformance scenarios through D1Storage",
-          "at": "2026-09-21",
-          "ref": "packages/adapters/test/sqlite.test.ts"
+          "at": "2026-10-01T05:10:35.856Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+          "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
+          "ref": "conformance/certification/differential.json"
         }
       ]
     },
@@ -203,14 +262,47 @@
       "tuple": null,
       "status": "certified",
       "features": [
-        "semantic reference"
+        "local scenario semantics",
+        "storage adapter differential"
       ],
+      "scope": {
+        "scenarios": [
+          "m2.concurrency",
+          "m2.customer-crud",
+          "m2.idempotency",
+          "m2.pagination",
+          "m2.site-references",
+          "m3.changesets",
+          "m3.integrity",
+          "m4.blobs",
+          "m4.csv-import",
+          "m5.messaging",
+          "m6.temporal-hierarchy",
+          "m6.views-projections-cache",
+          "m7.schedules",
+          "m7.workflows",
+          "m8.limits"
+        ],
+        "objectStore": "memory",
+        "transport": "in-process",
+        "purposeSurfaces": true,
+        "excludes": [
+          "hosted object bytes",
+          "HTTP/WebSocket endpoints",
+          "realtime",
+          "durable restart",
+          "production migration"
+        ]
+      },
       "evidence": [
         {
           "suite": "differential",
           "failures": 0,
           "drift": "none",
-          "ref": "conformance/reports/differential.json"
+          "at": "2026-10-01T05:10:35.856Z",
+          "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
+          "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
+          "ref": "conformance/certification/differential.json"
         }
       ]
     }
@@ -244,7 +336,7 @@
   ],
   "benchmarks": {
     "ref": "conformance/benchmarks/governance-overhead.json",
-    "at": "2026-09-21T10:08:20.290Z",
+    "at": "2026-09-23T20:45:41.968Z",
     "note": "per-profile measurements with workload definitions and limits; no cross-machine or parity claim"
   },
   "migration": {

@@ -1,0 +1,33 @@
+import publication
+export resource SoftwareRelease
+  @tenant
+  @appendOnly
+{
+  id : id
+  version : text length 1..128
+  release : publication.Release
+}
+export resource ModelRelease
+  @tenant
+  @appendOnly
+{
+  id : id
+  modelRevision : text length 1..128
+  release : publication.Release
+}
+export resource RecipePublication
+  @tenant
+  @appendOnly
+{
+  id : id
+  recipeCode : text length 1..128
+  release : publication.Release
+}
+export resource DocumentPublication
+  @tenant
+  @appendOnly
+{
+  id : id
+  documentCode : text length 1..128
+  release : publication.Release
+}

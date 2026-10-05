@@ -1,0 +1,17 @@
+// Transport IDs are validated against the business bundle before dispatch.
+shape ControllerState {
+  desiredSequence : integer >= 0
+}
+shape DesiredCommand {
+  sequence : integer >= 1
+  desired : id
+  scope : id
+}
+function ApplyDesired {
+  input DesiredCommand
+  output ControllerState
+}
+actor ReconciliationController keyed by scope {
+  state ControllerState
+  on Desired -> ApplyDesired
+}

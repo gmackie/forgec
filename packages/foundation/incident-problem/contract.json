@@ -1,0 +1,80 @@
+{
+  "slug": "incident-problem",
+  "layer": "system",
+  "issue": 132,
+  "dependencies": [
+    "case-management",
+    "specification",
+    "evidence",
+    "evaluation",
+    "decision",
+    "fulfillment",
+    "change",
+    "service-level",
+    "risk",
+    "assurance"
+  ],
+  "facts": [
+    "ServiceIncident",
+    "SecurityIncident",
+    "QualityIncident",
+    "CustomerProblem"
+  ],
+  "operations": [
+    "incident-problem authorized runtime services"
+  ],
+  "invariants": [
+    "Incident occurrences remain distinct from risks findings and problem candidates",
+    "Typed incident correlation and evidence-backed known problems/workarounds",
+    "Verified remediation and case-bound close/reopen semantics",
+    "Service-level integration and four domain incident profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F132-01",
+      "description": "Incident occurrences remain distinct from risks findings and problem candidates",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-incident-problem.test.ts"
+      ]
+    },
+    {
+      "id": "F132-02",
+      "description": "Typed incident correlation and evidence-backed known problems/workarounds",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-incident-problem.test.ts"
+      ]
+    },
+    {
+      "id": "F132-03",
+      "description": "Verified remediation and case-bound close/reopen semantics",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-incident-problem.test.ts"
+      ]
+    },
+    {
+      "id": "F132-04",
+      "description": "Service-level integration and four domain incident profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-incident-problem.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ServiceIncident",
+    "SecurityIncident",
+    "QualityIncident",
+    "CustomerProblem"
+  ]
+}

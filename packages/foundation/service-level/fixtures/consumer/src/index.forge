@@ -1,0 +1,25 @@
+import service
+export resource SupportFirstResponse
+  @tenant
+  @appendOnly
+{
+  id : id
+  ticket : text length 1..128
+  instance : service.ServiceLevelInstance
+}
+export resource LabTurnaround
+  @tenant
+  @appendOnly
+{
+  id : id
+  sample : text length 1..128
+  instance : service.ServiceLevelInstance
+}
+export resource DeploymentObjective
+  @tenant
+  @appendOnly
+{
+  id : id
+  deployment : text length 1..128
+  instance : service.ServiceLevelInstance
+}

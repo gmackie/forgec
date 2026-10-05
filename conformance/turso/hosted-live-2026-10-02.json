@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "tests": [
+    {
+      "name": "Remote binary round trip and atomic rollback of earlier statement",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent remote journal claims admit one owner and preserve terminal receipts across clients",
+      "status": "passed"
+    },
+    {
+      "name": "Remote atomic absence guards select one winner and isolate tenants",
+      "status": "passed"
+    },
+    {
+      "name": "Remote missing reference is rejected without a partial reservation",
+      "status": "passed"
+    }
+  ],
+  "scope": "Hosted Turso using libSQL executor, publication journal and Foundation D1 SQL planner; no replica/failover certification",
+  "at": "2026-10-02T21:18:38Z",
+  "organization": "gmackie",
+  "credentialReference": "env:TURSO_API_KEY",
+  "sourceSha256": {
+    "scripts/qualify-turso.py": "af4f12f758c46daecd5a36899cfbe98cea730f25ae92d3b7eabcbff5bee1b146",
+    "conformance/turso/qualify.mjs": "3892a96bd6b8ca5f160cbd0a05d3cdb42caa6d8fcdb6c8607fa929fc367cca9c",
+    "packages/runtime/src/adapters/libsql-executor.ts": "789b285235f7d210699f44a964a358f8a8f9ad8a8590c0ee56d18a286bfaaf64",
+    "packages/runtime/src/adapters/artifact-publication-sql.ts": "477e8f152f9523d3e137addbe620a2796c4659e1a6df07d314106b4fa4e66e16",
+    "packages/runtime/src/adapters/d1.ts": "0b11ed6d4dc6eba11d9ac2f07a6b9808a7568fd0ed30b20e3394a81174e10f04"
+  },
+  "cleanup": {
+    "remainingDatabases": 0,
+    "errors": []
+  }
+}

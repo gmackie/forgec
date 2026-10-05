@@ -1,0 +1,61 @@
+{
+  "scope": "Deployed isolated Bob reconciliation operation with native API-key authentication and separate PostgreSQL databases; synthetic seeded runs, no task execution or production rollout",
+  "at": "2026-10-01T05:42:28.921Z",
+  "tests": [
+    {
+      "name": "Unauthenticated caller rejected",
+      "status": "passed",
+      "httpStatus": 401
+    },
+    {
+      "name": "Read-only API key rejected",
+      "status": "passed",
+      "httpStatus": 403
+    },
+    {
+      "name": "Untrusted identity input rejected",
+      "status": "passed",
+      "httpStatus": 400
+    },
+    {
+      "name": "Cross-workspace attempt rejected",
+      "status": "passed",
+      "httpStatus": 403
+    },
+    {
+      "name": "Persisted native Bob run reconciles to real Foundation PostgreSQL",
+      "status": "passed",
+      "httpStatus": 200
+    },
+    {
+      "name": "Explicit retry is idempotent",
+      "status": "passed",
+      "httpStatus": 200
+    },
+    {
+      "name": "Foundation outage is recoverable without exposing provider error",
+      "status": "passed",
+      "httpStatus": 503
+    },
+    {
+      "name": "Restart replay preserves exact Foundation IDs",
+      "status": "passed",
+      "httpStatus": 200
+    },
+    {
+      "name": "Opt-out rollback disables reconciliation",
+      "status": "passed",
+      "httpStatus": 404
+    },
+    {
+      "name": "Restart replay preserves exact Foundation IDs",
+      "status": "passed",
+      "httpStatus": 200
+    },
+    {
+      "name": "Restart replay preserves exact Foundation IDs",
+      "status": "passed",
+      "httpStatus": 200
+    }
+  ]
+}

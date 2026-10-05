@@ -1,0 +1,88 @@
+{
+  "slug": "organization-workforce",
+  "layer": "system",
+  "issue": 66,
+  "dependencies": [
+    "party",
+    "participation",
+    "specification",
+    "qualification",
+    "classification",
+    "place"
+  ],
+  "facts": [
+    "OrganizationUnit hierarchy, pinned PositionSpecification, Position and temporal incumbency."
+  ],
+  "operations": [
+    "Typed creation, query and lifecycle operations for organization-workforce"
+  ],
+  "invariants": [
+    "Availability expectations and Routing/Scheduling adapters follow core; no payroll/compensation substrate.",
+    "Employee/crew/incident command; acyclic units; position != incumbent; qualification requirements; overlapping incumbency policy and race; place/classification refs."
+  ],
+  "acceptance": [
+    {
+      "id": "F66-01",
+      "description": "organization unit hierarchy",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-organization-workforce.test.ts"
+      ]
+    },
+    {
+      "id": "F66-02",
+      "description": "position specification + position model",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-organization-workforce.test.ts"
+      ]
+    },
+    {
+      "id": "F66-03",
+      "description": "incumbency/participation relation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-organization-workforce.test.ts"
+      ]
+    },
+    {
+      "id": "F66-04",
+      "description": "qualification requirements",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-organization-workforce.test.ts"
+      ]
+    },
+    {
+      "id": "F66-05",
+      "description": "place/classification integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-organization-workforce.test.ts"
+      ]
+    },
+    {
+      "id": "F66-06",
+      "description": "fixtures for employee org, production crew and incident-command structure",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-organization-workforce.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "fixtures for employee org, production crew and incident-command structure"
+  ]
+}

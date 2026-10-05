@@ -1,0 +1,123 @@
+import identifiers
+import lineage
+import evaluation
+import decision
+import reconciliation
+export resource ResolutionDomain
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+}
+export resource SourceRecord
+  @tenant
+  @appendOnly
+{
+  id : id
+  domain : ResolutionDomain
+  identifier : identifiers.Identifier @unique
+  node : lineage.LineageNode
+  reconciliation : reconciliation.ReconciliationScope
+}
+export resource CanonicalRecord
+  @tenant
+  @appendOnly
+{
+  id : id
+  domain : ResolutionDomain
+  node : lineage.LineageNode
+  key : text length 1..128
+  unique domain, key
+}
+export resource ResolutionCase
+  @tenant
+  @appendOnly
+{
+  id : id
+  source : SourceRecord
+  candidate : CanonicalRecord
+  evaluation : evaluation.EvaluationRun
+  finish : evaluation.EvaluationFinish
+  decision : decision.DecisionCase
+  desired : reconciliation.DesiredRevision
+  desiredEvent : reconciliation.ReconciliationEvent
+  rules {
+    source.domain == candidate.domain
+    finish.run == evaluation && finish.outcome == "Completed"
+    decision.evaluation == finish
+    evaluation.definition == desired.pin
+    desired.scope == source.reconciliation
+    desiredEvent.desired == desired && desiredEvent.kind == "Desired"
+  }
+}
+export resource ResolutionChoice
+  @tenant
+  @appendOnly
+{
+  id : id
+  resolution : ResolutionCase
+  canonical : CanonicalRecord
+  decision : decision.DecisionCase
+  option : decision.DecisionOption @unique
+  rules {
+    resolution.candidate == canonical
+    resolution.decision == decision
+    option.decisionCase == decision
+  }
+}
+export resource SurvivorshipDecision
+  @tenant
+  @appendOnly
+{
+  id : id
+  resolution : ResolutionCase
+  choice : ResolutionChoice
+  canonical : CanonicalRecord
+  decision : decision.DecisionCase
+  outcome : decision.DecisionOutcome
+  terminal : decision.DecisionEvent
+  option : decision.DecisionOption
+  lineage : lineage.LineageRelation
+  sourceNode : lineage.LineageNode
+  targetNode : lineage.LineageNode
+  source : SourceRecord
+  rules {
+    choice.resolution == resolution && choice.canonical == canonical && choice.option == option
+    resolution.source == source && resolution.candidate == canonical
+    resolution.decision == decision && outcome.decisionCase == decision
+    terminal.decisionCase == decision && terminal.kind == "Finalized" && terminal.outcome == outcome
+    outcome.selected == option && option.decisionCase == decision
+    source.node == sourceNode && canonical.node == targetNode
+    lineage.source == sourceNode && lineage.target == targetNode
+  }
+}
+export enum MappingKind {
+  Initial
+  Merge
+  Unmerge
+}
+export resource CanonicalLink
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  source : SourceRecord
+  ordinal : integer >= 1 <= 128
+  previous : CanonicalLink?
+  canonical : CanonicalRecord
+  from : CanonicalRecord?
+  kind : MappingKind
+  survivorship : SurvivorshipDecision?
+  rules {
+    source.domain == canonical.domain
+    from == null || from.domain == source.domain
+    (previous == null && ordinal == 1 && kind == MappingKind.Initial && from == null && survivorship == null) || (previous != null && previous.source == source && previous.ordinal == ordinal - 1 && from == previous.canonical)
+    kind != MappingKind.Initial || previous == null
+    kind != MappingKind.Merge || (previous != null && canonical != from && survivorship != null && survivorship.source == source && survivorship.canonical == canonical)
+    kind != MappingKind.Unmerge || (previous != null && previous.kind == MappingKind.Merge && canonical == previous.from && survivorship == null)
+  }
+  unique source, ordinal
+  find by source, ordinal
+}

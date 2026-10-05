@@ -1,0 +1,65 @@
+import { Effect } from 'effect';
+import { expect, it } from 'vitest';
+import { foundation, foundationAdapters } from './helpers/foundation.js';
+import { Capacities } from '../src/foundation/capacity.js';
+import { Availability } from '../src/foundation/availability.js';
+import { Qualifications } from '../src/foundation/qualification.js';
+import { Allocations } from '../src/foundation/allocation.js';
+import { Demands } from '../src/foundation/demand.js';
+import { Engine } from '../src/engine.js';
+import { localAuthorizer } from '../src/gatekeeper.js';
+const p = '@forgegraph/foundation/capacity/_/', q = '@forgegraph/foundation/qualification/_/', a = '@forgegraph/foundation/allocation/_/', s = '@forgegraph/foundation/specification/_/';
+const from = '2026-01-02T14:00:00Z', until = '2026-01-02T15:00:00Z';
+for (const adapter of foundationAdapters) it(`${adapter}: typed capacity, qualification, time eligibility, claims and demand gaps`, async () => {
+ const h = await foundation('capacity', adapter, true), run = Effect.runPromise;
+ try {
+  const { engine, ctx, call } = h, service = new Capacities(engine), allocations = new Allocations(engine);
+  const repo = await call(s + 'Repository.create', { key: 'capacity', provider: 'git', locator: 'https://example.test/capacity' });
+  const pin = await call(s + 'SpecificationPin.create', { repository: repo.id, anchor: 'work', revision: 'b'.repeat(40) });
+  const issuer = await call('@forgegraph/foundation/party/_/Party.create', { label: 'Authority' });
+  const subject = await call(q + 'QualificationSubject.create', { label: 'Provider' });
+  const definition = await call(q + 'QualificationDefinition.create', { key: 'capable', pin: pin.id, label: 'Capability requirement' });
+  const requirement = await call(q + 'QualificationRequirement.create', { definition: definition.id, minimumLevel: null });
+  const capability = await call(p + 'CapabilitySpecification.create', { key: 'work', definition: pin.id, requirement: requirement.id, dimension: 'service concurrency', unit: 'slot' });
+  const availability = new Availability(engine), calendar = await run(availability.createCalendar('Provider', ctx));
+  const revision = await run(availability.createRevision({ calendar: String(calendar.id), timezone: 'UTC', weekly: [{ weekday: 5, startMinute: 840, endMinute: 900 }] }, ctx));
+  const provider = await call(p + 'CapabilityProvider.create', { key: 'provider', subject: subject.id, resource: null, capability: capability.id, calendar: revision.id });
+  const pool = await call(a + 'AllocationPool.create', { key: 'capacity', mode: 'fungible', capacity: '10', unit: 'slot' });
+  const input = { provider: provider.id, capability: capability.id, amount: '8.5', unit: 'slot', from, until, place: null, scope: pin.id, pool: pool.id, applicationCount: 1 };
+  const actual = await call(p + 'Capacity.create', { ...input, key: 'actual', basis: 'actual' });
+  await expect(run(service.project(String(actual.id), from, ctx))).rejects.toThrow();
+  const demand = await run(new Demands(engine).record({ key: 'demand', requester: String(issuer.id), specification: String(pin.id), constraints: String(pin.id), origin: 'explicit', quantity: '9', unit: 'slot', from, until, priority: 1, priorityPolicy: String(pin.id), source: 'request:1' }, ctx));
+  const reservation = await call(a + 'AllocationReservation.create', { pool: pool.id, key: 'work', quantity: '9', unit: 'slot', from, until, holdUntil: from });
+  await call(p + 'CapacityDemand.create', { capacity: actual.id, capability: capability.id, ordinal: 1, demand: demand.id, reservation: reservation.id });
+  const unqualified = await run(service.project(String(actual.id), from, ctx));
+  expect(unqualified.available).toBe('0.000000'); expect(unqualified.gap).toBe('9.000000');
+  const award = await run(new Qualifications(engine).award({ subject: String(subject.id), definition: String(definition.id), issuer: String(issuer.id), issuerRecord: '1', issuedAt: '2026-01-01T00:00:00Z' }, ctx));
+  const before = await run(service.project(String(actual.id), from, ctx));
+  expect(before.remaining).toBe('8.500000'); expect(before.gap).toBe('0.500000');
+  await run(allocations.act(String(reservation.id), 'book', ctx));
+  const booked = await run(service.project(String(actual.id), from, ctx));
+  expect(booked.committed).toBe('9.000000'); expect(booked.remaining).toBe('-0.500000'); expect(booked.unapplied).toBe('0.000000'); expect(booked.gap).toBe('0.500000');
+  const planned = await call(p + 'Capacity.create', { ...input, key: 'planned', basis: 'planned', amount: '10', applicationCount: 0 });
+  expect((await run(service.compare(String(planned.id), String(actual.id), from, ctx))).variance).toBe('-1.500000');
+  await expect(run(service.compare(String(actual.id), String(planned.id), from, ctx))).rejects.toThrow();
+  const closed = await call(p + 'Capacity.create', { ...input, key: 'closed', basis: 'actual', from: '2026-01-03T14:00:00Z', until: '2026-01-03T15:00:00Z', applicationCount: 0 });
+  const closedProjection = await run(service.project(String(closed.id), '2026-01-03T14:00:00Z', ctx));
+  expect(closedProjection.qualified).toBe(true); expect(closedProjection.temporallyAvailable).toBe(false); expect(closedProjection.available).toBe('0.000000');
+  const forecast = await call(p + 'Capacity.create', { ...input, key: 'forecast', basis: 'forecast', amount: '0', applicationCount: 0 });
+  expect((await run(service.project(String(forecast.id), from, ctx))).basis).toBe('forecast');
+  for (const [name, field] of [['ManufacturingCellCapacity', 'cell'], ['HospitalServiceCapacity', 'service'], ['CloudComputeCapacity', 'region'], ['NetworkCapacity', 'circuit'], ['FieldServiceCapacity', 'territory']]) {
+   await call('@fixture/capacity-consumer/_/' + name + '.create', { capacity: actual.id, [field!]: name });
+  }
+  await expect(call(p + 'Capacity.create', { ...input, key: 'wrong-unit', basis: 'actual', unit: 'hours' })).rejects.toThrow();
+  await expect(run(service.project(String(actual.id), until, ctx))).rejects.toThrow();
+  await expect(run(service.project(String(actual.id), from, { ...ctx, tenant: 'other' }))).rejects.toThrow();
+  await run(allocations.act(String(reservation.id), 'release', ctx));
+  await run(new Demands(engine).resolve(String(demand.id), 'cancelled', null, '2026-01-01T12:00:00Z', 'Withdrawn', ctx));
+  expect((await run(service.project(String(actual.id), from, ctx))).gap).toBe('0.000000');
+  await run(new Qualifications(engine).revoke(String(award.id), from, 'Expired authorization', ctx));
+  expect((await run(service.project(String(actual.id), from, ctx))).qualified).toBe(false);
+  const guarded = new Engine(engine.model, engine.layer);
+  guarded.gatekeeper.authorizer = localAuthorizer({ policies: engine.model.resources.filter(r => r.id !== p + 'CapacityDemand').map(r => ({ id: r.id, actions: [r.id + '.*'], requires: [], where: [] })), pips: [], epoch: 2, knownObligations: [] });
+  await expect(run(new Capacities(guarded).project(String(actual.id), from, ctx))).rejects.toThrow();
+ } finally { await h.close(); }
+});

@@ -546,7 +546,7 @@ fn views_projections_and_caches_elaborate_and_are_checked() {
             "resource R {\n  id : id\n  g : text\n  n : integer\n}\nprojection P {\n  from R\n  by g\n  max n as biggest\n}\n",
         )],
     );
-    assert_eq!(codes(non_invertible), vec!["W-PROJ-002"]);
+    assert!(codes(non_invertible).is_empty()); // bounded extrema ledger avoids recomputation scans
 }
 
 #[test]
@@ -1261,4 +1261,89 @@ fn workflow_arguments_are_type_checked_against_the_callee_contract() {
             .iter()
             .any(|d| d.code == "E-WF-008")
     );
+}
+
+#[test]
+fn multi_hop_reference_rules_fail_closed() {
+    for expression in [
+        "replacement.code.domain == code.domain",
+        "code.ordinal > replacement.code.ordinal",
+    ] {
+        let source = format!(
+            r#"
+resource Domain {{
+ id : id
+}}
+resource Code {{
+ id : id
+ domain : Domain
+ ordinal : integer
+}}
+resource Revision {{
+ id : id
+ code : Code
+}}
+resource Link {{
+ id : id
+ code : Code
+ replacement : Revision
+ rules {{ {expression} }}
+}}
+"#
+        );
+        let out = compile(
+            &inline("@test/reference-path", &[("src/index.forge", &source)]),
+            &[],
+        );
+        assert!(
+            out.diagnostics.iter().any(|d| d.code == "E-EXPR-003"),
+            "{:#?}",
+            out.diagnostics
+        );
+        assert!(out.ir.is_none());
+    }
+}
+
+#[test]
+fn direct_reference_rules_still_compile() {
+    let source = r#"
+resource Code {
+ id : id
+ ordinal : integer
+}
+resource Link {
+ id : id
+ code : Code
+ prior : Code
+ rules { code.ordinal > prior.ordinal }
+}
+"#;
+    let out = compile(
+        &inline("@test/direct-reference", &[("src/index.forge", source)]),
+        &[],
+    );
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    assert!(out.ir.is_some());
+}
+
+#[test]
+fn workflow_choice_bindings_do_not_escape_or_leak_to_other_branch() {
+    let prefix = "shape Payload { value : text }\nfunction Echo { input Payload\n output Payload }\nworkflow Flow { input Payload\n output Payload\n version 1\n";
+    for body in [
+        "if input.value == \"yes\" { step branch = Echo(value: input.value) } else { step other = Echo(value: branch.value) }\nreturn input\n}",
+        "if input.value == \"yes\" { step branch = Echo(value: input.value) }\nreturn branch\n}",
+    ] {
+        let result = compile(
+            &inline(
+                "@test/branch-scope",
+                &[("flow.forge", &format!("{prefix}{body}"))],
+            ),
+            &[],
+        );
+        assert!(
+            result.diagnostics.iter().any(|d| d.code == "E-SYM-001"),
+            "{}",
+            result.render()
+        );
+    }
 }

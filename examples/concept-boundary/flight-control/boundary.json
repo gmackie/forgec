@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "slug": "flight-control",
+  "outcomes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "coordination",
+      "description": "Envelope approval, revision identity, sequence correlation, mode ownership and decision provenance",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/flight-control/_/FlightEnvelope",
+        "@boundary/flight-control/_/FlightMode",
+        "@boundary/flight-control/_/ReactToFlightTick",
+        "@boundary/flight-control/_/ControlDecision"
+      ],
+      "pressures": [
+        "sensor-actuator"
+      ],
+      "rationale": "Typed contracts and one logical producer express discrete responsibility without prescribing the control implementation."
+    },
+    {
+      "id": "reaction-budget",
+      "description": "Periodic release and reaction deadline change acceptable system behavior",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/flight-control/_/ReactToFlightTick"
+      ],
+      "pressures": [
+        "fixed-period",
+        "deadlines",
+        "wcet"
+      ],
+      "rationale": "Activation admits a reaction but does not constrain clock, release jitter, sample age or completion time."
+    },
+    {
+      "id": "safe-modes",
+      "description": "Explicit inhibited/startup behavior and nonautomatic recovery",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/flight-control/_/ReactToFlightTick",
+        "@boundary/flight-control/_/FlightMode"
+      ],
+      "pressures": [
+        "modes",
+        "fail-safe"
+      ],
+      "rationale": "Modes can be domain data; hazard-specific transition and recovery obligations need contracts beyond a graph."
+    },
+    {
+      "id": "execution-strategy",
+      "description": "A deterministic synchronous controller implementation realizes ReactToFlightTick; an RTOS adapter releases ticks and latches outputs. The graph does not supply synchronous semantics.",
+      "layer": "L1",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/flight-control/_/ReactToFlightTick"
+      ],
+      "pressures": [
+        "deterministic-execution",
+        "platform-mapping"
+      ],
+      "rationale": "A thread, synchronous node or PLC task is a realization of the same responsibility; the mechanism alone does not discharge requirements."
+    },
+    {
+      "id": "deployment",
+      "description": "AADL analysis maps the controller, sensor buses and actuator driver to processors and connections; replicas implement one logical owner. Core affinity and network scheduling are L2 until an explicit independence requirement makes them contractual.",
+      "layer": "L2",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/flight-control/_/ReactToFlightTick",
+        "@boundary/flight-control/_/AirframeIO"
+      ],
+      "pressures": [
+        "hardware-placement",
+        "platform-mapping"
+      ],
+      "rationale": "Physical mapping and latency budgets need deployment-specific evidence, separate from logical ownership."
+    },
+    {
+      "id": "specialized-semantics",
+      "description": "Sensor-fusion equations, stability margins, actuator dynamics, synchronous control-law causality and voting failure assumptions",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/flight-control/_/ReactToFlightTick",
+        "@boundary/flight-control/_/AirframeIO"
+      ],
+      "pressures": [
+        "formal-verification",
+        "simulation-artifacts"
+      ],
+      "rationale": "A matching typed interface cannot define the external tool model of computation, prove safety, or solve physical equations."
+    }
+  ],
+  "facets": [
+    {
+      "id": "reaction-budget",
+      "kind": "timing",
+      "status": "proposed",
+      "targets": [
+        "@boundary/flight-control/_/ReactToFlightTick"
+      ],
+      "parameters": {
+        "periodUs": 10000,
+        "deadlineUs": 5000,
+        "wcetBudgetUs": 2000
+      },
+      "meaning": "Illustrative release-to-command requirement measured on one monotonic clock; period changes require domain review.",
+      "obligations": [
+        "Offline inequality validation is not a WCET proof, schedulability analysis, timer implementation or runtime safety proof.",
+        "Specify release jitter, clock error, sample-age bound, execution platform and interrupt/bus interference before analysis.",
+        "Deadline is measured from scheduled release to command acceptance at the I/O boundary, not merely process return; include communication delay.",
+        "Missed releases and expired outputs require independently assessed monitoring; do not queue unbounded catch-up reactions."
+      ]
+    },
+    {
+      "id": "safe-modes",
+      "kind": "mode",
+      "status": "proposed",
+      "targets": [
+        "@boundary/flight-control/_/ReactToFlightTick",
+        "@boundary/flight-control/_/FlightMode"
+      ],
+      "parameters": {
+        "modes": [
+          "disengaged",
+          "armed",
+          "tracking",
+          "degraded"
+        ],
+        "restartMode": "disengaged",
+        "automaticRecovery": false
+      },
+      "meaning": "Modes and reset semantics remain domain vocabulary; this sidecar proposes obligations, not executable transition logic.",
+      "obligations": [
+        "Define transition priority and handling of simultaneous reset/fault inputs in the specialized model.",
+        "Assess safe outputs and monitor independence against domain hazards; neither naming a mode nor parsing this file proves safety."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "A deterministic synchronous controller implementation realizes ReactToFlightTick; an RTOS adapter releases ticks and latches outputs. The graph does not supply synchronous semantics.",
+    "placement": "AADL analysis maps the controller, sensor buses and actuator driver to processors and connections; replicas implement one logical owner. Core affinity and network scheduling are L2 until an explicit independence requirement makes them contractual.",
+    "limitations": [
+      "No executable control law, hardware binding or analyzer result is included.",
+      "Single logical owner does not provide physical redundancy, mutual exclusion or exactly-once actuation.",
+      "Policy and clinical/operator authorization are implementation prerequisites, not asserted by these policy-free interface sketches."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "controller-model",
+      "path": "specialized-model/controller.scade-sketch.txt",
+      "format": "SCADE interface/pseudocode sketch",
+      "status": "sketch",
+      "process": "@boundary/flight-control/_/ReactToFlightTick",
+      "inputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#input:sample",
+        "@boundary/flight-control/_/ReactToFlightTick#input:approval",
+        "@boundary/flight-control/_/ReactToFlightTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#output:state",
+        "@boundary/flight-control/_/ReactToFlightTick#output:decision",
+        "@boundary/flight-control/_/ReactToFlightTick#output:command"
+      ],
+      "claim": "Interface and explanatory pseudocode only; no control analyzer, code generator or hardware test executed."
+    },
+    {
+      "id": "deployment-model",
+      "path": "specialized-model/deployment.aadl-sketch.txt",
+      "format": "AADL-inspired deployment/analysis sketch",
+      "status": "sketch",
+      "process": "@boundary/flight-control/_/ReactToFlightTick",
+      "inputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#input:sample",
+        "@boundary/flight-control/_/ReactToFlightTick#input:approval",
+        "@boundary/flight-control/_/ReactToFlightTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#output:state",
+        "@boundary/flight-control/_/ReactToFlightTick#output:decision",
+        "@boundary/flight-control/_/ReactToFlightTick#output:command"
+      ],
+      "claim": "Analysis inputs and mapping questions only; not an executable AADL model or schedulability result."
+    }
+  ],
+  "sources": [
+    {
+      "title": "SEI: Architecture Analysis and Design Language (AADL)",
+      "url": "https://www.sei.cmu.edu/projects/architecture-analysis-and-design-language-aadl/",
+      "supports": "Fetched 2026-09-23. Architectural component categories include processors, devices and threads; analysis of embedded-system quality attributes is distinct from a typed responsibility graph."
+    },
+    {
+      "title": "AUTOSAR Classic Platform",
+      "url": "https://www.autosar.org/standards/classic-platform",
+      "supports": "Fetched with curl 2026-09-23. Distinguishes application, runtime environment and basic software; mostly hardware-independent application components communicate through RTE. Used as a separation analogy, not an avionics/medical compliance requirement."
+    },
+    {
+      "title": "Ansys SCADE Suite official product documentation",
+      "url": "https://ansys.synopsys.com/products/embedded-software/ansys-scade-suite",
+      "supports": "Fetched 2026-09-23 after redirect from ansys.com. Describes model analyses and architecture/design synchronization; its qualified-generation workflow does not certify this unexecuted sketch or discharge platform/physical assumptions."
+    },
+    {
+      "title": "MathWorks: Types of Sample Time",
+      "url": "https://www.mathworks.com/help/simulink/ug/types-of-sample-time.html",
+      "supports": "Official documentation URL; retrieval returned HTTP403 on 2026-09-23. Comparison is limited to established distinction between sampled and continuous models; no detailed solver guarantees or reviewed page quotations claimed."
+    },
+    {
+      "title": "OMG SysML version 2.0 specification",
+      "url": "https://www.omg.org/spec/SysML/2.0/About-SysML",
+      "supports": "Fetched 2026-09-23. Describes system structure/behavior and analysis/verification cases; supports keeping requirement-to-verification traceability separate from execution proof."
+    }
+  ]
+}

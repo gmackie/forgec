@@ -1,0 +1,17 @@
+resource Encounter { id : id }
+resource LabResult { id : id }
+resource MedicationOrder { id : id }
+resource Patient { id : id }
+resource Transfer { id : id }
+function EmergencyRead @http(POST, "/realization-a/EmergencyRead") { input Encounter.Record
+ output Encounter.Record }
+function MaintainEncounter @http(POST, "/realization-a/MaintainEncounter") { input Encounter.Record
+ output Encounter.Record }
+function PrescribeMedication @http(POST, "/realization-a/PrescribeMedication") { input Encounter.Record
+ output MedicationOrder.Record }
+function ReceiveLab @http(POST, "/realization-a/ReceiveLab") { input Encounter.Record
+ output LabResult.Record }
+function RegisterPatient @http(POST, "/realization-a/RegisterPatient") { input Encounter.Record
+ output Patient.Record }
+function TransferPatient @http(POST, "/realization-a/TransferPatient") { input Encounter.Record
+ output Transfer.Record }

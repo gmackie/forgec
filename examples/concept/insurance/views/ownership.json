@@ -1,0 +1,91 @@
+{
+  "nodes": {
+    "@corpus/insurance/_/AssessClaim": "process",
+    "@corpus/insurance/_/Claim": "entity",
+    "@corpus/insurance/_/ClaimApproved": "fact",
+    "@corpus/insurance/_/ClaimDecision": "entity",
+    "@corpus/insurance/_/ClaimReopened": "fact",
+    "@corpus/insurance/_/Coverage": "entity",
+    "@corpus/insurance/_/Evidence": "entity",
+    "@corpus/insurance/_/EvidenceReceived": "fact",
+    "@corpus/insurance/_/FraudSignalRaised": "fact",
+    "@corpus/insurance/_/LossReported": "fact",
+    "@corpus/insurance/_/MaintainClaim": "process",
+    "@corpus/insurance/_/MaintainCoverage": "process",
+    "@corpus/insurance/_/PayClaim": "process",
+    "@corpus/insurance/_/PaymentIssued": "fact",
+    "@corpus/insurance/_/Payout": "entity",
+    "@corpus/insurance/_/ReceiveEvidence": "process",
+    "@corpus/insurance/_/ReopenClaim": "process",
+    "@corpus/insurance/_/ReportLoss": "process",
+    "@corpus/insurance/_/ScreenFraud": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/ClaimApproved",
+      "port": "@corpus/insurance/_/AssessClaim#output:ClaimApproved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/ClaimDecision",
+      "port": "@corpus/insurance/_/AssessClaim#output:ClaimDecision",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/MaintainClaim",
+      "to": "@corpus/insurance/_/Claim",
+      "port": "@corpus/insurance/_/MaintainClaim#output:Claim",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/MaintainCoverage",
+      "to": "@corpus/insurance/_/Coverage",
+      "port": "@corpus/insurance/_/MaintainCoverage#output:Coverage",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/PayClaim",
+      "to": "@corpus/insurance/_/PaymentIssued",
+      "port": "@corpus/insurance/_/PayClaim#output:PaymentIssued",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/PayClaim",
+      "to": "@corpus/insurance/_/Payout",
+      "port": "@corpus/insurance/_/PayClaim#output:Payout",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/ReceiveEvidence",
+      "to": "@corpus/insurance/_/Evidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#output:Evidence",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/ReceiveEvidence",
+      "to": "@corpus/insurance/_/EvidenceReceived",
+      "port": "@corpus/insurance/_/ReceiveEvidence#output:EvidenceReceived",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/ReopenClaim",
+      "to": "@corpus/insurance/_/ClaimReopened",
+      "port": "@corpus/insurance/_/ReopenClaim#output:ClaimReopened",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/ReportLoss",
+      "to": "@corpus/insurance/_/LossReported",
+      "port": "@corpus/insurance/_/ReportLoss#output:LossReported",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/ScreenFraud",
+      "to": "@corpus/insurance/_/FraudSignalRaised",
+      "port": "@corpus/insurance/_/ScreenFraud#output:FraudSignalRaised",
+      "kind": "emit"
+    }
+  ]
+}

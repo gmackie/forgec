@@ -1,0 +1,19 @@
+[package]
+name = "@fixture/collections-dunning-consumer"
+version = "0.1.0"
+edition = "2027"
+[dependencies.collections-dunning]
+path = "../.."
+deploy = true
+[dependencies.settlement]
+path = "../../../settlement"
+deploy = true
+[dependencies.fulfillment]
+path = "../../../fulfillment"
+deploy = true
+[dependencies.party]
+path = "../../../party"
+deploy = true
+[dependencies.entitlement]
+path = "../../../entitlement"
+deploy = true

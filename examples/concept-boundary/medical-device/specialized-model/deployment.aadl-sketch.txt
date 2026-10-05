@@ -1,0 +1,9 @@
+NON-EXECUTABLE AADL-INSPIRED ANALYSIS SKETCH
+Logical owner: @boundary/medical-device/_/ReactToTherapyTick
+PumpIO acquisition -> reaction task -> command acceptance
+period = 5000 us; end-to-end deadline = 2000 us
+illustrative task WCET budget = 800 us (unmeasured, unproved)
+Bind acquisition, execution and driver to candidate processors/buses.
+Require response-time and end-to-end analysis including release jitter, blocking, preemption, communication and I/O latching.
+Require independent missed-release monitoring and measured platform assumptions.
+No processor, scheduling protocol, execution-time measurement or AADL analyzer result is provided.

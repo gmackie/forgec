@@ -1,0 +1,230 @@
+
+> @cloudflare/forge@0.1.0 test /Volumes/dev/.worktrees/cf_forge/investigation/packages/forge
+> node --import tsx --test openapi-resolver.test.ts overlay-source.test.ts shared/fern-openapi-compat.test.ts shared/sdk-method-names.test.ts
+
+TAP version 13
+# Subtest: parameter metadata separates resolved type from schema identity
+ok 1 - parameter metadata separates resolved type from schema identity
+  ---
+  duration_ms: 3.554542
+  type: 'test'
+  ...
+# Subtest: path-item parameters are inherited and operation parameters override them
+ok 2 - path-item parameters are inherited and operation parameters override them
+  ---
+  duration_ms: 0.306333
+  type: 'test'
+  ...
+# Subtest: object array body params are exposed as JSON-valued array parameters
+ok 3 - object array body params are exposed as JSON-valued array parameters
+  ---
+  duration_ms: 0.341
+  type: 'test'
+  ...
+# Subtest: object array body params resolve refs only for arrays directly under the body root
+ok 4 - object array body params resolve refs only for arrays directly under the body root
+  ---
+  duration_ms: 0.427
+  type: 'test'
+  ...
+# Subtest: object array body params are exposed from root oneOf variants
+ok 5 - object array body params are exposed from root oneOf variants
+  ---
+  duration_ms: 0.493
+  type: 'test'
+  ...
+# Subtest: operation descriptions fall back to OpenAPI summaries
+ok 6 - operation descriptions fall back to OpenAPI summaries
+  ---
+  duration_ms: 0.212
+  type: 'test'
+  ...
+# Subtest: oneOf merges enum values from referenced properties in every variant
+ok 7 - oneOf merges enum values from referenced properties in every variant
+  ---
+  duration_ms: 0.3815
+  type: 'test'
+  ...
+# Subtest: x-fern-parameter-name sets sdkName on path, query, header, and referenced parameters
+ok 8 - x-fern-parameter-name sets sdkName on path, query, header, and referenced parameters
+  ---
+  duration_ms: 0.185125
+  type: 'test'
+  ...
+# Subtest: x-fern-property-name renames body flag segments at every depth
+ok 9 - x-fern-property-name renames body flag segments at every depth
+  ---
+  duration_ms: 0.358125
+  type: 'test'
+  ...
+# Subtest: x-fern-property-name survives oneOf variant merges and renames conflicts
+ok 10 - x-fern-property-name survives oneOf variant merges and renames conflicts
+  ---
+  duration_ms: 0.702833
+  type: 'test'
+  ...
+# Subtest: filters unavailable operations from overlays applied to a public OpenAPI
+ok 11 - filters unavailable operations from overlays applied to a public OpenAPI
+  ---
+  duration_ms: 1.55825
+  type: 'test'
+  ...
+# Subtest: drops command overlays that have no operations in the source OpenAPI
+ok 12 - drops command overlays that have no operations in the source OpenAPI
+  ---
+  duration_ms: 0.074333
+  type: 'test'
+  ...
+# Subtest: external overlay resolution does not require internal description coverage
+ok 13 - external overlay resolution does not require internal description coverage
+  ---
+  duration_ms: 1.819625
+  type: 'test'
+  ...
+# Subtest: external overlay output does not recreate unavailable command groups
+ok 14 - external overlay output does not recreate unavailable command groups
+  ---
+  duration_ms: 1.604667
+  type: 'test'
+  ...
+# Subtest: loads command and group descriptions from the OpenAPI command catalogue
+ok 15 - loads command and group descriptions from the OpenAPI command catalogue
+  ---
+  duration_ms: 0.290041
+  type: 'test'
+  ...
+# Subtest: loads nested and dotted group metadata from the OpenAPI command catalogue
+ok 16 - loads nested and dotted group metadata from the OpenAPI command catalogue
+  ---
+  duration_ms: 7.905291
+  type: 'test'
+  ...
+# Subtest: writes command and group metadata to x-forge-commands in the overlaid OpenAPI
+ok 17 - writes command and group metadata to x-forge-commands in the overlaid OpenAPI
+  ---
+  duration_ms: 1.047709
+  type: 'test'
+  ...
+# Subtest: keeps x-forge-params as declared
+ok 18 - keeps x-forge-params as declared
+  ---
+  duration_ms: 0.545042
+  type: 'test'
+  ...
+# Subtest: applies root patches and operation metadata directly
+ok 19 - applies root patches and operation metadata directly
+  ---
+  duration_ms: 0.761583
+  type: 'test'
+  ...
+# Subtest: rejects a root patch that destroys the OpenAPI document shape
+ok 20 - rejects a root patch that destroys the OpenAPI document shape
+  ---
+  duration_ms: 0.810208
+  type: 'test'
+  ...
+# Subtest: root patches replace scalar arrays instead of appending them
+ok 21 - root patches replace scalar arrays instead of appending them
+  ---
+  duration_ms: 0.2885
+  type: 'test'
+  ...
+# Subtest: rejects invalid method lifecycle metadata on the OpenAPI-only path
+ok 22 - rejects invalid method lifecycle metadata on the OpenAPI-only path
+  ---
+  duration_ms: 0.130167
+  type: 'test'
+  ...
+# Subtest: drops a referenced example incompatible with an anyOf literal
+ok 23 - drops a referenced example incompatible with an anyOf literal
+  ---
+  duration_ms: 1.270417
+  type: 'test'
+  ...
+# Subtest: leaves semantically different anyOf examples unchanged
+ok 24 - leaves semantically different anyOf examples unchanged
+  ---
+  duration_ms: 0.106542
+  type: 'test'
+  ...
+# Subtest: incompatible example repair is idempotent
+ok 25 - incompatible example repair is idempotent
+  ---
+  duration_ms: 0.1215
+  type: 'test'
+  ...
+# Subtest: distributes safe oneOf common properties into every object branch
+ok 26 - distributes safe oneOf common properties into every object branch
+  ---
+  duration_ms: 0.433625
+  type: 'test'
+  ...
+# Subtest: leaves constrained oneOf property intersections unchanged
+ok 27 - leaves constrained oneOf property intersections unchanged
+  ---
+  duration_ms: 0.085167
+  type: 'test'
+  ...
+# Subtest: undiscriminated oneOf repair is idempotent
+ok 28 - undiscriminated oneOf repair is idempotent
+  ---
+  duration_ms: 0.138292
+  type: 'test'
+  ...
+# Subtest: extracts map-of-array values without dropping nested constraints
+ok 29 - extracts map-of-array values without dropping nested constraints
+  ---
+  duration_ms: 0.416916
+  type: 'test'
+  ...
+# Subtest: map-of-array repair is idempotent
+ok 30 - map-of-array repair is idempotent
+  ---
+  duration_ms: 0.158459
+  type: 'test'
+  ...
+# Subtest: renames every member of a method collision from its operationId
+ok 31 - renames every member of a method collision from its operationId
+  ---
+  duration_ms: 12.485583
+  type: 'test'
+  ...
+# Subtest: does not combine different groups or ignored operations
+ok 32 - does not combine different groups or ignored operations
+  ---
+  duration_ms: 0.091958
+  type: 'test'
+  ...
+# Subtest: gives aliases of the same operation deterministic distinct names
+ok 33 - gives aliases of the same operation deterministic distinct names
+  ---
+  duration_ms: 0.145208
+  type: 'test'
+  ...
+# Subtest: avoids an existing method when a collision-derived name would reuse it
+ok 34 - avoids an existing method when a collision-derived name would reuse it
+  ---
+  duration_ms: 0.369834
+  type: 'test'
+  ...
+# Subtest: repairs names that collide only after Fern normalization
+ok 35 - repairs names that collide only after Fern normalization
+  ---
+  duration_ms: 0.06525
+  type: 'test'
+  ...
+# Subtest: hashes operationIds that normalize to the same candidate
+ok 36 - hashes operationIds that normalize to the same candidate
+  ---
+  duration_ms: 0.224375
+  type: 'test'
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 36
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 527.249708

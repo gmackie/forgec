@@ -1,0 +1,21 @@
+import maintenance
+export resource IndustrialMaintenance @tenant @appendOnly {
+ id : id
+ order : maintenance.MaintenanceWorkOrder @unique
+ machine : text length 1..128
+}
+export resource FleetMaintenance @tenant @appendOnly {
+ id : id
+ order : maintenance.MaintenanceWorkOrder @unique
+ vehicle : text length 1..128
+}
+export resource MedicalMaintenance @tenant @appendOnly {
+ id : id
+ order : maintenance.MaintenanceWorkOrder @unique
+ device : text length 1..128
+}
+export resource NetworkMaintenance @tenant @appendOnly {
+ id : id
+ order : maintenance.MaintenanceWorkOrder @unique
+ service : text length 1..128
+}

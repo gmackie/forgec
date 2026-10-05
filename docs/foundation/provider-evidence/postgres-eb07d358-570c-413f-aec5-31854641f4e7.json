@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-adjudication-invariants/1",
+  "coverageCriteria": [
+    "F44-STORE"
+  ],
+  "status": "passing",
+  "runId": "eb07d358-570c-413f-aec5-31854641f4e7",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+  "sourceFingerprint": "7b04c5a082a9f3e45e66100ddbfa668523d5279704b2d1499433314c6a9a257c",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "ddb30b8a0f9f7972fc521a0a27b35e5b0039ab53f241d6095a972a2d8af900ce"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "7f3aef4782ab091e1eb7cb5700a792a185539ac7784969561972f7208e53dc60"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "6364e7be653079521abd6896082c60e42be7870793470a5318c2f45e23e903c6"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous item timestamps cannot prove prior Decision binding",
+    "hosted: determination, source reasons, exact idempotent settlement and three domains",
+    "hosted: fulfillment and explanation intents remain distinct from execution",
+    "hosted: rejected Decision cannot authorize a positive award or settlement"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T04:46:17.700Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous item timestamps cannot prove prior Decision binding",
+    "hosted: determination, source reasons, exact idempotent settlement and three domains",
+    "hosted: fulfillment and explanation intents remain distinct from execution",
+    "hosted: rejected Decision cannot authorize a positive award or settlement"
+  ],
+  "testReportSha256": "48ee96f66996959719af39ab86a0dc77daf5a70cb5d632707c1ade69f1ab6121",
+  "identity": {
+    "provider": "postgres",
+    "runId": "eb07d358-570c-413f-aec5-31854641f4e7",
+    "tenantPrefix": "foundation-cert-eb07d358-570c-413f-aec5-31854641f4e7",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

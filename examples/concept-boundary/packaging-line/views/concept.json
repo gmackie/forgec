@@ -1,0 +1,74 @@
+{
+  "nodes": {
+    "@boundary/packaging-line/_/ActuatorIntent": "reference",
+    "@boundary/packaging-line/_/ApproveRecipe": "process",
+    "@boundary/packaging-line/_/ApprovedRecipe": "entity",
+    "@boundary/packaging-line/_/LineIO": "external",
+    "@boundary/packaging-line/_/LineMode": "entity",
+    "@boundary/packaging-line/_/ReactToScan": "process",
+    "@boundary/packaging-line/_/ScanDecision": "fact",
+    "@boundary/packaging-line/_/ScanImage": "reference"
+  },
+  "edges": [
+    {
+      "from": "@boundary/packaging-line/_/ApproveRecipe",
+      "to": "@boundary/packaging-line/_/ApprovedRecipe",
+      "port": "@boundary/packaging-line/_/ApproveRecipe#output:approval",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/packaging-line/_/ApprovedRecipe",
+      "to": "@boundary/packaging-line/_/ReactToScan",
+      "port": "@boundary/packaging-line/_/ReactToScan#input:approval",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/packaging-line/_/LineIO",
+      "to": "@boundary/packaging-line/_/ReactToScan",
+      "port": "@boundary/packaging-line/_/ReactToScan#activation:tick",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/packaging-line/_/LineIO",
+      "to": "@boundary/packaging-line/_/ReactToScan",
+      "port": "@boundary/packaging-line/_/ReactToScan#input:sample",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/packaging-line/_/LineMode",
+      "to": "@boundary/packaging-line/_/ReactToScan",
+      "port": "@boundary/packaging-line/_/ReactToScan#input:previous",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/packaging-line/_/ReactToScan",
+      "to": "@boundary/packaging-line/_/ActuatorIntent",
+      "port": "@boundary/packaging-line/_/ReactToScan#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/packaging-line/_/ReactToScan",
+      "to": "@boundary/packaging-line/_/LineIO",
+      "port": "@boundary/packaging-line/_/ReactToScan#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/packaging-line/_/ReactToScan",
+      "to": "@boundary/packaging-line/_/LineMode",
+      "port": "@boundary/packaging-line/_/ReactToScan#output:state",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/packaging-line/_/ReactToScan",
+      "to": "@boundary/packaging-line/_/ScanDecision",
+      "port": "@boundary/packaging-line/_/ReactToScan#output:decision",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/packaging-line/_/ScanImage",
+      "to": "@boundary/packaging-line/_/ReactToScan",
+      "port": "@boundary/packaging-line/_/ReactToScan#input:sample",
+      "kind": "input"
+    }
+  ]
+}

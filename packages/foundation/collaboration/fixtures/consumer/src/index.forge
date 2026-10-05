@@ -1,0 +1,22 @@
+import collaboration
+export resource KanBangerIssue
+  @tenant
+  @facet(collaboration.Discussable)
+{
+  id : id
+  label : text length 1..200
+}
+export resource ForgeGraphDeployment
+  @tenant
+  @facet(collaboration.Discussable)
+{
+  id : id
+  label : text length 1..200
+}
+export resource LevelForgeCandidate
+  @tenant
+  @facet(collaboration.Discussable)
+{
+  id : id
+  label : text length 1..200
+}

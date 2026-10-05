@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-assurance-invariants/1",
+  "coverageCriteria": [
+    "F40-STORE"
+  ],
+  "status": "passing",
+  "runId": "56ab04b1-d677-4141-8bf5-19e486e2ab42",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "70ff7aef191febad9063cb56f4bf431747886ed9c0f7a4850001d40205798269",
+  "sourceFingerprint": "d226c9c0a92598b09a5ed36ceb1a17268060bbe19634be0ba0f77588bdc02714",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "cbe4807a55afc45ad1bfc276b7019f33e4a4177f5cd7d911008a4a93b1522326"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "857f72a34a72ffdadcfbe726fc56fe3d1fda7067eb009536a011259e2268e2b5"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "06ba4d194dc6c6705636f48bdeb7d685a8dc3b866ce5adfb00b27b346b572702"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: findings, dispositions, corrective work and pinned attestations retain separate history"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T22:42:02.531Z",
+  "passedTraces": [
+    "hosted: findings, dispositions, corrective work and pinned attestations retain separate history"
+  ],
+  "testReportSha256": "3e3859529ef8a53375a35ac202b7e55c26df8502aa109a085999455fefa108b6",
+  "identity": {
+    "provider": "d1",
+    "runId": "56ab04b1-d677-4141-8bf5-19e486e2ab42",
+    "tenantPrefix": "foundation-cert-56ab04b1-d677-4141-8bf5-19e486e2ab42",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "cbe4807a55afc45ad1bfc276b7019f33e4a4177f5cd7d911008a4a93b1522326",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "ORD"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

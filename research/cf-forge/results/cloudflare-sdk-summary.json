@@ -1,0 +1,36 @@
+{
+  "sourceBytes": 154135,
+  "files": 136,
+  "map": {
+    "dns-records-for-a-zone-create-dns-record": {
+      "accessor": [
+        "dns",
+        "records"
+      ],
+      "method": "create",
+      "httpMethod": "POST",
+      "path": "/zones/{zone_id}/dns_records",
+      "requestType": "CreateRecordsRequest",
+      "responseType": "DnsRecordsDnsRecordResponse",
+      "requestBodyProperty": "body",
+      "requiredRequestProperties": [
+        "body",
+        "zone_id"
+      ]
+    },
+    "dns-records-for-a-zone-list-dns-records": {
+      "accessor": [
+        "dns",
+        "records"
+      ],
+      "method": "list",
+      "httpMethod": "GET",
+      "path": "/zones/{zone_id}/dns_records",
+      "requestType": "ListRecordsRequest",
+      "responseType": "ListRecordsResponse",
+      "requiredRequestProperties": [
+        "zone_id"
+      ]
+    }
+  }
+}

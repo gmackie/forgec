@@ -1,0 +1,13 @@
+flowchart TB
+  c0["validation-provenance: L0 (A)"]
+  ValidatePipeline -.-> c0
+  RecordPipelineValidation -.-> c0
+  PipelineValidation -.-> c0
+  c1["stream-budget: L0-facet (B)"]
+  ValidatePipeline -.-> c1
+  c2["clocked-execution: external (C)"]
+  HDLToolchain -.-> c2
+  c3["dataflow-schedule: L1 (C)"]
+  HDLToolchain -.-> c3
+  c4["clock-domain-crossing: L2 (C)"]
+  HDLToolchain -.-> c4

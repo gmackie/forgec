@@ -1,0 +1,26 @@
+import inventory
+export resource WarehouseStock @tenant @appendOnly {
+ id : id
+ item : inventory.StockItem @unique
+ sku : text length 1..128
+}
+export resource ManufacturingStock @tenant @appendOnly {
+ id : id
+ item : inventory.StockItem @unique
+ material : text length 1..128
+}
+export resource ClinicalStock @tenant @appendOnly {
+ id : id
+ item : inventory.StockItem @unique
+ product : text length 1..128
+}
+export resource ITStock @tenant @appendOnly {
+ id : id
+ item : inventory.StockItem @unique
+ model : text length 1..128
+}
+export resource VisibilityEvent @tenant @appendOnly {
+ id : id
+ visibility : inventory.InventoryVisibility @unique
+ epcisReference : text length 1..200
+}

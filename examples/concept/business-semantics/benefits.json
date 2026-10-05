@@ -1,0 +1,642 @@
+{
+  "version": "concept-ir/2",
+  "package": "@semantics/benefits",
+  "entities": {
+    "@semantics/benefits/_/Award": {
+      "name": "Award",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "awarded": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "paid": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "agency": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/benefits/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "household": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/benefits/_/Party",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@semantics/benefits/_/Party": {
+      "name": "Party",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@semantics/benefits/_/IncomeReported": {
+      "name": "IncomeReported",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@semantics/benefits/_/AwardRevision": {
+      "name": "AwardRevision",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "cause": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/benefits/_/IncomeReported"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "target": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/benefits/_/Award",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "quantity": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "decimal",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@semantics/benefits/_/Determine": {
+      "name": "Determine",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/benefits/_/Award",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "occurrence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/benefits/_/IncomeReported"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "result": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@semantics/benefits/_/Award",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "consequence": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@semantics/benefits/_/AwardRevision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@semantics/benefits/_/Award": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      },
+      "@semantics/benefits/_/IncomeReported": {
+        "occurrence": "occurredAt",
+        "valid": null,
+        "knowledge": {
+          "from": "knownAt",
+          "to": null
+        }
+      },
+      "@semantics/benefits/_/AwardRevision": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": null
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": null
+        }
+      }
+    },
+    "selections": {
+      "@semantics/benefits/_/validAtOccurrence": {
+        "context": "@semantics/benefits/_/Determine",
+        "target": "@semantics/benefits/_/Award",
+        "axis": "valid",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "occurredAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      },
+      "@semantics/benefits/_/knownAtDecision": {
+        "context": "@semantics/benefits/_/Determine",
+        "target": "@semantics/benefits/_/Award",
+        "axis": "knowledge",
+        "relation": {
+          "kind": "at",
+          "instant": {
+            "kind": "name",
+            "path": [
+              "occurrence",
+              "knownAt"
+            ]
+          }
+        },
+        "tie_break": [],
+        "binding": "current"
+      }
+    },
+    "contracts": {
+      "@semantics/benefits/_/BoundedContribution": {
+        "owner": {
+          "kind": "entity",
+          "id": "@semantics/benefits/_/Award"
+        },
+        "kind": "invariant",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "self",
+              "awarded"
+            ]
+          }
+        },
+        "selectors": []
+      },
+      "@semantics/benefits/_/Available": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/benefits/_/Determine"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "current",
+              "awarded"
+            ]
+          }
+        },
+        "selectors": [
+          "@semantics/benefits/_/validAtOccurrence",
+          "@semantics/benefits/_/knownAtDecision"
+        ]
+      },
+      "@semantics/benefits/_/Preserved": {
+        "owner": {
+          "kind": "process",
+          "id": "@semantics/benefits/_/Determine"
+        },
+        "kind": "ensures",
+        "predicate": {
+          "kind": "binary",
+          "op": "<=",
+          "lhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "paid"
+            ]
+          },
+          "rhs": {
+            "kind": "name",
+            "path": [
+              "result",
+              "awarded"
+            ]
+          }
+        },
+        "selectors": []
+      }
+    },
+    "relationships": {
+      "@semantics/benefits/_/PositionRoles": {
+        "carrier": "@semantics/benefits/_/Award",
+        "endpoints": {
+          "agency": {
+            "target": "@semantics/benefits/_/Party",
+            "field": "agency"
+          },
+          "household": {
+            "target": "@semantics/benefits/_/Party",
+            "field": "household"
+          }
+        },
+        "evidence": [
+          "@semantics/benefits/_/IncomeReported"
+        ]
+      }
+    },
+    "events": [
+      "@semantics/benefits/_/IncomeReported"
+    ],
+    "effects": {
+      "@semantics/benefits/_/BusinessConsequence": {
+        "fact": "@semantics/benefits/_/AwardRevision",
+        "causes": {
+          "cause": "@semantics/benefits/_/IncomeReported"
+        },
+        "targets": {
+          "target": "@semantics/benefits/_/Award"
+        }
+      }
+    },
+    "views": {
+      "@semantics/benefits/_/AgencyView": {
+        "fact": "@semantics/benefits/_/Award",
+        "observerRole": "agency",
+        "fields": [
+          "id",
+          "awarded",
+          "paid"
+        ],
+        "authorizations": [],
+        "purpose": null
+      },
+      "@semantics/benefits/_/HouseholdView": {
+        "fact": "@semantics/benefits/_/Award",
+        "observerRole": "household",
+        "fields": [
+          "id",
+          "awarded",
+          "paid"
+        ],
+        "authorizations": [],
+        "purpose": null
+      }
+    }
+  }
+}

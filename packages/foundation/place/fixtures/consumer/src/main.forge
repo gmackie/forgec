@@ -1,0 +1,38 @@
+import place
+resource Facility
+  @tenant
+  @appendOnly
+{
+  id : id
+  location : place.Place @unique
+}
+resource Room
+  @tenant
+  @appendOnly
+{
+  id : id
+  facility : Facility
+  location : place.Place @unique
+  rules {
+    location.parent == facility.location
+  }
+}
+resource CustomerSite
+  @tenant
+  @appendOnly
+{
+  id : id
+  location : place.Place @unique
+  address : place.PlaceAddressRevision
+  rules {
+    address.place == location
+  }
+}
+resource WarehouseLocation
+  @tenant
+  @appendOnly
+{
+  id : id
+  location : place.Place @unique
+  aisle : text length 1..32
+}

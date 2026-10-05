@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Cloudflare Workflows + Durable Objects",
+    "storage": "D1 + R2",
+    "transport": "Queues",
+    "conflict": "CRDT",
+    "query": "H3",
+    "batchSize": 100,
+    "concurrency": 8,
+    "cacheTtl": 30
+  },
+  "obligations": [
+    "The during selector records window length but not event time, lateness or retraction semantics. This is an intentional gap, also relevant to marketplace locations.",
+    "TemperatureWindow is a named intermediate Entity here, making it durable. Compare airline typed results before promoting a non-durable Value."
+  ]
+}

@@ -15,6 +15,9 @@ export interface OperationEvent {
   ts: string;
   seq: number;
   operation: string;
+  /** Artifact identity and source-map anchor, excluded from metric dimensions. */
+  buildHash?: string;
+  semanticAnchor?: string;
   kind: string;
   resource?: string;
   outcome: Outcome;
@@ -113,10 +116,14 @@ export class Telemetry {
 
   private write(operation: string, ctx: CallContext, durationMs: number, status: number, code: string | undefined, phase: OperationEvent["phase"]): void {
     const { kind, resource } = this.entry(operation);
+    const ref = this.engine.model.operation(operation);
+    const semanticAnchor = ref ? `${ref.resource.id}#op:${operation.slice(ref.resource.id.length + 1)}` : this.engine.model.functions.some(f => f.id === operation) ? operation : undefined;
     const ev: OperationEvent = {
       ts: new Date().toISOString(),
       seq: ++this.seq,
       operation,
+      buildHash: this.engine.model.bundle.buildHash,
+      ...(semanticAnchor ? { semanticAnchor } : {}),
       kind,
       ...(resource ? { resource } : {}),
       outcome: classify(status, code),

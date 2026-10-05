@@ -1,0 +1,115 @@
+import fulfillment
+import qualification
+import availability
+import allocation
+import participation
+import party
+
+export resource RoutingResource
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  subject : qualification.QualificationSubject
+  party : party.Party?
+  executor : fulfillment.FulfillmentExecutor
+  pool : allocation.AllocationPool
+  calendar : availability.AvailabilityCalendarRevision
+}
+export resource RoutingRequest
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  requirement : qualification.QualificationRequirement
+  participants : participation.ParticipationSet
+  fulfillment : fulfillment.FulfillmentSet
+  from : datetime
+  until : datetime
+  quantity : decimal<6> > 0
+  unit : text length 1..64
+  rules {
+    from < until
+  }
+}
+export resource RoutingCandidate
+  @tenant
+  @appendOnly
+{
+  id : id
+  request : RoutingRequest
+  resource : RoutingResource
+  qualification : qualification.Qualification
+  participant : participation.Participation?
+  evaluatedAt : datetime
+  rank : integer >= 0 <= 1000000
+  rationale : text length 1..1000
+  rules {
+    qualification.subject == resource.subject
+  }
+  list by request
+}
+export resource AssignmentOffer
+  @tenant
+  @appendOnly
+{
+  id : id
+  candidate : RoutingCandidate
+  offeredAt : datetime
+  expiresAt : datetime
+  rules {
+    offeredAt < expiresAt
+  }
+}
+export enum OfferOutcome {
+  accepted
+  declined
+  expired
+}
+export resource AssignmentOfferEnd
+  @tenant
+  @appendOnly
+{
+  id : id
+  offer : AssignmentOffer @unique
+  outcome : OfferOutcome
+  at : datetime
+  reason : text length 1..500
+  rules {
+    at >= offer.offeredAt
+  }
+  find by offer
+}
+export resource Assignment
+  @tenant
+  @appendOnly
+{
+  id : id
+  request : RoutingRequest @unique
+  offer : AssignmentOffer @unique
+  reservation : allocation.AllocationReservation
+  acceptedAt : datetime
+  find by request
+  find by offer
+}
+export resource AssignmentEnd
+  @tenant
+  @appendOnly
+{
+  id : id
+  assignment : Assignment @unique
+  reason : text length 1..500
+  at : datetime
+  find by assignment
+}
+export resource AssignmentExecution
+  @tenant
+  @appendOnly
+{
+  id : id
+  assignment : Assignment @unique
+  fulfillment : fulfillment.Fulfillment @unique
+  find by assignment
+}

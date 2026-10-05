@@ -1,0 +1,43 @@
+import entitlement
+resource Purchase
+  @tenant
+  @appendOnly
+{
+  id : id
+  orderNumber : text
+}
+resource SoftwareSeat
+  @tenant
+  @appendOnly
+{
+  id : id
+  entitlement : entitlement.Entitlement @unique
+  product : text
+  purchase : Purchase
+}
+resource WarrantyCoverage
+  @tenant
+  @appendOnly
+{
+  id : id
+  entitlement : entitlement.Entitlement @unique
+  serialNumber : text
+  purchase : Purchase
+}
+resource CourseAccess
+  @tenant
+  @appendOnly
+{
+  id : id
+  entitlement : entitlement.Entitlement @unique
+  courseCode : text
+}
+resource ContractualDuty
+  @tenant
+  @appendOnly
+{
+  id : id
+  obligation : entitlement.Obligation @unique
+  contractNumber : text
+  deliverable : text
+}

@@ -1,0 +1,100 @@
+import trust
+import risk
+import evaluation
+import decision
+import evidence
+import specification
+export resource ChallengeInteraction @tenant @timestamps @appendOnly {
+ id : id
+ subject : trust.TrustSubject
+ action : specification.SpecificationPin
+ startedAt : datetime
+ until : datetime
+ rules { startedAt < until }
+}
+export enum ChallengeDisposition { allow
+ require
+ deny
+ defer }
+export resource ChallengeDecision @tenant @timestamps @appendOnly {
+ id : id
+ interaction : ChallengeInteraction
+ policy : specification.SpecificationPin
+ evaluation : evaluation.EvaluationFinish
+ run : evaluation.EvaluationRun
+ disposition : ChallengeDisposition
+ risk : risk.RiskAssessment?
+ trust : trust.TrustAssessment?
+ support : evidence.EvidenceSeal
+ reason : text length 1..1000
+ rules { evaluation.run == run
+ run.definition == policy
+ evaluation.outcome == "Completed" }
+}
+export resource Challenge @tenant @timestamps @appendOnly {
+ id : id
+ decision : ChallengeDecision
+ interaction : ChallengeInteraction
+ requirement : specification.SpecificationPin
+ mechanism : text length 1..128
+ maxAttempts : integer >= 1 <= 16
+ expiresAt : datetime
+ rules { decision.interaction == interaction
+ decision.disposition == ChallengeDisposition.require
+ expiresAt > createdAt
+ expiresAt <= interaction.until }
+ unique decision, requirement
+}
+/// Bind the approval option before votes; option labels never confer authority.
+export resource ChallengeApproval @tenant @timestamps @appendOnly {
+ id : id
+ challenge : Challenge @unique
+ decisionCase : decision.DecisionCase @unique
+ approvedOption : decision.DecisionOption
+ rules { approvedOption.decisionCase == decisionCase }
+ find by challenge
+}
+export resource ChallengeAttempt @tenant @timestamps @appendOnly {
+ id : id
+ challenge : Challenge
+ evaluation : evaluation.EvaluationFinish
+ run : evaluation.EvaluationRun
+ support : evidence.EvidenceSeal
+ successful : boolean
+ approval : ChallengeApproval?
+ outcome : decision.DecisionOutcome?
+ rules { evaluation.run == run
+ run.definition == challenge.requirement
+ evaluation.outcome == "Completed"
+ (approval == null) == (outcome == null)
+ approval == null || (approval.challenge == challenge && outcome.decisionCase == approval.decisionCase)
+ }
+}
+export enum ChallengeEventKind { failed
+ satisfied
+ cancelled
+ expired }
+export resource ChallengeEvent @tenant @timestamps @appendOnly {
+ id : id
+ challenge : Challenge
+ ordinal : integer >= 1 <= 17
+ previous : ChallengeEvent?
+ kind : ChallengeEventKind
+ attempt : ChallengeAttempt?
+ reason : text length 1..1000
+ rules {
+ (previous == null && ordinal == 1) || (previous != null && previous.challenge == challenge && previous.kind == ChallengeEventKind.failed && ordinal == previous.ordinal + 1)
+ (kind == ChallengeEventKind.failed || kind == ChallengeEventKind.satisfied) == (attempt != null)
+ attempt == null || (attempt.challenge == challenge && ((kind == ChallengeEventKind.satisfied) == attempt.successful))
+ kind != ChallengeEventKind.expired || createdAt >= challenge.expiresAt
+ (kind == ChallengeEventKind.cancelled || kind == ChallengeEventKind.expired) || (createdAt < challenge.expiresAt && ordinal <= challenge.maxAttempts)
+ }
+ unique challenge, ordinal
+ find by challenge, ordinal
+}
+export resource ChallengeParticipant @tenant @appendOnly {
+ id : id
+ interaction : ChallengeInteraction @unique
+ subject : trust.TrustSubject
+ rules { subject == interaction.subject }
+}

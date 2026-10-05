@@ -1,0 +1,69 @@
+{
+  "temporal": {
+    "@semantics/realizations/_/Balance": {
+      "valid": {
+        "from": "effectiveFrom",
+        "to": "effectiveUntil"
+      },
+      "knowledge": {
+        "from": "createdAt"
+      }
+    },
+    "@semantics/realizations/_/Movements#fact:Transfer": {
+      "occurrence": "occurredAt",
+      "knowledge": {
+        "from": "knownAt"
+      }
+    },
+    "@semantics/realizations/_/Movements#fact:Applied": {
+      "valid": {
+        "from": "validFrom"
+      },
+      "knowledge": {
+        "from": "knownFrom"
+      }
+    }
+  },
+  "events": [
+    "@semantics/realizations/_/Movements#fact:Transfer"
+  ],
+  "effects": {
+    "@semantics/realizations/_/Apply": {
+      "fact": "@semantics/realizations/_/Movements#fact:Applied",
+      "causes": {
+        "cause": "@semantics/realizations/_/Movements#fact:Transfer"
+      },
+      "targets": {
+        "target": "@semantics/realizations/_/Balance"
+      }
+    }
+  },
+  "contracts": {
+    "@semantics/realizations/_/Bounded": {
+      "owner": {
+        "kind": "entity",
+        "id": "@semantics/realizations/_/Balance"
+      },
+      "kind": "invariant",
+      "predicate": {
+        "kind": "binary",
+        "op": "<=",
+        "lhs": {
+          "kind": "name",
+          "path": [
+            "self",
+            "applied"
+          ]
+        },
+        "rhs": {
+          "kind": "name",
+          "path": [
+            "self",
+            "amount"
+          ]
+        }
+      },
+      "selectors": []
+    }
+  }
+}

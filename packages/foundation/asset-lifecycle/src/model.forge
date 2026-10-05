@@ -1,0 +1,53 @@
+import resource-relations
+import specification
+import place
+import evidence
+import attestation
+import artifact
+/// Explicit domain configuration snapshot hook; does not implement a configuration engine.
+export resource AssetConfiguration @tenant @appendOnly {
+ id : id
+ resource : resource-relations.ResourceSubject
+ definition : specification.SpecificationPin
+ snapshot : artifact.ArtifactRevision?
+}
+export resource AssetProfile @tenant @appendOnly {
+ id : id
+ resource : resource-relations.ResourceSubject @unique
+ specification : specification.SpecificationPin
+ attestationSubject : attestation.AttestationSubject @unique
+ commissioningAttestationRequired : boolean
+ custodyKind : resource-relations.RelationKind?
+}
+export enum AssetAction { acquire
+ provision
+ commission
+ operate
+ deactivate
+ move
+ refurbish
+ retire
+ decommission }
+export resource AssetLifecycleEvent @tenant @timestamps @appendOnly {
+ id : id
+ asset : AssetProfile
+ ordinal : integer >= 1 <= 128
+ previous : AssetLifecycleEvent?
+ action : AssetAction
+ at : datetime
+ place : place.Place?
+ custody : resource-relations.PartyResourceRelation?
+ configuration : AssetConfiguration
+ evidence : evidence.EvidenceSeal
+ attestation : attestation.Attestation?
+ reason : text length 1..1000
+ recordedBy : text length 1..128
+ rules { configuration.resource == asset.resource
+ custody == null || custody.subject == asset.resource
+ custody == null || custody.kind == asset.custodyKind
+ attestation == null || attestation.subject == asset.attestationSubject
+ attestation == null || attestation.specification == asset.specification
+ (previous == null && ordinal == 1) || (previous != null && previous.asset == asset && ordinal == previous.ordinal + 1 && at >= previous.at) }
+ unique asset, ordinal
+ find by asset, ordinal
+}

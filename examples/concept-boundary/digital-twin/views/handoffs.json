@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "conceptHash": "d4b731a844381d5cf0de3a8d3abba17269f373e27cefa04cd9e44562c3fd2670",
+  "boundarySemanticHash": "31eb4e65f80677abb97bf80382cc27a032c072ccfbfe947afa303a07fe6914ac",
+  "artifacts": [
+    {
+      "id": "thermal-model",
+      "sha256": "d5f4fd591cef5519711673eb2f304223e382ab6bffe8bbdf30c64e4666702ab7",
+      "path": "specialized-model/ThermalPlant.mo",
+      "process": "@boundary/digital-twin/_/RunPlantSimulation",
+      "inputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#output:request"
+      ],
+      "status": "sketch",
+      "claim": "Representative lumped thermal conservation equation; not simulated."
+    },
+    {
+      "id": "plant-assembly",
+      "sha256": "e6bd47984953230f8c252c38a897eab40712db51803431c23d538704951b388f",
+      "path": "specialized-model/SystemStructure.ssd",
+      "process": "@boundary/digital-twin/_/RunPlantSimulation",
+      "inputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/digital-twin/_/RunPlantSimulation#output:request"
+      ],
+      "status": "sketch",
+      "claim": "Well-formed XML, interface agreement checked; references intentionally absent FMU."
+    },
+    {
+      "id": "interface-evidence",
+      "sha256": "a52e6f1a1de322bbb92296f4d161936c54a69c690b8607f86e388e1e8f50fb7e",
+      "path": "specialized-model/verification.json",
+      "process": "@boundary/digital-twin/_/RecordSimulation",
+      "inputPorts": [
+        "@boundary/digital-twin/_/RecordSimulation#input:report"
+      ],
+      "outputPorts": [
+        "@boundary/digital-twin/_/RecordSimulation#output:record",
+        "@boundary/digital-twin/_/RecordSimulation#output:recorded"
+      ],
+      "status": "checked",
+      "claim": "Static XML/name/digest checks only; no numerical result."
+    }
+  ]
+}

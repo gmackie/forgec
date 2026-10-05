@@ -1,0 +1,61 @@
+import { Effect } from 'effect';
+import { expect, it } from 'vitest';
+import { foundation, foundationAdapters } from './helpers/foundation.js';
+import { agreement } from './helpers/agreement.js';
+import { Onboarding } from '../src/foundation/onboarding.js';
+import { Evidence } from '../src/foundation/evidence.js';
+import { Evaluations } from '../src/foundation/evaluation.js';
+import { Qualifications } from '../src/foundation/qualification.js';
+import { Intake } from '../src/foundation/intake.js';
+import { PartyRelationships } from '../src/foundation/party-relationship.js';
+import { Fulfillments } from '../src/foundation/fulfillment.js';
+import { Delegations } from '../src/foundation/delegation.js';
+import { Records } from '../src/foundation/records.js';
+const p = '@forgegraph/foundation/onboarding/_/', c = '@forgegraph/foundation/case-management/_/', e = '@forgegraph/foundation/evaluation/_/', q = '@forgegraph/foundation/qualification/_/', r = '@forgegraph/foundation/party-relationship/_/', f = '@forgegraph/foundation/fulfillment/_/';
+for (const adapter of foundationAdapters) it(`${adapter}: onboarding gates, activation and explicit offboarding cleanup`, async () => {
+ const h = await foundation('onboarding', adapter, true), run = Effect.runPromise;
+ try {
+  const { engine, ctx, call } = h, contract = await agreement(h), service = new Onboarding(engine), from = '2026-01-01T00:00:00Z', activatedAt = '2026-01-02T00:00:00Z', endedAt = '2026-01-03T00:00:00Z', completedAt = '2026-01-05T00:00:00Z';
+  const bundle = await call('@forgegraph/foundation/evidence/_/EvidenceBundle.create', { key: 'checks', label: 'Checks' }), seal = await run(new Evidence(engine).seal(String(bundle.id), null, ctx));
+  const subject = await call(q + 'QualificationSubject.create', { label: 'Candidate' }), party = await call(q + 'PartySubject.create', { subject: subject.id, party: contract.customer.id }), definition = await call(q + 'QualificationDefinition.create', { key: 'eligible', pin: contract.pin.id, label: 'Eligibility' }), requirement = await call(q + 'QualificationRequirement.create', { definition: definition.id, minimumLevel: null });
+  const set = await call(e + 'EvaluationSet.create', { label: 'Checks' }), executor = await call(e + 'EvaluationExecutor.create', { key: 'reviewer', label: 'Reviewer' }), evaluations = new Evaluations(engine);
+  async function evaluate(at: string) { const evaluation = await run(evaluations.create({ evaluationSet: String(set.id), definition: String(contract.pin.id), executor: String(executor.id) }, ctx)); await run(evaluations.start(String(evaluation.id), at, ctx)); const finish = await run(evaluations.finish(String(evaluation.id), 'Completed', at, 'Verified', ctx)); return { evaluation, finish }; }
+  const intakeCheck = await evaluate(from), form = await call('@forgegraph/foundation/intake/_/IntakeForm.create', { definition: contract.pin.id, label: 'Application', anonymousAllowed: false }), intake = new Intake(engine), submission = await run(intake.submit({ form: String(form.id), submitter: String(contract.customer.id), sourceKey: 'application', submittedAt: from }, ctx)), validation = await run(intake.validate(String(submission.id), String(intakeCheck.finish.id), 'Accepted', 'Complete', ctx));
+  const caseSubject = await call(c + 'CaseSubject.create', { key: 'candidate' });
+  const caseInput = { subject: caseSubject.id, context: contract.pin.id, reason: 'Lifecycle', owner: contract.supplier.id, participants: contract.participants.id, openedAt: from };
+  const activity = await call(c + 'Case.create', { ...caseInput, key: 'onboard' });
+  const d = '@forgegraph/foundation/delegation/_/';
+  const principal = await call(d + 'DelegationSubject.create', { label: 'Candidate principal' }), delegator = await call(d + 'DelegationSubject.create', { label: 'Authority' }), holder = await call(d + 'DelegationPartySubject.create', { subject: delegator.id, party: contract.supplier.id });
+  const root = await call('@forgegraph/foundation/entitlement/_/Entitlement.create', { holder: contract.supplier.id, right: contract.right.id, scope: contract.scope.id, quantity: null, unit: null, validFrom: from, validUntil: '2027-01-01T00:00:00Z', predecessor: null, recordedBy: ctx.actor, reason: 'Provisioning authority' });
+  const delegated = await call(d + 'Delegation.create', { delegator: delegator.id, delegate: principal.id, root: root.id, rootHolder: holder.id, parent: null, depth: 1, scope: contract.scope.id, right: contract.right.id, constraints: contract.pin.id, purpose: 'Service', validFrom: from, validUntil: '2027-01-01T00:00:00Z', redelegable: false, source: 'Onboarding', support: seal.id });
+  const onboarding = await call(p + 'Onboarding.create', { key: 'candidate', case: activity.id, subject: subject.id, party: party.id, principal: principal.id, criteria: contract.pin.id, submission: submission.id, validation: validation.id, requirement: requirement.id, decision: contract.approval.id, accepted: contract.accepted.id, gateCount: 4 });
+  const relationDefinition = await call(r + 'PartyRelationshipDefinition.create', { key: 'customer', pin: contract.pin.id, forwardLabel: 'serves', inverseLabel: 'customer of' }), relationships = new PartyRelationships(engine), relation = await run(relationships.record({ definition: String(relationDefinition.id), fromParty: String(contract.supplier.id), toParty: String(contract.customer.id), validFrom: activatedAt, source: 'Accepted onboarding' }, ctx));
+  const gate = async (ordinal: number, previous: unknown, payload: Record<string, unknown>) => call(p + 'OnboardingGate.create', { onboarding: onboarding.id, ordinal, previous, at: activatedAt, relationship: null, access: null, delegation: null, configuration: null, provision: null, ...payload });
+  const first = await gate(1, null, { relationship: relation.id });
+  await expect(run(service.activate({ onboarding: String(onboarding.id), at: activatedAt, support: String(seal.id) }, ctx))).rejects.toThrow();
+  await run(new Qualifications(engine).award({ subject: String(subject.id), definition: String(definition.id), issuer: String(contract.supplier.id), issuerRecord: 'approved', issuedAt: from }, ctx));
+  const configCheck = await evaluate(activatedAt), config = await call(p + 'OnboardingConfiguration.create', { onboarding: onboarding.id, definition: contract.pin.id, run: configCheck.evaluation.id, finish: configCheck.finish.id, support: seal.id }), second = await gate(2, first.id, { configuration: config.id });
+  const workSet = await call(f + 'FulfillmentSet.create', { label: 'Lifecycle work' }), worker = await call(f + 'FulfillmentExecutor.create', { key: 'provisioner' }), works = new Fulfillments(engine);
+  async function work(ordinal: number, at: string, finish = true) { const row = await call(f + 'Fulfillment.create', { fulfillmentSet: workSet.id, ordinal, specificationPin: contract.pin.id, executor: worker.id, requestedAt: at, evidence: null }); if (finish) { await run(works.start(String(row.id), at, ctx)); await run(works.finish(String(row.id), 'completed', 'complete', at, 'Done', ctx)); } return row; }
+  const provision = await work(1, activatedAt, false); const third = await gate(3, second.id, { provision: provision.id }); await gate(4, third.id, { delegation: delegated.id });
+  await expect(run(service.activate({ onboarding: String(onboarding.id), at: activatedAt, support: String(seal.id) }, ctx))).rejects.toThrow();
+  await run(works.start(String(provision.id), activatedAt, ctx)); await run(works.finish(String(provision.id), 'completed', 'complete', activatedAt, 'Provisioned', ctx));
+  const activation = await run(service.activate({ onboarding: String(onboarding.id), at: activatedAt, support: String(seal.id) }, ctx));
+  expect((await run(service.activation(String(activation.id), ctx))).onboarding.gates).toHaveLength(4);
+  const cleanup = await work(2, endedAt), transfer = await work(3, endedAt), obligationCheck = await evaluate(endedAt);
+  engine.testClockJump(3 * 24 * 3600 * 1000);
+  const approval = await run(contract.decisions.open({ participationSet: String(contract.participants.id), electors: [String(contract.signers[0]!.id)], eligibilityAt: endedAt, options: ['Accept', 'Reject'], rule: 'Single', deadline: '2027-01-01T00:00:00Z' }, ctx)), option = (await run(contract.decisions.state(String(approval.id), ctx))).options[0]!;
+  const category = await call('@forgegraph/foundation/records/_/RecordCategory.create', { label: 'Transition', meaning: null }), rule = await call('@forgegraph/foundation/records/_/RetentionRule.create', { category: category.id, trigger: 'offboarding', periodDays: 365, disposition: 'Archive', authority: 'Policy', source: 'Records policy', support: seal.id }), retention = await run(new Records(engine).register(String(rule.id), endedAt, ctx, String(seal.id)));
+  const offCase = await call(c + 'Case.create', { ...caseInput, key: 'offboard' }), offboarding = await call(p + 'Offboarding.create', { activation: activation.id, case: offCase.id, policy: contract.pin.id, cleanup: cleanup.id, transfer: transfer.id, obligationReview: obligationCheck.evaluation.id, approval: approval.id, accepted: option.id, retention: retention.id }), completion = await call(p + 'OffboardingCompletion.create', { offboarding: offboarding.id, obligations: obligationCheck.finish.id, support: seal.id, at: completedAt });
+  await expect(run(service.completion(String(completion.id), ctx))).rejects.toThrow();
+  await run(contract.decisions.respond(String(approval.id), String(contract.signers[0]!.id), [0], ctx)); await run(contract.decisions.finalize(String(approval.id), ctx));
+  await expect(run(service.completion(String(completion.id), ctx))).rejects.toThrow();
+  await run(relationships.end(String(relation.id), endedAt, 'Offboarded', ctx));
+  await expect(run(service.completion(String(completion.id), ctx))).rejects.toThrow();
+  await run(new Delegations(engine).revoke(String(delegated.id), endedAt, 'Offboarded', ctx));
+  expect((await run(service.completion(String(completion.id), ctx))).retention.disposed).toBe(false);
+  expect((await run(service.activation(String(activation.id), ctx))).onboarding.head).toBeTruthy();
+  for (const name of ['EmployeeOnboarding', 'VendorOnboarding', 'TenantOnboarding', 'DeviceOnboarding']) await call('@fixture/onboarding-consumer/_/' + name + '.create', { onboarding: onboarding.id, profile: name });
+  await expect(run(service.activation(String(activation.id), { ...ctx, tenant: 'foreign' }))).rejects.toThrow();
+ } finally { await h.close(); }
+});

@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-03T15:00:30.349635+00:00",
+  "scope": "Read-only live writer inventory; no service changes",
+  "host": "Bob host",
+  "services": {
+    "hermes-vault-sync.service": "failed",
+    "hermes-vault-sync.timer": "active/waiting; triggers every ten minutes",
+    "ooda-runner.service": "active/running",
+    "ooda-research-backend.service": "active/running"
+  },
+  "mac": "No matching Obsidian/vault LaunchAgent found; interactive/editor/Git-plugin writers not fenced",
+  "cutoverReady": false,
+  "requiredActions": [
+    "Close admissions on every configured host and retain all publication journals.",
+    "Stop and prevent restart of legacy sync timer, sync service and affected runner writers; establish which vault the research backend can access.",
+    "Fence interactive/editor writes on the Mac; take fresh verified worktree snapshots of all three copies.",
+    "Reconcile local working-tree changes and divergent branch content before selecting the active imported head.",
+    "Activate explicitly configured authenticated routes and runner bindings on an exclusively owned generation; retain the old generation and recovery access."
+  ],
+  "limits": [
+    "Shared SQLite admissions coordinate only cooperating processes using the same local file.",
+    "Preserving all history refs does not merge divergent note content into the active head.",
+    "Existing snapshots preserve unpublished and ignored files separately; those bytes are not part of the cloud history import."
+  ]
+}

@@ -1,0 +1,14 @@
+NON-EXECUTABLE INTERFACE SKETCH — no control law or plant included
+Logical AssessPlan consumes mission, snapshot, optional candidate; exports request.
+Candidate correlation: missionId + missionRevision + sceneSequence + modelDigest + frame + safetyEnvelopeDigest.
+Reject infeasible, stale, expired, wrong-revision or wrong-frame candidates.
+Logical AdvanceMission consumes mission, optional assessment, optional receipt.
+It exports MotionCommand(missionId, commandSequence, missionRevision, disposition,
+trajectoryDigest, leaseExpiresAt) and emits CommandDecision.
+Receipts correlate by missionId + missionRevision + commandSequence.
+No matching assessment permits only Hold/Stop, never FollowTrajectory.
+LocalController independently enforces lease expiry and reports ActuationReceipt.
+Required external evidence: plant/contact model, braking envelope, controller
+sampling/overrun policy, sensor time synchronization, safety and WCET analyses.
+Implementation may place planner on GPU; watchdog must not depend on remote RPC.
+These requirements are not executable tests or successful analysis results.

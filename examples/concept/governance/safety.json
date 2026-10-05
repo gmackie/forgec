@@ -1,0 +1,525 @@
+{
+  "version": "concept-ir/2",
+  "package": "@governance/safety",
+  "entities": {
+    "@governance/safety/_/Conversation": {
+      "name": "Conversation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/safety/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "regulated": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "inspectionPassed": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@governance/safety/_/Customer": {
+      "name": "Customer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@governance/safety/_/StandardsBody": {
+      "name": "StandardsBody",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@governance/safety/_/SafetyJurisdiction": {
+      "name": "SafetyJurisdiction",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@governance/safety/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/safety/_/Customer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/safety/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@governance/safety/_/MessageReceived": {
+      "name": "MessageReceived",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/safety/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@governance/safety/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/safety/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@governance/safety/_/Respond": {
+      "name": "Respond",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/safety/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    },
+    "@governance/safety/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@governance/safety/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@governance/safety/_/Conversation": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      }
+    },
+    "relationships": {
+      "@governance/safety/_/Participants": {
+        "carrier": "@governance/safety/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@governance/safety/_/Customer",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@governance/safety/_/Conversation",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@governance/safety/_/MessageReceived",
+      "@governance/safety/_/Closed"
+    ],
+    "interactions": {
+      "@governance/safety/_/Engagement": {
+        "carrier": "@governance/safety/_/Conversation",
+        "participation": [
+          "@governance/safety/_/Participants"
+        ],
+        "events": {
+          "@governance/safety/_/MessageReceived": "context",
+          "@governance/safety/_/Closed": "context"
+        },
+        "processes": {
+          "@governance/safety/_/Respond": "engagement",
+          "@governance/safety/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    },
+    "subjects": {
+      "@governance/safety/_/ParticipantIdentity": {
+        "carrier": "@governance/safety/_/Customer",
+        "profiles": [
+          "party"
+        ]
+      },
+      "@governance/safety/_/Authority": {
+        "carrier": "@governance/safety/_/StandardsBody",
+        "profiles": [
+          "authority"
+        ]
+      }
+    },
+    "contracts": {
+      "@governance/safety/_/RequiredOutcome": {
+        "owner": {
+          "kind": "process",
+          "id": "@governance/safety/_/Respond"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "name",
+          "path": [
+            "engagement",
+            "inspectionPassed"
+          ]
+        },
+        "selectors": []
+      }
+    },
+    "externalConstraints": {
+      "@governance/safety/_/ExternalRule": {
+        "authority": "@governance/safety/_/Authority",
+        "jurisdiction": "@governance/safety/_/SafetyJurisdiction",
+        "citations": [
+          "illustrative:safety-standard/revision-1/clause-8"
+        ],
+        "applicability": {
+          "process": "@governance/safety/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [
+          "@governance/safety/_/RequiredOutcome"
+        ],
+        "prohibitions": [],
+        "validFrom": 0,
+        "validUntil": 1000,
+        "supersedes": [],
+        "evidence": []
+      },
+      "@governance/safety/_/Suspension": {
+        "authority": "@governance/safety/_/Authority",
+        "jurisdiction": "@governance/safety/_/SafetyJurisdiction",
+        "citations": [
+          "illustrative:safety-standard/revision-2/clause-8"
+        ],
+        "applicability": {
+          "process": "@governance/safety/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [],
+        "prohibitions": [
+          "@governance/safety/_/Respond"
+        ],
+        "validFrom": 1000,
+        "validUntil": null,
+        "supersedes": [
+          "@governance/safety/_/ExternalRule"
+        ],
+        "evidence": []
+      }
+    }
+  }
+}

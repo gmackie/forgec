@@ -1,0 +1,40 @@
+{
+  "status": "failed",
+  "tests": [],
+  "httpStatus": 500,
+  "errorCode": "WorkerNonJson",
+  "journalHost": "deployed Workers native D1 binding",
+  "workerSha256": "3cba8c91f6dbe414ba88bce46142b522903e947ea39d7c4652140810318af7d3",
+  "transportEvents": [
+    {
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 1,
+      "retry": true
+    },
+    {
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 2,
+      "retry": true
+    }
+  ],
+  "at": "2026-10-02T19:53:37Z",
+  "scope": "Actual Node ArtifactPublisher and Git transport with live Cloudflare Artifacts plus deployed Workers D1 journal",
+  "sourceSha256": {
+    "packages/runtime/src/artifact-publication.ts": "ce5135cebd1893b1d2dbf34ef5ee61e10f720f2129e2a266eb0dcff947df0b8a",
+    "packages/runtime/src/adapters/artifact-publication-git.ts": "a43629153c42df92339ba4055d367b02cc59bf6ca726af1202c828b321a64684",
+    "packages/runtime/src/adapters/artifact-publication-sql.ts": "477e8f152f9523d3e137addbe620a2796c4659e1a6df07d314106b4fa4e66e16",
+    "conformance/artifacts/publish-live.mjs": "e6c96e61b46e1099fe7cfde2103845a24d33b538dd353573869c1c9c6d40438b",
+    "conformance/artifacts/journal-worker.ts": "b704bbd12d7631c07f5669ccac59bb6cacb5adedf59786e4c7894794d0f5fa01",
+    "scripts/artifact_journal_worker.py": "10ccb12931ebb7a9a3308cd6f6a62414983649302ef78d45948b0eca6a5ac6ac"
+  },
+  "cleanup": {
+    "remainingResources": [],
+    "errors": []
+  },
+  "nodeVersion": "v24.14.0",
+  "gitVersion": "git version 2.51.1"
+}

@@ -1,0 +1,50 @@
+name: Artifacts binding management certification
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 6 * * 2'
+  pull_request:
+    paths:
+      - 'conformance/artifacts/management-worker.mjs'
+      - 'scripts/qualify-artifact-binding.py'
+      - 'scripts/test_artifact_binding.py'
+      - 'scripts/*snapshot.py'
+      - 'scripts/test/artifact-management-worker.test.mjs'
+      - '.forgejo/workflows/artifact-binding-certification.yml'
+concurrency:
+  group: artifact-binding-certification
+  cancel-in-progress: false
+jobs:
+  contracts:
+    runs-on: [forgegraph-ci, forgegraph-worker]
+    timeout-minutes: 5
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test scripts/test/artifact-management-worker.test.mjs
+      - run: python3 -m unittest discover -s scripts -p 'test_*.py'
+  live:
+    if: ${{ forgejo.event_name == 'workflow_dispatch' || (forgejo.event_name == 'schedule' && vars.ARTIFACT_BINDING_CERTIFICATION_ENABLED == 'true') }}
+    needs: contracts
+    runs-on: [forgegraph-ci, forgegraph-worker]
+    timeout-minutes: 10
+    env:
+      CF_ARTIFACT_CERT_TOKEN: ${{ secrets.ARTIFACT_CERT_CLOUDFLARE_TOKEN }}
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - name: Qualify disposable native binding and Git transport
+        run: python3 scripts/qualify-artifact-binding.py --account c07a7e704db1808e1fff91bed2b1cd49 --state-dir .binding-cert-private --evidence conformance/reports/binding/live.json
+      - name: Reconcile owned resources
+        if: always()
+        run: |
+          if test -f .binding-cert-private/state.json; then
+            python3 scripts/qualify-artifact-binding.py --cleanup-only --account c07a7e704db1808e1fff91bed2b1cd49 --state-dir .binding-cert-private --evidence conformance/reports/binding/cleanup.json
+          fi
+      - uses: https://code.forgejo.org/forgejo/upload-artifact@v4
+        if: always()
+        with:
+          name: artifact-binding-certification
+          path: conformance/reports/binding/
+          if-no-files-found: warn

@@ -1,0 +1,91 @@
+{
+  "slug": "selection",
+  "layer": "system",
+  "issue": 59,
+  "dependencies": [
+    "specification",
+    "participation",
+    "evaluation",
+    "decision",
+    "agreement-catalog"
+  ],
+  "facts": [
+    "Solicitation, typed submission envelope, evaluated shortlist and durable award/agreement link."
+  ],
+  "operations": [
+    "submit typed envelope; scoreSubmission from completed pinned Evaluation",
+    "shortlist explicit bounded scored nominations onto fresh Decision options",
+    "award winning submission against issued Agreement; inspectAward validates provenance"
+  ],
+  "invariants": [
+    "Artifact submissions, Intake and Quote-to-Submission adapters; no reverse Agreement-to-Selection or Quote-to-Selection core edge.",
+    "Procurement/hiring/grants; pinned criteria, deadlines, ties/ranking when enabled, duplicate award guard and winning agreement trace.",
+    "Ranking uses exact six-decimal BigInt quantities; explicit tie rejection or deterministic submission-key order",
+    "Agreement issuance is separate durable workflow; core does not claim Artifact/Intake/Quotation bridges or serializable revocation/Decision read snapshots"
+  ],
+  "acceptance": [
+    {
+      "id": "F59-01",
+      "description": "solicitation/call model",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-selection.test.ts"
+      ]
+    },
+    {
+      "id": "F59-02",
+      "description": "submission envelope",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-selection.test.ts"
+      ]
+    },
+    {
+      "id": "F59-03",
+      "description": "evaluation/decision integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-selection.test.ts"
+      ]
+    },
+    {
+      "id": "F59-04",
+      "description": "award/selection fact",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-selection.test.ts"
+      ]
+    },
+    {
+      "id": "F59-05",
+      "description": "shortlist/ranking support where justified",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-selection.test.ts"
+      ]
+    },
+    {
+      "id": "F59-06",
+      "description": "fixtures for procurement, hiring and grants",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-selection.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "fixtures for procurement, hiring and grants"
+  ]
+}

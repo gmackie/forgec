@@ -138,6 +138,8 @@ pub struct ResourceContract {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryContract {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub search_mode: Option<String>,
     pub name: String,
     pub kind: String,
     pub params: Vec<String>,
@@ -265,6 +267,7 @@ pub fn plan(ir: &DomainIR) -> Contracts {
             for a in &p.aggregates {
                 let schema = match (a.function.as_str(), a.scale) {
                     ("count", _) => json!({ "type": "integer", "x-forge-type": "integer" }),
+                    ("exists" | "notExists", _) => json!({ "type": "boolean" }),
                     (_, Some(scale)) => {
                         json!({ "type": "string", "x-forge-type": "decimal", "x-forge-scale": scale })
                     }
@@ -272,6 +275,11 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                         .as_ref()
                         .and_then(|s| s.record.properties.get(&a.field).cloned())
                         .unwrap_or(json!({ "type": "number" })),
+                };
+                let schema = if matches!(a.function.as_str(), "min" | "max" | "latest") {
+                    json!({"anyOf":[schema,{"type":"null"}]})
+                } else {
+                    schema
                 };
                 record.properties.insert(a.alias.clone(), schema);
                 record.required.push(a.alias.clone());
@@ -444,6 +452,23 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
     ordered.extend(r.fields.iter().filter(|f| f.synthesized));
     ordered.extend(r.fields.iter().filter(|f| !f.synthesized && f.name != "id"));
     for f in ordered {
+        if f.secret {
+            record.properties.insert(
+                format!("{}Present", f.name),
+                json!({"type":"boolean","readOnly":true}),
+            );
+            record.required.push(format!("{}Present", f.name));
+            let mut schema = field_schema(ir, r, f);
+            schema["writeOnly"] = json!(true);
+            create.properties.insert(f.name.clone(), schema.clone());
+            if !f.ty.optional {
+                create.required.push(f.name.clone());
+            }
+            if !f.immutable {
+                patch.properties.insert(f.name.clone(), schema);
+            }
+            continue;
+        }
         if f.hidden {
             continue;
         }
@@ -465,6 +490,7 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
         .finds
         .iter()
         .map(|f| QueryContract {
+            search_mode: None,
             name: f.name.clone(),
             kind: "find".into(),
             params: f.fields.clone(),
@@ -472,6 +498,7 @@ fn resource(ir: &DomainIR, r: &Resource) -> ResourceContract {
         })
         .collect();
     queries.extend(r.lists.iter().map(|l| QueryContract {
+        search_mode: l.search_mode.clone(),
         name: l.name.clone(),
         kind: "list".into(),
         params: l.fields.clone(),
@@ -563,6 +590,17 @@ fn shape_or_record_schema(ir: &DomainIR, base: &TypeBase) -> JsonSchema {
         _ => vec![],
     };
     for f in fields {
+        if f.secret {
+            s.properties.insert(
+                format!("{}Present", f.name),
+                json!({"type":"boolean","readOnly":true}),
+            );
+            s.required.push(format!("{}Present", f.name));
+            continue;
+        }
+        if f.hidden {
+            continue;
+        }
         let owner = match base {
             TypeBase::Record { resource } | TypeBase::Reference { resource } => ir
                 .find_resource(resource)
@@ -636,6 +674,11 @@ pub fn field_schema(ir: &DomainIR, owner: &Resource, f: &Field) -> Value {
         if f.server_owned {
             obj.insert("readOnly".into(), json!(true));
         }
+        if let Some(sequence) = &f.sequence {
+            obj.insert("x-forge-sequence".into(), json!(sequence));
+            obj.insert("minimum".into(), json!(sequence.start));
+            obj.insert("maximum".into(), json!(sequence.max));
+        }
         if !f.ty.normalizers.is_empty() {
             obj.insert("x-forge-normalizers".into(), json!(f.ty.normalizers));
         }
@@ -658,8 +701,31 @@ fn literal_json(l: &Literal) -> Value {
     }
 }
 
+fn collection_element_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
+    let mut schema = if matches!(ty.base, TypeBase::Shape { .. }) {
+        serde_json::to_value(shape_or_record_schema(ir, &ty.base)).unwrap()
+    } else {
+        type_schema(ir, owner, ty)
+    };
+    if ty.optional {
+        let base = schema["type"].clone();
+        schema["type"] = json!([base, "null"]);
+    }
+    schema
+}
 fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
     let mut s = match &ty.base {
+        TypeBase::Collection {
+            collection,
+            element,
+        } => match collection {
+            CollectionKind::Map => {
+                json!({"type":"object","additionalProperties":collection_element_schema(ir,owner,element),"x-forge-collection":"map"})
+            }
+            CollectionKind::List | CollectionKind::Set => {
+                json!({"type":"array","items":collection_element_schema(ir,owner,element),"uniqueItems":*collection==CollectionKind::Set,"x-forge-collection":if *collection==CollectionKind::Set {"set"}else{"list"}})
+            }
+        },
         TypeBase::Scalar { name, args } => match name.as_str() {
             "id" => {
                 json!({ "type": "string", "x-forge-type": "id", "maxLength": 64, "pattern": "^[A-Za-z0-9_-]+$" })
@@ -728,10 +794,32 @@ fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
             match c {
                 Constraint::Length { min, max } => {
                     if let Some(min) = min {
-                        obj.insert("minLength".into(), json!(min));
+                        obj.insert(
+                            match &ty.base {
+                                TypeBase::Collection {
+                                    collection: CollectionKind::Map,
+                                    ..
+                                } => "minProperties",
+                                TypeBase::Collection { .. } => "minItems",
+                                _ => "minLength",
+                            }
+                            .into(),
+                            json!(min),
+                        );
                     }
                     if let Some(max) = max {
-                        obj.insert("maxLength".into(), json!(max));
+                        obj.insert(
+                            match &ty.base {
+                                TypeBase::Collection {
+                                    collection: CollectionKind::Map,
+                                    ..
+                                } => "maxProperties",
+                                TypeBase::Collection { .. } => "maxItems",
+                                _ => "maxLength",
+                            }
+                            .into(),
+                            json!(max),
+                        );
                     }
                 }
                 Constraint::Compare { op, value } => {

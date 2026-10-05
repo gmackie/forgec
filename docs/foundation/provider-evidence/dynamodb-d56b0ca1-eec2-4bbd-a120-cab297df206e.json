@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-adjudication-invariants/1",
+  "coverageCriteria": [
+    "F44-STORE"
+  ],
+  "status": "passing",
+  "runId": "d56b0ca1-eec2-4bbd-a120-cab297df206e",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "24b5146ce46e63ddce4b0bd902cf1c3ad0704317e2e5b059d8ef51b968250ccd",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "ddb30b8a0f9f7972fc521a0a27b35e5b0039ab53f241d6095a972a2d8af900ce"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "7f3aef4782ab091e1eb7cb5700a792a185539ac7784969561972f7208e53dc60"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "6364e7be653079521abd6896082c60e42be7870793470a5318c2f45e23e903c6"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous item timestamps cannot prove prior Decision binding",
+    "hosted: determination, source reasons, exact idempotent settlement and three domains",
+    "hosted: fulfillment and explanation intents remain distinct from execution",
+    "hosted: rejected Decision cannot authorize a positive award or settlement"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T15:11:00.901Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous item timestamps cannot prove prior Decision binding",
+    "hosted: determination, source reasons, exact idempotent settlement and three domains",
+    "hosted: fulfillment and explanation intents remain distinct from execution",
+    "hosted: rejected Decision cannot authorize a positive award or settlement"
+  ],
+  "testReportSha256": "5d72e5464c385a2c7da0e8261572355a0b2af17e825d5d823ad486c7d6852f07",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "d56b0ca1-eec2-4bbd-a120-cab297df206e",
+    "tenantPrefix": "foundation-cert-d56b0ca1-eec2-4bbd-a120-cab297df206e",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

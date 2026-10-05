@@ -55,3 +55,24 @@ on every boot. Never enable it where untrusted callers can reach the process.
 [Operations](https://github.com/gmackie/forgec/blob/main/docs/operations.md)
 
 Apache-2.0
+
+Blob finalization hashes the sealed copy and checks its byte count after copying.
+Each contender uses a fresh private object key, so a losing metadata commit cannot
+replace a winner's bytes. The hidden `sealedGeneration` field stores a versioned
+`forge-sealed/1` object token plus provider generation; readers still support legacy
+generation-only keys. Upgrade readers before writers; older runtime versions cannot
+read the new object-token format. Failed finalizations may leave unreferenced private
+objects for lifecycle cleanup. This is local race coverage, not live R2/S3 certification.
+
+### Opt-in Foundation application adapters
+
+The runtime package ships experimental application adapters as explicit subpath exports:
+
+```ts
+import { withFoundationProduction } from "@forgegraph/runtime/foundation/apps/levelforge";
+import { assessChangeset } from "@forgegraph/runtime/foundation/apps/forgegraph";
+```
+
+Additional subpaths are `bob`, `kanbanger`, `latchflow`, and `stream-conductor`. They accept structural application ports. Bob and KanBanger accept an explicit Effect runner; the other adapters use the runtime's own Effect dependency internally. They do not install or enable an application. Compile the corresponding `examples/foundation/apps/<app>` schema into the application's Foundation deployment and supply authenticated tenant context and trusted bindings. Each example documents its integration seam and recovery boundaries. These optional adapters preserve application vocabulary; they are not new generic Foundation packages.
+
+`pnpm foundation:distribution` unpacks the real `pnpm pack` tarball into an external temporary consumer and checks all six JavaScript exports and TypeScript declarations. It rejects unresolved workspace dependency protocols.

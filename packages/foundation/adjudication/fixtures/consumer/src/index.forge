@@ -1,0 +1,25 @@
+import adjudication
+export resource ExpenseRequest
+  @tenant
+  @appendOnly
+{
+  id : id
+  expenseCode : text length 1..128
+  adjudicationCase : adjudication.AdjudicationCase
+}
+export resource WarrantyRequest
+  @tenant
+  @appendOnly
+{
+  id : id
+  serialNumber : text length 1..128
+  adjudicationCase : adjudication.AdjudicationCase
+}
+export resource HealthcarePreauthorization
+  @tenant
+  @appendOnly
+{
+  id : id
+  serviceCode : text length 1..128
+  adjudicationCase : adjudication.AdjudicationCase
+}

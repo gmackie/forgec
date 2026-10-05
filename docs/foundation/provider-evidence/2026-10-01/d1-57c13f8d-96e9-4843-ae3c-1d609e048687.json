@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-agreement-catalog-invariants/1",
+  "coverageCriteria": [
+    "F43-STORE"
+  ],
+  "status": "passing",
+  "runId": "57c13f8d-96e9-4843-ae3c-1d609e048687",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "c89102edf610cdf200708964a46b671f2baddbc629c20cea3c972a10fc63e25c",
+  "sourceFingerprint": "ca23535fcb749f7c3c716a97d1fc921c0ebb326ab2144e7d185b9a62daf2eaf8",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "93911a58ed16b0368f151a24ee8ae331d1872a4ec0b1e791bcf2b0faf0f5b03e"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "5f560c37267902ea47867a96222ea740501291a37c19b170497e456b2e4095c3"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "083e8d343a1bc1b715b3c932fa55130ae53d9e5fe1ce8eec7e48bb6054ce74b7"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: pinned acceptance, resumable exactly-once issuance and four typed domains",
+    "hosted: missing signers, expired offers and lifecycle history",
+    "hosted: independent successor agreements, denied issuance and hidden lifecycle",
+    "hosted: interrupted issuance resumes without duplicate grants",
+    "hosted: concurrent issuance receipt misses cannot duplicate raw entitlement grants"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-10-01T02:40:18.695Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: pinned acceptance, resumable exactly-once issuance and four typed domains",
+    "hosted: missing signers, expired offers and lifecycle history",
+    "hosted: independent successor agreements, denied issuance and hidden lifecycle",
+    "hosted: interrupted issuance resumes without duplicate grants",
+    "hosted: concurrent issuance receipt misses cannot duplicate raw entitlement grants"
+  ],
+  "testReportSha256": "9e934b28405b980fb7031071031a4228896b57c4f5a35e2042df3bc8f8cad449",
+  "identity": {
+    "provider": "d1",
+    "runId": "57c13f8d-96e9-4843-ae3c-1d609e048687",
+    "tenantPrefix": "foundation-cert-57c13f8d-96e9-4843-ae3c-1d609e048687",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "93911a58ed16b0368f151a24ee8ae331d1872a4ec0b1e791bcf2b0faf0f5b03e",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "PDX"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

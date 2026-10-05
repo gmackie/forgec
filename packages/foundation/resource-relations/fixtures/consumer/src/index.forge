@@ -1,0 +1,22 @@
+import relations
+export resource LeasedEquipment @tenant @appendOnly {
+ id : id
+ resource : relations.ResourceSubject @unique
+ serial : text length 1..128 @unique
+}
+export resource ConsignedInventory @tenant @appendOnly {
+ id : id
+ resource : relations.ResourceSubject @unique
+ lot : text length 1..128 @unique
+}
+export resource CloudResource @tenant @appendOnly {
+ id : id
+ resource : relations.ResourceSubject @unique
+ account : text length 1..128 @unique
+}
+export resource CustodyHandoffEvent @tenant @appendOnly {
+ id : id
+ source : relations.RelationSource @unique
+ resource : relations.ResourceSubject
+ receipt : text length 1..128 @unique
+}

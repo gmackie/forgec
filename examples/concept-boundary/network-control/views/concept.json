@@ -1,0 +1,266 @@
+{
+  "nodes": {
+    "@boundary/network-control/_/AdmitIntent": "process",
+    "@boundary/network-control/_/ApplicationAttempt": "fact",
+    "@boundary/network-control/_/ApplyNetworkPlan": "process",
+    "@boundary/network-control/_/BoundaryOperator": "principal",
+    "@boundary/network-control/_/DesiredConfig": "reference",
+    "@boundary/network-control/_/DeviceCommand": "reference",
+    "@boundary/network-control/_/DeviceReceipt": "reference",
+    "@boundary/network-control/_/MayAdmitIntent": "policy",
+    "@boundary/network-control/_/MayApplyNetworkPlan": "policy",
+    "@boundary/network-control/_/MayObserveDevices": "policy",
+    "@boundary/network-control/_/MayReconcileNetwork": "policy",
+    "@boundary/network-control/_/NetworkDevices": "external",
+    "@boundary/network-control/_/NetworkIntent": "entity",
+    "@boundary/network-control/_/ObserveDevices": "process",
+    "@boundary/network-control/_/ObservedTopology": "entity",
+    "@boundary/network-control/_/ReconcileDecision": "fact",
+    "@boundary/network-control/_/ReconcileNetwork": "process",
+    "@boundary/network-control/_/RouteSolution": "reference",
+    "@boundary/network-control/_/RoutingEngine": "external",
+    "@boundary/network-control/_/TelemetryReport": "reference"
+  },
+  "edges": [
+    {
+      "from": "@boundary/network-control/_/AdmitIntent",
+      "to": "@boundary/network-control/_/NetworkIntent",
+      "port": "@boundary/network-control/_/AdmitIntent#output:intent",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/network-control/_/ApplyNetworkPlan",
+      "to": "@boundary/network-control/_/ApplicationAttempt",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#output:attempt",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/network-control/_/ApplyNetworkPlan",
+      "to": "@boundary/network-control/_/DeviceCommand",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/network-control/_/ApplyNetworkPlan",
+      "to": "@boundary/network-control/_/NetworkDevices",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/network-control/_/BoundaryOperator",
+      "to": "@boundary/network-control/_/AdmitIntent",
+      "port": "@boundary/network-control/_/AdmitIntent",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/BoundaryOperator",
+      "to": "@boundary/network-control/_/ApplyNetworkPlan",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/BoundaryOperator",
+      "to": "@boundary/network-control/_/ObserveDevices",
+      "port": "@boundary/network-control/_/ObserveDevices",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/BoundaryOperator",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/DeviceReceipt",
+      "to": "@boundary/network-control/_/ApplyNetworkPlan",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#input:receipt",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/network-control/_/MayAdmitIntent",
+      "to": "@boundary/network-control/_/AdmitIntent",
+      "port": "@boundary/network-control/_/AdmitIntent",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/network-control/_/MayAdmitIntent",
+      "to": "@boundary/network-control/_/BoundaryOperator",
+      "port": "@boundary/network-control/_/MayAdmitIntent",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/MayAdmitIntent",
+      "to": "@boundary/network-control/_/NetworkIntent",
+      "port": "@boundary/network-control/_/MayAdmitIntent",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/network-control/_/MayApplyNetworkPlan",
+      "to": "@boundary/network-control/_/ApplicationAttempt",
+      "port": "@boundary/network-control/_/MayApplyNetworkPlan",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/network-control/_/MayApplyNetworkPlan",
+      "to": "@boundary/network-control/_/ApplyNetworkPlan",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/network-control/_/MayApplyNetworkPlan",
+      "to": "@boundary/network-control/_/BoundaryOperator",
+      "port": "@boundary/network-control/_/MayApplyNetworkPlan",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/MayObserveDevices",
+      "to": "@boundary/network-control/_/BoundaryOperator",
+      "port": "@boundary/network-control/_/MayObserveDevices",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/MayObserveDevices",
+      "to": "@boundary/network-control/_/ObserveDevices",
+      "port": "@boundary/network-control/_/ObserveDevices",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/network-control/_/MayObserveDevices",
+      "to": "@boundary/network-control/_/ObservedTopology",
+      "port": "@boundary/network-control/_/MayObserveDevices",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/network-control/_/MayReconcileNetwork",
+      "to": "@boundary/network-control/_/BoundaryOperator",
+      "port": "@boundary/network-control/_/MayReconcileNetwork",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/network-control/_/MayReconcileNetwork",
+      "to": "@boundary/network-control/_/ReconcileDecision",
+      "port": "@boundary/network-control/_/MayReconcileNetwork",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/network-control/_/MayReconcileNetwork",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/network-control/_/NetworkDevices",
+      "to": "@boundary/network-control/_/ApplyNetworkPlan",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#activation:receipt",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/network-control/_/NetworkDevices",
+      "to": "@boundary/network-control/_/ApplyNetworkPlan",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#input:receipt",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/network-control/_/NetworkDevices",
+      "to": "@boundary/network-control/_/ObserveDevices",
+      "port": "@boundary/network-control/_/ObserveDevices#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/network-control/_/NetworkDevices",
+      "to": "@boundary/network-control/_/ObserveDevices",
+      "port": "@boundary/network-control/_/ObserveDevices#input:report",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/network-control/_/NetworkIntent",
+      "to": "@boundary/network-control/_/AdmitIntent",
+      "port": "@boundary/network-control/_/AdmitIntent#input:current",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/network-control/_/NetworkIntent",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork#activation:intentChanged",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/network-control/_/NetworkIntent",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork#input:intent",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/network-control/_/ObserveDevices",
+      "to": "@boundary/network-control/_/ObservedTopology",
+      "port": "@boundary/network-control/_/ObserveDevices#output:topology",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/network-control/_/ObservedTopology",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/network-control/_/ObservedTopology",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork#input:topology",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/network-control/_/ReconcileDecision",
+      "to": "@boundary/network-control/_/ApplyNetworkPlan",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/network-control/_/ReconcileDecision",
+      "to": "@boundary/network-control/_/ApplyNetworkPlan",
+      "port": "@boundary/network-control/_/ApplyNetworkPlan#input:decision",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/network-control/_/ReconcileNetwork",
+      "to": "@boundary/network-control/_/DesiredConfig",
+      "port": "@boundary/network-control/_/ReconcileNetwork#output:routeRequest",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/network-control/_/ReconcileNetwork",
+      "to": "@boundary/network-control/_/ReconcileDecision",
+      "port": "@boundary/network-control/_/ReconcileNetwork#output:decision",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/network-control/_/ReconcileNetwork",
+      "to": "@boundary/network-control/_/RoutingEngine",
+      "port": "@boundary/network-control/_/ReconcileNetwork#output:routeRequest",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/network-control/_/RouteSolution",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork#input:solution",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/network-control/_/RoutingEngine",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork#activation:solution",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/network-control/_/RoutingEngine",
+      "to": "@boundary/network-control/_/ReconcileNetwork",
+      "port": "@boundary/network-control/_/ReconcileNetwork#input:solution",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/network-control/_/TelemetryReport",
+      "to": "@boundary/network-control/_/ObserveDevices",
+      "port": "@boundary/network-control/_/ObserveDevices#input:report",
+      "kind": "input"
+    }
+  ]
+}

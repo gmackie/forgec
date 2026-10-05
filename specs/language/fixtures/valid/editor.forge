@@ -1,0 +1,61 @@
+/// Shared syntax corpus.
+module demo
+import common as shared
+export type Title = text trim length 1..200
+purpose Support
+dataClass Email extends data.personal.contact
+shape Request { name : Title }
+enum Color {
+  Red = "red"
+  Blue = "blue"
+}
+resource Ticket @tenant @versioned {
+  id : id
+  title : Title
+  score : integer >= 0 = 0
+  color : Color = Color.Red
+  email : email? @data(Email)
+  capability Basic {
+    read { title color }
+    update { title }
+  }
+  for Support { use Basic }
+  lifecycle status {
+    initial Open
+    terminal Closed
+    close: Open -> Closed
+      input { reason : text }
+  }
+  unique title
+  find by title
+  list by color order by title asc
+  rules { score >= -1 }
+}
+function Notify {
+  input Request
+  output Ticket.Record
+  uses { Ticket read for Support }
+  errors { Missing }
+  slo {
+    availability 99.9% over 28d
+    latency 99% <= 500ms over 28d
+  }
+}
+source Daily {
+  cron "0 8 * * *"
+  timezone "UTC"
+  -> Notify
+}
+workflow Run {
+  input Request
+  output Ticket.Record
+  version 1
+  step notified = Notify(name: input.name)
+    catch Missing -> fail Missing
+  step pause = sleep 1s
+  if true {
+    return notified
+  } else {
+    fail Missing
+  }
+}

@@ -1,0 +1,1564 @@
+{
+  "entities": {
+    "@boundary/robot-mission/_/Mission": {
+      "name": "Mission",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "goal": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/GoalSpec"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "revision": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "mode": {
+          "ty": {
+            "base": {
+              "kind": "enum",
+              "id": "@boundary/robot-mission/_/MissionMode"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/robot-mission/_/PerceptionSnapshot": {
+      "name": "PerceptionSnapshot",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sample": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/SceneSample"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/robot-mission/_/PlanAssessment": {
+      "name": "PlanAssessment",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "mission": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/robot-mission/_/Mission",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "candidate": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/TrajectoryCandidate"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recordedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/robot-mission/_/CommandDecision": {
+      "name": "CommandDecision",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "mission": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/robot-mission/_/Mission",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "command": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/MotionCommand"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "receipt": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/ActuationReceipt"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "reason": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/robot-mission/_/SensorGateway": {
+      "name": "SensorGateway",
+      "data": {
+        "@boundary/robot-mission/_/SensorGateway#data:sample": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/robot-mission/_/SceneSample"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {},
+      "events": [
+        "PerceptionAvailable"
+      ]
+    },
+    "@boundary/robot-mission/_/TrajectorySolver": {
+      "name": "TrajectorySolver",
+      "data": {
+        "@boundary/robot-mission/_/TrajectorySolver#data:candidate": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/robot-mission/_/TrajectoryCandidate"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/robot-mission/_/TrajectorySolver#accepts:request": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/robot-mission/_/PlanningRequest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "CandidateReady"
+      ]
+    },
+    "@boundary/robot-mission/_/LocalController": {
+      "name": "LocalController",
+      "data": {
+        "@boundary/robot-mission/_/LocalController#data:receipt": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/robot-mission/_/ActuationReceipt"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/robot-mission/_/LocalController#accepts:command": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/robot-mission/_/MotionCommand"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "ReceiptAvailable",
+        "WatchdogStop"
+      ]
+    }
+  },
+  "principals": {
+    "@boundary/robot-mission/_/BoundaryOperator": {
+      "name": "BoundaryOperator",
+      "attributes": {
+        "authorized": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@boundary/robot-mission/_/MayReviseMission": {
+      "name": "MayReviseMission",
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@boundary/robot-mission/_/Mission",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/robot-mission/_/MayObserveScene": {
+      "name": "MayObserveScene",
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/robot-mission/_/PerceptionSnapshot"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/robot-mission/_/MayAssessPlan": {
+      "name": "MayAssessPlan",
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/robot-mission/_/PlanAssessment"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/robot-mission/_/MayAdvanceMission": {
+      "name": "MayAdvanceMission",
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/robot-mission/_/CommandDecision"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    }
+  },
+  "processes": {
+    "@boundary/robot-mission/_/ReviseMission": {
+      "name": "ReviseMission",
+      "purpose": null,
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/robot-mission/_/MayReviseMission",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/robot-mission/_/ReviseMission#activation:trigger": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/GoalSpec"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        },
+        "@boundary/robot-mission/_/ReviseMission#activation:decision": {
+          "kind": "fact",
+          "fact": "@boundary/robot-mission/_/CommandDecision"
+        }
+      },
+      "inputs": {
+        "@boundary/robot-mission/_/ReviseMission#input:current": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/robot-mission/_/Mission",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/robot-mission/_/ReviseMission#input:decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/robot-mission/_/CommandDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/robot-mission/_/ReviseMission#output:mission": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/robot-mission/_/Mission",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/robot-mission/_/ObserveScene": {
+      "name": "ObserveScene",
+      "purpose": null,
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/robot-mission/_/MayObserveScene",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/robot-mission/_/ObserveScene#activation:trigger": {
+          "kind": "externalEvent",
+          "external": "@boundary/robot-mission/_/SensorGateway",
+          "event": "PerceptionAvailable"
+        }
+      },
+      "inputs": {
+        "@boundary/robot-mission/_/ObserveScene#input:sample": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/SceneSample"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/robot-mission/_/SensorGateway"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/robot-mission/_/ObserveScene#output:snapshot": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/robot-mission/_/PerceptionSnapshot"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/robot-mission/_/AssessPlan": {
+      "name": "AssessPlan",
+      "purpose": null,
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/robot-mission/_/MayAssessPlan",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/robot-mission/_/AssessPlan#activation:trigger": {
+          "kind": "externalEvent",
+          "external": "@boundary/robot-mission/_/TrajectorySolver",
+          "event": "CandidateReady"
+        },
+        "@boundary/robot-mission/_/AssessPlan#activation:newScene": {
+          "kind": "fact",
+          "fact": "@boundary/robot-mission/_/PerceptionSnapshot"
+        }
+      },
+      "inputs": {
+        "@boundary/robot-mission/_/AssessPlan#input:mission": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/robot-mission/_/Mission",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/robot-mission/_/AssessPlan#input:snapshot": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/robot-mission/_/PerceptionSnapshot"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/robot-mission/_/AssessPlan#input:candidate": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/TrajectoryCandidate"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/robot-mission/_/TrajectorySolver"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/robot-mission/_/AssessPlan#output:assessment": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/robot-mission/_/PlanAssessment"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/robot-mission/_/AssessPlan#output:request": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/PlanningRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/robot-mission/_/TrajectorySolver"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/robot-mission/_/AdvanceMission": {
+      "name": "AdvanceMission",
+      "purpose": null,
+      "principal": "@boundary/robot-mission/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/robot-mission/_/MayAdvanceMission",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/robot-mission/_/AdvanceMission#activation:trigger": {
+          "kind": "request",
+          "payload": null
+        },
+        "@boundary/robot-mission/_/AdvanceMission#activation:receipt": {
+          "kind": "externalEvent",
+          "external": "@boundary/robot-mission/_/LocalController",
+          "event": "ReceiptAvailable"
+        },
+        "@boundary/robot-mission/_/AdvanceMission#activation:assessment": {
+          "kind": "fact",
+          "fact": "@boundary/robot-mission/_/PlanAssessment"
+        }
+      },
+      "inputs": {
+        "@boundary/robot-mission/_/AdvanceMission#input:mission": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/robot-mission/_/Mission",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/robot-mission/_/AdvanceMission#input:assessment": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/robot-mission/_/PlanAssessment"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/robot-mission/_/AdvanceMission#input:receipt": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/ActuationReceipt"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/robot-mission/_/LocalController"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/robot-mission/_/AdvanceMission#output:decision": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/robot-mission/_/CommandDecision"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/robot-mission/_/AdvanceMission#output:command": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/robot-mission/_/MotionCommand"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/robot-mission/_/LocalController"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/robot-mission/_/GoalSpec": {
+      "destinationFrame": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "destinationDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "safetyEnvelopeDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "deadlineAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/robot-mission/_/SceneSample": {
+      "sequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "capturedAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "frame": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "obstacleMapDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "localizationHealthy": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/robot-mission/_/TrajectoryCandidate": {
+      "missionRevision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "sceneSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "modelDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "trajectoryDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "validUntil": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "feasible": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "missionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "frame": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "safetyEnvelopeDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/robot-mission/_/PlanningRequest": {
+      "missionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "revision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "sceneSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "goal": {
+        "ty": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/robot-mission/_/GoalSpec"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/robot-mission/_/MotionCommand": {
+      "missionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "missionRevision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "commandSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "disposition": {
+        "ty": {
+          "base": {
+            "kind": "enum",
+            "id": "@boundary/robot-mission/_/CommandDisposition"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "trajectoryDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": true,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "leaseExpiresAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/robot-mission/_/ActuationReceipt": {
+      "commandSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "accepted": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "watchdogStopped": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "observedAt": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "datetime",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "missionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "missionRevision": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {
+    "@boundary/robot-mission/_/MissionMode": [
+      "Ready",
+      "Executing",
+      "Hold",
+      "Aborted",
+      "Completed"
+    ],
+    "@boundary/robot-mission/_/CommandDisposition": [
+      "FollowTrajectory",
+      "Hold",
+      "Stop"
+    ]
+  },
+  "version": "concept-ir/2",
+  "package": "@boundary/robot-mission"
+}

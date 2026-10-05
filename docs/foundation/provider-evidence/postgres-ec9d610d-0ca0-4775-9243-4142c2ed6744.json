@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-publication-invariants/1",
+  "coverageCriteria": [
+    "F48-STORE"
+  ],
+  "status": "passing",
+  "runId": "ec9d610d-0ca0-4775-9243-4142c2ed6744",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+  "sourceFingerprint": "343cb7827b1d5dbe74f13feef144b0b7d5ec62fe0b0ef7c8344e05d852f604b9",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "3f39fb1338ee2927506b289f9ee9bf4184087cc6a48f3281a11d56f60d123009"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "35537e104697527dd7b3ce8981b52db80a92d7bf89cc267cac5db2331febdeef"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "b40a6106a4c033a8e52c4fdec93ca22981a04815daaa011795caeb12a77fc284"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous Decision timestamps cannot prove prior candidate binding",
+    "hosted: post-hoc evaluation binding cannot be laundered through future business timestamps",
+    "hosted: all qualification policies, exact release pins and four domain satellites",
+    "hosted: failed gates reject publication and promotion races preserve the journal",
+    "hosted: deprecation history, hidden journal and denied writes fail closed"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T05:00:39.736Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous Decision timestamps cannot prove prior candidate binding",
+    "hosted: post-hoc evaluation binding cannot be laundered through future business timestamps",
+    "hosted: all qualification policies, exact release pins and four domain satellites",
+    "hosted: failed gates reject publication and promotion races preserve the journal",
+    "hosted: deprecation history, hidden journal and denied writes fail closed"
+  ],
+  "testReportSha256": "7fbb8658357d82e03ace415ab3d91359b2ae768a9bf92e7cbdd083ae8e2b6129",
+  "identity": {
+    "provider": "postgres",
+    "runId": "ec9d610d-0ca0-4775-9243-4142c2ed6744",
+    "tenantPrefix": "foundation-cert-ec9d610d-0ca0-4775-9243-4142c2ed6744",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

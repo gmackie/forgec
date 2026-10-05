@@ -59,7 +59,7 @@ const machineName = (w: { aws: { stateMachine: string } }) => `${w.aws.stateMach
 const machineArns = Object.fromEntries(workflowPlans.map((w) => [w.name, stack.formatArn({ service: "states", resource: "stateMachine", resourceName: machineName(w), arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME })]));
 
 const fn = new lambda.Function(stack, "Api", {
-  runtime: lambda.Runtime.NODEJS_22_X,
+  runtime: lambda.Runtime.NODEJS_24_X,
   handler: "index.handler",
   code: lambda.Code.fromAsset(path.join(import.meta.dirname, "dist")),
   memorySize: 512,

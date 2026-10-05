@@ -1,0 +1,14 @@
+BOUNDED FORMAL-HANDOFF SKETCH — not executable TLA+/PlusCal
+Process: ApplyNetworkPlan
+Input decision: intent revision r, observed device generation g, route digest.
+Input receipt: idempotencyKey, accepted flag, applied revision, observed time.
+Output command: device, desiredRevision r, observedGeneration g,
+controllerEpoch e, operationDigest, idempotencyKey.
+Output attempt: immutable association to ReconcileDecision and optional receipt.
+State to model externally: desiredRevision, observedGeneration, activeEpoch,
+inflight commands, partition state, per-device lastApplied and receipt inbox.
+Safety question: stale epoch/generation cannot replace a newer applied revision.
+Liveness assumptions: eventually stable intent; eventually reachable devices;
+fair retry; eventual delivery. Permanent partitions invalidate liveness claim.
+Explore: duplicate commands, reordered telemetry, receipt loss, two replicas.
+No invariant, refinement mapping, model-check result or proof is supplied here.

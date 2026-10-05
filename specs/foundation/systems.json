@@ -1,0 +1,1050 @@
+{
+  "schemaVersion": 1,
+  "layer": "system",
+  "status": "implementation-in-progress",
+  "packages": [
+    {
+      "slug": "decision",
+      "issue": 39,
+      "dependencies": [
+        "participation",
+        "evidence",
+        "evaluation"
+      ],
+      "contract": "packages/foundation/decision/contract.json",
+      "acceptanceIds": [
+        "F39-01",
+        "F39-02",
+        "F39-03",
+        "F39-04",
+        "F39-05",
+        "F39-06",
+        "F39-07",
+        "F39-R01",
+        "F39-R02",
+        "F39-AUTH",
+        "F39-STORE"
+      ]
+    },
+    {
+      "slug": "assurance",
+      "issue": 40,
+      "dependencies": [
+        "specification",
+        "evaluation",
+        "evidence",
+        "artifact",
+        "attestation"
+      ],
+      "contract": "packages/foundation/assurance/contract.json",
+      "acceptanceIds": [
+        "F40-01",
+        "F40-02",
+        "F40-03",
+        "F40-04",
+        "F40-05",
+        "F40-06",
+        "F40-07",
+        "F40-R01",
+        "F40-R02",
+        "F40-AUTH",
+        "F40-STORE"
+      ]
+    },
+    {
+      "slug": "change",
+      "issue": 41,
+      "dependencies": [
+        "decision",
+        "specification",
+        "evaluation",
+        "fulfillment",
+        "evidence"
+      ],
+      "contract": "packages/foundation/change/contract.json",
+      "acceptanceIds": [
+        "F41-01",
+        "F41-02",
+        "F41-03",
+        "F41-04",
+        "F41-05",
+        "F41-06",
+        "F41-07",
+        "F41-R01",
+        "F41-R02",
+        "F41-AUTH",
+        "F41-STORE"
+      ]
+    },
+    {
+      "slug": "experiment",
+      "issue": 42,
+      "dependencies": [
+        "specification",
+        "participation",
+        "allocation",
+        "fulfillment",
+        "evaluation",
+        "evidence",
+        "artifact",
+        "lineage"
+      ],
+      "contract": "packages/foundation/experiment/contract.json",
+      "acceptanceIds": [
+        "F42-01",
+        "F42-02",
+        "F42-03",
+        "F42-04",
+        "F42-05",
+        "F42-06",
+        "F42-R01",
+        "F42-R02",
+        "F42-AUTH",
+        "F42-STORE"
+      ]
+    },
+    {
+      "slug": "agreement-catalog",
+      "issue": 43,
+      "dependencies": [
+        "decision",
+        "specification",
+        "participation",
+        "entitlement",
+        "evaluation",
+        "artifact",
+        "evidence",
+        "party"
+      ],
+      "contract": "packages/foundation/agreement-catalog/contract.json",
+      "acceptanceIds": [
+        "F43-01",
+        "F43-02",
+        "F43-03",
+        "F43-04",
+        "F43-05",
+        "F43-06",
+        "F43-R01",
+        "F43-R02",
+        "F43-AUTH",
+        "F43-STORE"
+      ]
+    },
+    {
+      "slug": "adjudication",
+      "issue": 44,
+      "dependencies": [
+        "decision",
+        "entitlement",
+        "evidence",
+        "evaluation",
+        "fulfillment",
+        "ledger",
+        "delivery"
+      ],
+      "contract": "packages/foundation/adjudication/contract.json",
+      "acceptanceIds": [
+        "F44-01",
+        "F44-02",
+        "F44-03",
+        "F44-04",
+        "F44-05",
+        "F44-06",
+        "F44-R01",
+        "F44-R02",
+        "F44-AUTH",
+        "F44-STORE"
+      ]
+    },
+    {
+      "slug": "operations",
+      "issue": 45,
+      "dependencies": [
+        "specification",
+        "allocation",
+        "fulfillment",
+        "usage",
+        "lineage",
+        "evaluation",
+        "evidence"
+      ],
+      "contract": "packages/foundation/operations/contract.json",
+      "acceptanceIds": [
+        "F45-01",
+        "F45-02",
+        "F45-03",
+        "F45-04",
+        "F45-05",
+        "F45-06",
+        "F45-07",
+        "F45-R01",
+        "F45-R02",
+        "F45-AUTH",
+        "F45-STORE"
+      ]
+    },
+    {
+      "slug": "reconciliation",
+      "issue": 46,
+      "dependencies": [
+        "specification",
+        "evaluation",
+        "fulfillment",
+        "evidence"
+      ],
+      "contract": "packages/foundation/reconciliation/contract.json",
+      "acceptanceIds": [
+        "F46-01",
+        "F46-02",
+        "F46-03",
+        "F46-04",
+        "F46-05",
+        "F46-06",
+        "F46-07",
+        "F46-R01",
+        "F46-R02",
+        "F46-AUTH",
+        "F46-STORE"
+      ]
+    },
+    {
+      "slug": "integration",
+      "issue": 47,
+      "dependencies": [
+        "reconciliation",
+        "identifiers",
+        "delivery",
+        "fulfillment",
+        "lineage",
+        "evidence"
+      ],
+      "contract": "packages/foundation/integration/contract.json",
+      "acceptanceIds": [
+        "F47-01",
+        "F47-02",
+        "F47-03",
+        "F47-04",
+        "F47-05",
+        "F47-06",
+        "F47-07",
+        "F47-R01",
+        "F47-R02",
+        "F47-AUTH",
+        "F47-STORE"
+      ]
+    },
+    {
+      "slug": "publication",
+      "issue": 48,
+      "dependencies": [
+        "decision",
+        "specification",
+        "artifact",
+        "evaluation",
+        "evidence",
+        "participation"
+      ],
+      "contract": "packages/foundation/publication/contract.json",
+      "acceptanceIds": [
+        "F48-01",
+        "F48-02",
+        "F48-03",
+        "F48-04",
+        "F48-05",
+        "F48-06",
+        "F48-07",
+        "F48-R01",
+        "F48-R02",
+        "F48-AUTH",
+        "F48-STORE"
+      ]
+    },
+    {
+      "slug": "collaboration",
+      "issue": 49,
+      "dependencies": [
+        "participation",
+        "artifact"
+      ],
+      "contract": "packages/foundation/collaboration/contract.json",
+      "acceptanceIds": [
+        "F49-01",
+        "F49-02",
+        "F49-03",
+        "F49-04",
+        "F49-05",
+        "F49-06",
+        "F49-R01",
+        "F49-R02",
+        "F49-AUTH",
+        "F49-STORE"
+      ]
+    },
+    {
+      "slug": "notifications",
+      "issue": 50,
+      "dependencies": [
+        "participation",
+        "delivery",
+        "artifact",
+        "reachability"
+      ],
+      "contract": "packages/foundation/notifications/contract.json",
+      "acceptanceIds": [
+        "F50-01",
+        "F50-02",
+        "F50-03",
+        "F50-04",
+        "F50-05",
+        "F50-06",
+        "F50-07",
+        "F50-R01",
+        "F50-R02",
+        "F50-AUTH",
+        "F50-STORE"
+      ]
+    },
+    {
+      "slug": "routing",
+      "issue": 57,
+      "dependencies": [
+        "fulfillment",
+        "qualification",
+        "availability",
+        "allocation",
+        "participation",
+        "party"
+      ],
+      "contract": "packages/foundation/routing/contract.json",
+      "acceptanceIds": [
+        "F57-01",
+        "F57-02",
+        "F57-03",
+        "F57-04",
+        "F57-05",
+        "F57-06"
+      ]
+    },
+    {
+      "slug": "scheduling",
+      "issue": 58,
+      "dependencies": [
+        "availability",
+        "allocation",
+        "participation",
+        "place",
+        "fulfillment"
+      ],
+      "contract": "packages/foundation/scheduling/contract.json",
+      "acceptanceIds": [
+        "F58-01",
+        "F58-02",
+        "F58-03",
+        "F58-04",
+        "F58-05",
+        "F58-06"
+      ]
+    },
+    {
+      "slug": "selection",
+      "issue": 59,
+      "dependencies": [
+        "specification",
+        "participation",
+        "evaluation",
+        "decision",
+        "agreement-catalog"
+      ],
+      "contract": "packages/foundation/selection/contract.json",
+      "acceptanceIds": [
+        "F59-01",
+        "F59-02",
+        "F59-03",
+        "F59-04",
+        "F59-05",
+        "F59-06"
+      ]
+    },
+    {
+      "slug": "intake",
+      "issue": 60,
+      "dependencies": [
+        "specification",
+        "artifact",
+        "evaluation",
+        "party"
+      ],
+      "contract": "packages/foundation/intake/contract.json",
+      "acceptanceIds": [
+        "F60-01",
+        "F60-02",
+        "F60-03",
+        "F60-04",
+        "F60-05",
+        "F60-06"
+      ]
+    },
+    {
+      "slug": "risk",
+      "issue": 61,
+      "dependencies": [
+        "evaluation",
+        "evidence",
+        "fulfillment",
+        "decision"
+      ],
+      "contract": "packages/foundation/risk/contract.json",
+      "acceptanceIds": [
+        "F61-01",
+        "F61-02",
+        "F61-03",
+        "F61-04",
+        "F61-05",
+        "F61-06"
+      ]
+    },
+    {
+      "slug": "master-data",
+      "issue": 62,
+      "dependencies": [
+        "identifiers",
+        "lineage",
+        "evaluation",
+        "decision",
+        "reconciliation"
+      ],
+      "contract": "packages/foundation/master-data/contract.json",
+      "acceptanceIds": [
+        "F62-01",
+        "F62-02",
+        "F62-03",
+        "F62-04",
+        "F62-05",
+        "F62-06"
+      ]
+    },
+    {
+      "slug": "service-level",
+      "issue": 63,
+      "dependencies": [
+        "agreement-catalog",
+        "entitlement",
+        "evaluation",
+        "fulfillment",
+        "availability",
+        "specification"
+      ],
+      "contract": "packages/foundation/service-level/contract.json",
+      "acceptanceIds": [
+        "F63-01",
+        "F63-02",
+        "F63-03",
+        "F63-04",
+        "F63-05",
+        "F63-06"
+      ]
+    },
+    {
+      "slug": "knowledge",
+      "issue": 64,
+      "dependencies": [
+        "artifact",
+        "specification",
+        "classification",
+        "publication",
+        "entitlement",
+        "evaluation"
+      ],
+      "contract": "packages/foundation/knowledge/contract.json",
+      "acceptanceIds": [
+        "F64-01",
+        "F64-02",
+        "F64-03",
+        "F64-04",
+        "F64-05",
+        "F64-06"
+      ]
+    },
+    {
+      "slug": "quotation-pricing",
+      "issue": 65,
+      "dependencies": [
+        "agreement-catalog",
+        "specification",
+        "evaluation",
+        "ledger",
+        "party"
+      ],
+      "contract": "packages/foundation/quotation-pricing/contract.json",
+      "acceptanceIds": [
+        "F65-01",
+        "F65-02",
+        "F65-03",
+        "F65-04",
+        "F65-05",
+        "F65-06"
+      ]
+    },
+    {
+      "slug": "organization-workforce",
+      "issue": 66,
+      "dependencies": [
+        "party",
+        "participation",
+        "specification",
+        "qualification",
+        "classification",
+        "place"
+      ],
+      "contract": "packages/foundation/organization-workforce/contract.json",
+      "acceptanceIds": [
+        "F66-01",
+        "F66-02",
+        "F66-03",
+        "F66-04",
+        "F66-05",
+        "F66-06"
+      ]
+    },
+    {
+      "slug": "planning-budget",
+      "issue": 67,
+      "dependencies": [
+        "specification",
+        "allocation",
+        "evaluation",
+        "ledger",
+        "classification",
+        "usage",
+        "fulfillment"
+      ],
+      "contract": "packages/foundation/planning-budget/contract.json",
+      "acceptanceIds": [
+        "F67-01",
+        "F67-02",
+        "F67-03",
+        "F67-04",
+        "F67-05",
+        "F67-06"
+      ]
+    },
+    {
+      "slug": "settlement",
+      "issue": 80,
+      "dependencies": [
+        "party",
+        "entitlement",
+        "fulfillment",
+        "agreement-catalog",
+        "ledger"
+      ],
+      "contract": "packages/foundation/settlement/contract.json",
+      "acceptanceIds": [
+        "F80-01",
+        "F80-02",
+        "F80-03",
+        "F80-04",
+        "F80-05",
+        "F80-06",
+        "F80-07",
+        "F80-08",
+        "F80-09",
+        "F80-10",
+        "F80-STORE",
+        "F80-SEMANTIC"
+      ]
+    },
+    {
+      "slug": "records",
+      "issue": 97,
+      "dependencies": [
+        "classification",
+        "evidence",
+        "artifact"
+      ],
+      "contract": "packages/foundation/records/contract.json",
+      "acceptanceIds": [
+        "F97-category",
+        "F97-trigger",
+        "F97-hold",
+        "F97-history"
+      ]
+    },
+    {
+      "issue": 103,
+      "slug": "opportunity",
+      "dependencies": [
+        "party",
+        "participation",
+        "specification",
+        "evaluation",
+        "quotation-pricing",
+        "selection",
+        "agreement-catalog"
+      ],
+      "contract": "packages/foundation/opportunity/contract.json",
+      "acceptanceIds": [
+        "F103-identity",
+        "F103-stages",
+        "F103-assessment",
+        "F103-conversion",
+        "F103-fixtures"
+      ]
+    },
+    {
+      "issue": 107,
+      "slug": "trust",
+      "dependencies": [
+        "party",
+        "specification",
+        "evaluation",
+        "evidence",
+        "risk"
+      ],
+      "contract": "packages/foundation/trust/contract.json",
+      "acceptanceIds": [
+        "F107-signals",
+        "F107-assessment",
+        "F107-correction",
+        "F107-risk",
+        "F107-fixtures"
+      ]
+    },
+    {
+      "issue": 106,
+      "slug": "quota",
+      "dependencies": [
+        "entitlement",
+        "usage",
+        "allocation",
+        "specification",
+        "ledger"
+      ],
+      "contract": "packages/foundation/quota/contract.json",
+      "acceptanceIds": [
+        "F106-windows",
+        "F106-sources",
+        "F106-policy",
+        "F106-realization",
+        "F106-fixtures"
+      ]
+    },
+    {
+      "issue": 104,
+      "slug": "demand",
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence",
+        "place",
+        "intake",
+        "fulfillment",
+        "allocation",
+        "scheduling",
+        "routing"
+      ],
+      "contract": "packages/foundation/demand/contract.json",
+      "acceptanceIds": [
+        "F104-01",
+        "F104-02",
+        "F104-03",
+        "F104-04"
+      ]
+    },
+    {
+      "issue": 105,
+      "slug": "billing",
+      "dependencies": [
+        "agreement-catalog",
+        "quotation-pricing",
+        "usage",
+        "entitlement",
+        "settlement",
+        "ledger",
+        "specification"
+      ],
+      "contract": "packages/foundation/billing/contract.json",
+      "acceptanceIds": [
+        "F105-01",
+        "F105-02",
+        "F105-03",
+        "F105-04"
+      ]
+    },
+    {
+      "issue": 108,
+      "slug": "challenge",
+      "dependencies": [
+        "trust",
+        "risk",
+        "evaluation",
+        "decision",
+        "evidence",
+        "specification"
+      ],
+      "contract": "packages/foundation/challenge/contract.json",
+      "acceptanceIds": [
+        "F108-01",
+        "F108-02",
+        "F108-03",
+        "F108-04",
+        "F108-05"
+      ]
+    },
+    {
+      "issue": 98,
+      "slug": "access-governance",
+      "dependencies": [
+        "delegation",
+        "entitlement",
+        "participation",
+        "qualification",
+        "decision",
+        "evidence",
+        "attestation",
+        "specification"
+      ],
+      "contract": "packages/foundation/access-governance/contract.json",
+      "acceptanceIds": [
+        "F98-01",
+        "F98-02",
+        "F98-03",
+        "F98-04",
+        "F98-05"
+      ]
+    },
+    {
+      "issue": 123,
+      "slug": "capacity",
+      "dependencies": [
+        "specification",
+        "qualification",
+        "availability",
+        "allocation",
+        "demand",
+        "place",
+        "resource-relations"
+      ],
+      "contract": "packages/foundation/capacity/contract.json",
+      "acceptanceIds": [
+        "F123-01",
+        "F123-02",
+        "F123-03",
+        "F123-04",
+        "F123-05"
+      ]
+    },
+    {
+      "issue": 125,
+      "slug": "case-management",
+      "dependencies": [
+        "party",
+        "participation",
+        "specification",
+        "evidence",
+        "artifact",
+        "evaluation",
+        "decision",
+        "fulfillment",
+        "collaboration"
+      ],
+      "contract": "packages/foundation/case-management/contract.json",
+      "acceptanceIds": [
+        "F125-01",
+        "F125-02",
+        "F125-03",
+        "F125-04",
+        "F125-05"
+      ]
+    },
+    {
+      "issue": 126,
+      "slug": "inventory",
+      "dependencies": [
+        "specification",
+        "identifiers",
+        "place",
+        "party",
+        "resource-relations",
+        "allocation",
+        "evidence",
+        "demand"
+      ],
+      "contract": "packages/foundation/inventory/contract.json",
+      "acceptanceIds": [
+        "F126-01",
+        "F126-02",
+        "F126-03",
+        "F126-04",
+        "F126-05",
+        "F126-06"
+      ]
+    },
+    {
+      "issue": 128,
+      "slug": "project",
+      "dependencies": [
+        "planning-budget",
+        "party",
+        "participation",
+        "specification",
+        "fulfillment",
+        "evaluation",
+        "usage",
+        "scheduling",
+        "allocation"
+      ],
+      "contract": "packages/foundation/project/contract.json",
+      "acceptanceIds": [
+        "F128-01",
+        "F128-02",
+        "F128-03",
+        "F128-04",
+        "F128-05"
+      ]
+    },
+    {
+      "issue": 129,
+      "slug": "asset-lifecycle",
+      "dependencies": [
+        "resource-relations",
+        "specification",
+        "place",
+        "evidence",
+        "attestation",
+        "artifact"
+      ],
+      "contract": "packages/foundation/asset-lifecycle/contract.json",
+      "acceptanceIds": [
+        "F129-01",
+        "F129-02",
+        "F129-03",
+        "F129-04",
+        "F129-05"
+      ]
+    },
+    {
+      "issue": 130,
+      "slug": "maintenance",
+      "dependencies": [
+        "asset-lifecycle",
+        "demand",
+        "fulfillment",
+        "qualification",
+        "routing",
+        "scheduling",
+        "inventory",
+        "operations",
+        "evaluation",
+        "decision",
+        "evidence",
+        "measurement"
+      ],
+      "contract": "packages/foundation/maintenance/contract.json",
+      "acceptanceIds": [
+        "F130-01",
+        "F130-02",
+        "F130-03",
+        "F130-04",
+        "F130-05"
+      ]
+    },
+    {
+      "issue": 131,
+      "slug": "returns",
+      "dependencies": [
+        "inventory",
+        "agreement-catalog",
+        "entitlement",
+        "party",
+        "fulfillment",
+        "evaluation",
+        "decision",
+        "evidence",
+        "billing",
+        "settlement"
+      ],
+      "contract": "packages/foundation/returns/contract.json",
+      "acceptanceIds": [
+        "F131-01",
+        "F131-02",
+        "F131-03",
+        "F131-04",
+        "F131-05"
+      ]
+    },
+    {
+      "issue": 132,
+      "slug": "incident-problem",
+      "dependencies": [
+        "case-management",
+        "specification",
+        "evidence",
+        "evaluation",
+        "decision",
+        "fulfillment",
+        "change",
+        "service-level",
+        "risk",
+        "assurance"
+      ],
+      "contract": "packages/foundation/incident-problem/contract.json",
+      "acceptanceIds": [
+        "F132-01",
+        "F132-02",
+        "F132-03",
+        "F132-04"
+      ]
+    },
+    {
+      "issue": 133,
+      "slug": "campaign",
+      "dependencies": [
+        "specification",
+        "notifications",
+        "delivery",
+        "artifact",
+        "agreement-catalog",
+        "planning-budget",
+        "scheduling",
+        "collaboration",
+        "measurement",
+        "evidence"
+      ],
+      "contract": "packages/foundation/campaign/contract.json",
+      "acceptanceIds": [
+        "F133-01",
+        "F133-02",
+        "F133-03",
+        "F133-04",
+        "F133-05"
+      ]
+    },
+    {
+      "issue": 134,
+      "slug": "dispute-appeal",
+      "dependencies": [
+        "case-management",
+        "party",
+        "participation",
+        "specification",
+        "evidence",
+        "evaluation",
+        "decision",
+        "billing",
+        "assurance",
+        "fulfillment",
+        "change"
+      ],
+      "contract": "packages/foundation/dispute-appeal/contract.json",
+      "acceptanceIds": [
+        "F134-01",
+        "F134-02",
+        "F134-03",
+        "F134-04",
+        "F134-05"
+      ]
+    },
+    {
+      "issue": 135,
+      "slug": "onboarding",
+      "dependencies": [
+        "case-management",
+        "intake",
+        "qualification",
+        "party-relationship",
+        "access-governance",
+        "delegation",
+        "specification",
+        "evaluation",
+        "decision",
+        "evidence",
+        "fulfillment",
+        "records"
+      ],
+      "contract": "packages/foundation/onboarding/contract.json",
+      "acceptanceIds": [
+        "F135-01",
+        "F135-02",
+        "F135-03",
+        "F135-04",
+        "F135-05"
+      ]
+    },
+    {
+      "issue": 136,
+      "slug": "subscription",
+      "dependencies": [
+        "party",
+        "specification",
+        "agreement-catalog",
+        "entitlement",
+        "billing",
+        "quota",
+        "service-level",
+        "decision",
+        "evidence"
+      ],
+      "contract": "packages/foundation/subscription/contract.json",
+      "acceptanceIds": [
+        "F136-01",
+        "F136-02",
+        "F136-03",
+        "F136-04",
+        "F136-05"
+      ]
+    },
+    {
+      "issue": 137,
+      "slug": "rewards",
+      "dependencies": [
+        "party",
+        "specification",
+        "usage",
+        "evaluation",
+        "decision",
+        "ledger",
+        "entitlement",
+        "agreement-catalog",
+        "fulfillment",
+        "evidence"
+      ],
+      "contract": "packages/foundation/rewards/contract.json",
+      "acceptanceIds": [
+        "F137-01",
+        "F137-02",
+        "F137-03",
+        "F137-04",
+        "F137-05"
+      ]
+    },
+    {
+      "issue": 138,
+      "slug": "collections-dunning",
+      "dependencies": [
+        "settlement",
+        "case-management",
+        "notifications",
+        "agreement-catalog",
+        "decision",
+        "specification",
+        "evidence",
+        "dispute-appeal",
+        "billing",
+        "challenge",
+        "trust",
+        "evaluation",
+        "fulfillment",
+        "ledger"
+      ],
+      "contract": "packages/foundation/collections-dunning/contract.json",
+      "acceptanceIds": [
+        "F138-01",
+        "F138-02",
+        "F138-03",
+        "F138-04",
+        "F138-05"
+      ]
+    }
+  ]
+}

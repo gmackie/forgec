@@ -24,6 +24,14 @@ export default {
     const facade = request.headers.get("x-facade") ?? "raw-d1";
     const mk = executors[facade];
     if (!mk) return new Response(`unknown facade ${facade}`, { status: 400 });
+    // Local test harness only: drive the identical adapter fault scenarios from Node.
+    if (new URL(request.url).pathname === "/_forge/test-sql") {
+      const {method, statements} = await request.json() as {method: "first" | "all" | "run" | "batch"; statements: import("../../src/adapters/sql-executor.js").SqlStatement[]};
+      const executor = mk(env.DB);
+      try {
+        return Response.json({value: method === "batch" ? await executor.batch(statements) : await executor[method](statements[0]!)});
+      } catch (e) {return Response.json({error: String(e)}, {status:409});}
+    }
     const layer = Layer.mergeAll(
       Layer.succeed(Clock)({ now: () => new Date().toISOString() }),
       Layer.succeed(IdGen)(productionIds()),

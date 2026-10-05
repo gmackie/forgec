@@ -1,0 +1,112 @@
+{
+  "slug": "consent",
+  "layer": "substrate",
+  "issue": 93,
+  "dependencies": [],
+  "facts": [
+    "ConsentSubject: sidecar attached by canonical application resource",
+    "ConsentGrant: purpose, activity and scope, with valid time and knowledge time recorded separately",
+    "ConsentEvidence: how the grant was captured",
+    "ConsentDisposition: withdrawal or supersession, carrying both time axes"
+  ],
+  "operations": [
+    "Grant(subject, purpose, activity, scope, grantedTo?, basis?, conditions?, validFrom, validUntil?, recordedAt)",
+    "AttachEvidence(grant, capturedAt, method, provenance)",
+    "Withdraw(grant, effectiveAt, recordedAt, reason); Supersede(grant, replacement, effectiveAt, recordedAt, reason)",
+    "EffectiveAt(subject, purpose, activity, scope, validAt, knownAt); ListBySubject"
+  ],
+  "invariants": [
+    "Consent is not authorization: these facts are an input to a decision and a missing grant is the absence of an input, never a denial reason on its own",
+    "Purpose, activity and scope are independent axes; agreeing to store for research is not agreeing to share, nor to store for marketing",
+    "Valid time and knowledge time are separate: a grant counts only when it was in force at validAt and already recorded by knownAt, and a disposition suppresses it under the same two tests",
+    "Withdrawal preserves history; a terminal disposition is unique per grant and must either withdraw or hand over to a replacement",
+    "Notification preference, agreement and entitlement are different facts with different lifecycles and are not modelled here"
+  ],
+  "acceptance": [
+    {
+      "id": "F93-01",
+      "description": "ConsentGrant durable fact.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F93-02",
+      "description": "Withdrawal and expiry preserve history.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F93-03",
+      "description": "Purpose and data/action scope are explicit.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F93-04",
+      "description": "Evidence/source is attachable.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F93-05",
+      "description": "ABAC/Gatekeeper PIP example.",
+      "kind": "fixture",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F93-06",
+      "description": "Intake #60 can produce Consent without owning it.",
+      "kind": "fixture",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F93-07",
+      "description": "Notification preferences remain distinct from consent.",
+      "kind": "compile",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F93-08",
+      "description": "Temporal query can answer whether consent was valid and known at a past decision/access time.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-consent.test.ts"
+      ],
+      "verification": "local"
+    }
+  ],
+  "fixtures": [
+    "research-intake",
+    "policy-decision-log",
+    "marketing-preference-separation"
+  ]
+}

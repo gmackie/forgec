@@ -1,0 +1,75 @@
+import { foundation, foundationAdapters } from "./helpers/foundation.js";
+import { DatabaseSync, type SQLInputValue } from "node:sqlite";
+import { D1Storage } from "../src/adapters/d1.js";
+import type { SqlExecutor, SqlStatement } from "../src/adapters/sql-executor.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { Effect } from "effect";
+import { expect, it } from "vitest";
+import { Engine } from "../src/engine.js";
+import { Model, type AppBundle } from "../src/model.js";
+import { MemoryStorage } from "../src/adapters/memory.js";
+import { testLayer } from "../src/testing.js";
+import { Classification } from "../src/foundation/classification.js";
+const fixture = process.env["FORGE_FOUNDATION_CONSUMER"] ?? resolve(import.meta.dirname, "../../../conformance/fixtures/classification-consumer");
+const bundle = JSON.parse(readFileSync(resolve(fixture, "app.json"), "utf8")) as AppBundle;
+const prefix = "@forgegraph/foundation/classification/_/", identifiers = "@forgegraph/foundation/identifiers/_/";
+const consumer = "@foundation-probe/classification-consumers/_/";
+const ctx = { tenant: "acme", actor: "user", requestId: "classification" };
+for (const adapter of foundationAdapters) it(`${adapter}: business vocabulary hierarchy, immutable meaning and sidecars`, async () => {
+  const f = await foundation("classification", adapter, true);
+  const engine = f.engine, model = engine.model;
+  try {
+    const call = (op: string, input: Record<string, unknown>, context = ctx) => Effect.runPromise(engine.call(op, input, context));
+    const service = new Classification(engine);
+    const set = async (label: string) => call(identifiers + "IdentifierSet.create", { label });
+    const taxonomy = await call(prefix + "Taxonomy.create", { key: "business", identifiers: (await set("Business")).id });
+    const otherTaxonomy = await call(prefix + "Taxonomy.create", { key: "other", identifiers: (await set("Other")).id });
+    const concept = async (ordinal: number, parent: unknown = null, tax: unknown = taxonomy.id) => call(prefix + "Concept.create", { taxonomy: tax, ordinal, identifiers: (await set(`Concept ${ordinal}`)).id, parent });
+    const old = await concept(1), replacement = await concept(2), child = await concept(3, old.id), foreign = await concept(1, null, otherTaxonomy.id);
+    await expect(call(prefix + "Concept.move", { id: old.id, expectedVersion: 1, parent: child.id })).rejects.toThrow();
+    await expect(call(prefix + "Concept.move", { id: child.id, expectedVersion: 1, parent: foreign.id })).rejects.toThrow();
+    const revision = async (c: unknown, label: string) => {
+      const owner = await call(prefix + "Concept.get", { id: c });
+      return call(prefix + "ConceptRevision.create", { concept: c, taxonomy: owner.taxonomy, ordinal: owner.ordinal, revision: 1, label, definition: `${label} definition` });
+    };
+    const meaning = await revision(old.id, "Old meaning"), successor = await revision(replacement.id, "Successor"), foreignMeaning = await revision(foreign.id, "Foreign");
+    const childMeaning = await call(prefix + "ConceptRevision.create", { concept: child.id, taxonomy: taxonomy.id, ordinal: child.ordinal, revision: 1, parentMeaning: meaning.id, label: "Child", definition: "Original parent context" });
+    await call(prefix + "Concept.move", { id: child.id, expectedVersion: 1, parent: replacement.id });
+    expect((await call(prefix + "ConceptRevision.get", { id: childMeaning.id })).parentMeaning).toBe(meaning.id);
+    await call(identifiers + "Identifier.create", { identifierSet: old.identifiers, namespace: "business-code", issuer: null, issuerScope: "namespace", value: "OLD", validFrom: "2026-01-01T00:00:00Z" });
+    expect((await call(identifiers + "Identifier.find.byNamespaceIssuerScopeValue", { params: { namespace: "business-code", issuerScope: "namespace", value: "OLD" } })).identifierSet).toBe(old.identifiers);
+    await call(prefix + "ConceptAlias.create", { taxonomy: taxonomy.id, alias: " legacy ", meaning: meaning.id });
+    await expect(call(prefix + "ConceptAlias.create", { taxonomy: taxonomy.id, alias: "LEGACY", meaning: successor.id })).rejects.toThrow();
+    await expect(call(prefix + "ConceptAlias.create", { taxonomy: taxonomy.id, alias: "foreign", meaning: foreignMeaning.id })).rejects.toThrow();
+    expect((await call(prefix + "ConceptAlias.find.byTaxonomyAlias", { params: { taxonomy: taxonomy.id, alias: "LEGACY" } })).meaning).toBe(meaning.id);
+    const facts: string[] = [];
+    for (const name of ["KnowledgeArticle", "Product", "RiskScenario", "JobFamily"]) {
+      const classifications = await call(prefix + "ClassificationSet.create", { label: name });
+      await call(consumer + name + ".create", { classifications: classifications.id });
+      const fact = await call(prefix + "ClassificationAssignment.create", { classifications: classifications.id, meaning: meaning.id, recordedAt: "2026-01-01T00:00:00Z" });
+      facts.push(String(fact.id));
+    }
+    const changed = await call(prefix + "ConceptRevision.create", { concept: old.id, taxonomy: taxonomy.id, ordinal: old.ordinal, revision: 2, previous: meaning.id, label: "Changed meaning", definition: "New definition" });
+    await expect(call(prefix + "ConceptRevision.create", { concept: old.id, taxonomy: taxonomy.id, ordinal: old.ordinal, revision: 3, previous: successor.id, label: "Wrong predecessor", definition: "Wrong" })).rejects.toThrow();
+    const disposition = { concept: old.id, replacement: successor.id, effectiveAt: "2026-02-01T00:00:00Z", reason: "Vocabulary consolidation" };
+    const race = await Promise.allSettled([call(prefix + "ConceptDisposition.create", disposition), call(prefix + "ConceptDisposition.create", { ...disposition, replacement: null })]);
+    expect(race.filter(r => r.status === "fulfilled")).toHaveLength(1);
+    const terminal = await call(prefix + "ConceptDisposition.find.byConcept", { params: { concept: old.id } });
+    expect(await Effect.runPromise(service.status(String(old.id), "2026-01-01T00:00:00Z", ctx))).toMatchObject({ state: "active" });
+    expect(await Effect.runPromise(service.status(String(old.id), "2026-02-01T00:00:00Z", ctx))).toMatchObject({ state: terminal.replacement == null ? "retired" : "superseded" });
+    await expect(call(prefix + "ConceptDisposition.create", { ...disposition, concept: replacement.id, replacement: meaning.id })).rejects.toThrow();
+    await expect(call(prefix + "ConceptDisposition.create", { ...disposition, concept: child.id, replacement: foreignMeaning.id })).rejects.toThrow();
+    expect(await Effect.runPromise(service.resolveAssignment(facts[0]!, ctx))).toMatchObject({ id: meaning.id, label: "Old meaning", definition: "Old meaning definition" });
+    await expect(call(prefix + "ConceptRevision.update", { id: changed.id, patch: { label: "Overwrite" } })).rejects.toThrow();
+    await expect(call(prefix + "ConceptRevision.delete", { id: changed.id })).rejects.toThrow();
+    await expect(call(prefix + "ClassificationAssignment.get", { id: facts[0] }, { ...ctx, tenant: "other" })).rejects.toThrow();
+    await expect(call(prefix + "ConceptAlias.create", { taxonomy: taxonomy.id, alias: "foreign-tenant", meaning: meaning.id }, { ...ctx, tenant: "other" })).rejects.toThrow();
+    const retraction = await call(prefix + "ClassificationRetraction.create", { assignment: facts[0], effectiveAt: "2026-03-01T00:00:00Z", reason: "Reclassified" });
+    await expect(call(prefix + "ClassificationRetraction.create", { assignment: facts[0], effectiveAt: "2026-04-01T00:00:00Z", reason: "Duplicate" })).rejects.toThrow();
+    await expect(call(prefix + "ClassificationRetraction.delete", { id: retraction.id })).rejects.toThrow();
+    const a = await concept(4), b = await concept(5);
+    const moves = await Promise.allSettled([call(prefix + "Concept.move", { id: a.id, expectedVersion: 1, parent: b.id }), call(prefix + "Concept.move", { id: b.id, expectedVersion: 1, parent: a.id })]);
+    expect(moves.filter(r => r.status === "fulfilled")).toHaveLength(1);
+  } finally { await f.close(); }
+});

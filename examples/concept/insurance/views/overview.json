@@ -1,0 +1,499 @@
+{
+  "nodes": {
+    "@corpus/insurance/_/AssessClaim": "process",
+    "@corpus/insurance/_/Claim": "entity",
+    "@corpus/insurance/_/ClaimApproved": "fact",
+    "@corpus/insurance/_/ClaimAssessment": "purpose",
+    "@corpus/insurance/_/ClaimDecision": "entity",
+    "@corpus/insurance/_/ClaimReopened": "fact",
+    "@corpus/insurance/_/Coverage": "entity",
+    "@corpus/insurance/_/Evidence": "entity",
+    "@corpus/insurance/_/EvidenceReceived": "fact",
+    "@corpus/insurance/_/FraudSignalRaised": "fact",
+    "@corpus/insurance/_/LossReported": "fact",
+    "@corpus/insurance/_/MaintainClaim": "process",
+    "@corpus/insurance/_/MaintainCoverage": "process",
+    "@corpus/insurance/_/MedicalProvider": "external",
+    "@corpus/insurance/_/Operator": "principal",
+    "@corpus/insurance/_/PayClaim": "process",
+    "@corpus/insurance/_/PaymentIssued": "fact",
+    "@corpus/insurance/_/Payout": "entity",
+    "@corpus/insurance/_/PoliceRecords": "external",
+    "@corpus/insurance/_/ReceiveEvidence": "process",
+    "@corpus/insurance/_/ReopenClaim": "process",
+    "@corpus/insurance/_/RepairNetwork": "external",
+    "@corpus/insurance/_/ReportLoss": "process",
+    "@corpus/insurance/_/ScopedAccess": "policy",
+    "@corpus/insurance/_/ScreenFraud": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/ClaimApproved",
+      "port": "@corpus/insurance/_/AssessClaim#output:ClaimApproved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/AssessClaim",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/ClaimDecision",
+      "port": "@corpus/insurance/_/AssessClaim#output:ClaimDecision",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/ClaimDecision",
+      "port": "@corpus/insurance/_/AssessClaim#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/RepairNetwork",
+      "port": "@corpus/insurance/_/AssessClaim#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/insurance/_/Claim",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:Claim",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Claim",
+      "to": "@corpus/insurance/_/PayClaim",
+      "port": "@corpus/insurance/_/PayClaim#input:Claim",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Claim",
+      "to": "@corpus/insurance/_/ReopenClaim",
+      "port": "@corpus/insurance/_/ReopenClaim#input:Claim",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/ClaimApproved",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#activation:ClaimApproved",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/insurance/_/ClaimApproved",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#input:ClaimApproved",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/ClaimDecision",
+      "to": "@corpus/insurance/_/PayClaim",
+      "port": "@corpus/insurance/_/PayClaim#input:ClaimDecision",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/ClaimReopened",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#activation:ClaimReopened",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/insurance/_/ClaimReopened",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#input:ClaimReopened",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Coverage",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:Coverage",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Coverage",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:MedicalProvider",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Coverage",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:PoliceRecords",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Coverage",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:RepairNetwork",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Evidence",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:Evidence",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/Evidence",
+      "to": "@corpus/insurance/_/ScreenFraud",
+      "port": "@corpus/insurance/_/ScreenFraud#activation:change",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/insurance/_/Evidence",
+      "to": "@corpus/insurance/_/ScreenFraud",
+      "port": "@corpus/insurance/_/ScreenFraud#input:Evidence",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/EvidenceReceived",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#wait:EvidenceReceived",
+      "kind": "wait"
+    },
+    {
+      "from": "@corpus/insurance/_/FraudSignalRaised",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#activation:FraudSignalRaised",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/insurance/_/FraudSignalRaised",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:FraudSignalRaised",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/LossReported",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#activation:LossReported",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/insurance/_/LossReported",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#input:LossReported",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/insurance/_/MaintainClaim",
+      "to": "@corpus/insurance/_/Claim",
+      "port": "@corpus/insurance/_/MaintainClaim#output:Claim",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/MaintainClaim",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/MaintainClaim",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/MaintainCoverage",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/MaintainCoverage",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/MaintainCoverage",
+      "to": "@corpus/insurance/_/Coverage",
+      "port": "@corpus/insurance/_/MaintainCoverage#output:Coverage",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/MedicalProvider",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:MedicalProvider",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/MaintainCoverage",
+      "port": "@corpus/insurance/_/MaintainCoverage",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/PayClaim",
+      "port": "@corpus/insurance/_/PayClaim",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/ReopenClaim",
+      "port": "@corpus/insurance/_/ReopenClaim",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/ReportLoss",
+      "port": "@corpus/insurance/_/ReportLoss",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/Operator",
+      "to": "@corpus/insurance/_/ScreenFraud",
+      "port": "@corpus/insurance/_/ScreenFraud",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/PayClaim",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/PayClaim",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/PayClaim",
+      "to": "@corpus/insurance/_/PaymentIssued",
+      "port": "@corpus/insurance/_/PayClaim#output:PaymentIssued",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/PayClaim",
+      "to": "@corpus/insurance/_/Payout",
+      "port": "@corpus/insurance/_/PayClaim#output:Payout",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/PoliceRecords",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:PoliceRecords",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/insurance/_/ReceiveEvidence",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/ReceiveEvidence",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/ReceiveEvidence",
+      "to": "@corpus/insurance/_/Evidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#output:Evidence",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/insurance/_/ReceiveEvidence",
+      "to": "@corpus/insurance/_/EvidenceReceived",
+      "port": "@corpus/insurance/_/ReceiveEvidence#output:EvidenceReceived",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/ReopenClaim",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/ReopenClaim",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/ReopenClaim",
+      "to": "@corpus/insurance/_/ClaimReopened",
+      "port": "@corpus/insurance/_/ReopenClaim#output:ClaimReopened",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/RepairNetwork",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/insurance/_/RepairNetwork",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:RepairNetwork",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/insurance/_/ReportLoss",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/ReportLoss",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/ReportLoss",
+      "to": "@corpus/insurance/_/LossReported",
+      "port": "@corpus/insurance/_/ReportLoss#output:LossReported",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:Claim",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:Coverage",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:Evidence",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/AssessClaim",
+      "port": "@corpus/insurance/_/AssessClaim#input:FraudSignalRaised",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/ScopedAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/Coverage",
+      "port": "@corpus/insurance/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#input:ClaimApproved",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#input:ClaimReopened",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/MaintainClaim",
+      "port": "@corpus/insurance/_/MaintainClaim#input:LossReported",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/MaintainCoverage",
+      "port": "@corpus/insurance/_/MaintainCoverage",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/Operator",
+      "port": "@corpus/insurance/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/PayClaim",
+      "port": "@corpus/insurance/_/PayClaim",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/PayClaim",
+      "port": "@corpus/insurance/_/PayClaim#input:Claim",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/PayClaim",
+      "port": "@corpus/insurance/_/PayClaim#input:ClaimDecision",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:MedicalProvider",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:PoliceRecords",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:RepairNetwork",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ReopenClaim",
+      "port": "@corpus/insurance/_/ReopenClaim",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ReopenClaim",
+      "port": "@corpus/insurance/_/ReopenClaim#input:Claim",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ReportLoss",
+      "port": "@corpus/insurance/_/ReportLoss",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ScreenFraud",
+      "port": "@corpus/insurance/_/ScreenFraud",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScopedAccess",
+      "to": "@corpus/insurance/_/ScreenFraud",
+      "port": "@corpus/insurance/_/ScreenFraud#input:Evidence",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/insurance/_/ScreenFraud",
+      "to": "@corpus/insurance/_/ClaimAssessment",
+      "port": "@corpus/insurance/_/ScreenFraud",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/insurance/_/ScreenFraud",
+      "to": "@corpus/insurance/_/FraudSignalRaised",
+      "port": "@corpus/insurance/_/ScreenFraud#output:FraudSignalRaised",
+      "kind": "emit"
+    }
+  ]
+}

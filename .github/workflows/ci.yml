@@ -35,6 +35,23 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace --locked
+      - run: python3 examples/concept-boundary/generate_pressure_matrix.py --check
+      - run: python3 examples/concept-boundary/digital-twin/specialized-model/check_interface.py
+
+  editor-grammar:
+    name: Tree-sitter generation and Rowan drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: "24.x", package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install tree-sitter-cli --version 0.25.10 --locked
+      - run: tree-sitter generate
+        working-directory: tree-sitter-forge
+      - run: git diff --exit-code -- tree-sitter-forge/src
+      - run: cargo test -p tree-sitter-forge --locked
 
   runtime:
     name: runtime + packages (node ${{ matrix.node }})
@@ -42,7 +59,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ["22.x", "24.x"]
+        node: ["24.x"]
     services:
       postgres:
         image: postgres:17
@@ -56,6 +73,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 20
     env:
       FORGE_PG_URL: postgres://forge:forge@localhost:5432/forge_test
+      FORGE_FOUNDATION_PG_URL: postgres://forge:forge@localhost:5432/forge_test
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -70,9 +88,19 @@ jobs:
       # the Node-host and cutover suites need a second database on the same server
       - run: PGPASSWORD=forge psql -h localhost -U forge -d postgres -c "CREATE DATABASE forge_node" -c "CREATE DATABASE forge_temporal"
       - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/test/*.test.mjs
+      - run: node scripts/verify-foundation.mjs --suite contracts --all
       # generated fixtures must match what the compiler emits from the sources in this commit
       - run: ./scripts/refresh-fixtures.sh
-      - run: git diff --exit-code -- conformance/fixtures examples/acme/generated || (echo "::error::generated fixtures are stale; run ./scripts/refresh-fixtures.sh" && exit 1)
+      - run: git diff --exit-code -- conformance/fixtures conformance/foundation/composition.app.json examples/acme/generated || (echo "::error::generated fixtures are stale; run ./scripts/refresh-fixtures.sh" && exit 1)
+      - name: Foundation PostgreSQL invariant traces
+        run: node scripts/verify-foundation.mjs --suite providers --provider postgres
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: foundation-postgres-${{ matrix.node }}
+          path: conformance/reports/foundation/providers/
+          if-no-files-found: warn
       - run: pnpm -r run build
       - run: pnpm -r typecheck
       - run: pnpm -r test
@@ -140,6 +168,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 20
     env:
       FORGE_PG_URL: postgres://forge:forge@localhost:5432/forge_test
+      FORGE_FOUNDATION_PG_URL: postgres://forge:forge@localhost:5432/forge_test
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -186,6 +215,7 @@ jobs:
       - run: pnpm -r run build
       # every publishable package must produce a tarball that carries its built output
       - run: node scripts/check-packaging.mjs
+      - run: node scripts/verify-foundation-distribution.mjs
       # and every crate name must still be ours to publish under
       - run: node scripts/check-crate-names.mjs
       - run: cargo publish --dry-run -p forgegraph-syntax --locked

@@ -1,0 +1,25 @@
+import decision
+resource HumanApproval
+  @tenant
+  @appendOnly
+{
+  id : id
+  subject : text
+  decisionCase : decision.DecisionCase
+}
+resource ReleaseGate
+  @tenant
+  @appendOnly
+{
+  id : id
+  releaseKey : text
+  decisionCase : decision.DecisionCase
+}
+resource ReviewBoardDecision
+  @tenant
+  @appendOnly
+{
+  id : id
+  reviewKey : text
+  decisionCase : decision.DecisionCase
+}

@@ -3,13 +3,13 @@
  * by stable id, inputs decoded through the common pipeline, and every write
  * becomes a CommitPlan executed atomically by the storage adapter.
  */
-import { Effect, Layer } from "effect";
+import { Cause, Effect, Layer } from "effect";
 import { encodeIdentity, sortKey } from "./codecs.js";
 import { decodeCursor, encodeCursor } from "./cursor.js";
 import { canonicalize, decodeObject, evalExpr, type Wire } from "./decode.js";
 import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Operation, type Resource, type Transition, type Unique } from "./model.js";
-import { Clock, CursorSecret, IdGen, Storage, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
+import { Clock, CursorSecret, IdGen, Storage, type AtomicAbsenceGuard, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
 import { Changesets } from "./changeset.js";
 import { Blobs } from "./blobs.js";
 import { Imports } from "./imports.js";
@@ -25,7 +25,7 @@ import { Governance } from "./governance.js";
 import { Scope } from "./scope.js";
 import { Gatekeeper } from "./gatekeeper.js";
 import { Suppression } from "./suppression.js";
-import { testClocks } from "./testing.js";
+import { jumpTestClock } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
 
@@ -59,14 +59,25 @@ export function stableJson(v: unknown): string {
   return JSON.stringify(v);
 }
 
+export interface AtomicMutation { operation: string; input: Wire }
+export interface AtomicOptions {
+  /** Unconditional unique keys on append-only resources. Absence is checked at commit,
+   * including facts the caller could not see through a row-filtered query. Requires
+   * read authorization for the finder without a current record (fails closed). */
+  absent?: readonly { resource: string; unique: string; values: Wire }[];
+}
+
 export interface EngineOptions {
+  secrets?: import("./credentials.js").SecretAdapter;
   functions?: FunctionImpl[];
   externals?: Record<string, ExternalBinding>;
 }
 
 export class Engine {
   readonly functions: Functions;
+  private readonly secrets: import("./credentials.js").SecretAdapter | undefined;
   constructor(readonly model: Model, readonly layer: Layer.Layer<RuntimeServices>, options: EngineOptions = {}) {
+    this.secrets = options.secrets;
     this.functions = new Functions(this, options.functions ?? [], options.externals ?? {});
   }
 
@@ -117,6 +128,8 @@ export class Engine {
       return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     }
     const { op, resource } = ref;
+    if (resource.decorators.writeOnce && ["update", "delete", "restore", "move", "transition"].includes(op.kind)) return Effect.fail(err("MethodNotAllowed", `${resource.name} has write-once content`));
+    if (resource.decorators.appendOnly && !["create", "get", "find", "list", "effective"].includes(op.kind)) return Effect.fail(err("MethodNotAllowed", `${resource.name} is append-only`));
     const body = (input ?? {}) as Wire;
     return self.scope.resolve(resource, ctx).pipe(Effect.flatMap((surface) => (surface ? self.scopedOperation(surface, op, resource, body, ctx) : self.operation(opId, op, resource, body, ctx))));
   }
@@ -223,13 +236,17 @@ export class Engine {
   }
 
   /** Build the commit plan for a mutation without persisting it (used by single calls and changeset preview). */
-  planFor(opId: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
+  planFor(opId: string, body: Wire, ctx: CallContext, preview = false): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     const ref = self.model.operation(opId);
     if (!ref) return Effect.fail(err("MethodNotAllowed", `unknown operation ${opId}`));
     const { op, resource } = ref;
+    if (resource.decorators.writeOnce && ["update", "delete", "restore", "move", "transition"].includes(op.kind)) return Effect.fail(err("MethodNotAllowed", `${resource.name} has write-once content`));
+    if (resource.decorators.appendOnly && op.kind !== "create") return Effect.fail(err("MethodNotAllowed", `${resource.name} is append-only`));
+    if (preview && resource.fields.some(f=>f.secret) && ["create","update"].includes(op.kind)) return Effect.fail(err("ValidationFailed","credential writes cannot be previewed"));
     switch (op.kind) {
       case "create":
+        if (preview && resource.fields.some(f=>f.sequence)) return Effect.fail(err("SequencePreviewUnsupported","sequence allocation requires a committed create; changeset previews cannot reserve numbers"));
         return self.create(resource, body, ctx);
       case "update":
         return self.update(resource, body, ctx);
@@ -249,18 +266,85 @@ export class Engine {
     return canonicalize(this.model, plan.resource, plan.hardDelete ? plan.before! : plan.after);
   }
 
-  private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+  /** Authorized, bounded composition of independent mutations against durable references.
+   * No staged reads/references or repeated-record composition is implied. Callers
+   * use immutable unique publication facts for retries; receipt keys are rejected. */
+  atomic(mutations: readonly AtomicMutation[], ctx: CallContext, options: AtomicOptions = {}): Effect.Effect<Wire[], ForgeError> {
+    const self = this;
+    const started = performance.now();
+    return Effect.gen(function* () {
+      if (ctx.idempotencyKey) return yield* Effect.fail(err("ValidationFailed", "Atomic mutations require a durable application command key, not a per-operation receipt"));
+      if (!mutations.length || mutations.length > 32) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations require 1..32 operations"));
+      const storage = yield* Storage;
+      const absent: AtomicAbsenceGuard[] = [];
+      if ((options.absent?.length ?? 0) > 32) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations support at most 32 absence guards"));
+      if (options.absent?.length && !storage.atomicAbsenceGuards) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support atomic absence guards"));
+      for (const guard of options.absent ?? []) {
+        const resource = self.model.resources.find(r => r.id === guard.resource);
+        const unique = resource?.uniques.find(u => u.name === guard.unique);
+        const finder = resource?.finds.find(f => f.coveredBy === guard.unique);
+        if (!resource?.decorators.appendOnly || !unique || unique.condition || !finder) return yield* Effect.fail(err("ValidationFailed", "Absence guards require an unconditional unique finder on an append-only resource"));
+        const fields = [...unique.within, ...unique.fields];
+        if (Object.keys(guard.values).some(field => !fields.includes(field))) return yield* Effect.fail(err("ValidationFailed", "Absence guard contains fields outside its unique key"));
+        const values = yield* self.queryValues(resource, fields, guard.values);
+        const claimKey = self.claimKey(resource, unique, values);
+        if (!claimKey) return yield* Effect.fail(err("ValidationFailed", "Absence guards require a complete non-null unique key"));
+        const surface = yield* self.scope.resolve(resource, ctx);
+        if (surface) yield* self.scope.checkQuery(surface, resource, values, []);
+        // No synthetic record and no filtered pre-read: row-dependent authority cannot
+        // establish absence of every matching fact, so it must fail closed.
+        const decision = yield* self.gatekeeper.decide(`${resource.id}.find.${finder.name}`, "read", resource, ctx);
+        if (decision.effect !== "allow" || decision.rowFilter?.length) return yield* Effect.fail(err("NotPermitted", "Atomic absence guard requires unfiltered read authority"));
+        if (!absent.some(g => g.claimKey === claimKey)) absent.push({ tenant: ctx.tenant, resource, unique, claimKey, values });
+      }
+      const plans: CommitPlan[] = [], surfaces: (import("./scope.js").Surface | null)[] = [];
+      for (const mutation of mutations) {
+        const ref = self.model.operation(mutation.operation);
+        if (!ref) return yield* Effect.fail(err("MethodNotAllowed", "Atomic operation is not a resource mutation"));
+        if (ref.resource.fields.some(f => f.sequence || f.secret)) return yield* Effect.fail(err("ValidationFailed", "Atomic mutations do not support sequence allocation or credential sealing"));
+        const surface = yield* self.scope.resolve(ref.resource, ctx);
+        if (surface) {
+          switch (ref.op.kind) {
+            case "create": yield* self.scope.checkCreate(surface, ref.resource, mutation.input); break;
+            case "update": yield* self.scope.checkPatch(surface, ref.resource, (mutation.input["patch"] ?? {}) as Wire); break;
+            case "transition": yield* self.scope.checkAction(surface, ref.resource, ref.op.action!); break;
+            case "delete": case "restore": yield* self.scope.checkAction(surface, ref.resource, ref.op.kind); break;
+            default: return yield* Effect.fail(err("MethodNotAllowed", "Unsupported atomic mutation"));
+          }
+        }
+        const plan = yield* self.authorizedPlan(mutation.operation, mutation.input, ctx);
+        if (plans.some(p => p.resource.id === plan.resource.id && p.id === plan.id)) return yield* Effect.fail(err("ValidationFailed", "Atomic operations cannot mutate the same record twice"));
+        plans.push(plan); surfaces.push(surface);
+      }
+      if (plans.some(plan => absent.some(guard => plan.tenant === guard.tenant && plan.claims.some(claim => claim.after === guard.claimKey)))) return yield* Effect.fail(err("ValidationFailed", "Atomic mutation creates a fact required to be absent"));
+      const budget = storage.budget(plans, absent);
+      if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Atomic mutations exceed provider transaction budget"));
+      yield* storage.commitAll(plans, absent);
+      return plans.map((plan, i) => surfaces[i] ? self.scope.project(surfaces[i]!, self.resultOf(plan)) : self.resultOf(plan));
+    }).pipe(
+      Effect.provide(self.layer),
+      Effect.tap(() => Effect.sync(() => { for (const mutation of mutations) self.telemetry.emit(mutation.operation, ctx, started, self.successStatus(mutation.operation)); })),
+      Effect.tapError(error => Effect.sync(() => { for (const mutation of mutations) self.telemetry.emit(mutation.operation, ctx, started, error.status, error.code); })),
+    );
+  }
+
+  private authorizedPlan(opId: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       if (yield* self.portability.isFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
-      // A suppressed subject's data is never recreated or revived, whatever queued the write (PAR-158):
-      // creates are checked on the request body before any reference lookup can answer for the ledger.
       const ref = self.model.operation(opId);
       if (ref?.op.kind === "create") yield* self.suppression.guard(ref.resource, "create", body as StoredRecord, ctx);
       const plan = yield* self.planFor(opId, body, ctx);
-      // Authorize current AND candidate state (PAR-110): a permitted update cannot move the record out of scope.
       yield* self.gatekeeper.requireWrite(opId, plan.resource, ctx, plan.before ? canonicalize(self.model, plan.resource, plan.before) : null, canonicalize(self.model, plan.resource, plan.after));
       yield* self.suppression.guard(plan.resource, plan.kind, plan.after, ctx);
+      return plan;
+    });
+  }
+
+  private mutate(opId: string, body: Wire, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
+    const self = this;
+    return Effect.gen(function* () {
+      const plan = yield* self.authorizedPlan(opId, body, ctx);
       yield* (yield* Storage).commit(plan);
       return self.resultOf(plan);
     });
@@ -283,7 +367,7 @@ export class Engine {
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {
-    testClocks.at(-1)?.jump(ms);
+    jumpTestClock(this.layer, ms);
   }
 
   /** Every projection is one durable logical subscription on its source's change channel. */
@@ -314,6 +398,7 @@ export class Engine {
 
   // ------------------------------------------------------------ helpers
   claimKey(r: Resource, u: Unique, rec: Wire): string | null {
+    if (u.condition && !u.condition.values.includes(String(rec[u.condition.field]))) return null;
     const self = this;
     const fields = [...u.within, ...u.fields];
     const values = fields.map((f) => rec[f]);
@@ -373,6 +458,9 @@ export class Engine {
 
   private checkRules(r: Resource, after: Wire, refs: Record<string, Wire | null>): Effect.Effect<void, ForgeError> {
     const self = this;
+    if (self.model.bundle.ir.requires?.includes("collections/1") && new TextEncoder().encode(JSON.stringify(after)).length > 256 * 1024) {
+      return Effect.fail(err("ValidationFailed", "record exceeds the 256 KiB collection profile limit"));
+    }
     const failures = r.rules.filter((rule) => !evalExpr(self.model, r, rule, after, undefined, refs));
     if (failures.length === 0) return Effect.void;
     return Effect.fail(err("ValidationFailed", "a row rule was violated", { fields: failures.map((rule) => ({ path: "", code: "RuleViolation", message: describeRule(rule) })) }));
@@ -412,6 +500,17 @@ export class Engine {
     return [{ tenant: ctx.tenant, opId, ordinal: 0, channel: `${r.id}.changes`, message, payload: { id, version: after["version"] ?? null, ...extra }, createdAt: at, ...(ctx.trace ? { trace: ctx.trace } : {}) }];
   }
 
+  private sealSecrets(r:Resource,record:Wire,changed:Wire,ctx:CallContext):Effect.Effect<void,ForgeError> {
+    const self=this;
+    return Effect.gen(function*(){
+      for(const field of r.fields) {
+        if(!field.secret || !Object.hasOwn(changed,field.name) || record[field.name]===null) continue;
+        if(!self.secrets) return yield* Effect.fail(err("DependencyUnavailable","credential sealing adapter is not configured"));
+        record[field.name]=yield* Effect.tryPromise({try:()=>self.secrets!.seal({tenant:ctx.tenant,resource:r.id,record:String(record["id"]),field:field.name},String(record[field.name])),catch:()=>err("DependencyUnavailable","credential sealing failed")});
+      }
+    });
+  }
+
   // ------------------------------------------------------------ create
   private create(r: Resource, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
@@ -436,6 +535,28 @@ export class Engine {
         after["byteCount"] = null;
         after["digest"] = null;
       }
+      for (const field of r.fields) {
+        if (!field.sequence) continue;
+        const sequence = field.sequence;
+        const partition = sequence.partition ? after[sequence.partition] : null;
+        const key = JSON.stringify([r.id,field.name,partition]);
+        const storage = yield* Storage;
+        let allocated = false;
+        for (let attempt=0; attempt<64; attempt++) {
+          const current = yield* storage.getDocument(ctx.tenant,"sequence",key);
+          const last = current?.["last"];
+          const next = last === undefined ? sequence.start : Number(last)+1;
+          if (!Number.isSafeInteger(next) || next < sequence.start || next > sequence.max) {
+            return yield* Effect.fail(err("SequenceExhausted", `sequence ${r.name}.${field.name} is exhausted or requires migration`));
+          }
+          const reservation = yield* storage.putDocument(ctx.tenant,"sequence",key,{last:next},(current?.["_version"] as number | undefined) ?? null).pipe(Effect.exit);
+          if (reservation._tag === "Success") {after[field.name]=next; allocated=true;break;}
+          const error = Cause.squash(reservation.cause);
+          if (!(error instanceof ForgeError) || error.code !== "VersionConflict") return yield* Effect.fail(error instanceof ForgeError ? error : err("Internal","sequence reservation failed"));
+        }
+        if (!allocated) return yield* Effect.fail(err("TransientConflict","sequence contention; retry the operation"));
+      }
+      yield* self.sealSecrets(r,after,value,ctx);
       const guards = self.referenceGuards(r, after, null);
       const refs = yield* self.loadReferences(r, after, ctx, guards);
       yield* self.checkRules(r, after, refs);
@@ -505,12 +626,13 @@ export class Engine {
     return Effect.gen(function* () {
       const l = r.lists.find((x) => x.name === query)!;
       const values = yield* self.queryValues(r, l.fields, body["params"]);
+      const cursorQuery = l.searchMode ? `${opId}:${yield* Effect.promise(()=>sha256(stableJson(values)))}` : opId;
       const rawLimit = body["limit"];
       const limit = typeof rawLimit === "number" && rawLimit > 0 ? Math.min(Math.floor(rawLimit), PAGE_MAX) : PAGE_DEFAULT;
       const secret = (yield* CursorSecret).key;
       let after: { keys: string[]; values: unknown[]; id: string } | null = null;
       if (typeof body["cursor"] === "string" && body["cursor"]) {
-        const state = yield* decodeCursor(secret, body["cursor"], { q: opId, t: ctx.tenant });
+        const state = yield* decodeCursor(secret, body["cursor"], { q: cursorQuery, t: ctx.tenant });
         after = { keys: state.k, values: state.r, id: state.id };
       }
       const storage = yield* Storage;
@@ -524,7 +646,9 @@ export class Engine {
       if (plan.kind === "exact") {
         const denied = plan.filter.some((c) => (c.op === "in" && !c.values.includes(values[c.field])) || (c.op === "eq" && values[c.field] !== c.values[0]) || (c.op === "ne" && c.values.includes(values[c.field])));
         if (denied) items = [];
-      } else if (plan.kind === "candidate") {
+      }
+      // Query predicates are only a prefilter; freshness and obligations still require decisions.
+      if (self.gatekeeper.authorizer) {
         const kept: Wire[] = [];
         for (const it of items) {
           const d = yield* self.gatekeeper.decide(opId, "read", r, ctx, it);
@@ -535,7 +659,7 @@ export class Engine {
       let next: string | null = null;
       if (page.hasMore && page.records.length) {
         const last = page.records[page.records.length - 1]!;
-        next = yield* encodeCursor(secret, { q: opId, v: 1, t: ctx.tenant, k: keys(last), r: l.order.map((o) => last[o.field] ?? null), id: String(last["id"]) });
+        next = yield* encodeCursor(secret, { q: cursorQuery, v: 1, t: ctx.tenant, k: keys(last), r: l.order.map((o) => last[o.field] ?? null), id: String(last["id"]) });
       }
       return { items, next, limit, ...(plan.kind !== "none" ? { plan: { kind: plan.kind, ...(plan.policy ? { policy: plan.policy } : {}) } } : {}) };
     });
@@ -557,6 +681,7 @@ export class Engine {
       const after: Wire = { ...before, ...patch };
       if (r.decorators.versioned) after["version"] = (before["version"] as number) + 1;
       if (r.decorators.timestamps) after["updatedAt"] = now;
+      yield* self.sealSecrets(r,after,patch,ctx);
       const guards = self.referenceGuards(r, after, new Set(Object.keys(patch)));
       const refs = yield* self.loadReferences(r, after, ctx, guards);
       yield* self.checkRules(r, after, refs);
@@ -635,7 +760,7 @@ export class Engine {
       const opId = ids.opId();
       const plan: CommitPlan = {
         tenant: ctx.tenant, opId, actor: ctx.actor, at: now, resource: r, kind: "transition", id, expectedVersion: expected, before, after,
-        claims: [], references: [], dependents: [], hardDelete: false,
+        claims: self.claimChanges(r, before, after), references: [], dependents: [], hardDelete: false,
         audit: { ...self.audit(`status.${action}`, r, id, after, ctx, opId, now), payload: input }, outbox: self.changeEvent(r, `status.${action}`, id, after, ctx, opId, now),
       };
       return plan;
@@ -651,8 +776,7 @@ export class Engine {
     return Effect.gen(function* () {
       const storage = yield* Storage;
       const requestHash = yield* Effect.promise(() => sha256(stableJson(body)));
-      const existing = yield* storage.getReceipt(ctx.tenant, operation, key);
-      if (existing) {
+      const replay = (existing: Receipt) => Effect.gen(function* () {
         if (existing.requestHash !== requestHash) return yield* Effect.fail(err("IdempotencyMismatch", "idempotency key reused with a different request"));
         // Reuse repeats no effect, but the stored response is disclosed only under current authority (PAR-112).
         const ref = self.model.operation(operation);
@@ -660,10 +784,18 @@ export class Engine {
         const d = yield* self.gatekeeper.decide(operation, "replay", ref?.resource ?? null, ctx, stored && typeof stored === "object" && "id" in stored ? stored : undefined);
         if (d.effect !== "allow") return yield* Effect.fail(err("NotPermitted", "the stored result of this request is no longer accessible under current authority"));
         return stored;
-      }
+      });
+      const existing = yield* storage.getReceipt(ctx.tenant, operation, key);
+      if (existing) return yield* replay(existing);
       const clock = yield* Clock;
       const receipt: Receipt = { tenant: ctx.tenant, operation, key, requestHash, status: 200, response: null, createdAt: clock.now() };
-      return yield* runWithReceipt(run, receipt);
+      return yield* runWithReceipt(run, receipt).pipe(Effect.catch((error) => Effect.gen(function* () {
+        if (error.code !== "VersionConflict") return yield* Effect.fail(error);
+        // Another caller may commit after our initial receipt miss but before we read
+        // the record. Its durable receipt distinguishes a replay from a stale request.
+        const committed = yield* storage.getReceipt(ctx.tenant, operation, key);
+        return committed ? yield* replay(committed) : yield* Effect.fail(error);
+      })));
     });
 
     function runWithReceipt(inner: Effect.Effect<Wire, ForgeError, RuntimeServices>, receipt: Receipt) {
@@ -673,6 +805,7 @@ export class Engine {
         // Explicit delegation: spreading a class instance would drop prototype methods.
         const wrapped: StorageAdapter = {
           name: storage.name,
+          ...(storage.atomicAbsenceGuards ? { atomicAbsenceGuards: true as const } : {}),
           get: (...a) => storage.get(...a),
           findUnique: (...a) => storage.findUnique(...a),
           list: (...a) => storage.list(...a),
@@ -683,12 +816,15 @@ export class Engine {
           getDocument: (...a) => storage.getDocument(...a),
           exportPage: (...a) => storage.exportPage(...a),
           putDocument: (...a) => storage.putDocument(...a),
+          putDocuments: (...a) => storage.putDocuments(...a),
           outboxSweep: (...a) => storage.outboxSweep(...a),
           outboxTenants: () => storage.outboxTenants(),
           outboxClaim: (...a) => storage.outboxClaim(...a),
           outboxProgress: (...a) => storage.outboxProgress(...a),
           outboxDead: (...a) => storage.outboxDead(...a),
           outboxRedrive: (...a) => storage.outboxRedrive(...a),
+          ...(storage.atomicCompletion ? { atomicCompletion: true as const } : {}),
+          hasProcessed: (...a) => storage.hasProcessed(...a),
           markProcessed: (...a) => storage.markProcessed(...a),
           overlapping: (...a) => storage.overlapping(...a),
           effectiveAt: (...a) => storage.effectiveAt(...a),

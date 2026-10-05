@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "conceptHash": "3a16057b843bee1f4383780b592a587734522e32dd92ad59b49b2d0584559f6c",
+  "boundarySemanticHash": "b2aeed6c7fe83ba056fa1713ec888c990e960877834124aa1060b97181948043",
+  "artifacts": [
+    {
+      "id": "quorum-model",
+      "sha256": "ee158b7399f375bcd5184e9e030b47c54acc4debf7ae1e69ffb4706bce1f1bef",
+      "path": "specialized-model/BoundedQuorum.tla",
+      "process": "@boundary/consensus/_/CheckProtocol",
+      "inputPorts": [
+        "@boundary/consensus/_/CheckProtocol#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/consensus/_/CheckProtocol#output:request"
+      ],
+      "status": "checked",
+      "claim": "TLC checks three named safety invariants only for the finite supplied configuration."
+    },
+    {
+      "id": "quorum-config",
+      "sha256": "3b141f780b9b8d896543023de988d6389ea9b91b2f2a88e2310e8dda3a38d7f9",
+      "path": "specialized-model/BoundedQuorum.cfg",
+      "process": "@boundary/consensus/_/CheckProtocol",
+      "inputPorts": [
+        "@boundary/consensus/_/CheckProtocol#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/consensus/_/CheckProtocol#output:request"
+      ],
+      "status": "checked",
+      "claim": "Three voters, two values, one slot; no fairness assumption."
+    },
+    {
+      "id": "verification-report",
+      "sha256": "5eee34852d63c4e2a894bcae1911dbd972f12dbc18f7d618cb9418fdbfe7910f",
+      "path": "specialized-model/verification.json",
+      "process": "@boundary/consensus/_/RecordVerification",
+      "inputPorts": [
+        "@boundary/consensus/_/RecordVerification#input:report"
+      ],
+      "outputPorts": [
+        "@boundary/consensus/_/RecordVerification#output:record",
+        "@boundary/consensus/_/RecordVerification#output:recorded"
+      ],
+      "status": "checked",
+      "claim": "Pins tool and input digests, bounded state counts and checks."
+    }
+  ]
+}

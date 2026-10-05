@@ -1,0 +1,8 @@
+flowchart LR
+  ApproveFlightEnvelope --> FlightEnvelope
+  AirframeIO -->|Tick and FlightSample| ReactToFlightTick
+  FlightEnvelope --> ReactToFlightTick
+  FlightMode -->|previous| ReactToFlightTick
+  ReactToFlightTick --> FlightMode
+  ReactToFlightTick --> ControlDecision
+  ReactToFlightTick -->|SurfaceDemand| AirframeIO

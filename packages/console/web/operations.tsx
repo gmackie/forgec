@@ -326,16 +326,18 @@ export function FunctionPlayground({
   );
 }
 export function DeploymentWorkspace({
+  initialTarget,
   api,
   onTest,
 }: {
   api: Api;
   onTest: (id?: string) => void;
+  initialTarget?:string|undefined;
 }) {
   const [targets, setTargets] = useState<
       Omit<DeploymentTarget, "token" | "endpoint">[]
     >([]),
-    [target, setTarget] = useState(""),
+    [target, setTarget] = useState(initialTarget||""),
     [status, setStatus] = useState<DeploymentStatus | null>(null),
     [release, setRelease] = useState(""),
     [error, setError] = useState(""),

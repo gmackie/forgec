@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
-import { generateSigner, digestOf } from "@forgegraph/registry/artifacts";
+import { canonical, digestOf, generateSigner } from "@forgegraph/registry/artifacts";
 import type { AppBundle } from "@forgegraph/runtime";
 import { OciRegistry } from "../src/oci.js";
+import { PLAYGROUND_MEDIA } from "../src/playground-document.js";
 const bundle = JSON.parse(
   readFileSync(
     new URL("../../../conformance/fixtures/acme.app.json", import.meta.url),
@@ -78,14 +79,97 @@ describe("OCI registry", () => {
     );
     expect(manifest.artifactType).toBe("application/vnd.forgegraph.package.v1");
     expect((await registry.list())[0]?.entry.name).toBe("@acme/commerce");
-    expect((await registry.pull(result.ociDigest)).pulled.bundle).toEqual(
-      bundle,
-    );
+    const pulled = await registry.pull(result.ociDigest);
+    expect(pulled.pulled.bundle).toEqual(bundle);
+    expect(pulled.playground).toBeNull();
     expect(
       server.requests.every((u) => u.startsWith("https://registry.example/")),
     ).toBe(true);
     server.blobs.set(manifest.layers[0].digest, "{}");
     await expect(registry.pull(result.ociDigest)).rejects.toThrow(/digest/i);
+  });
+  it("stores the playground draft as an unsigned layer and keeps the signed bundle digest stable", async () => {
+    const server = distribution(),
+      signer = await generateSigner("release");
+    const registry = new OciRegistry({
+      url: "https://registry.example",
+      repository: "forge",
+      authority: "independent.example",
+      signer,
+      fetch: server.fetcher,
+    });
+    const draft = (x: number) => ({
+      version: "playground/1" as const,
+      name: "demo",
+      currentFile: "main.forge",
+      files: [{ path: "main.forge", text: "source Nightly {\n  cron \"0 8 * * *\"\n  timezone \"UTC\"\n}\n" }],
+      positions: [{ path: "main.forge", name: "Nightly", x, y: 20 }],
+      samples: [{ path: "main.forge", name: "Nightly", clock: "2026-10-03T08:00:00.000Z", payload: { ok: true } }],
+    });
+    const first = await registry.publish({
+      name: "@acme/commerce",
+      version: "0.1.0",
+      bundle,
+      owner: "Commerce",
+      commit: "abc123",
+      playground: draft(10),
+    });
+    const moved = await registry.publish({
+      name: "@acme/commerce",
+      version: "0.1.1",
+      bundle,
+      owner: "Commerce",
+      commit: "abc123",
+      playground: draft(400),
+    });
+    const opened = await registry.pull(first.ociDigest);
+    const shifted = await registry.pull(moved.ociDigest);
+    const signed = (ociDigest: string) => {
+      const manifest = JSON.parse(server.manifests.get(ociDigest)!);
+      const layer = manifest.layers.find(
+        (item: { mediaType: string }) => item.mediaType === "application/vnd.forgegraph.manifest.v1+json",
+      );
+      return {
+        manifest,
+        forge: JSON.parse(server.blobs.get(layer.digest)!) as { layers: Record<string, string> },
+      };
+    };
+    const left = signed(first.ociDigest);
+    const right = signed(moved.ociDigest);
+    expect(left.manifest.layers).toHaveLength(right.manifest.layers.length);
+    expect(left.manifest.layers.length).toBeLessThanOrEqual(8);
+    expect(left.manifest.layers.some((item: { mediaType: string }) => item.mediaType === PLAYGROUND_MEDIA)).toBe(true);
+    expect(Object.keys(left.forge.layers)).not.toContain("playground");
+    expect(left.forge.layers.bundle).toBe(right.forge.layers.bundle);
+    expect(left.forge.layers.ir).toBe(right.forge.layers.ir);
+    expect(digestOf(canonical(opened.pulled.bundle))).toBe(digestOf(canonical(bundle)));
+    expect(opened.playground?.bundleDigest).toBe(digestOf(canonical(bundle)));
+    expect(shifted.playground?.bundleDigest).toBe(opened.playground?.bundleDigest);
+    expect(opened.playground?.positions[0]?.x).toBe(10);
+    expect(shifted.playground?.positions[0]?.x).toBe(400);
+    expect(opened.playground?.samples[0]?.payload).toEqual({ ok: true });
+    expect(first.ociDigest).not.toBe(moved.ociDigest);
+    expect(opened.pulled.bundle).toEqual(bundle);
+    const playgroundLayer = left.manifest.layers.find(
+      (item: { mediaType: string; digest: string }) => item.mediaType === PLAYGROUND_MEDIA,
+    );
+    server.blobs.set(playgroundLayer.digest, "{\"not\":\"a playground document\"}");
+    const damaged = await registry.pull(first.ociDigest);
+    expect(damaged.pulled.bundle).toEqual(bundle);
+    expect(damaged.playground).toBeNull();
+    await expect(
+      registry.publish({
+        name: "@acme/commerce",
+        version: "0.1.2",
+        bundle,
+        owner: "Commerce",
+        commit: "abc123",
+        playground: {
+          ...draft(1),
+          files: [{ path: "main.forge", text: "x".repeat(8_000_001) }],
+        },
+      }),
+    ).rejects.toThrow(/8 MB/);
   });
   it("refuses version replacement and never sends credentials to an off-origin upload location", async () => {
     const server = distribution(),

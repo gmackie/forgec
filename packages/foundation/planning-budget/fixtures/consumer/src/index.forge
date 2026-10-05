@@ -1,0 +1,25 @@
+import planning
+export resource ProjectPlan
+  @tenant
+  @appendOnly
+{
+  id : id
+  plan : planning.Plan @unique
+  label : text length 1..200
+}
+export resource ProcurementBudget
+  @tenant
+  @appendOnly
+{
+  id : id
+  plan : planning.Plan @unique
+  label : text length 1..200
+}
+export resource CapacityPlan
+  @tenant
+  @appendOnly
+{
+  id : id
+  plan : planning.Plan @unique
+  label : text length 1..200
+}

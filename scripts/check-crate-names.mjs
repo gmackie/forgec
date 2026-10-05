@@ -11,16 +11,13 @@
  * So: ask crates.io about every name up front. A name is fine if it is free, or if it already
  * holds a version of ours — otherwise the release stops before it has published anything.
  *
- *   OWNER=<crates.io user/team>  optional; when set, a taken name owned by OWNER passes
+ *   OWNER=<crates.io user/team>  defaults to the verified release owner, gmackie
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const UA = "forgegraph-release-check (https://github.com/gmackie/forgec)";
-const owner = process.env["OWNER"] ?? "";
-
-const workspace = readFileSync("Cargo.toml", "utf8");
-const version = /^version\s*=\s*"([^"]+)"/m.exec(workspace.split("[workspace.package]")[1] ?? "")?.[1] ?? "";
+const owner = process.env["OWNER"] ?? "gmackie";
 
 const crates = readdirSync("crates", { withFileTypes: true })
   .filter((d) => d.isDirectory())
@@ -41,6 +38,7 @@ for (const c of crates) {
     res = await fetch(`https://crates.io/api/v1/crates/${c.name}`, { headers: { "user-agent": UA } });
   } catch (e) {
     console.error(`::warning::could not reach crates.io for ${c.name}: ${String(e)}`);
+    failed = true;
     continue;
   }
   if (res.status === 404) {
@@ -49,13 +47,22 @@ for (const c of crates) {
   }
   if (!res.ok) {
     console.error(`::warning::crates.io answered ${res.status} for ${c.name}; not checked`);
+    failed = true;
     continue;
   }
   const body = await res.json();
-  const owners = [body.crate?.["id"], ...(body.versions ?? []).map((v) => v.published_by?.login).filter(Boolean)];
-  const mine = owner && owners.includes(owner);
-  const alreadyOurs = (body.versions ?? []).some((v) => v.num === version);
-  if (mine || alreadyOurs) {
+  let owned = false;
+  try {
+    const response = await fetch(`https://crates.io/api/v1/crates/${c.name}/owners`, { headers: { "user-agent": UA } });
+    if (!response.ok) throw new Error(`owners endpoint returned ${response.status}`);
+    const data = await response.json();
+    owned = (data.users ?? []).some((user) => user.login === owner);
+  } catch (error) {
+    console.error(`::error::could not verify ownership of ${c.name}: ${String(error)}`);
+    failed = true;
+    continue;
+  }
+  if (owned) {
     console.error(`${c.name}: ours (latest ${body.crate?.max_version})`);
     continue;
   }

@@ -1,0 +1,16 @@
+import codes
+export resource CountryAddress @tenant @appendOnly {
+ id : id
+ country : codes.CodeRevision
+ street : text length 1..200
+}
+export resource CurrencyAmount @tenant @appendOnly {
+ id : id
+ currency : codes.CodeRevision
+ minorUnits : integer
+}
+export resource IndustryRegistration @tenant @appendOnly {
+ id : id
+ industry : codes.CodeRevision
+ businessName : text length 1..200
+}

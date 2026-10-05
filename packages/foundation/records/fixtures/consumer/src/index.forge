@@ -1,0 +1,16 @@
+import records
+resource ComplianceInvoice @tenant @appendOnly {
+ id : id
+ record : records.Record @unique
+ invoiceNumber : text length 1..128
+}
+resource ApplicantData @tenant @appendOnly {
+ id : id
+ record : records.Record @unique
+ applicantCode : text length 1..128
+}
+resource LitigationFile @tenant @appendOnly {
+ id : id
+ record : records.Record @unique
+ caseNumber : text length 1..128
+}

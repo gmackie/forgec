@@ -13,7 +13,7 @@ Prebuilt binaries with SHA-256 checksums are attached to every
 
 ## Toolchain for working on ForgeGraph itself
 
-- Rust 1.97+ (`cargo`), Node 22.5+, pnpm 10.
+- Rust 1.97+ (`cargo`), Node 24+, pnpm 10.
 - `cargo build -p forgegraph-cli` builds the compiler; the binary is
   `target/debug/forgec` (`cargo run -q -p forgegraph-cli -- <cmd>` works
   without installing).

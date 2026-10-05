@@ -1,0 +1,279 @@
+{
+  "nodes": {
+    "@boundary/robot-mission/_/ActuationReceipt": "reference",
+    "@boundary/robot-mission/_/AdvanceMission": "process",
+    "@boundary/robot-mission/_/AssessPlan": "process",
+    "@boundary/robot-mission/_/BoundaryOperator": "principal",
+    "@boundary/robot-mission/_/CommandDecision": "fact",
+    "@boundary/robot-mission/_/LocalController": "external",
+    "@boundary/robot-mission/_/MayAdvanceMission": "policy",
+    "@boundary/robot-mission/_/MayAssessPlan": "policy",
+    "@boundary/robot-mission/_/MayObserveScene": "policy",
+    "@boundary/robot-mission/_/MayReviseMission": "policy",
+    "@boundary/robot-mission/_/Mission": "entity",
+    "@boundary/robot-mission/_/MotionCommand": "reference",
+    "@boundary/robot-mission/_/ObserveScene": "process",
+    "@boundary/robot-mission/_/PerceptionSnapshot": "fact",
+    "@boundary/robot-mission/_/PlanAssessment": "fact",
+    "@boundary/robot-mission/_/PlanningRequest": "reference",
+    "@boundary/robot-mission/_/ReviseMission": "process",
+    "@boundary/robot-mission/_/SceneSample": "reference",
+    "@boundary/robot-mission/_/SensorGateway": "external",
+    "@boundary/robot-mission/_/TrajectoryCandidate": "reference",
+    "@boundary/robot-mission/_/TrajectorySolver": "external"
+  },
+  "edges": [
+    {
+      "from": "@boundary/robot-mission/_/ActuationReceipt",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission#input:receipt",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/AdvanceMission",
+      "to": "@boundary/robot-mission/_/CommandDecision",
+      "port": "@boundary/robot-mission/_/AdvanceMission#output:decision",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/robot-mission/_/AdvanceMission",
+      "to": "@boundary/robot-mission/_/LocalController",
+      "port": "@boundary/robot-mission/_/AdvanceMission#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/robot-mission/_/AdvanceMission",
+      "to": "@boundary/robot-mission/_/MotionCommand",
+      "port": "@boundary/robot-mission/_/AdvanceMission#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/robot-mission/_/AssessPlan",
+      "to": "@boundary/robot-mission/_/PlanAssessment",
+      "port": "@boundary/robot-mission/_/AssessPlan#output:assessment",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/robot-mission/_/AssessPlan",
+      "to": "@boundary/robot-mission/_/PlanningRequest",
+      "port": "@boundary/robot-mission/_/AssessPlan#output:request",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/robot-mission/_/AssessPlan",
+      "to": "@boundary/robot-mission/_/TrajectorySolver",
+      "port": "@boundary/robot-mission/_/AssessPlan#output:request",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/robot-mission/_/BoundaryOperator",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/BoundaryOperator",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/BoundaryOperator",
+      "to": "@boundary/robot-mission/_/ObserveScene",
+      "port": "@boundary/robot-mission/_/ObserveScene",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/BoundaryOperator",
+      "to": "@boundary/robot-mission/_/ReviseMission",
+      "port": "@boundary/robot-mission/_/ReviseMission",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/CommandDecision",
+      "to": "@boundary/robot-mission/_/ReviseMission",
+      "port": "@boundary/robot-mission/_/ReviseMission#activation:decision",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/robot-mission/_/CommandDecision",
+      "to": "@boundary/robot-mission/_/ReviseMission",
+      "port": "@boundary/robot-mission/_/ReviseMission#input:decision",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/LocalController",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission#activation:receipt",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/robot-mission/_/LocalController",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission#input:receipt",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayAdvanceMission",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayAdvanceMission",
+      "to": "@boundary/robot-mission/_/BoundaryOperator",
+      "port": "@boundary/robot-mission/_/MayAdvanceMission",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayAdvanceMission",
+      "to": "@boundary/robot-mission/_/CommandDecision",
+      "port": "@boundary/robot-mission/_/MayAdvanceMission",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayAssessPlan",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayAssessPlan",
+      "to": "@boundary/robot-mission/_/BoundaryOperator",
+      "port": "@boundary/robot-mission/_/MayAssessPlan",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayAssessPlan",
+      "to": "@boundary/robot-mission/_/PlanAssessment",
+      "port": "@boundary/robot-mission/_/MayAssessPlan",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayObserveScene",
+      "to": "@boundary/robot-mission/_/BoundaryOperator",
+      "port": "@boundary/robot-mission/_/MayObserveScene",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayObserveScene",
+      "to": "@boundary/robot-mission/_/ObserveScene",
+      "port": "@boundary/robot-mission/_/ObserveScene",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayObserveScene",
+      "to": "@boundary/robot-mission/_/PerceptionSnapshot",
+      "port": "@boundary/robot-mission/_/MayObserveScene",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayReviseMission",
+      "to": "@boundary/robot-mission/_/BoundaryOperator",
+      "port": "@boundary/robot-mission/_/MayReviseMission",
+      "kind": "principal"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayReviseMission",
+      "to": "@boundary/robot-mission/_/Mission",
+      "port": "@boundary/robot-mission/_/MayReviseMission",
+      "kind": "resource"
+    },
+    {
+      "from": "@boundary/robot-mission/_/MayReviseMission",
+      "to": "@boundary/robot-mission/_/ReviseMission",
+      "port": "@boundary/robot-mission/_/ReviseMission",
+      "kind": "authorize"
+    },
+    {
+      "from": "@boundary/robot-mission/_/Mission",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission#input:mission",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/Mission",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan#input:mission",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/Mission",
+      "to": "@boundary/robot-mission/_/ReviseMission",
+      "port": "@boundary/robot-mission/_/ReviseMission#input:current",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/ObserveScene",
+      "to": "@boundary/robot-mission/_/PerceptionSnapshot",
+      "port": "@boundary/robot-mission/_/ObserveScene#output:snapshot",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/robot-mission/_/PerceptionSnapshot",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan#activation:newScene",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/robot-mission/_/PerceptionSnapshot",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan#input:snapshot",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/PlanAssessment",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission#activation:assessment",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/robot-mission/_/PlanAssessment",
+      "to": "@boundary/robot-mission/_/AdvanceMission",
+      "port": "@boundary/robot-mission/_/AdvanceMission#input:assessment",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/ReviseMission",
+      "to": "@boundary/robot-mission/_/Mission",
+      "port": "@boundary/robot-mission/_/ReviseMission#output:mission",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/robot-mission/_/SceneSample",
+      "to": "@boundary/robot-mission/_/ObserveScene",
+      "port": "@boundary/robot-mission/_/ObserveScene#input:sample",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/SensorGateway",
+      "to": "@boundary/robot-mission/_/ObserveScene",
+      "port": "@boundary/robot-mission/_/ObserveScene#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/robot-mission/_/SensorGateway",
+      "to": "@boundary/robot-mission/_/ObserveScene",
+      "port": "@boundary/robot-mission/_/ObserveScene#input:sample",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/robot-mission/_/TrajectoryCandidate",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan#input:candidate",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/robot-mission/_/TrajectorySolver",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan#activation:trigger",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/robot-mission/_/TrajectorySolver",
+      "to": "@boundary/robot-mission/_/AssessPlan",
+      "port": "@boundary/robot-mission/_/AssessPlan#input:candidate",
+      "kind": "acquire"
+    }
+  ]
+}

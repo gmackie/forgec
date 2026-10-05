@@ -194,3 +194,15 @@ it("rejects a stale build before executing a mutation", async () => {
  expect(discovery.headers.get("x-forge-build")).toBe(bundle.buildHash);
  expect((await discovery.json()).features).toContain("invocation-preconditions");
 });
+
+it("authenticates workspace discovery and exposes only record and changeset/import routes", async () => {
+  const anonymous = await handler(new Request("https://api.test/forge/workspace.json"));
+  expect(anonymous.status).toBe(401);
+  const response = await handler(req("GET", "/forge/workspace.json"));
+  expect(response.headers.get("x-forge-build")).toBe(bundle.buildHash);
+  const workspace = await response.json();
+  expect(workspace.descriptor).toEqual(bundle.ui);
+  expect(workspace.operations.some((o: any) => o.kind === "changeset.propose")).toBe(true);
+  expect(workspace.operations.some((o: any) => o.kind.startsWith("admin.") || o.kind === "function")).toBe(false);
+  expect((await handler(req("GET", "/forge/workspace.json", undefined, {"x-forge-if-build":"old"}))).status).toBe(409);
+});

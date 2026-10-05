@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Temporal + keyed services",
+    "storage": "Postgres + object storage",
+    "transport": "Kafka",
+    "conflict": "OT",
+    "query": "PostGIS",
+    "batchSize": 1000,
+    "concurrency": 32,
+    "cacheTtl": 120
+  },
+  "obligations": [
+    "One logical producer survives concurrent writers: the users are inputs, and competing document-maintenance owners are rejected. This does not prove convergence or causal history.",
+    "Hierarchical membership traversal, revocation timing and offline authorization require runtime evidence. Policy expression names alone cannot prove inheritance semantics."
+  ]
+}

@@ -1,0 +1,25 @@
+import change
+export resource SoftwareDeployment
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : change.Change
+  environment : text length 1..128
+}
+export resource RecipeChange
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : change.Change
+  recipe : text length 1..128
+}
+export resource PolicyChange
+  @tenant
+  @appendOnly
+{
+  id : id
+  change : change.Change
+  policy : text length 1..128
+}

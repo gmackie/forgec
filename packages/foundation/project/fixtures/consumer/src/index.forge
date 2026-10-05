@@ -1,0 +1,16 @@
+import project
+export resource SoftwareProject @tenant @appendOnly {
+ id : id
+ project : project.Project @unique
+ repository : text length 1..128
+}
+export resource CapitalProject @tenant @appendOnly {
+ id : id
+ project : project.Project @unique
+ site : text length 1..128
+}
+export resource ResearchStudy @tenant @appendOnly {
+ id : id
+ project : project.Project @unique
+ protocol : text length 1..128
+}

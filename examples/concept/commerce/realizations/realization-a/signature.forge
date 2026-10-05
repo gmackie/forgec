@@ -1,0 +1,16 @@
+resource Order { id : id }
+resource Refund { id : id }
+resource Return { id : id }
+resource Shipment { id : id }
+function CancelOrder @http(POST, "/realization-a/CancelOrder") { input Order.Record
+ output Order.Record }
+function MaintainOrder @http(POST, "/realization-a/MaintainOrder") { input Order.Record
+ output Order.Record }
+function ManageRefund @http(POST, "/realization-a/ManageRefund") { input Order.Record
+ output Refund.Record }
+function ManageReturn @http(POST, "/realization-a/ManageReturn") { input Order.Record
+ output Return.Record }
+function ManageShipment @http(POST, "/realization-a/ManageShipment") { input Order.Record
+ output Shipment.Record }
+function ReceivePayment @http(POST, "/realization-a/ReceivePayment") { input Order.Record
+ output Order.Record }

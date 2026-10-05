@@ -91,3 +91,75 @@ describe("blob lifecycle", () => {
     expect((await fails(engine.call(`${DOC}.create`, { order: "ord_nope", kind: "x", label: "X" }, ctx))).code).toBe("ReferenceMissing");
   });
 });
+
+it("hashes sealed bytes even when staging changes between inspection and sealing", async () => {
+  const doc = await run(engine.call(`${DOC}.create`, { order: order.id, kind: "quote", label: "Q" }, ctx));
+  const up = await run(engine.call(`${DOC}.beginUpload`, { id: doc.id, expectedVersion: 1, mediaType: "application/pdf", byteCount: 5 }, ctx));
+  await objects.simulateUpload(up.upload.url, new TextEncoder().encode("hello"), "application/pdf");
+  const seal = objects.seal.bind(objects);
+  objects.seal = (...args) => Effect.gen(function* () {
+    yield* Effect.promise(() => objects.simulateUpload(up.upload.url, new TextEncoder().encode("world"), "application/pdf"));
+    return yield* seal(...args);
+  });
+  const fin = await run(engine.call(`${DOC}.finalizeUpload`, { id: doc.id, expectedVersion: 2 }, ctx));
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("world"));
+  expect(fin.digest).toBe("sha256:" + [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join(""));
+});
+
+it("a losing finalizer cannot overwrite the winning finalizer's sealed content", async () => {
+  const doc = await run(engine.call(`${DOC}.create`, { order: order.id, kind: "quote", label: "Q" }, ctx));
+  const up = await run(engine.call(`${DOC}.beginUpload`, { id: doc.id, expectedVersion: 1, mediaType: "application/pdf", byteCount: 5 }, ctx));
+  await objects.simulateUpload(up.upload.url, new TextEncoder().encode("hello"), "application/pdf");
+  let release!: () => void, entered!: () => void;
+  const waiting = new Promise<void>(r => { entered = r; });
+  const barrier = new Promise<void>(r => { release = r; });
+  const seal = objects.seal.bind(objects);
+  let count = 0;
+  objects.seal = (...args) => Effect.gen(function* () {
+    if (++count === 1) { entered(); yield* Effect.promise(() => barrier); }
+    return yield* seal(...args);
+  });
+  const losing = fails(engine.call(`${DOC}.finalizeUpload`, { id: doc.id, expectedVersion: 2 }, ctx));
+  await waiting;
+  try {
+    await objects.simulateUpload(up.upload.url, new TextEncoder().encode("world"), "application/pdf");
+    await run(engine.call(`${DOC}.finalizeUpload`, { id: doc.id, expectedVersion: 2 }, ctx));
+    await objects.simulateUpload(up.upload.url, new TextEncoder().encode("EVIL!"), "application/pdf");
+  } finally { release(); }
+  expect((await losing).code).toBe("VersionConflict");
+  const dl = await run(engine.call(`${DOC}.download`, { id: doc.id }, ctx));
+  expect(new TextDecoder().decode(await objects.simulateDownload(dl.url))).toBe("world");
+});
+
+it("rejects an immutable copy whose size changed after staging inspection", async () => {
+  const doc = await run(engine.call(`${DOC}.create`, { order: order.id, kind: "quote", label: "Q" }, ctx));
+  const up = await run(engine.call(`${DOC}.beginUpload`, { id: doc.id, expectedVersion: 1, mediaType: "application/pdf", byteCount: 5 }, ctx));
+  await objects.simulateUpload(up.upload.url, new TextEncoder().encode("hello"), "application/pdf");
+  const seal = objects.seal.bind(objects);
+  objects.seal = (...args) => Effect.gen(function* () {
+    yield* Effect.promise(() => objects.simulateUpload(up.upload.url, new TextEncoder().encode("longer"), "application/pdf"));
+    return yield* seal(...args);
+  });
+  const fin = await run(engine.call(`${DOC}.finalizeUpload`, { id: doc.id, expectedVersion: 2 }, ctx));
+  expect(fin.uploadState).toBe("rejected");
+  expect((await fails(engine.call(`${DOC}.download`, { id: doc.id }, ctx))).code).toBe("InvalidTransition");
+});
+
+it("continues reading legacy generation-only sealed keys", async () => {
+  const doc = await run(engine.call(`${DOC}.create`, { order: order.id, kind: "quote", label: "Q" }, ctx));
+  const up = await run(engine.call(`${DOC}.beginUpload`, { id: doc.id, expectedVersion: 1, mediaType: "application/pdf", byteCount: 5 }, ctx));
+  await objects.simulateUpload(up.upload.url, new TextEncoder().encode("hello"), "application/pdf");
+  await run(engine.call(`${DOC}.finalizeUpload`, { id: doc.id, expectedVersion: 2 }, ctx));
+  await objects.simulateUpload(up.upload.url, new TextEncoder().encode("hello"), "application/pdf");
+  const staging = decodeURIComponent(up.upload.url.replace("memory://upload/", ""));
+  await run(objects.seal(staging, `sealed/${ctx.tenant}/${model.wireName(DOC)}/${doc.id}/1`, "application/pdf"));
+  // Restore the hidden provider-generation field as a legacy snapshot would.
+  const { Storage } = await import("../src/services.js");
+  await run(Effect.gen(function* () {
+    const plan = yield* engine.planFor(`${DOC}.update`, { id: doc.id, expectedVersion: 3, patch: { label: "Legacy" } }, ctx);
+    plan.after.sealedGeneration = "legacy-etag";
+    yield* (yield* Storage).commit(plan);
+  }).pipe(Effect.provide(engine.layer)));
+  const dl = await run(engine.call(`${DOC}.download`, { id: doc.id }, ctx));
+  expect(new TextDecoder().decode(await objects.simulateDownload(dl.url))).toBe("hello");
+});

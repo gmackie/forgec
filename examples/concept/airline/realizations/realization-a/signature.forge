@@ -1,0 +1,25 @@
+resource Aircraft { id : id }
+resource CrewDuty { id : id }
+resource Flight { id : id }
+resource Gate { id : id }
+resource RecoveryPlan { id : id }
+function AirspaceFeasibility @http(POST, "/realization-a/AirspaceFeasibility") { input Aircraft.Record
+ output Aircraft.Record }
+function ApplyRecovery @http(POST, "/realization-a/ApplyRecovery") { input Aircraft.Record
+ output Flight.Record }
+function ApproveRecovery @http(POST, "/realization-a/ApproveRecovery") { input Aircraft.Record
+ output Aircraft.Record }
+function BuildRecoveryPlan @http(POST, "/realization-a/BuildRecoveryPlan") { input Aircraft.Record
+ output RecoveryPlan.Record }
+function CrewFeasibility @http(POST, "/realization-a/CrewFeasibility") { input Aircraft.Record
+ output Aircraft.Record }
+function FleetFeasibility @http(POST, "/realization-a/FleetFeasibility") { input Aircraft.Record
+ output Aircraft.Record }
+function MaintainAircraft @http(POST, "/realization-a/MaintainAircraft") { input Aircraft.Record
+ output Aircraft.Record }
+function MaintainCrew @http(POST, "/realization-a/MaintainCrew") { input Aircraft.Record
+ output CrewDuty.Record }
+function MaintainGate @http(POST, "/realization-a/MaintainGate") { input Aircraft.Record
+ output Gate.Record }
+function ReceiveWeather @http(POST, "/realization-a/ReceiveWeather") { input Aircraft.Record
+ output Aircraft.Record }

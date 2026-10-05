@@ -1,0 +1,34 @@
+{
+  "nodes": {
+    "@corpus/benefits/_/DeliverNotice": "process",
+    "@corpus/benefits/_/IncomeRegistry": "external",
+    "@corpus/benefits/_/NoticeService": "external",
+    "@corpus/benefits/_/ReceiveEvidence": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/benefits/_/DeliverNotice",
+      "to": "@corpus/benefits/_/NoticeService",
+      "port": "@corpus/benefits/_/DeliverNotice#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/benefits/_/IncomeRegistry",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/benefits/_/IncomeRegistry",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence#input:Household",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/benefits/_/NoticeService",
+      "to": "@corpus/benefits/_/DeliverNotice",
+      "port": "@corpus/benefits/_/DeliverNotice#activation:external",
+      "kind": "activate"
+    }
+  ]
+}

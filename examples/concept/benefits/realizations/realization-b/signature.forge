@@ -1,0 +1,22 @@
+resource Appeal { id : id }
+resource BenefitAward { id : id }
+resource EligibilityCase { id : id }
+resource Evidence { id : id }
+resource Household { id : id }
+resource RuleSet { id : id }
+function DeliverNotice @http(POST, "/realization-b/DeliverNotice") { input Appeal.Record
+ output Appeal.Record }
+function DetermineEligibility @http(POST, "/realization-b/DetermineEligibility") { input Appeal.Record
+ output EligibilityCase.Record }
+function HearAppeal @http(POST, "/realization-b/HearAppeal") { input Appeal.Record
+ output Appeal.Record }
+function IssueAward @http(POST, "/realization-b/IssueAward") { input Appeal.Record
+ output BenefitAward.Record }
+function MaintainHousehold @http(POST, "/realization-b/MaintainHousehold") { input Appeal.Record
+ output Household.Record }
+function PublishRules @http(POST, "/realization-b/PublishRules") { input Appeal.Record
+ output RuleSet.Record }
+function ReceiveEvidence @http(POST, "/realization-b/ReceiveEvidence") { input Appeal.Record
+ output Evidence.Record }
+function Recertify @http(POST, "/realization-b/Recertify") { input Appeal.Record
+ output Appeal.Record }

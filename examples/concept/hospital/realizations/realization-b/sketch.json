@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Temporal + keyed services",
+    "storage": "Postgres + object storage",
+    "transport": "Kafka",
+    "conflict": "OT",
+    "query": "PostGIS",
+    "batchSize": 1000,
+    "concurrency": 32,
+    "cacheTtl": 120
+  },
+  "obligations": [
+    "Emergency permission and audit emission are separate contracts; atomic coupling is unproven. Compare evidence obligations in insurance and benefits.",
+    "Treatment purpose alone is not authorization. Hierarchical ward/team inheritance and external disclosure need policy evaluation beyond reference validation."
+  ]
+}

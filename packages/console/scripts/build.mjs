@@ -1,10 +1,11 @@
 import { build } from "esbuild";
 await build({
   entryPoints: ["src/node.ts"],
+  loader: {".sql":"text"},
   outfile: "dist/server.mjs",
   bundle: true,
   platform: "node",
-  target: "node22",
+  target: "node24",
   format: "esm",
   conditions: ["source"],
   sourcemap: true,
@@ -13,4 +14,4 @@ await build({
   },
 });
 
-await build({entryPoints:["src/runner/main.ts"],outfile:"dist/runner.mjs",bundle:true,platform:"node",target:"node22",format:"esm",conditions:["source"]});
+await build({entryPoints:["src/runner/main.ts"],outfile:"dist/runner.mjs",bundle:true,platform:"node",target:"node24",format:"esm",conditions:["source"]});

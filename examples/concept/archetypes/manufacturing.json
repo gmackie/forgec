@@ -1,0 +1,123 @@
+{
+  "version": "concept-ir/2",
+  "package": "manufacturing",
+  "entities": {
+    "WorkRequest": {
+      "name": "WorkRequest",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "ProcessDefinition": {
+      "name": "ProcessDefinition",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "JobRun": {
+      "name": "JobRun",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "Performance": {
+      "name": "Performance",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {},
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {},
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "archetypes": {
+    "definitions": {
+      "RequestFulfillment": {
+        "roles": {
+          "request": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "specification": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "fulfillment": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "outcome": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          }
+        },
+        "relationships": {
+          "requests": {
+            "request": "request",
+            "specification": "specification"
+          },
+          "fulfills": {
+            "fulfillment": "fulfillment",
+            "request": "request"
+          },
+          "produces": {
+            "fulfillment": "fulfillment",
+            "outcome": "outcome"
+          }
+        },
+        "contracts": {},
+        "outputs": [
+          "outcome"
+        ],
+        "extensible": true
+      }
+    },
+    "profiles": {
+      "manufacturing": {
+        "bindings": {
+          "RequestFulfillment": {
+            "request": "WorkRequest",
+            "specification": "ProcessDefinition",
+            "fulfillment": "JobRun",
+            "outcome": "Performance"
+          }
+        },
+        "label": "manufacturing",
+        "aliases": [],
+        "constraints": {},
+        "extensions": [],
+        "source": "examples/concept/archetypes/manufacturing.json#/archetypes/profiles/manufacturing"
+      }
+    }
+  }
+}

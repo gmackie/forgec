@@ -1,3 +1,5 @@
+import { sqliteStudio } from "./studio-sqlite.js";
+import studioMigration from "../migrations/0003_studio.sql";
 import {runtimeConnections} from "./runtime-control.js";
 import {deploymentConnections} from "./deployment-control.js";
 import { createServer } from "node:http";
@@ -25,6 +27,7 @@ const db = new DatabaseSync(dbPath);
 const store = new SqliteState(db);
 const api = createApi({
   store,
+  studio: sqliteStudio(db,studioMigration,config.ADMIN_TOKEN),
   token: config.ADMIN_TOKEN,
   authority: config.INSTANCE_AUTHORITY,
   name: config.INSTANCE_NAME || "Forge",
@@ -54,7 +57,7 @@ const server = createServer(async (req, res) => {
       `${scheme}//${req.headers.host || "localhost"}`,
     );
     let response: Response;
-    if (url.pathname === "/healthz") response = Response.json({ status: "ok" });
+    if (url.pathname === "/healthz") response = Response.json({ status: "ok", authMode: (config.AUTH_MODE === "cloudflare-access" ? "cloudflare-access" : "token") });
     else if (url.pathname.startsWith("/api/")) {
       const headers = new Headers();
       for (const [key, value] of Object.entries(req.headers))

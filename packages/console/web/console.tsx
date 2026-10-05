@@ -1,3 +1,4 @@
+import {EnvironmentOperations} from "./environment-operations.js";
 import React, {
   lazy,
   Suspense,
@@ -31,7 +32,12 @@ import {
 } from "@phosphor-icons/react";
 import type { App, Environment, ViewState } from "../src/model.js";
 import type { PackageSummary } from "../src/oci.js";
+import type { AppBundle } from "@forgegraph/runtime";
+import type { PlaygroundDocument } from "../src/playground-document.js";
+import type { OpenedPackage } from "./playground.js";
+import { draftPlaygroundDocument } from "./editor/playground-session.js";
 import { PackageGovernance } from "./governance.js";
+import { RegistryCredentials } from "./credentials.js";
 
 type Api = <T>(
   path: string,
@@ -42,7 +48,7 @@ type Api = <T>(
 const ForgeEditor = lazy(() => import("./editor/editor.js").then(m => ({ default: m.ForgeEditor })));
 
 const DeploymentWorkspace=lazy(()=>import('./operations.js').then(m=>({default:m.DeploymentWorkspace})));
-const FunctionPlayground=lazy(()=>import('./operations.js').then(m=>({default:m.FunctionPlayground})));
+const PlaygroundPage=lazy(()=>import('./playground.js').then(m=>({default:m.PlaygroundPage})));
 type Page = "Editor" | "Apps" | "Deployments" | "Playground" | "Registry" | "Activity" | "Settings";
 const pages = [
   { name: "Editor", icon: SquaresFourIcon },
@@ -349,7 +355,7 @@ function PublishEditor({
   return (
     <Modal
       title="Publish a package"
-      description="Upload a compiled app.json bundle. Forge signs the package and publishes its artifacts and metadata to your OCI registry."
+      description="Upload a compiled app.json bundle. Forge signs the package and publishes its artifacts and metadata to your OCI registry. The current browser draft is attached as an unsigned playground layer. An existing version stays immutable."
       close={close}
       label="Publish package"
       submit={async () => {
@@ -362,12 +368,17 @@ function PublishEditor({
         } catch {
           throw new Error("The bundle is not valid JSON.");
         }
+        const playground = draftPlaygroundDocument();
+        if (playground && new TextEncoder().encode(JSON.stringify(playground)).length > 8_000_000) {
+          throw new Error("The playground draft must be smaller than 8 MB.");
+        }
         await api("/packages", "POST", {
           name,
           version,
           owner,
           commit,
           bundle,
+          ...(playground ? { playground } : {}),
         });
         await saved();
       }}
@@ -409,7 +420,7 @@ function PublishEditor({
       />
       <Banner
         variant="secondary"
-        description="Review the bundle before publishing. Environment secrets and implementation code do not belong in a package."
+        description="Review the bundle before publishing. Environment secrets and implementation code do not belong in the signed package. The unsigned playground layer stores the open draft, node positions, and source samples."
       />
     </Modal>
   );
@@ -440,7 +451,25 @@ function Confirm({
   );
 }
 
-export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
+/** Carries the HTTP status, which the previous helper discarded. */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export function Console({
+  fetcher = fetch,
+  autoAuth = true,
+}: {
+  fetcher?: typeof fetch;
+  /** Probe for an already-authenticated session on mount (Cloudflare Access signs in upstream). */
+  autoAuth?: boolean;
+}) {
   const [token, setToken] = useState(""),
     [state, setState] = useState<ViewState | null>(null),
     [page, setPage] = useState<Page>("Editor");
@@ -463,7 +492,44 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
   };
   const [dialog, setDialogState] = useState<DialogState | null>(null);
   const [runtimeTarget,setRuntimeTarget]=useState<string|undefined>();
+  const [deploymentTarget,setDeploymentTarget]=useState<string|undefined>();
+  const [openedPackage, setOpenedPackage] = useState<OpenedPackage | null>(null);
+  const [openingPackage, setOpeningPackage] = useState(false);
   const session = useRef(0);
+  // Distinct from refresh(): a failed probe is the normal unauthenticated case, not an error to
+  // show. Painting "Enter this instance's administrator token" on a virgin card would be wrong.
+  const [probing, setProbing] = useState(autoAuth);
+  const [signIn, setSignIn] = useState<"token" | "cloudflare-access">("token");
+  useEffect(() => {
+    if (!autoAuth) return;
+    let live = true;
+    void (async () => {
+      try {
+        // /healthz is public, so this answers even when the API cannot start.
+        const health = await fetcher("/healthz");
+        const mode = ((await health.json()) as { authMode?: string }).authMode;
+        if (live && mode === "cloudflare-access") setSignIn("cloudflare-access");
+      } catch {
+        // Unreachable health endpoint tells us nothing; assume the local scheme.
+      }
+      try {
+        const next = await api<ViewState>("/state");
+        if (live) setState(next);
+      } catch (e) {
+        // Not signed in is the ordinary case and says nothing. A server that is reachable but
+        // failing is worth showing, because the alternative is a login form that cannot work.
+        if (live && e instanceof ApiError && e.status >= 500)
+          setError((e as Error).message);
+      } finally {
+        if (live) setProbing(false);
+      }
+    })();
+    return () => {
+      live = false;
+    };
+    // Once, on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const setDialog = (next: Omit<DialogState, "revision"> | null) =>
     setDialogState(next ? { ...next, revision: state?.revision ?? 0 } : null);
   const api: Api = useCallback(async (path, method = "GET", body, revision) => {
@@ -471,16 +537,39 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
     const response = await fetcher(`/api${path}`, {
       method,
       headers: {
-        authorization: `Bearer ${token}`,
+        // Access authenticates at the edge and injects its own assertion; the browser has no
+        // token to send and must not invent one.
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
         ...(body !== undefined ? { "content-type": "application/json" } : {}),
         ...(revision !== undefined ? { "if-match": String(revision) } : {}),
       },
+      credentials: "same-origin",
+      // An expired Access session answers with a cross-origin redirect to the login domain.
+      // Following it from here yields an HTML page, not JSON; catching it as an opaque
+      // redirect lets the page reload and re-authenticate properly.
+      redirect: "manual",
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
-    const data = (await response.json()) as { error?: string };
+    if (response.type === "opaqueredirect" || response.status === 0) {
+      if (typeof location !== "undefined") location.reload();
+      throw new ApiError(0, "Re-authenticating…");
+    }
+    // Read as text first: a login page, a proxy error or an empty body are all valid HTTP and
+    // none of them are JSON. Parsing before checking the status turned those into an
+    // unreadable SyntaxError instead of the status that explains them.
+    const text = await response.text();
     if (epoch !== session.current) throw new Error("Session ended.");
+    let data: { error?: string } = {};
+    try {
+      data = text ? (JSON.parse(text) as { error?: string }) : {};
+    } catch {
+      data = {};
+    }
     if (!response.ok)
-      throw new Error(data.error || `Request failed (${response.status})`);
+      throw new ApiError(
+        response.status,
+        data.error || `Request failed (${response.status})`,
+      );
     return data as never;
   },[token,fetcher]);
   async function refresh() {
@@ -526,6 +615,7 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
   }
   const app = state?.apps.find((a) => a.id === selectedApp);
   const close = () => setDialog(null);
+  if (!state && probing) return <main className="login-page" aria-busy="true" />;
   if (!state)
     return (
       <main className="login-page">
@@ -545,32 +635,54 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
             Manage applications, configure environments, and explore your
             registry.
           </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void refresh();
-            }}
-          >
-            <Input
-              label="Administrator token"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              description="Use the token configured by this instance’s operator."
-            />
-            <ErrorMessage error={error} />
-            <Button variant="primary" type="submit" loading={busy}>
-              Connect to instance
-            </Button>
-          </form>
-          <div className="login-note">
-            <ShieldCheckIcon size={18} />
-            <span>
-              Your token stays in this browser tab. No central account required.
-            </span>
-          </div>
+          {signIn === "cloudflare-access" ? (
+            // This instance has no token to type. Offering the box anyway — which is what
+            // happened when the API failed behind a working Access session — invites someone
+            // to enter a credential that cannot be accepted, and hides the real fault.
+            <>
+              <ErrorMessage error={error} />
+              <Button variant="primary" onClick={() => location.reload()}>
+                Retry sign-in
+              </Button>
+              <div className="login-note">
+                <ShieldCheckIcon size={18} />
+                <span>
+                  Sign-in is delegated to Cloudflare Access. If this keeps
+                  failing, the instance is reachable but not serving its API.
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void refresh();
+                }}
+              >
+                <Input
+                  label="Administrator token"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  description="Use the token configured by this instance’s operator."
+                />
+                <ErrorMessage error={error} />
+                <Button variant="primary" type="submit" loading={busy}>
+                  Connect to instance
+                </Button>
+              </form>
+              <div className="login-note">
+                <ShieldCheckIcon size={18} />
+                <span>
+                  Your token stays in this browser tab. No central account
+                  required.
+                </span>
+              </div>
+            </>
+          )}
         </section>
         <p className="login-footer">
           Forge management console · Independently hosted
@@ -624,6 +736,12 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
             variant="ghost"
             icon={<SignOutIcon />}
             onClick={() => {
+              // Under Access the session is a cookie the edge owns; clearing local state would
+              // look like signing out while the next request silently succeeds.
+              if (state.instance.authMode === "cloudflare-access") {
+                location.href = "/cdn-cgi/access/logout";
+                return;
+              }
               session.current++;
               setBusy(false);
               setState(null);
@@ -670,9 +788,9 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
           </div>
         </header>
         <main className="content">
-          {page==='Deployments'&&<Suspense fallback={<p>Loading deployments…</p>}><DeploymentWorkspace api={api} onTest={id=>{setRuntimeTarget(id);setPage('Playground');}}/></Suspense>}
-          {page==='Playground'&&<Suspense fallback={<p>Loading playground…</p>}><FunctionPlayground api={api} initialTarget={runtimeTarget}/></Suspense>}
-          {page === "Editor" ? <Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} /></Suspense> : null}
+          {page==='Deployments'&&<Suspense fallback={<p>Loading deployments…</p>}><DeploymentWorkspace api={api} initialTarget={deploymentTarget} onTest={id=>{setRuntimeTarget(id);setPage('Playground');}}/></Suspense>}
+          {page==='Playground'&&<Suspense fallback={<p>Loading playground…</p>}><PlaygroundPage api={api} initialTarget={runtimeTarget} opened={openedPackage} onUseDraft={() => setOpenedPackage(null)}/></Suspense>}
+          <div hidden={page !== "Editor"}><Suspense fallback={<p>Loading Forge Studio…</p>}><ForgeEditor token={token} api={api} /></Suspense></div>
           <ErrorMessage error={error} />
           {notice ? (
             <p className="notice" role="status">
@@ -868,62 +986,11 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
                   endpoints and configuration.
                 </Blank>
               ) : (
-                <div className="environment-grid">
-                  {app.environments.map((e) => (
-                    <section className="panel environment" key={e.id}>
-                      <div className="section-toolbar">
-                        <h3>{e.name}</h3>
-                        <Badge variant="secondary">{targets[e.target]}</Badge>
-                      </div>
-                      <a
-                        href={e.endpoint}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="endpoint"
-                      >
-                        {e.endpoint}
-                        <ArrowUpRightIcon />
-                      </a>
-                      <div className="environment-meta">
-                        <span>
-                          {Object.keys(e.config).length} configuration values
-                        </span>
-                        <span>
-                          {Object.keys(e.secretRefs).length} secret references
-                        </span>
-                      </div>
-                      <p className="muted small">
-                        {e.packageDigest
-                          ? `Package ${e.packageDigest.slice(0, 22)}…`
-                          : "No package pinned"}
-                      </p>
-                      <Badge variant="outline">Deployment unverified</Badge>
-                      <div className="card-footer">
-                        <Button
-                          disabled={app.archived}
-                          onClick={() =>
-                            setDialog({
-                              kind: "environment",
-                              app,
-                              environment: e,
-                            })
-                          }
-                        >
-                          Configure
-                        </Button>
-                        <Button
-                          disabled={app.archived}
-                          variant="ghost"
-                          onClick={() =>
-                            setDialog({ kind: "remove", app, environment: e })
-                          }
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    </section>
-                  ))}
-                </div>
+                <EnvironmentOperations app={app} api={api}
+                  onConfigure={environment=>setDialog({kind:"environment",app,environment})}
+                  onRemove={environment=>setDialog({kind:"remove",app,environment})}
+                  onManage={id=>{setDeploymentTarget(id);setPage("Deployments");}}
+                  onTest={id=>{setRuntimeTarget(id);setPage("Playground");}}/>
               )}
             </>
           ) : null}
@@ -1044,30 +1111,57 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
                 eyebrow="PACKAGE CONTRACT"
                 title={selectedPackage.entry.name}
                 action={
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const result = await api<{
-                          pulled: { bundle: unknown };
-                        }>(`/packages/${selectedPackage.ociDigest}`);
-                        const url = URL.createObjectURL(
-                          new Blob(
-                            [JSON.stringify(result.pulled.bundle, null, 2)],
-                            { type: "application/json" },
-                          ),
-                        );
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = "app.json";
-                        a.click();
-                        setTimeout(() => URL.revokeObjectURL(url), 1000);
-                      } catch (e) {
-                        setError((e as Error).message);
-                      }
-                    }}
-                  >
-                    Download bundle
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      disabled={openingPackage}
+                      onClick={async () => {
+                        setOpeningPackage(true);
+                        try {
+                          const result = await api<{
+                            pulled: { bundle: AppBundle };
+                            playground: PlaygroundDocument | null;
+                          }>(`/packages/${selectedPackage.ociDigest}`);
+                          setOpenedPackage({
+                            token: Date.now(),
+                            bundle: result.pulled.bundle,
+                            playground: result.playground ?? null,
+                          });
+                          setPage("Playground");
+                        } catch (e) {
+                          setError((e as Error).message);
+                        } finally {
+                          setOpeningPackage(false);
+                        }
+                      }}
+                    >
+                      {openingPackage ? "Opening…" : "Open in Playground"}
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const result = await api<{
+                            pulled: { bundle: unknown };
+                          }>(`/packages/${selectedPackage.ociDigest}`);
+                          const url = URL.createObjectURL(
+                            new Blob(
+                              [JSON.stringify(result.pulled.bundle, null, 2)],
+                              { type: "application/json" },
+                            ),
+                          );
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = "app.json";
+                          a.click();
+                          setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        } catch (e) {
+                          setError((e as Error).message);
+                        }
+                      }}
+                    >
+                      Download bundle
+                    </Button>
+                  </>
                 }
               >
                 Version {selectedPackage.entry.version} ·{" "}
@@ -1206,15 +1300,36 @@ export function Console({ fetcher = fetch }: { fetcher?: typeof fetch }) {
                   server’s environment configuration.
                 </p>
               </section>
+              <RegistryCredentials
+                api={api}
+                authority={state.instance.authority}
+              />
               <div className="two-columns">
                 <section className="panel detail-panel">
                   <ShieldCheckIcon size={24} />
-                  <h2>Local authority</h2>
-                  <p>
-                    Authentication and package signing belong to this instance.
-                    There is no central sign-in, telemetry, or required upstream
-                    registry.
-                  </p>
+                  <h2>
+                    {state.instance.authMode === "cloudflare-access"
+                      ? "Delegated sign-in"
+                      : "Local authority"}
+                  </h2>
+                  {state.instance.authMode === "cloudflare-access" ? (
+                    <p>
+                      Package signing belongs to this instance. Sign-in is
+                      delegated to Cloudflare Access
+                      {state.instance.identityAuthority
+                        ? ` for ${state.instance.identityAuthority}`
+                        : ""}
+                      ; registry clients authenticate with credentials this
+                      instance issues. There is no telemetry or required
+                      upstream registry.
+                    </p>
+                  ) : (
+                    <p>
+                      Authentication and package signing belong to this
+                      instance. There is no central sign-in, telemetry, or
+                      required upstream registry.
+                    </p>
+                  )}
                 </section>
                 <section className="panel detail-panel">
                   <PackageIcon size={24} />

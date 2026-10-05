@@ -1,0 +1,7 @@
+flowchart TB
+  intent_observation[intent-observation: L0 A] --> ReconcileNetwork
+  convergence_contract[convergence-contract: L0-facet B] -. assumption .-> ReconcileNetwork
+  routing_strategy[routing-strategy: L1 A] --> RoutingEngine
+  replica_placement[replica-placement: L2 B] -. realizes .-> ApplyNetworkPlan
+  fencing_validation[fencing-validation: L1 B] -. analyzes .-> ApplyNetworkPlan
+  ReconcileNetwork --> ReconcileDecision --> ApplyNetworkPlan

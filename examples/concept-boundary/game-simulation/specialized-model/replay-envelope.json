@@ -1,0 +1,27 @@
+{
+  "status": "sketch",
+  "executed": false,
+  "equivalence": "exact per-tick canonical state digest",
+  "pinnedInputs": [
+    "checkpoint bytes",
+    "ordered accepted input batches",
+    "rules build",
+    "physics solver build",
+    "random stream state",
+    "compiler and floating-point mode",
+    "platform envelope"
+  ],
+  "forbiddenImplicitInputs": [
+    "wall clock",
+    "unrecorded network arrival order",
+    "unseeded random number generation"
+  ],
+  "testCases": [
+    "duplicate tick",
+    "restart after input sealing",
+    "late client command",
+    "different solver build",
+    "cross-platform replay mismatch"
+  ],
+  "failureOutput": "ReplayVerdict with firstDivergentTick; never overwrite TickCommitted"
+}

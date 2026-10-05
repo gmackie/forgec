@@ -352,3 +352,71 @@ fn postgres_dialect_preserves_portable_semantics() {
     assert!(!pg.contains("PRAGMA"));
     insta::assert_snapshot!("postgres", pg);
 }
+
+#[test]
+fn postgres_cycles_install_forward_foreign_keys_after_table_creation() {
+    use forgegraph_planner::sql::{ForeignKey, render_postgres};
+    let mut schema = acme().sql;
+    // Force a cycle between two existing valid table declarations. The renderer
+    // must retain both constraints without referencing a not-yet-created table.
+    let first = schema.tables[0].name.clone();
+    let second = schema.tables[1].name.clone();
+    schema.tables[0].foreign_keys.push(ForeignKey {
+        columns: vec!["id".into()],
+        references: second.clone(),
+        referenced_columns: vec!["id".into()],
+    });
+    schema.tables[1].foreign_keys.push(ForeignKey {
+        columns: vec!["id".into()],
+        references: first,
+        referenced_columns: vec!["id".into()],
+    });
+    let sql = render_postgres(&schema);
+    let last_create = sql.rfind("CREATE TABLE").unwrap();
+    let alter = sql
+        .find("ALTER TABLE")
+        .expect("cyclic references require a second DDL phase");
+    assert!(alter > last_create);
+    assert_eq!(
+        sql.matches("FOREIGN KEY").count(),
+        schema
+            .tables
+            .iter()
+            .map(|t| t.foreign_keys.len())
+            .sum::<usize>()
+    );
+}
+
+#[test]
+fn reserved_to_table_and_reference_columns_share_safe_physical_names() {
+    let package = load_package(
+        &Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples")).join("sql-identifiers"),
+    )
+    .unwrap();
+    let ir = compile(&package, &[]).ir.unwrap();
+    let plans = plan(&ir).unwrap();
+    let target = plans
+        .sql
+        .tables
+        .iter()
+        .find(|t| t.resource.as_ref().is_some_and(|id| id.ends_with("/To")))
+        .unwrap();
+    assert_eq!(target.name, "to_");
+    let edge = plans
+        .sql
+        .tables
+        .iter()
+        .find(|t| t.name == "stage_transition")
+        .unwrap();
+    assert!(edge.columns.iter().any(|c| c.name == "from_"));
+    assert!(edge.columns.iter().any(|c| c.name == "to_"));
+    assert!(edge.foreign_keys.iter().all(|f| f.references == "to_"));
+    for ddl in [
+        forgegraph_planner::sql::render_sqlite(&plans.sql),
+        forgegraph_planner::sql::render_postgres(&plans.sql),
+    ] {
+        assert!(ddl.contains("CREATE TABLE to_"));
+        assert!(ddl.contains("REFERENCES to_"));
+        assert!(!ddl.contains("CREATE TABLE to ("));
+    }
+}

@@ -1,0 +1,93 @@
+import specification
+import participation
+import evaluation
+import decision
+import agreement-catalog
+
+export enum SelectionTiePolicy {
+  reject
+  submissionKey
+}
+export resource Solicitation
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  criteria : specification.SpecificationPin
+  terms : specification.SpecificationPin
+  participants : participation.ParticipationSet
+  opensAt : datetime
+  closesAt : datetime
+  tiePolicy : SelectionTiePolicy
+  rules {
+    opensAt < closesAt
+  }
+}
+export resource Submission
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  solicitation : Solicitation
+  key : text length 1..128
+  participant : participation.Participation
+  evaluationSet : evaluation.EvaluationSet
+  rules {
+    participant.participationSet == solicitation.participants
+    createdAt >= solicitation.opensAt
+    createdAt < solicitation.closesAt
+  }
+  unique solicitation, key
+  list by solicitation
+}
+export resource SubmissionScore
+  @tenant
+  @appendOnly
+{
+  id : id
+  submission : Submission @unique
+  finish : evaluation.EvaluationFinish
+  score : decimal<6>
+  rationale : text length 1..1000
+  find by submission
+}
+export resource ShortlistMember
+  @tenant
+  @appendOnly
+{
+  id : id
+  score : SubmissionScore
+  option : decision.DecisionOption
+  next : ShortlistMember?
+}
+export resource SelectionShortlist
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  solicitation : Solicitation @unique
+  decisionCase : decision.DecisionCase @unique
+  head : ShortlistMember
+  find by solicitation
+}
+export resource SelectionAward
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  solicitation : Solicitation @unique
+  shortlist : SelectionShortlist
+  submission : Submission
+  outcome : decision.DecisionOutcome
+  agreement : agreement-catalog.Agreement @unique
+  rules {
+    shortlist.solicitation == solicitation
+    submission.solicitation == solicitation
+    outcome.decisionCase == shortlist.decisionCase
+  }
+  find by solicitation
+}

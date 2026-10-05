@@ -1,0 +1,21 @@
+import quota
+export resource ApiTokenBudget @tenant @appendOnly {
+ id : id
+ allowance : quota.Allowance
+ key : text length 1..128
+}
+export resource SeatAllowance @tenant @appendOnly {
+ id : id
+ allowance : quota.Allowance
+ key : text length 1..128
+}
+export resource BenefitAllowance @tenant @appendOnly {
+ id : id
+ allowance : quota.Allowance
+ key : text length 1..128
+}
+export resource MachineCapacity @tenant @appendOnly {
+ id : id
+ allowance : quota.Allowance
+ key : text length 1..128
+}

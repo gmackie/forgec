@@ -1,0 +1,33 @@
+import agreement
+export resource SaaSSubscription
+  @tenant
+  @appendOnly
+{
+  id : id
+  workspace : text length 1..128
+  agreement : agreement.Agreement
+}
+export resource CourseEnrollment
+  @tenant
+  @appendOnly
+{
+  id : id
+  courseCode : text length 1..128
+  agreement : agreement.Agreement
+}
+export resource LabServiceOrder
+  @tenant
+  @appendOnly
+{
+  id : id
+  sampleCode : text length 1..128
+  agreement : agreement.Agreement
+}
+export resource VendorContract
+  @tenant
+  @appendOnly
+{
+  id : id
+  vendorCode : text length 1..128
+  agreement : agreement.Agreement
+}

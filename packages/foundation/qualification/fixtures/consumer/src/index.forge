@@ -1,0 +1,40 @@
+import qualification
+
+resource Technician
+  @tenant
+  @appendOnly
+{
+  id : id
+  person : qualification.PartySubject @unique
+}
+resource Vendor
+  @tenant
+  @appendOnly
+{
+  id : id
+  organization : qualification.PartySubject @unique
+}
+resource Runner
+  @tenant
+  @appendOnly
+{
+  id : id
+  subject : qualification.QualificationSubject @unique
+  machineName : text length 1..100
+}
+resource RunnerRequirement
+  @tenant
+  @appendOnly
+{
+  id : id
+  requirement : qualification.QualificationRequirement
+  runtimeName : text length 1..100
+}
+resource CredentialDetails
+  @tenant
+  @appendOnly
+{
+  id : id
+  qualification : qualification.Qualification @unique
+  credentialNumber : text length 1..100
+}

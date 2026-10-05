@@ -1,0 +1,87 @@
+{
+  "slug": "asset-lifecycle",
+  "layer": "system",
+  "issue": 129,
+  "dependencies": [
+    "resource-relations",
+    "specification",
+    "place",
+    "evidence",
+    "attestation",
+    "artifact"
+  ],
+  "facts": [
+    "IndustrialAsset",
+    "MedicalAsset",
+    "CloudAsset",
+    "FleetAsset"
+  ],
+  "operations": [
+    "asset-lifecycle authorized runtime services"
+  ],
+  "invariants": [
+    "Resource profile with acquired/provisioned lifecycle identity",
+    "Guarded commissioning operation deactivation retirement and decommissioning",
+    "Explicit place moves and authoritative custody relationship references",
+    "Pinned configuration evidence and attestation hooks",
+    "Industrial medical cloud and fleet profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F129-01",
+      "description": "Resource profile with acquired/provisioned lifecycle identity",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-asset-lifecycle.test.ts"
+      ]
+    },
+    {
+      "id": "F129-02",
+      "description": "Guarded commissioning operation deactivation retirement and decommissioning",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-asset-lifecycle.test.ts"
+      ]
+    },
+    {
+      "id": "F129-03",
+      "description": "Explicit place moves and authoritative custody relationship references",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-asset-lifecycle.test.ts"
+      ]
+    },
+    {
+      "id": "F129-04",
+      "description": "Pinned configuration evidence and attestation hooks",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-asset-lifecycle.test.ts"
+      ]
+    },
+    {
+      "id": "F129-05",
+      "description": "Industrial medical cloud and fleet profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-asset-lifecycle.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "IndustrialAsset",
+    "MedicalAsset",
+    "CloudAsset",
+    "FleetAsset"
+  ]
+}

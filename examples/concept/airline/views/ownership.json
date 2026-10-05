@@ -1,0 +1,83 @@
+{
+  "nodes": {
+    "@corpus/airline/_/Aircraft": "entity",
+    "@corpus/airline/_/AircraftOutOfService": "fact",
+    "@corpus/airline/_/ApplyRecovery": "process",
+    "@corpus/airline/_/ApproveRecovery": "process",
+    "@corpus/airline/_/BuildRecoveryPlan": "process",
+    "@corpus/airline/_/CrewDuty": "entity",
+    "@corpus/airline/_/CrewUnavailable": "fact",
+    "@corpus/airline/_/Flight": "entity",
+    "@corpus/airline/_/FlightDelayed": "fact",
+    "@corpus/airline/_/Gate": "entity",
+    "@corpus/airline/_/MaintainAircraft": "process",
+    "@corpus/airline/_/MaintainCrew": "process",
+    "@corpus/airline/_/MaintainGate": "process",
+    "@corpus/airline/_/ReceiveWeather": "process",
+    "@corpus/airline/_/RecoveryPlan": "entity",
+    "@corpus/airline/_/RecoveryPlanApproved": "fact",
+    "@corpus/airline/_/WeatherChanged": "fact"
+  },
+  "edges": [
+    {
+      "from": "@corpus/airline/_/ApplyRecovery",
+      "to": "@corpus/airline/_/Flight",
+      "port": "@corpus/airline/_/ApplyRecovery#output:Flight",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/airline/_/ApplyRecovery",
+      "to": "@corpus/airline/_/FlightDelayed",
+      "port": "@corpus/airline/_/ApplyRecovery#output:FlightDelayed",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/airline/_/ApproveRecovery",
+      "to": "@corpus/airline/_/RecoveryPlanApproved",
+      "port": "@corpus/airline/_/ApproveRecovery#output:RecoveryPlanApproved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/airline/_/BuildRecoveryPlan",
+      "to": "@corpus/airline/_/RecoveryPlan",
+      "port": "@corpus/airline/_/BuildRecoveryPlan#output:RecoveryPlan",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainAircraft",
+      "to": "@corpus/airline/_/Aircraft",
+      "port": "@corpus/airline/_/MaintainAircraft#output:Aircraft",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainAircraft",
+      "to": "@corpus/airline/_/AircraftOutOfService",
+      "port": "@corpus/airline/_/MaintainAircraft#output:AircraftOutOfService",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainCrew",
+      "to": "@corpus/airline/_/CrewDuty",
+      "port": "@corpus/airline/_/MaintainCrew#output:CrewDuty",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainCrew",
+      "to": "@corpus/airline/_/CrewUnavailable",
+      "port": "@corpus/airline/_/MaintainCrew#output:CrewUnavailable",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/airline/_/MaintainGate",
+      "to": "@corpus/airline/_/Gate",
+      "port": "@corpus/airline/_/MaintainGate#output:Gate",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/airline/_/ReceiveWeather",
+      "to": "@corpus/airline/_/WeatherChanged",
+      "port": "@corpus/airline/_/ReceiveWeather#output:WeatherChanged",
+      "kind": "emit"
+    }
+  ]
+}

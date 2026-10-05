@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-reconciliation-invariants/1",
+  "coverageCriteria": [
+    "F46-STORE"
+  ],
+  "status": "passing",
+  "runId": "47bfe434-de03-4bbf-9447-1335c19036ce",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "739090c2c588a57cb9e58152ff163f647dce1007473b8166b199eeead17b281a",
+  "sourceFingerprint": "9fd99c1d49724d7b80d26dd3ac9022916a3e4ece785fe649cd11a62d55cd9954",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "319a6eb2e018c002950a75644040ac74aba11bbea57d34839b4921a72f93320d"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "371e5a88bdebbfb4f660154dab54a1fcc3e36e9a5e2375b278d5dc6e0ef38d76"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "9ec471efd789ded3944e5e1a139613a4b4b06acef2dc7f1425f0b8da0bb74d8e"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: desired journal fences attempts/results and real keyed actor resumes effects without rewriting newer intent"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-30T22:56:23.166Z",
+  "passedTraces": [
+    "hosted: desired journal fences attempts/results and real keyed actor resumes effects without rewriting newer intent"
+  ],
+  "testReportSha256": "e23738bd03e131fe2501a51b1716e218824413a997aa2ef133bd3d809b58b559",
+  "identity": {
+    "provider": "postgres",
+    "runId": "47bfe434-de03-4bbf-9447-1335c19036ce",
+    "tenantPrefix": "foundation-cert-47bfe434-de03-4bbf-9447-1335c19036ce",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

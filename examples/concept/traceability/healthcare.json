@@ -1,0 +1,1000 @@
+{
+  "version": "concept-ir/2",
+  "package": "@trace/healthcare",
+  "entities": {
+    "@trace/healthcare/_/Conversation": {
+      "name": "Conversation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "regulated": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "consentRecorded": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/healthcare/_/Customer": {
+      "name": "Customer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/healthcare/_/PrivacyAuthority": {
+      "name": "PrivacyAuthority",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/healthcare/_/ProcessingJurisdiction": {
+      "name": "ProcessingJurisdiction",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/healthcare/_/TreatmentDecision": {
+      "name": "TreatmentDecision",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/healthcare/_/ClinicalEvidence": {
+      "name": "ClinicalEvidence",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/healthcare/_/SourceRecord": {
+      "name": "SourceRecord",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@trace/healthcare/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/Customer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/healthcare/_/MessageReceived": {
+      "name": "MessageReceived",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/healthcare/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/healthcare/_/Lineage0": {
+      "name": "Lineage0",
+      "fields": {
+        "derived": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/TreatmentDecision",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/ClinicalEvidence",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/healthcare/_/Lineage1": {
+      "name": "Lineage1",
+      "fields": {
+        "derived": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/ClinicalEvidence",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/SourceRecord",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@trace/healthcare/_/Respond": {
+      "name": "Respond",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    },
+    "@trace/healthcare/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/healthcare/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@trace/healthcare/_/Conversation": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      },
+      "@trace/healthcare/_/TreatmentDecision": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      },
+      "@trace/healthcare/_/ClinicalEvidence": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      },
+      "@trace/healthcare/_/SourceRecord": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      }
+    },
+    "relationships": {
+      "@trace/healthcare/_/Participants": {
+        "carrier": "@trace/healthcare/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@trace/healthcare/_/Customer",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@trace/healthcare/_/Conversation",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      },
+      "@trace/healthcare/_/TraceLink0": {
+        "carrier": "@trace/healthcare/_/Lineage0",
+        "endpoints": {
+          "derived": {
+            "target": "@trace/healthcare/_/TreatmentDecision",
+            "field": "derived"
+          },
+          "source": {
+            "target": "@trace/healthcare/_/ClinicalEvidence",
+            "field": "source"
+          }
+        },
+        "evidence": []
+      },
+      "@trace/healthcare/_/TraceLink1": {
+        "carrier": "@trace/healthcare/_/Lineage1",
+        "endpoints": {
+          "derived": {
+            "target": "@trace/healthcare/_/ClinicalEvidence",
+            "field": "derived"
+          },
+          "source": {
+            "target": "@trace/healthcare/_/SourceRecord",
+            "field": "source"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@trace/healthcare/_/MessageReceived",
+      "@trace/healthcare/_/Closed"
+    ],
+    "interactions": {
+      "@trace/healthcare/_/Engagement": {
+        "carrier": "@trace/healthcare/_/Conversation",
+        "participation": [
+          "@trace/healthcare/_/Participants"
+        ],
+        "events": {
+          "@trace/healthcare/_/MessageReceived": "context",
+          "@trace/healthcare/_/Closed": "context"
+        },
+        "processes": {
+          "@trace/healthcare/_/Respond": "engagement",
+          "@trace/healthcare/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    },
+    "subjects": {
+      "@trace/healthcare/_/ParticipantIdentity": {
+        "carrier": "@trace/healthcare/_/Customer",
+        "profiles": [
+          "party"
+        ]
+      },
+      "@trace/healthcare/_/Authority": {
+        "carrier": "@trace/healthcare/_/PrivacyAuthority",
+        "profiles": [
+          "authority"
+        ]
+      }
+    },
+    "contracts": {
+      "@trace/healthcare/_/RequiredOutcome": {
+        "owner": {
+          "kind": "process",
+          "id": "@trace/healthcare/_/Respond"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "name",
+          "path": [
+            "engagement",
+            "consentRecorded"
+          ]
+        },
+        "selectors": []
+      }
+    },
+    "externalConstraints": {
+      "@trace/healthcare/_/ExternalRule": {
+        "authority": "@trace/healthcare/_/Authority",
+        "jurisdiction": "@trace/healthcare/_/ProcessingJurisdiction",
+        "citations": [
+          "illustrative:privacy-rule/revision-1/section-4"
+        ],
+        "applicability": {
+          "process": "@trace/healthcare/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [
+          "@trace/healthcare/_/RequiredOutcome"
+        ],
+        "prohibitions": [],
+        "validFrom": 0,
+        "validUntil": 1000,
+        "supersedes": [],
+        "evidence": []
+      },
+      "@trace/healthcare/_/Suspension": {
+        "authority": "@trace/healthcare/_/Authority",
+        "jurisdiction": "@trace/healthcare/_/ProcessingJurisdiction",
+        "citations": [
+          "illustrative:privacy-rule/revision-2/section-4"
+        ],
+        "applicability": {
+          "process": "@trace/healthcare/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [],
+        "prohibitions": [
+          "@trace/healthcare/_/Respond"
+        ],
+        "validFrom": 1000,
+        "validUntil": null,
+        "supersedes": [
+          "@trace/healthcare/_/ExternalRule"
+        ],
+        "evidence": []
+      }
+    },
+    "traceability": {
+      "@trace/healthcare/_/Reconstruction": {
+        "source": "@trace/healthcare/_/TreatmentDecision",
+        "destination": "@trace/healthcare/_/SourceRecord",
+        "path": [
+          {
+            "relationship": "@trace/healthcare/_/TraceLink0",
+            "fromRole": "derived",
+            "toRole": "source"
+          },
+          {
+            "relationship": "@trace/healthcare/_/TraceLink1",
+            "fromRole": "derived",
+            "toRole": "source"
+          }
+        ],
+        "requiredBy": "@trace/healthcare/_/ExternalRule",
+        "applicability": {
+          "process": "@trace/healthcare/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "validFrom": 0,
+        "validUntil": 1000,
+        "retentionDays": 30,
+        "requiredAttributes": {
+          "@trace/healthcare/_/TreatmentDecision": [
+            "id"
+          ],
+          "@trace/healthcare/_/ClinicalEvidence": [
+            "id"
+          ],
+          "@trace/healthcare/_/SourceRecord": [
+            "id"
+          ]
+        },
+        "validTime": true,
+        "knowledgeTime": true
+      }
+    }
+  }
+}

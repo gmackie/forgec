@@ -1,0 +1,93 @@
+import party
+import specification
+import evidence
+
+export resource QualificationSubject
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+export resource PartySubject
+  @tenant
+  @appendOnly
+{
+  id : id
+  subject : QualificationSubject @unique
+  party : party.Party @unique
+  find by party
+}
+export resource QualificationDefinition
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128
+  pin : specification.SpecificationPin
+  label : text length 1..200
+  unique key, pin
+  find by key, pin
+}
+export resource QualificationLevel
+  @tenant
+  @appendOnly
+{
+  id : id
+  definition : QualificationDefinition
+  code : text length 1..64
+  rank : integer >= 0 <= 1000000
+  unique definition, code
+  unique definition, rank
+  find by definition, code
+}
+export resource QualificationRequirement
+  @tenant
+  @appendOnly
+{
+  id : id
+  definition : QualificationDefinition
+  minimumLevel : QualificationLevel?
+  rules {
+    minimumLevel == null || minimumLevel.definition == definition
+  }
+}
+export resource Qualification
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  subject : QualificationSubject
+  definition : QualificationDefinition
+  level : QualificationLevel?
+  issuer : party.Party
+  issuerRecord : text length 1..128
+  issuedAt : datetime
+  expiresAt : datetime?
+  support : evidence.EvidenceSeal?
+  recordedBy : text length 1..128
+  rules {
+    expiresAt == null || expiresAt > issuedAt
+    level == null || level.definition == definition
+  }
+  unique issuer, issuerRecord
+  list by subject
+}
+export resource QualificationRevocation
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  qualification : Qualification @unique
+  effectiveAt : datetime
+  reason : text length 1..500
+  recordedBy : text length 1..128
+  rules {
+    effectiveAt >= qualification.issuedAt
+  }
+  find by qualification
+}

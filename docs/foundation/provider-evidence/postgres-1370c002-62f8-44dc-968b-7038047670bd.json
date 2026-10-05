@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-settlement-invariants/1",
+  "coverageCriteria": [
+    "F80-STORE"
+  ],
+  "status": "passing",
+  "runId": "1370c002-62f8-44dc-968b-7038047670bd",
+  "provider": "postgres",
+  "topology": "native-postgres-local",
+  "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+  "sourceFingerprint": "7206f7b38f51f8beb9b29ac7ed3b1258a7c6993d317a5505d5dd97cb8f8a3b1e",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "67032616162a844af3c539db79c1ba3e0c8a9ffbbe6f0b247eefec928030fd2f"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "23902e6092b3382f24f02700d501bee23a34aeb95b38954de67ba51c9a573001"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "1e7ad5b0b9560c663ccdb44858918162c45d3dd0f6cbdb06b4a4589dac2a4d20"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: CommerceReceivable partial materialization and settlement retain neutral temporal positions",
+    "hosted: ExpenseReimbursement partial materialization and settlement retain neutral temporal positions",
+    "hosted: ServiceCredit partial materialization and settlement retain neutral temporal positions",
+    "hosted: one source atomically settles multiple positions and cannot be overspent or reused",
+    "hosted: immutable reversals corrections and effective-time prefixes preserve explainable history",
+    "hosted: trusted source admission authorization isolation and failed publication never mint balances",
+    "hosted: issued Agreement authority and independent exact Ledger association remain explicit",
+    "hosted: obligation terminal races and unadmitted raw publications fail closed",
+    "hosted: late domain proof cannot confer authority on an earlier raw publication"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T17:13:41.286Z",
+  "passedTraces": [
+    "hosted: CommerceReceivable partial materialization and settlement retain neutral temporal positions",
+    "hosted: ExpenseReimbursement partial materialization and settlement retain neutral temporal positions",
+    "hosted: ServiceCredit partial materialization and settlement retain neutral temporal positions",
+    "hosted: one source atomically settles multiple positions and cannot be overspent or reused",
+    "hosted: immutable reversals corrections and effective-time prefixes preserve explainable history",
+    "hosted: trusted source admission authorization isolation and failed publication never mint balances",
+    "hosted: issued Agreement authority and independent exact Ledger association remain explicit",
+    "hosted: obligation terminal races and unadmitted raw publications fail closed",
+    "hosted: late domain proof cannot confer authority on an earlier raw publication"
+  ],
+  "testReportSha256": "aaf3b958f0becc7c9a102897f11a2b6a140c5ba1e30fa94b33013abe4a00f78f",
+  "identity": {
+    "provider": "postgres",
+    "runId": "1370c002-62f8-44dc-968b-7038047670bd",
+    "tenantPrefix": "foundation-cert-1370c002-62f8-44dc-968b-7038047670bd",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.9 (Homebrew)"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

@@ -1,0 +1,132 @@
+import party
+import specification
+import evidence
+import place
+import intake
+import fulfillment
+import allocation
+import scheduling
+import routing
+export enum DemandOrigin { explicit
+ inferred }
+export resource Demand @tenant @timestamps @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ requester : party.Party
+ specification : specification.SpecificationPin
+ constraints : specification.SpecificationPin
+ origin : DemandOrigin
+ quantity : decimal<6> > 0
+ unit : text length 1..64
+ place : place.Place?
+ from : datetime
+ until : datetime
+ priority : integer >= 0 <= 1000
+ priorityPolicy : specification.SpecificationPin
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ rules { from < until
+ origin != DemandOrigin.inferred || support != null }
+ find by key
+}
+export resource DemandSubmission @tenant @appendOnly {
+ id : id
+ demand : Demand @unique
+ submission : intake.Submission @unique
+ validation : intake.SubmissionValidation
+ rules { demand.origin == "explicit"
+ validation.submission == submission
+ validation.verdict == "Accepted"
+ demand.requester == submission.submitter
+ demand.specification == submission.definition }
+}
+/// Membership groups compatible demand; it never creates extra fulfillable quantity.
+export resource DemandGroup @tenant @appendOnly {
+ id : id
+ memberCount : integer >= 1 <= 16
+ key : text length 1..128 @unique
+ specification : specification.SpecificationPin
+ constraints : specification.SpecificationPin
+ unit : text length 1..64
+ place : place.Place?
+ from : datetime
+ until : datetime
+ rules { from < until }
+}
+export resource DemandGroupMember @tenant @appendOnly {
+ id : id
+ group : DemandGroup
+ ordinal : integer >= 1 <= 16
+ demand : Demand
+ rules { ordinal <= group.memberCount
+ demand.specification == group.specification
+ demand.constraints == group.constraints
+ demand.unit == group.unit
+ demand.place == group.place
+ demand.from == group.from
+ demand.until == group.until }
+ unique group, demand
+ unique group, ordinal
+ list by group
+}
+export enum DemandOutcome { cancelled
+ superseded
+ converted }
+export resource DemandResolution @tenant @timestamps @appendOnly {
+ id : id
+ demand : Demand @unique
+ outcome : DemandOutcome
+ replacement : Demand?
+ fulfillment : fulfillment.Fulfillment? @unique
+ at : datetime
+ reason : text length 1..1000
+ recordedBy : text length 1..128
+ rules {
+ at >= demand.createdAt
+ (outcome == DemandOutcome.cancelled && replacement == null && fulfillment == null) || (outcome == DemandOutcome.superseded && replacement != null && fulfillment == null) || (outcome == DemandOutcome.converted && replacement == null && fulfillment != null)
+ replacement == null || (replacement != demand && replacement.requester == demand.requester && replacement.specification == demand.specification && replacement.createdAt > demand.createdAt)
+ fulfillment == null || (fulfillment.specificationPin == demand.specification && fulfillment.requestedAt >= demand.createdAt)
+ }
+ find by demand
+}
+/// Planning references are not proof of reserved capacity or execution.
+export resource DemandAllocation @tenant @appendOnly {
+ id : id
+ demand : Demand
+ reservation : allocation.AllocationReservation @unique
+ rules { demand.quantity == reservation.quantity
+ demand.unit == reservation.unit
+ demand.from == reservation.from
+ demand.until == reservation.until }
+}
+export resource DemandSchedule @tenant @appendOnly {
+ id : id
+ demand : Demand
+ resolution : DemandResolution
+ fulfillment : fulfillment.Fulfillment
+ appointment : scheduling.Appointment @unique
+ slot : scheduling.CandidateSlot
+ requirement : scheduling.SchedulingRequirement
+ rules { resolution.demand == demand
+ resolution.fulfillment == fulfillment
+ appointment.fulfillment == fulfillment.fulfillmentSet
+ appointment.slot == slot
+ slot.requirement == requirement
+ requirement.place == demand.place
+ slot.from >= demand.from
+ slot.until <= demand.until }
+}
+export resource DemandRoute @tenant @appendOnly {
+ id : id
+ demand : Demand
+ resolution : DemandResolution
+ fulfillment : fulfillment.Fulfillment
+ request : routing.RoutingRequest @unique
+ rules { resolution.demand == demand
+ resolution.fulfillment == fulfillment
+ request.fulfillment == fulfillment.fulfillmentSet
+ request.quantity == demand.quantity
+ request.unit == demand.unit
+ request.from == demand.from
+ request.until == demand.until }
+}

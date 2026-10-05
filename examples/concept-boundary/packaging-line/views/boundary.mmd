@@ -1,0 +1,7 @@
+flowchart TB
+  coordination["coordination: L0 / A"] --> reaction["ReactToScan"]
+  budget["reaction-budget: L0-facet / B"] -.requirements.-> reaction
+  modes["safe-modes: L0-facet / B"] -.requirements.-> reaction
+  reaction --> strategy["execution-strategy: L1 / B"]
+  strategy --> deployment["deployment: L2 / B"]
+  reaction -.artifact handoff.-> specialized["specialized-semantics: external / C"]

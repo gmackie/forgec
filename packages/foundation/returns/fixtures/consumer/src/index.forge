@@ -1,0 +1,21 @@
+import returns
+export resource CommerceReturn @tenant @appendOnly {
+ id : id
+ request : returns.ReturnRequest @unique
+ orderNumber : text length 1..128
+}
+export resource WarrantyReturn @tenant @appendOnly {
+ id : id
+ request : returns.ReturnRequest @unique
+ warranty : text length 1..128
+}
+export resource MaterialReturn @tenant @appendOnly {
+ id : id
+ request : returns.ReturnRequest @unique
+ lot : text length 1..128
+}
+export resource LoanReturn @tenant @appendOnly {
+ id : id
+ request : returns.ReturnRequest @unique
+ loan : text length 1..128
+}

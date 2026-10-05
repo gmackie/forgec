@@ -1,0 +1,17 @@
+import attestation
+resource ComplianceDeclaration @tenant @appendOnly {
+ id : id
+ assertion : attestation.Attestation
+ regulation : text length 1..200
+}
+resource CredentialAssertion @tenant @appendOnly {
+ id : id
+ assertion : attestation.Attestation
+ credentialKey : text length 1..200
+}
+resource SoftwareProvenance @tenant @appendOnly {
+ id : id
+ assertion : attestation.Attestation
+ subject : attestation.AttestationArtifactSubject
+ rules { assertion.subject == subject.subject }
+}

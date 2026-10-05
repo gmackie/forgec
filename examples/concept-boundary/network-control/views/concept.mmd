@@ -1,0 +1,7 @@
+flowchart LR
+  AdmitIntent --> NetworkIntent --> ReconcileNetwork
+  NetworkDevices --> ObserveDevices --> ObservedTopology --> ReconcileNetwork
+  RoutingEngine <--> ReconcileNetwork
+  ReconcileNetwork --> ReconcileDecision --> ApplyNetworkPlan
+  ApplyNetworkPlan <--> NetworkDevices
+  ApplyNetworkPlan --> ApplicationAttempt

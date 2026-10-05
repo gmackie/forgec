@@ -1,0 +1,90 @@
+import party
+import specification
+import usage
+import evaluation
+import decision
+import ledger
+import entitlement
+import agreement-catalog
+import fulfillment
+import evidence
+export resource RewardProgram @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ specification : specification.SpecificationPin
+ eligibility : specification.SpecificationPin
+ earning : specification.SpecificationPin
+ catalog : agreement-catalog.Catalog
+ funding : ledger.Account
+ from : datetime
+ until : datetime
+ rules { from < until }
+}
+export resource RewardMember @tenant @appendOnly {
+ id : id
+ program : RewardProgram
+ party : party.Party
+ account : ledger.Account @unique
+ rules { account != program.funding }
+ unique program, party
+}
+export resource RewardClaim @tenant @appendOnly {
+ id : id
+ member : RewardMember
+ sourceKey : text length 1..200
+ usage : usage.UsageEvent?
+ outcome : fulfillment.FulfillmentEnd?
+ rules { (usage != null && outcome == null) || (usage == null && outcome != null) }
+ unique member, sourceKey
+ unique member, usage
+ unique member, outcome
+}
+export resource RewardAward @tenant @appendOnly {
+ id : id
+ claim : RewardClaim
+ revision : integer >= 1 <= 8
+ previous : RewardAward? @unique
+ eligibilityRun : evaluation.EvaluationRun
+ eligibility : evaluation.EvaluationFinish
+ earningRun : evaluation.EvaluationRun
+ earning : evaluation.EvaluationFinish
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ support : evidence.EvidenceSeal
+ points : decimal<6>?
+ posting : ledger.PostingGroup? @unique
+ benefit : entitlement.Entitlement? @unique
+ at : datetime
+ expiresAt : datetime
+ rules { eligibility.run == eligibilityRun && eligibility.outcome == "Completed"
+ earning.run == earningRun && earning.outcome == "Completed"
+ eligibility.finishedAt <= at && earning.finishedAt <= at
+ accepted.decisionCase == approval
+ (previous == null && revision == 1) || (previous != null && previous.claim == claim && revision == previous.revision + 1 && at >= previous.at)
+ (points != null && points > 0 && posting != null && benefit == null) || (points == null && posting == null && benefit != null)
+ expiresAt > at }
+ unique claim, revision
+}
+export resource RewardRedemption @tenant @appendOnly {
+ id : id
+ award : RewardAward @unique
+ offer : agreement-catalog.Offer
+ fulfillment : fulfillment.Fulfillment @unique
+}
+export enum RewardEndKind { redeemed
+ expired
+ reversed }
+export resource RewardEnd @tenant @appendOnly {
+ id : id
+ award : RewardAward @unique
+ kind : RewardEndKind
+ at : datetime
+ reason : text length 1..500
+ redemption : RewardRedemption?
+ posting : ledger.PostingGroup? @unique
+ benefitEnd : entitlement.EntitlementEnd?
+ rules { at >= award.at
+ (kind == "redeemed" && redemption != null && redemption.award == award && at < award.expiresAt) || (kind != "redeemed" && redemption == null)
+ kind != "expired" || at >= award.expiresAt
+ (award.posting != null && posting != null && benefitEnd == null) || (award.benefit != null && benefitEnd != null && benefitEnd.entitlement == award.benefit && posting == null) }
+}

@@ -1,0 +1,57 @@
+import specification
+
+export enum AvailabilityRuleKind {
+  Weekly
+  Date
+  Override
+}
+export resource AvailabilityCalendar
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+export resource AvailabilityRuleSet
+  @tenant
+  @appendOnly
+{
+  id : id
+  calendar : AvailabilityCalendar
+}
+export resource AvailabilityRule
+  @tenant
+  @appendOnly
+{
+  id : id
+  ruleSet : AvailabilityRuleSet
+  ordinal : integer >= 0 <= 127
+  kind : AvailabilityRuleKind
+  weekday : integer? >= 0 <= 6
+  localDate : date?
+  startMinute : integer? >= 0 <= 1439
+  endMinute : integer? >= 0 <= 1440
+  available : boolean
+  from : datetime?
+  until : datetime?
+  priority : integer? >= 0 <= 127
+  unique ruleSet, ordinal
+  find by ruleSet, ordinal
+}
+export resource AvailabilityCalendarRevision
+  @tenant
+  @appendOnly
+{
+  id : id
+  calendar : AvailabilityCalendar
+  ruleSet : AvailabilityRuleSet
+  ruleCount : integer >= 0 <= 128
+  rulesDigest : text length 64..64 pattern "^[0-9a-f]{64}$"
+  timezone : text length 1..128
+  timezoneDataVersion : text length 1..128
+  origin : specification.SpecificationPin?
+  rules {
+    ruleSet.calendar == calendar
+  }
+  list by calendar
+}

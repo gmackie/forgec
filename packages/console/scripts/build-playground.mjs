@@ -21,7 +21,7 @@ await build({
   bundle: true,
   platform: "node",
   format: "esm",
-  target: "node22",
+  target: "node24",
   conditions: ["source"],
   banner: {
     js: 'import {createRequire} from "node:module";const require=createRequire(import.meta.url);',

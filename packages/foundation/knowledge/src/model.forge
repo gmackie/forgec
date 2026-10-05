@@ -1,0 +1,93 @@
+import artifact
+import specification
+import classification
+import publication
+import entitlement
+import evaluation
+export resource KnowledgeItem
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  title : text length 1..200
+  accessRight : entitlement.RightDefinition
+  scope : entitlement.EntitlementScope
+  find by key
+}
+export resource KnowledgeClassification
+  @tenant
+  @appendOnly
+{
+  id : id
+  assignment : classification.ClassificationAssignment
+  next : KnowledgeClassification?
+  depth : integer >= 1 <= 16
+  rules {
+    (next == null && depth == 1) || (next != null && depth == next.depth + 1)
+  }
+}
+export resource KnowledgeRevision
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  item : KnowledgeItem
+  revision : integer >= 1
+  previous : KnowledgeRevision? @unique
+  specification : specification.SpecificationPin
+  content : artifact.ArtifactRevision
+  classifications : KnowledgeClassification
+  assessmentDefinition : specification.SpecificationPin
+  rules {
+    content.specificationPin == specification
+    (previous == null && revision == 1) || (previous != null && previous.item == item && revision == previous.revision + 1)
+  }
+  unique item, revision
+  find by item, revision
+}
+export resource KnowledgePublication
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  revision : KnowledgeRevision
+  release : publication.Release
+  audience : publication.ReleaseAudienceLink @unique
+  rules {
+    release.specification == revision.specification
+    release.artifact == revision.content
+    audience.release == release
+  }
+  unique revision, audience
+}
+export resource KnowledgeFeedback
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  edition : KnowledgePublication
+  revision : KnowledgeRevision
+  run : evaluation.EvaluationRun @unique
+  rules {
+    edition.revision == revision
+    run.definition == revision.assessmentDefinition
+  }
+  find by run
+}
+export resource KnowledgeFeedbackResult
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  feedback : KnowledgeFeedback @unique
+  finish : evaluation.EvaluationFinish @unique
+  rules {
+    finish.run == feedback.run
+  }
+  find by feedback
+}

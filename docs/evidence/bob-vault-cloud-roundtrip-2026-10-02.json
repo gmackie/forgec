@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "scope": "Disposable cloud history roundtrip; no source routing or live vault mutation",
+  "initialCommits": 215,
+  "initialRefs": 14,
+  "initialObjects": 1420,
+  "rollbackCommits": 216,
+  "rollbackRefs": 14,
+  "rollbackObjects": 1423,
+  "sourceBundleSha256": "d920885fd7ae57744fbdca5bc5bfdba8a9114139b5e0c134576baae47799be1c",
+  "rollbackBundleSha256": "2767474a34f17e9e7ad39048fbeb5edf4c4e5ac34700bb36c14639e92a77bb6a",
+  "postImportContentVerified": true,
+  "cleanup": {
+    "remainingResources": 0
+  },
+  "at": "2026-10-03T03:40:26Z",
+  "credentialReference": "~/.wrangler/config/default.toml:oauth_token",
+  "method": [
+    "Restore the trusted history bundle into an exclusive private bare repository and compare its full manifest.",
+    "Create a fresh disposable Cloudflare Artifacts repository; record cleanup intent before creation.",
+    "Push every inventoried ref with an expected-absent guard, without retrying writes.",
+    "Fetch every ref into a new bare repository and compare refs, object IDs, types, byte lengths and raw SHA-256 digests.",
+    "Create a synthetic file commit, publish with the prior head lease, fetch and compare the complete updated graph.",
+    "Export the cloud readback, restore its bundle into another exclusive bare repository, and verify the synthetic file bytes.",
+    "Delete the owned disposable repository; retain private snapshots, bundles, manifests and method scripts."
+  ],
+  "limitations": [
+    "Local operator rehearsal using Wrangler OAuth; does not qualify scheduled REST credentials.",
+    "History refs and object content only; ignored files, journals, database state and external symlink payloads were not uploaded.",
+    "No deployed Bob route, legacy-writer fencing, source-vault mutation or production routing change.",
+    "Cloud default branch configured to main; default-branch symbolic advertisement not independently asserted."
+  ],
+  "sourceFiles": {
+    "forge-cloud-history.mjs": "cd9ec756ebe9018d8be2eeac314b5126ec69f6e5e5163404bfc7f0389143abd0",
+    "forge-cloud-rehearse.py": "4b2287d1721492925d083ef6a9b0b02190ec68cc12b67a67932633b243450e1b"
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "nodes": {
+    "@corpus/manufacturing/_/CalculateTemperatureWindow": "process",
+    "@corpus/manufacturing/_/DetectExcursion": "process",
+    "@corpus/manufacturing/_/Machine": "entity",
+    "@corpus/manufacturing/_/MaintainEquipment": "process",
+    "@corpus/manufacturing/_/MaintainMachine": "process",
+    "@corpus/manufacturing/_/Operator": "principal",
+    "@corpus/manufacturing/_/QualityControl": "purpose",
+    "@corpus/manufacturing/_/ReceiveTelemetry": "process",
+    "@corpus/manufacturing/_/ScopedAccess": "policy",
+    "@corpus/manufacturing/_/TrackBatch": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "to": "@corpus/manufacturing/_/QualityControl",
+      "port": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/manufacturing/_/DetectExcursion",
+      "to": "@corpus/manufacturing/_/QualityControl",
+      "port": "@corpus/manufacturing/_/DetectExcursion",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/manufacturing/_/MaintainEquipment",
+      "to": "@corpus/manufacturing/_/QualityControl",
+      "port": "@corpus/manufacturing/_/MaintainEquipment",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/manufacturing/_/MaintainMachine",
+      "to": "@corpus/manufacturing/_/QualityControl",
+      "port": "@corpus/manufacturing/_/MaintainMachine",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/manufacturing/_/Operator",
+      "to": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "port": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/manufacturing/_/Operator",
+      "to": "@corpus/manufacturing/_/DetectExcursion",
+      "port": "@corpus/manufacturing/_/DetectExcursion",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/manufacturing/_/Operator",
+      "to": "@corpus/manufacturing/_/MaintainEquipment",
+      "port": "@corpus/manufacturing/_/MaintainEquipment",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/manufacturing/_/Operator",
+      "to": "@corpus/manufacturing/_/MaintainMachine",
+      "port": "@corpus/manufacturing/_/MaintainMachine",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/manufacturing/_/Operator",
+      "to": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/manufacturing/_/Operator",
+      "to": "@corpus/manufacturing/_/TrackBatch",
+      "port": "@corpus/manufacturing/_/TrackBatch",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "to": "@corpus/manufacturing/_/QualityControl",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "port": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "port": "@corpus/manufacturing/_/CalculateTemperatureWindow#input:TemperatureObserved",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/DetectExcursion",
+      "port": "@corpus/manufacturing/_/DetectExcursion",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/DetectExcursion",
+      "port": "@corpus/manufacturing/_/DetectExcursion#input:Batch",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/DetectExcursion",
+      "port": "@corpus/manufacturing/_/DetectExcursion#input:TemperatureWindow",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/Machine",
+      "port": "@corpus/manufacturing/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/MaintainEquipment",
+      "port": "@corpus/manufacturing/_/MaintainEquipment",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/MaintainEquipment",
+      "port": "@corpus/manufacturing/_/MaintainEquipment#input:Machine",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/MaintainEquipment",
+      "port": "@corpus/manufacturing/_/MaintainEquipment#input:QualityHold",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/MaintainMachine",
+      "port": "@corpus/manufacturing/_/MaintainMachine",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/MaintainMachine",
+      "port": "@corpus/manufacturing/_/MaintainMachine#input:MachineFaultObserved",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/MaintainMachine",
+      "port": "@corpus/manufacturing/_/MaintainMachine#input:MaintenanceCompleted",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/Operator",
+      "port": "@corpus/manufacturing/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/QualityControl",
+      "port": "@corpus/manufacturing/_/ScopedAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry#input:Machine",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry#input:backfill",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ScopedAccess",
+      "to": "@corpus/manufacturing/_/TrackBatch",
+      "port": "@corpus/manufacturing/_/TrackBatch",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/manufacturing/_/TrackBatch",
+      "to": "@corpus/manufacturing/_/QualityControl",
+      "port": "@corpus/manufacturing/_/TrackBatch",
+      "kind": "purpose"
+    }
+  ]
+}

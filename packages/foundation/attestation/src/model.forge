@@ -1,0 +1,77 @@
+import party
+import specification
+import evidence
+import artifact
+import qualification
+/// Typed domain links bind this subject, never a targetType/targetId pair.
+export resource AttestationSubject @tenant @appendOnly {
+ id : id
+ label : text length 1..200
+}
+export resource AttestationPartySubject @tenant @appendOnly {
+ id : id
+ subject : AttestationSubject @unique
+ party : party.Party @unique
+}
+export resource AttestationArtifactSubject @tenant @appendOnly {
+ id : id
+ subject : AttestationSubject @unique
+ revision : artifact.ArtifactRevision @unique
+}
+export resource AttestationQualificationSubject @tenant @appendOnly {
+ id : id
+ subject : AttestationSubject @unique
+ qualificationSubject : qualification.QualificationSubject @unique
+}
+export resource Attestation @tenant @timestamps @appendOnly {
+ id : id
+ issuer : AttestationSubject
+ subject : AttestationSubject
+ issuerRecord : text length 1..128
+ specification : specification.SpecificationPin
+ issuedAt : datetime
+ validFrom : datetime
+ validUntil : datetime?
+ conclusion : text length 1..2000
+ source : text length 1..1000
+ support : evidence.EvidenceSeal?
+ proof : artifact.ArtifactRevision?
+ rules {
+  validFrom >= issuedAt
+  validUntil == null || validUntil > validFrom
+ }
+ unique issuer, issuerRecord
+ find by issuer, issuerRecord
+}
+export resource AttestationEnd @tenant @timestamps @appendOnly {
+ id : id
+ attestation : Attestation @unique
+ replacement : Attestation?
+ effectiveAt : datetime
+ reason : text length 1..1000
+ recordedBy : text length 1..128
+ rules {
+  effectiveAt >= attestation.validFrom
+  replacement == null || (replacement.issuer == attestation.issuer && replacement.subject == attestation.subject && replacement.specification == attestation.specification && replacement.validFrom > attestation.validFrom && effectiveAt == replacement.validFrom)
+ }
+ find by attestation
+}
+export resource QualificationAttestation @tenant @appendOnly {
+ id : id
+ qualification : qualification.Qualification
+ definition : qualification.QualificationDefinition
+ subject : AttestationQualificationSubject
+ issuer : AttestationPartySubject
+ attestation : Attestation
+ rules {
+  qualification.definition == definition
+  qualification.subject == subject.qualificationSubject
+  qualification.issuer == issuer.party
+  attestation.subject == subject.subject
+  attestation.issuer == issuer.subject
+  attestation.specification == definition.pin
+  qualification.issuedAt >= attestation.validFrom
+  attestation.validUntil == null || (qualification.expiresAt != null && qualification.expiresAt <= attestation.validUntil)
+ }
+ unique qualification, attestation
+}

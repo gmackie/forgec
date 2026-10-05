@@ -4,9 +4,10 @@
  * assertion table's named CHECK, as certified by the M0 spike.
  */
 import { Effect } from "effect";
+import { absenceWriteConflict } from "../atomic-guards.js";
 import { err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
-import type { CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import type { AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 import { SqlMapping } from "./sql-mapping.js";
 import { rawD1Executor, type SqlExecutor, type SqlStatement } from "./sql-executor.js";
 
@@ -22,6 +23,7 @@ export interface D1Stmt {
   run(): Promise<{ meta: { changes: number } }>;
 }
 
+const identifier = (name: string) => `"${name.replaceAll('"', '""')}"`;
 const st = (sql: string, ...params: unknown[]): SqlStatement => ({ sql, params });
 
 /** D1 serializes writes behind one writer, so a transient conflict is rare and clears quickly. */
@@ -31,6 +33,8 @@ const D1_BATCH_STATEMENT_LIMIT = 100;
 
 export class D1Storage implements StorageAdapter {
   readonly name: string;
+  readonly atomicAbsenceGuards = true;
+  readonly atomicCompletion = true;
   private readonly map: SqlMapping;
   private readonly db: SqlExecutor;
 
@@ -61,7 +65,7 @@ export class D1Storage implements StorageAdapter {
   findUnique(tenant: string, r: Resource, u: Unique, _claimKey: string, values: Record<string, unknown>): Effect.Effect<StoredRecord | null, ForgeError> {
     const t = this.map.table(r);
     const fields = [...u.within, ...u.fields];
-    const where = [...(r.decorators.tenant ? ["tenant = ?"] : []), ...fields.map((f) => `${this.map.column(r, f).name} = ?`)].join(" AND ");
+    const where = [...(r.decorators.tenant ? ["tenant = ?"] : []), ...fields.map((f) => `${identifier(this.map.column(r, f).name)} = ?`)].join(" AND ");
     const binds = [...(r.decorators.tenant ? [tenant] : []), ...fields.map((f) => this.map.toColumn(r.fields.find((x) => x.name === f)!, values[f]))];
     return this.wrap(async () => {
       const row = await this.db.first(st(`SELECT * FROM ${t.name} WHERE ${where}`, ...binds));
@@ -71,7 +75,7 @@ export class D1Storage implements StorageAdapter {
 
   list(tenant: string, r: Resource, q: ListQuery, _sortKeys: (rec: StoredRecord) => string[]): Effect.Effect<{ records: StoredRecord[]; hasMore: boolean }, ForgeError> {
     const t = this.map.table(r);
-    const col = (f: string) => this.map.column(r, f).name;
+    const col = (f: string) => identifier(this.map.column(r, f).name);
     const field = (f: string) => r.fields.find((x) => x.name === f)!;
     const where: string[] = [];
     const binds: unknown[] = [];
@@ -118,7 +122,7 @@ export class D1Storage implements StorageAdapter {
 
   countDependents(tenant: string, child: Resource, field: string, id: string): Effect.Effect<number, ForgeError> {
     const t = this.map.table(child);
-    const col = this.map.column(child, field).name;
+    const col = identifier(this.map.column(child, field).name);
     const live = child.decorators.softDelete ? " AND deleted_at IS NULL" : "";
     const tenantSql = child.decorators.tenant ? "tenant = ? AND " : "";
     const binds = child.decorators.tenant ? [tenant, id] : [id];
@@ -136,7 +140,7 @@ export class D1Storage implements StorageAdapter {
     const binds: unknown[] = [];
     if (r.decorators.tenant) where.push("tenant = ?");
     for (const [i, f] of g.groupFields.entries()) {
-      where.push(`${this.map.column(r, f).name} = ?`);
+      where.push(`${identifier(this.map.column(r, f).name)} = ?`);
       binds.push(this.map.toColumn(r.fields.find((x) => x.name === f)!, g.groupValues[i]));
     }
     where.push("id <> ?");
@@ -164,7 +168,7 @@ export class D1Storage implements StorageAdapter {
       binds.push(tenant);
     }
     for (const [i, f] of groupFields.entries()) {
-      where.push(`${this.map.column(r, f).name} = ?`);
+      where.push(`${identifier(this.map.column(r, f).name)} = ?`);
       binds.push(this.map.toColumn(r.fields.find((x) => x.name === f)!, groupValues[i]));
     }
     if (r.decorators.softDelete) where.push("deleted_at IS NULL");
@@ -177,7 +181,7 @@ export class D1Storage implements StorageAdapter {
   }
   children(tenant: string, r: Resource, parentField: string, id: string, limit: number): Effect.Effect<StoredRecord[], ForgeError> {
     const t = this.map.table(r);
-    const col = this.map.column(r, parentField).name;
+    const col = identifier(this.map.column(r, parentField).name);
     const order = r.fields.some((f) => f.name === "name") ? "name, id" : "id";
     const live = r.decorators.softDelete ? " AND deleted_at IS NULL" : "";
     const tenantSql = r.decorators.tenant ? "tenant = ? AND " : "";
@@ -221,6 +225,9 @@ export class D1Storage implements StorageAdapter {
   outboxRedrive(r: { tenant: string; opId: string; ordinal: number }): Effect.Effect<boolean, ForgeError> {
     return this.wrap(async () => (await this.db.run(st("UPDATE forge_outbox SET status = 'pending', attempts = 0, lease_owner = NULL, lease_until = NULL WHERE tenant = ? AND op_id = ? AND ordinal = ? AND status = 'dead'", r.tenant, r.opId, r.ordinal))).changes === 1);
   }
+  hasProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
+    return this.wrap(async () => !!await this.db.first(st("SELECT 1 FROM forge_processed WHERE tenant = ? AND subscription = ? AND message_id = ?", tenant, subscription, messageId)));
+  }
   markProcessed(tenant: string, subscription: string, messageId: string): Effect.Effect<boolean, ForgeError> {
     return this.wrap(async () => {
       const res = await this.db.run(st("INSERT OR IGNORE INTO forge_processed (tenant, subscription, message_id, at) VALUES (?, ?, ?, ?)", tenant, subscription, messageId, new Date().toISOString()));
@@ -236,8 +243,8 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
-  budget(plans: CommitPlan[]): { actions: number; limit: number } {
-    return { actions: plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
+  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
+    return { actions: absent.length * 2 + plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
   }
 
   exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
@@ -256,6 +263,28 @@ export class D1Storage implements StorageAdapter {
       const row = await this.db.first<{ version: number; body: string }>(st("SELECT version, body FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", tenant, kind, id));
       return row ? { ...(JSON.parse(row.body) as Record<string, unknown>), _version: row.version } : null;
     });
+  }
+
+  putDocuments(tenant: string, writes: DocumentWrite[]): Effect.Effect<void, ForgeError> {
+    if (writes.length > 24 || new Set(writes.map(w=>JSON.stringify([w.kind,w.id]))).size !== writes.length) return Effect.fail(err("BudgetExceeded", "document batch must contain at most 24 distinct keys"));
+    if (!writes.length) return Effect.void;
+    const op = `documents:${crypto.randomUUID()}`;
+    const statements: SqlStatement[] = [];
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    for (const w of writes) {
+      conditions.push(w.expectedVersion === null ? "NOT EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?)" : "EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ? AND version = ?)");
+      params.push(tenant,w.kind,w.id,...(w.expectedVersion === null ? [] : [w.expectedVersion]));
+    }
+    statements.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, (${conditions.join(" AND ")})`,op,...params));
+    for (const w of writes) {
+      const { _version, ...rest } = w.doc; void _version;
+      statements.push(w.expectedVersion === null
+        ? st("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, ?)",tenant,w.kind,w.id,JSON.stringify(rest))
+        : st("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?",JSON.stringify(rest),tenant,w.kind,w.id,w.expectedVersion));
+    }
+    statements.push(st("DELETE FROM _forge_assert WHERE op_id = ?",op));
+    return Effect.tryPromise({try:async()=>{await this.db.batch(statements);},catch:(e)=> /forge_precondition|UNIQUE constraint failed|database is locked/.test(String(e)) ? err("VersionConflict","document batch changed concurrently") : err("StorageUnavailable",String(e))});
   }
 
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {
@@ -281,15 +310,19 @@ export class D1Storage implements StorageAdapter {
    * serializable snapshot isolation conflicts whenever independent writers overlap.
    */
   protected readonly retryAttempts: number = RETRY_ATTEMPTS;
+  /** PostgreSQL can let the primary key arbitrate create collisions without an SSI absence read. */
+  protected readonly assertCreateAbsent: boolean = true;
   protected retryDelayMs(attempt: number): number {
     return Math.floor(Math.random() * 25 * attempt);
   }
 
-  commitAll(plans: CommitPlan[]): Effect.Effect<void, ForgeError> {
+  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
+      const conflict = absenceWriteConflict(plans, absent);
+      if (conflict) return yield* Effect.fail(conflict);
       for (let attempt = 1; ; attempt++) {
-        const outcome = yield* self.commitOnce(plans);
+        const outcome = yield* self.commitOnce(plans, absent);
         if (outcome === "ok") return;
         if (outcome.code !== "TransientConflict" || attempt >= self.retryAttempts) return yield* Effect.fail(outcome);
         yield* Effect.sleep(self.retryDelayMs(attempt));
@@ -297,13 +330,33 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
-  private commitOnce(plans: CommitPlan[]): Effect.Effect<"ok" | ForgeError, never> {
-    const stmts: SqlStatement[] = plans.flatMap((p) => this.statementsFor(p));
+  private commitOnce(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[]): Effect.Effect<"ok" | ForgeError, never> {
+    const stmts: SqlStatement[] = [];
+    const guardIds = absent.map(() => crypto.randomUUID());
+    for (const [index, guard] of absent.entries()) {
+      const query = this.absenceQuery(guard);
+      stmts.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, NOT EXISTS (${query.sql})`, guardIds[index], ...query.params));
+    }
+    stmts.push(...plans.flatMap(p => this.statementsFor(p)));
+    for (const id of guardIds) stmts.push(st("DELETE FROM _forge_assert WHERE op_id = ?", id));
     return Effect.promise(async () => {
       try {
         await this.db.batch(stmts);
         return "ok" as const;
       } catch (e) {
+        if (/CHECK constraint failed: forge_precondition/.test(String((e as Error)?.message ?? e))) {
+          for (const guard of absent) {
+            const found = await this.db.first(this.absenceQuery(guard)).catch(() => null);
+            if (found) return err("VersionConflict", "Atomic absence guard failed");
+          }
+        }
+        for (const plan of plans) {
+          if (plan.completion) {
+            const w = plan.completion;
+            const row = await this.db.first<{version: number}>(st("SELECT version FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", plan.tenant, w.kind, w.id));
+            if ((row?.version ?? null) !== w.expectedVersion) return err("VersionConflict", "subscription claim changed");
+          }
+        }
         // Find the plan whose precondition failed: diagnose each until one explains the failure.
         for (const plan of plans) {
           const outcome = await this.classify(e, plan);
@@ -314,10 +367,32 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
+  private absenceQuery(guard: AtomicAbsenceGuard): SqlStatement {
+    const { resource, unique, tenant, values } = guard;
+    const fields = [...unique.within, ...unique.fields];
+    const where = [...(resource.decorators.tenant ? ["tenant = ?"] : []), ...fields.map(f => `${identifier(this.map.column(resource, f).name)} = ?`)];
+    return st(`SELECT 1 FROM ${this.map.table(resource).name} WHERE ${where.join(" AND ")}`,
+      ...(resource.decorators.tenant ? [tenant] : []),
+      ...fields.map(f => this.map.toColumn(resource.fields.find(field => field.name === f)!, values[f])));
+  }
+
   /** Statements for one logical command; several commands concatenate into one atomic batch. */
   private statementsFor(plan: CommitPlan): SqlStatement[] {
     const { resource: r, tenant, id } = plan;
     const stmts: SqlStatement[] = [];
+    if (plan.completion) {
+      const w = plan.completion;
+      const op = `completion:${plan.opId}`;
+      const { _version, ...doc } = w.doc; void _version;
+      const predicate = w.expectedVersion === null
+        ? "NOT EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?)"
+        : "EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ? AND version = ?)";
+      stmts.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, ${predicate}`, op, tenant, w.kind, w.id, ...(w.expectedVersion === null ? [] : [w.expectedVersion])));
+      stmts.push(w.expectedVersion === null
+        ? st("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, ?)", tenant, w.kind, w.id, JSON.stringify(doc))
+        : st("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?", JSON.stringify(doc), tenant, w.kind, w.id, w.expectedVersion));
+      stmts.push(st("DELETE FROM _forge_assert WHERE op_id = ?", op));
+    }
     if (plan.kind === "publish") {
       const a = plan.audit;
       stmts.push(st("INSERT INTO forge_audit (tenant, op_id, resource, record_id, kind, new_version, actor, at, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", a.tenant, a.opId, a.resource, a.recordId, a.kind, a.newVersion, a.actor, a.at, null));
@@ -335,8 +410,12 @@ export class D1Storage implements StorageAdapter {
     const preds: string[] = [];
     const predBinds: unknown[] = [];
     if (plan.kind === "create") {
-      preds.push(`NOT EXISTS (SELECT 1 FROM ${t.name} WHERE ${kw.sql})`);
-      predBinds.push(...kw.bind(tenant, id));
+      if (this.assertCreateAbsent) {
+        preds.push(`NOT EXISTS (SELECT 1 FROM ${t.name} WHERE ${kw.sql})`);
+        predBinds.push(...kw.bind(tenant, id));
+      } else {
+        preds.push("1 = 1");
+      }
     } else {
       const versionSql = plan.expectedVersion !== null ? " AND version = ?" : "";
       preds.push(`EXISTS (SELECT 1 FROM ${t.name} WHERE ${kw.sql}${versionSql})`);
@@ -373,7 +452,7 @@ export class D1Storage implements StorageAdapter {
     }
     for (const d of plan.dependents) {
       const dt = this.map.table(d.resource);
-      const col = this.map.column(d.resource, d.field).name;
+      const col = identifier(this.map.column(d.resource, d.field).name);
       const live = d.resource.decorators.softDelete ? " AND deleted_at IS NULL" : "";
       const tenantSql = d.resource.decorators.tenant ? "tenant = ? AND " : "";
       preds.push(`NOT EXISTS (SELECT 1 FROM ${dt.name} WHERE ${tenantSql}${col} = ?${live})`);

@@ -1,0 +1,64 @@
+{
+  "target": "aws-dynamodb",
+  "url": "https://5pk1s4feje.execute-api.us-east-1.amazonaws.com",
+  "at": "2026-10-01T05:11:30.090Z",
+  "samplesPerOp": 20,
+  "latencyMs": {
+    "crud-write:create": {
+      "n": 20,
+      "p50": 147,
+      "p95": 363,
+      "max": 363
+    },
+    "crud-read:get": {
+      "n": 20,
+      "p50": 65,
+      "p95": 207,
+      "max": 207
+    },
+    "crud-read:list": {
+      "n": 20,
+      "p50": 66,
+      "p95": 209,
+      "max": 209
+    },
+    "crud-write:update": {
+      "n": 20,
+      "p50": 164,
+      "p95": 465,
+      "max": 465
+    },
+    "function:SubmitOrder": {
+      "n": 20,
+      "p50": 274,
+      "p95": 395,
+      "max": 395
+    }
+  },
+  "atomicBudget": [
+    {
+      "operations": 1,
+      "physicalActions": 7,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    },
+    {
+      "operations": 2,
+      "physicalActions": 13,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    },
+    {
+      "operations": 5,
+      "physicalActions": 31,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    },
+    {
+      "operations": 10,
+      "physicalActions": 61,
+      "physicalLimit": 100,
+      "atomicAllowed": true
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+import fulfillment
+export resource RunCompletion
+  @tenant
+  @appendOnly
+{
+  id : id
+  taskRunId : text length 1..128 @unique
+  sessionId : text length 1..128
+  userId : text length 1..128
+  workspaceId : text length 1..128
+  planningItemId : text length 1..128
+  execution : fulfillment.Fulfillment @unique
+  terminal : fulfillment.FulfillmentEnd @unique
+  rules {
+    terminal.fulfillment == execution
+    terminal.outcome == "completed"
+  }
+  find by taskRunId
+}

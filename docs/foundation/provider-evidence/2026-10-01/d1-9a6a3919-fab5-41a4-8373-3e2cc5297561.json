@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-core-invariants/1",
+  "coverageCriteria": [],
+  "status": "passing",
+  "runId": "9a6a3919-fab5-41a4-8373-3e2cc5297561",
+  "provider": "d1",
+  "topology": "cloudflare-d1-hosted",
+  "targetHash": "76a3e5a9b43d29a32892c27abb4531459ab4034c7d9540c7d039a1bd27935ac2",
+  "sourceFingerprint": "da6f934fd5b3071c6767a52a6a329a3519d2a67d8c158650d8f37d12ced5ccd2",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "019c9f000886a574afdca7b73faf79a7b3d2dfca1e47a58d2f344fac2991e9f3"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "cbeda4517c123bf16276d0c197aa6011c0f2de80abb824d155abf7697c55f735"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "e904672a9ca8405f260673081f1fab33410e6125050b77d6075fcc80295b3945"
+    }
+  ],
+  "requestedTraces": [
+    "capacity-race-and-restart",
+    "authorized-atomic-rollback",
+    "exact-ledger-reversal",
+    "usage-retry-and-isolation",
+    "terminal-absence-guard-race"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-10-01T02:25:06.210Z",
+  "passedTraces": [
+    "capacity-race-and-restart",
+    "authorized-atomic-rollback",
+    "exact-ledger-reversal",
+    "usage-retry-and-isolation",
+    "terminal-absence-guard-race"
+  ],
+  "testReportSha256": "4e211fefb52c5ea6d2386708a56c3c51f8b51711d963ede7aed0749941f371df",
+  "identity": {
+    "provider": "d1",
+    "runId": "9a6a3919-fab5-41a4-8373-3e2cc5297561",
+    "tenantPrefix": "foundation-cert-9a6a3919-fab5-41a4-8373-3e2cc5297561",
+    "observed": {
+      "protocol": "foundation-d1/1",
+      "provider": "cloudflare-d1-hosted",
+      "bundleSha256": "019c9f000886a574afdca7b73faf79a7b3d2dfca1e47a58d2f344fac2991e9f3",
+      "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+      "colo": "PDX"
+    },
+    "objectStore": "not exercised",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

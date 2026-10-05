@@ -1,0 +1,28 @@
+{
+  "nodes": {
+    "@corpus/collaborative/_/ManageComment": "process",
+    "@corpus/collaborative/_/NotificationService": "external",
+    "@corpus/collaborative/_/OfflineClient": "external",
+    "@corpus/collaborative/_/ReceiveEdits": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/collaborative/_/ManageComment",
+      "to": "@corpus/collaborative/_/NotificationService",
+      "port": "@corpus/collaborative/_/ManageComment#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/collaborative/_/OfflineClient",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/collaborative/_/OfflineClient",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits#input:Workspace",
+      "kind": "acquire"
+    }
+  ]
+}

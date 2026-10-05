@@ -1,0 +1,20 @@
+import identifiers
+
+resource GitHubRepository @tenant @versioned {
+  id : id
+  name : text length 1..128
+  identifiers : identifiers.IdentifierSet @immutable @unique
+}
+resource SerializedDevice @tenant @versioned {
+  id : id
+  serials : identifiers.IdentifierSet @immutable @unique
+}
+resource PatientRecord @tenant @versioned {
+  id : id
+  medicalRecordNumbers : identifiers.IdentifierSet @immutable @unique
+}
+resource HospitalIssuer @tenant @appendOnly {
+  id : id
+  issuer : identifiers.Issuer @unique
+  name : text length 1..128
+}

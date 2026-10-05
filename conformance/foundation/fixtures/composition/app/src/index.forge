@@ -1,0 +1,32 @@
+import records
+import remote
+
+resource Issue
+  @tenant
+  @versioned
+{
+  id : id
+  evidence : records.EvidenceBundle
+  title : text length 1..100
+}
+
+shape PublishInput {
+  issue : Issue
+  expectedVersion : integer >= 1
+  title : text length 1..100
+}
+
+function PublishIssue {
+  input PublishInput
+  output Issue.Record
+
+  uses {
+    Issue write
+    records.EvidenceBundle read
+    remote.Notify
+  }
+
+  errors {
+    DeliveryUnavailable
+  }
+}

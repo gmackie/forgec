@@ -1,0 +1,131 @@
+import specification
+import participation
+import allocation
+import fulfillment
+import evaluation
+import evidence
+import artifact
+import lineage
+export enum AssignmentMethod {
+  Manual
+  SeededHash
+}
+export resource Experiment
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  definition : specification.SpecificationPin
+  variantCount : integer >= 1 <= 16
+  method : AssignmentMethod
+  seed : text length 1..128
+  pool : allocation.AllocationPool?
+  amendmentOf : Experiment?
+  revision : integer >= 1 <= 128
+  rules {
+    (amendmentOf == null && revision == 1) || (amendmentOf != null && revision > amendmentOf.revision)
+  }
+}
+export resource ExperimentVariant
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : Experiment
+  ordinal : integer >= 0 <= 15
+  definition : specification.SpecificationPin
+  label : text length 1..128
+  rules {
+    ordinal < experiment.variantCount
+  }
+  unique experiment, ordinal
+  find by experiment, ordinal
+}
+export resource ExperimentAssignment
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : Experiment
+  subjectKey : text length 1..128
+  variant : ExperimentVariant
+  method : AssignmentMethod
+  seed : text length 1..128
+  provenance : text length 1..500
+  participant : participation.Participation?
+  reservation : allocation.AllocationReservation? @unique
+  rules {
+    variant.experiment == experiment && method == experiment.method && seed == experiment.seed
+    (experiment.pool == null && reservation == null) || (experiment.pool != null && reservation != null && reservation.pool == experiment.pool)
+  }
+  unique experiment, subjectKey
+  find by experiment, subjectKey
+}
+export enum ExperimentEventKind {
+  Assigned
+  Closed
+  Cancelled
+}
+export resource ExperimentEvent
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : Experiment
+  ordinal : integer >= 1 <= 128
+  previous : ExperimentEvent?
+  kind : ExperimentEventKind
+  assignment : ExperimentAssignment? @unique
+  reservation : allocation.AllocationReservation?
+  grant : allocation.AllocationJournal?
+  rules {
+    (previous == null && ordinal == 1) || (previous != null && previous.experiment == experiment && previous.ordinal == ordinal - 1 && previous.kind == ExperimentEventKind.Assigned)
+    (kind == ExperimentEventKind.Assigned) == (assignment != null)
+    assignment == null || (assignment.experiment == experiment && assignment.reservation == reservation)
+    assignment != null || reservation == null
+    (reservation == null && grant == null) || (reservation != null && grant != null && grant.reservation == reservation && grant.action == "allocate")
+  }
+  unique experiment, ordinal
+  find by experiment, ordinal
+}
+export resource ExperimentIntervention
+  @tenant
+  @appendOnly
+{
+  id : id
+  assignment : ExperimentAssignment
+  variant : ExperimentVariant
+  fulfillment : fulfillment.Fulfillment
+  rules {
+    assignment.variant == variant && fulfillment.specificationPin == variant.definition
+  }
+}
+export resource ExperimentEvaluationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  assignment : ExperimentAssignment
+  variant : ExperimentVariant
+  run : evaluation.EvaluationRun
+  finish : evaluation.EvaluationFinish
+  support : evidence.EvidenceSeal
+  rules {
+    assignment.variant == variant && run.definition == variant.definition
+    finish.run == run && finish.outcome == "Completed" && finish.support == support
+  }
+}
+export resource ExperimentArtifactLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  experiment : Experiment
+  revision : artifact.ArtifactRevision
+  node : lineage.LineageNode
+  definition : specification.SpecificationPin
+  rules {
+    definition == experiment.definition && revision.specificationPin == definition
+  }
+}

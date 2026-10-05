@@ -23,6 +23,8 @@ pub struct Package {
     pub dependencies: Vec<(String, String)>,
     /// (alias, path) for dependencies resolved from disk, used by loaders.
     pub dependency_paths: Vec<(String, PathBuf)>,
+    /// Dependency aliases explicitly selected for this deployment. Imports alone stay remote.
+    pub deployed_dependencies: Vec<String>,
     /// `[observability]` from forge.toml: SLO window and per-class targets.
     pub observability: crate::ir::ObservabilityConfig,
     /// `[extensions.<name>]` pins: manifest path (relative to the package root) and expected sha256.
@@ -50,6 +52,7 @@ impl Package {
                 .collect(),
             dependencies: Vec::new(),
             dependency_paths: Vec::new(),
+            deployed_dependencies: Vec::new(),
             observability: crate::ir::ObservabilityConfig::default(),
             extensions: Vec::new(),
         }
@@ -120,6 +123,8 @@ fn default_root() -> String {
 #[derive(Debug, Deserialize)]
 struct Dependency {
     path: String,
+    #[serde(default)]
+    deploy: bool,
 }
 #[derive(Debug, Deserialize, Default)]
 struct Compatibility {
@@ -193,6 +198,12 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
         files,
         dependencies,
         dependency_paths,
+        deployed_dependencies: m
+            .dependencies
+            .iter()
+            .filter(|(_, d)| d.deploy)
+            .map(|(a, _)| a.clone())
+            .collect(),
         extensions: m
             .extensions
             .iter()

@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Temporal + keyed services",
+    "storage": "Postgres + object storage",
+    "transport": "Kafka",
+    "conflict": "OT",
+    "query": "PostGIS",
+    "batchSize": 1000,
+    "concurrency": 32,
+    "cacheTtl": 120
+  },
+  "obligations": [
+    "Runtime payloads and automation expressions are opaque text because ConceptIR lacks dependent types. Validation against tenant schemas is an interpreter obligation, shared with configurable benefits rules.",
+    "Policy definitions are runtime data, not compile-time principals or policies. Never infer authorization from user-authored metadata."
+  ]
+}

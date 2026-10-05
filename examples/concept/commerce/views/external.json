@@ -1,0 +1,48 @@
+{
+  "nodes": {
+    "@corpus/commerce/_/Carrier": "external",
+    "@corpus/commerce/_/ManageRefund": "process",
+    "@corpus/commerce/_/ManageShipment": "process",
+    "@corpus/commerce/_/Payments": "external",
+    "@corpus/commerce/_/ReceivePayment": "process",
+    "@corpus/commerce/_/TaxAuthority": "external"
+  },
+  "edges": [
+    {
+      "from": "@corpus/commerce/_/Carrier",
+      "to": "@corpus/commerce/_/ManageShipment",
+      "port": "@corpus/commerce/_/ManageShipment#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/Carrier",
+      "port": "@corpus/commerce/_/ManageShipment#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/commerce/_/Payments",
+      "to": "@corpus/commerce/_/ManageRefund",
+      "port": "@corpus/commerce/_/ManageRefund#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/Payments",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/commerce/_/Payments",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:Order",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/commerce/_/TaxAuthority",
+      "to": "@corpus/commerce/_/ReceivePayment",
+      "port": "@corpus/commerce/_/ReceivePayment#input:taxQuote",
+      "kind": "acquire"
+    }
+  ]
+}

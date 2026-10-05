@@ -1,0 +1,123 @@
+{
+  "version": "concept-ir/2",
+  "package": "healthcare",
+  "entities": {
+    "LabOrder": {
+      "name": "LabOrder",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "LabTestDefinition": {
+      "name": "LabTestDefinition",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "LabRun": {
+      "name": "LabRun",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "LabResult": {
+      "name": "LabResult",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {},
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {},
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "archetypes": {
+    "definitions": {
+      "RequestFulfillment": {
+        "roles": {
+          "request": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "specification": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "fulfillment": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "outcome": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          }
+        },
+        "relationships": {
+          "requests": {
+            "request": "request",
+            "specification": "specification"
+          },
+          "fulfills": {
+            "fulfillment": "fulfillment",
+            "request": "request"
+          },
+          "produces": {
+            "fulfillment": "fulfillment",
+            "outcome": "outcome"
+          }
+        },
+        "contracts": {},
+        "outputs": [
+          "outcome"
+        ],
+        "extensible": true
+      }
+    },
+    "profiles": {
+      "healthcare": {
+        "bindings": {
+          "RequestFulfillment": {
+            "request": "LabOrder",
+            "specification": "LabTestDefinition",
+            "fulfillment": "LabRun",
+            "outcome": "LabResult"
+          }
+        },
+        "label": "healthcare",
+        "aliases": [],
+        "constraints": {},
+        "extensions": [],
+        "source": "examples/concept/archetypes/healthcare.json#/archetypes/profiles/healthcare"
+      }
+    }
+  }
+}

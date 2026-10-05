@@ -2,7 +2,99 @@
 
 ## Unreleased
 
+### Added
+
+- `@forgegraph/foundation/configuration` (experimental): typed parameterization
+  against a pinned specification revision, layered defaults and overrides,
+  deterministic resolution, and resolutions identified by a digest over their
+  values. `Configuration` in `@forgegraph/runtime` resolves a chain and records it.
+
+  Configuration is not arbitrary JSON: every value assigns a parameter the pinned
+  revision declared, so an unknown key cannot be set and a key retyped in a later
+  revision cannot be silently inherited. Layers carry an ordinal and a child's is
+  strictly greater than its parent's, so precedence is a total order and resolution
+  gives the same answer whichever end of the chain you start from. Every resolved
+  value records which configuration supplied it, so a surprising value is
+  attributable without re-deriving the chain by hand.
+
+  Secret parameters carry a reference and never a literal, may not carry a default,
+  and resolve to that reference. This package cannot dereference a binding, and a
+  test scans the compiled contract for any field that could hold secret material.
+
+  Seven criteria have local evidence; scalar type validation remains tracked in #94.
+
+- `@forgegraph/foundation/reachability` (experimental): contact points and service
+  endpoints as durable facts, with purpose labels, preference ranking, half-open
+  validity, verification evidence and explicit supersession. `Reachability` in
+  `@forgegraph/runtime` declares, verifies, supersedes and resolves them.
+
+  Contact points and endpoints are separate resources rather than one polymorphic
+  locator, because a data classification is a property of a field. A single `value`
+  column has to be classified once: as `data.contact`, which sweeps webhook URLs into
+  subject-rights erasure that does not apply to them, or as structural, which
+  under-classifies an email address. `LocatorKind.personal` decides which profile a
+  kind belongs to and a rule on each profile enforces it.
+
+  No transport mechanics are foundation semantics here: a locator says where something
+  can be reached, never whether a message was sent, how many attempts it took, or what
+  a provider answered. A test asserts that structurally against the compiled contract.
+  Notifications now consumes typed contact points and endpoints and checks their
+  validity at notification time. All eight criteria have local evidence.
+
+### Added
+
+- `@forgegraph/foundation/consent` (experimental): consent grants, withdrawal,
+  supersession and evidence as durable facts, with purpose, processing activity and
+  data scope as three independent axes. `Consent` in `@forgegraph/runtime` grants,
+  evidences, withdraws, supersedes and answers `effectiveAt`.
+
+  Valid time and knowledge time are recorded separately, which is the point of the
+  package. A withdrawal recorded on 1 March but backdated to 1 February gives three
+  different correct answers: asked on 20 February about 15 February, consent held,
+  because the withdrawal was not yet known; asked on 5 March about the same moment,
+  it did not; asked on 5 March about 15 January, it held, because a backdated
+  withdrawal reaches back only as far as it says. A decision made last Tuesday has to
+  stay explainable with what was known last Tuesday.
+
+  Consent is not authorization: these facts are one input to a decision, and a null
+  result means no permission was recorded rather than a denial. Notification
+  preference, agreement and entitlement are different facts with different lifecycles,
+  and a test asserts structurally that none of them has appeared in this contract.
+
+  This is a bounded valid/knowledge interpretation built from ordinary fields, not an
+  L0 temporal facet; ConceptIR #75 is what would make those axes language-level.
+  All eight criteria on #93 have executable local evidence.
+
+## 0.4.0 (2026-09-24)
+
+### Added
+
+- ConceptIR business archetypes, typed Subjects, semantic identities and revision
+  pins, traceability requirements, and explicit authority and boundary validation.
+- Portable actors, work queues, search, sealed credentials, sequences, conditional
+  uniqueness, typed collections, workflow maps, and incremental projections.
+- Foundation contracts and composed systems, including capacity, inventory,
+  projects, subscriptions, billing, returns, maintenance, rewards, and collections.
+- Forge Studio business and developer views, editable records, source navigation,
+  repository reviews, runtime connections, and Worker deployment management.
+- Production console integration with Cloudflare Access, an R2-backed OCI registry,
+  scoped registry credentials, and authenticated activity attribution.
+
+### Changed
+
+- Requires Node.js 24 or later.
+- Expanded ConceptIR validation rejects ambiguous or unsupported models, including
+  unsupported multi-hop reference expressions. Review compiler diagnostics when
+  upgrading existing models.
+- Foundation trust subjects use `TrustPartySubject`; regenerate dependent bundles
+  and review updated package contracts before upgrading deployed applications.
+
 ### Fixed
+
+- Concurrent workflow activity replay, PostgreSQL predicate conflict handling and
+  contention retries, actor alarm supersession, and projection rebuild recovery.
+- Collection contracts in SDK and GraphQL generation, SQL reserved identifiers,
+  language-server completion and references, and editor syntax coverage.
 
 - `forgec --version` printed `forge 0.3.0` and the language server announced
   itself as `forge`, both left over from the rename. The binary now identifies

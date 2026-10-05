@@ -1,0 +1,93 @@
+{
+  "slug": "availability",
+  "layer": "substrate",
+  "issue": 55,
+  "dependencies": [
+    "specification"
+  ],
+  "facts": [
+    "AvailabilityCalendar: stable typed calendar handle",
+    "AvailabilityRuleSet and append-only indexed Weekly/Date/Override rules",
+    "AvailabilityCalendarRevision: immutable count/digest, IANA zone, timezone database version and optional SpecificationPin"
+  ],
+  "operations": [
+    "Availability.createCalendar(label)",
+    "Availability.createRevision(calendar, timezone, weekly, exceptions?, overrides?, origin?) publishes a sealed immutable revision last",
+    "Availability.effectiveWindows(revision, from, until) returns bounded half-open UTC windows"
+  ],
+  "invariants": [
+    "At most 128 typed rules per revision and 31 days per whole-minute query; only weekly recurrence supported",
+    "Local-date exceptions replace weekly availability, including overnight carry; absolute overrides use highest unique overlapping priority",
+    "DST gaps contain no instants and both fold occurrences use wall-minute membership; timezone database mismatch fails closed",
+    "Revision pins rule count and canonical digest; later append-only rule rows cannot change the pinned indexed subset",
+    "Typed worker/machine/facility attachments; no capacity, reservation, appointment or generic subject pointer"
+  ],
+  "acceptance": [
+    {
+      "id": "F55-01",
+      "description": "recurring availability rules",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-availability.test.ts"
+      ]
+    },
+    {
+      "id": "F55-02",
+      "description": "exceptions/overrides",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-availability.test.ts"
+      ]
+    },
+    {
+      "id": "F55-03",
+      "description": "timezone semantics",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-availability.test.ts"
+      ]
+    },
+    {
+      "id": "F55-04",
+      "description": "effective-window query",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-availability.test.ts"
+      ]
+    },
+    {
+      "id": "F55-05",
+      "description": "Allocation/Scheduling integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-scheduling.test.ts"
+      ]
+    },
+    {
+      "id": "F55-06",
+      "description": "fixtures for worker, machine and facility availability",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-availability.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "worker-availability",
+    "machine-availability",
+    "facility-availability",
+    "planned-allocation-scheduling-query-input"
+  ]
+}

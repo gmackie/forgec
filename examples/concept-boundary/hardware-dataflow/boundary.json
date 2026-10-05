@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "slug": "hardware-dataflow",
+  "outcomes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "validation-provenance",
+      "description": "Build inputs, checker reports and admission",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline",
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+        "@boundary/hardware-dataflow/_/PipelineValidation"
+      ],
+      "pressures": [
+        "traceability"
+      ],
+      "rationale": "Discrete validation jobs fit ordinary processes; clocked tokens are not persisted business facts."
+    },
+    {
+      "id": "stream-budget",
+      "description": "Declared rates, bounded storage and backpressure",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline"
+      ],
+      "pressures": [
+        "synchronous-dataflow",
+        "backpressure",
+        "resource-budgets"
+      ],
+      "rationale": "Budget declarations can generate specialized obligations, but do not supply firing semantics."
+    },
+    {
+      "id": "clocked-execution",
+      "description": "Cycle-level ready/valid and state updates",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/hardware-dataflow/_/HDLToolchain"
+      ],
+      "pressures": [
+        "synchronous-dataflow",
+        "deterministic-execution",
+        "backpressure"
+      ],
+      "rationale": "HDL simulator defines simultaneous edge-triggered update and stall behavior; arbitrary Process ordering would change semantics."
+    },
+    {
+      "id": "dataflow-schedule",
+      "description": "Token rates and firing schedule",
+      "layer": "L1",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/hardware-dataflow/_/HDLToolchain"
+      ],
+      "pressures": [
+        "synchronous-dataflow"
+      ],
+      "rationale": "For static rates use an SDF scheduler; ready/valid stalls make elapsed time variable even when sample order is stable."
+    },
+    {
+      "id": "clock-domain-crossing",
+      "description": "Clock, reset and physical crossings",
+      "layer": "L2",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/hardware-dataflow/_/HDLToolchain"
+      ],
+      "pressures": [
+        "hardware-placement",
+        "platform-mapping"
+      ],
+      "rationale": "Independent clock domains require CDC analysis/async FIFO implementation, never an unqualified process edge."
+    }
+  ],
+  "facets": [
+    {
+      "id": "stream-capacity",
+      "kind": "resource-budget",
+      "status": "proposed",
+      "targets": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline"
+      ],
+      "parameters": {
+        "productionRate": 1,
+        "consumptionRate": 1,
+        "bufferTokens": 1,
+        "clockDomains": 1
+      },
+      "meaning": "An illustrative one-slot elastic stage conserves accepted samples while tolerating downstream stalls.",
+      "obligations": [
+        "Prove no loss/duplication for accepted ready/valid transfers.",
+        "Verify output stability while stalled.",
+        "Changing either static rate requires balance and capacity analysis.",
+        "This sidecar is not a scheduler, synthesis constraint, or CDC proof."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "Export source/test/constraint identities to HDL tools; record evidence independently of application ownership.",
+    "placement": "Illustrative single-clock stage; FPGA/ASIC choice and clock constraints remain physical realization.",
+    "limitations": [
+      "Directed RTL simulation is not exhaustive formal verification or synthesis/timing closure.",
+      "No asynchronous clock-domain crossing is implemented.",
+      "Sample tokens and registers remain external to ConceptIR."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "elastic-stage",
+      "path": "specialized-model/elastic_stage.sv",
+      "format": "SystemVerilog RTL",
+      "status": "checked",
+      "process": "@boundary/hardware-dataflow/_/ValidatePipeline",
+      "inputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#output:request"
+      ],
+      "claim": "One-slot ready/valid pipeline, verified by directed stall/replacement test."
+    },
+    {
+      "id": "elastic-testbench",
+      "path": "specialized-model/elastic_stage_tb.sv",
+      "format": "SystemVerilog testbench",
+      "status": "checked",
+      "process": "@boundary/hardware-dataflow/_/ValidatePipeline",
+      "inputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#input:request"
+      ],
+      "outputPorts": [
+        "@boundary/hardware-dataflow/_/ValidatePipeline#output:request"
+      ],
+      "claim": "Checks occupancy, stable stalled output, ordering and sample conservation."
+    },
+    {
+      "id": "rtl-report",
+      "path": "specialized-model/verification.json",
+      "format": "Icarus simulation evidence",
+      "status": "checked",
+      "process": "@boundary/hardware-dataflow/_/RecordPipelineValidation",
+      "inputPorts": [
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#input:report"
+      ],
+      "outputPorts": [
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:record",
+        "@boundary/hardware-dataflow/_/RecordPipelineValidation#output:recorded"
+      ],
+      "claim": "Pins source and testbench; records directed simulation only."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Ptolemy II official project",
+      "url": "https://ptolemy.berkeley.edu/ptolemyII/",
+      "supports": "Directors define models of computation; a graph alone does not establish execution law."
+    },
+    {
+      "title": "Ptolemy II SDF director",
+      "url": "https://ptolemy.berkeley.edu/ptolemyII/ptII11.0/ptII11.0.1/doc/codeDoc/ptolemy/domains/sdf/kernel/SDFDirector.html",
+      "supports": "Static token production/consumption rates enable balance equations and schedules."
+    },
+    {
+      "title": "Accellera SystemVerilog",
+      "url": "https://www.accellera.org/downloads/standards/systemverilog",
+      "supports": "HDL describes concurrent, clocked behavior outside the ConceptIR process semantics."
+    },
+    {
+      "title": "AMD CDC methodology",
+      "url": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Clock-Domain-Crossings",
+      "supports": "Physical clock crossings need dedicated implementation and analysis."
+    }
+  ]
+}

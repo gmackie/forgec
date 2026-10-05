@@ -1,0 +1,36 @@
+import reachability
+
+/// A Party-shaped owner: a person or organization reached through contact points.
+resource CustomerAccount @tenant @versioned {
+  id : id
+  name : text length 1..200
+  locators : reachability.LocatorSet @immutable @unique
+}
+
+/// A non-Party subject. Services are reached through endpoints, never contact points,
+/// and the rule on each profile is what enforces that rather than this fixture's intent.
+resource SupportService @tenant @versioned {
+  id : id
+  name : text length 1..200
+  locators : reachability.LocatorSet @immutable @unique
+}
+
+/// A device: also a non-Party subject, and the case that shows a locator set belongs to
+/// whatever owns it rather than to a person.
+resource FieldDevice @tenant @versioned {
+  id : id
+  serial : text length 1..128 @unique
+  locators : reachability.LocatorSet @immutable @unique
+}
+
+/// A notification-shaped consumer. It selects an already-declared endpoint to send to and
+/// records nothing about reachability itself: no value, no validity, no verification. This
+/// is the shape #50 would take over this substrate, kept here as a probe so the boundary is
+/// executable rather than asserted in prose.
+resource OutboundRoute @tenant @appendOnly {
+  id : id
+  service : SupportService
+  destination : reachability.Endpoint
+  unique service, destination
+  list by service
+}

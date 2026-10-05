@@ -1,0 +1,22 @@
+[package]
+name = "@forgegraph/foundation/change"
+version = "0.1.0"
+edition = "2027"
+[source]
+root = "src"
+entry = "src/model.forge"
+[dependencies.decision]
+path = "../decision"
+deploy = true
+[dependencies.specification]
+path = "../specification"
+deploy = true
+[dependencies.evaluation]
+path = "../evaluation"
+deploy = true
+[dependencies.fulfillment]
+path = "../fulfillment"
+deploy = true
+[dependencies.evidence]
+path = "../evidence"
+deploy = true

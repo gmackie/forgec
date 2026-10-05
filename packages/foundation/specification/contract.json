@@ -1,0 +1,105 @@
+{
+  "slug": "specification",
+  "layer": "substrate",
+  "issue": 26,
+  "dependencies": [],
+  "facts": [
+    "Repository: stable source repository identity independent of provider URL",
+    "SpecificationPin: repository + semantic anchor + complete Git commit object ID",
+    "Realization: source pin + buildHash + published manifest digest"
+  ],
+  "operations": [
+    "ResolveSelector(repository, anchor, selector) -> immutable pin via declared provider adapter",
+    "RecordRealization(pin, buildHash, manifestDigest)",
+    "ListBySpecification(repository, anchor); ListByRevision(pin); ResolveSourceSpan(pin)"
+  ],
+  "invariants": [
+    "Branches, tags and latest are discovery inputs only, never stored durable revisions",
+    "Source commit, compiled semantic hash and content digest remain distinct typed values",
+    "File movement preserves identity when semantic anchor is preserved; instances never float",
+    "Provider resolution and source-map lookup cannot silently substitute another commit"
+  ],
+  "acceptance": [
+    {
+      "id": "F26-01",
+      "description": "typed immutable specification pin",
+      "kind": "compile",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-specification.test.ts",
+        "crates/forgegraph-semantic/tests/append_only.rs"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F26-02",
+      "description": "mutable selector -> immutable commit resolution API",
+      "kind": "provider",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-specification-git.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F26-03",
+      "description": "no durable branch/tag pins",
+      "kind": "compile",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-specification.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F26-04",
+      "description": "semantic-anchor integration with source-map work",
+      "kind": "compile",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-specification-git.test.ts",
+        "crates/forgegraph-semantic/tests/append_only.rs"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F26-05",
+      "description": "realization/artifact provenance link",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-artifact-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F26-06",
+      "description": "source-control provider abstraction remains outside business semantics",
+      "kind": "compile",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-specification-git.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F26-07",
+      "description": "fixtures proving old instances remain pinned after spec evolution",
+      "kind": "fixture",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-specification-consumer.test.ts"
+      ],
+      "verification": "local"
+    }
+  ],
+  "fixtures": [
+    "forgegraph-deployment",
+    "levelforge-generation",
+    "latchflow-experience",
+    "stream-conductor-broadcast",
+    "evaluation-definition",
+    "manufacturing-recipe",
+    "lab-protocol"
+  ]
+}

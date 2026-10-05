@@ -1,0 +1,1765 @@
+{
+  "entities": {
+    "@boundary/game-simulation/_/WorldState": {
+      "name": "WorldState",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "state": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/TickState"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@boundary/game-simulation/_/InputBatch": {
+      "name": "InputBatch",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tick": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "orderedCommandsDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "cutoffSequence": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "acceptedCount": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sessionId": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/game-simulation/_/TickCommitted": {
+      "name": "TickCommitted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tick": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "integer",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "previousDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "stateDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "inputBatch": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/game-simulation/_/InputBatch"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "rulesDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sessionId": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@boundary/game-simulation/_/ReplayChecked": {
+      "name": "ReplayChecked",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "request": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/ReplayRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "verdict": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/ReplayVerdict"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@boundary/game-simulation/_/GameClients": {
+      "name": "GameClients",
+      "data": {
+        "@boundary/game-simulation/_/GameClients#data:command": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/PlayerCommand"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/game-simulation/_/GameClients#accepts:snapshot": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/ClientSnapshot"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "CommandReceived"
+      ]
+    },
+    "@boundary/game-simulation/_/TickDriver": {
+      "name": "TickDriver",
+      "data": {
+        "@boundary/game-simulation/_/TickDriver#data:tick": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/TickRequest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {},
+      "events": [
+        "TickRequested"
+      ]
+    },
+    "@boundary/game-simulation/_/PhysicsEngine": {
+      "name": "PhysicsEngine",
+      "data": {
+        "@boundary/game-simulation/_/PhysicsEngine#data:collision": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/PhysicsResult"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/game-simulation/_/PhysicsEngine#accepts:state": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/PhysicsRequest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "CollisionReady"
+      ]
+    },
+    "@boundary/game-simulation/_/ReplayExecutor": {
+      "name": "ReplayExecutor",
+      "data": {
+        "@boundary/game-simulation/_/ReplayExecutor#data:verdict": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/ReplayVerdict"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "accepts": {
+        "@boundary/game-simulation/_/ReplayExecutor#accepts:request": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/ReplayRequest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "VerdictReady"
+      ]
+    }
+  },
+  "principals": {
+    "@boundary/game-simulation/_/BoundaryOperator": {
+      "name": "BoundaryOperator",
+      "attributes": {
+        "authorized": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@boundary/game-simulation/_/MaySealInputs": {
+      "name": "MaySealInputs",
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/game-simulation/_/InputBatch"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/game-simulation/_/MayAdvanceWorld": {
+      "name": "MayAdvanceWorld",
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@boundary/game-simulation/_/WorldState",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/game-simulation/_/MayProjectClients": {
+      "name": "MayProjectClients",
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "shape",
+          "id": "@boundary/game-simulation/_/ClientSnapshot"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    },
+    "@boundary/game-simulation/_/MayVerifyReplay": {
+      "name": "MayVerifyReplay",
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "resource": {
+        "base": {
+          "kind": "fact",
+          "id": "@boundary/game-simulation/_/ReplayChecked"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": null,
+      "requiredAttributes": [
+        "authorized"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "name",
+        "path": [
+          "principal",
+          "authorized"
+        ]
+      }
+    }
+  },
+  "processes": {
+    "@boundary/game-simulation/_/SealInputs": {
+      "name": "SealInputs",
+      "purpose": null,
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/game-simulation/_/MaySealInputs",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/game-simulation/_/SealInputs#activation:trigger": {
+          "kind": "externalEvent",
+          "external": "@boundary/game-simulation/_/TickDriver",
+          "event": "TickRequested"
+        }
+      },
+      "inputs": {
+        "@boundary/game-simulation/_/SealInputs#input:commands": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/PlayerCommand"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/game-simulation/_/GameClients"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/game-simulation/_/SealInputs#input:tick": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/TickRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/game-simulation/_/TickDriver"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/game-simulation/_/SealInputs#output:batch": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/game-simulation/_/InputBatch"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/game-simulation/_/AdvanceWorld": {
+      "name": "AdvanceWorld",
+      "purpose": null,
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/game-simulation/_/MayAdvanceWorld",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/game-simulation/_/AdvanceWorld#activation:trigger": {
+          "kind": "fact",
+          "fact": "@boundary/game-simulation/_/InputBatch"
+        },
+        "@boundary/game-simulation/_/AdvanceWorld#activation:response": {
+          "kind": "externalEvent",
+          "external": "@boundary/game-simulation/_/PhysicsEngine",
+          "event": "CollisionReady"
+        }
+      },
+      "inputs": {
+        "@boundary/game-simulation/_/AdvanceWorld#input:prior": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/game-simulation/_/WorldState",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/game-simulation/_/AdvanceWorld#input:batch": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/game-simulation/_/InputBatch"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/game-simulation/_/AdvanceWorld#input:physics": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/PhysicsResult"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/game-simulation/_/PhysicsEngine"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/game-simulation/_/AdvanceWorld#output:world": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/game-simulation/_/WorldState",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@boundary/game-simulation/_/AdvanceWorld#output:committed": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/game-simulation/_/TickCommitted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/game-simulation/_/AdvanceWorld#output:physicsRequest": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/PhysicsRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/game-simulation/_/PhysicsEngine"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/game-simulation/_/ProjectClients": {
+      "name": "ProjectClients",
+      "purpose": null,
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/game-simulation/_/MayProjectClients",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/game-simulation/_/ProjectClients#activation:trigger": {
+          "kind": "fact",
+          "fact": "@boundary/game-simulation/_/TickCommitted"
+        }
+      },
+      "inputs": {
+        "@boundary/game-simulation/_/ProjectClients#input:world": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@boundary/game-simulation/_/WorldState",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/game-simulation/_/ProjectClients#input:commit": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/game-simulation/_/TickCommitted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/game-simulation/_/ProjectClients#output:snapshot": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/ClientSnapshot"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/game-simulation/_/GameClients"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@boundary/game-simulation/_/VerifyReplay": {
+      "name": "VerifyReplay",
+      "purpose": null,
+      "principal": "@boundary/game-simulation/_/BoundaryOperator",
+      "authorizations": [
+        {
+          "policy": "@boundary/game-simulation/_/MayVerifyReplay",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@boundary/game-simulation/_/VerifyReplay#activation:trigger": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/ReplayRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        },
+        "@boundary/game-simulation/_/VerifyReplay#activation:response": {
+          "kind": "externalEvent",
+          "external": "@boundary/game-simulation/_/ReplayExecutor",
+          "event": "VerdictReady"
+        }
+      },
+      "inputs": {
+        "@boundary/game-simulation/_/VerifyReplay#input:request": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/ReplayRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/game-simulation/_/VerifyReplay#input:verdict": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/ReplayVerdict"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@boundary/game-simulation/_/ReplayExecutor"
+          },
+          "selection": {
+            "cardinality": "optional",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        },
+        "@boundary/game-simulation/_/VerifyReplay#input:commits": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/game-simulation/_/TickCommitted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "many",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {
+        "@boundary/game-simulation/_/VerifyReplay#output:checked": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@boundary/game-simulation/_/ReplayChecked"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@boundary/game-simulation/_/VerifyReplay#output:replayRequest": {
+          "ty": {
+            "base": {
+              "kind": "shape",
+              "id": "@boundary/game-simulation/_/ReplayRequest"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@boundary/game-simulation/_/ReplayExecutor"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {
+    "@boundary/game-simulation/_/PlayerCommand": {
+      "sessionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "playerId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "clientSequence": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "targetTick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "action": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "payloadDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/game-simulation/_/TickRequest": {
+      "sessionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "tick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "previousStateDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/game-simulation/_/TickState": {
+      "sessionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "tick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "stateDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "rulesDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "randomStreamDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/game-simulation/_/PhysicsResult": {
+      "tick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "inputStateDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "collisionDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "solverBuildDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "sessionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "inputBatchDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/game-simulation/_/ClientSnapshot": {
+      "sessionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "tick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "stateDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "projectionDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/game-simulation/_/ReplayRequest": {
+      "sessionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "fromTick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "untilTick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "rulesDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "checkpointDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/game-simulation/_/ReplayVerdict": {
+      "matched": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "boolean",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "firstDivergentTick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": true,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "actualDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "expectedDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "request": {
+        "ty": {
+          "base": {
+            "kind": "shape",
+            "id": "@boundary/game-simulation/_/ReplayRequest"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    },
+    "@boundary/game-simulation/_/PhysicsRequest": {
+      "sessionId": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "tick": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "integer",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "stateDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "rulesDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "randomStreamDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      },
+      "inputBatchDigest": {
+        "ty": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "immutable": true,
+        "default": null,
+        "derived": null
+      }
+    }
+  },
+  "enums": {
+    "@boundary/game-simulation/_/InputDisposition": [
+      "Accepted",
+      "Late",
+      "Duplicate",
+      "Invalid"
+    ]
+  },
+  "version": "concept-ir/2",
+  "package": "@boundary/game-simulation"
+}

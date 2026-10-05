@@ -1,0 +1,390 @@
+[
+  {
+    "name": "cloudflare",
+    "fixtureSha256": "0ee04fed2bbc7cfa99af1d81fa53ca34bae3bf8795d3e16706e060ff452d596f",
+    "importExit": 0,
+    "checkExit": 0,
+    "stderr": "@research/cloudflare: imported 2 operations (0 skipped), 51 unsupported features, 0 foreign identifiers, 0 callbacks/webhooks -> /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-187-cloudflare-xbouq8jp\nreview /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-187-cloudflare-xbouq8jp/import-report.json and /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-187-cloudflare-xbouq8jp/FOREIGN_IDS.md\n",
+    "unsupported": [
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_AAAARecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_AAAARecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_ARecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_ARecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_CAARecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_CAARecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_CERTRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_CERTRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_CNAMERecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_CNAMERecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_DNSKEYRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_DNSKEYRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_DSRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_DSRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_HTTPSRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_HTTPSRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "minimum",
+        "at": "components.schemas.dns-records_LOCRecord.data.altitude",
+        "note": "bound -100000 cannot be expressed as a Forge numeric refinement; omitted"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_LOCRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_LOCRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_MXRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_MXRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_NAPTRRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_NAPTRRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_NSRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_NSRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_OPENPGPKEYRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_OPENPGPKEYRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_PTRRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_PTRRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_SMIMEARecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_SMIMEARecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_SRVRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_SRVRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_SSHFPRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_SSHFPRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_SVCBRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_SVCBRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_TLSARecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_TLSARecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_TXTRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_TXTRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_URIRecord.tags",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.dns-records_URIRecord.ttl",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_dns-record-response.meta.shadowed_by",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_dns_response_collection.errors",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_dns_response_collection.messages",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_dns_response_collection.result",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_dns_response_single.errors",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_dns_response_single.messages",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.dns-records_dns_response_single.result.meta.shadowed_by",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "paths./zones/{zone_id}/dns_records.get.responses.200.result",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      }
+    ]
+  },
+  {
+    "name": "github",
+    "fixtureSha256": "852275f0af38ba7d48a3b73b40ca2879ff0e481b9d882e4d88d09fe0b551e218",
+    "importExit": 0,
+    "checkExit": 0,
+    "stderr": "@research/github: imported 2 operations (0 skipped), 23 unsupported features, 52 foreign identifiers, 0 callbacks/webhooks -> /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-187-github-yuko8aks\nreview /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-187-github-yuko8aks/import-report.json and /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-187-github-yuko8aks/FOREIGN_IDS.md\n",
+    "unsupported": [
+      {
+        "feature": "array",
+        "at": "components.schemas.issue-field-value.multi_select_options",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "anyOf",
+        "at": "components.schemas.issue-field-value.value",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.issue.assignees",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.issue.issue_field_values",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.issue.labels",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.issue.performed_via_github_app.events",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "oneOf",
+        "at": "components.schemas.issue.performed_via_github_app.owner",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.issue.pinned_comment.performed_via_github_app.events",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "oneOf",
+        "at": "components.schemas.issue.pinned_comment.performed_via_github_app.owner",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.issue.repository.topics",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.nullable-integration.events",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "oneOf",
+        "at": "components.schemas.nullable-integration.owner",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.nullable-issue-comment.performed_via_github_app.events",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "oneOf",
+        "at": "components.schemas.nullable-issue-comment.performed_via_github_app.owner",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.repository.topics",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.scim-error.schemas",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "components.schemas.validation-error.errors",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "response-schema",
+        "at": "paths./repos/{owner}/{repo}/issues.get.responses.200",
+        "note": "non-object success body; output omitted"
+      },
+      {
+        "feature": "array",
+        "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.assignees",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.issue_field_values",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "array",
+        "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.labels",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      },
+      {
+        "feature": "oneOf",
+        "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.milestone",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      },
+      {
+        "feature": "oneOf",
+        "at": "paths./repos/{owner}/{repo}/issues.post.requestBody.title",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      }
+    ]
+  }
+]

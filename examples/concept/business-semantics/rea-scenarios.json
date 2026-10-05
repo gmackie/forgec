@@ -1,0 +1,584 @@
+{
+  "version": "rea-corpus/1",
+  "records": [
+    {
+      "id": "seller",
+      "declaration": "@semantics/commerce/_/Party",
+      "fields": {
+        "id": "seller"
+      }
+    },
+    {
+      "id": "buyer",
+      "declaration": "@semantics/commerce/_/Party",
+      "fields": {
+        "id": "buyer"
+      }
+    },
+    {
+      "id": "finance",
+      "declaration": "@semantics/commerce/_/Party",
+      "fields": {
+        "id": "finance"
+      }
+    },
+    {
+      "id": "logistics",
+      "declaration": "@semantics/commerce/_/Party",
+      "fields": {
+        "id": "logistics"
+      }
+    },
+    {
+      "id": "warranty",
+      "declaration": "@semantics/commerce/_/Party",
+      "fields": {
+        "id": "warranty"
+      }
+    },
+    {
+      "id": "spec",
+      "declaration": "@semantics/commerce/_/Specification",
+      "fields": {
+        "id": "spec",
+        "name": "1000 units of Grade A"
+      }
+    },
+    {
+      "id": "usd-spec",
+      "declaration": "@semantics/commerce/_/Specification",
+      "fields": {
+        "id": "usd-spec",
+        "name": "USD obligation"
+      }
+    },
+    {
+      "id": "lot",
+      "declaration": "@semantics/commerce/_/Resource",
+      "fields": {
+        "id": "lot",
+        "specification": "spec"
+      }
+    },
+    {
+      "id": "quote",
+      "declaration": "@semantics/commerce/_/Quote",
+      "fields": {
+        "id": "quote",
+        "specification": "spec",
+        "seller": "seller",
+        "buyer": "buyer",
+        "offeredQuantity": "1000"
+      }
+    },
+    {
+      "id": "agreement",
+      "declaration": "@semantics/commerce/_/Agreement",
+      "fields": {
+        "id": "agreement",
+        "seller": "seller",
+        "buyer": "buyer",
+        "acceptedQuote": "quote"
+      }
+    },
+    {
+      "id": "goods",
+      "declaration": "@semantics/commerce/_/Obligation",
+      "fields": {
+        "id": "goods",
+        "agreement": "agreement",
+        "specification": "spec",
+        "promisor": "seller",
+        "promisee": "buyer",
+        "quantity": "1000",
+        "unit": "unit"
+      }
+    },
+    {
+      "id": "money",
+      "declaration": "@semantics/commerce/_/Obligation",
+      "fields": {
+        "id": "money",
+        "agreement": "agreement",
+        "specification": "usd-spec",
+        "promisor": "buyer",
+        "promisee": "seller",
+        "quantity": "5000",
+        "unit": "USD"
+      }
+    },
+    {
+      "id": "order",
+      "declaration": "@semantics/commerce/_/Order",
+      "fields": {
+        "id": "order",
+        "agreement": "agreement",
+        "obligation": "goods"
+      }
+    },
+    {
+      "id": "reservation",
+      "declaration": "@semantics/commerce/_/Reservation",
+      "fields": {
+        "id": "reservation",
+        "obligation": "goods",
+        "resource": "lot",
+        "quantity": "1000"
+      }
+    },
+    {
+      "id": "delivery1",
+      "declaration": "@semantics/commerce/_/DeliveryOccurred",
+      "fields": {
+        "id": "delivery1",
+        "occurredAt": "2026-09-30T00:00:00Z",
+        "knownAt": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "fulfillment1",
+      "declaration": "@semantics/commerce/_/FulfillmentApplied",
+      "fields": {
+        "id": "fulfillment1",
+        "cause": "delivery1",
+        "obligation": "goods",
+        "resource": "lot",
+        "quantity": "400"
+      }
+    },
+    {
+      "id": "delivery2",
+      "declaration": "@semantics/commerce/_/DeliveryOccurred",
+      "fields": {
+        "id": "delivery2",
+        "occurredAt": "2026-09-30T00:00:00Z",
+        "knownAt": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "fulfillment2",
+      "declaration": "@semantics/commerce/_/FulfillmentApplied",
+      "fields": {
+        "id": "fulfillment2",
+        "cause": "delivery2",
+        "obligation": "goods",
+        "resource": "lot",
+        "quantity": "300"
+      }
+    },
+    {
+      "id": "delivery3",
+      "declaration": "@semantics/commerce/_/DeliveryOccurred",
+      "fields": {
+        "id": "delivery3",
+        "occurredAt": "2026-09-30T00:00:00Z",
+        "knownAt": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "fulfillment3",
+      "declaration": "@semantics/commerce/_/FulfillmentApplied",
+      "fields": {
+        "id": "fulfillment3",
+        "cause": "delivery3",
+        "obligation": "goods",
+        "resource": "lot",
+        "quantity": "300"
+      }
+    },
+    {
+      "id": "position",
+      "declaration": "@semantics/commerce/_/SettlementPosition",
+      "fields": {
+        "id": "position",
+        "creditor": "seller",
+        "debtor": "buyer",
+        "amount": "5000",
+        "applied": "5000",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "payment1",
+      "declaration": "@semantics/commerce/_/PaymentReceived",
+      "fields": {
+        "id": "payment1",
+        "occurredAt": "2026-09-30T00:00:00Z",
+        "knownAt": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "settlement1",
+      "declaration": "@semantics/commerce/_/SettlementApplied",
+      "fields": {
+        "id": "settlement1",
+        "cause": "payment1",
+        "target": "position",
+        "quantity": "2000",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "payment2",
+      "declaration": "@semantics/commerce/_/PaymentReceived",
+      "fields": {
+        "id": "payment2",
+        "occurredAt": "2026-09-30T00:00:00Z",
+        "knownAt": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "settlement2",
+      "declaration": "@semantics/commerce/_/SettlementApplied",
+      "fields": {
+        "id": "settlement2",
+        "cause": "payment2",
+        "target": "position",
+        "quantity": "3000",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "ownership",
+      "declaration": "@semantics/commerce/_/OwnershipAssignment",
+      "fields": {
+        "id": "ownership",
+        "party": "seller",
+        "resource": "lot",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "control",
+      "declaration": "@semantics/commerce/_/ControlAssignment",
+      "fields": {
+        "id": "control",
+        "party": "finance",
+        "resource": "lot",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "custody",
+      "declaration": "@semantics/commerce/_/CustodyAssignment",
+      "fields": {
+        "id": "custody",
+        "party": "logistics",
+        "resource": "lot",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "operation",
+      "declaration": "@semantics/commerce/_/OperationAssignment",
+      "fields": {
+        "id": "operation",
+        "party": "warranty",
+        "resource": "lot",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "transfer",
+      "declaration": "@semantics/commerce/_/TransferOccurred",
+      "fields": {
+        "id": "transfer",
+        "seller": "seller",
+        "buyer": "buyer",
+        "resource": "lot",
+        "quantity": "1000",
+        "occurredAt": "2026-09-30T00:00:00Z",
+        "knownAt": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "fromBalance",
+      "declaration": "@semantics/commerce/_/InventoryBalance",
+      "fields": {
+        "id": "fromBalance",
+        "resource": "lot",
+        "holder": "seller",
+        "quantity": "0"
+      }
+    },
+    {
+      "id": "toBalance",
+      "declaration": "@semantics/commerce/_/InventoryBalance",
+      "fields": {
+        "id": "toBalance",
+        "resource": "lot",
+        "holder": "buyer",
+        "quantity": "1000"
+      }
+    },
+    {
+      "id": "decrease",
+      "declaration": "@semantics/commerce/_/StockDecreased",
+      "fields": {
+        "id": "decrease",
+        "cause": "transfer",
+        "target": "fromBalance",
+        "quantity": "1000",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "increase",
+      "declaration": "@semantics/commerce/_/StockIncreased",
+      "fields": {
+        "id": "increase",
+        "cause": "transfer",
+        "target": "toBalance",
+        "quantity": "1000",
+        "validFrom": "2026-09-30T00:00:00Z",
+        "knownFrom": "2026-09-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "completion",
+      "declaration": "@semantics/commerce/_/ExchangeCompleted",
+      "fields": {
+        "id": "completion",
+        "payment": "payment2",
+        "delivery": "delivery3",
+        "target": "agreement",
+        "quantity": "1000"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "reciprocal-sale",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "same",
+          "left": "goods",
+          "leftField": "agreement",
+          "right": "money",
+          "rightField": "agreement"
+        },
+        {
+          "kind": "same",
+          "left": "goods",
+          "leftField": "promisor",
+          "right": "money",
+          "rightField": "promisee"
+        },
+        {
+          "kind": "same",
+          "left": "goods",
+          "leftField": "promisee",
+          "right": "money",
+          "rightField": "promisor"
+        }
+      ]
+    },
+    {
+      "id": "partial-fulfillment",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "sum",
+          "records": [
+            "fulfillment1",
+            "fulfillment2",
+            "fulfillment3"
+          ],
+          "field": "quantity",
+          "expected": "1000"
+        }
+      ]
+    },
+    {
+      "id": "partial-settlement",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "sum",
+          "records": [
+            "settlement1",
+            "settlement2"
+          ],
+          "field": "quantity",
+          "expected": "5000"
+        }
+      ]
+    },
+    {
+      "id": "multi-party-exchange",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "distinct",
+          "records": [
+            "seller",
+            "buyer",
+            "finance",
+            "logistics",
+            "warranty"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neutral-perspectives",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "views",
+          "record": "transfer",
+          "views": [
+            "@semantics/commerce/_/Outbound",
+            "@semantics/commerce/_/Inbound"
+          ]
+        },
+        {
+          "kind": "views",
+          "record": "agreement",
+          "views": [
+            "@semantics/commerce/_/Sale",
+            "@semantics/commerce/_/Purchase"
+          ]
+        },
+        {
+          "kind": "views",
+          "record": "position",
+          "views": [
+            "@semantics/commerce/_/Receivable",
+            "@semantics/commerce/_/Payable"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "control-custody",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "same",
+          "left": "ownership",
+          "leftField": "resource",
+          "right": "custody",
+          "rightField": "resource"
+        },
+        {
+          "kind": "distinct",
+          "records": [
+            "ownership",
+            "control",
+            "custody",
+            "operation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "specification-instance",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "same",
+          "left": "goods",
+          "leftField": "specification",
+          "right": "lot",
+          "rightField": "specification"
+        }
+      ]
+    },
+    {
+      "id": "reservation-before-fulfillment",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "same",
+          "left": "reservation",
+          "leftField": "obligation",
+          "right": "fulfillment1",
+          "rightField": "obligation"
+        },
+        {
+          "kind": "same",
+          "left": "reservation",
+          "leftField": "resource",
+          "right": "fulfillment1",
+          "rightField": "resource"
+        },
+        {
+          "kind": "before",
+          "left": "reservation",
+          "right": "delivery1"
+        }
+      ]
+    },
+    {
+      "id": "quote-accepted-agreement",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "composition",
+          "declaration": "@semantics/commerce/_/Quote"
+        },
+        {
+          "kind": "composition",
+          "declaration": "@semantics/commerce/_/Order"
+        },
+        {
+          "kind": "same",
+          "left": "agreement",
+          "leftField": "seller",
+          "right": "quote",
+          "rightField": "seller"
+        },
+        {
+          "kind": "before",
+          "left": "quote",
+          "right": "agreement"
+        }
+      ]
+    },
+    {
+      "id": "invoice-outstanding-position",
+      "provenance": "Forge modeling choice inspired by REA literature; not verified ISO normative semantics",
+      "assertions": [
+        {
+          "kind": "composition",
+          "declaration": "@semantics/commerce/_/Invoice"
+        },
+        {
+          "kind": "views",
+          "record": "position",
+          "views": [
+            "@semantics/commerce/_/Receivable",
+            "@semantics/commerce/_/Payable"
+          ]
+        },
+        {
+          "kind": "remaining",
+          "position": "position",
+          "payments": [
+            "settlement1"
+          ],
+          "expected": "3000"
+        },
+        {
+          "kind": "remaining",
+          "position": "position",
+          "payments": [
+            "settlement1",
+            "settlement2"
+          ],
+          "expected": "0"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+shape AgentInput { prompt : text length 1..1000 }
+shape AgentOutput { summary : text length <= 2000 }
+function ExecuteAgentTask { input AgentInput
+  output AgentOutput
+}
+workQueue AgentWork {
+  execute ExecuteAgentTask
+  lease 90s
+  retry 3
+  capacity 128
+  runners 32
+}
+shape BuildInput { repository : text length 1..200 }
+shape BuildOutput { artifact : text length 1..200 }
+function ExecuteBuild { input BuildInput
+  output BuildOutput
+}
+workQueue VerificationBuilds {
+  execute ExecuteBuild
+  lease 120s
+  retry 2
+  capacity 64
+  runners 16
+}

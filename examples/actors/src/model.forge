@@ -1,0 +1,27 @@
+shape SessionState { score : integer >= 0 }
+shape Action { points : integer >= 0 }
+function ApplyAction { input Action
+ output SessionState
+}
+actor GameSession keyed by session {
+ state SessionState
+ on Action -> ApplyAction
+}
+shape StreamState { activeOutputs : integer >= 0 }
+shape OutputCommand { count : integer >= 0 }
+function ChangeOutput { input OutputCommand
+ output StreamState
+}
+actor StreamSession keyed by session {
+ state StreamState
+ on Output -> ChangeOutput
+}
+shape ExperienceState { phase : text length 1..40 }
+shape SensorEvent { sensor : text length 1..40 }
+function HandleSensor { input SensorEvent
+ output ExperienceState
+}
+actor ExperienceSession keyed by session {
+ state ExperienceState
+ on Sensor -> HandleSensor
+}

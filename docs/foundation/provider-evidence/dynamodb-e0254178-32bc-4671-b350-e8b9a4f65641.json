@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-decision-invariants/1",
+  "coverageCriteria": [
+    "F39-STORE"
+  ],
+  "status": "passing",
+  "runId": "e0254178-32bc-4671-b350-e8b9a4f65641",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "638f108ce0319dbc488008a6d4a8c686c297b8eabbef53f2e202e7f00ee741c9",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "652db4978f45e85951991430da9b8412c424c766a56e56bae242ae9205aeed49"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "775a21f258023b45c29c610848abfb3324bbec648381573bacde0cf5a1dedc38"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "ee49c6f9403e82bc9bf8deab653c9add1b4eeba80f49db3947943e83d88e3395"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: six pinned rules and immutable outcomes",
+    "hosted: journal serializes finalize versus withdrawal and rejects raw forks",
+    "hosted: duplicates, eligibility snapshots and denied journal reads fail closed",
+    "hosted: expiry, reconsideration, support and typed applications",
+    "hosted: malformed raw terminal candidates fail closed and denied writes stay denied"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T05:02:50.147Z",
+  "passedTraces": [
+    "hosted: six pinned rules and immutable outcomes",
+    "hosted: journal serializes finalize versus withdrawal and rejects raw forks",
+    "hosted: duplicates, eligibility snapshots and denied journal reads fail closed",
+    "hosted: expiry, reconsideration, support and typed applications",
+    "hosted: malformed raw terminal candidates fail closed and denied writes stay denied"
+  ],
+  "testReportSha256": "22bacc08f75235377b68a1efb709b22b11ef2a144d0dd298c126f207f7e9dc19",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "e0254178-32bc-4671-b350-e8b9a4f65641",
+    "tenantPrefix": "foundation-cert-e0254178-32bc-4671-b350-e8b9a4f65641",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

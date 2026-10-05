@@ -1,0 +1,82 @@
+{
+  "nodes": {
+    "@corpus/banking/_/Account": "entity",
+    "@corpus/banking/_/AccountBalance": "entity",
+    "@corpus/banking/_/Authorization": "entity",
+    "@corpus/banking/_/AuthorizationApproved": "fact",
+    "@corpus/banking/_/AuthorizeCard": "process",
+    "@corpus/banking/_/DeriveBalance": "process",
+    "@corpus/banking/_/Dispute": "entity",
+    "@corpus/banking/_/DisputeResolved": "fact",
+    "@corpus/banking/_/LedgerEntryPosted": "fact",
+    "@corpus/banking/_/MaintainAccount": "process",
+    "@corpus/banking/_/PostLedger": "process",
+    "@corpus/banking/_/ResolveDispute": "process",
+    "@corpus/banking/_/ReversalReceived": "fact",
+    "@corpus/banking/_/SettleCard": "process",
+    "@corpus/banking/_/Settlement": "entity",
+    "@corpus/banking/_/SettlementReceived": "fact"
+  },
+  "edges": [
+    {
+      "from": "@corpus/banking/_/AuthorizeCard",
+      "to": "@corpus/banking/_/Authorization",
+      "port": "@corpus/banking/_/AuthorizeCard#output:Authorization",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/banking/_/AuthorizeCard",
+      "to": "@corpus/banking/_/AuthorizationApproved",
+      "port": "@corpus/banking/_/AuthorizeCard#output:AuthorizationApproved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/banking/_/DeriveBalance",
+      "to": "@corpus/banking/_/AccountBalance",
+      "port": "@corpus/banking/_/DeriveBalance#output:AccountBalance",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/banking/_/MaintainAccount",
+      "to": "@corpus/banking/_/Account",
+      "port": "@corpus/banking/_/MaintainAccount#output:Account",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/banking/_/PostLedger",
+      "to": "@corpus/banking/_/LedgerEntryPosted",
+      "port": "@corpus/banking/_/PostLedger#output:LedgerEntryPosted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/banking/_/ResolveDispute",
+      "to": "@corpus/banking/_/Dispute",
+      "port": "@corpus/banking/_/ResolveDispute#output:Dispute",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/banking/_/ResolveDispute",
+      "to": "@corpus/banking/_/DisputeResolved",
+      "port": "@corpus/banking/_/ResolveDispute#output:DisputeResolved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/banking/_/ResolveDispute",
+      "to": "@corpus/banking/_/ReversalReceived",
+      "port": "@corpus/banking/_/ResolveDispute#output:ReversalReceived",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/banking/_/SettleCard",
+      "to": "@corpus/banking/_/Settlement",
+      "port": "@corpus/banking/_/SettleCard#output:Settlement",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/banking/_/SettleCard",
+      "to": "@corpus/banking/_/SettlementReceived",
+      "port": "@corpus/banking/_/SettleCard#output:SettlementReceived",
+      "kind": "emit"
+    }
+  ]
+}

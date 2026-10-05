@@ -1,0 +1,92 @@
+{
+  "version": "forge-connector-artifact/1",
+  "capability": {
+    "id": "deployment.release-marker",
+    "version": "1",
+    "application": "@pilot/deployment-verification/_/VerifyRelease",
+    "binding": "@pilot/deployment-provider/_/CheckRelease"
+  },
+  "vendor": "cloudflare-workers",
+  "hostProfiles": [
+    "node24-live-api"
+  ],
+  "credentialSlots": {
+    "cloudflare": "local Wrangler OAuth reference; never embedded"
+  },
+  "scope": {
+    "tenant": "connector-certification",
+    "account": "c07a7e704db1808e1fff91bed2b1cd49",
+    "script": "forge-connector-pilot-189-20261001",
+    "singleWriter": true
+  },
+  "specSha256": "cfa98c6b5495426d5ce846b1ee3fd8acfcace33047891955c3dcfbcfb6b3752b",
+  "overlaySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "overlay": [],
+  "operationMap": {
+    "worker-script-settings-get-settings": {
+      "accessor": [
+        "workers",
+        "legacy",
+        "scripts",
+        "settings"
+      ],
+      "method": "get",
+      "httpMethod": "GET",
+      "path": "/accounts/{account_id}/workers/scripts/{script_name}/script-settings",
+      "requestType": "GetSettingsRequest",
+      "responseType": "WorkersScriptSettingsItem",
+      "requiredRequestProperties": [
+        "account_id",
+        "script_name"
+      ]
+    },
+    "worker-script-settings-patch-settings": {
+      "accessor": [
+        "workers",
+        "legacy",
+        "scripts",
+        "settings"
+      ],
+      "method": "edit",
+      "httpMethod": "PATCH",
+      "path": "/accounts/{account_id}/workers/scripts/{script_name}/script-settings",
+      "requestType": "EditSettingsRequest",
+      "responseType": "WorkersScriptSettingsItem",
+      "requestBodyProperty": "body",
+      "requiredRequestProperties": [
+        "account_id",
+        "body",
+        "script_name"
+      ]
+    }
+  },
+  "generator": {
+    "upstreamRevision": "cfe397c296a5e6d9fce01eb335ed805821e5547c",
+    "currentUpstreamRevision": "056b13e10e35672480de15955aefd8ade03a9732",
+    "currentDelta": "README.md only; generator source unchanged",
+    "transformerSha256": "aea24b047385f0da811ce6bedfe30e629cd5caf616b0991aa54235a4fa6e6245",
+    "fernCli": "5.112.0",
+    "typescriptGenerator": "3.80.1",
+    "baseIndexDigest": "sha256:e806e9ff27d619caf84f9d5e52c9bc1f89e355dfd76d75faf1260b1115e1e192",
+    "baseArm64ManifestDigest": "sha256:50e8c98324f45203a538522d97a8220e6d60add21bd35f13e2141c2e3a5fb8f8",
+    "patchedImageId": "sha256:cbccf7f0c98d893068fb36bc408e6742358b665a1a52cec480a7da8ab3ce2b4a",
+    "baseLayersVerifiedAsPatchedImagePrefix": true
+  },
+  "runtime": {
+    "priorRevision": "de65061f3f57b3c099c72b3eb1989615b7b9bf4e",
+    "currentRevision": "8ee7caeb6373",
+    "functionsSha256": "2d31fd946adb28d513464d7cb82c562a67c4b9868c882e07c159c03c42b47585",
+    "adapterSha256": "83715a905e3884dbe962d4e66c65dc1d2ec09a827c6fcb48703699f0839e0533",
+    "transportSha256": "0d1018d3dfa7a69e05836d5f2566405c4381e43cc154eb1611632540d90e854e"
+  },
+  "domainMappings": {
+    "settings.tags": "bounded string tags; null differs from absent",
+    "settings.logpush": "boolean only; no coercion",
+    "releaseMarker": "exact release:<key> tag; capability confirms marker membership",
+    "writeOutcome": "persist uncertain before PATCH; replay only reconciles GET; never blind retry"
+  },
+  "retryOwner": "connector; SDK maxRetries=0, timeout=15 seconds",
+  "rollback": "select prior direct REST adapter for reads; stop writes, retain journal, reconcile uncertain outcomes before any manual retry",
+  "inbound": false,
+  "distribution": "Research source and vendor schema only. Generated SDKs and generator container remain ignored/private; no package or container publication."
+}

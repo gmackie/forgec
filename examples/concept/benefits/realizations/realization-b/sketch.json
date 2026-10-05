@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Temporal + keyed services",
+    "storage": "Postgres + object storage",
+    "transport": "Kafka",
+    "conflict": "OT",
+    "query": "PostGIS",
+    "batchSize": 1000,
+    "concurrency": 32,
+    "cacheTtl": 120
+  },
+  "obligations": [
+    "Bitemporal rule/household corrections recur with banking and insurance. AsOf plus fields cannot prove temporal joins or non-overlapping validity intervals.",
+    "A notice delivery fact is not proof of legally adequate service. Provenance needs evidence obligations rather than a new universal Notice primitive."
+  ]
+}

@@ -126,3 +126,21 @@ it("does not invent a revision when the provider fails", async () => {
     Response.json({}, { status: 403 })) as typeof fetch);
   await expect(git.snapshot()).rejects.toMatchObject({ status: 502 });
 });
+
+it("tracks branch history and creates a branch at a verified commit",async()=>{
+  const calls:{url:string;body:any}[]=[];
+  const git=new GitRepository(config,"secret",(async(input,init)=>{
+    const url=String(input),body=init?.body?JSON.parse(String(init.body)):undefined;calls.push({url,body});
+    if(url.includes("/branches?"))return Response.json([{name:"studio",commit:{sha},protected:true}]);
+    if(url.includes("/commits?"))return Response.json([{sha,commit:{message:"Change",author:{name:"Author",date:"2026-09-22"}},html_url:"https://github.com/owner/repo/commit/"+sha}]);
+    if(url.includes("/git/trees/"))return Response.json({tree:[]});
+    if(url.endsWith("/git/refs"))return Response.json({});
+    throw Error(url);
+  }) as typeof fetch);
+  expect((await git.branches()).items[0]).toEqual({name:"studio",revision:sha,protected:true});
+  expect((await git.onBranch("studio/change").history()).items[0]!.revision).toBe(sha);
+  expect(calls.at(-1)!.url).toContain("sha=studio%2Fchange");
+  await git.createBranch("studio/change",sha);
+  expect(calls.at(-1)!.body).toEqual({ref:"refs/heads/studio/change",sha});
+  await expect(git.createBranch("../invalid",sha)).rejects.toMatchObject({status:400});
+});

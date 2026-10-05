@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "status": "bounded-invariants-passed",
+  "executed": true,
+  "tool": {
+    "name": "TLC",
+    "releaseUrl": "https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar",
+    "reportedVersion": "TLC2 Version 2026.09.23.154203 (rev: 4260e47)",
+    "sha256": "32d64fbbc464559fc7192341b27b885fa4eb6b92d1648d2b49fb9cdcb7aacf81",
+    "java": "OpenJDK 26.0.1 Homebrew"
+  },
+  "command": "java -cp /tmp/forge-boundary-tla2tools-1.8.0.jar tlc2.TLC -workers 1 -metadir /tmp/forge-boundary-tlc-states -config BoundedQuorum.cfg BoundedQuorum.tla",
+  "workingDirectory": "examples/concept-boundary/consensus/specialized-model",
+  "inputs": {
+    "BoundedQuorum.tla": "ee158b7399f375bcd5184e9e030b47c54acc4debf7ae1e69ffb4706bce1f1bef",
+    "BoundedQuorum.cfg": "3b141f780b9b8d896543023de988d6389ea9b91b2f2a88e2310e8dda3a38d7f9"
+  },
+  "bounds": {
+    "nodes": 3,
+    "values": 2,
+    "slots": 1,
+    "votesPerNode": 1
+  },
+  "assertions": [
+    "TypeOK",
+    "Agreement",
+    "Validity"
+  ],
+  "result": {
+    "generatedStates": 107,
+    "distinctStates": 41,
+    "searchDepth": 5,
+    "remainingStates": 0
+  },
+  "negativeControl": {
+    "change": "Replace votes[n] = None guard with TRUE in temporary model",
+    "initialFailure": "Validity",
+    "agreementOnlyConfig": "TypeOK Agreement",
+    "agreementFailure": "Agreement",
+    "generatedStates": 366,
+    "distinctStates": 67
+  },
+  "limitations": [
+    "Finite single-slot write-once voting abstraction only.",
+    "No elections, reconfiguration, crash recovery, log replication or network model.",
+    "No temporal liveness property or fairness assumption checked.",
+    "ConceptIR graph and deployed protocol refinement not checked by TLC."
+  ]
+}

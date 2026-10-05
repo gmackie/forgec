@@ -1,0 +1,8 @@
+flowchart TB
+  world_authority[world-authority: L0 A] --> AdvanceWorld
+  tick_replay[tick-replay: L0-facet B] -. obligation .-> AdvanceWorld
+  tick_replay -. verify .-> VerifyReplay
+  server_strategy[server-strategy: L1 A] -. realizes .-> AdvanceWorld
+  shard_placement[shard-placement: L2 B] -. allocates .-> AdvanceWorld
+  numerical_physics[numerical-physics: external C] --> PhysicsEngine
+  AdvanceWorld <--> PhysicsEngine

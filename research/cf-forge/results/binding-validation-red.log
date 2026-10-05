@@ -1,0 +1,25 @@
+✔ generated SDK supplies transport behind an external binding (22.191416ms)
+✔ connection rejects another tenant before resolving credentials or sending traffic (2.271375ms)
+✔ uncertain writes return an explicit outcome without retry or credential leakage (4.73175ms)
+✖ invalid success data is rejected at the binding boundary (3.58325ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 337.672417
+
+✖ failing tests:
+
+test at research/cf-forge/bindings.test.mjs:15:1
+✖ invalid success data is rejected at the binding boundary (3.58325ms)
+  Error: invalid vendor id
+      at decodeOutput (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:10:327)
+      at file:///Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/binding.mjs:17:27
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async <anonymous> (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:15:172)
+      at async vendor (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:9:505)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)

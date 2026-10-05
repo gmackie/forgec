@@ -1,0 +1,30 @@
+{
+  "subjects": {
+    "@forgegraph/foundation/attestation/_/ActorIdentity": {
+      "carrier": "@forgegraph/foundation/attestation/_/AttestationSubject",
+      "profiles": [
+        "actor"
+      ]
+    }
+  },
+  "relationships": {
+    "@forgegraph/foundation/attestation/_/ActorRoles": {
+      "carrier": "@forgegraph/foundation/attestation/_/Attestation",
+      "endpoints": {
+        "issuer": {
+          "target": "@forgegraph/foundation/attestation/_/AttestationSubject",
+          "field": "issuer"
+        },
+        "subject": {
+          "target": "@forgegraph/foundation/attestation/_/AttestationSubject",
+          "field": "subject"
+        }
+      },
+      "subjectRoles": [
+        "issuer",
+        "subject"
+      ],
+      "evidence": []
+    }
+  }
+}

@@ -1,0 +1,38 @@
+export resource IdentifierSet @tenant @appendOnly {
+  id : id
+  label : text length 1..200
+}
+export resource Issuer @tenant @appendOnly {
+  id : id
+  key : text length 1..128 @unique
+  find by key
+}
+export resource Identifier @tenant @appendOnly {
+  id : id
+  identifierSet : IdentifierSet
+  namespace : text trim lowercase length 1..128
+  issuer : Issuer?
+  issuerScope : text length 1..128
+  value : text trim length 1..128
+  validFrom : datetime
+  validUntil : datetime?
+  rules {
+    validUntil == null || validUntil > validFrom
+    (issuer == null && issuerScope == "namespace") || (issuer != null && issuerScope == issuer)
+  }
+  unique namespace, issuerScope, value
+  find by namespace, issuerScope, value
+  list by identifierSet
+}
+export resource IdentifierDisposition @tenant @appendOnly {
+  id : id
+  identifier : Identifier @unique
+  replacement : Identifier?
+  effectiveAt : datetime
+  reason : text length 1..500
+  rules {
+    effectiveAt >= identifier.validFrom
+    replacement == null || (replacement.identifierSet == identifier.identifierSet && replacement.validFrom > identifier.validFrom && effectiveAt == replacement.validFrom)
+  }
+  find by identifier
+}

@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "slug": "scientific-workflow",
+  "outcomes": [
+    "A",
+    "B"
+  ],
+  "concerns": [
+    {
+      "id": "experiment-provenance",
+      "description": "Experiment revisions, logical members, attempts and selected artifacts",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/scientific-workflow/_/Experiment",
+        "@boundary/scientific-workflow/_/SweepMember",
+        "@boundary/scientific-workflow/_/AttemptRecorded",
+        "@boundary/scientific-workflow/_/CollectionPublished"
+      ],
+      "pressures": [
+        "traceability"
+      ],
+      "rationale": "A logical member is distinct from scheduler attempts; collection evidence must identify the selected successful attempt and content digest."
+    },
+    {
+      "id": "reproducibility",
+      "description": "Pinned inputs and declared numerical comparison policy",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/scientific-workflow/_/CollectExperiment",
+        "@boundary/scientific-workflow/_/Experiment"
+      ],
+      "pressures": [
+        "replay",
+        "deterministic-execution"
+      ],
+      "rationale": "Reproducibility requires explicit tolerance or exact equivalence and versioned environments; invocation alone does not guarantee deterministic results."
+    },
+    {
+      "id": "scatter-realization",
+      "description": "Scatter expansion, retries and selection mechanism",
+      "layer": "L1",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/scientific-workflow/_/ExpandSweep",
+        "@boundary/scientific-workflow/_/ExecuteMember",
+        "@boundary/scientific-workflow/_/CollectExperiment"
+      ],
+      "pressures": [
+        "backpressure"
+      ],
+      "rationale": "CWL-style scatter and retry controllers implement native member/attempt concepts while preserving logical identity."
+    },
+    {
+      "id": "hpc-placement",
+      "description": "Scheduler arrays, resource classes and artifact storage placement",
+      "layer": "L2",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/scientific-workflow/_/ExecuteMember",
+        "@boundary/scientific-workflow/_/HpcExecutor",
+        "@boundary/scientific-workflow/_/ArtifactStore"
+      ],
+      "pressures": [
+        "hardware-placement",
+        "platform-mapping",
+        "resource-budgets"
+      ],
+      "rationale": "Scheduler task IDs and node placement are realization details; memory and walltime budgets constrain executable allocation."
+    },
+    {
+      "id": "executor-boundary",
+      "description": "External numerical executable invocation",
+      "layer": "L1",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/scientific-workflow/_/HpcExecutor",
+        "@boundary/scientific-workflow/_/ExecuteMember"
+      ],
+      "pressures": [
+        "simulation-artifacts"
+      ],
+      "rationale": "This fixture exchanges opaque job/artifact contracts without composing differential equations. An external executable alone does not require C or new kernel semantics."
+    }
+  ],
+  "facets": [
+    {
+      "id": "experiment-reproducibility",
+      "kind": "replay",
+      "status": "proposed",
+      "targets": [
+        "@boundary/scientific-workflow/_/CollectExperiment"
+      ],
+      "parameters": {
+        "equivalence": "ExperimentSpec.comparisonPolicyDigest",
+        "pins": [
+          "input content",
+          "parameters",
+          "container",
+          "executor build",
+          "selected attempt",
+          "comparison policy"
+        ]
+      },
+      "meaning": "Reproduction is evaluated using the declared comparison policy and complete provenance.",
+      "obligations": [
+        "Define tolerance, units and nondeterministic reduction treatment in the policy artifact.",
+        "Run a real numerical comparison before claiming reproducibility; no executor or comparator was run."
+      ]
+    },
+    {
+      "id": "sweep-budget",
+      "kind": "resource-budget",
+      "status": "proposed",
+      "targets": [
+        "@boundary/scientific-workflow/_/ExecuteMember"
+      ],
+      "parameters": {
+        "maxInflight": "realization-defined positive finite bound",
+        "retryBudget": "finite per member",
+        "preemption": "checkpoint digest required for resume"
+      },
+      "meaning": "Large parameter sweeps must bound resource demand and retry work.",
+      "obligations": [
+        "Choose limits from scheduler capacity and workload measurements.",
+        "Validate failed, preempted, missing and duplicate attempts without counting the same member twice."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "Scatter logical members, retain attempt evidence and publish a provenance-complete collection under an explicit comparison policy.",
+    "placement": "CWL-compatible adapter and Slurm-style arrays are possible realizations; CPU/GPU class and artifact store remain allocation choices.",
+    "limitations": [
+      "No CWL runner, Slurm scheduler or numerical program was executed.",
+      "No equations or numerical solver semantics are embedded; modeling those would require a separate specialized artifact."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "sweep-interface",
+      "path": "specialized-model/sweep-interface.txt",
+      "format": "CWL/Slurm execution interface sketch",
+      "status": "sketch",
+      "process": "@boundary/scientific-workflow/_/ExecuteMember",
+      "inputPorts": [
+        "@boundary/scientific-workflow/_/ExecuteMember#input:member",
+        "@boundary/scientific-workflow/_/ExecuteMember#input:prior",
+        "@boundary/scientific-workflow/_/ExecuteMember#input:result"
+      ],
+      "outputPorts": [
+        "@boundary/scientific-workflow/_/ExecuteMember#output:attempt",
+        "@boundary/scientific-workflow/_/ExecuteMember#output:job"
+      ],
+      "claim": "Port contract only; no scheduler submission or workflow execution."
+    },
+    {
+      "id": "numerical-envelope",
+      "path": "specialized-model/numerical-envelope.json",
+      "format": "Numerical reproducibility policy sketch",
+      "status": "sketch",
+      "process": "@boundary/scientific-workflow/_/CollectExperiment",
+      "inputPorts": [
+        "@boundary/scientific-workflow/_/CollectExperiment#input:experiment",
+        "@boundary/scientific-workflow/_/CollectExperiment#input:members",
+        "@boundary/scientific-workflow/_/CollectExperiment#input:attempts",
+        "@boundary/scientific-workflow/_/CollectExperiment#input:artifacts"
+      ],
+      "outputPorts": [
+        "@boundary/scientific-workflow/_/CollectExperiment#output:collection"
+      ],
+      "claim": "Comparison requirements only; no numerical comparator executed."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Ptolemy II models of computation",
+      "url": "https://ptolemy.berkeley.edu/ptolemyII/",
+      "supports": "Directors define distinct continuous-time, discrete-event, synchronous/reactive and dataflow laws; typed graph edges alone do not supply them."
+    },
+    {
+      "title": "Arcadia method",
+      "url": "https://mbse-capella.org/arcadia.html",
+      "supports": "Logical architecture versus physical architecture supports keeping semantic ownership independent of processor placement."
+    },
+    {
+      "title": "CWL Workflow specification",
+      "url": "https://www.commonwl.org/v1.2/Workflow.html",
+      "supports": "WorkflowStep scatter and ScatterFeatureRequirement are execution mechanisms for logical member expansion."
+    },
+    {
+      "title": "Slurm job arrays",
+      "url": "https://slurm.schedmd.com/job_array.html",
+      "supports": "Array task identity and requeue behavior do not guarantee task ordering; logical member identity must survive scheduler attempts."
+    },
+    {
+      "title": "Process Run Crate profile",
+      "url": "https://www.researchobject.org/workflow-run-crate/profiles/process_run_crate/",
+      "supports": "SoftwareApplication and CreateAction object/result/instrument describe retrospective execution evidence; no RO-Crate conformance is claimed."
+    }
+  ]
+}

@@ -40,6 +40,7 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm }
       - uses: dtolnay/rust-toolchain@stable
+        with: { targets: wasm32-unknown-unknown }
       - uses: Swatinem/rust-cache@v2
       - id: v
         name: the tag, the crates and every package must agree on one version
@@ -132,6 +133,7 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: "24.x", cache: pnpm, registry-url: "https://registry.npmjs.org" }
       - uses: dtolnay/rust-toolchain@stable
+        with: { targets: wasm32-unknown-unknown }
       - uses: Swatinem/rust-cache@v2
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r run build
@@ -154,6 +156,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
+        with: { targets: wasm32-unknown-unknown }
       - uses: Swatinem/rust-cache@v2
       # dependency order; each publish waits for the index before the next crate needs it
       - name: publish crates

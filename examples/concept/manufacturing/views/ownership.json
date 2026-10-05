@@ -1,0 +1,82 @@
+{
+  "nodes": {
+    "@corpus/manufacturing/_/Batch": "entity",
+    "@corpus/manufacturing/_/CalculateTemperatureWindow": "process",
+    "@corpus/manufacturing/_/DetectExcursion": "process",
+    "@corpus/manufacturing/_/Machine": "entity",
+    "@corpus/manufacturing/_/MachineFaultObserved": "fact",
+    "@corpus/manufacturing/_/MaintainEquipment": "process",
+    "@corpus/manufacturing/_/MaintainMachine": "process",
+    "@corpus/manufacturing/_/MaintenanceCompleted": "fact",
+    "@corpus/manufacturing/_/MaintenanceOrder": "entity",
+    "@corpus/manufacturing/_/ProcessExcursionDetected": "fact",
+    "@corpus/manufacturing/_/QualityHold": "entity",
+    "@corpus/manufacturing/_/QualityHoldPlaced": "fact",
+    "@corpus/manufacturing/_/ReceiveTelemetry": "process",
+    "@corpus/manufacturing/_/TemperatureObserved": "fact",
+    "@corpus/manufacturing/_/TemperatureWindow": "entity",
+    "@corpus/manufacturing/_/TrackBatch": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/manufacturing/_/CalculateTemperatureWindow",
+      "to": "@corpus/manufacturing/_/TemperatureWindow",
+      "port": "@corpus/manufacturing/_/CalculateTemperatureWindow#output:TemperatureWindow",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/manufacturing/_/DetectExcursion",
+      "to": "@corpus/manufacturing/_/ProcessExcursionDetected",
+      "port": "@corpus/manufacturing/_/DetectExcursion#output:ProcessExcursionDetected",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/manufacturing/_/DetectExcursion",
+      "to": "@corpus/manufacturing/_/QualityHold",
+      "port": "@corpus/manufacturing/_/DetectExcursion#output:QualityHold",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/manufacturing/_/DetectExcursion",
+      "to": "@corpus/manufacturing/_/QualityHoldPlaced",
+      "port": "@corpus/manufacturing/_/DetectExcursion#output:QualityHoldPlaced",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/manufacturing/_/MaintainEquipment",
+      "to": "@corpus/manufacturing/_/MaintenanceCompleted",
+      "port": "@corpus/manufacturing/_/MaintainEquipment#output:MaintenanceCompleted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/manufacturing/_/MaintainEquipment",
+      "to": "@corpus/manufacturing/_/MaintenanceOrder",
+      "port": "@corpus/manufacturing/_/MaintainEquipment#output:MaintenanceOrder",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/manufacturing/_/MaintainMachine",
+      "to": "@corpus/manufacturing/_/Machine",
+      "port": "@corpus/manufacturing/_/MaintainMachine#output:Machine",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "to": "@corpus/manufacturing/_/MachineFaultObserved",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry#output:MachineFaultObserved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "to": "@corpus/manufacturing/_/TemperatureObserved",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry#output:TemperatureObserved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/manufacturing/_/TrackBatch",
+      "to": "@corpus/manufacturing/_/Batch",
+      "port": "@corpus/manufacturing/_/TrackBatch#output:Batch",
+      "kind": "produce"
+    }
+  ]
+}

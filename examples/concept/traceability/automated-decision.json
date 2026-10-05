@@ -1,0 +1,1000 @@
+{
+  "version": "concept-ir/2",
+  "package": "@trace/automated-decision",
+  "entities": {
+    "@trace/automated-decision/_/Conversation": {
+      "name": "Conversation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "regulated": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "consentRecorded": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/automated-decision/_/Customer": {
+      "name": "Customer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/automated-decision/_/PrivacyAuthority": {
+      "name": "PrivacyAuthority",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/automated-decision/_/ProcessingJurisdiction": {
+      "name": "ProcessingJurisdiction",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/automated-decision/_/AutomatedDecision": {
+      "name": "AutomatedDecision",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/automated-decision/_/InputEvidence": {
+      "name": "InputEvidence",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/automated-decision/_/ModelRevision": {
+      "name": "ModelRevision",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@trace/automated-decision/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/Customer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/automated-decision/_/MessageReceived": {
+      "name": "MessageReceived",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/automated-decision/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/automated-decision/_/Lineage0": {
+      "name": "Lineage0",
+      "fields": {
+        "derived": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/AutomatedDecision",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/InputEvidence",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/automated-decision/_/Lineage1": {
+      "name": "Lineage1",
+      "fields": {
+        "derived": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/InputEvidence",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/ModelRevision",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@trace/automated-decision/_/Respond": {
+      "name": "Respond",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    },
+    "@trace/automated-decision/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/automated-decision/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@trace/automated-decision/_/Conversation": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      },
+      "@trace/automated-decision/_/AutomatedDecision": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      },
+      "@trace/automated-decision/_/InputEvidence": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      },
+      "@trace/automated-decision/_/ModelRevision": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      }
+    },
+    "relationships": {
+      "@trace/automated-decision/_/Participants": {
+        "carrier": "@trace/automated-decision/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@trace/automated-decision/_/Customer",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@trace/automated-decision/_/Conversation",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      },
+      "@trace/automated-decision/_/TraceLink0": {
+        "carrier": "@trace/automated-decision/_/Lineage0",
+        "endpoints": {
+          "derived": {
+            "target": "@trace/automated-decision/_/AutomatedDecision",
+            "field": "derived"
+          },
+          "source": {
+            "target": "@trace/automated-decision/_/InputEvidence",
+            "field": "source"
+          }
+        },
+        "evidence": []
+      },
+      "@trace/automated-decision/_/TraceLink1": {
+        "carrier": "@trace/automated-decision/_/Lineage1",
+        "endpoints": {
+          "derived": {
+            "target": "@trace/automated-decision/_/InputEvidence",
+            "field": "derived"
+          },
+          "source": {
+            "target": "@trace/automated-decision/_/ModelRevision",
+            "field": "source"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@trace/automated-decision/_/MessageReceived",
+      "@trace/automated-decision/_/Closed"
+    ],
+    "interactions": {
+      "@trace/automated-decision/_/Engagement": {
+        "carrier": "@trace/automated-decision/_/Conversation",
+        "participation": [
+          "@trace/automated-decision/_/Participants"
+        ],
+        "events": {
+          "@trace/automated-decision/_/MessageReceived": "context",
+          "@trace/automated-decision/_/Closed": "context"
+        },
+        "processes": {
+          "@trace/automated-decision/_/Respond": "engagement",
+          "@trace/automated-decision/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    },
+    "subjects": {
+      "@trace/automated-decision/_/ParticipantIdentity": {
+        "carrier": "@trace/automated-decision/_/Customer",
+        "profiles": [
+          "party"
+        ]
+      },
+      "@trace/automated-decision/_/Authority": {
+        "carrier": "@trace/automated-decision/_/PrivacyAuthority",
+        "profiles": [
+          "authority"
+        ]
+      }
+    },
+    "contracts": {
+      "@trace/automated-decision/_/RequiredOutcome": {
+        "owner": {
+          "kind": "process",
+          "id": "@trace/automated-decision/_/Respond"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "name",
+          "path": [
+            "engagement",
+            "consentRecorded"
+          ]
+        },
+        "selectors": []
+      }
+    },
+    "externalConstraints": {
+      "@trace/automated-decision/_/ExternalRule": {
+        "authority": "@trace/automated-decision/_/Authority",
+        "jurisdiction": "@trace/automated-decision/_/ProcessingJurisdiction",
+        "citations": [
+          "illustrative:privacy-rule/revision-1/section-4"
+        ],
+        "applicability": {
+          "process": "@trace/automated-decision/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [
+          "@trace/automated-decision/_/RequiredOutcome"
+        ],
+        "prohibitions": [],
+        "validFrom": 0,
+        "validUntil": 1000,
+        "supersedes": [],
+        "evidence": []
+      },
+      "@trace/automated-decision/_/Suspension": {
+        "authority": "@trace/automated-decision/_/Authority",
+        "jurisdiction": "@trace/automated-decision/_/ProcessingJurisdiction",
+        "citations": [
+          "illustrative:privacy-rule/revision-2/section-4"
+        ],
+        "applicability": {
+          "process": "@trace/automated-decision/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [],
+        "prohibitions": [
+          "@trace/automated-decision/_/Respond"
+        ],
+        "validFrom": 1000,
+        "validUntil": null,
+        "supersedes": [
+          "@trace/automated-decision/_/ExternalRule"
+        ],
+        "evidence": []
+      }
+    },
+    "traceability": {
+      "@trace/automated-decision/_/Reconstruction": {
+        "source": "@trace/automated-decision/_/AutomatedDecision",
+        "destination": "@trace/automated-decision/_/ModelRevision",
+        "path": [
+          {
+            "relationship": "@trace/automated-decision/_/TraceLink0",
+            "fromRole": "derived",
+            "toRole": "source"
+          },
+          {
+            "relationship": "@trace/automated-decision/_/TraceLink1",
+            "fromRole": "derived",
+            "toRole": "source"
+          }
+        ],
+        "requiredBy": "@trace/automated-decision/_/ExternalRule",
+        "applicability": {
+          "process": "@trace/automated-decision/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "validFrom": 0,
+        "validUntil": 1000,
+        "retentionDays": 30,
+        "requiredAttributes": {
+          "@trace/automated-decision/_/AutomatedDecision": [
+            "id"
+          ],
+          "@trace/automated-decision/_/InputEvidence": [
+            "id"
+          ],
+          "@trace/automated-decision/_/ModelRevision": [
+            "id"
+          ]
+        },
+        "validTime": true,
+        "knowledgeTime": true
+      }
+    }
+  }
+}

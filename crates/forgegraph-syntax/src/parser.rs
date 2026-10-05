@@ -37,6 +37,7 @@ const DECL_KEYWORDS: &[&str] = &[
     "enum",
     "type",
     "shape",
+    "facet",
     "resource",
     "blob",
     "cache",
@@ -50,6 +51,8 @@ const DECL_KEYWORDS: &[&str] = &[
     "module",
     "export",
     "workflow",
+    "workQueue",
+    "actor",
     "dataClass",
 ]; // `purpose` is also a function item, so it does not signal an unclosed block
 
@@ -330,6 +333,7 @@ impl<'a> Parser<'a> {
             "enum" => K::ENUM_DECL,
             "type" => K::TYPE_DECL,
             "shape" => K::SHAPE_DECL,
+            "facet" => K::FACET_DECL,
             "resource" => K::RESOURCE_DECL,
             "blob" => K::BLOB_DECL,
             "cache" => K::CACHE_DECL,
@@ -339,6 +343,8 @@ impl<'a> Parser<'a> {
             "channel" => K::CHANNEL_DECL,
             "source" => K::SOURCE_DECL,
             "workflow" => K::WORKFLOW_DECL,
+            "workQueue" => K::WORK_QUEUE_DECL,
+            "actor" => K::ACTOR_DECL,
             "purpose" => K::PURPOSE_DECL,
             "dataClass" => K::DATA_CLASS_DECL,
             "on" => K::SUBSCRIPTION_DECL,
@@ -358,7 +364,7 @@ impl<'a> Parser<'a> {
         match kind {
             K::ENUM_DECL => self.enum_body(),
             K::TYPE_DECL => self.type_body(),
-            K::SHAPE_DECL => self.shape_body(),
+            K::SHAPE_DECL | K::FACET_DECL => self.shape_body(),
             K::RESOURCE_DECL => self.resource_body(),
             K::BLOB_DECL => self.blob_body(),
             K::CACHE_DECL => self.cache_body(),
@@ -367,6 +373,54 @@ impl<'a> Parser<'a> {
             K::FUNCTION_DECL => self.function_body(),
             K::CHANNEL_DECL => self.channel_body(),
             K::SOURCE_DECL => self.source_body(),
+            K::ACTOR_DECL => {
+                self.expect_ident("actor name");
+                self.expect_kw("keyed");
+                self.expect_kw("by");
+                self.expect_ident("actor key");
+                self.block_allow("on", |p| {
+                    p.start(K::ACTOR_ITEM);
+                    let key = p.current_text().to_string();
+                    p.bump();
+                    match key.as_str() {
+                        "state" => p.qualified_name("actor state shape"),
+                        "on" => {
+                            p.expect_ident("command name");
+                            p.expect(TokenKind::Arrow, "`->`");
+                            p.qualified_name("handler function");
+                        }
+                        _ => {
+                            p.error("expected actor state or on command");
+                            p.recover_line();
+                        }
+                    }
+                    p.finish();
+                    p.end_item();
+                });
+            }
+            K::WORK_QUEUE_DECL => {
+                self.expect_ident("queue name");
+                self.block(|p| {
+                    p.start(K::WORK_QUEUE_ITEM);
+                    let key = p.current_text().to_string();
+                    p.bump();
+                    match key.as_str() {
+                        "execute" => p.qualified_name("execution function"),
+                        "lease" => {
+                            p.expect(TokenKind::Duration, "lease duration");
+                        }
+                        "retry" | "capacity" | "runners" => {
+                            p.expect(TokenKind::Int, "queue bound");
+                        }
+                        _ => {
+                            p.error("unknown workQueue item");
+                            p.recover_line();
+                        }
+                    }
+                    p.finish();
+                    p.end_item();
+                });
+            }
             K::WORKFLOW_DECL => self.workflow_body(),
             K::PURPOSE_DECL => {
                 // edition 2027: `purpose Name [extends Parent]`
@@ -402,6 +456,9 @@ impl<'a> Parser<'a> {
     // ---------------------------------------------------------------- blocks
     /// `{` NL* ( item NL+ )* `}` with per-item recovery.
     fn block(&mut self, item: impl Fn(&mut Self)) {
+        self.block_allow("", item);
+    }
+    fn block_allow(&mut self, allowed: &str, item: impl Fn(&mut Self)) {
         if !self.expect(TokenKind::LBrace, "`{`") {
             return;
         }
@@ -417,6 +474,7 @@ impl<'a> Parser<'a> {
             }
             // A declaration keyword inside a block means the block was never closed.
             if self.at(TokenKind::Ident)
+                && self.current_text() != allowed
                 && DECL_KEYWORDS.contains(&self.current_text())
                 && self.nth(1) == TokenKind::Ident
                 && !matches!(self.nth(1), TokenKind::Colon)
@@ -510,15 +568,20 @@ impl<'a> Parser<'a> {
     fn type_expr(&mut self) {
         self.start(K::TYPE_EXPR);
         self.start(K::TYPE_REF);
+        let collection = matches!(self.current_text(), "list" | "set" | "map");
         self.qualified_name("type name");
-        if self.at(TokenKind::Lt) && self.type_args_ahead() {
+        if self.at(TokenKind::Lt) && (collection || self.type_args_ahead()) {
             self.start(K::TYPE_ARGS);
             self.bump();
             loop {
                 self.start(K::TYPE_ARG);
-                match self.current() {
-                    TokenKind::Ident | TokenKind::Int | TokenKind::String => self.bump(),
-                    _ => self.error("expected type argument"),
+                if collection {
+                    self.type_expr();
+                } else {
+                    match self.current() {
+                        TokenKind::Ident | TokenKind::Int | TokenKind::String => self.bump(),
+                        _ => self.error("expected type argument"),
+                    }
                 }
                 self.finish();
                 if self.at(TokenKind::Comma) {
@@ -566,7 +629,13 @@ impl<'a> Parser<'a> {
                     self.expect(TokenKind::String, "pattern string");
                     self.finish();
                 }
-                k if Self::is_compare_kind(k) => {
+                k if Self::is_compare_kind(k)
+                    && !(k == TokenKind::Gt
+                        && !matches!(
+                            self.nth(1),
+                            TokenKind::Int | TokenKind::Decimal | TokenKind::Minus
+                        )) =>
+                {
                     self.start(K::REFINEMENT);
                     self.bump();
                     self.literal_or_error();
@@ -625,9 +694,11 @@ impl<'a> Parser<'a> {
     fn qualified_name(&mut self, what: &str) {
         self.start(K::QUALIFIED_NAME);
         if self.expect_ident(what) {
-            while self.at(TokenKind::Dot) && self.nth(1) == TokenKind::Ident {
+            while self.at(TokenKind::Dot) {
                 self.bump();
-                self.bump();
+                if !self.expect_ident("name after `.`") {
+                    break;
+                }
             }
         }
         self.finish();
@@ -735,6 +806,24 @@ impl<'a> Parser<'a> {
                 self.bump();
                 self.field_list();
             }
+            if self.at_kw("while") {
+                self.start(K::WHERE_DECL);
+                self.bump();
+                self.expect_ident("predicate field");
+                if self.at_kw("in") {
+                    self.bump();
+                } else {
+                    self.error("expected `in`");
+                }
+                self.expect(TokenKind::LBracket, "`[` ");
+                self.expect_ident("enum member");
+                while self.at(TokenKind::Comma) {
+                    self.bump();
+                    self.expect_ident("enum member");
+                }
+                self.expect(TokenKind::RBracket, "`]`");
+                self.finish();
+            }
             self.finish();
             self.end_item();
         } else if t == "find" && n1t == "by" {
@@ -744,10 +833,14 @@ impl<'a> Parser<'a> {
             self.field_list();
             self.finish();
             self.end_item();
-        } else if t == "list" && n1t == "by" {
+        } else if (t == "list" && n1t == "by") || t == "search" {
+            let search = t == "search";
             self.start(K::LIST_DECL);
             self.bump();
-            self.bump();
+            if search {
+                self.expect_ident("search mode");
+            }
+            self.expect_kw("by");
             self.field_list();
             let i = self.sig_after_lines(self.pos);
             if self.raw_kind(i) == TokenKind::Ident
@@ -1036,13 +1129,21 @@ impl<'a> Parser<'a> {
                     p.finish();
                     p.end_item();
                 }
-                "count" | "sum" | "min" | "max" if p.nth(1) == TokenKind::Ident => {
+                "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"
+                    if p.nth(1) == TokenKind::Ident =>
+                {
                     p.start(K::AGGREGATE_DECL);
                     p.bump();
                     p.bump();
                     if p.at_kw("as") {
                         p.bump();
                         p.expect_ident("alias");
+                    }
+                    if p.at_kw("where") {
+                        p.start(K::WHERE_DECL);
+                        p.bump();
+                        p.expr();
+                        p.finish();
                     }
                     p.finish();
                     p.end_item();
@@ -1225,7 +1326,19 @@ impl<'a> Parser<'a> {
         self.expect_ident("source name");
         self.header_decorators();
         self.block(|p| {
-            if p.at_kw("cron") {
+            if p.at(TokenKind::At) {
+                p.start(K::SOURCE_EXPOSURE);
+                p.decorator();
+                p.eat_lines();
+                if p.at_kw("resource") || p.at_kw("function") {
+                    p.bump();
+                } else {
+                    p.error("expected resource or function exposure");
+                }
+                p.qualified_name("exposed declaration");
+                p.finish();
+                p.end_item();
+            } else if p.at_kw("cron") {
                 p.start(K::CRON_DECL);
                 p.bump();
                 p.expect(TokenKind::String, "cron expression");
@@ -1307,7 +1420,26 @@ impl<'a> Parser<'a> {
                 self.bump();
                 self.bump(); // step name
                 self.expect(TokenKind::Eq, "`=`");
-                if self.at_kw("sleep") {
+                if self.at_kw("map") {
+                    self.start(K::STEP_MAP);
+                    self.bump();
+                    self.expect_ident("map item binding");
+                    self.expect_kw("in");
+                    self.expr();
+                    self.eat_lines();
+                    self.expect_kw("concurrency");
+                    self.expect(TokenKind::Int, "concurrency limit");
+                    self.eat_lines();
+                    self.expect(TokenKind::LBrace, "`{`");
+                    self.eat_lines();
+                    self.start(K::STEP_CALL);
+                    self.qualified_name("mapped function");
+                    self.named_args();
+                    self.finish();
+                    self.eat_lines();
+                    self.expect(TokenKind::RBrace, "`}`");
+                    self.finish();
+                } else if self.at_kw("sleep") {
                     self.start(K::STEP_SLEEP);
                     self.bump();
                     self.expect(TokenKind::Duration, "sleep duration");

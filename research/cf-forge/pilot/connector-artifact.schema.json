@@ -1,0 +1,318 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "capability",
+    "vendor",
+    "hostProfiles",
+    "credentialSlots",
+    "scope",
+    "specSha256",
+    "overlaySha256",
+    "overlay",
+    "operationMap",
+    "generator",
+    "runtime",
+    "domainMappings",
+    "retryOwner",
+    "rollback",
+    "inbound",
+    "distribution"
+  ],
+  "properties": {
+    "version": {
+      "const": "forge-connector-artifact/1"
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "application",
+        "binding"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "application": {
+          "type": "string"
+        },
+        "binding": {
+          "type": "string"
+        }
+      }
+    },
+    "vendor": {
+      "type": "string"
+    },
+    "hostProfiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "credentialSlots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cloudflare"
+      ],
+      "properties": {
+        "cloudflare": {
+          "type": "string"
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tenant",
+        "account",
+        "script",
+        "singleWriter"
+      ],
+      "properties": {
+        "tenant": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string"
+        },
+        "singleWriter": {
+          "type": "boolean"
+        }
+      }
+    },
+    "specSha256": {
+      "type": "string"
+    },
+    "overlaySha256": {
+      "type": "string"
+    },
+    "overlay": {
+      "type": "array",
+      "items": {}
+    },
+    "operationMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "worker-script-settings-get-settings",
+        "worker-script-settings-patch-settings"
+      ],
+      "properties": {
+        "worker-script-settings-get-settings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "accessor",
+            "method",
+            "httpMethod",
+            "path",
+            "requestType",
+            "responseType",
+            "requiredRequestProperties"
+          ],
+          "properties": {
+            "accessor": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "method": {
+              "type": "string"
+            },
+            "httpMethod": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            },
+            "requestType": {
+              "type": "string"
+            },
+            "responseType": {
+              "type": "string"
+            },
+            "requiredRequestProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "worker-script-settings-patch-settings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "accessor",
+            "method",
+            "httpMethod",
+            "path",
+            "requestType",
+            "responseType",
+            "requestBodyProperty",
+            "requiredRequestProperties"
+          ],
+          "properties": {
+            "accessor": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "method": {
+              "type": "string"
+            },
+            "httpMethod": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            },
+            "requestType": {
+              "type": "string"
+            },
+            "responseType": {
+              "type": "string"
+            },
+            "requestBodyProperty": {
+              "type": "string"
+            },
+            "requiredRequestProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstreamRevision",
+        "currentUpstreamRevision",
+        "currentDelta",
+        "transformerSha256",
+        "fernCli",
+        "typescriptGenerator",
+        "baseIndexDigest",
+        "baseArm64ManifestDigest",
+        "patchedImageId",
+        "baseLayersVerifiedAsPatchedImagePrefix"
+      ],
+      "properties": {
+        "upstreamRevision": {
+          "type": "string"
+        },
+        "currentUpstreamRevision": {
+          "type": "string"
+        },
+        "currentDelta": {
+          "type": "string"
+        },
+        "transformerSha256": {
+          "type": "string"
+        },
+        "fernCli": {
+          "type": "string"
+        },
+        "typescriptGenerator": {
+          "type": "string"
+        },
+        "baseIndexDigest": {
+          "type": "string"
+        },
+        "baseArm64ManifestDigest": {
+          "type": "string"
+        },
+        "patchedImageId": {
+          "type": "string"
+        },
+        "baseLayersVerifiedAsPatchedImagePrefix": {
+          "type": "boolean"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "priorRevision",
+        "currentRevision",
+        "functionsSha256",
+        "adapterSha256",
+        "transportSha256"
+      ],
+      "properties": {
+        "priorRevision": {
+          "type": "string"
+        },
+        "currentRevision": {
+          "type": "string"
+        },
+        "functionsSha256": {
+          "type": "string"
+        },
+        "adapterSha256": {
+          "type": "string"
+        },
+        "transportSha256": {
+          "type": "string"
+        }
+      }
+    },
+    "domainMappings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "settings.tags",
+        "settings.logpush",
+        "releaseMarker",
+        "writeOutcome"
+      ],
+      "properties": {
+        "settings.tags": {
+          "type": "string"
+        },
+        "settings.logpush": {
+          "type": "string"
+        },
+        "releaseMarker": {
+          "type": "string"
+        },
+        "writeOutcome": {
+          "type": "string"
+        }
+      }
+    },
+    "retryOwner": {
+      "type": "string"
+    },
+    "rollback": {
+      "type": "string"
+    },
+    "inbound": {
+      "type": "boolean"
+    },
+    "distribution": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

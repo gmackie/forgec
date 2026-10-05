@@ -1,0 +1,160 @@
+import specification
+
+/// What choices parameterize a thing, typed against a pinned specification.
+///
+/// Reconciliation #46 asks whether observed reality matches what was desired. This asks what
+/// was desired in the first place, and the two have different lifecycles: a configuration is
+/// authored, layered and resolved long before anything observes it, and it stays valid when
+/// nothing is observing at all.
+///
+/// Configuration is not arbitrary JSON. Every value is an assignment to a parameter declared
+/// by a SpecificationPin, so an unknown key cannot be set and a typed key cannot be set twice.
+/// Secrets are never values here: a secret-typed parameter carries a reference to a binding
+/// resolved elsewhere, and this package stores no secret material at all.
+export resource ParameterType
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..32 @unique
+  label : text length 1..200
+  /// A secret-typed parameter may only ever be assigned a reference, never a literal.
+  secret : boolean
+  find by key
+}
+
+/// A parameter a pinned specification declares. Pinning is what makes "typed" mean anything:
+/// the same key may be a boolean in one revision and an integer in the next, and a
+/// configuration authored against the old revision must not silently retype.
+export resource ParameterDefinition
+  @tenant
+  @appendOnly
+{
+  id : id
+  pin : specification.SpecificationPin
+  key : text trim lowercase length 1..128
+  valueType : ParameterType
+  /// Snapshot of `valueType.secret`, validated on write. Kernel expressions hydrate one
+  /// reference hop, so every rule that needs to know "is this secret" would otherwise be
+  /// reaching through two. Snapshotting it here keeps those rules enforceable.
+  secret : boolean
+  required : boolean
+  defaultValue : text? length 1..2048
+  rules {
+    secret == valueType.secret
+    secret == false || defaultValue == null
+  }
+  unique pin, key
+  find by pin, key
+  list by pin
+}
+
+/// Layers give resolution a deterministic order. The ordinal is the precedence: a higher
+/// layer's assignment wins, and equal ordinals are impossible because the key is unique.
+export resource ConfigurationLayer
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..64 @unique
+  label : text length 1..200
+  ordinal : integer >= 1 <= 64 @unique
+  find by key
+  list by ordinal
+}
+
+/// One authored configuration at one layer, optionally inheriting from another. The parent
+/// chain is what "composition" means here; resolution walks it and the nearest assignment wins.
+export resource Configuration
+  @tenant
+  @appendOnly
+{
+  id : id
+  pin : specification.SpecificationPin
+  key : text trim lowercase length 1..128
+  layer : ConfigurationLayer
+  /// Snapshot of `layer.ordinal`, validated on write, so the precedence rule below stays
+  /// within one reference hop.
+  layerOrdinal : integer >= 1 <= 64
+  parent : Configuration?
+  rules {
+    layerOrdinal == layer.ordinal
+    parent == null || parent.pin == pin
+    parent == null || parent.layerOrdinal < layerOrdinal
+  }
+  unique pin, key, layer
+  find by pin, key, layer
+  list by pin
+}
+
+/// Where a secret lives, never what it is. The reference is an opaque locator resolved by
+/// whatever holds secrets; nothing in this package can dereference it.
+export resource SecretBinding
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..128 @unique
+  reference : text length 1..512
+  find by key
+}
+
+/// An assignment of one parameter in one configuration. Exactly one of a literal value or a
+/// secret reference, decided by the parameter's own type rather than by the caller.
+export resource ParameterAssignment
+  @tenant
+  @appendOnly
+{
+  id : id
+  configuration : Configuration
+  parameter : ParameterDefinition
+  value : text? length 1..2048
+  secretRef : SecretBinding?
+  rules {
+    parameter.pin == configuration.pin
+    parameter.secret == false || (secretRef != null && value == null)
+    parameter.secret == true || (value != null && secretRef == null)
+  }
+  unique configuration, parameter
+  find by configuration, parameter
+  list by configuration
+}
+
+/// A resolution, identified by a digest the caller computes over the resolved values. Stable
+/// identity is what lets a reconciler say "still the same desired state" without re-reading
+/// every value, and what lets a later reader tell two resolutions apart.
+export resource ResolvedConfiguration
+  @tenant
+  @appendOnly
+{
+  id : id
+  configuration : Configuration
+  digest : text length 71..71 pattern "^sha256:[0-9a-f]{64}$"
+  resolvedAt : datetime
+  /// Expected value count; the header is preparation until all values commit.
+  entryCount : integer >= 0 <= 32
+  unique configuration, digest
+  find by configuration, digest
+  list by configuration
+}
+
+/// One resolved value, carrying the configuration it actually came from. That provenance is
+/// the difference between a resolved bag of values and an explainable one: without it, nobody
+/// can say which layer set a surprising value.
+export resource ResolvedValue
+  @tenant
+  @appendOnly
+{
+  id : id
+  resolved : ResolvedConfiguration
+  parameter : ParameterDefinition
+  source : Configuration
+  value : text? length 1..2048
+  secretRef : SecretBinding?
+  rules {
+    parameter.secret == false || value == null
+    parameter.secret == true || secretRef == null
+  }
+  unique resolved, parameter
+  list by resolved
+}

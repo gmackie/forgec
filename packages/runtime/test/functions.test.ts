@@ -116,3 +116,17 @@ describe("implemented functions", () => {
     expect(seen).toEqual([ids.order]);
   });
 });
+
+it("retries a failed subscription handler and deduplicates only after success", async () => {
+  let attempts = 0;
+  const fulfill = defineFunction("@acme/commerce/_/FulfillOrder", () => Effect.suspend(() => {
+    attempts++;
+    return attempts === 1 ? Effect.fail(err("DependencyUnavailable", "try again")) : Effect.void;
+  }));
+  const e = new Engine(model, testLayer(storage), { functions: [fulfill] });
+  const env = { channel: "@acme/commerce/_/OrderEvents", message: "OrderSubmitted", tenant: "acme", opId: "retry", ordinal: 0, messageId: "retry:0", payload: {}, createdAt: "t" };
+  await expect(e.consume("fulfill-order", env)).rejects.toMatchObject({ code: "DependencyUnavailable" });
+  expect(await e.consume("fulfill-order", env)).toBe("processed");
+  expect(await e.consume("fulfill-order", env)).toBe("duplicate");
+  expect(attempts).toBe(2);
+});

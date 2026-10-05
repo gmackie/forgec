@@ -9,7 +9,7 @@ holding that claim up is evidence. Most of what follows is about evidence.
 You need:
 
 - **Rust 1.97+** (`rustup toolchain install 1.97`) with `rustfmt` and `clippy`
-- **Node 22.5+** and **pnpm 10** (`corepack enable`)
+- **Node 24+** and **pnpm 10** (`corepack enable`)
 - **PostgreSQL 17** for the Node-profile suites. Point `FORGE_PG_URL` at it and
   create two databases: `forge_node` and `forge_temporal`.
 

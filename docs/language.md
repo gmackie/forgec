@@ -220,3 +220,19 @@ source NightlyReconciliation {
 Cron compiles to an explicit recurrence (0/7 = Sunday, day-of-month OR
 day-of-week, IANA zone). Occurrence identity is schedule + intended instant;
 missed runs catch up in order within a window; overlapping runs are skipped.
+
+## Structural facets (edition 2027)
+
+Declare reusable fields with `facet ContactDetails { email : email? }` and apply
+with `resource Customer @facet(ContactDetails) { id : id }`.
+`@facet(A, B)` and repeated `@facet(A) @facet(B)` are equivalent. Facets are
+compile-time field composition: no subtyping, runtime type tests, or overrides.
+Fields may have defaults, constraints, `@immutable`, `@label`, and `@data`.
+Identity, derived fields, uniqueness, lifecycle, queries, capabilities, and
+resource decorators cannot be supplied by a facet. All collisions fail compilation,
+including synthesized fields such as `version` on a versioned resource.
+
+Exported facets may be used through an imported dependency alias. Their field
+types resolve in the defining package. Compatibility compares the effective
+resource contracts and includes facet origins in affected-field explanations.
+See `examples/facets` for game and business examples.

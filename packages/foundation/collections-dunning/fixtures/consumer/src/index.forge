@@ -1,0 +1,31 @@
+import collections-dunning
+import settlement
+import fulfillment
+import party
+import entitlement
+export resource B2BCollections @tenant @appendOnly {
+ id : id
+ collection : collections-dunning.Collection
+ account : text length 1..200
+}
+export resource SaaSCollections @tenant @appendOnly {
+ id : id
+ collection : collections-dunning.Collection
+ account : text length 1..200
+}
+export resource ConsumerCollections @tenant @appendOnly {
+ id : id
+ collection : collections-dunning.Collection
+ account : text length 1..200
+}
+export resource EconomicOccurrence @tenant @timestamps @appendOnly {
+ id : id
+ fulfillmentEnd : fulfillment.FulfillmentEnd @unique
+ kind : settlement.SettlementKind
+ creditor : party.Party
+ debtor : party.Party
+ scope : entitlement.EntitlementScope
+ unit : text length 1..64
+ quantity : decimal<6> > 0
+ occurredAt : datetime
+}

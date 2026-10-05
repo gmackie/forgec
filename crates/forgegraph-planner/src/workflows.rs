@@ -98,10 +98,11 @@ fn driver_asl(workflow_id: &str) -> Value {
           "Choices": [
             { "Variable": "$.state.status", "StringEquals": "sleeping", "Next": "Sleep" },
             { "Variable": "$.state.status", "StringEquals": "waiting", "Next": "WaitForSignal" },
-            { "Variable": "$.state.status", "StringEquals": "running", "Next": "Advance" }
+            { "Variable": "$.state.status", "StringEquals": "running", "Next": "RetryRunning" }
           ],
           "Default": "Done"
         },
+        "RetryRunning": { "Type": "Wait", "Seconds": 1, "Next": "Advance" },
         "Sleep": { "Type": "Wait", "TimestampPath": "$.state.dueAt", "Next": "Advance" },
         "WaitForSignal": {
           "Type": "Task",

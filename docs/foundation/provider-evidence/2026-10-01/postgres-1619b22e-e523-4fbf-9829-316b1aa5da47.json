@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-core-invariants/1",
+  "coverageCriteria": [],
+  "status": "passing",
+  "runId": "1619b22e-e523-4fbf-9829-316b1aa5da47",
+  "provider": "postgres",
+  "topology": "native-postgres-remote",
+  "targetHash": "26659ddadba4e07c6aa3fdad2b293ccd69bf3ad419e93292c8cf45ab3d4be951",
+  "sourceFingerprint": "da6f934fd5b3071c6767a52a6a329a3519d2a67d8c158650d8f37d12ced5ccd2",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "019c9f000886a574afdca7b73faf79a7b3d2dfca1e47a58d2f344fac2991e9f3"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "cbeda4517c123bf16276d0c197aa6011c0f2de80abb824d155abf7697c55f735"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "e904672a9ca8405f260673081f1fab33410e6125050b77d6075fcc80295b3945"
+    }
+  ],
+  "requestedTraces": [
+    "capacity-race-and-restart",
+    "authorized-atomic-rollback",
+    "exact-ledger-reversal",
+    "usage-retry-and-isolation",
+    "terminal-absence-guard-race"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-10-01T02:24:47.529Z",
+  "passedTraces": [
+    "capacity-race-and-restart",
+    "authorized-atomic-rollback",
+    "exact-ledger-reversal",
+    "usage-retry-and-isolation",
+    "terminal-absence-guard-race"
+  ],
+  "testReportSha256": "a2b0afb1e5644371cad13a5c5efbc69b0ff4d636d6ff9a17338dcf557d71bfb5",
+  "identity": {
+    "provider": "postgres",
+    "runId": "1619b22e-e523-4fbf-9829-316b1aa5da47",
+    "tenantPrefix": "foundation-cert-1619b22e-e523-4fbf-9829-316b1aa5da47",
+    "observed": {
+      "driver": "pg",
+      "serverVersion": "17.11 (Debian 17.11-1.pgdg13+2)"
+    },
+    "objectStore": "not exercised",
+    "retainedData": "isolated test schema removed on close"
+  }
+}

@@ -1,0 +1,54 @@
+export resource LedgerBook
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+}
+export resource Account
+  @tenant
+  @appendOnly
+{
+  id : id
+  book : LedgerBook
+  key : text length 1..128
+  unit : text length 1..64
+  unique book, key
+}
+// Candidates are not posted until selected by an immutable seal.
+export resource Entry
+  @tenant
+  @appendOnly
+{
+  id : id
+  book : LedgerBook
+  account : Account
+  quantity : decimal<6>
+  next : Entry?
+  rules {
+    account.book == book
+    next == null || next.book == book
+  }
+}
+export resource PostingGroup
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  book : LedgerBook
+  key : text length 1..128
+  claim : text length 1..300
+  head : Entry
+  policy : text length 1..16
+  reversalOf : PostingGroup?
+  reason : text length 1..1000
+  unique book, key
+  unique book, claim
+  list by book
+  rules {
+    head.book == book
+    reversalOf == null || reversalOf.book == book
+    policy == "balanced" || policy == "unrestricted"
+  }
+}

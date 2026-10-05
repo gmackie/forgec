@@ -76,7 +76,8 @@ fn direction_of(code: &str) -> Option<&'static str> {
         | "parameter-required"
         | "workflow-removed"
         | "dependency-removed" => "producer",
-        "graph-changed-without-version"
+        "collection-type-changed"
+        | "graph-changed-without-version"
         | "table-removed"
         | "column-removed"
         | "column-type-changed"
@@ -91,6 +92,22 @@ fn direction_of(code: &str) -> Option<&'static str> {
 fn needs_of(code: &str) -> Vec<&'static str> {
     match code {
         "field-required" => vec!["backfill-review"],
+        "actor-definition-changed" => vec!["actor-state-migration", "fenced-owner-cutover"],
+        "search-index-changed" => vec!["rebuild-search-index", "cursor-invalidation"],
+        "credential-definition-changed" => vec![
+            "seal-existing-data",
+            "credential-interface-review",
+            "key-migration-review",
+        ],
+        "work-queue-definition-changed" => vec!["drain-or-migrate-queued-tasks"],
+        "sequence-definition-changed" => {
+            vec!["sequence-high-water-review", "existing-data-validation"]
+        }
+        "collection-type-changed" => vec!["existing-data-validation", "codec-migration-review"],
+        "projection-definition-changed" => vec!["rebuild-projection-generation"],
+        "unique-invariant-changed" => {
+            vec!["existing-data-validation", "rebuild-indexes-and-claims"]
+        }
         "column-type-changed" => vec!["data-rewrite"],
         "column-added" | "table-added" => vec!["expand-ddl"],
         "column-removed" | "table-removed" => vec!["retention-decision", "contract-ddl"],
@@ -145,6 +162,223 @@ pub fn compare(old: &Value, new: &Value) -> Report {
             needs: needs_of(code),
         })
     };
+
+    let resources = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .map(|r| (s(&r["id"]), r["uniques"].clone()))
+            .collect()
+    };
+    let before = resources(old);
+    let after = resources(new);
+    for (id, old_uniques) in &before {
+        if let Some(new_uniques) = after.get(id)
+            && old_uniques != new_uniques
+        {
+            push(&mut f,"storage","migration","unique-invariant-changed",id.clone(),"uniqueness keys or conditions changed; validate existing rows and rebuild indexes/claims before activation".into());
+        }
+    }
+
+    let append_only = |bundle: &Value| -> BTreeMap<String, bool> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .map(|r| {
+                (
+                    s(&r["id"]),
+                    r["decorators"]["appendOnly"].as_bool().unwrap_or(false),
+                )
+            })
+            .collect()
+    };
+    for (id, previous) in append_only(old) {
+        if let Some(current) = append_only(new).get(&id)
+            && *current != previous
+        {
+            push(&mut f, "storage", "migration", "append-only-changed", id,
+                "resource immutability changed; review retained facts and dependent provenance before activation".into());
+        }
+    }
+
+    let write_once = |bundle: &Value| -> BTreeMap<String, bool> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .map(|r| {
+                (
+                    s(&r["id"]),
+                    r["decorators"]["writeOnce"].as_bool().unwrap_or(false),
+                )
+            })
+            .collect()
+    };
+    for (id, previous) in write_once(old) {
+        if let Some(current) = write_once(new).get(&id)
+            && *current != previous
+        {
+            push(
+                &mut f,
+                "storage",
+                "migration",
+                "write-once-changed",
+                id,
+                "content immutability changed; review published artifacts before activation".into(),
+            );
+        }
+    }
+
+    let projections = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle,&["ir","modules"]).into_iter().flat_map(|m|arr(m,&["projections"])).map(|p|(s(&p["id"]),serde_json::json!({"source":p["source"],"by":p["by"],"where":p["where"],"aggregates":p["aggregates"]}))).collect()
+    };
+    for (id, previous) in projections(old) {
+        if let Some(current) = projections(new).get(&id)
+            && &previous != current
+        {
+            push(&mut f,"storage","migration","projection-definition-changed",id,"projection grouping, filters or aggregates changed; build a new generation before serving the new contract".into());
+        }
+    }
+
+    // JSON storage does not reveal element codec or collection-bound changes.
+    let collection_fields = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| {
+                arr(m, &["resources"])
+                    .into_iter()
+                    .chain(arr(m, &["shapes"]))
+            })
+            .flat_map(|r| {
+                arr(r, &["fields"]).into_iter().map(move |field| {
+                    (
+                        format!("{}.{}", s(&r["id"]), s(&field["name"])),
+                        field["type"].clone(),
+                    )
+                })
+            })
+            .collect()
+    };
+    let current_fields = collection_fields(new);
+    for (id, previous) in collection_fields(old) {
+        if let Some(current) = current_fields.get(&id)
+            && previous != *current
+            && (previous["base"]["kind"] == "collection" || current["base"]["kind"] == "collection")
+        {
+            push(&mut f, "api", "breaking", "collection-type-changed", id,
+                "collection kind, element codec or bounds changed; validate stored values and review producer/consumer compatibility".into());
+        }
+    }
+
+    let sequences = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .flat_map(|r| {
+                arr(r, &["fields"])
+                    .into_iter()
+                    .filter(|f| !f["sequence"].is_null())
+                    .map(move |f| {
+                        (
+                            format!("{}.{}", s(&r["id"]), s(&f["name"])),
+                            f["sequence"].clone(),
+                        )
+                    })
+            })
+            .collect()
+    };
+    let old_sequences = sequences(old);
+    let new_sequences = sequences(new);
+    for id in old_sequences
+        .keys()
+        .chain(new_sequences.keys())
+        .collect::<std::collections::BTreeSet<_>>()
+    {
+        if old_sequences.get(id) != new_sequences.get(id) {
+            push(&mut f,"storage","migration","sequence-definition-changed",id.clone(),"sequence added, removed or changed; preserve partition high-water marks and validate existing allocated values before activation".into());
+        }
+    }
+
+    let queues = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["workQueues"]))
+            .map(|q| (s(&q["id"]), q.clone()))
+            .collect()
+    };
+    let previous_queues = queues(old);
+    let current_queues = queues(new);
+    for (id, previous) in previous_queues {
+        if current_queues.get(&id) != Some(&previous) {
+            push(&mut f,"workflow","migration","work-queue-definition-changed",id,"queue definition changed or removed; preserve active claim fencing and pinned task requirements during migration".into());
+        }
+    }
+
+    let credentials = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .flat_map(|r| {
+                arr(r, &["fields"])
+                    .into_iter()
+                    .filter(|f| f["secret"] == true)
+                    .map(move |f| {
+                        (
+                            format!("{}.{}", s(&r["id"]), s(&f["name"])),
+                            f["type"].clone(),
+                        )
+                    })
+            })
+            .collect()
+    };
+    let old_credentials = credentials(old);
+    let new_credentials = credentials(new);
+    for id in old_credentials
+        .keys()
+        .chain(new_credentials.keys())
+        .collect::<std::collections::BTreeSet<_>>()
+    {
+        if old_credentials.get(id) != new_credentials.get(id) {
+            push(&mut f,"storage","migration","credential-definition-changed",id.clone(),"credential field added, removed or changed; seal/backfill existing data, review interfaces and migrate keys before activation".into());
+        }
+    }
+
+    let searches = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["resources"]))
+            .flat_map(|r| {
+                arr(r, &["lists"])
+                    .into_iter()
+                    .filter(|l| !l["searchMode"].is_null())
+                    .map(move |l| (format!("{}.{}", s(&r["id"]), s(&l["name"])), l.clone()))
+            })
+            .collect()
+    };
+    let old_search = searches(old);
+    let new_search = searches(new);
+    for id in old_search
+        .keys()
+        .chain(new_search.keys())
+        .collect::<std::collections::BTreeSet<_>>()
+    {
+        if old_search.get(id) != new_search.get(id) {
+            push(&mut f,"storage","migration","search-index-changed",id.clone(),"search index changed; rebuild physical access paths and invalidate outstanding search cursors".into());
+        }
+    }
+
+    let actors = |bundle: &Value| -> BTreeMap<String, Value> {
+        arr(bundle, &["ir", "modules"])
+            .into_iter()
+            .flat_map(|m| arr(m, &["actors"]))
+            .map(|a| (s(&a["id"]), a.clone()))
+            .collect()
+    };
+    let current_actors = actors(new);
+    for (id, previous) in actors(old) {
+        if current_actors.get(&id) != Some(&previous) {
+            push(&mut f,"workflow","migration","actor-definition-changed",id,"actor state, commands or identity changed; migrate durable state and fence old owners before activation".into());
+        }
+    }
 
     // ---- API: contracts (record/create/patch schemas per resource, operations, functions, enums)
     let old_res = by_id(arr(old, &["contracts", "resources"]), "id");
@@ -939,6 +1173,24 @@ pub fn compare(old: &Value, new: &Value) -> Report {
         }
     }
 
+    // Explain effective-shape changes using semantic origins, never source paths.
+    let mut origins = BTreeMap::new();
+    for artifact in [old, new] {
+        for module in arr(artifact, &["ir", "modules"]) {
+            if let Some(map) = module["facetOrigins"].as_object() {
+                for (anchor, origin) in map {
+                    origins.insert(anchor.replace("#field:", "."), s(origin));
+                }
+            }
+        }
+    }
+    for finding in &mut f {
+        if let Some(origin) = origins.get(&finding.subject) {
+            finding
+                .detail
+                .push_str(&format!("; field contributed by {origin}"));
+        }
+    }
     let rank = |sev: &str| match sev {
         "breaking" => 4,
         "risk" => 3,

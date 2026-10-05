@@ -1,0 +1,14 @@
+/// Small issue-tracker contract for the GraphQL compatibility projection.
+export resource Issue @tenant @timestamps @versioned @crud("/v1/issues", actions: [complete]) {
+  id : id
+  identifier : text length 1..40 @unique @immutable
+  title : text length 1..200
+  team : text length 1..40 @immutable
+  lifecycle status {
+    initial Open
+    terminal Completed
+    complete: Open -> Completed
+  }
+  find by identifier
+  list by team order by identifier asc
+}

@@ -1,0 +1,116 @@
+{
+  "at": "2026-10-01T19:38:57Z",
+  "status": "passed",
+  "scope": "Disposable live Cloudflare Artifacts repository, real Git smart HTTP, and actual Workers binding through Forge reader",
+  "runtimeBase": "b165fd1b052a",
+  "tests": [
+    {
+      "name": "Disposable repository created",
+      "status": "passed"
+    },
+    {
+      "name": "Git expected-absent push publishes merge DAG",
+      "status": "passed"
+    },
+    {
+      "name": "Disposable qualification Worker deployed with native Artifacts binding",
+      "status": "passed"
+    },
+    {
+      "name": "Actual Workers binding resolves exact repository, commit and tree",
+      "status": "passed"
+    },
+    {
+      "name": "Actual Workers binding returns exact pinned binary bytes",
+      "status": "passed"
+    },
+    {
+      "name": "Actual Workers binding traverses both merge parents and deduplicates ancestor",
+      "status": "passed"
+    },
+    {
+      "name": "Live history and byte budgets fail explicitly",
+      "status": "passed"
+    },
+    {
+      "name": "Worker authentication and reader authorization reject unauthorized access",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent expected-head pushes admit exactly one winner",
+      "status": "passed"
+    },
+    {
+      "name": "Stale expected head cannot overwrite accepted publication",
+      "status": "passed"
+    },
+    {
+      "name": "Old pin remains exact after published branch moves",
+      "status": "passed"
+    },
+    {
+      "name": "Read token fetches but cannot publish",
+      "status": "passed"
+    },
+    {
+      "name": "Revoked repository token cannot read",
+      "status": "passed"
+    },
+    {
+      "name": "Fork becomes ready with separate repository identity and exact baseline",
+      "status": "passed"
+    },
+    {
+      "name": "Repository token cannot cross into a fork",
+      "status": "passed"
+    },
+    {
+      "name": "Git mirror export preserves complete reachable DAG and binary content",
+      "status": "passed"
+    },
+    {
+      "name": "Deleted and recreated repository name cannot reuse an old binding",
+      "status": "passed"
+    }
+  ],
+  "transportEvents": [
+    {
+      "action": "file",
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 1,
+      "retry": true
+    },
+    {
+      "action": "file",
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 2,
+      "retry": true
+    },
+    {
+      "action": "file",
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 3,
+      "retry": true
+    },
+    {
+      "action": "file",
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 4,
+      "retry": true
+    }
+  ],
+  "cleanup": {
+    "remainingResources": [],
+    "errors": []
+  },
+  "workerSha256": "672a4579252a02f09f2bc6778d2bf1a097f8a92b998fbd96a1e2fba0fab559a1",
+  "gitVersion": "git version 2.51.1"
+}

@@ -1,0 +1,105 @@
+{
+  "nodes": {
+    "@corpus/marketplace/_/AcceptOffer": "process",
+    "@corpus/marketplace/_/CancelJob": "process",
+    "@corpus/marketplace/_/DispatchJob": "process",
+    "@corpus/marketplace/_/IssueOffer": "process",
+    "@corpus/marketplace/_/Job": "entity",
+    "@corpus/marketplace/_/JobCancelled": "fact",
+    "@corpus/marketplace/_/JobCompleted": "fact",
+    "@corpus/marketplace/_/JobRequested": "fact",
+    "@corpus/marketplace/_/MaintainTrip": "process",
+    "@corpus/marketplace/_/ObserveProvider": "process",
+    "@corpus/marketplace/_/Offer": "entity",
+    "@corpus/marketplace/_/OfferAccepted": "fact",
+    "@corpus/marketplace/_/OfferExpired": "fact",
+    "@corpus/marketplace/_/PayProvider": "process",
+    "@corpus/marketplace/_/Payout": "entity",
+    "@corpus/marketplace/_/PayoutIssued": "fact",
+    "@corpus/marketplace/_/PriceQuote": "entity",
+    "@corpus/marketplace/_/Provider": "entity",
+    "@corpus/marketplace/_/ProviderLocationObserved": "fact",
+    "@corpus/marketplace/_/QuotePrice": "process",
+    "@corpus/marketplace/_/Trip": "entity"
+  },
+  "edges": [
+    {
+      "from": "@corpus/marketplace/_/AcceptOffer",
+      "to": "@corpus/marketplace/_/OfferAccepted",
+      "port": "@corpus/marketplace/_/AcceptOffer#output:OfferAccepted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/marketplace/_/CancelJob",
+      "to": "@corpus/marketplace/_/JobCancelled",
+      "port": "@corpus/marketplace/_/CancelJob#output:JobCancelled",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/marketplace/_/DispatchJob",
+      "to": "@corpus/marketplace/_/Job",
+      "port": "@corpus/marketplace/_/DispatchJob#output:Job",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/marketplace/_/DispatchJob",
+      "to": "@corpus/marketplace/_/JobRequested",
+      "port": "@corpus/marketplace/_/DispatchJob#output:JobRequested",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/marketplace/_/IssueOffer",
+      "to": "@corpus/marketplace/_/Offer",
+      "port": "@corpus/marketplace/_/IssueOffer#output:Offer",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/marketplace/_/IssueOffer",
+      "to": "@corpus/marketplace/_/OfferExpired",
+      "port": "@corpus/marketplace/_/IssueOffer#output:OfferExpired",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/marketplace/_/MaintainTrip",
+      "to": "@corpus/marketplace/_/JobCompleted",
+      "port": "@corpus/marketplace/_/MaintainTrip#output:JobCompleted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/marketplace/_/MaintainTrip",
+      "to": "@corpus/marketplace/_/Trip",
+      "port": "@corpus/marketplace/_/MaintainTrip#output:Trip",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/marketplace/_/ObserveProvider",
+      "to": "@corpus/marketplace/_/Provider",
+      "port": "@corpus/marketplace/_/ObserveProvider#output:Provider",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/marketplace/_/ObserveProvider",
+      "to": "@corpus/marketplace/_/ProviderLocationObserved",
+      "port": "@corpus/marketplace/_/ObserveProvider#output:ProviderLocationObserved",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/marketplace/_/PayProvider",
+      "to": "@corpus/marketplace/_/Payout",
+      "port": "@corpus/marketplace/_/PayProvider#output:Payout",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/marketplace/_/PayProvider",
+      "to": "@corpus/marketplace/_/PayoutIssued",
+      "port": "@corpus/marketplace/_/PayProvider#output:PayoutIssued",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/marketplace/_/QuotePrice",
+      "to": "@corpus/marketplace/_/PriceQuote",
+      "port": "@corpus/marketplace/_/QuotePrice#output:PriceQuote",
+      "kind": "produce"
+    }
+  ]
+}

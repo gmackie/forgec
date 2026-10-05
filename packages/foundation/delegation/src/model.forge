@@ -1,0 +1,51 @@
+import party
+import entitlement
+import specification
+import evidence
+export resource DelegationSubject @tenant @appendOnly {
+ id : id
+ label : text length 1..200
+}
+export resource DelegationPartySubject @tenant @appendOnly {
+ id : id
+ subject : DelegationSubject @unique
+ party : party.Party @unique
+ find by subject
+}
+export resource Delegation @tenant @timestamps @appendOnly {
+ id : id
+ delegator : DelegationSubject
+ delegate : DelegationSubject
+ root : entitlement.Entitlement
+ rootHolder : DelegationPartySubject
+ parent : Delegation?
+ depth : integer >= 1 <= 8
+ scope : entitlement.EntitlementScope
+ right : entitlement.RightDefinition
+ constraints : specification.SpecificationPin
+ purpose : text length 1..128
+ validFrom : datetime
+ validUntil : datetime
+ redelegable : boolean
+ source : text length 1..1000
+ support : evidence.EvidenceSeal
+ rules {
+ delegator != delegate
+ root.holder == rootHolder.party
+ scope == root.scope
+ right == root.right
+ validFrom >= root.validFrom
+ validUntil > validFrom
+ root.validUntil == null || validUntil <= root.validUntil
+ (parent == null && depth == 1 && delegator == rootHolder.subject) || (parent != null && parent.delegate == delegator && parent.root == root && parent.rootHolder == rootHolder && depth == parent.depth + 1 && parent.redelegable && parent.scope == scope && parent.right == right && parent.constraints == constraints && parent.purpose == purpose && validFrom >= parent.validFrom && validUntil <= parent.validUntil)
+ }
+}
+export resource DelegationRevocation @tenant @timestamps @appendOnly {
+ id : id
+ delegation : Delegation @unique
+ effectiveAt : datetime
+ reason : text length 1..1000
+ recordedBy : text length 1..128
+ rules { effectiveAt >= delegation.validFrom }
+ find by delegation
+}

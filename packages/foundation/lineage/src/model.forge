@@ -1,0 +1,105 @@
+import specification
+export enum LineageKind {
+  Derived
+  Aggregated
+  Copied
+  Extracted
+}
+export resource LineageGraph
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+export resource LineageNode
+  @tenant
+  @appendOnly
+{
+  id : id
+  graph : LineageGraph
+  rank : integer >= 1 <= 1000000
+  label : text length 1..200
+  unique graph, rank
+}
+export resource LineageRelation
+  @tenant
+  @appendOnly
+{
+  id : id
+  graph : LineageGraph
+  source : LineageNode
+  target : LineageNode
+  kind : LineageKind
+  definition : specification.SpecificationPin?
+  supersedes : LineageRelation? @unique
+  revision : integer >= 1 <= 128
+  rules {
+    source.graph == graph && target.graph == graph
+    source.rank < target.rank
+    (supersedes == null && revision == 1) || (supersedes != null && revision > supersedes.revision && supersedes.graph == graph && supersedes.source == source && supersedes.target == target)
+  }
+  list by target
+  list by source
+}
+export resource Transformation
+  @tenant
+  @appendOnly
+{
+  id : id
+  graph : LineageGraph
+  rank : integer >= 1 <= 1000000
+  definition : specification.SpecificationPin?
+  label : text length 1..200
+}
+export resource TransformationInput
+  @tenant
+  @appendOnly
+{
+  id : id
+  transformation : Transformation
+  node : LineageNode
+  next : TransformationInput?
+  depth : integer >= 1 <= 128
+  rules {
+    node.graph == transformation.graph && node.rank < transformation.rank
+    (next == null && depth == 1) || (next != null && next.transformation == transformation && depth > next.depth)
+  }
+  unique transformation, node
+  list by transformation
+  list by node
+}
+export resource TransformationOutput
+  @tenant
+  @appendOnly
+{
+  id : id
+  transformation : Transformation
+  node : LineageNode
+  next : TransformationOutput?
+  depth : integer >= 1 <= 128
+  rules {
+    node.graph == transformation.graph && node.rank > transformation.rank
+    (next == null && depth == 1) || (next != null && next.transformation == transformation && depth > next.depth)
+  }
+  unique transformation, node
+  list by transformation
+  list by node
+}
+
+export resource TransformationSeal
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  transformation : Transformation @unique
+  inputs : TransformationInput
+  outputs : TransformationOutput
+  recordedBy : text length 1..128
+  rules {
+    inputs.transformation == transformation
+    outputs.transformation == transformation
+  }
+  find by transformation
+}

@@ -132,6 +132,38 @@ pub struct DataSemantics {
     pub summary: BTreeMap<String, usize>,
 }
 
+fn classified_fields(ir: &DomainIR, fields: &[Field], prefix: &str, depth: usize) -> Vec<Field> {
+    let mut out = vec![];
+    if depth > 8 {
+        return out;
+    }
+    for field in fields {
+        let mut f = field.clone();
+        f.name = format!("{prefix}{}", field.name);
+        out.push(f.clone());
+        match &f.ty.base {
+            TypeBase::Collection { element, .. } => {
+                let mut child = f.clone();
+                child.name = "[]".into();
+                child.ty = (**element).clone();
+                out.extend(classified_fields(ir, &[child], &f.name, depth + 1));
+            }
+            TypeBase::Shape { id } if depth > 0 => {
+                if let Some(shape) = ir.find_shape(id) {
+                    out.extend(classified_fields(
+                        ir,
+                        &shape.fields,
+                        &format!("{}.", f.name),
+                        depth + 1,
+                    ));
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
 impl DataSemantics {
     pub fn of(ir: &DomainIR, tax: &Taxonomy) -> DataSemantics {
         let declared: BTreeMap<String, String> = ir
@@ -144,7 +176,7 @@ impl DataSemantics {
         let mut subjects = Vec::new();
         for m in &ir.modules {
             for r in &m.resources {
-                for f in &r.fields {
+                for f in &classified_fields(ir, &r.fields, "", 0) {
                     let (class, evidence) = match &f.ty.data_class {
                         Some(c) => (c.clone(), "declared"),
                         None => {

@@ -1,0 +1,1000 @@
+{
+  "version": "concept-ir/2",
+  "package": "@trace/food",
+  "entities": {
+    "@trace/food/_/Conversation": {
+      "name": "Conversation",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "startedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "endedAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "regulated": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "consentRecorded": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "boolean",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/food/_/Customer": {
+      "name": "Customer",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/food/_/PrivacyAuthority": {
+      "name": "PrivacyAuthority",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/food/_/ProcessingJurisdiction": {
+      "name": "ProcessingJurisdiction",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/food/_/FinishedLot": {
+      "name": "FinishedLot",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/food/_/IngredientLot": {
+      "name": "IngredientLot",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@trace/food/_/SupplierLot": {
+      "name": "SupplierLot",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "validUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownFrom": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "knownUntil": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": true,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@trace/food/_/Participation": {
+      "name": "Participation",
+      "fields": {
+        "participant": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/Customer",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/food/_/MessageReceived": {
+      "name": "MessageReceived",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/food/_/Closed": {
+      "name": "Closed",
+      "fields": {
+        "context": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/food/_/Lineage0": {
+      "name": "Lineage0",
+      "fields": {
+        "derived": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/FinishedLot",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/IngredientLot",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@trace/food/_/Lineage1": {
+      "name": "Lineage1",
+      "fields": {
+        "derived": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/IngredientLot",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "source": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/SupplierLot",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {
+    "@trace/food/_/Respond": {
+      "name": "Respond",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    },
+    "@trace/food/_/Review": {
+      "name": "Review",
+      "purpose": null,
+      "principal": null,
+      "authorizations": [],
+      "activations": {},
+      "inputs": {
+        "engagement": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@trace/food/_/Conversation",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": null,
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": null
+        }
+      },
+      "outputs": {},
+      "behavior": null
+    }
+  },
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "semantics": {
+    "temporal": {
+      "@trace/food/_/Conversation": {
+        "occurrence": null,
+        "valid": {
+          "from": "startedAt",
+          "to": "endedAt"
+        },
+        "knowledge": null
+      },
+      "@trace/food/_/FinishedLot": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      },
+      "@trace/food/_/IngredientLot": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      },
+      "@trace/food/_/SupplierLot": {
+        "occurrence": null,
+        "valid": {
+          "from": "validFrom",
+          "to": "validUntil"
+        },
+        "knowledge": {
+          "from": "knownFrom",
+          "to": "knownUntil"
+        }
+      }
+    },
+    "relationships": {
+      "@trace/food/_/Participants": {
+        "carrier": "@trace/food/_/Participation",
+        "endpoints": {
+          "participant": {
+            "target": "@trace/food/_/Customer",
+            "field": "participant"
+          },
+          "context": {
+            "target": "@trace/food/_/Conversation",
+            "field": "context"
+          }
+        },
+        "evidence": []
+      },
+      "@trace/food/_/TraceLink0": {
+        "carrier": "@trace/food/_/Lineage0",
+        "endpoints": {
+          "derived": {
+            "target": "@trace/food/_/FinishedLot",
+            "field": "derived"
+          },
+          "source": {
+            "target": "@trace/food/_/IngredientLot",
+            "field": "source"
+          }
+        },
+        "evidence": []
+      },
+      "@trace/food/_/TraceLink1": {
+        "carrier": "@trace/food/_/Lineage1",
+        "endpoints": {
+          "derived": {
+            "target": "@trace/food/_/IngredientLot",
+            "field": "derived"
+          },
+          "source": {
+            "target": "@trace/food/_/SupplierLot",
+            "field": "source"
+          }
+        },
+        "evidence": []
+      }
+    },
+    "events": [
+      "@trace/food/_/MessageReceived",
+      "@trace/food/_/Closed"
+    ],
+    "interactions": {
+      "@trace/food/_/Engagement": {
+        "carrier": "@trace/food/_/Conversation",
+        "participation": [
+          "@trace/food/_/Participants"
+        ],
+        "events": {
+          "@trace/food/_/MessageReceived": "context",
+          "@trace/food/_/Closed": "context"
+        },
+        "processes": {
+          "@trace/food/_/Respond": "engagement",
+          "@trace/food/_/Review": "engagement"
+        },
+        "parent": "parent",
+        "purpose": null
+      }
+    },
+    "subjects": {
+      "@trace/food/_/ParticipantIdentity": {
+        "carrier": "@trace/food/_/Customer",
+        "profiles": [
+          "party"
+        ]
+      },
+      "@trace/food/_/Authority": {
+        "carrier": "@trace/food/_/PrivacyAuthority",
+        "profiles": [
+          "authority"
+        ]
+      }
+    },
+    "contracts": {
+      "@trace/food/_/RequiredOutcome": {
+        "owner": {
+          "kind": "process",
+          "id": "@trace/food/_/Respond"
+        },
+        "kind": "requires",
+        "predicate": {
+          "kind": "name",
+          "path": [
+            "engagement",
+            "consentRecorded"
+          ]
+        },
+        "selectors": []
+      }
+    },
+    "externalConstraints": {
+      "@trace/food/_/ExternalRule": {
+        "authority": "@trace/food/_/Authority",
+        "jurisdiction": "@trace/food/_/ProcessingJurisdiction",
+        "citations": [
+          "illustrative:privacy-rule/revision-1/section-4"
+        ],
+        "applicability": {
+          "process": "@trace/food/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [
+          "@trace/food/_/RequiredOutcome"
+        ],
+        "prohibitions": [],
+        "validFrom": 0,
+        "validUntil": 1000,
+        "supersedes": [],
+        "evidence": []
+      },
+      "@trace/food/_/Suspension": {
+        "authority": "@trace/food/_/Authority",
+        "jurisdiction": "@trace/food/_/ProcessingJurisdiction",
+        "citations": [
+          "illustrative:privacy-rule/revision-2/section-4"
+        ],
+        "applicability": {
+          "process": "@trace/food/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "requirements": [],
+        "prohibitions": [
+          "@trace/food/_/Respond"
+        ],
+        "validFrom": 1000,
+        "validUntil": null,
+        "supersedes": [
+          "@trace/food/_/ExternalRule"
+        ],
+        "evidence": []
+      }
+    },
+    "traceability": {
+      "@trace/food/_/Reconstruction": {
+        "source": "@trace/food/_/FinishedLot",
+        "destination": "@trace/food/_/SupplierLot",
+        "path": [
+          {
+            "relationship": "@trace/food/_/TraceLink0",
+            "fromRole": "derived",
+            "toRole": "source"
+          },
+          {
+            "relationship": "@trace/food/_/TraceLink1",
+            "fromRole": "derived",
+            "toRole": "source"
+          }
+        ],
+        "requiredBy": "@trace/food/_/ExternalRule",
+        "applicability": {
+          "process": "@trace/food/_/Respond",
+          "predicate": {
+            "kind": "name",
+            "path": [
+              "engagement",
+              "regulated"
+            ]
+          }
+        },
+        "validFrom": 0,
+        "validUntil": 1000,
+        "retentionDays": 30,
+        "requiredAttributes": {
+          "@trace/food/_/FinishedLot": [
+            "id"
+          ],
+          "@trace/food/_/IngredientLot": [
+            "id"
+          ],
+          "@trace/food/_/SupplierLot": [
+            "id"
+          ]
+        },
+        "validTime": true,
+        "knowledgeTime": true
+      }
+    }
+  }
+}

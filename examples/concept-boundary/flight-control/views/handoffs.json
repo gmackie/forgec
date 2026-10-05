@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "conceptHash": "97a57823f0a80c488f02f78a936963f552fc659cac0407895f1f9cafd6425610",
+  "boundarySemanticHash": "fac1487b2639de65a0901cb8caf104c38a0a48fb1ad0bf47de2cd2c894a8ce4f",
+  "artifacts": [
+    {
+      "id": "controller-model",
+      "sha256": "665282c1005d8d0149aa9a39d4a7e78e85f7828e80cb51f20e471c21a12a1ede",
+      "path": "specialized-model/controller.scade-sketch.txt",
+      "process": "@boundary/flight-control/_/ReactToFlightTick",
+      "inputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#input:sample",
+        "@boundary/flight-control/_/ReactToFlightTick#input:approval",
+        "@boundary/flight-control/_/ReactToFlightTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#output:state",
+        "@boundary/flight-control/_/ReactToFlightTick#output:decision",
+        "@boundary/flight-control/_/ReactToFlightTick#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Interface and explanatory pseudocode only; no control analyzer, code generator or hardware test executed."
+    },
+    {
+      "id": "deployment-model",
+      "sha256": "a3f5e996d819fdcfe59008e3b0b712cd234458ae4dfa25b90378acf07cf4a1af",
+      "path": "specialized-model/deployment.aadl-sketch.txt",
+      "process": "@boundary/flight-control/_/ReactToFlightTick",
+      "inputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#input:sample",
+        "@boundary/flight-control/_/ReactToFlightTick#input:approval",
+        "@boundary/flight-control/_/ReactToFlightTick#input:previous"
+      ],
+      "outputPorts": [
+        "@boundary/flight-control/_/ReactToFlightTick#output:state",
+        "@boundary/flight-control/_/ReactToFlightTick#output:decision",
+        "@boundary/flight-control/_/ReactToFlightTick#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Analysis inputs and mapping questions only; not an executable AADL model or schedulability result."
+    }
+  ]
+}

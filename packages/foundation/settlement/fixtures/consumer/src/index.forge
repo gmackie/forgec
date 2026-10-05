@@ -1,0 +1,54 @@
+import settlement
+import party
+import entitlement
+import fulfillment
+export resource CommerceReceivable
+  @tenant
+  @appendOnly
+{
+  id : id
+  orderNumber : text length 1..128
+  position : settlement.SettlementPosition
+}
+export resource ExpenseReimbursement
+  @tenant
+  @appendOnly
+{
+  id : id
+  expenseNumber : text length 1..128
+  position : settlement.SettlementPosition
+}
+export resource ServiceCredit
+  @tenant
+  @appendOnly
+{
+  id : id
+  serviceKey : text length 1..128
+  position : settlement.SettlementPosition
+}
+// A document is a typed representation, never an independent economic balance.
+export resource InvoiceRepresentation
+  @tenant
+  @appendOnly
+{
+  id : id
+  invoiceNumber : text length 1..128
+  position : settlement.SettlementPosition
+}
+// Domain admission owns measurement and the relation between an occurrence and
+// obligation scope/parties. A source key is never evidence on its own.
+export resource EconomicOccurrence
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  fulfillmentEnd : fulfillment.FulfillmentEnd @unique
+  kind : settlement.SettlementKind
+  creditor : party.Party
+  debtor : party.Party
+  scope : entitlement.EntitlementScope
+  unit : text length 1..64
+  quantity : decimal<6> > 0
+  occurredAt : datetime
+}

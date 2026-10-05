@@ -1,0 +1,56 @@
+{
+  "nodes": {
+    "@corpus/airline/_/AirTrafficControl": "external",
+    "@corpus/airline/_/AirportOperations": "external",
+    "@corpus/airline/_/AirspaceFeasibility": "process",
+    "@corpus/airline/_/ApplyRecovery": "process",
+    "@corpus/airline/_/MaintainAircraft": "process",
+    "@corpus/airline/_/MaintainGate": "process",
+    "@corpus/airline/_/ReceiveWeather": "process",
+    "@corpus/airline/_/WeatherService": "external"
+  },
+  "edges": [
+    {
+      "from": "@corpus/airline/_/AirTrafficControl",
+      "to": "@corpus/airline/_/AirspaceFeasibility",
+      "port": "@corpus/airline/_/AirspaceFeasibility#input:Flight",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/airline/_/AirportOperations",
+      "to": "@corpus/airline/_/MaintainAircraft",
+      "port": "@corpus/airline/_/MaintainAircraft#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/airline/_/AirportOperations",
+      "to": "@corpus/airline/_/MaintainGate",
+      "port": "@corpus/airline/_/MaintainGate#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/airline/_/AirportOperations",
+      "to": "@corpus/airline/_/MaintainGate",
+      "port": "@corpus/airline/_/MaintainGate#input:Flight",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/airline/_/ApplyRecovery",
+      "to": "@corpus/airline/_/AirportOperations",
+      "port": "@corpus/airline/_/ApplyRecovery#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/airline/_/WeatherService",
+      "to": "@corpus/airline/_/ReceiveWeather",
+      "port": "@corpus/airline/_/ReceiveWeather#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/airline/_/WeatherService",
+      "to": "@corpus/airline/_/ReceiveWeather",
+      "port": "@corpus/airline/_/ReceiveWeather#input:Flight",
+      "kind": "acquire"
+    }
+  ]
+}

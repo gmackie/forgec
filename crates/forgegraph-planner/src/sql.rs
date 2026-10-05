@@ -61,6 +61,8 @@ pub struct Index {
     pub columns: Vec<String>,
     pub unique: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub predicate: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub query: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub constraint: Option<String>,
@@ -75,9 +77,10 @@ pub fn storage_of(ty: &TypeSpec) -> (&'static str, &'static str) {
             "json" => ("TEXT", "json"),
             _ => ("TEXT", "text"),
         },
-        TypeBase::Shape { .. } | TypeBase::Record { .. } | TypeBase::Message { .. } => {
-            ("TEXT", "json")
-        }
+        TypeBase::Collection { .. }
+        | TypeBase::Shape { .. }
+        | TypeBase::Record { .. }
+        | TypeBase::Message { .. } => ("TEXT", "json"),
         _ => ("TEXT", "text"),
     }
 }
@@ -145,6 +148,18 @@ pub fn plan(ir: &DomainIR) -> SqlSchema {
                     table: tname.clone(),
                     columns: key(&cols),
                     unique: true,
+                    predicate: u.condition.as_ref().map(|condition| {
+                        format!(
+                            "\"{}\" IN ({})",
+                            naming::column(&condition.field),
+                            condition
+                                .values
+                                .iter()
+                                .map(|value| format!("'{}'", value.replace('\'', "''")))
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        )
+                    }),
                     query: None,
                     constraint: Some(u.name.clone()),
                 });
@@ -168,6 +183,7 @@ pub fn plan(ir: &DomainIR) -> SqlSchema {
                     table: tname.clone(),
                     columns,
                     unique: false,
+                    predicate: None,
                     query: Some(l.name.clone()),
                     constraint: None,
                 });
@@ -367,6 +383,8 @@ pub fn render_postgres(s: &SqlSchema) -> String {
             .unwrap_or(0);
         tables.push(remaining.remove(idx));
     }
+    let mut emitted = Vec::new();
+    let mut deferred = Vec::new();
     for t in &tables {
         out.push_str(&format!("\nCREATE TABLE {} (\n", t.name));
         let mut lines: Vec<String> = t
@@ -390,6 +408,10 @@ pub fn render_postgres(s: &SqlSchema) -> String {
                 .join(", ")
         ));
         for fk in &t.foreign_keys {
+            if fk.references != t.name && !emitted.contains(&fk.references) {
+                deferred.push((t.name.clone(), fk));
+                continue;
+            }
             lines.push(format!(
                 "  FOREIGN KEY ({}) REFERENCES {} ({})",
                 fk.columns
@@ -410,12 +432,32 @@ pub fn render_postgres(s: &SqlSchema) -> String {
         }
         out.push_str(&lines.join(",\n"));
         out.push_str("\n);\n");
+        emitted.push(t.name.clone());
+    }
+    // Cyclic resource references cannot be topologically sorted. Install only
+    // forward foreign keys after every table exists, preserving all constraints.
+    for (table, fk) in deferred {
+        out.push_str(&format!(
+            "\nALTER TABLE {} ADD FOREIGN KEY ({}) REFERENCES {} ({});\n",
+            table,
+            fk.columns
+                .iter()
+                .map(|c| q(c))
+                .collect::<Vec<_>>()
+                .join(", "),
+            fk.references,
+            fk.referenced_columns
+                .iter()
+                .map(|c| q(c))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
     }
     out.push('\n');
     out.push_str("CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);\n");
     for i in &s.indexes {
         out.push_str(&format!(
-            "CREATE {}INDEX {} ON {} ({});\n",
+            "CREATE {}INDEX {} ON {} ({}){};\n",
             if i.unique { "UNIQUE " } else { "" },
             i.name,
             i.table,
@@ -423,7 +465,11 @@ pub fn render_postgres(s: &SqlSchema) -> String {
                 .iter()
                 .map(|c| q(c))
                 .collect::<Vec<_>>()
-                .join(", ")
+                .join(", "),
+            i.predicate
+                .as_ref()
+                .map(|p| format!(" WHERE {p}"))
+                .unwrap_or_default()
         ));
     }
     out
@@ -472,11 +518,15 @@ pub fn render_sqlite(s: &SqlSchema) -> String {
     out.push_str("CREATE INDEX forge_outbox_pending ON forge_outbox (status, lease_until);\n");
     for i in &s.indexes {
         out.push_str(&format!(
-            "CREATE {}INDEX {} ON {} ({});\n",
+            "CREATE {}INDEX {} ON {} ({}){};\n",
             if i.unique { "UNIQUE " } else { "" },
             i.name,
             i.table,
-            i.columns.join(", ")
+            i.columns.join(", "),
+            i.predicate
+                .as_ref()
+                .map(|p| format!(" WHERE {p}"))
+                .unwrap_or_default()
         ));
     }
     out

@@ -9,6 +9,7 @@
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { certificationIdentity, type CertificationIdentity } from "../../scripts/certification-identity.mjs";
 import type { AppBundle } from "@forgegraph/runtime";
 import { runScenario, type Report } from "./runner.js";
 import { loadScenarios } from "./scenarios.js";
@@ -23,7 +24,7 @@ import type { Target } from "./target.js";
 export const EXPLAINED_KEYS = new Set(["next", "cursor", "freshUntil", "loadedAt", "generation", "lastEventAt", "at", "startedAt", "endedAt", "requestId", "physicalActions", "physicalLimit"]);
 
 export interface Difference { scenario: string; step: string; path: string; a: unknown; b: unknown; explained: boolean; key?: string }
-export interface DifferentialReport {
+export interface DifferentialReport extends CertificationIdentity {
   version: "differential/1";
   at: string;
   profiles: { name: string; ran: boolean; reason?: string; scenarios: number; failures: number }[];
@@ -69,6 +70,8 @@ export function compareReports(a: Report[], b: Report[], raceSteps: Record<strin
 }
 
 export async function runDifferential(targets: { name: string; target: Target | null; reason?: string }[], bundle?: AppBundle): Promise<DifferentialReport> {
+  const identity = certificationIdentity(resolve(import.meta.dirname, "../.."));
+  if (bundle && bundle.buildHash !== identity.buildHash) throw new Error("Differential bundle differs from the current certification fixture");
   const scenarios = loadScenarios();
   const runs = new Map<string, Report[]>();
   const profiles: DifferentialReport["profiles"] = [];
@@ -88,7 +91,7 @@ export async function runDifferential(targets: { name: string; target: Target | 
     pairs.push({ a: names[i]!, b: names[j]!, compared: runs.get(names[i]!)!.reduce((n, r) => n + Object.keys(r.results).length, 0), explained: d.filter((x) => x.explained).length, unexplained: d.filter((x) => !x.explained).length });
     differences.push(...d);
   }
-  void bundle;
-  return { version: "differential/1", at: new Date().toISOString(), profiles, pairs, differences, drift: differences.some((d) => !d.explained) || profiles.some((p) => p.ran && p.failures > 0) ? "unexplained" : "none" };
+  if (JSON.stringify(certificationIdentity(resolve(import.meta.dirname, "../.."))) !== JSON.stringify(identity)) throw new Error("Source changed during differential certification");
+  return { ...identity, version: "differential/1", at: new Date().toISOString(), profiles, pairs, differences, drift: differences.some((d) => !d.explained) || profiles.some((p) => p.ran && p.failures > 0) ? "unexplained" : "none" };
 }
 

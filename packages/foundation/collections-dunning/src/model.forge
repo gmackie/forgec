@@ -1,0 +1,103 @@
+import settlement
+import case-management
+import notifications
+import agreement-catalog
+import decision
+import specification
+import evidence
+import dispute-appeal
+import billing
+import challenge
+import trust
+import evaluation
+import fulfillment
+import ledger
+export resource CollectionPolicy @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ definition : specification.SpecificationPin
+ warningDays : integer >= 0 <= 36500
+ escalationDays : integer >= 0 <= 36500
+ rules { escalationDays >= warningDays }
+}
+export resource Collection @tenant @timestamps @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ case : case-management.Case @unique
+ position : settlement.SettlementPosition
+ policy : CollectionPolicy
+ openedAt : datetime
+}
+export resource CollectionNotice @tenant @appendOnly {
+ id : id
+ collection : Collection
+ notification : notifications.Notification @unique
+ interaction : case-management.CaseEvent?
+ rules { interaction == null || (interaction.case == collection.case && interaction.kind == "interaction") }
+}
+export resource PaymentPromise @tenant @timestamps @appendOnly {
+ id : id
+ collection : Collection @unique
+ arrangement : agreement-catalog.Agreement @unique
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ amount : decimal<6> > 0
+ unit : text length 1..64
+ at : datetime
+ dueAt : datetime
+ challenge : challenge.Challenge?
+ subject : trust.TrustSubject?
+ partySubject : trust.TrustPartySubject?
+ support : evidence.EvidenceSeal
+ rules { accepted.decisionCase == approval
+ at < dueAt
+ at >= collection.openedAt
+ (challenge == null) == (subject == null)
+ (subject == null) == (partySubject == null)
+ partySubject == null || partySubject.subject == subject }
+}
+export resource CollectionDispute @tenant @appendOnly {
+ id : id
+ collection : Collection
+ dispute : dispute-appeal.Dispute
+ billPosition : billing.BillPosition
+ rules { billPosition.position == collection.position }
+ unique collection, dispute
+}
+export enum CollectionDispositionKind { writeoff
+ externalRecovery }
+export resource CollectionDisposition @tenant @appendOnly {
+ id : id
+ collection : Collection
+ kind : CollectionDispositionKind
+ policy : specification.SpecificationPin
+ evaluation : evaluation.EvaluationFinish
+ run : evaluation.EvaluationRun
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ posting : ledger.PostingGroup?
+ recovery : fulfillment.Fulfillment?
+ at : datetime
+ support : evidence.EvidenceSeal
+ rules { evaluation.run == run
+ evaluation.outcome == "Completed"
+ run.definition == policy
+ accepted.decisionCase == approval
+ (kind == "writeoff" && posting != null && recovery == null) || (kind == "externalRecovery" && recovery != null && posting == null)
+ evaluation.finishedAt <= at }
+}
+export enum CollectionClosureKind { cured
+ writeoff
+ externalRecovery }
+export resource CollectionClosure @tenant @timestamps @appendOnly {
+ id : id
+ collection : Collection
+ closure : case-management.CaseEvent
+ kind : CollectionClosureKind
+ disposition : CollectionDisposition?
+ rules { closure.case == collection.case && closure.kind == "close"
+ (kind == "cured" && disposition == null) || (kind != "cured" && disposition != null && disposition.collection == collection && disposition.at <= closure.at)
+ kind != "writeoff" || disposition.kind == "writeoff"
+ kind != "externalRecovery" || disposition.kind == "externalRecovery" }
+ unique collection, closure
+}

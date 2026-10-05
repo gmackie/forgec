@@ -1,0 +1,65 @@
+{
+  "version": "connector-pilot-evidence/1",
+  "verifiedAt": "2026-10-01T01:46:55.788Z",
+  "capability": "deployment.release-marker/1",
+  "marker": {
+    "key": "pilot-1790819214538",
+    "tag": "release:pilot-1790819214538"
+  },
+  "vendor": "Cloudflare Workers script settings",
+  "host": "Node 24 against live Cloudflare API",
+  "account": "c07a7e704db1808e1fff91bed2b1cd49",
+  "worker": "forge-connector-pilot-189-20261001",
+  "credentialReference": "existing local Wrangler OAuth login (value omitted)",
+  "checks": [
+    "live typed SDK read",
+    "tenant isolation before traffic",
+    "expired prior Wrangler credential redacted; current credential reselected",
+    "accepted write with lost response persisted and reconciled without duplicate PATCH",
+    "pre-dispatch cancellation sends no request",
+    "prior direct adapter shadow read agrees; writes never shadowed"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "hashes": {
+    "spec": "cfa98c6b5495426d5ce846b1ee3fd8acfcace33047891955c3dcfbcfb6b3752b",
+    "adapter": "83715a905e3884dbe962d4e66c65dc1d2ec09a827c6fcb48703699f0839e0533",
+    "transport": "0d1018d3dfa7a69e05836d5f2566405c4381e43cc154eb1611632540d90e854e",
+    "operationMap": "35b78fd77547b2986c703db355cd4e13cc6f4dd56c548a1568bcd42069afbd5a"
+  },
+  "limitations": [
+    "Node host only; no deployed connector Worker/AWS claim",
+    "Single-writer disposable Worker; no generic PATCH idempotency",
+    "Expired prior Wrangler login tested; current OAuth token was not revoked",
+    "Snapshot matrix recorded separately; a distinct future generator release is not certified"
+  ],
+  "cleanup": "deleted; see cleanup-evidence.json"
+}

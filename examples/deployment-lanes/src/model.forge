@@ -1,0 +1,18 @@
+export resource Deployment @tenant @versioned {
+  id : id
+  application : text
+  stage : text
+  target : text
+
+  unique application, stage, target while status in [Pending, Deploying, HealthChecking]
+
+  lifecycle status {
+    initial Pending
+    terminal Active
+    terminal Failed
+    deploy: Pending -> Deploying
+    check: Deploying -> HealthChecking
+    activate: HealthChecking -> Active
+    fail: Pending | Deploying | HealthChecking -> Failed
+  }
+}

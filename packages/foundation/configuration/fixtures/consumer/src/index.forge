@@ -1,0 +1,48 @@
+import configuration
+
+/// F94-07, four shapes that look unrelated and parameterize identically.
+
+/// A workspace agent: per-workspace options over a pinned agent specification.
+resource WorkspaceAgent @tenant @versioned {
+  id : id
+  name : text length 1..200
+  settings : configuration.Configuration @immutable @unique
+}
+
+/// An industrial device: setpoints and limits over a pinned process specification. The values
+/// are operational rather than commercial, and nothing about the model changes for that.
+resource ProcessUnit @tenant @versioned {
+  id : id
+  tag : text length 1..64 @unique
+  settings : configuration.Configuration @immutable @unique
+}
+
+/// A SaaS tenant: the option set sold to one customer.
+resource TenantPlan @tenant @versioned {
+  id : id
+  account : text length 1..128 @unique
+  settings : configuration.Configuration @immutable @unique
+}
+
+/// A deployment: the configuration a release is deployed with. Distinct from the release
+/// itself, which is why it points at a resolution rather than at a Configuration — a deployment
+/// is pinned to exactly the values that were resolved, not to whatever they resolve to later.
+resource DeploymentConfiguration @tenant @appendOnly {
+  id : id
+  environment : text trim lowercase length 1..64
+  resolved : configuration.ResolvedConfiguration @unique
+  deployedAt : datetime
+  list by environment
+}
+
+/// F94-08: a reconciler consumes a resolution and owns none of it. It records what it observed
+/// and whether that matched, and holds no parameter values of its own — so it cannot drift from
+/// the desired state it is comparing against, because it does not keep a second copy.
+resource DriftObservation @tenant @appendOnly {
+  id : id
+  deployment : DeploymentConfiguration
+  observedAt : datetime
+  matches : boolean
+  detail : text length 1..500
+  list by deployment
+}

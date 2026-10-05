@@ -1,0 +1,1355 @@
+{
+  "version": 1,
+  "suite": "provider-certification",
+  "status": "passing",
+  "verifiedAt": "2026-09-23T17:31:47.521Z",
+  "scope": "Foundation database durability only; object bytes use memory test doubles; receipts are local integrity evidence, not cryptographic provider attestation",
+  "profileCount": 16,
+  "providerCount": 3,
+  "cells": [
+    {
+      "slug": "allocation",
+      "provider": "postgres",
+      "runId": "6568fd45-1ca6-41d0-9fa5-0e4810a41a1d",
+      "criteria": [
+        "F34-05"
+      ],
+      "sourceFingerprint": "36f5cb66a86e0769f6cb35a9ad1b16c9433566c61decb9b0b4b5b804d244d514",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "acbb7adaf8ac7e5f4cae8326e4271cf508732d76a04f2ac2358bc5639ca2dc35"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "061f009ec079b764daa329b5f5bd7be4afa60febe7494745e517443c7ae2fbca"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "7712ae532c11de6b0089f63a32e2a759c6cb769a4bbe77ce5363c11b853eac0e"
+        }
+      ],
+      "testReportSha256": "58a3db97da4659172f1bb102bee0fe2b0f45b88ca99f90afada6973d16abd6c2",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-6568fd45-1ca6-41d0-9fa5-0e4810a41a1d.json",
+      "receiptSha256": "29243365e5fcc4fa4c71276db2fbf507e30a4dafe37ffc2c55d317dd95835db6",
+      "reportFile": "postgres-6568fd45-1ca6-41d0-9fa5-0e4810a41a1d.vitest.json"
+    },
+    {
+      "slug": "allocation",
+      "provider": "d1",
+      "runId": "5b1d2d0c-deab-4d9a-9e13-1f8086b52adc",
+      "criteria": [
+        "F34-05"
+      ],
+      "sourceFingerprint": "36f5cb66a86e0769f6cb35a9ad1b16c9433566c61decb9b0b4b5b804d244d514",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "acbb7adaf8ac7e5f4cae8326e4271cf508732d76a04f2ac2358bc5639ca2dc35"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "061f009ec079b764daa329b5f5bd7be4afa60febe7494745e517443c7ae2fbca"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "7712ae532c11de6b0089f63a32e2a759c6cb769a4bbe77ce5363c11b853eac0e"
+        }
+      ],
+      "testReportSha256": "3ac068ce772ac0de0b0d078c3f9d827984f1155359eb19f1d17cebac0451a6aa",
+      "targetHash": "1268f95045de19457b0ead16cac579fedc62a834a8470ad04200744e16842b1e",
+      "receiptFile": "d1-5b1d2d0c-deab-4d9a-9e13-1f8086b52adc.json",
+      "receiptSha256": "1d4fc260b6ebf63912c05eacc3612d8341c9298bd3f038b12341ccd8f0deee77",
+      "reportFile": "d1-5b1d2d0c-deab-4d9a-9e13-1f8086b52adc.vitest.json"
+    },
+    {
+      "slug": "allocation",
+      "provider": "dynamodb",
+      "runId": "45b36d03-9284-40b9-b730-f94c4a830b66",
+      "criteria": [
+        "F34-05"
+      ],
+      "sourceFingerprint": "36f5cb66a86e0769f6cb35a9ad1b16c9433566c61decb9b0b4b5b804d244d514",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "acbb7adaf8ac7e5f4cae8326e4271cf508732d76a04f2ac2358bc5639ca2dc35"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "061f009ec079b764daa329b5f5bd7be4afa60febe7494745e517443c7ae2fbca"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "7712ae532c11de6b0089f63a32e2a759c6cb769a4bbe77ce5363c11b853eac0e"
+        }
+      ],
+      "testReportSha256": "b7b41307b1d11834332a49699b8a58f16d862c47b8b150781a91d758f4e68874",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-45b36d03-9284-40b9-b730-f94c4a830b66.json",
+      "receiptSha256": "764e09bd4f7e1265b8febf0e9b1ede4c130d2320b26c38d5b3aedaa78e8f66ab",
+      "reportFile": "dynamodb-45b36d03-9284-40b9-b730-f94c4a830b66.vitest.json"
+    },
+    {
+      "slug": "ledger",
+      "provider": "postgres",
+      "runId": "a8c2fc53-8851-4c58-9b07-887429a1ad30",
+      "criteria": [
+        "F36-06"
+      ],
+      "sourceFingerprint": "174a5b73723b680a157e0d28a0b16de7691d55b0b74b64c39a9e83c07dada4c2",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "37c070fffa1b03405cadcc84124a5d621ad0bb15b1de763f40efbcef579c59f8"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "e98c2683f7fc01f04e51e0e0ba0fed2b502137b746f258e49e46b527a2e8c217"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "1ee008ea95f4b52f2858d7b025a2b943419053416ef7e8d8b5b7b948f92ab7a2"
+        }
+      ],
+      "testReportSha256": "69c5cfe4fde547f1e4a25421f59685a93c26613339a72a81b5565154f0a57386",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-a8c2fc53-8851-4c58-9b07-887429a1ad30.json",
+      "receiptSha256": "76d377cde06af5f0a23bf8fe020f527672258b3a759c90168fa7fc4432b951b6",
+      "reportFile": "postgres-a8c2fc53-8851-4c58-9b07-887429a1ad30.vitest.json"
+    },
+    {
+      "slug": "ledger",
+      "provider": "d1",
+      "runId": "b00f939f-de8b-431e-8d40-64801755cf69",
+      "criteria": [
+        "F36-06"
+      ],
+      "sourceFingerprint": "174a5b73723b680a157e0d28a0b16de7691d55b0b74b64c39a9e83c07dada4c2",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "37c070fffa1b03405cadcc84124a5d621ad0bb15b1de763f40efbcef579c59f8"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "e98c2683f7fc01f04e51e0e0ba0fed2b502137b746f258e49e46b527a2e8c217"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "1ee008ea95f4b52f2858d7b025a2b943419053416ef7e8d8b5b7b948f92ab7a2"
+        }
+      ],
+      "testReportSha256": "93197055cdab94b74485a484be45da77dab3974f9a14c3c563bef1e78fcc88b2",
+      "targetHash": "12b83df580a49078b1b06f2d5416cc55a9356d25f67698b36cec4697687a266b",
+      "receiptFile": "d1-b00f939f-de8b-431e-8d40-64801755cf69.json",
+      "receiptSha256": "bc9bf58a5c1e3aac106b4e40d8d30b58e43d057fdb2e8a3c1cb83fd95c9f4642",
+      "reportFile": "d1-b00f939f-de8b-431e-8d40-64801755cf69.vitest.json"
+    },
+    {
+      "slug": "ledger",
+      "provider": "dynamodb",
+      "runId": "c738a4c0-fd79-433e-beb0-544a9a94021e",
+      "criteria": [
+        "F36-06"
+      ],
+      "sourceFingerprint": "174a5b73723b680a157e0d28a0b16de7691d55b0b74b64c39a9e83c07dada4c2",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "37c070fffa1b03405cadcc84124a5d621ad0bb15b1de763f40efbcef579c59f8"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "e98c2683f7fc01f04e51e0e0ba0fed2b502137b746f258e49e46b527a2e8c217"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "1ee008ea95f4b52f2858d7b025a2b943419053416ef7e8d8b5b7b948f92ab7a2"
+        }
+      ],
+      "testReportSha256": "9e1f3cb5018795c8dd238148ace02e6d3a3f7dd725757c90832c5875bef74b9b",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-c738a4c0-fd79-433e-beb0-544a9a94021e.json",
+      "receiptSha256": "af849490eb9f8cd13af53ffdec3c651953cec1ddf061e7f166f33351a80d1544",
+      "reportFile": "dynamodb-c738a4c0-fd79-433e-beb0-544a9a94021e.vitest.json"
+    },
+    {
+      "slug": "decision",
+      "provider": "postgres",
+      "runId": "db1bb003-c3ea-4f16-83d4-5de1f781c551",
+      "criteria": [
+        "F39-STORE"
+      ],
+      "sourceFingerprint": "25b1828222df51433240355ea533f47663612c9f88348d8f0bf4fb184e937095",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "652db4978f45e85951991430da9b8412c424c766a56e56bae242ae9205aeed49"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "775a21f258023b45c29c610848abfb3324bbec648381573bacde0cf5a1dedc38"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "ee49c6f9403e82bc9bf8deab653c9add1b4eeba80f49db3947943e83d88e3395"
+        }
+      ],
+      "testReportSha256": "38569ca7aeda47369c06ca2e65734f7d45ca28835b6d08873c6786e9e54597cf",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-db1bb003-c3ea-4f16-83d4-5de1f781c551.json",
+      "receiptSha256": "0828e62e56f67d5267b2cd3618165cc7c70bda7e04909b03a325fb383a4553ec",
+      "reportFile": "postgres-db1bb003-c3ea-4f16-83d4-5de1f781c551.vitest.json"
+    },
+    {
+      "slug": "decision",
+      "provider": "d1",
+      "runId": "672f0514-6f20-4992-8e24-754573cf4200",
+      "criteria": [
+        "F39-STORE"
+      ],
+      "sourceFingerprint": "25b1828222df51433240355ea533f47663612c9f88348d8f0bf4fb184e937095",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "652db4978f45e85951991430da9b8412c424c766a56e56bae242ae9205aeed49"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "775a21f258023b45c29c610848abfb3324bbec648381573bacde0cf5a1dedc38"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "ee49c6f9403e82bc9bf8deab653c9add1b4eeba80f49db3947943e83d88e3395"
+        }
+      ],
+      "testReportSha256": "13bfaf375776f28984956fbd86b7107a84c45ee147d6d2310b498219448b1c4c",
+      "targetHash": "3b828ee94a399b2c9976db966c275e35dad18fb9e113f57863857713ac54fead",
+      "receiptFile": "d1-672f0514-6f20-4992-8e24-754573cf4200.json",
+      "receiptSha256": "9be9a11e9e7821fc63cedd6aecca2d213d563216af2581c4a52f5d04a73c1054",
+      "reportFile": "d1-672f0514-6f20-4992-8e24-754573cf4200.vitest.json"
+    },
+    {
+      "slug": "decision",
+      "provider": "dynamodb",
+      "runId": "670a7b7e-2367-4e10-a459-00b4f170a679",
+      "criteria": [
+        "F39-STORE"
+      ],
+      "sourceFingerprint": "25b1828222df51433240355ea533f47663612c9f88348d8f0bf4fb184e937095",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "652db4978f45e85951991430da9b8412c424c766a56e56bae242ae9205aeed49"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "775a21f258023b45c29c610848abfb3324bbec648381573bacde0cf5a1dedc38"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "ee49c6f9403e82bc9bf8deab653c9add1b4eeba80f49db3947943e83d88e3395"
+        }
+      ],
+      "testReportSha256": "23efbbef56730a6b57b104f1966ef69b97c7f1d4a8a8fe0cf99239e1818ed20c",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-670a7b7e-2367-4e10-a459-00b4f170a679.json",
+      "receiptSha256": "64ee7200043a5423f3d30d634e6546cd450e628d72451d86c17f180e08623352",
+      "reportFile": "dynamodb-670a7b7e-2367-4e10-a459-00b4f170a679.vitest.json"
+    },
+    {
+      "slug": "assurance",
+      "provider": "postgres",
+      "runId": "15893198-d223-4c72-b888-3d0bc38c4f1c",
+      "criteria": [
+        "F40-STORE"
+      ],
+      "sourceFingerprint": "972c2a51a600717d3579df8eadff4cbbbf993e88d502f25a48247af84e5783a7",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "a59b45ca8ac050e0890c888135c93cd348aad8549110f3fc417979c176d2a9f0"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "a514e515d9b73e5522226a3fdaa130a9f3da3ccb50a2267dfdd92c74619048d6"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "096699b8a17b89df4d2bdbda66b51887b7dfdfa33a3684f5b6011df2e93448fc"
+        }
+      ],
+      "testReportSha256": "faf62c2c63c8ffa8193c24f7642341751b5858d568a0327cc675d6fcbaba85b9",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-15893198-d223-4c72-b888-3d0bc38c4f1c.json",
+      "receiptSha256": "95725e9f68354fcfa22b7b8845479eb5383a63820a9513877786652b857f127e",
+      "reportFile": "postgres-15893198-d223-4c72-b888-3d0bc38c4f1c.vitest.json"
+    },
+    {
+      "slug": "assurance",
+      "provider": "d1",
+      "runId": "9580f899-4fed-47a4-8df2-16654f736564",
+      "criteria": [
+        "F40-STORE"
+      ],
+      "sourceFingerprint": "972c2a51a600717d3579df8eadff4cbbbf993e88d502f25a48247af84e5783a7",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "a59b45ca8ac050e0890c888135c93cd348aad8549110f3fc417979c176d2a9f0"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "a514e515d9b73e5522226a3fdaa130a9f3da3ccb50a2267dfdd92c74619048d6"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "096699b8a17b89df4d2bdbda66b51887b7dfdfa33a3684f5b6011df2e93448fc"
+        }
+      ],
+      "testReportSha256": "8d633c2fe99598ed03a7e8c96ac07967d55f76d3027c12ae819acd81785fc046",
+      "targetHash": "65bebaab9ff53b64d3bde5a89e5aeaac61d0bbcff8b02887a1de90dcf11abe25",
+      "receiptFile": "d1-9580f899-4fed-47a4-8df2-16654f736564.json",
+      "receiptSha256": "fa5665d8e8327b6b5767ca35966b27ed2a159997921685351753f32aa689f9c8",
+      "reportFile": "d1-9580f899-4fed-47a4-8df2-16654f736564.vitest.json"
+    },
+    {
+      "slug": "assurance",
+      "provider": "dynamodb",
+      "runId": "8e6ea38c-fd64-4a1c-99cf-706f12cbfc04",
+      "criteria": [
+        "F40-STORE"
+      ],
+      "sourceFingerprint": "972c2a51a600717d3579df8eadff4cbbbf993e88d502f25a48247af84e5783a7",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "a59b45ca8ac050e0890c888135c93cd348aad8549110f3fc417979c176d2a9f0"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "a514e515d9b73e5522226a3fdaa130a9f3da3ccb50a2267dfdd92c74619048d6"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "096699b8a17b89df4d2bdbda66b51887b7dfdfa33a3684f5b6011df2e93448fc"
+        }
+      ],
+      "testReportSha256": "f5e5045d4604a0bf44679ed04c9f8af85f4b5a4514a077ce7f30b1a9ce60b148",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-8e6ea38c-fd64-4a1c-99cf-706f12cbfc04.json",
+      "receiptSha256": "ed3a2915ae1739e0137370a211c07fd98fbaf2085c7485b9c0c01431750231d8",
+      "reportFile": "dynamodb-8e6ea38c-fd64-4a1c-99cf-706f12cbfc04.vitest.json"
+    },
+    {
+      "slug": "change",
+      "provider": "postgres",
+      "runId": "ef22a3af-ad0e-4d59-87f3-5302e7393d4d",
+      "criteria": [
+        "F41-STORE"
+      ],
+      "sourceFingerprint": "cce5d673aed1e7ede91c1bf641e09ab0fb8023534438d1cb54feab6ef168e6c4",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "d634cc493e07f690c9233ffe04cfeb396c6cd390817319cfb7236c000a509469"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "a3178060fd213a9fe47197847a3fff878327a051361c2ee9b396ab537e91bcb1"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "2b0ddd020d4ce88b55f06f4f060b13edca9283522708e3a101948440ac15be04"
+        }
+      ],
+      "testReportSha256": "7c8e0beee31ffdf6526137375c9c785512837c7b8bbccb53a7a2056bf7200d47",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-ef22a3af-ad0e-4d59-87f3-5302e7393d4d.json",
+      "receiptSha256": "6772d7f332733c2e71bcbb1cc7bff14097c60266eb4340b96ea597570d19ce5c",
+      "reportFile": "postgres-ef22a3af-ad0e-4d59-87f3-5302e7393d4d.vitest.json"
+    },
+    {
+      "slug": "change",
+      "provider": "d1",
+      "runId": "7d5f389d-7b04-439c-8cf3-576905ebfe60",
+      "criteria": [
+        "F41-STORE"
+      ],
+      "sourceFingerprint": "cce5d673aed1e7ede91c1bf641e09ab0fb8023534438d1cb54feab6ef168e6c4",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "d634cc493e07f690c9233ffe04cfeb396c6cd390817319cfb7236c000a509469"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "a3178060fd213a9fe47197847a3fff878327a051361c2ee9b396ab537e91bcb1"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "2b0ddd020d4ce88b55f06f4f060b13edca9283522708e3a101948440ac15be04"
+        }
+      ],
+      "testReportSha256": "88e3f58c8b1482b37609b502c1fb4dcad67b2106b187a1e5728887cce7471597",
+      "targetHash": "3871b1ed3179d114ba8ee427ad9584bfb9714b9ba16be2b2a9ce28e30fbb0acb",
+      "receiptFile": "d1-7d5f389d-7b04-439c-8cf3-576905ebfe60.json",
+      "receiptSha256": "5e3f6757fe1a83649770a6a7ea53e9690fb0b05ce4babbe7b92357a01525146e",
+      "reportFile": "d1-7d5f389d-7b04-439c-8cf3-576905ebfe60.vitest.json"
+    },
+    {
+      "slug": "change",
+      "provider": "dynamodb",
+      "runId": "dab4f4f4-41ae-4ce4-86e4-3b6ca9f6c41b",
+      "criteria": [
+        "F41-STORE"
+      ],
+      "sourceFingerprint": "cce5d673aed1e7ede91c1bf641e09ab0fb8023534438d1cb54feab6ef168e6c4",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "d634cc493e07f690c9233ffe04cfeb396c6cd390817319cfb7236c000a509469"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "a3178060fd213a9fe47197847a3fff878327a051361c2ee9b396ab537e91bcb1"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "2b0ddd020d4ce88b55f06f4f060b13edca9283522708e3a101948440ac15be04"
+        }
+      ],
+      "testReportSha256": "1a2b83776d9f3d329673981d78c888ccf73c38d6575e6730326ae1053773c05e",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-dab4f4f4-41ae-4ce4-86e4-3b6ca9f6c41b.json",
+      "receiptSha256": "b9afbea5cb1506a608e672df2c775683dd119b087984f52511d7b86149862587",
+      "reportFile": "dynamodb-dab4f4f4-41ae-4ce4-86e4-3b6ca9f6c41b.vitest.json"
+    },
+    {
+      "slug": "experiment",
+      "provider": "postgres",
+      "runId": "4852ea49-944f-44b1-91af-80c86233b8ea",
+      "criteria": [
+        "F42-STORE"
+      ],
+      "sourceFingerprint": "ad70f274be56651b942059396005d3bcead386d2ec7f4b5fd95ccaff2fadc291",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "ba077a73f18d7301f8be813e1f924b339c32efa7bb90236b6a618a46a315c54e"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "b111a1327f183144315d6e89c64740108ee2be8ad126e2a38383c3e88b606764"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "4865f714f19baf8a9ed8ffe17e1aaff3e968e5a06eb2c2bf644b6fcb8ed88221"
+        }
+      ],
+      "testReportSha256": "539b14af34ebaa7c0016b86942513d42c0092f87e818c2f5bdbb10301e8f6807",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-4852ea49-944f-44b1-91af-80c86233b8ea.json",
+      "receiptSha256": "ddb2d05360b9647d6bafa990d231ff6d42ff2c5677021d6e59f4355e73c309ca",
+      "reportFile": "postgres-4852ea49-944f-44b1-91af-80c86233b8ea.vitest.json"
+    },
+    {
+      "slug": "experiment",
+      "provider": "d1",
+      "runId": "f7306f0b-fc62-4b10-bf3a-dcfa47c9b39d",
+      "criteria": [
+        "F42-STORE"
+      ],
+      "sourceFingerprint": "ad70f274be56651b942059396005d3bcead386d2ec7f4b5fd95ccaff2fadc291",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "ba077a73f18d7301f8be813e1f924b339c32efa7bb90236b6a618a46a315c54e"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "b111a1327f183144315d6e89c64740108ee2be8ad126e2a38383c3e88b606764"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "4865f714f19baf8a9ed8ffe17e1aaff3e968e5a06eb2c2bf644b6fcb8ed88221"
+        }
+      ],
+      "testReportSha256": "42e763911c52fd93ceee6cba37105dd38eb841fc54c4695cf51d03ffd4adb235",
+      "targetHash": "524c2450d5af415f3df4c038ed8d73ddc07eb201fb37b780a46d8f7054ce3c79",
+      "receiptFile": "d1-f7306f0b-fc62-4b10-bf3a-dcfa47c9b39d.json",
+      "receiptSha256": "13f866c094f454360c54d29ca7f48b44303a28b289b775cac25fe91b581070bf",
+      "reportFile": "d1-f7306f0b-fc62-4b10-bf3a-dcfa47c9b39d.vitest.json"
+    },
+    {
+      "slug": "experiment",
+      "provider": "dynamodb",
+      "runId": "8bccb5ea-1691-4bcc-9860-775b2596e234",
+      "criteria": [
+        "F42-STORE"
+      ],
+      "sourceFingerprint": "ad70f274be56651b942059396005d3bcead386d2ec7f4b5fd95ccaff2fadc291",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "ba077a73f18d7301f8be813e1f924b339c32efa7bb90236b6a618a46a315c54e"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "b111a1327f183144315d6e89c64740108ee2be8ad126e2a38383c3e88b606764"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "4865f714f19baf8a9ed8ffe17e1aaff3e968e5a06eb2c2bf644b6fcb8ed88221"
+        }
+      ],
+      "testReportSha256": "d2d0955945ef4469a2f271af2b799a393916fe0171ff8269dd56d9f776ea1018",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-8bccb5ea-1691-4bcc-9860-775b2596e234.json",
+      "receiptSha256": "5bce00154a83969dcdd0c1cbefdd20b75ca295818ba119ca12580fafb21b7c96",
+      "reportFile": "dynamodb-8bccb5ea-1691-4bcc-9860-775b2596e234.vitest.json"
+    },
+    {
+      "slug": "agreement-catalog",
+      "provider": "postgres",
+      "runId": "9d8174c7-48ac-4235-aec5-b99063f3766f",
+      "criteria": [
+        "F43-STORE"
+      ],
+      "sourceFingerprint": "f1f841e4d84dc5965b2bef51b54d56b5f6e6bb459ec55199ac26c7d3ae96c51b",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "89780f9092dca15ca136db0c92b5a87d3946027163c9f79b2233d5242a6657f7"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "5f560c37267902ea47867a96222ea740501291a37c19b170497e456b2e4095c3"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "083e8d343a1bc1b715b3c932fa55130ae53d9e5fe1ce8eec7e48bb6054ce74b7"
+        }
+      ],
+      "testReportSha256": "6a1ed6d93442d70ebdf9138def539965241a7beab85066594c0551b37d0503d6",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-9d8174c7-48ac-4235-aec5-b99063f3766f.json",
+      "receiptSha256": "7bb3dd17393a3efe7bf3e5e05123806b68056740b01e1c4458cdb08b1c5e8948",
+      "reportFile": "postgres-9d8174c7-48ac-4235-aec5-b99063f3766f.vitest.json"
+    },
+    {
+      "slug": "agreement-catalog",
+      "provider": "d1",
+      "runId": "d3afaeb4-c5c9-44cd-bd2b-42510bdfc506",
+      "criteria": [
+        "F43-STORE"
+      ],
+      "sourceFingerprint": "f1f841e4d84dc5965b2bef51b54d56b5f6e6bb459ec55199ac26c7d3ae96c51b",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "89780f9092dca15ca136db0c92b5a87d3946027163c9f79b2233d5242a6657f7"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "5f560c37267902ea47867a96222ea740501291a37c19b170497e456b2e4095c3"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "083e8d343a1bc1b715b3c932fa55130ae53d9e5fe1ce8eec7e48bb6054ce74b7"
+        }
+      ],
+      "testReportSha256": "d09e881a0ce0913e5654c2aa3f9c7c9367f752a61f7c1ef098ca9e85bd64d9d1",
+      "targetHash": "5ed1570c623f7cf1363b7a65562f5d7d445e2485f92b8df79ab9103fa188aa93",
+      "receiptFile": "d1-d3afaeb4-c5c9-44cd-bd2b-42510bdfc506.json",
+      "receiptSha256": "3e19f154625364e8c03c59654f0c3a688c6947e16b0f4282171d38e28cc3c5a3",
+      "reportFile": "d1-d3afaeb4-c5c9-44cd-bd2b-42510bdfc506.vitest.json"
+    },
+    {
+      "slug": "agreement-catalog",
+      "provider": "dynamodb",
+      "runId": "530d4acf-2f0c-4ee0-818d-b44317f6a6e3",
+      "criteria": [
+        "F43-STORE"
+      ],
+      "sourceFingerprint": "f1f841e4d84dc5965b2bef51b54d56b5f6e6bb459ec55199ac26c7d3ae96c51b",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "89780f9092dca15ca136db0c92b5a87d3946027163c9f79b2233d5242a6657f7"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "5f560c37267902ea47867a96222ea740501291a37c19b170497e456b2e4095c3"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "083e8d343a1bc1b715b3c932fa55130ae53d9e5fe1ce8eec7e48bb6054ce74b7"
+        }
+      ],
+      "testReportSha256": "6df1a0841871e49851e4c6e60bbfe5a1d65de2845b335b8d197c03c5fbe17590",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-530d4acf-2f0c-4ee0-818d-b44317f6a6e3.json",
+      "receiptSha256": "1569fcc39f988ef69de05070ab7f8be40c3163cefab8519a0435fab7a87db790",
+      "reportFile": "dynamodb-530d4acf-2f0c-4ee0-818d-b44317f6a6e3.vitest.json"
+    },
+    {
+      "slug": "adjudication",
+      "provider": "postgres",
+      "runId": "aacbffbb-2382-43ca-8201-6e4f5af4dc3b",
+      "criteria": [
+        "F44-STORE"
+      ],
+      "sourceFingerprint": "c3daa526fa60a19d93649f9ed1f74d306aac2fc8dba6a00fa007db54fc4743d6",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "ddb30b8a0f9f7972fc521a0a27b35e5b0039ab53f241d6095a972a2d8af900ce"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "7f3aef4782ab091e1eb7cb5700a792a185539ac7784969561972f7208e53dc60"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "6364e7be653079521abd6896082c60e42be7870793470a5318c2f45e23e903c6"
+        }
+      ],
+      "testReportSha256": "bbdcb699cf4a94ff5e51bfacd47dbedd81da44222dd3fb696cb6f73a1268dd61",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-aacbffbb-2382-43ca-8201-6e4f5af4dc3b.json",
+      "receiptSha256": "9f8d2a357ce425727369c3688d49188a8c59a1ade8591a5845a8ae0f1f97568a",
+      "reportFile": "postgres-aacbffbb-2382-43ca-8201-6e4f5af4dc3b.vitest.json"
+    },
+    {
+      "slug": "adjudication",
+      "provider": "d1",
+      "runId": "c0ff041a-ec0c-4d15-bb42-86e11efbe8d6",
+      "criteria": [
+        "F44-STORE"
+      ],
+      "sourceFingerprint": "c3daa526fa60a19d93649f9ed1f74d306aac2fc8dba6a00fa007db54fc4743d6",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "ddb30b8a0f9f7972fc521a0a27b35e5b0039ab53f241d6095a972a2d8af900ce"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "7f3aef4782ab091e1eb7cb5700a792a185539ac7784969561972f7208e53dc60"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "6364e7be653079521abd6896082c60e42be7870793470a5318c2f45e23e903c6"
+        }
+      ],
+      "testReportSha256": "e6fab5a737e17cc53a32cb3ddbcb8e312985e93b4fba4077a937f32047c85019",
+      "targetHash": "8cd1b1eae617e9d30e949a9a60c6e765ed6af2bf56726108c13abe249a7d443d",
+      "receiptFile": "d1-c0ff041a-ec0c-4d15-bb42-86e11efbe8d6.json",
+      "receiptSha256": "3b04e50ea54500310727d7eefa70eb33431f20d7a959ac652fe61453fee32f14",
+      "reportFile": "d1-c0ff041a-ec0c-4d15-bb42-86e11efbe8d6.vitest.json"
+    },
+    {
+      "slug": "adjudication",
+      "provider": "dynamodb",
+      "runId": "57f79a23-077c-45d9-9cb2-da30c56d45b7",
+      "criteria": [
+        "F44-STORE"
+      ],
+      "sourceFingerprint": "c3daa526fa60a19d93649f9ed1f74d306aac2fc8dba6a00fa007db54fc4743d6",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "ddb30b8a0f9f7972fc521a0a27b35e5b0039ab53f241d6095a972a2d8af900ce"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "7f3aef4782ab091e1eb7cb5700a792a185539ac7784969561972f7208e53dc60"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "6364e7be653079521abd6896082c60e42be7870793470a5318c2f45e23e903c6"
+        }
+      ],
+      "testReportSha256": "6a464f9146a6c6996e21278038ac9f83c38717c10c6258e38f18f778ddaffb14",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-57f79a23-077c-45d9-9cb2-da30c56d45b7.json",
+      "receiptSha256": "1e37f8e31243f7f7b37c5e0e9e4b79be8f47b1db160ac3f92fe871ec9569c864",
+      "reportFile": "dynamodb-57f79a23-077c-45d9-9cb2-da30c56d45b7.vitest.json"
+    },
+    {
+      "slug": "operations",
+      "provider": "postgres",
+      "runId": "eb517057-806e-4622-a7a9-065998df9495",
+      "criteria": [
+        "F45-STORE"
+      ],
+      "sourceFingerprint": "19797cc46cab97fab5c9b9bd922f7fc813dd5476afac940aa80b8207f15dce23",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "6ea2c71e2660e6401a6583dd13ef4a75cda7103197fa54379c34028f1739551f"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "467704fc4143bfaebce7ef70049ee31f0e54ccdc14642022e132f8c76a62d2b7"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "15794029172aa15995daea3841fec324617db356126a8cf4b5aeb3248bb2083a"
+        }
+      ],
+      "testReportSha256": "8237310cefecd7a4b2588dd013881f09078f7cdc5e03798e469cd8a0176fcb65",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-eb517057-806e-4622-a7a9-065998df9495.json",
+      "receiptSha256": "a26e7af47d30c7306fce2590b67c387ac66121918ce293809e8f1fa897958bcb",
+      "reportFile": "postgres-eb517057-806e-4622-a7a9-065998df9495.vitest.json"
+    },
+    {
+      "slug": "operations",
+      "provider": "d1",
+      "runId": "b9623727-8cb3-44c2-946b-75eda4c7239d",
+      "criteria": [
+        "F45-STORE"
+      ],
+      "sourceFingerprint": "19797cc46cab97fab5c9b9bd922f7fc813dd5476afac940aa80b8207f15dce23",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "6ea2c71e2660e6401a6583dd13ef4a75cda7103197fa54379c34028f1739551f"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "467704fc4143bfaebce7ef70049ee31f0e54ccdc14642022e132f8c76a62d2b7"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "15794029172aa15995daea3841fec324617db356126a8cf4b5aeb3248bb2083a"
+        }
+      ],
+      "testReportSha256": "d5b79288bf6e4dd90b8d73abb78d8f8300647e47fe7d1ed8e0ad83563da01334",
+      "targetHash": "122fd2eeccbf66fe15807502eee9d045e11900ae7ae97f1ad2646083f770429d",
+      "receiptFile": "d1-b9623727-8cb3-44c2-946b-75eda4c7239d.json",
+      "receiptSha256": "917d68d8c7dd07fd6bfc5758b2aafc496d5953ed7f339b467f767ed2c86e61f2",
+      "reportFile": "d1-b9623727-8cb3-44c2-946b-75eda4c7239d.vitest.json"
+    },
+    {
+      "slug": "operations",
+      "provider": "dynamodb",
+      "runId": "a3586a4e-0c36-4bad-a107-9be56097d0fc",
+      "criteria": [
+        "F45-STORE"
+      ],
+      "sourceFingerprint": "19797cc46cab97fab5c9b9bd922f7fc813dd5476afac940aa80b8207f15dce23",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "6ea2c71e2660e6401a6583dd13ef4a75cda7103197fa54379c34028f1739551f"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "467704fc4143bfaebce7ef70049ee31f0e54ccdc14642022e132f8c76a62d2b7"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "15794029172aa15995daea3841fec324617db356126a8cf4b5aeb3248bb2083a"
+        }
+      ],
+      "testReportSha256": "23d5810c8b5d35b2de3050a51673d29c694ca048858a8f076736dd4fa7050b4f",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-a3586a4e-0c36-4bad-a107-9be56097d0fc.json",
+      "receiptSha256": "e2e352825b3847e1881c83df7861db92ff161e6fa92f50e7c5d1b6481525e8ff",
+      "reportFile": "dynamodb-a3586a4e-0c36-4bad-a107-9be56097d0fc.vitest.json"
+    },
+    {
+      "slug": "reconciliation",
+      "provider": "postgres",
+      "runId": "966d8172-f754-459c-aa47-281d83b266a8",
+      "criteria": [
+        "F46-STORE"
+      ],
+      "sourceFingerprint": "a61df452bb2375dc3aa6f718c1e8f046acda764abeeab61c686db3a6c9027222",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "196614f608373ee970f8b7555a40164dd824792c45c4f704309ed44803ba6fc7"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "371e5a88bdebbfb4f660154dab54a1fcc3e36e9a5e2375b278d5dc6e0ef38d76"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "9ec471efd789ded3944e5e1a139613a4b4b06acef2dc7f1425f0b8da0bb74d8e"
+        }
+      ],
+      "testReportSha256": "91aa603d0ee0334ea7a049ad64b34c4766d7d08de86574d5055875cf16d887aa",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-966d8172-f754-459c-aa47-281d83b266a8.json",
+      "receiptSha256": "9b500314dc3b75f59479099e81eb77dce6699c797743944bf164c35f2c9aeb5d",
+      "reportFile": "postgres-966d8172-f754-459c-aa47-281d83b266a8.vitest.json"
+    },
+    {
+      "slug": "reconciliation",
+      "provider": "d1",
+      "runId": "13093f0a-37f7-4ca1-b6e9-8ee108775ae7",
+      "criteria": [
+        "F46-STORE"
+      ],
+      "sourceFingerprint": "a61df452bb2375dc3aa6f718c1e8f046acda764abeeab61c686db3a6c9027222",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "196614f608373ee970f8b7555a40164dd824792c45c4f704309ed44803ba6fc7"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "371e5a88bdebbfb4f660154dab54a1fcc3e36e9a5e2375b278d5dc6e0ef38d76"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "9ec471efd789ded3944e5e1a139613a4b4b06acef2dc7f1425f0b8da0bb74d8e"
+        }
+      ],
+      "testReportSha256": "fb79d25a5dfb34fd0bf714648cad83c6968cc39c53cb06ffd8c05ac1c1201140",
+      "targetHash": "717eaa38dd9e772bee7b1fc580f9e175920c629e7643a6aea0e1dd713cf19736",
+      "receiptFile": "d1-13093f0a-37f7-4ca1-b6e9-8ee108775ae7.json",
+      "receiptSha256": "09bddf07565a64c6bdc6db7f069bc7e11b20529a85a4548ade5af4a3319d9763",
+      "reportFile": "d1-13093f0a-37f7-4ca1-b6e9-8ee108775ae7.vitest.json"
+    },
+    {
+      "slug": "reconciliation",
+      "provider": "dynamodb",
+      "runId": "49f84fac-91a0-4eb5-b493-4c7941658faf",
+      "criteria": [
+        "F46-STORE"
+      ],
+      "sourceFingerprint": "a61df452bb2375dc3aa6f718c1e8f046acda764abeeab61c686db3a6c9027222",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "196614f608373ee970f8b7555a40164dd824792c45c4f704309ed44803ba6fc7"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "371e5a88bdebbfb4f660154dab54a1fcc3e36e9a5e2375b278d5dc6e0ef38d76"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "9ec471efd789ded3944e5e1a139613a4b4b06acef2dc7f1425f0b8da0bb74d8e"
+        }
+      ],
+      "testReportSha256": "937dc79ac57f41a2726131e15719213b3bd731b67fdb05001fcfbca0eb8dbf4e",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-49f84fac-91a0-4eb5-b493-4c7941658faf.json",
+      "receiptSha256": "641a1b688d43c488a418638dd20a82334f5c6e26642e6acf0ab436de4db1f7b8",
+      "reportFile": "dynamodb-49f84fac-91a0-4eb5-b493-4c7941658faf.vitest.json"
+    },
+    {
+      "slug": "integration",
+      "provider": "postgres",
+      "runId": "d060b979-a36e-4215-9643-86ec0082250c",
+      "criteria": [
+        "F47-STORE"
+      ],
+      "sourceFingerprint": "95d4d973b97024e3f3f0ccae1e2ab49b0e72f96c2835cad29c1dbec64f1395d8",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "f55297a42bbf4a22c2b2d43c9922effc0f05010f252cb073cec383ba74395a9c"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "01fdfccca846dc81aa8b314264d8a1c37c4771dab328afe8135a9edf33988e74"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "6768aa677f2168d80aa5d80ccbb6279aef94651d3ad837fde21d422211a84806"
+        }
+      ],
+      "testReportSha256": "0604edf234571b95cce1df9e4cbec3580c6265eec3dadf586b569f007ce1540b",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-d060b979-a36e-4215-9643-86ec0082250c.json",
+      "receiptSha256": "8818622ce68fc443c24b8b62f91b53e0e5b38f266bdd4581f1106bbd932ade76",
+      "reportFile": "postgres-d060b979-a36e-4215-9643-86ec0082250c.vitest.json"
+    },
+    {
+      "slug": "integration",
+      "provider": "d1",
+      "runId": "1aaec967-f88d-4367-aafd-0bcc8c7b52ee",
+      "criteria": [
+        "F47-STORE"
+      ],
+      "sourceFingerprint": "95d4d973b97024e3f3f0ccae1e2ab49b0e72f96c2835cad29c1dbec64f1395d8",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "f55297a42bbf4a22c2b2d43c9922effc0f05010f252cb073cec383ba74395a9c"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "01fdfccca846dc81aa8b314264d8a1c37c4771dab328afe8135a9edf33988e74"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "6768aa677f2168d80aa5d80ccbb6279aef94651d3ad837fde21d422211a84806"
+        }
+      ],
+      "testReportSha256": "ee704d75229dc6e4f69c9393eab384b2f74cc4bcdccf2033949c1c0a04906fee",
+      "targetHash": "663c5b63084988c5ee1c713a4267422ab1146064ee64f4d03ced2e99d40c03be",
+      "receiptFile": "d1-1aaec967-f88d-4367-aafd-0bcc8c7b52ee.json",
+      "receiptSha256": "433e1c5f6645b8700f61f08fe9a42f0cf82f61f950279723843874c0cc198a9c",
+      "reportFile": "d1-1aaec967-f88d-4367-aafd-0bcc8c7b52ee.vitest.json"
+    },
+    {
+      "slug": "integration",
+      "provider": "dynamodb",
+      "runId": "b456cd8d-00ec-4a21-b250-a4f72104fc63",
+      "criteria": [
+        "F47-STORE"
+      ],
+      "sourceFingerprint": "95d4d973b97024e3f3f0ccae1e2ab49b0e72f96c2835cad29c1dbec64f1395d8",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "f55297a42bbf4a22c2b2d43c9922effc0f05010f252cb073cec383ba74395a9c"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "01fdfccca846dc81aa8b314264d8a1c37c4771dab328afe8135a9edf33988e74"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "6768aa677f2168d80aa5d80ccbb6279aef94651d3ad837fde21d422211a84806"
+        }
+      ],
+      "testReportSha256": "0aca0003f37d390a5bb681cc8f578bf0b4e441f4c6a5de0dcbb6097e11a2c99c",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-b456cd8d-00ec-4a21-b250-a4f72104fc63.json",
+      "receiptSha256": "3fc1120cab7fe8c500e4ceeeb24b8d8eb3a68cd78b2cad77f6fc97a0045da7de",
+      "reportFile": "dynamodb-b456cd8d-00ec-4a21-b250-a4f72104fc63.vitest.json"
+    },
+    {
+      "slug": "publication",
+      "provider": "postgres",
+      "runId": "92643f55-b464-4947-aade-8cfec05a0c42",
+      "criteria": [
+        "F48-STORE"
+      ],
+      "sourceFingerprint": "a677c1f6a384477a108605df3ef07e42af48407f24fd9da5b1de6a19fa7b35a1",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "3f39fb1338ee2927506b289f9ee9bf4184087cc6a48f3281a11d56f60d123009"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "35537e104697527dd7b3ce8981b52db80a92d7bf89cc267cac5db2331febdeef"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "b40a6106a4c033a8e52c4fdec93ca22981a04815daaa011795caeb12a77fc284"
+        }
+      ],
+      "testReportSha256": "39dd6367c040205d5b927cde552ad87b3165cc9c924c2eb87901078cdf79ff2f",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-92643f55-b464-4947-aade-8cfec05a0c42.json",
+      "receiptSha256": "0112e886987b16fd03ecc4ee5a2755c5e802cb602d144e0edde649ed4957be00",
+      "reportFile": "postgres-92643f55-b464-4947-aade-8cfec05a0c42.vitest.json"
+    },
+    {
+      "slug": "publication",
+      "provider": "d1",
+      "runId": "6665c2ea-cb9d-4704-b6b7-e90a6eb0f99a",
+      "criteria": [
+        "F48-STORE"
+      ],
+      "sourceFingerprint": "a677c1f6a384477a108605df3ef07e42af48407f24fd9da5b1de6a19fa7b35a1",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "3f39fb1338ee2927506b289f9ee9bf4184087cc6a48f3281a11d56f60d123009"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "35537e104697527dd7b3ce8981b52db80a92d7bf89cc267cac5db2331febdeef"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "b40a6106a4c033a8e52c4fdec93ca22981a04815daaa011795caeb12a77fc284"
+        }
+      ],
+      "testReportSha256": "5b1e14976852503f66796db1db087beb69688370b8cb669595473716d5ffeb08",
+      "targetHash": "245a38f20aa3c651191a6576802d410edb978683a077d2aa0ee64fde16ce237d",
+      "receiptFile": "d1-6665c2ea-cb9d-4704-b6b7-e90a6eb0f99a.json",
+      "receiptSha256": "5765f04a8adf27fa34a95071071074b739192c0be93210cd372d981a988ce3f1",
+      "reportFile": "d1-6665c2ea-cb9d-4704-b6b7-e90a6eb0f99a.vitest.json"
+    },
+    {
+      "slug": "publication",
+      "provider": "dynamodb",
+      "runId": "5fffa862-4d0e-47ee-868f-14308e50959b",
+      "criteria": [
+        "F48-STORE"
+      ],
+      "sourceFingerprint": "a677c1f6a384477a108605df3ef07e42af48407f24fd9da5b1de6a19fa7b35a1",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "3f39fb1338ee2927506b289f9ee9bf4184087cc6a48f3281a11d56f60d123009"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "35537e104697527dd7b3ce8981b52db80a92d7bf89cc267cac5db2331febdeef"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "b40a6106a4c033a8e52c4fdec93ca22981a04815daaa011795caeb12a77fc284"
+        }
+      ],
+      "testReportSha256": "6865efc140cfacfc214baaffbb8ca21733ea10cb99a23c697b8955e2fa8dadb6",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-5fffa862-4d0e-47ee-868f-14308e50959b.json",
+      "receiptSha256": "b4e5c1b2b6733d6b8c79815b40dbce47c94bd07fad6bf5f38fcfdd18aa7aa12c",
+      "reportFile": "dynamodb-5fffa862-4d0e-47ee-868f-14308e50959b.vitest.json"
+    },
+    {
+      "slug": "collaboration",
+      "provider": "postgres",
+      "runId": "76e7c0b4-5dba-474d-a67b-d4995739e954",
+      "criteria": [
+        "F49-STORE"
+      ],
+      "sourceFingerprint": "33c6a2260c2673a6b0b81aae83dc30ffa7c0d3769b7e916ee6223afb946713c5",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "821a2aa687b811e8288c2ec3d79abf43cc01d5282fb7b8cded62578f06ceed66"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "869d6ba9530d94995ee775f31aa0dc883c58741a5b918f68939ba822e02b9c74"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "159197ebd360f67a20af08ad3c4438e3245fb0f2853c3f7d9909fc257262102b"
+        }
+      ],
+      "testReportSha256": "0980497f3b6f9b5144f740fb195a945c5df4fcbf37296aa74a55ceaa81b8b976",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-76e7c0b4-5dba-474d-a67b-d4995739e954.json",
+      "receiptSha256": "7a973b350e25364abc9ea02f51ed92d8621e0b1a409c2e9b4afdbca6417ee2e0",
+      "reportFile": "postgres-76e7c0b4-5dba-474d-a67b-d4995739e954.vitest.json"
+    },
+    {
+      "slug": "collaboration",
+      "provider": "d1",
+      "runId": "c21f4a5d-4d3d-4cde-88da-93e1e6ead890",
+      "criteria": [
+        "F49-STORE"
+      ],
+      "sourceFingerprint": "33c6a2260c2673a6b0b81aae83dc30ffa7c0d3769b7e916ee6223afb946713c5",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "821a2aa687b811e8288c2ec3d79abf43cc01d5282fb7b8cded62578f06ceed66"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "869d6ba9530d94995ee775f31aa0dc883c58741a5b918f68939ba822e02b9c74"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "159197ebd360f67a20af08ad3c4438e3245fb0f2853c3f7d9909fc257262102b"
+        }
+      ],
+      "testReportSha256": "2e4e3a31f34ae5517e772066ac0a8ab4235a794cf153e00100c9c2a63b7ed715",
+      "targetHash": "a84b5dfb00dbdb2b63c26d16cc286e5746a4b6f817b7b61ef95e9617de49f392",
+      "receiptFile": "d1-c21f4a5d-4d3d-4cde-88da-93e1e6ead890.json",
+      "receiptSha256": "37120ba8603b676c1204845bed1811ae6a402b60423e6ee13661f02723200bb8",
+      "reportFile": "d1-c21f4a5d-4d3d-4cde-88da-93e1e6ead890.vitest.json"
+    },
+    {
+      "slug": "collaboration",
+      "provider": "dynamodb",
+      "runId": "b87cc2d5-538b-4a50-ab91-9be8d2ebc9c0",
+      "criteria": [
+        "F49-STORE"
+      ],
+      "sourceFingerprint": "33c6a2260c2673a6b0b81aae83dc30ffa7c0d3769b7e916ee6223afb946713c5",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "821a2aa687b811e8288c2ec3d79abf43cc01d5282fb7b8cded62578f06ceed66"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "869d6ba9530d94995ee775f31aa0dc883c58741a5b918f68939ba822e02b9c74"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "159197ebd360f67a20af08ad3c4438e3245fb0f2853c3f7d9909fc257262102b"
+        }
+      ],
+      "testReportSha256": "ed6983ce1335c99efbe1f6627c44bfe7fc91c4af9e8f48c0845d37c3cc7ba2c3",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-b87cc2d5-538b-4a50-ab91-9be8d2ebc9c0.json",
+      "receiptSha256": "90665e636f382bf8c6d0edc0e46b6e80ad8c963d94982400f64dba63d7dc7501",
+      "reportFile": "dynamodb-b87cc2d5-538b-4a50-ab91-9be8d2ebc9c0.vitest.json"
+    },
+    {
+      "slug": "notifications",
+      "provider": "postgres",
+      "runId": "fb15d536-6ba2-482e-bf42-572b5cf04091",
+      "criteria": [
+        "F50-STORE"
+      ],
+      "sourceFingerprint": "6a0655f4a32080b70d7a948ec3bc54a8baa4f66ef4bdf9c7618155044e8c88fc",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "592c1599ff1695e5427492fcaff0770437ca53f9a2b043defa5f90408e28cb7a"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "afb1ba6f047372a0539f13f63f1c67706a5e753ad0a633421f515cd154ff1b19"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "4237e76957a2d5c66c893a13a980d856bf075d0bdaf78e42536ad06e3d6be9e4"
+        }
+      ],
+      "testReportSha256": "51f5aa42cd34568ec9db2ef675f7036aef3d1d7b9c3b1dc0f92e878b76e51359",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-fb15d536-6ba2-482e-bf42-572b5cf04091.json",
+      "receiptSha256": "36a4737036333ba7cc2b6ea1e930cbd44bcfdac3dc8069505f89be77211707d2",
+      "reportFile": "postgres-fb15d536-6ba2-482e-bf42-572b5cf04091.vitest.json"
+    },
+    {
+      "slug": "notifications",
+      "provider": "d1",
+      "runId": "afea1fcf-fe83-4228-92da-e46a0b8b1914",
+      "criteria": [
+        "F50-STORE"
+      ],
+      "sourceFingerprint": "6a0655f4a32080b70d7a948ec3bc54a8baa4f66ef4bdf9c7618155044e8c88fc",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "592c1599ff1695e5427492fcaff0770437ca53f9a2b043defa5f90408e28cb7a"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "afb1ba6f047372a0539f13f63f1c67706a5e753ad0a633421f515cd154ff1b19"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "4237e76957a2d5c66c893a13a980d856bf075d0bdaf78e42536ad06e3d6be9e4"
+        }
+      ],
+      "testReportSha256": "bd8512ab1e6cbfff269f848f353b6f2faea889d4a758fbd95c02eab1891dcaa7",
+      "targetHash": "7654731a725d1cd9dfd74af0780872c8d9775561630f5fdeae2338c92ce148e0",
+      "receiptFile": "d1-afea1fcf-fe83-4228-92da-e46a0b8b1914.json",
+      "receiptSha256": "645bad8f0d7d80587fe75f2551f5cce153ac5ec4bb85c8b6997c1873458318cd",
+      "reportFile": "d1-afea1fcf-fe83-4228-92da-e46a0b8b1914.vitest.json"
+    },
+    {
+      "slug": "notifications",
+      "provider": "dynamodb",
+      "runId": "c9018ac8-25f2-4e64-aa4c-80529e9c7215",
+      "criteria": [
+        "F50-STORE"
+      ],
+      "sourceFingerprint": "6a0655f4a32080b70d7a948ec3bc54a8baa4f66ef4bdf9c7618155044e8c88fc",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "592c1599ff1695e5427492fcaff0770437ca53f9a2b043defa5f90408e28cb7a"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "afb1ba6f047372a0539f13f63f1c67706a5e753ad0a633421f515cd154ff1b19"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "4237e76957a2d5c66c893a13a980d856bf075d0bdaf78e42536ad06e3d6be9e4"
+        }
+      ],
+      "testReportSha256": "0def31f952705a960457a91128147948a8d3913236fd44e795ea991ea6417d82",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-c9018ac8-25f2-4e64-aa4c-80529e9c7215.json",
+      "receiptSha256": "71a9624089e756e7e8528c686c851c59bbca3a191dbb849306c0fae22690d1d6",
+      "reportFile": "dynamodb-c9018ac8-25f2-4e64-aa4c-80529e9c7215.vitest.json"
+    },
+    {
+      "slug": "resource-relations",
+      "provider": "postgres",
+      "runId": "fba6b6e0-ae92-41f9-9db4-3497e7893778",
+      "criteria": [
+        "F79-STORE"
+      ],
+      "sourceFingerprint": "38a6e851b0534f2954968cdd59055f546733ec42b9a62463002197e31b82d4fe",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "5824e08b2824ee1b984ac6394ed4c0251e4ae313db750ceaa088bec89d340f0e"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "f8386cad2c49bce881799081b6483836014e9b6ed0afd74f00ed81bc6e76fa1a"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "5907011ecda0255296db14e14a6cd231ee2aae06c8cb7b27375519ec6d115101"
+        }
+      ],
+      "testReportSha256": "3cee30b3500f0ec509410bf3a377dbe3426eefa30093908775df6f53c617bc56",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-fba6b6e0-ae92-41f9-9db4-3497e7893778.json",
+      "receiptSha256": "c325d43d3170ef9c8c8e733824de0ae874d1b4cd66666de24c8a66c00977d313",
+      "reportFile": "postgres-fba6b6e0-ae92-41f9-9db4-3497e7893778.vitest.json"
+    },
+    {
+      "slug": "resource-relations",
+      "provider": "d1",
+      "runId": "0ab175aa-5943-48ba-bbcb-3ebeff64a683",
+      "criteria": [
+        "F79-STORE"
+      ],
+      "sourceFingerprint": "38a6e851b0534f2954968cdd59055f546733ec42b9a62463002197e31b82d4fe",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "5824e08b2824ee1b984ac6394ed4c0251e4ae313db750ceaa088bec89d340f0e"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "f8386cad2c49bce881799081b6483836014e9b6ed0afd74f00ed81bc6e76fa1a"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "5907011ecda0255296db14e14a6cd231ee2aae06c8cb7b27375519ec6d115101"
+        }
+      ],
+      "testReportSha256": "6aa66075d4996e0ff7d63bed02348b3b3ee34b4f0e3557d14880535cbe32b44a",
+      "targetHash": "62ec9bdcfda121b9cdc3a056a50a181ce3648707587d63ea56385e4bff0c18f8",
+      "receiptFile": "d1-0ab175aa-5943-48ba-bbcb-3ebeff64a683.json",
+      "receiptSha256": "532e115217da9ea9a4f84b1690a703a3c3f2a9bd7387af5caa575e6d14089dbb",
+      "reportFile": "d1-0ab175aa-5943-48ba-bbcb-3ebeff64a683.vitest.json"
+    },
+    {
+      "slug": "resource-relations",
+      "provider": "dynamodb",
+      "runId": "9f49df3f-773c-4e12-89e1-3410382277c2",
+      "criteria": [
+        "F79-STORE"
+      ],
+      "sourceFingerprint": "38a6e851b0534f2954968cdd59055f546733ec42b9a62463002197e31b82d4fe",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "5824e08b2824ee1b984ac6394ed4c0251e4ae313db750ceaa088bec89d340f0e"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "f8386cad2c49bce881799081b6483836014e9b6ed0afd74f00ed81bc6e76fa1a"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "5907011ecda0255296db14e14a6cd231ee2aae06c8cb7b27375519ec6d115101"
+        }
+      ],
+      "testReportSha256": "7938a6f54840b16e26b1d2e5ba857ce55b1fa3b7addbf2abbd6d76bfe17144fc",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-9f49df3f-773c-4e12-89e1-3410382277c2.json",
+      "receiptSha256": "cda9f7cba8d15e948b0530dc2b85343782c7dd088ac724268251699d29c169a4",
+      "reportFile": "dynamodb-9f49df3f-773c-4e12-89e1-3410382277c2.vitest.json"
+    },
+    {
+      "slug": "settlement",
+      "provider": "postgres",
+      "runId": "1370c002-62f8-44dc-968b-7038047670bd",
+      "criteria": [
+        "F80-STORE"
+      ],
+      "sourceFingerprint": "7206f7b38f51f8beb9b29ac7ed3b1258a7c6993d317a5505d5dd97cb8f8a3b1e",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "67032616162a844af3c539db79c1ba3e0c8a9ffbbe6f0b247eefec928030fd2f"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "23902e6092b3382f24f02700d501bee23a34aeb95b38954de67ba51c9a573001"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "1e7ad5b0b9560c663ccdb44858918162c45d3dd0f6cbdb06b4a4589dac2a4d20"
+        }
+      ],
+      "testReportSha256": "aaf3b958f0becc7c9a102897f11a2b6a140c5ba1e30fa94b33013abe4a00f78f",
+      "targetHash": "10dede9a3a7ef6e019887f504e46d9d3bde1d9318abbe3eda1ee24337478e3fe",
+      "receiptFile": "postgres-1370c002-62f8-44dc-968b-7038047670bd.json",
+      "receiptSha256": "ce5491fa6732b3f27d88853e7f89b173992bf5907523007c25c50cbdbd08a16f",
+      "reportFile": "postgres-1370c002-62f8-44dc-968b-7038047670bd.vitest.json"
+    },
+    {
+      "slug": "settlement",
+      "provider": "d1",
+      "runId": "056e0bc1-d5a4-4b11-a13d-7021438ee480",
+      "criteria": [
+        "F80-STORE"
+      ],
+      "sourceFingerprint": "7206f7b38f51f8beb9b29ac7ed3b1258a7c6993d317a5505d5dd97cb8f8a3b1e",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "67032616162a844af3c539db79c1ba3e0c8a9ffbbe6f0b247eefec928030fd2f"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "23902e6092b3382f24f02700d501bee23a34aeb95b38954de67ba51c9a573001"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "1e7ad5b0b9560c663ccdb44858918162c45d3dd0f6cbdb06b4a4589dac2a4d20"
+        }
+      ],
+      "testReportSha256": "fef1c88a3c00a5d86216730ed1a2e6bd40a432ef9a2f14be08986e808ce1028c",
+      "targetHash": "88af643e9403d75abf3956ef92bc9a8370afe79e3ff66ab354efb649cea1641b",
+      "receiptFile": "d1-056e0bc1-d5a4-4b11-a13d-7021438ee480.json",
+      "receiptSha256": "f63834cca5f849b83f95031e4c183a18019898144a9b1175275f7bea60111d10",
+      "reportFile": "d1-056e0bc1-d5a4-4b11-a13d-7021438ee480.vitest.json"
+    },
+    {
+      "slug": "settlement",
+      "provider": "dynamodb",
+      "runId": "f95a6ec3-71aa-445f-9d0a-2faeef31d1f9",
+      "criteria": [
+        "F80-STORE"
+      ],
+      "sourceFingerprint": "7206f7b38f51f8beb9b29ac7ed3b1258a7c6993d317a5505d5dd97cb8f8a3b1e",
+      "artifacts": [
+        {
+          "path": "app.json",
+          "sha256": "67032616162a844af3c539db79c1ba3e0c8a9ffbbe6f0b247eefec928030fd2f"
+        },
+        {
+          "path": "d1/0001_init.sql",
+          "sha256": "23902e6092b3382f24f02700d501bee23a34aeb95b38954de67ba51c9a573001"
+        },
+        {
+          "path": "postgres/0001_init.sql",
+          "sha256": "1e7ad5b0b9560c663ccdb44858918162c45d3dd0f6cbdb06b4a4589dac2a4d20"
+        }
+      ],
+      "testReportSha256": "cb35dc7880e2d96b509a0631a464fa4101d04cafae9f200e58bfdd17c4dfe99c",
+      "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+      "receiptFile": "dynamodb-f95a6ec3-71aa-445f-9d0a-2faeef31d1f9.json",
+      "receiptSha256": "063389a9260d6e609235e3916c57a2525d70ad2a74e4ba633d22ad3bcdda721e",
+      "reportFile": "dynamodb-f95a6ec3-71aa-445f-9d0a-2faeef31d1f9.vitest.json"
+    }
+  ]
+}

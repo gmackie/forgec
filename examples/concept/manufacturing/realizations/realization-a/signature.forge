@@ -1,0 +1,17 @@
+resource Batch { id : id }
+resource Machine { id : id }
+resource MaintenanceOrder { id : id }
+resource QualityHold { id : id }
+resource TemperatureWindow { id : id }
+function CalculateTemperatureWindow @http(POST, "/realization-a/CalculateTemperatureWindow") { input Batch.Record
+ output TemperatureWindow.Record }
+function DetectExcursion @http(POST, "/realization-a/DetectExcursion") { input Batch.Record
+ output QualityHold.Record }
+function MaintainEquipment @http(POST, "/realization-a/MaintainEquipment") { input Batch.Record
+ output MaintenanceOrder.Record }
+function MaintainMachine @http(POST, "/realization-a/MaintainMachine") { input Batch.Record
+ output Machine.Record }
+function ReceiveTelemetry @http(POST, "/realization-a/ReceiveTelemetry") { input Batch.Record
+ output Batch.Record }
+function TrackBatch @http(POST, "/realization-a/TrackBatch") { input Batch.Record
+ output Batch.Record }

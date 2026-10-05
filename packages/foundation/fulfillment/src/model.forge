@@ -1,0 +1,107 @@
+import specification
+import evidence
+
+export enum FulfillmentOutcome {
+  completed
+  failed
+  cancelled
+}
+export enum FulfillmentCoverage {
+  complete
+  partial
+  none
+}
+export resource FulfillmentSet
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+/// Executor-specific handle; domain satellites own human/agent/equipment details.
+export resource FulfillmentExecutor
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  find by key
+}
+export resource Fulfillment
+  @tenant
+  @appendOnly
+{
+  id : id
+  fulfillmentSet : FulfillmentSet
+  ordinal : integer >= 1
+  specificationPin : specification.SpecificationPin?
+  executor : FulfillmentExecutor
+  requestedAt : datetime
+  evidence : evidence.EvidenceSeal?
+  unique fulfillmentSet, ordinal
+  list by fulfillmentSet
+    order by ordinal asc
+}
+export resource FulfillmentStart
+  @tenant
+  @appendOnly
+{
+  id : id
+  fulfillment : Fulfillment @unique
+  beganAt : datetime
+  recordedBy : text length 1..128
+  rules {
+    beganAt >= fulfillment.requestedAt
+  }
+  find by fulfillment
+}
+/// Terminal business observation wins over any late execution-start report.
+export resource FulfillmentEnd
+  @tenant
+  @appendOnly
+{
+  id : id
+  fulfillment : Fulfillment @unique
+  start : FulfillmentStart?
+  outcome : FulfillmentOutcome
+  coverage : FulfillmentCoverage
+  endedAt : datetime
+  evidence : evidence.EvidenceSeal?
+  reason : text length 1..500
+  recordedBy : text length 1..128
+  rules {
+    endedAt >= fulfillment.requestedAt
+    start == null || (start.fulfillment == fulfillment && endedAt >= start.beganAt)
+    (outcome == FulfillmentOutcome.cancelled && coverage == FulfillmentCoverage.none) || (start != null && ( (outcome == FulfillmentOutcome.failed && coverage == FulfillmentCoverage.none) || (outcome == FulfillmentOutcome.completed && coverage != FulfillmentCoverage.none)))
+  }
+  find by fulfillment
+}
+export resource FulfillmentReplacement
+  @tenant
+  @appendOnly
+{
+  id : id
+  prior : Fulfillment @unique
+  priorEnd : FulfillmentEnd
+  replacement : Fulfillment @unique
+  reason : text length 1..500
+  rules {
+    priorEnd.fulfillment == prior
+    replacement.fulfillmentSet == prior.fulfillmentSet
+    replacement.ordinal > prior.ordinal
+  }
+  find by prior
+}
+/// Kernel task address, not an application EntityRef or business request payload.
+export resource FulfillmentTaskLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  fulfillment : Fulfillment
+  queue : text length 1..128
+  task : text length 1..128
+  unique queue, task
+  find by queue, task
+  list by fulfillment
+}

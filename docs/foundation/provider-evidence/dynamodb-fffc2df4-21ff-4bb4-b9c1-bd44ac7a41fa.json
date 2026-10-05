@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "suite": "providers",
+  "profile": "foundation-publication-invariants/1",
+  "coverageCriteria": [
+    "F48-STORE"
+  ],
+  "status": "passing",
+  "runId": "fffc2df4-21ff-4bb4-b9c1-bd44ac7a41fa",
+  "provider": "dynamodb",
+  "topology": "aws-dynamodb-hosted",
+  "targetHash": "bab6b8d8b50e63db1796d3748a0c0d832ea02e43f8484cdcf68ab0fb922d3946",
+  "sourceFingerprint": "343cb7827b1d5dbe74f13feef144b0b7d5ec62fe0b0ef7c8344e05d852f604b9",
+  "artifacts": [
+    {
+      "path": "app.json",
+      "sha256": "3f39fb1338ee2927506b289f9ee9bf4184087cc6a48f3281a11d56f60d123009"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "35537e104697527dd7b3ce8981b52db80a92d7bf89cc267cac5db2331febdeef"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "b40a6106a4c033a8e52c4fdec93ca22981a04815daaa011795caeb12a77fc284"
+    }
+  ],
+  "requestedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous Decision timestamps cannot prove prior candidate binding",
+    "hosted: post-hoc evaluation binding cannot be laundered through future business timestamps",
+    "hosted: all qualification policies, exact release pins and four domain satellites",
+    "hosted: failed gates reject publication and promotion races preserve the journal",
+    "hosted: deprecation history, hidden journal and denied writes fail closed"
+  ],
+  "certification": "executed profile only; acceptance requires matching PostgreSQL, hosted D1 and hosted DynamoDB receipts",
+  "verifiedAt": "2026-09-23T05:03:53.079Z",
+  "passedTraces": [
+    "hosted: ambiguous or legacy timestamps cannot establish authority ordering",
+    "hosted: ambiguous Decision timestamps cannot prove prior candidate binding",
+    "hosted: post-hoc evaluation binding cannot be laundered through future business timestamps",
+    "hosted: all qualification policies, exact release pins and four domain satellites",
+    "hosted: failed gates reject publication and promotion races preserve the journal",
+    "hosted: deprecation history, hidden journal and denied writes fail closed"
+  ],
+  "testReportSha256": "effb9a67f77de9ff2daabdf9c3fece36951e2e8ee16e70b4e6f4d01613191e97",
+  "identity": {
+    "provider": "dynamodb",
+    "runId": "fffc2df4-21ff-4bb4-b9c1-bd44ac7a41fa",
+    "tenantPrefix": "foundation-cert-fffc2df4-21ff-4bb4-b9c1-bd44ac7a41fa",
+    "observed": {
+      "service": "aws-dynamodb",
+      "region": "us-east-1",
+      "tableArnHash": "5a3c96c128dfb4302f2a4288d1a275944161314e06eeb8b71767e5df6367f677",
+      "tableStatus": "ACTIVE"
+    },
+    "objectStore": "memory object-store test double; database durability only",
+    "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+  }
+}

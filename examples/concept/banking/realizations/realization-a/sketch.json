@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Cloudflare Workflows + Durable Objects",
+    "storage": "D1 + R2",
+    "transport": "Queues",
+    "conflict": "CRDT",
+    "query": "H3",
+    "batchSize": 100,
+    "concurrency": 8,
+    "cacheTtl": 30
+  },
+  "obligations": [
+    "Double-entry and atomic balanced posting are explicit gaps: uniqueness is insufficient. Hospital dose limits and commerce refund ceilings recur without implying a new primitive yet.",
+    "As-of selects accounting time; recorded-at corrections need bitemporal treatment shared with benefits and insurance."
+  ]
+}

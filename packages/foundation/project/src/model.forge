@@ -1,0 +1,85 @@
+import planning-budget
+import party
+import participation
+import specification
+import fulfillment
+import evaluation
+import usage
+import scheduling
+import allocation
+export resource Program @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ sponsor : party.Party
+ scope : specification.SpecificationPin
+}
+export resource Project @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ program : Program?
+ scope : specification.SpecificationPin
+ sponsor : party.Party
+ owner : party.Party
+ participants : participation.ParticipationSet
+ plan : planning-budget.Plan
+ goal : planning-budget.Goal
+ budget : planning-budget.FundingEnvelope?
+ forecast : planning-budget.ForecastScenario?
+ workCount : integer >= 1 <= 16
+ dependencyCount : integer >= 0 <= 32
+ rules { goal.plan == plan
+ budget == null || budget.plan == plan
+ forecast == null || forecast.plan == plan }
+}
+/// Hierarchy is scope decomposition, not a dependency edge or runtime Task.
+export resource WorkPackage @tenant @appendOnly {
+ id : id
+ project : Project
+ ordinal : integer >= 1 <= 16
+ key : text length 1..128
+ parent : WorkPackage?
+ depth : integer >= 1 <= 16
+ scope : specification.SpecificationPin
+ planned : decimal<6> >= 0
+ unit : text length 1..64
+ from : datetime
+ until : datetime
+ milestone : planning-budget.Milestone?
+ fulfillment : fulfillment.Fulfillment @unique
+ usage : usage.UsageStream? @unique
+ allocation : allocation.AllocationReservation?
+ appointment : scheduling.Appointment?
+ rules { ordinal <= project.workCount
+ (parent == null && depth == 1) || (parent != null && parent.project == project && depth == parent.depth + 1)
+ from < until
+ milestone == null || milestone.plan == project.plan }
+ unique project, ordinal
+ unique project, key
+ list by project
+}
+export enum ProjectDependencyKind { finishToStart
+ startToStart
+ finishToFinish }
+export resource ProjectDependency @tenant @appendOnly {
+ id : id
+ project : Project
+ ordinal : integer >= 1 <= 32
+ predecessor : WorkPackage
+ successor : WorkPackage
+ kind : ProjectDependencyKind
+ rules { ordinal <= project.dependencyCount
+ predecessor.project == project
+ successor.project == project
+ predecessor != successor }
+ unique project, ordinal
+ unique predecessor, successor, kind
+ list by project
+}
+export resource ProjectMilestoneResult @tenant @appendOnly {
+ id : id
+ work : WorkPackage
+ milestone : planning-budget.Milestone
+ evaluation : evaluation.EvaluationFinish
+ rules { milestone == work.milestone
+ evaluation.outcome == "Completed" }
+}

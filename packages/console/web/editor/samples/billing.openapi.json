@@ -1,0 +1,77 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Vendor Billing", "version": "1.0.0" },
+  "servers": [{ "url": "https://billing.vendor.example/v1" }],
+  "paths": {
+    "/invoices": {
+      "post": {
+        "operationId": "createInvoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InvoiceCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Invoice" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/{invoiceId}": {
+      "get": {
+        "operationId": "getInvoice",
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invoice",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Invoice" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "InvoiceCreate": {
+        "type": "object",
+        "required": ["customer_id", "amount", "currency"],
+        "properties": {
+          "customer_id": { "type": "string" },
+          "amount": { "type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$" },
+          "currency": { "type": "string", "enum": ["USD", "EUR"] },
+          "memo": { "type": "string", "maxLength": 200 }
+        }
+      },
+      "Invoice": {
+        "type": "object",
+        "required": ["id", "amount", "currency"],
+        "properties": {
+          "id": { "type": "string" },
+          "customer_id": { "type": "string" },
+          "amount": { "type": "string" },
+          "currency": { "type": "string", "enum": ["USD", "EUR"] }
+        }
+      }
+    }
+  }
+}

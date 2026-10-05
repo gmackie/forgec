@@ -1,0 +1,87 @@
+import fulfillment
+resource DevelopmentRequest
+  @tenant
+  @appendOnly
+{
+  id : id
+  issueKey : text length 1..128
+  runs : fulfillment.FulfillmentSet @unique
+}
+resource DevelopmentOutcome
+  @tenant
+  @appendOnly
+{
+  id : id
+  request : DevelopmentRequest
+  execution : fulfillment.Fulfillment @unique
+  commitSha : text length 40..40 pattern "^[a-f0-9]{40}$"
+  rules {
+    execution.fulfillmentSet == request.runs
+  }
+}
+resource LabRequest
+  @tenant
+  @appendOnly
+{
+  id : id
+  assay : text length 1..128
+  requestedSamples : integer >= 1
+  runs : fulfillment.FulfillmentSet @unique
+}
+resource LabOutcome
+  @tenant
+  @appendOnly
+{
+  id : id
+  request : LabRequest
+  execution : fulfillment.Fulfillment @unique
+  processedSamples : integer >= 1
+  reportCode : text length 1..128
+  rules {
+    execution.fulfillmentSet == request.runs
+    processedSamples <= request.requestedSamples
+  }
+}
+resource ProvisioningRequest
+  @tenant
+  @appendOnly
+{
+  id : id
+  workspaceName : text length 1..128
+  runs : fulfillment.FulfillmentSet @unique
+}
+resource ProvisioningOutcome
+  @tenant
+  @appendOnly
+{
+  id : id
+  request : ProvisioningRequest
+  execution : fulfillment.Fulfillment @unique
+  provisionedEndpoint : text length 1..2048
+  rules {
+    execution.fulfillmentSet == request.runs
+  }
+}
+resource BobRunner
+  @tenant
+  @appendOnly
+{
+  id : id
+  executor : fulfillment.FulfillmentExecutor @unique
+  runnerKey : text length 1..128
+}
+shape DevelopmentWorkInput {
+  fulfillment : fulfillment.Fulfillment
+  request : DevelopmentRequest
+}
+shape DevelopmentWorkOutput {
+  issueKey : text length 1..128
+}
+function DevelopmentWork {
+  input DevelopmentWorkInput
+  output DevelopmentWorkOutput
+  uses {
+    DevelopmentRequest read
+    fulfillment.Fulfillment read
+  }
+}

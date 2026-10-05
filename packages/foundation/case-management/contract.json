@@ -1,0 +1,90 @@
+{
+  "slug": "case-management",
+  "layer": "system",
+  "issue": 125,
+  "dependencies": [
+    "party",
+    "participation",
+    "specification",
+    "evidence",
+    "artifact",
+    "evaluation",
+    "decision",
+    "fulfillment",
+    "collaboration"
+  ],
+  "facts": [
+    "SupportCase",
+    "CareEpisode",
+    "InvestigationCase",
+    "LegalMatter"
+  ],
+  "operations": [
+    "case-management authorized runtime services"
+  ],
+  "invariants": [
+    "Durable adaptive case with typed subject ownership and participation",
+    "Authorized file interaction decision and fulfillment activity",
+    "Evidence-backed milestones and explicit entry criteria",
+    "Serialized transfer escalation closure and reopening history",
+    "Support healthcare investigation and legal consumer profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F125-01",
+      "description": "Durable adaptive case with typed subject ownership and participation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-case-management.test.ts"
+      ]
+    },
+    {
+      "id": "F125-02",
+      "description": "Authorized file interaction decision and fulfillment activity",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-case-management.test.ts"
+      ]
+    },
+    {
+      "id": "F125-03",
+      "description": "Evidence-backed milestones and explicit entry criteria",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-case-management.test.ts"
+      ]
+    },
+    {
+      "id": "F125-04",
+      "description": "Serialized transfer escalation closure and reopening history",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-case-management.test.ts"
+      ]
+    },
+    {
+      "id": "F125-05",
+      "description": "Support healthcare investigation and legal consumer profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-case-management.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "SupportCase",
+    "CareEpisode",
+    "InvestigationCase",
+    "LegalMatter"
+  ]
+}

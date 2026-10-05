@@ -1,0 +1,160 @@
+import reconciliation
+import identifiers
+import delivery
+import fulfillment
+import lineage
+import evidence
+export enum SyncDirection {
+  Inbound
+  Outbound
+  Bidirectional
+}
+export enum SyncAuthority {
+  External
+  Internal
+  Manual
+}
+export resource Connection
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  provider : text length 1..128
+  credentialBinding : text length 1..128
+  direction : SyncDirection
+  authority : SyncAuthority
+  reconciliation : reconciliation.ReconciliationScope
+}
+export resource ExternalMapping
+  @tenant
+  @appendOnly
+{
+  id : id
+  connection : Connection
+  identifier : identifiers.Identifier
+  node : lineage.LineageNode
+  unique connection, identifier
+}
+export resource WebhookReceipt
+  @tenant
+  @appendOnly
+{
+  id : id
+  connection : Connection
+  providerEvent : text length 1..200
+  digest : text length 64..64 pattern "^[0-9a-f]{64}$"
+  support : evidence.EvidenceSeal
+  unique connection, providerEvent
+  find by connection, providerEvent
+}
+export resource SyncRun
+  @tenant
+  @appendOnly
+{
+  id : id
+  connection : Connection
+  key : text length 1..128
+  before : SyncCursor?
+  afterToken : text length 1..500
+  expectedCount : integer >= 1 <= 128
+  fulfillment : fulfillment.Fulfillment
+  desired : reconciliation.DesiredRevision
+  rules {
+    connection.direction != SyncDirection.Outbound
+    before == null || before.connection == connection
+    desired.scope == connection.reconciliation
+    fulfillment.specificationPin == desired.pin
+  }
+  unique connection, key
+}
+export resource AcceptedRecord
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : SyncRun
+  mapping : ExternalMapping
+  connection : Connection
+  ordinal : integer >= 1 <= 128
+  previous : AcceptedRecord?
+  support : evidence.EvidenceSeal
+  lineage : lineage.LineageRelation
+  sourceNode : lineage.LineageNode
+  rules {
+    run.connection == connection && mapping.connection == connection
+    mapping.node == sourceNode && lineage.source == sourceNode
+    ordinal <= run.expectedCount
+    (previous == null && ordinal == 1) || (previous != null && previous.run == run && previous.ordinal == ordinal - 1)
+  }
+  unique run, ordinal
+  find by run, ordinal
+}
+export resource SyncSeal
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : SyncRun @unique
+  head : AcceptedRecord
+  count : integer >= 1 <= 128
+  rules {
+    head.run == run && head.ordinal == count && count == run.expectedCount
+  }
+}
+export resource SyncCursor
+  @tenant
+  @appendOnly
+{
+  id : id
+  connection : Connection
+  ordinal : integer >= 1 <= 128
+  previous : SyncCursor?
+  run : SyncRun
+  seal : SyncSeal
+  token : text length 1..500
+  rules {
+    run.connection == connection && run.before == previous
+    seal.run == run && token == run.afterToken
+    (previous == null && ordinal == 1) || (previous != null && previous.connection == connection && previous.ordinal == ordinal - 1)
+  }
+  unique connection, ordinal
+  find by connection, ordinal
+}
+export resource SyncConflict
+  @tenant
+  @appendOnly
+{
+  id : id
+  mapping : ExternalMapping
+  connection : Connection
+  desired : reconciliation.DesiredRevision
+  drift : reconciliation.Drift
+  description : text length 1..1000
+  rules {
+    mapping.connection == connection && drift.desired == desired
+    desired.scope == connection.reconciliation
+  }
+}
+export resource SyncResolution
+  @tenant
+  @appendOnly
+{
+  id : id
+  conflict : SyncConflict @unique
+  authority : SyncAuthority
+  support : evidence.EvidenceSeal
+  reason : text length 1..500
+}
+export resource OutboundDelivery
+  @tenant
+  @appendOnly
+{
+  id : id
+  connection : Connection
+  mapping : ExternalMapping
+  intent : delivery.DeliveryIntent
+  rules {
+    connection.direction != SyncDirection.Inbound && mapping.connection == connection
+  }
+}

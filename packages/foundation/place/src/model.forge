@@ -1,0 +1,55 @@
+import identifiers
+
+/// Identity survives containment moves. Kernel audit preserves committed changes.
+export resource Place
+  @tenant
+  @versioned
+  @audited
+  @hierarchical
+{
+  id : id
+  identifiers : identifiers.IdentifierSet @immutable @unique
+  name : text trim length 1..200
+  find by identifiers
+}
+
+/// Address is an optional typed extension, never the identity of a Place.
+export resource PlaceAddressRevision
+  @tenant
+  @appendOnly
+{
+  id : id
+  place : Place
+  revision : integer >= 1
+  previous : PlaceAddressRevision?
+  line1 : text length 1..200
+  line2 : text? length 1..200
+  locality : text length 1..100
+  region : text? length 1..100
+  postalCode : text? length 1..32
+  countryCode : text uppercase length 2..2 pattern "^[A-Z]{2}$"
+  rules {
+    (revision == 1 && previous == null) || (previous != null && previous.place == place && revision > previous.revision)
+  }
+  unique place, revision
+  list by place
+    order by revision desc
+}
+
+/// A separate history lets virtual or addressless places have a timezone.
+export resource PlaceTimezoneRevision
+  @tenant
+  @appendOnly
+{
+  id : id
+  place : Place
+  revision : integer >= 1
+  previous : PlaceTimezoneRevision?
+  zone : timezone
+  rules {
+    (revision == 1 && previous == null) || (previous != null && previous.place == place && revision > previous.revision)
+  }
+  unique place, revision
+  list by place
+    order by revision desc
+}

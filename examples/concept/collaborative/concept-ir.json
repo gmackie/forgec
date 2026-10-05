@@ -1,0 +1,2195 @@
+{
+  "version": "concept-ir/2",
+  "package": "@corpus/collaborative",
+  "entities": {
+    "@corpus/collaborative/_/Comment": {
+      "name": "Comment",
+      "fields": {
+        "author": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "text": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/collaborative/_/Document": {
+      "name": "Document",
+      "fields": {
+        "contentDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "workspace": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/collaborative/_/Membership": {
+      "name": "Membership",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "member": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "role": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "workspace": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/collaborative/_/Share": {
+      "name": "Share",
+      "fields": {
+        "document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "recipient": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/collaborative/_/Version": {
+      "name": "Version",
+      "fields": {
+        "contentDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "parentVersion": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "@corpus/collaborative/_/Workspace": {
+      "name": "Workspace",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "name": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "parent": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": false,
+          "default": null,
+          "derived": null
+        },
+        "tenant": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      },
+      "invariants": [
+        {
+          "name": "tenantIdentity",
+          "fields": [
+            "id"
+          ],
+          "within": [
+            "tenant"
+          ]
+        }
+      ],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": true,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {
+    "@corpus/collaborative/_/CommentAdded": {
+      "name": "CommentAdded",
+      "fields": {
+        "comment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Comment",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/collaborative/_/DocumentEdited": {
+      "name": "DocumentEdited",
+      "fields": {
+        "actor": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "baseVersion": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Version",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "patchDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/collaborative/_/DocumentRestored": {
+      "name": "DocumentRestored",
+      "fields": {
+        "actor": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "version": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Version",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/collaborative/_/ShareGranted": {
+      "name": "ShareGranted",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "share": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Share",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/collaborative/_/ShareRevoked": {
+      "name": "ShareRevoked",
+      "fields": {
+        "effectiveAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "share": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Share",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    },
+    "@corpus/collaborative/_/VersionPublished": {
+      "name": "VersionPublished",
+      "fields": {
+        "id": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "occurredAt": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "datetime",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "sourceDigest": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "text",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "subject": {
+          "ty": {
+            "base": {
+              "kind": "scalar",
+              "name": "id",
+              "args": []
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        },
+        "version": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Version",
+              "representation": "reference"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": "@corpus/collaborative/_/Sensitive",
+            "purpose": "@corpus/collaborative/_/Collaboration"
+          },
+          "immutable": true,
+          "default": null,
+          "derived": null
+        }
+      }
+    }
+  },
+  "externals": {
+    "@corpus/collaborative/_/NotificationService": {
+      "name": "NotificationService",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/collaborative/_/Workspace",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "Comment": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/collaborative/_/Comment",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/collaborative/_/Workspace",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/collaborative/_/OfflineClient": {
+      "name": "OfflineClient",
+      "data": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/collaborative/_/Workspace",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      },
+      "events": [
+        "Updated"
+      ],
+      "accepts": {
+        "record": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/collaborative/_/Workspace",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "principals": {
+    "@corpus/collaborative/_/Operator": {
+      "name": "Operator",
+      "attributes": {
+        "purpose": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "role": {
+          "base": {
+            "kind": "scalar",
+            "name": "text",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "subject": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        },
+        "tenant": {
+          "base": {
+            "kind": "scalar",
+            "name": "id",
+            "args": []
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    }
+  },
+  "policies": {
+    "@corpus/collaborative/_/ScopedAccess": {
+      "name": "ScopedAccess",
+      "principal": "@corpus/collaborative/_/Operator",
+      "resource": {
+        "base": {
+          "kind": "entity",
+          "id": "@corpus/collaborative/_/Workspace",
+          "representation": "record"
+        },
+        "optional": false,
+        "constraints": [],
+        "normalizers": [],
+        "dataClass": null,
+        "purpose": null
+      },
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "requiredAttributes": [
+        "principal.purpose",
+        "principal.role",
+        "principal.subject",
+        "principal.tenant",
+        "resource.id",
+        "resource.tenant",
+        "resource.workspace"
+      ],
+      "effect": "permit",
+      "predicate": {
+        "kind": "binary",
+        "op": "&&",
+        "lhs": {
+          "kind": "binary",
+          "op": "&&",
+          "lhs": {
+            "kind": "binary",
+            "op": "==",
+            "lhs": {
+              "kind": "name",
+              "path": [
+                "principal",
+                "tenant"
+              ]
+            },
+            "rhs": {
+              "kind": "name",
+              "path": [
+                "resource",
+                "tenant"
+              ]
+            }
+          },
+          "rhs": {
+            "kind": "binary",
+            "op": "&&",
+            "lhs": {
+              "kind": "binary",
+              "op": "==",
+              "lhs": {
+                "kind": "name",
+                "path": [
+                  "principal",
+                  "purpose"
+                ]
+              },
+              "rhs": {
+                "kind": "literal",
+                "literal": {
+                  "type": "string",
+                  "value": "Collaboration"
+                }
+              }
+            },
+            "rhs": {
+              "kind": "call",
+              "callee": [
+                "roleAllows"
+              ],
+              "args": [
+                {
+                  "kind": "name",
+                  "path": [
+                    "principal",
+                    "role"
+                  ]
+                },
+                {
+                  "kind": "name",
+                  "path": [
+                    "resource",
+                    "id"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "rhs": {
+          "kind": "call",
+          "callee": [
+            "inheritedWorkspaceMemberOrExplicitShare"
+          ],
+          "args": [
+            {
+              "kind": "name",
+              "path": [
+                "principal",
+                "subject"
+              ]
+            },
+            {
+              "kind": "name",
+              "path": [
+                "resource",
+                "workspace"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "processes": {
+    "@corpus/collaborative/_/MaintainDocument": {
+      "name": "MaintainDocument",
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "principal": "@corpus/collaborative/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/collaborative/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/collaborative/_/MaintainDocument#activation:DocumentEdited": {
+          "kind": "fact",
+          "fact": "@corpus/collaborative/_/DocumentEdited"
+        },
+        "@corpus/collaborative/_/MaintainDocument#activation:DocumentRestored": {
+          "kind": "fact",
+          "fact": "@corpus/collaborative/_/DocumentRestored"
+        }
+      },
+      "inputs": {
+        "@corpus/collaborative/_/MaintainDocument#input:DocumentEdited": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/DocumentEdited"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/collaborative/_/MaintainDocument#input:DocumentRestored": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/DocumentRestored"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/collaborative/_/MaintainDocument#output:Document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": {
+        "workflow": null,
+        "stateMachine": null,
+        "stateful": {
+          "base": {
+            "kind": "entity",
+            "id": "@corpus/collaborative/_/Document",
+            "representation": "record"
+          },
+          "optional": false,
+          "constraints": [],
+          "normalizers": [],
+          "dataClass": null,
+          "purpose": null
+        }
+      }
+    },
+    "@corpus/collaborative/_/ManageComment": {
+      "name": "ManageComment",
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "principal": "@corpus/collaborative/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/collaborative/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/collaborative/_/ManageComment#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/collaborative/_/ManageComment#input:Document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/collaborative/_/ManageComment#output:Comment": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Comment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/collaborative/_/ManageComment#output:CommentAdded": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/CommentAdded"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/collaborative/_/ManageComment#output:external": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Comment",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "export",
+            "external": "@corpus/collaborative/_/NotificationService"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/collaborative/_/ManageShare": {
+      "name": "ManageShare",
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "principal": "@corpus/collaborative/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/collaborative/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/collaborative/_/ManageShare#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/collaborative/_/ManageShare#input:Document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        },
+        "@corpus/collaborative/_/ManageShare#input:Membership": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Membership",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/collaborative/_/ManageShare#output:Share": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Share",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/collaborative/_/ManageShare#output:ShareGranted": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/ShareGranted"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        },
+        "@corpus/collaborative/_/ManageShare#output:ShareRevoked": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/ShareRevoked"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/collaborative/_/ManageWorkspace": {
+      "name": "ManageWorkspace",
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "principal": "@corpus/collaborative/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/collaborative/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/collaborative/_/ManageWorkspace#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {},
+      "outputs": {
+        "@corpus/collaborative/_/ManageWorkspace#output:Membership": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Membership",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/collaborative/_/ManageWorkspace#output:Workspace": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/collaborative/_/PublishVersion": {
+      "name": "PublishVersion",
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "principal": "@corpus/collaborative/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/collaborative/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/collaborative/_/PublishVersion#activation:change": {
+          "kind": "change",
+          "entity": "@corpus/collaborative/_/Document"
+        }
+      },
+      "inputs": {
+        "@corpus/collaborative/_/PublishVersion#input:Document": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Document",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": {
+              "kind": "name",
+              "path": [
+                "request",
+                "versionAt"
+              ]
+            }
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/collaborative/_/PublishVersion#output:Version": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Version",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "produceEntity"
+          }
+        },
+        "@corpus/collaborative/_/PublishVersion#output:VersionPublished": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/VersionPublished"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/collaborative/_/ReceiveEdits": {
+      "name": "ReceiveEdits",
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "principal": "@corpus/collaborative/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/collaborative/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/collaborative/_/ReceiveEdits#activation:external": {
+          "kind": "externalEvent",
+          "external": "@corpus/collaborative/_/OfflineClient",
+          "event": "Updated"
+        },
+        "@corpus/collaborative/_/ReceiveEdits#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/collaborative/_/ReceiveEdits#input:Workspace": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "external",
+            "external": "@corpus/collaborative/_/OfflineClient"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/collaborative/_/ReceiveEdits#output:DocumentEdited": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/DocumentEdited"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    },
+    "@corpus/collaborative/_/RestoreVersion": {
+      "name": "RestoreVersion",
+      "purpose": "@corpus/collaborative/_/Collaboration",
+      "principal": "@corpus/collaborative/_/Operator",
+      "authorizations": [
+        {
+          "policy": "@corpus/collaborative/_/ScopedAccess",
+          "mode": "requireAll"
+        }
+      ],
+      "activations": {
+        "@corpus/collaborative/_/RestoreVersion#activation:request": {
+          "kind": "request",
+          "payload": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Workspace",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          }
+        }
+      },
+      "inputs": {
+        "@corpus/collaborative/_/RestoreVersion#input:Version": {
+          "ty": {
+            "base": {
+              "kind": "entity",
+              "id": "@corpus/collaborative/_/Version",
+              "representation": "record"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "origin": {
+            "kind": "internal"
+          },
+          "selection": {
+            "cardinality": "one",
+            "forBinding": "subject",
+            "predicate": null,
+            "during": null,
+            "asOf": null
+          },
+          "authorization": {
+            "policy": "@corpus/collaborative/_/ScopedAccess",
+            "mode": "requireAll"
+          }
+        }
+      },
+      "outputs": {
+        "@corpus/collaborative/_/RestoreVersion#output:DocumentRestored": {
+          "ty": {
+            "base": {
+              "kind": "fact",
+              "id": "@corpus/collaborative/_/DocumentRestored"
+            },
+            "optional": false,
+            "constraints": [],
+            "normalizers": [],
+            "dataClass": null,
+            "purpose": null
+          },
+          "disposition": {
+            "kind": "emitFact"
+          }
+        }
+      },
+      "behavior": null
+    }
+  },
+  "purposes": {
+    "@corpus/collaborative/_/Collaboration": {
+      "id": "@corpus/collaborative/_/Collaboration",
+      "name": "Collaboration",
+      "exported": false
+    }
+  },
+  "dataClasses": {
+    "@corpus/collaborative/_/Sensitive": {
+      "id": "@corpus/collaborative/_/Sensitive",
+      "name": "Sensitive",
+      "exported": false,
+      "extends": "data.customer"
+    }
+  },
+  "shapes": {},
+  "enums": {}
+}

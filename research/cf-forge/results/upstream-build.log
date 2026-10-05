@@ -1,0 +1,25 @@
+
+> @cloudflare/forge-transformer-sdk-ts@0.1.0 build /Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-forge-transformer-sdk-ts
+> tsx scripts/build-package.ts
+
+note: baseline generated SDK not found at /Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-forge-sdk-ts/src/_generated; skipping baseline-sdk.tar packaging
+node:fs:440
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-fern-config/fern/openapi.json'
+    at readFileSync (node:fs:440:20)
+    at <anonymous> (/Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-forge-transformer-sdk-ts/scripts/build-package.ts:57:28)
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-fern-config/fern/openapi.json'
+}
+
+Node.js v22.22.0
+/Volumes/dev/.worktrees/cf_forge/investigation/packages/cloudflare-forge-transformer-sdk-ts:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @cloudflare/forge-transformer-sdk-ts@0.1.0 build: `tsx scripts/build-package.ts`
+Exit status 1

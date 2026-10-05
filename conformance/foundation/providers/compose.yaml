@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: forge
+      POSTGRES_PASSWORD: foundation-test-only
+      POSTGRES_DB: forge_foundation
+    ports:
+      - "127.0.0.1:${FORGE_FOUNDATION_PG_PORT:-55479}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forge -d forge_foundation"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    tmpfs:
+      - /var/lib/postgresql/data

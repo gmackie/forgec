@@ -1,0 +1,30 @@
+import evaluation
+resource ChangeVerification @tenant @appendOnly {
+  id : id
+  run : evaluation.EvaluationRun @unique
+  commit : text length 40..40
+  testsPassed : integer >= 0
+  testsFailed : integer >= 0
+}
+resource LevelEvaluation @tenant @appendOnly {
+  id : id
+  run : evaluation.EvaluationRun @unique
+  candidate : text length 1..100
+  reachable : boolean
+  difficulty : decimal<3> >= 0
+}
+resource LanguageModelEvaluation @tenant @appendOnly {
+  id : id
+  run : evaluation.EvaluationRun @unique
+  modelRevision : text length 1..100
+  datasetRevision : text length 1..100
+  accuracy : decimal<3> >= 0 <= 1
+}
+resource Inspection @tenant @appendOnly {
+  id : id
+  run : evaluation.EvaluationRun @unique
+  lot : text length 1..100
+  diameter : decimal<3> >= 0
+  unit : text length 1..20
+  acceptable : boolean
+}

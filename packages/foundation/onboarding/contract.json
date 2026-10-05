@@ -1,0 +1,93 @@
+{
+  "slug": "onboarding",
+  "layer": "system",
+  "issue": 135,
+  "dependencies": [
+    "case-management",
+    "intake",
+    "qualification",
+    "party-relationship",
+    "access-governance",
+    "delegation",
+    "specification",
+    "evaluation",
+    "decision",
+    "evidence",
+    "fulfillment",
+    "records"
+  ],
+  "facts": [
+    "EmployeeOnboarding",
+    "VendorOnboarding",
+    "TenantOnboarding",
+    "DeviceOnboarding"
+  ],
+  "operations": [
+    "onboarding authorized runtime services"
+  ],
+  "invariants": [
+    "Accepted intake, qualification and decision explain activation",
+    "Fixed ordered provisioning gates compose relationship, access, delegation and configuration",
+    "Activation requires every gate and complete provisioning",
+    "Offboarding explicitly revokes all linked grants and ends relationships",
+    "Cleanup, transfer, obligation review and retention remain evidenced history"
+  ],
+  "acceptance": [
+    {
+      "id": "F135-01",
+      "description": "Accepted intake, qualification and decision explain activation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-onboarding.test.ts"
+      ]
+    },
+    {
+      "id": "F135-02",
+      "description": "Fixed ordered provisioning gates compose relationship, access, delegation and configuration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-onboarding.test.ts"
+      ]
+    },
+    {
+      "id": "F135-03",
+      "description": "Activation requires every gate and complete provisioning",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-onboarding.test.ts"
+      ]
+    },
+    {
+      "id": "F135-04",
+      "description": "Offboarding explicitly revokes all linked grants and ends relationships",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-onboarding.test.ts"
+      ]
+    },
+    {
+      "id": "F135-05",
+      "description": "Cleanup, transfer, obligation review and retention remain evidenced history",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-onboarding.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "EmployeeOnboarding",
+    "VendorOnboarding",
+    "TenantOnboarding",
+    "DeviceOnboarding"
+  ]
+}

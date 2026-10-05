@@ -1,0 +1,10 @@
+flowchart LR
+  ReviseMission -->|owns| Mission
+  SensorGateway --> ObserveScene --> PerceptionSnapshot
+  Mission --> AssessPlan
+  PerceptionSnapshot --> AssessPlan
+  TrajectorySolver <--> AssessPlan
+  AssessPlan --> PlanAssessment --> AdvanceMission
+  Mission --> AdvanceMission
+  AdvanceMission --> CommandDecision --> ReviseMission
+  AdvanceMission <--> LocalController

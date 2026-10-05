@@ -1,0 +1,82 @@
+import {Effect} from 'effect';
+import {expect,it} from 'vitest';
+import {foundation,foundationAdapters} from './helpers/foundation.js';
+import {MasterData} from '../src/foundation/master-data.js';
+import {Decisions} from '../src/foundation/decision.js';
+import {Participations} from '../src/foundation/participation.js';
+import {Evaluations} from '../src/foundation/evaluation.js';
+import {Evidence} from '../src/foundation/evidence.js';
+import {Reconciliations} from '../src/foundation/reconciliation.js';
+import {localAuthorizer} from '../src/gatekeeper.js';
+const p='@forgegraph/foundation/master-data/_/',i='@forgegraph/foundation/identifiers/_/',l='@forgegraph/foundation/lineage/_/',e='@forgegraph/foundation/evaluation/_/',s='@forgegraph/foundation/specification/_/',r='@forgegraph/foundation/reconciliation/_/',pp='@forgegraph/foundation/participation/_/',d='@fixture/master-data-consumer/_/';
+const run=Effect.runPromise,at='2026-01-01T00:00:00Z';
+for(const adapter of foundationAdapters)it(`${adapter}: typed resolution, validated survivorship, competing merges and reversible immutable history`,async()=>{
+ const f=await foundation('master-data',adapter,true),{call,ctx,engine}=f;
+ try{
+  const master=new MasterData(engine),decisions=new Decisions(engine),evaluations=new Evaluations(engine);
+  const voters=new Participations(engine,{namespace:'resolution',roles:['steward']});
+  const participationSet=await call(pp+'ParticipationSet.create',{label:'Stewards'});
+  await run(voters.registerRole('steward',ctx));
+  const party=await call('@forgegraph/foundation/party/_/Party.create',{label:'Steward'});
+  const voter=await run(voters.add({participationSet:String(participationSet.id),participant:String(party.id),role:'steward',validFrom:at,reason:'Appointed'},ctx));
+  const repo=await call(s+'Repository.create',{key:'matching',provider:'git',locator:'https://example.test/match'});
+  const pin=await call(s+'SpecificationPin.create',{repository:repo.id,anchor:'match',revision:'a'.repeat(40)});
+  const bundle=await call('@forgegraph/foundation/evidence/_/EvidenceBundle.create',{key:'match',label:'Match evidence'});
+  const seal=await run(new Evidence(engine).seal(String(bundle.id),null,ctx));
+  const set=await call(e+'EvaluationSet.create',{label:'Matches'}),executor=await call(e+'EvaluationExecutor.create',{key:'matcher',label:'Matcher'});
+  const domains=[];
+  for(const type of ['Customer','Supplier','Asset']){
+   const domain=await call(p+'ResolutionDomain.create',{key:type});domains.push(domain);
+   const graph=await call(l+'LineageGraph.create',{label:type});
+   const sourceNode=await call(l+'LineageNode.create',{graph:graph.id,rank:1,label:'Source'});
+   const initialNode=await call(l+'LineageNode.create',{graph:graph.id,rank:2,label:'Initial'});
+   const targetNode=await call(l+'LineageNode.create',{graph:graph.id,rank:3,label:'Survivor'});
+   const identifiers=await call(i+'IdentifierSet.create',{label:type});
+   const identifier=await call(i+'Identifier.create',{identifierSet:identifiers.id,namespace:type.toLowerCase(),issuer:null,issuerScope:'namespace',value:'42',validFrom:at,validUntil:null});
+   await expect(call(i+'Identifier.create',{identifierSet:identifiers.id,namespace:type.toUpperCase(),issuer:null,issuerScope:'namespace',value:'42',validFrom:at,validUntil:null})).rejects.toThrow();
+   const scope=await call(r+'ReconciliationScope.create',{key:type});
+   const desired=await call(r+'DesiredRevision.create',{scope:scope.id,sequence:1,pin:pin.id});
+   const desiredEvent=await run(new Reconciliations(engine).publish(String(scope.id),String(desired.id),'Desired',null,ctx));
+   const source=await call(p+'SourceRecord.create',{domain:domain.id,identifier:identifier.id,node:sourceNode.id,reconciliation:scope.id});
+   const original=await call(p+'CanonicalRecord.create',{domain:domain.id,node:initialNode.id,key:'original'});
+   const target=await call(p+'CanonicalRecord.create',{domain:domain.id,node:targetNode.id,key:'survivor'});
+   const entity=await call(d+type+'.create',{canonical:original.id,[type==='Asset'?'serial':'name']:'Domain record'});
+   await call(d+type+'Source.create',{source:source.id,[type.toLowerCase()]:entity.id});
+   if(type==='Supplier')await expect(call(d+'CustomerSource.create',{source:source.id,customer:entity.id})).rejects.toThrow();
+   const first=await run(master.initialize(String(source.id),String(original.id),{...ctx,idempotencyKey:'init-'+type}));
+   expect(await run(master.initialize(String(source.id),String(original.id),{...ctx,idempotencyKey:'init-'+type}))).toEqual(first);
+   const evaluation=await run(evaluations.create({evaluationSet:String(set.id),definition:String(pin.id),executor:String(executor.id)},ctx));
+   await run(evaluations.start(String(evaluation.id),at,ctx));
+   const finish=await run(evaluations.finish(String(evaluation.id),'Completed',at,'Match',ctx,String(seal.id)));
+   const decision=await run(decisions.open({participationSet:String(participationSet.id),electors:[String(voter.id)],eligibilityAt:at,deadline:'2027-01-01T00:00:00Z',options:['Survivor'],rule:'Single',evaluation:String(finish.id)},ctx));
+   await run(decisions.respond(String(decision.id),String(voter.id),[0],ctx));
+   const outcome=await run(decisions.finalize(String(decision.id),ctx));
+   const terminal=(await run(decisions.state(String(decision.id),ctx))).terminal!;
+   const resolution=await call(p+'ResolutionCase.create',{source:source.id,candidate:target.id,evaluation:evaluation.id,finish:finish.id,decision:decision.id,desired:desired.id,desiredEvent:desiredEvent.id});
+   const lineage=await call(l+'LineageRelation.create',{graph:graph.id,source:sourceNode.id,target:targetNode.id,kind:'Derived',definition:pin.id,supersedes:null,revision:1});
+   const choice=await call(p+'ResolutionChoice.create',{resolution:resolution.id,canonical:target.id,decision:decision.id,option:outcome.selected});
+   const survival=await call(p+'SurvivorshipDecision.create',{resolution:resolution.id,choice:choice.id,canonical:target.id,decision:decision.id,outcome:outcome.id,terminal:terminal.id,option:outcome.selected,lineage:lineage.id,sourceNode:sourceNode.id,targetNode:targetNode.id,source:source.id});
+   await expect(call(p+'SurvivorshipDecision.create',{resolution:resolution.id,choice:choice.id,canonical:original.id,decision:decision.id,outcome:outcome.id,terminal:terminal.id,option:outcome.selected,lineage:lineage.id,sourceNode:sourceNode.id,targetNode:targetNode.id,source:source.id})).rejects.toThrow();
+   const race=await Promise.allSettled([run(master.merge(String(source.id),String(survival.id),String(first.id),ctx)),run(master.merge(String(source.id),String(survival.id),String(first.id),ctx))]);
+   expect(race.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+   expect(race.filter(x=>x.status==='rejected')).toHaveLength(1);
+   const merged=(await run(master.state(String(source.id),ctx))).current!;
+   expect(merged.canonical).toBe(target.id);
+   const restored=await run(master.unmerge(String(source.id),String(merged.id),{...ctx,idempotencyKey:'undo-'+type}));
+   expect(await run(new MasterData(engine).unmerge(String(source.id),String(merged.id),{...ctx,idempotencyKey:'undo-'+type}))).toEqual(restored);
+   const history=await run(master.state(String(source.id),ctx));
+   expect(history.history).toHaveLength(3);expect(history.current?.canonical).toBe(original.id);
+   await expect(run(master.merge(String(source.id),String(survival.id),String(first.id),ctx))).rejects.toThrow();
+   await expect(call(p+'CanonicalLink.delete',{id:merged.id})).rejects.toThrow();
+   await expect(run(master.state(String(source.id),{...ctx,tenant:'foreign'}))).rejects.toThrow();
+   await expect(call(p+'SourceRecord.create',{domain:domain.id,identifier:identifier.id,node:sourceNode.id,reconciliation:scope.id},{...ctx,tenant:'foreign'})).rejects.toThrow();
+   if(type==='Asset'){
+    const wrong=await call(p+'CanonicalRecord.create',{domain:domains[0]!.id,node:targetNode.id,key:'foreign-domain'});
+    await expect(call(p+'CanonicalLink.create',{source:source.id,canonical:wrong.id,ordinal:4,previous:restored.id,from:original.id,kind:'Merge',survivorship:survival.id})).rejects.toThrow();
+    engine.gatekeeper.authorizer=localAuthorizer({policies:[{id:'source',actions:[p+'SourceRecord.*'],requires:[],where:[]}],pips:[],epoch:1,knownObligations:[]});
+    await expect(run(master.state(String(source.id),ctx))).rejects.toThrow();
+    await expect(run(master.unmerge(String(source.id),String(merged.id),ctx))).rejects.toThrow();
+   }
+  }
+ }finally{await f.close();}
+});

@@ -1,0 +1,92 @@
+{
+  "slug": "routing",
+  "layer": "system",
+  "issue": 57,
+  "dependencies": [
+    "fulfillment",
+    "qualification",
+    "availability",
+    "allocation",
+    "participation",
+    "party"
+  ],
+  "facts": [
+    "Need/context, candidates, explainable assignment offer and accept/decline/expire history."
+  ],
+  "operations": [
+    "evaluate typed candidate with pinned qualification and caller-owned explanation/rank",
+    "offer; accept atomically with capacity and unique request assignment; closeOffer declined/expired",
+    "consume with eligibility revalidation; release invalidated assignment; attachExecution"
+  ],
+  "invariants": [
+    "Place/priority, workforce positions and appointment integration are upper-layer joins; no dependency on Scheduling or Workforce.",
+    "Support/technician/reviewer/Bob; reject stale or expired eligibility; revalidate snapshot on accept; atomic capacity claim; competing accepts and expiry.",
+    "Qualification/Participation terminal absence is guarded by unique key in the assignment/capacity transaction; later invalidation fails closed on consumption and remains explicitly releasable",
+    "Offer expiry is evaluated before publication; provider-clock commit-time expiry is not claimed"
+  ],
+  "acceptance": [
+    {
+      "id": "F57-01",
+      "description": "routing request/context",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-routing.test.ts"
+      ]
+    },
+    {
+      "id": "F57-02",
+      "description": "candidate eligibility from Qualification/Availability",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-routing.test.ts"
+      ]
+    },
+    {
+      "id": "F57-03",
+      "description": "capacity/allocation integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-routing.test.ts"
+      ]
+    },
+    {
+      "id": "F57-04",
+      "description": "explainable routing decision",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-routing.test.ts"
+      ]
+    },
+    {
+      "id": "F57-05",
+      "description": "assignment offer/accept/decline lifecycle",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-routing.test.ts"
+      ]
+    },
+    {
+      "id": "F57-06",
+      "description": "fixtures for support agent, technician, reviewer and Bob Runner/business assignment",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-routing.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "fixtures for support agent, technician, reviewer and Bob Runner/business assignment"
+  ]
+}

@@ -1,0 +1,11 @@
+export shape ReleaseMarker {
+  key : text length 1..64
+  tag : text length 1..72
+}
+export shape MarkerResult {
+  applied : boolean
+}
+export function CheckRelease {
+  input ReleaseMarker
+  output MarkerResult
+}

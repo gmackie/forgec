@@ -1,0 +1,164 @@
+/// How to reach something. Contact points reach people, endpoints reach systems.
+///
+/// These are two resources rather than one polymorphic locator because a data
+/// classification is a property of a field, not of a row. One `value` column would have to
+/// be classified once: as contact data, which sweeps webhook URLs into subject-rights
+/// erasure that does not apply to them, or as structural, which under-classifies an email
+/// address. Neither is acceptable, so the split is in the model.
+///
+/// No transport mechanics live here. A locator says where something can be reached, never
+/// how a provider delivers to it, what retry policy applies, or whether a message was sent.
+/// Delivery #38 and Notifications #50 own those.
+export dataClass ContactValue extends data.contact
+export type ContactValueText = text trim length 1..320 @data(ContactValue)
+
+export resource LocatorSet
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+
+/// Kinds are a registry rather than an enum so an application can add `mcp` or a queue
+/// dialect without a language change. `personal` is what keeps the two profiles apart, and
+/// it is enforced by a rule on each of them rather than by convention.
+export resource LocatorKind
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..64 @unique
+  label : text length 1..200
+  personal : boolean
+  find by key
+  list by personal
+}
+
+/// Purpose is a label on reachability, not a governance purpose and not a notification
+/// preference: `billing` says which address to use for invoices, never whether the subject
+/// agreed to receive them. Consent and preference are separate facts elsewhere.
+export resource LocatorPurpose
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..64 @unique
+  label : text length 1..200
+  find by key
+}
+
+export resource ContactPoint
+  @tenant
+  @appendOnly
+{
+  id : id
+  locatorSet : LocatorSet
+  kind : LocatorKind
+  purpose : LocatorPurpose
+  value : ContactValueText
+  preference : integer >= 1 <= 64
+  validFrom : datetime
+  validUntil : datetime?
+  rules {
+    kind.personal == true
+    validUntil == null || validUntil > validFrom
+  }
+  unique locatorSet, kind, purpose, value
+  unique locatorSet, kind, purpose, preference
+  find by locatorSet, kind, purpose, value
+  list by locatorSet
+  list by locatorSet, kind, purpose
+    order by preference asc
+}
+
+export resource Endpoint
+  @tenant
+  @appendOnly
+{
+  id : id
+  locatorSet : LocatorSet
+  kind : LocatorKind
+  purpose : LocatorPurpose
+  value : text trim length 1..2048
+  preference : integer >= 1 <= 64
+  validFrom : datetime
+  validUntil : datetime?
+  rules {
+    kind.personal == false
+    validUntil == null || validUntil > validFrom
+  }
+  unique locatorSet, kind, purpose, value
+  unique locatorSet, kind, purpose, preference
+  find by locatorSet, kind, purpose, value
+  list by locatorSet
+  list by locatorSet, kind, purpose
+    order by preference asc
+}
+
+/// Verification is evidence that a locator reached who it claimed to, kept separate from
+/// the locator so an unverified address is still a usable fact rather than a missing one.
+export resource ContactPointVerification
+  @tenant
+  @appendOnly
+{
+  id : id
+  contactPoint : ContactPoint @unique
+  verifiedAt : datetime
+  method : text trim lowercase length 1..64
+  evidence : text length 1..500
+  rules {
+    verifiedAt >= contactPoint.validFrom
+  }
+  find by contactPoint
+}
+
+export resource EndpointVerification
+  @tenant
+  @appendOnly
+{
+  id : id
+  endpoint : Endpoint @unique
+  verifiedAt : datetime
+  method : text trim lowercase length 1..64
+  evidence : text length 1..500
+  rules {
+    verifiedAt >= endpoint.validFrom
+  }
+  find by endpoint
+}
+
+/// One terminal disposition per locator. A replacement must belong to the same set and kind
+/// and begin exactly where the old one ends, so supersession chains move strictly forward
+/// and cannot cycle. Uniqueness makes two racing revoke/supersede attempts fail atomically.
+export resource ContactPointDisposition
+  @tenant
+  @appendOnly
+{
+  id : id
+  contactPoint : ContactPoint @unique
+  replacement : ContactPoint?
+  effectiveAt : datetime
+  reason : text length 1..500
+  rules {
+    effectiveAt >= contactPoint.validFrom
+    replacement == null || (replacement.locatorSet == contactPoint.locatorSet && replacement.kind == contactPoint.kind && replacement.validFrom > contactPoint.validFrom && effectiveAt == replacement.validFrom)
+  }
+  find by contactPoint
+}
+
+export resource EndpointDisposition
+  @tenant
+  @appendOnly
+{
+  id : id
+  endpoint : Endpoint @unique
+  replacement : Endpoint?
+  effectiveAt : datetime
+  reason : text length 1..500
+  rules {
+    effectiveAt >= endpoint.validFrom
+    replacement == null || (replacement.locatorSet == endpoint.locatorSet && replacement.kind == endpoint.kind && replacement.validFrom > endpoint.validFrom && effectiveAt == replacement.validFrom)
+  }
+  find by endpoint
+}

@@ -1,0 +1,402 @@
+import decision
+import specification
+import participation
+import entitlement
+import evaluation
+import artifact
+import evidence
+import party
+export resource Catalog
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+  find by key
+}
+export resource CatalogEntry
+  @tenant
+  @appendOnly
+{
+  id : id
+  catalog : Catalog
+  key : text length 1..128
+  specification : specification.SpecificationPin
+  unique catalog, key
+  find by catalog, key
+}
+export resource Offer
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  entry : CatalogEntry
+  revision : integer >= 1
+  previous : Offer? @unique
+  supplier : party.Party
+  terms : specification.SpecificationPin
+  document : artifact.ArtifactRevision?
+  support : evidence.EvidenceSeal?
+  evaluation : evaluation.EvaluationFinish?
+  right : entitlement.RightDefinition?
+  requirement : entitlement.RequirementDefinition?
+  scope : entitlement.EntitlementScope
+  validFrom : datetime
+  validUntil : datetime
+  rules {
+    validUntil > validFrom
+    document == null || document.specificationPin == terms
+    (previous == null && revision == 1) || (previous != null && previous.entry == entry && previous.supplier == supplier && revision == previous.revision + 1)
+  }
+  unique entry, revision
+  find by entry, revision
+}
+export resource OfferQualification
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  offer : Offer
+  decisionCase : decision.DecisionCase @unique
+  approvedOption : decision.DecisionOption
+  rules {
+    approvedOption.decisionCase == decisionCase
+  }
+  find by decisionCase
+}
+export enum AgreementChange {
+  Original
+  Renewal
+  Amendment
+}
+export resource AgreementAcceptance
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  acceptanceKey : text length 1..128 @unique
+  offer : Offer
+  supplier : party.Party
+  customer : party.Party
+  supplierParticipation : participation.Participation
+  customerParticipation : participation.Participation
+  supplierEnd : participation.ParticipationEnd?
+  customerEnd : participation.ParticipationEnd?
+  qualification : OfferQualification
+  approvalOption : decision.DecisionOption
+  approval : decision.DecisionOutcome
+  terms : specification.SpecificationPin
+  document : artifact.ArtifactRevision?
+  offerValidFrom : datetime
+  offerValidUntil : datetime
+  validFrom : datetime
+  validUntil : datetime
+  predecessor : Agreement?
+  change : AgreementChange
+  recordedBy : text length 1..128
+  rules {
+    offerValidFrom == offer.validFrom
+    offerValidUntil == offer.validUntil
+    qualification.offer == offer
+    qualification.decisionCase == approval.decisionCase
+    qualification.approvedOption == approvalOption
+    approval.selected == approvalOption
+    supplier == offer.supplier
+    supplier != customer
+    supplierParticipation.participant == supplier
+    customerParticipation.participant == customer
+    supplierParticipation.participationSet == customerParticipation.participationSet
+    supplierEnd == null || (supplierEnd.participation == supplierParticipation && createdAt < supplierEnd.effectiveAt)
+    customerEnd == null || (customerEnd.participation == customerParticipation && createdAt < customerEnd.effectiveAt)
+    supplierParticipation.validFrom <= createdAt
+    customerParticipation.validFrom <= createdAt
+    supplierParticipation.validUntil == null || createdAt < supplierParticipation.validUntil
+    customerParticipation.validUntil == null || createdAt < customerParticipation.validUntil
+    createdAt >= offer.validFrom
+    createdAt < offer.validUntil
+    terms == offer.terms
+    document == offer.document
+    validUntil > validFrom
+    validFrom >= createdAt
+    (predecessor == null) == (change == AgreementChange.Original)
+    predecessor == null || predecessor.offer != offer
+    predecessor == null || (predecessor.customer == customer && predecessor.supplier == supplier)
+    change != AgreementChange.Renewal || validFrom >= predecessor.validUntil
+  }
+  find by acceptanceKey
+}
+export resource AgreementAcceptanceCommit
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  acceptance : AgreementAcceptance @unique
+  acceptanceKey : text length 1..128 @unique
+  offer : Offer
+  supplier : party.Party
+  customer : party.Party
+  supplierParticipation : participation.Participation
+  customerParticipation : participation.Participation
+  supplierEnd : participation.ParticipationEnd?
+  customerEnd : participation.ParticipationEnd?
+  qualification : OfferQualification
+  approvalOption : decision.DecisionOption
+  approval : decision.DecisionOutcome
+  terms : specification.SpecificationPin
+  document : artifact.ArtifactRevision?
+  offerValidFrom : datetime
+  offerValidUntil : datetime
+  validFrom : datetime
+  validUntil : datetime
+  predecessor : Agreement?
+  change : AgreementChange
+  recordedBy : text length 1..128
+  rules {
+    createdAt >= acceptance.createdAt
+    acceptanceKey == acceptance.acceptanceKey
+    offer == acceptance.offer
+    supplier == acceptance.supplier
+    customer == acceptance.customer
+    supplierParticipation == acceptance.supplierParticipation
+    customerParticipation == acceptance.customerParticipation
+    supplierEnd == acceptance.supplierEnd
+    customerEnd == acceptance.customerEnd
+    qualification == acceptance.qualification
+    approvalOption == acceptance.approvalOption
+    approval == acceptance.approval
+    terms == acceptance.terms
+    document == acceptance.document
+    offerValidFrom == acceptance.offerValidFrom
+    offerValidUntil == acceptance.offerValidUntil
+    validFrom == acceptance.validFrom
+    validUntil == acceptance.validUntil
+    predecessor == acceptance.predecessor
+    change == acceptance.change
+    recordedBy == acceptance.recordedBy
+
+    offerValidFrom == offer.validFrom
+    offerValidUntil == offer.validUntil
+    qualification.offer == offer
+    qualification.decisionCase == approval.decisionCase
+    qualification.approvedOption == approvalOption
+    approval.selected == approvalOption
+    supplier == offer.supplier
+    supplier != customer
+    supplierParticipation.participant == supplier
+    customerParticipation.participant == customer
+    supplierParticipation.participationSet == customerParticipation.participationSet
+    supplierEnd == null || (supplierEnd.participation == supplierParticipation && createdAt < supplierEnd.effectiveAt)
+    customerEnd == null || (customerEnd.participation == customerParticipation && createdAt < customerEnd.effectiveAt)
+    supplierParticipation.validFrom <= createdAt
+    customerParticipation.validFrom <= createdAt
+    supplierParticipation.validUntil == null || createdAt < supplierParticipation.validUntil
+    customerParticipation.validUntil == null || createdAt < customerParticipation.validUntil
+    createdAt >= offer.validFrom
+    createdAt < offer.validUntil
+    terms == offer.terms
+    document == offer.document
+    validUntil > validFrom
+    validFrom >= createdAt
+    (predecessor == null) == (change == AgreementChange.Original)
+    predecessor == null || predecessor.offer != offer
+    predecessor == null || (predecessor.customer == customer && predecessor.supplier == supplier)
+    change != AgreementChange.Renewal || validFrom >= predecessor.validUntil
+  }
+  find by acceptance
+}
+export resource Agreement
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  acceptance : AgreementAcceptanceCommit?
+  acceptanceKey : text length 1..128 @unique
+  offer : Offer
+  supplier : party.Party
+  customer : party.Party
+  supplierParticipation : participation.Participation
+  customerParticipation : participation.Participation
+  supplierEnd : participation.ParticipationEnd?
+  customerEnd : participation.ParticipationEnd?
+  qualification : OfferQualification
+  approvalOption : decision.DecisionOption
+  approval : decision.DecisionOutcome
+  terms : specification.SpecificationPin
+  document : artifact.ArtifactRevision?
+  validFrom : datetime
+  validUntil : datetime
+  predecessor : Agreement? @unique
+  change : AgreementChange
+  recordedBy : text length 1..128
+  rules {
+    acceptance == null || acceptanceKey == acceptance.acceptanceKey
+    acceptance == null || offer == acceptance.offer
+    acceptance == null || supplier == acceptance.supplier
+    acceptance == null || customer == acceptance.customer
+    acceptance == null || supplierParticipation == acceptance.supplierParticipation
+    acceptance == null || customerParticipation == acceptance.customerParticipation
+    acceptance == null || supplierEnd == acceptance.supplierEnd
+    acceptance == null || customerEnd == acceptance.customerEnd
+    acceptance == null || qualification == acceptance.qualification
+    acceptance == null || approvalOption == acceptance.approvalOption
+    acceptance == null || approval == acceptance.approval
+    acceptance == null || terms == acceptance.terms
+    acceptance == null || document == acceptance.document
+    acceptance == null || validFrom == acceptance.validFrom
+    acceptance == null || validUntil == acceptance.validUntil
+    acceptance == null || predecessor == acceptance.predecessor
+    acceptance == null || change == acceptance.change
+    acceptance == null || recordedBy == acceptance.recordedBy
+
+    qualification.offer == offer
+    qualification.decisionCase == approval.decisionCase
+    qualification.approvedOption == approvalOption
+    approval.selected == approvalOption
+    supplier == offer.supplier
+    supplier != customer
+    supplierParticipation.participant == supplier
+    customerParticipation.participant == customer
+    supplierParticipation.participationSet == customerParticipation.participationSet
+    acceptance != null || (supplierEnd == null || (supplierEnd.participation == supplierParticipation && createdAt < supplierEnd.effectiveAt))
+    acceptance != null || (customerEnd == null || (customerEnd.participation == customerParticipation && createdAt < customerEnd.effectiveAt))
+    acceptance != null || (supplierParticipation.validFrom <= createdAt)
+    acceptance != null || (customerParticipation.validFrom <= createdAt)
+    acceptance != null || (supplierParticipation.validUntil == null || createdAt < supplierParticipation.validUntil)
+    acceptance != null || (customerParticipation.validUntil == null || createdAt < customerParticipation.validUntil)
+    acceptance != null || (createdAt >= offer.validFrom)
+    acceptance != null || (createdAt < offer.validUntil)
+    terms == offer.terms
+    document == offer.document
+    validUntil > validFrom
+    acceptance != null || (validFrom >= createdAt)
+    (predecessor == null) == (change == AgreementChange.Original)
+    predecessor == null || predecessor.offer != offer
+    predecessor == null || (predecessor.customer == customer && predecessor.supplier == supplier)
+    change != AgreementChange.Renewal || validFrom >= predecessor.validUntil
+  }
+  find by acceptanceKey
+}
+export enum AgreementSide {
+  Supplier
+  Customer
+}
+export resource AgreementParticipant
+  @tenant
+  @appendOnly
+{
+  id : id
+  agreement : Agreement
+  side : AgreementSide
+  participant : participation.Participation
+  rules {
+    (side == AgreementSide.Supplier && participant == agreement.supplierParticipation) || (side == AgreementSide.Customer && participant == agreement.customerParticipation)
+  }
+  unique agreement, side
+}
+export resource AgreementTermLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  agreement : Agreement @unique
+  specification : specification.SpecificationPin
+  artifact : artifact.ArtifactRevision?
+  rules {
+    specification == agreement.terms
+    artifact == agreement.document
+  }
+  find by agreement
+}
+export resource AgreementEntitlementLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  agreement : Agreement @unique
+  offer : Offer
+  entitlement : entitlement.Entitlement @unique
+  rules {
+    offer == agreement.offer
+    entitlement.holder == agreement.customer
+    entitlement.right == offer.right
+    entitlement.scope == offer.scope
+    entitlement.validFrom == agreement.validFrom
+    entitlement.validUntil == agreement.validUntil
+  }
+  find by agreement
+}
+export resource AgreementObligationLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  agreement : Agreement @unique
+  offer : Offer
+  obligation : entitlement.Obligation @unique
+  rules {
+    offer == agreement.offer
+    obligation.obligatedParty == agreement.customer
+    obligation.requirement == offer.requirement
+    obligation.scope == offer.scope
+    obligation.incurredAt == agreement.validFrom
+    obligation.dueAt == agreement.validUntil
+  }
+  find by agreement
+}
+export resource AgreementIssued
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  agreement : Agreement @unique
+  offer : Offer
+  terms : AgreementTermLink
+  supplier : AgreementParticipant
+  customer : AgreementParticipant
+  right : AgreementEntitlementLink?
+  duty : AgreementObligationLink?
+  rules {
+    offer == agreement.offer
+    terms.agreement == agreement
+    supplier.agreement == agreement && supplier.side == AgreementSide.Supplier
+    customer.agreement == agreement && customer.side == AgreementSide.Customer
+    (right != null) == (offer.right != null)
+    (duty != null) == (offer.requirement != null)
+    right == null || right.agreement == agreement
+    duty == null || duty.agreement == agreement
+  }
+  find by agreement
+}
+export enum AgreementEventKind {
+  Suspended
+  Resumed
+  Terminated
+}
+export resource AgreementEvent
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  agreement : Agreement
+  ordinal : integer >= 0 <= 31
+  previous : AgreementEvent? @unique
+  kind : AgreementEventKind
+  reason : text length 1..500
+  recordedBy : text length 1..128
+  rules {
+    (previous == null && ordinal == 0) || (previous != null && previous.agreement == agreement && ordinal == previous.ordinal + 1)
+    previous == null || previous.kind != AgreementEventKind.Terminated
+    kind != AgreementEventKind.Resumed || (previous != null && previous.kind == AgreementEventKind.Suspended)
+    kind != AgreementEventKind.Suspended || previous == null || previous.kind == AgreementEventKind.Resumed
+  }
+  unique agreement, ordinal
+  find by agreement, ordinal
+}

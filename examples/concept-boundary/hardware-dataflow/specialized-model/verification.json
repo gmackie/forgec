@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "status": "directed-simulation-passed",
+  "executed": true,
+  "tool": {
+    "name": "Icarus Verilog",
+    "version": "13.0 (devel) (s20221226-109-g8e5476227)"
+  },
+  "commands": [
+    "iverilog -g2012 -s elastic_stage_tb -o /tmp/forge-boundary-elastic.vvp elastic_stage.sv elastic_stage_tb.sv",
+    "vvp /tmp/forge-boundary-elastic.vvp"
+  ],
+  "workingDirectory": "examples/concept-boundary/hardware-dataflow/specialized-model",
+  "inputs": {
+    "elastic_stage.sv": "22473e3af1111a5da49d3e7b3aef4b49fb98f579980a3eec4673d1a5e5dea9ab",
+    "elastic_stage_tb.sv": "89bbc97ad4a5ba2a616ac61b85e0b8240f865e3f6ada2a821b28a51aafe2140c"
+  },
+  "assertions": [
+    "Output valid/data stable while stalled",
+    "Accepted samples emitted in order without duplicates",
+    "Occupancy between zero and one",
+    "Three samples accepted and emitted; drained at end"
+  ],
+  "result": {
+    "acceptedSamples": 3,
+    "emittedSamples": 3,
+    "maxOccupancy": 1
+  },
+  "negativeControl": {
+    "change": "Set in_ready = 1'b1 in temporary RTL",
+    "result": "Simulation fails: invalid occupancy at time 45"
+  },
+  "limitations": [
+    "Directed single-clock simulation only; not exhaustive proof.",
+    "No synthesis, timing closure, CDC analysis or board execution.",
+    "Reset discards buffered data; conservation checked between resets."
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "slug": "risk",
+  "layer": "system",
+  "issue": 61,
+  "dependencies": [
+    "evaluation",
+    "evidence",
+    "fulfillment",
+    "decision"
+  ],
+  "facts": [
+    "Risk: uncertain future harm scenario",
+    "RiskScale and RiskLevel: immutable domain-owned ordered likelihood/impact vocabulary",
+    "RiskAssessment: pinned evaluation and evidence with single successor revision",
+    "RiskTreatment, ResidualRisk and RiskAcceptance: typed work and authoritative decision links"
+  ],
+  "operations": [
+    "AssessRisk; RecordTreatment; LinkResidualAssessment",
+    "AcceptRiskFromDecision; ValidateAcceptance; bounded generated assessment history"
+  ],
+  "invariants": [
+    "Specification method pins, Assurance findings and Planning treatment budgets use upper typed bridges; no universal risk score.",
+    "Project/security/vendor risk; preserve assessment revisions; treatment completion is distinct from mitigation success; optional acceptance Decision; concurrent update guards."
+  ],
+  "acceptance": [
+    {
+      "id": "F61-01",
+      "description": "Risk + assessment model",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-risk.test.ts"
+      ]
+    },
+    {
+      "id": "F61-02",
+      "description": "likelihood/impact extensibility",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-risk.test.ts"
+      ]
+    },
+    {
+      "id": "F61-03",
+      "description": "treatment/mitigation linkage",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-risk.test.ts"
+      ]
+    },
+    {
+      "id": "F61-04",
+      "description": "residual-risk evaluation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-risk.test.ts"
+      ]
+    },
+    {
+      "id": "F61-05",
+      "description": "decision/evidence integration",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-risk.test.ts"
+      ]
+    },
+    {
+      "id": "F61-06",
+      "description": "fixtures for project, security and vendor risk",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-risk.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "fixtures for project, security and vendor risk"
+  ]
+}

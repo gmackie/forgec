@@ -1,0 +1,12 @@
+import allocation
+import ledger
+import usage
+export resource Publication
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  reservation : allocation.AllocationReservation?
+  find by key
+}

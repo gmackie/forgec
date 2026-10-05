@@ -26,9 +26,12 @@ pub const SCALARS: &[&str] = &[
     "json",
 ];
 const RESOURCE_DECORATORS: &[&str] = &[
+    "facet",
     "tenant",
     "timestamps",
     "softDelete",
+    "appendOnly",
+    "writeOnce",
     "versioned",
     "audited",
     "crud",
@@ -39,7 +42,7 @@ const RESOURCE_DECORATORS: &[&str] = &[
     "subject",
     "record",
 ];
-const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data"];
+const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data", "sequence", "secret"];
 /// Declarations and decorators that need `edition = "2027"`.
 const EDITION_2027_DECORATORS: &[&str] = &["purposeScoped", "subject", "data", "record"];
 const FUNCTION_DECORATORS: &[&str] = &["http", "label"];
@@ -49,7 +52,33 @@ const DEFAULT_MODULE: &str = "_";
 pub struct Compilation {
     pub ir: Option<DomainIR>,
     pub diagnostics: Vec<Diagnostic>,
-    files: Vec<SourceFile>,
+    /// Build-local UTF-8 spans, excluded from canonical DomainIR.
+    pub source_index: BTreeMap<String, SourceSpan>,
+    pub references: Vec<SourceReference>,
+    pub workflow_scopes: Vec<WorkflowScope>,
+    pub workflow_fields: BTreeMap<String, Vec<(String, TypeSpec)>>,
+    pub(crate) files: Vec<SourceFile>,
+    pub(crate) parsed: BTreeMap<String, Parse>,
+}
+
+/// Build-local bindings visible at a workflow source position, shared by IDE tooling.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct WorkflowScope {
+    pub span: SourceSpan,
+    pub workflow: String,
+    pub bindings: BTreeMap<String, TypeSpec>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct SourceSpan {
+    pub file: String,
+    pub start: usize,
+    pub end: usize,
+}
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct SourceReference {
+    pub span: SourceSpan,
+    pub target: String,
 }
 
 impl Compilation {
@@ -91,6 +120,7 @@ enum SymKind {
     Enum,
     Type,
     Shape,
+    Facet,
     Resource,
     Blob,
     Cache,
@@ -100,6 +130,8 @@ enum SymKind {
     Channel,
     Source,
     Workflow,
+    WorkQueue,
+    Actor,
     Purpose,
     DataClass,
 }
@@ -111,8 +143,48 @@ struct Symbol {
     decl: Declaration,
 }
 
+#[derive(Default)]
+pub(crate) struct DeclarationCache {
+    entries: BTreeMap<String, CachedDeclaration>,
+    pub hits: u64,
+    pub misses: u64,
+}
+#[derive(Clone)]
+struct CachedDeclaration {
+    key: String,
+    module: Module,
+    diagnostics: Vec<Diagnostic>,
+    references: Vec<SourceReference>,
+    scopes: Vec<WorkflowScope>,
+    fields: BTreeMap<String, Vec<(String, TypeSpec)>>,
+    origins: BTreeMap<String, SourceSpan>,
+    facets: BTreeMap<String, String>,
+}
+fn append_module(target: &mut Module, mut source: Module) {
+    target.id = source.id;
+    target.enums.append(&mut source.enums);
+    target.types.append(&mut source.types);
+    target.shapes.append(&mut source.shapes);
+    target.facets.append(&mut source.facets);
+    target.facet_origins.append(&mut source.facet_origins);
+    target.resources.append(&mut source.resources);
+    target.functions.append(&mut source.functions);
+    target.channels.append(&mut source.channels);
+    target.sources.append(&mut source.sources);
+    target.subscriptions.append(&mut source.subscriptions);
+    target.views.append(&mut source.views);
+    target.projections.append(&mut source.projections);
+    target.caches.append(&mut source.caches);
+    target.workflows.append(&mut source.workflows);
+    target.work_queues.append(&mut source.work_queues);
+    target.actors.append(&mut source.actors);
+    target.purposes.append(&mut source.purposes);
+    target.data_classes.append(&mut source.data_classes);
+}
+
 struct Ctx<'a> {
     pkg: &'a Package,
+    declaration_cache: Option<&'a mut DeclarationCache>,
     deps: BTreeMap<String, &'a DomainIR>,
     diags: Vec<Diagnostic>,
     files: Vec<ParsedFile>,
@@ -121,11 +193,20 @@ struct Ctx<'a> {
     imports: BTreeMap<String, BTreeSet<String>>,
     /// Resources whose fields are being derived right now (recursion guard).
     resolving: Vec<String>,
+    facet_origins: BTreeMap<String, String>,
+    references: Vec<SourceReference>,
+    workflow_scopes: Vec<WorkflowScope>,
+    workflow_fields: BTreeMap<String, Vec<(String, TypeSpec)>>,
+    workflow_origins: BTreeMap<String, SourceSpan>,
+    type_depth: usize,
+    source_http: BTreeMap<String, HttpBinding>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 /// Per-workflow lowering state: declared step ids, names bound so far, declared errors.
 struct WfScope {
+    workflow: String,
+    origins: BTreeMap<String, String>,
     ids: Vec<String>,
     bound: Vec<String>,
     errors: Vec<String>,
@@ -141,17 +222,34 @@ enum Resolved {
 }
 
 pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
+    compile_with_parser(pkg, deps, &mut |text| parse(text), None)
+}
+
+pub(crate) fn compile_with_parser(
+    pkg: &Package,
+    deps: &[&DomainIR],
+    parser: &mut impl FnMut(&str) -> Parse,
+    declaration_cache: Option<&mut DeclarationCache>,
+) -> Compilation {
     let mut files: Vec<&SourceFile> = pkg.files.iter().collect();
     files.sort_by_key(|a| norm_path(&a.path));
 
     let mut ctx = Ctx {
         pkg,
+        declaration_cache,
         deps: BTreeMap::new(),
         diags: Vec::new(),
         files: Vec::new(),
         symbols: BTreeMap::new(),
         imports: BTreeMap::new(),
         resolving: Vec::new(),
+        facet_origins: BTreeMap::new(),
+        references: Vec::new(),
+        workflow_scopes: Vec::new(),
+        workflow_fields: BTreeMap::new(),
+        workflow_origins: BTreeMap::new(),
+        type_depth: 0,
+        source_http: BTreeMap::new(),
     };
     for (alias, name) in &pkg.dependencies {
         match deps.iter().find(|d| &d.package.name == name) {
@@ -175,7 +273,7 @@ pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
     // 1. parse
     for f in &files {
         let path = norm_path(&f.path);
-        let parse = parse(&f.text);
+        let parse = parser(&f.text);
         for e in parse.errors() {
             ctx.diags.push(Diagnostic {
                 code: "E-SYN-001".into(),
@@ -212,7 +310,80 @@ pub fn compile(pkg: &Package, deps: &[&DomainIR]) -> Compilation {
     let has_errors = ctx.diags.iter().any(|d| d.is_error());
     ctx.diags
         .sort_by(|a, b| (&a.file, a.start, &a.code).cmp(&(&b.file, b.start, &b.code)));
+    let mut source_index = BTreeMap::new();
+    for ((module, name), symbol) in &ctx.symbols {
+        let id = ctx.id(module, name);
+        let span = |range: (usize, usize)| SourceSpan {
+            file: ctx.files[symbol.file].path.clone(),
+            start: range.0,
+            end: range.1,
+        };
+        source_index.insert(
+            id.clone(),
+            span((
+                u32::from(symbol.decl.syntax().text_range().start()) as usize,
+                u32::from(symbol.decl.syntax().text_range().end()) as usize,
+            )),
+        );
+        for node in symbol
+            .decl
+            .syntax()
+            .children()
+            .filter(|n| n.kind() == forgegraph_syntax::SyntaxKind::FIELD_DECL)
+        {
+            let field = ast::FieldDecl::cast(node).unwrap();
+            if let Some(name) = field.name() {
+                source_index.insert(
+                    format!("{id}#field:{}", name.text()),
+                    span(range_of(&field)),
+                );
+            }
+        }
+        if let Declaration::Resource(resource) = &symbol.decl {
+            for node in resource
+                .syntax()
+                .descendants()
+                .filter(|n| n.kind() == forgegraph_syntax::SyntaxKind::NAME_EXPR)
+            {
+                if let Some(q) = node.children().find_map(ast::QualifiedName::cast)
+                    && let [field] = q.segments().as_slice()
+                {
+                    let anchor = format!("{id}#field:{field}");
+                    if let Some(target) = ctx.facet_origins.get(&anchor) {
+                        ctx.references.push(SourceReference {
+                            span: span(range_of(&q)),
+                            target: target.clone(),
+                        });
+                    }
+                }
+            }
+        }
+    }
+    for (effective, origin) in &ctx.facet_origins {
+        if let Some(span) = source_index.get(origin).cloned() {
+            source_index.insert(effective.clone(), span);
+        }
+    }
+    ctx.references.sort_by(|a, b| {
+        (&a.span.file, a.span.start, a.span.end, &a.target).cmp(&(
+            &b.span.file,
+            b.span.start,
+            b.span.end,
+            &b.target,
+        ))
+    });
+    ctx.references.dedup();
+    source_index.extend(ctx.workflow_origins);
     Compilation {
+        source_index,
+        references: ctx.references,
+        workflow_scopes: ctx.workflow_scopes,
+        workflow_fields: ctx.workflow_fields,
+        parsed: ctx
+            .files
+            .iter()
+            .map(|f| (f.path.clone(), f.parse.clone()))
+            .collect(),
         ir: if has_errors { None } else { Some(ir) },
         diagnostics: ctx.diags,
         files: files
@@ -305,6 +476,7 @@ impl<'a> Ctx<'a> {
                     Declaration::Enum(_) => SymKind::Enum,
                     Declaration::Type(_) => SymKind::Type,
                     Declaration::Shape(_) => SymKind::Shape,
+                    Declaration::Facet(_) => SymKind::Facet,
                     Declaration::Resource(_) => SymKind::Resource,
                     Declaration::Blob(_) => SymKind::Blob,
                     Declaration::Cache(_) => SymKind::Cache,
@@ -313,6 +485,8 @@ impl<'a> Ctx<'a> {
                     Declaration::Function(_) => SymKind::Function,
                     Declaration::Channel(_) => SymKind::Channel,
                     Declaration::Source(_) => SymKind::Source,
+                    Declaration::Actor(_) => SymKind::Actor,
+                    Declaration::WorkQueue(_) => SymKind::WorkQueue,
                     Declaration::Workflow(_) => SymKind::Workflow,
                     Declaration::Purpose(_) => SymKind::Purpose,
                     Declaration::DataClass(_) => SymKind::DataClass,
@@ -403,6 +577,54 @@ impl<'a> Ctx<'a> {
         file: usize,
         range: (usize, usize),
     ) -> Option<Resolved> {
+        let resolved = self.resolve_inner(segs, module, file, range);
+        let target = match &resolved {
+            Some(Resolved::Function(id) | Resolved::Channel(id)) => Some(id.clone()),
+            Some(Resolved::Transition { resource, action }) => {
+                Some(format!("{resource}#lifecycle:status/transition:{action}"))
+            }
+            Some(Resolved::Type(ty)) => match ty {
+                TypeBase::Enum { id } | TypeBase::Shape { id } => Some(id.clone()),
+                TypeBase::Reference { resource }
+                | TypeBase::Record { resource }
+                | TypeBase::Identity { resource }
+                | TypeBase::Status { resource } => Some(resource.clone()),
+                TypeBase::Message { channel, message } => {
+                    Some(format!("{channel}#message:{message}"))
+                }
+                _ => None,
+            },
+            None => None,
+        };
+        // Preserve the declared alias as the navigation target, even when it lowers to a scalar.
+        let target = if let [name] = segs {
+            self.sym(module, name)
+                .filter(|s| s.kind == SymKind::Type)
+                .map(|_| self.id(module, name))
+                .or(target)
+        } else {
+            target
+        };
+        if let Some(target) = target {
+            self.references.push(SourceReference {
+                span: SourceSpan {
+                    file: self.files[file].path.clone(),
+                    start: range.0,
+                    end: range.1,
+                },
+                target,
+            });
+        }
+        resolved
+    }
+
+    fn resolve_inner(
+        &mut self,
+        segs: &[String],
+        module: &str,
+        file: usize,
+        range: (usize, usize),
+    ) -> Option<Resolved> {
         let text = segs.join(".");
         match segs {
             [a] => {
@@ -423,10 +645,13 @@ impl<'a> Ctx<'a> {
                         SymKind::Function => Resolved::Function(id),
                         SymKind::Channel => Resolved::Channel(id),
                         SymKind::Type => Resolved::Type(self.alias_base(module, a)),
-                        SymKind::Source
+                        SymKind::Facet
+                        | SymKind::Source
                         | SymKind::Cache
                         | SymKind::View
                         | SymKind::Projection
+                        | SymKind::Actor
+                        | SymKind::WorkQueue
                         | SymKind::Workflow
                         | SymKind::Purpose
                         | SymKind::DataClass => {
@@ -575,6 +800,16 @@ impl<'a> Ctx<'a> {
     }
 
     fn alias_base(&self, module: &str, name: &str) -> TypeBase {
+        self.alias_base_bounded(module, name, 0)
+    }
+    fn alias_base_bounded(&self, module: &str, name: &str, depth: usize) -> TypeBase {
+        // The normal type expansion reports the cycle; base lookup must not overflow first.
+        if depth >= 32 {
+            return TypeBase::Scalar {
+                name: "text".into(),
+                args: vec![],
+            };
+        }
         // A type alias contributes its base; refinements are merged by the caller.
         if let Some(Symbol {
             decl: Declaration::Type(t),
@@ -597,7 +832,7 @@ impl<'a> Ctx<'a> {
                         SymKind::Enum => TypeBase::Enum { id },
                         SymKind::Shape => TypeBase::Shape { id },
                         SymKind::Resource | SymKind::Blob => TypeBase::Reference { resource: id },
-                        SymKind::Type => self.alias_base(module, a),
+                        SymKind::Type => self.alias_base_bounded(module, a, depth + 1),
                         _ => TypeBase::Scalar {
                             name: "text".into(),
                             args: vec![],
@@ -772,10 +1007,66 @@ impl<'a> Ctx<'a> {
 
     // ------------------------------------------------------------ types
     fn type_spec(&mut self, te: &ast::TypeExpr, module: &str, file: usize) -> Option<TypeSpec> {
+        if self.type_depth >= 32 {
+            self.err(
+                "E-COLLECTION-003",
+                file,
+                range_of(te),
+                "type expansion exceeds the maximum depth or contains a recursive alias",
+                None,
+            );
+            return None;
+        }
+        self.type_depth += 1;
+        let result = self.type_spec_inner(te, module, file);
+        self.type_depth -= 1;
+        result
+    }
+    fn type_spec_inner(
+        &mut self,
+        te: &ast::TypeExpr,
+        module: &str,
+        file: usize,
+    ) -> Option<TypeSpec> {
         let tr = te.type_ref()?;
         let name = tr.name()?;
         let segs = name.segments();
-        let res = self.resolve(&segs, module, file, range_of(&name))?;
+        let collection = segs.len() == 1 && matches!(segs[0].as_str(), "list" | "set" | "map");
+        let res = if collection {
+            let types = tr.element_types();
+            let map = segs[0] == "map";
+            if types.len() != if map { 2 } else { 1 } {
+                self.err(
+                    "E-COLLECTION-001",
+                    file,
+                    range_of(&tr),
+                    "list/set require one element type; map requires text and a value type",
+                    None,
+                );
+                return None;
+            }
+            if map && types[0].syntax().text().to_string().trim() != "text" {
+                self.err(
+                    "E-COLLECTION-001",
+                    file,
+                    range_of(&tr),
+                    "map keys must be text",
+                    None,
+                );
+                return None;
+            }
+            let element = self.type_spec(types.last().unwrap(), module, file)?;
+            Resolved::Type(TypeBase::Collection {
+                collection: match segs[0].as_str() {
+                    "list" => CollectionKind::List,
+                    "set" => CollectionKind::Set,
+                    _ => CollectionKind::Map,
+                },
+                element: Box::new(element),
+            })
+        } else {
+            self.resolve(&segs, module, file, range_of(&name))?
+        };
         let Resolved::Type(mut base) = res else {
             self.err(
                 "E-TYPE-001",
@@ -791,7 +1082,7 @@ impl<'a> Ctx<'a> {
             if !args.is_empty() {
                 *a = args;
             }
-        } else if !args.is_empty() {
+        } else if !args.is_empty() && !collection {
             self.err(
                 "E-TYPE-002",
                 file,
@@ -802,6 +1093,7 @@ impl<'a> Ctx<'a> {
         }
         // Inherit alias refinements.
         let (mut normalizers, mut constraints) = (Vec::new(), Vec::new());
+        let mut inherited_data = None;
         if let [a] = segs.as_slice()
             && let Some(Symbol {
                 decl: Declaration::Type(t),
@@ -813,6 +1105,8 @@ impl<'a> Ctx<'a> {
             if let Some(spec) = self.type_spec(&inner, module, file) {
                 normalizers = spec.normalizers;
                 constraints = spec.constraints;
+                base = spec.base;
+                inherited_data = spec.data_class;
             }
         }
         for r in te.refinements() {
@@ -876,13 +1170,74 @@ impl<'a> Ctx<'a> {
                 ),
             }
         }
+        if let TypeBase::Collection { element, .. } = &base {
+            let upper = constraints
+                .iter()
+                .filter_map(|c| {
+                    if let Constraint::Length { max, .. } = c {
+                        *max
+                    } else {
+                        None
+                    }
+                })
+                .min();
+            let lower = constraints
+                .iter()
+                .filter_map(|c| {
+                    if let Constraint::Length { min, .. } = c {
+                        *min
+                    } else {
+                        None
+                    }
+                })
+                .max()
+                .unwrap_or(0);
+            if upper.is_none_or(|n| n > 1024 || n < lower)
+                || constraints
+                    .iter()
+                    .any(|c| !matches!(c, Constraint::Length { .. }))
+                || !normalizers.is_empty()
+            {
+                self.err("E-COLLECTION-002",file,range_of(te),"collections require consistent length bounds with an upper bound at most 1024 and no scalar refinements",None);
+            }
+            let mut depth = 1;
+            let mut nested = &element.base;
+            while let TypeBase::Collection { element, .. } = nested {
+                depth += 1;
+                nested = &element.base;
+            }
+            if depth > 4 {
+                self.err(
+                    "E-COLLECTION-003",
+                    file,
+                    range_of(te),
+                    "collection nesting exceeds the portable depth of four",
+                    None,
+                );
+            }
+        }
+        if let [a] = segs.as_slice()
+            && let Some(Symbol {
+                decl: Declaration::Type(alias),
+                ..
+            }) = self.sym(module, a)
+        {
+            let alias = alias.clone();
+            if let Some(d) = alias
+                .decorators()
+                .find(|d| d.name().is_some_and(|n| n.text() == "data"))
+                && let Some(ArgValue::Name(path)) = d.args().first().and_then(|a| a.value())
+            {
+                inherited_data = self.resolve_data_class_or_path(&path, module, file, range_of(&d));
+            }
+        }
         Some(TypeSpec {
             base,
             optional: te.is_optional(),
             normalizers,
             constraints,
             purpose: None,
-            data_class: None,
+            data_class: inherited_data,
         })
     }
 
@@ -921,6 +1276,8 @@ impl<'a> Ctx<'a> {
                         ),
                     }
                 }
+                "secret" if allowed_decorators.contains(&"secret") => {}
+                "sequence" if allowed_decorators.contains(&"sequence") => {}
                 "label" => {}
                 other => {
                     let sugg = suggest(other, allowed_decorators.iter().copied())
@@ -966,6 +1323,8 @@ impl<'a> Ctx<'a> {
                 ty,
                 default: None,
                 derived: ir,
+                sequence: None,
+                secret: false,
                 immutable: true,
                 server_owned: true,
                 synthesized: false,
@@ -1005,6 +1364,8 @@ impl<'a> Ctx<'a> {
             ty,
             default,
             derived: None,
+            sequence: None,
+            secret: false,
             immutable,
             server_owned: false,
             synthesized: false,
@@ -1299,7 +1660,7 @@ impl<'a> Ctx<'a> {
         None
     }
 
-    /// Validate `a.b.c` against a resource's fields, following references.
+    /// Validate resource paths against the runtime's single-reference-hop profile.
     fn check_path(
         &mut self,
         path: &[String],
@@ -1382,7 +1743,19 @@ impl<'a> Ctx<'a> {
             };
             if i + 1 < path.len() {
                 match &f.ty.base {
-                    TypeBase::Reference { resource } => current = resource.clone(),
+                    TypeBase::Reference { resource } => {
+                        if i > 0 {
+                            self.err(
+                                "E-EXPR-003",
+                                file,
+                                range,
+                                "expressions support only one reference hop; bind a direct reference instead",
+                                None,
+                            );
+                            return None;
+                        }
+                        current = resource.clone();
+                    }
                     _ => {
                         self.err(
                             "E-EXPR-002",
@@ -1442,6 +1815,7 @@ impl<'a> Ctx<'a> {
                 if !nested {
                     self.resolving.pop();
                 }
+                out.extend(self.applied_facets(&r, module, file));
                 self.diags.truncate(saved); // reported by the owning pass, not here
                 out.extend(self.synthesized_fields(
                     &self.decorators_of(&r),
@@ -1520,6 +1894,141 @@ impl<'a> Ctx<'a> {
         })
     }
 
+    /// Validate templates even when unused. Facets cannot supply derived fields or uniqueness.
+    fn facet_fields(&mut self, facet: &ast::FacetDecl, module: &str, file: usize) -> Vec<Field> {
+        let mut fields = Vec::new();
+        let mut names = BTreeSet::new();
+        for fd in facet.fields() {
+            let name = fd.name().map(|n| n.text().to_string()).unwrap_or_default();
+            if !names.insert(name.clone()) || name == "id" || fd.derived().is_some() {
+                self.err("E-FACET-002", file, range_of(&fd), format!("facet field `{name}` must be a distinct declared non-identity field; derived fields are not supported"), None);
+                continue;
+            }
+            if let Some(field) =
+                self.field(&fd, module, file, None, &["immutable", "label", "data"])
+            {
+                fields.push(field);
+            }
+        }
+        fields.sort_by(|a, b| a.name.cmp(&b.name));
+        fields
+    }
+
+    fn applied_facets(
+        &mut self,
+        resource: &ast::ResourceDecl,
+        module: &str,
+        file: usize,
+    ) -> Vec<Field> {
+        let mut out = Vec::new();
+        let mut seen = BTreeSet::new();
+        for dec in resource
+            .decorators()
+            .filter(|d| d.name().is_some_and(|n| n.text() == "facet"))
+        {
+            self.require_edition_2027(file, range_of(&dec), "`@facet`");
+            if dec.args().is_empty() {
+                self.err(
+                    "E-FACET-001",
+                    file,
+                    range_of(&dec),
+                    "@facet requires at least one facet name",
+                    None,
+                );
+            }
+            for arg in dec.args() {
+                let Some(ArgValue::Name(parts)) = arg.value().filter(|_| arg.label().is_none())
+                else {
+                    self.err(
+                        "E-FACET-001",
+                        file,
+                        range_of(&arg),
+                        "@facet expects positional facet names",
+                        None,
+                    );
+                    continue;
+                };
+                let resolved = match parts.as_slice() {
+                    [name] => match self.sym(module, name) {
+                        Some(Symbol {
+                            decl: Declaration::Facet(facet),
+                            file: origin,
+                            ..
+                        }) => {
+                            let facet = facet.clone();
+                            let origin = *origin;
+                            Some((
+                                self.id(module, name),
+                                self.facet_fields(&facet, module, origin),
+                            ))
+                        }
+                        _ => None,
+                    },
+                    [alias, rest @ ..]
+                        if self
+                            .imports
+                            .get(module)
+                            .is_some_and(|imports| imports.contains(alias)) =>
+                    {
+                        self.deps.get(alias).and_then(|dep| {
+                            dep.modules.iter().find_map(|m| {
+                                let name = match rest {
+                                    [n] if m.id == "_" => n,
+                                    [mo, n] if mo == &m.id => n,
+                                    _ => return None,
+                                };
+                                m.facets
+                                    .iter()
+                                    .find(|f| f.name == *name && f.exported)
+                                    .map(|f| (f.id.clone(), f.fields.clone()))
+                            })
+                        })
+                    }
+                    _ => None,
+                };
+                let Some((facet_id, fields)) = resolved else {
+                    self.err(
+                        "E-FACET-001",
+                        file,
+                        range_of(&arg),
+                        format!("`{}` is not a visible facet", parts.join(".")),
+                        None,
+                    );
+                    continue;
+                };
+                let (start, end) = range_of(&arg);
+                self.references.push(SourceReference {
+                    span: SourceSpan {
+                        file: self.files[file].path.clone(),
+                        start,
+                        end,
+                    },
+                    target: facet_id.clone(),
+                });
+                if !seen.insert(facet_id.clone()) {
+                    self.err(
+                        "E-FACET-003",
+                        file,
+                        range_of(&arg),
+                        format!("facet `{facet_id}` is applied more than once"),
+                        None,
+                    );
+                    continue;
+                }
+                let resource_id = self.id(module, resource.name().unwrap().text());
+                for field in fields {
+                    self.facet_origins.insert(
+                        format!("{resource_id}#field:{}", field.name),
+                        format!("{facet_id}#field:{}", field.name),
+                    );
+                    out.push(field);
+                }
+            }
+        }
+        out.sort_by(|a, b| a.name.cmp(&b.name));
+        out
+    }
+
     // ------------------------------------------------------------ resources
     fn decorators_of(&self, r: &ast::ResourceDecl) -> ResourceDecorators {
         let mut d = ResourceDecorators::default();
@@ -1529,6 +2038,8 @@ impl<'a> Ctx<'a> {
                 "tenant" => d.tenant = true,
                 "timestamps" => d.timestamps = true,
                 "softDelete" => d.soft_delete = true,
+                "appendOnly" => d.append_only = true,
+                "writeOnce" => d.write_once = true,
                 "versioned" => d.versioned = true,
                 "audited" => d.audited = true,
                 "hierarchical" => d.hierarchical = true,
@@ -1647,6 +2158,8 @@ impl<'a> Ctx<'a> {
             ty,
             default: None,
             derived: None,
+            sequence: None,
+            secret: false,
             immutable: false,
             server_owned: true,
             synthesized: true,
@@ -1686,6 +2199,8 @@ impl<'a> Ctx<'a> {
                 ty: scalar("datetime", false),
                 default: None,
                 derived: None,
+                sequence: None,
+                secret: false,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -1697,6 +2212,8 @@ impl<'a> Ctx<'a> {
                 ty: scalar("datetime", true),
                 default: None,
                 derived: None,
+                sequence: None,
+                secret: false,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -1719,6 +2236,8 @@ impl<'a> Ctx<'a> {
                 },
                 default: None,
                 derived: None,
+                sequence: None,
+                secret: false,
                 immutable: false,
                 server_owned: false,
                 synthesized: true,
@@ -1786,7 +2305,24 @@ impl<'a> Ctx<'a> {
                 );
             }
         }
-        let decorators = self.decorators_of(r);
+        let mut decorators = self.decorators_of(r);
+        if let Some(binding) = self.source_http.get(&id).cloned() {
+            if decorators.crud.is_some() {
+                self.err(
+                    "E-SRC-004",
+                    file,
+                    range_of(r),
+                    "resource HTTP exposure conflicts with @crud",
+                    None,
+                );
+            } else {
+                decorators.crud = Some(CrudBinding {
+                    path: binding.path,
+                    operations: None,
+                    actions: vec![],
+                });
+            }
+        }
 
         // fields
         let mut fields: Vec<Field> = Vec::new();
@@ -1814,6 +2350,127 @@ impl<'a> Ctx<'a> {
                 fields.push(f);
             }
         }
+        for fd in r.fields() {
+            for decorator in fd
+                .decorators()
+                .filter(|d| d.name().is_some_and(|n| n.text() == "sequence"))
+            {
+                let field_name = fd.name()?.text().to_string();
+                let mut sequence = Sequence {
+                    partition: None,
+                    start: 1,
+                    max: 9_007_199_254_740_991,
+                };
+                let mut labels = BTreeSet::new();
+                for arg in decorator.args() {
+                    let label = arg.label().unwrap_or_default();
+                    if !labels.insert(label.clone()) {
+                        self.err(
+                            "E-SEQ-001",
+                            file,
+                            range_of(&decorator),
+                            "duplicate sequence argument",
+                            None,
+                        );
+                    }
+                    match (label.as_str(), arg.value()) {
+                        ("partition", Some(ArgValue::Name(names))) if names.len() == 1 => {
+                            sequence.partition = Some(names[0].clone())
+                        }
+                        ("start" | "max", Some(ArgValue::Literal(value))) => {
+                            if let Ok(n) = value.parse::<u64>() {
+                                if label == "start" {
+                                    sequence.start = n;
+                                } else {
+                                    sequence.max = n;
+                                }
+                            } else {
+                                self.err(
+                                    "E-SEQ-001",
+                                    file,
+                                    range_of(&decorator),
+                                    "sequence bounds must be positive safe integers",
+                                    None,
+                                );
+                            }
+                        }
+                        _ => self.err(
+                            "E-SEQ-001",
+                            file,
+                            range_of(&decorator),
+                            "expected partition: field, start: integer or max: integer",
+                            None,
+                        ),
+                    }
+                }
+                if sequence.start == 0
+                    || sequence.start > sequence.max
+                    || sequence.max > 9_007_199_254_740_991
+                {
+                    self.err(
+                        "E-SEQ-001",
+                        file,
+                        range_of(&decorator),
+                        "sequence bounds must satisfy 1 <= start <= max <= 9007199254740991",
+                        None,
+                    );
+                }
+                if let Some(partition) = &sequence.partition {
+                    match fields.iter_mut().find(|f| &f.name==partition && f.name!=field_name) {
+                        Some(f) if !f.ty.optional && !f.server_owned && f.derived.is_none() && (matches!(&f.ty.base, TypeBase::Reference {..} | TypeBase::Enum {..}) || matches!(&f.ty.base, TypeBase::Scalar {name,..} if name == "text" || name == "id")) => { f.immutable=true; }
+                        _ => self.err("E-SEQ-002",file,range_of(&decorator),"sequence partition must be a required text/id field distinct from the allocated field",None),
+                    }
+                }
+                if let Some(f) = fields.iter_mut().find(|f| f.name == field_name) {
+                    if f.sequence.is_some()
+                        || f.ty.optional
+                        || f.default.is_some()
+                        || f.derived.is_some()
+                        || !matches!(&f.ty.base,TypeBase::Scalar {name,..} if name=="integer")
+                        || !f.ty.constraints.is_empty()
+                    {
+                        self.err("E-SEQ-003",file,range_of(&decorator),"sequence requires a plain required integer field without a default, derivation or second sequence",None);
+                    }
+                    f.sequence = Some(sequence);
+                    f.immutable = true;
+                    f.server_owned = true;
+                }
+            }
+        }
+        for fd in r.fields() {
+            if let Some(secret) = fd
+                .decorators()
+                .find(|d| d.name().is_some_and(|n| n.text() == "secret"))
+            {
+                let field_name = fd.name()?.text().to_string();
+                if !secret.args().is_empty()
+                    || declared_names.contains(&format!("{field_name}Present"))
+                    || !decorators.versioned
+                {
+                    self.err("E-SECRET-001",file,range_of(&secret),"@secret requires a versioned resource, no arguments and an unused <field>Present name",None);
+                }
+                if let Some(field) = fields.iter_mut().find(|f| f.name == field_name) {
+                    if field.name == "id"
+                        || field.default.is_some()
+                        || field.derived.is_some()
+                        || field.sequence.is_some()
+                        || !field.ty.normalizers.is_empty()
+                        || !matches!(&field.ty.base,TypeBase::Scalar {name,..} if name=="text")
+                    {
+                        self.err("E-SECRET-001",file,range_of(&secret),"@secret requires a text field without a default, derivation or sequence",None);
+                    }
+                    field.secret = true;
+                    field.hidden = true;
+                }
+            }
+        }
+        for f in self.applied_facets(r, module, file) {
+            if !declared_names.insert(f.name.clone()) {
+                self.err("E-FACET-003", file, range_of(r), format!("facet field `{}` collides with another field on `{name}`; overrides are not allowed", f.name), None);
+            } else {
+                fields.push(f);
+            }
+        }
         if blob.is_some() && !declared_names.contains("id") {
             // Blobs synthesize their id.
             fields.insert(
@@ -1833,6 +2490,8 @@ impl<'a> Ctx<'a> {
                     },
                     default: None,
                     derived: None,
+                    sequence: None,
+                    secret: false,
                     immutable: true,
                     server_owned: true,
                     synthesized: true,
@@ -1863,7 +2522,6 @@ impl<'a> Ctx<'a> {
                 );
             }
         }
-        let mut decorators = decorators;
         if blob.is_some() {
             decorators.timestamps = true;
             decorators.versioned = true;
@@ -1874,21 +2532,55 @@ impl<'a> Ctx<'a> {
         }
         for s in &synthesized {
             if declared_names.contains(&s.name) {
-                let tok = r
+                let span = r
                     .fields()
                     .find_map(|f| f.name().filter(|t| t.text() == s.name))
-                    .unwrap();
-                self.err("E-RES-001", file, tok_range(&tok), format!("field `{}` collides with a field synthesized by the resource's decorators or lifecycle", s.name), None);
+                    .map(|t| tok_range(&t))
+                    .unwrap_or_else(|| range_of(r));
+                self.err("E-RES-001", file, span, format!("field `{}` collides with a field synthesized by the resource's decorators or lifecycle", s.name), None);
             }
         }
         fields.extend(synthesized);
         let field_names: Vec<String> = fields.iter().map(|f| f.name.clone()).collect();
+
+        // lifecycle
+        let lifecycle = r
+            .lifecycle()
+            .and_then(|l| self.lifecycle(&l, module, file, &id, exported, enums_out));
+
+        if decorators.write_once
+            && (blob.is_none()
+                || decorators.soft_delete
+                || decorators.hierarchical
+                || lifecycle.is_some())
+        {
+            self.err(
+                "E-SEAL-001",
+                file,
+                range_of(r),
+                "@writeOnce requires a blob without soft deletion, hierarchy or lifecycle",
+                None,
+            );
+        }
+        if decorators.append_only {
+            if decorators.soft_delete
+                || decorators.hierarchical
+                || lifecycle.is_some()
+                || blob.is_some()
+            {
+                self.err("E-APPEND-001", file, range_of(r), "@appendOnly cannot combine with soft deletion, hierarchy, lifecycle or blob mutation", None);
+            }
+            for field in &mut fields {
+                field.immutable = true;
+            }
+        }
 
         // uniques
         let mut uniques: Vec<Unique> = unique_fields
             .iter()
             .map(|f| Unique {
                 name: f.clone(),
+                condition: None,
                 fields: vec![f.clone()],
                 within: vec![],
             })
@@ -1912,13 +2604,54 @@ impl<'a> Ctx<'a> {
                 n.push_str("_within_");
                 n.push_str(&within.join("_"));
             }
+            let condition = u.condition().map(|(predicate, values)| {
+                if !decorators.versioned {
+                    self.err("E-EXCLUSIVE-005",file,range_of(&u),"conditional uniqueness requires @versioned so stale updates cannot release another commit's claim",None);
+                }
+                let known = match fields.iter().find(|f| f.name == predicate).map(|f| &f.ty.base) {
+                    Some(TypeBase::Enum {id}) => self.enum_members(id,module).into_iter().map(|m|(m.name,m.value)).collect::<BTreeMap<_,_>>(),
+                    Some(TypeBase::Status { .. }) => lifecycle.as_ref().map(|l| l.states.iter().map(|s|(s.clone(),s.clone())).collect()).unwrap_or_default(),
+                    _ => { self.err("E-EXCLUSIVE-001",file,range_of(&u),"conditional uniqueness requires an enum or lifecycle status field",None); BTreeMap::new() },
+                };
+                let mut wire_values = Vec::new();
+                for value in values {
+                    if let Some(wire) = known.get(&value) {wire_values.push(wire.clone());}
+                    else {self.err("E-EXCLUSIVE-002",file,range_of(&u),format!("unknown conditional uniqueness member `{value}`"),None);}
+                }
+                for key in fs.iter().chain(within.iter()) {
+                    if fields.iter().find(|f| &f.name == key).is_some_and(|f| f.ty.optional || matches!(f.ty.base,TypeBase::Shape {..}|TypeBase::Record {..}|TypeBase::Message {..}|TypeBase::Collection {..})) {
+                        self.err("E-EXCLUSIVE-003",file,range_of(&u),"conditional uniqueness keys must be required scalar, enum or identity fields",None);
+                    }
+                }
+                wire_values.sort(); wire_values.dedup();
+                UniqueCondition {field:predicate,values:wire_values}
+            });
+            if let Some(predicate) = &condition {
+                n.push_str("_when_");
+                n.push_str(&hash_hex(&serde_json::to_string(predicate).unwrap())[..12]);
+            }
             uniques.push(Unique {
+                condition,
                 name: n,
                 fields: fs,
                 within,
             });
         }
         uniques.sort_by(|a, b| a.name.cmp(&b.name));
+        for pair in uniques.windows(2) {
+            if pair[0].name == pair[1].name {
+                self.err(
+                    "E-EXCLUSIVE-004",
+                    file,
+                    range_of(r),
+                    format!(
+                        "duplicate uniqueness key `{}`; combine its conditions in one declaration",
+                        pair[0].name
+                    ),
+                    None,
+                );
+            }
+        }
 
         // finds
         let mut finds = Vec::new();
@@ -1943,7 +2676,7 @@ impl<'a> Ctx<'a> {
                 continue;
             }
             let set: BTreeSet<&String> = fs.iter().collect();
-            match uniques.iter().find(|u| u.fields.iter().chain(u.within.iter()).collect::<BTreeSet<_>>() == set) {
+            match uniques.iter().find(|u| u.condition.is_none() && u.fields.iter().chain(u.within.iter()).collect::<BTreeSet<_>>() == set) {
                 Some(u) => finds.push(Find { name: camel(&fs), fields: fs.clone(), covered_by: u.name.clone() }),
                 None => self.err("E-QRY-001", file, range_of(&fd), format!("`find by {}` is not covered by a unique constraint, so it cannot return zero-or-one", fs.join(", ")), Some(format!("declare `unique {}` or use `list by`", fs.join(", ")))),
             }
@@ -1996,14 +2729,41 @@ impl<'a> Ctx<'a> {
                     direction: dir,
                 });
             }
+            let search_mode = ld.search_mode();
+            if let Some(mode) = &search_mode {
+                if mode != "exact" {
+                    self.err("E-SEARCH-001",file,range_of(&ld),"this profile supports only indexed exact search; prefix/tokenized/ranked modes need a certified provider plan",None);
+                }
+                if !fs.iter().any(|name| {
+                    fields.iter().any(|f| {
+                        &f.name == name
+                            && !f.ty.optional
+                            && matches!(&f.ty.base,TypeBase::Scalar {name,..} if name=="text")
+                    })
+                }) {
+                    self.err(
+                        "E-SEARCH-002",
+                        file,
+                        range_of(&ld),
+                        "exact search requires a nonoptional text search field",
+                        None,
+                    );
+                }
+            }
             lists.push(List {
-                name: camel(&fs),
+                name: if search_mode.is_some() {
+                    format!("search_{}", camel(&fs))
+                } else {
+                    camel(&fs)
+                },
+                search_mode,
                 fields: fs,
                 order,
             });
         }
         // Every resource has a bounded default browse: tenant-scoped, paged, ordered by id.
         lists.push(List {
+            search_mode: None,
             name: "all".into(),
             fields: vec![],
             order: vec![OrderKey {
@@ -2034,11 +2794,6 @@ impl<'a> Ctx<'a> {
                 }
             }
         }
-
-        // lifecycle
-        let lifecycle = r
-            .lifecycle()
-            .and_then(|l| self.lifecycle(&l, module, file, &id, exported, enums_out));
 
         // operations
         let mut operations = Vec::new();
@@ -2136,7 +2891,9 @@ impl<'a> Ctx<'a> {
             );
         }
         for l in &lists {
-            let path = if l.fields.is_empty() {
+            let path = if l.search_mode.is_some() {
+                format!("/search/{}", kebab(&l.fields))
+            } else if l.fields.is_empty() {
                 String::new()
             } else {
                 format!("/queries/{}", kebab(&l.fields))
@@ -2276,6 +3033,23 @@ impl<'a> Ctx<'a> {
                     );
                 }
             }
+        }
+
+        if decorators.write_once {
+            operations.retain(|op| {
+                !matches!(
+                    op.kind.as_str(),
+                    "update" | "delete" | "restore" | "move" | "transition"
+                )
+            });
+        }
+        if decorators.append_only {
+            operations.retain(|op| {
+                matches!(
+                    op.kind.as_str(),
+                    "create" | "get" | "find" | "list" | "effective"
+                )
+            });
         }
 
         // ---- edition 2027: governance surface
@@ -2758,11 +3532,20 @@ impl<'a> Ctx<'a> {
         let output = f
             .output()
             .and_then(|n| self.type_ref_spec(&n, module, file));
-        let mut http = None;
+        let mut http = self.source_http.get(&id).cloned();
         for d in f.decorators() {
             let Some(n) = d.name() else { continue };
             match n.text() {
                 "http" => {
+                    if self.source_http.contains_key(&id) {
+                        self.err(
+                            "E-SRC-004",
+                            file,
+                            range_of(&d),
+                            "function HTTP exposure conflicts with @http",
+                            None,
+                        );
+                    }
                     let args = d.args();
                     let method = args.first().and_then(|a| a.value()).and_then(|v| {
                         if let ArgValue::Name(m) = v {
@@ -3145,7 +3928,21 @@ impl<'a> Ctx<'a> {
                 ),
             }
         }
+        let input_anchor = format!("{id}#binding:input");
+        if let Some(input) = w.input() {
+            let (start, end) = range_of(&input);
+            self.workflow_origins.insert(
+                input_anchor.clone(),
+                SourceSpan {
+                    file: self.files[file].path.clone(),
+                    start,
+                    end,
+                },
+            );
+        }
         let mut scope = WfScope {
+            workflow: id.clone(),
+            origins: BTreeMap::from([("input".into(), input_anchor)]),
             ids: Vec::new(),
             bound: vec!["input".into()],
             errors: errors.clone(),
@@ -3179,7 +3976,29 @@ impl<'a> Ctx<'a> {
         scope: &mut WfScope,
     ) -> Vec<Step> {
         let mut out = Vec::new();
+        let mut previous_end = items
+            .first()
+            .map(|i| u32::from(i.syntax().text_range().start()) as usize)
+            .unwrap_or(0);
         for item in items {
+            for (_, ty) in &scope.types {
+                self.record_workflow_type(&ty.base, module, 0);
+            }
+            self.workflow_scopes.push(WorkflowScope {
+                span: SourceSpan {
+                    file: self.files[file].path.clone(),
+                    start: previous_end,
+                    end: u32::from(item.syntax().text_range().end()) as usize,
+                },
+                workflow: scope.workflow.clone(),
+                bindings: scope
+                    .types
+                    .iter()
+                    .filter(|(name, _)| scope.bound.contains(name))
+                    .cloned()
+                    .collect(),
+            });
+            previous_end = u32::from(item.syntax().text_range().end()) as usize;
             match item {
                 ast::StepItem::Step(s) => {
                     let Some(name_tok) = s.name() else { continue };
@@ -3191,6 +4010,7 @@ impl<'a> Ctx<'a> {
                     scope.ids.push(sid.clone());
                     let Some(body) = s.body() else { continue };
                     let step = match body {
+                        ast::StepBody::Map(m) => self.workflow_map(&sid, &m, module, file, scope),
                         ast::StepBody::Sleep(sl) => sl.duration().map(|d| Step::Sleep {
                             id: sid.clone(),
                             duration: d.text().to_string(),
@@ -3221,6 +4041,36 @@ impl<'a> Ctx<'a> {
                             scope.types.push((sid.clone(), t));
                         }
                     }
+                    if let Some(Step::Wait {
+                        channel, message, ..
+                    }) = &step
+                    {
+                        scope.types.push((
+                            sid.clone(),
+                            TypeSpec {
+                                base: TypeBase::Message {
+                                    channel: channel.clone(),
+                                    message: message.clone(),
+                                },
+                                optional: false,
+                                normalizers: vec![],
+                                constraints: vec![],
+                                purpose: None,
+                                data_class: None,
+                            },
+                        ));
+                    }
+                    let anchor = format!("{}#step:{sid}", scope.workflow);
+                    let (start, end) = range_of(s);
+                    self.workflow_origins.insert(
+                        anchor.clone(),
+                        SourceSpan {
+                            file: self.files[file].path.clone(),
+                            start,
+                            end,
+                        },
+                    );
+                    scope.origins.insert(sid.clone(), anchor);
                     scope.bound.push(sid);
                     if let Some(st) = step {
                         out.push(st);
@@ -3247,8 +4097,15 @@ impl<'a> Ctx<'a> {
                     let id = first(&then_items)
                         .or_else(|| first(&else_items))
                         .unwrap_or_else(|| format!("{}", scope.ids.len()));
+                    let before = scope.clone();
                     let then = self.workflow_items(&then_items, module, file, scope);
+                    let then_ids = scope.ids.clone();
+                    *scope = before.clone();
+                    scope.ids = then_ids;
                     let otherwise = self.workflow_items(&else_items, module, file, scope);
+                    let all_ids = scope.ids.clone();
+                    *scope = before;
+                    scope.ids = all_ids;
                     out.push(Step::Choice {
                         id,
                         condition: cond,
@@ -3391,9 +4248,35 @@ impl<'a> Ctx<'a> {
                     );
                     return None;
                 }
+                if let Some(anchor) = scope.origins.get(head) {
+                    let (start, _) = range_of(n);
+                    self.references.push(SourceReference {
+                        span: SourceSpan {
+                            file: self.files[file].path.clone(),
+                            start,
+                            end: start + head.len(),
+                        },
+                        target: anchor.clone(),
+                    });
+                }
                 Expr::Name { path }
             }
         })
+    }
+
+    fn record_workflow_type(&mut self, ty: &TypeBase, module: &str, depth: usize) {
+        if depth > 8 {
+            return;
+        }
+        let key = serde_json::to_string(ty).unwrap();
+        if self.workflow_fields.contains_key(&key) {
+            return;
+        }
+        let fields = self.typed_fields_of(ty, module);
+        self.workflow_fields.insert(key, fields.clone());
+        for (_, field) in fields {
+            self.record_workflow_type(&field.base, module, depth + 1);
+        }
     }
 
     fn workflow_wait(
@@ -3469,6 +4352,146 @@ impl<'a> Ctx<'a> {
             message,
             correlate,
             timeout,
+        })
+    }
+
+    fn workflow_map(
+        &mut self,
+        sid: &str,
+        m: &ast::StepMap,
+        module: &str,
+        file: usize,
+        scope: &mut WfScope,
+    ) -> Option<Step> {
+        let concurrency = m.concurrency()?.text().parse::<u32>().unwrap_or(0);
+        let source = m.source()?;
+        let Some(source_type) = self.workflow_expr_type(&source, module, scope) else {
+            self.err(
+                "E-WF-MAP-001",
+                file,
+                range_of(m),
+                "map input must resolve to a declared bounded list",
+                None,
+            );
+            return None;
+        };
+        let TypeBase::Collection {
+            collection: CollectionKind::List,
+            element,
+        } = source_type.base
+        else {
+            self.err(
+                "E-WF-MAP-001",
+                file,
+                range_of(m),
+                "map requires a bounded list input",
+                None,
+            );
+            return None;
+        };
+        let max_items = source_type
+            .constraints
+            .iter()
+            .filter_map(|c| {
+                if let Constraint::Length { max, .. } = c {
+                    *max
+                } else {
+                    None
+                }
+            })
+            .min()
+            .unwrap_or(0);
+        if concurrency == 0
+            || concurrency > 32
+            || max_items == 0
+            || max_items > 1024
+            || source_type.optional
+        {
+            self.err(
+                "E-WF-MAP-001",
+                file,
+                range_of(m),
+                "map requires a nonoptional bounded list and concurrency 1..32",
+                None,
+            );
+            return None;
+        }
+        let binding_token = m.binding()?;
+        let binding = binding_token.text().to_string();
+        if scope.bound.contains(&binding) {
+            self.err(
+                "E-WF-MAP-002",
+                file,
+                range_of(m),
+                "map binding shadows an existing workflow binding",
+                None,
+            );
+            return None;
+        }
+        let value = self.workflow_expr(&source, module, file, scope)?;
+        let mut child_scope = scope.clone();
+        child_scope.bound.push(binding.clone());
+        self.record_workflow_type(&element.base, module, 0);
+        child_scope.types.push((binding.clone(), *element));
+        let anchor = format!("{}#step:{sid}/binding:{binding}", scope.workflow);
+        let (start, end) = tok_range(&binding_token);
+        self.workflow_origins.insert(
+            anchor.clone(),
+            SourceSpan {
+                file: self.files[file].path.clone(),
+                start,
+                end,
+            },
+        );
+        child_scope.origins.insert(binding.clone(), anchor);
+        let call_ast = m.call()?;
+        let (start, end) = range_of(&call_ast);
+        self.workflow_scopes.push(WorkflowScope {
+            span: SourceSpan {
+                file: self.files[file].path.clone(),
+                start,
+                end,
+            },
+            workflow: scope.workflow.clone(),
+            bindings: child_scope
+                .types
+                .iter()
+                .filter(|(name, _)| child_scope.bound.contains(name))
+                .cloned()
+                .collect(),
+        });
+        let call = self.workflow_call(sid, &call_ast, module, file, &child_scope)?;
+        if let Step::Call {
+            target: CallTarget::Function { function },
+            ..
+        } = &call
+            && let Some(element) = self.function_output(function, module)
+        {
+            scope.types.push((
+                sid.into(),
+                TypeSpec {
+                    base: TypeBase::Collection {
+                        collection: CollectionKind::List,
+                        element: Box::new(element),
+                    },
+                    optional: false,
+                    constraints: vec![Constraint::Length {
+                        min: Some(0),
+                        max: Some(max_items),
+                    }],
+                    normalizers: vec![],
+                    purpose: None,
+                    data_class: None,
+                },
+            ));
+        }
+        Some(Step::Map {
+            id: sid.into(),
+            binding,
+            source: value,
+            concurrency,
+            max_items: max_items as u32,
+            call: Box::new(call),
         })
     }
 
@@ -3651,6 +4674,7 @@ impl<'a> Ctx<'a> {
                         .filter_map(|fd| self.field(&fd, module, file, None, &["immutable"]))
                         .map(|f| (f.name, f.ty))
                         .collect();
+
                     self.diags.truncate(saved); // reported once where the shape is lowered
                     return out;
                 }
@@ -3670,6 +4694,52 @@ impl<'a> Ctx<'a> {
                 .into_iter()
                 .map(|f| (f.name, f.ty))
                 .collect(),
+            TypeBase::Message { channel, message } => {
+                let prefix = format!("{}/{}/", self.pkg.name, module);
+                if let Some(name) = channel.strip_prefix(&prefix)
+                    && let Some(Symbol {
+                        decl: Declaration::Channel(c),
+                        file,
+                        ..
+                    }) = self.sym(module, name)
+                {
+                    let (c, file) = (c.clone(), *file);
+                    if let Some(m) = c
+                        .messages()
+                        .find(|m| m.name().is_some_and(|n| n.text() == message))
+                    {
+                        let saved = self.diags.len();
+                        let fields = m
+                            .fields()
+                            .filter_map(|f| self.field(&f, module, file, None, &["immutable"]))
+                            .map(|f| (f.name, f.ty))
+                            .collect();
+                        self.diags.truncate(saved);
+                        return fields;
+                    }
+                    let (contract, _) = self.channel_contract(&c, module, file);
+                    if contract != *channel {
+                        return self.typed_fields_of(
+                            &TypeBase::Message {
+                                channel: contract,
+                                message: message.clone(),
+                            },
+                            module,
+                        );
+                    }
+                }
+                self.deps
+                    .values()
+                    .find_map(|d| d.find_channel(channel))
+                    .and_then(|c| c.messages.iter().find(|m| &m.name == message))
+                    .map(|m| {
+                        m.fields
+                            .iter()
+                            .map(|f| (f.name.clone(), f.ty.clone()))
+                            .collect()
+                    })
+                    .unwrap_or_default()
+            }
             _ => vec![],
         }
     }
@@ -3877,7 +4947,202 @@ impl<'a> Ctx<'a> {
     }
 
     // ------------------------------------------------------------ build
+    fn collect_source_http(&mut self) {
+        let sources: Vec<_> = self
+            .symbols
+            .iter()
+            .filter_map(|((module, _), symbol)| {
+                if let Declaration::Source(source) = &symbol.decl {
+                    Some((module.clone(), symbol.file, source.clone()))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        for (module, file, source) in sources {
+            for exposure in source.exposures() {
+                let (Some(decorator), Some(target)) = (exposure.decorator(), exposure.target())
+                else {
+                    continue;
+                };
+                let args: Vec<_> = decorator.args().iter().filter_map(|a| a.value()).collect();
+                let resource = exposure.kind().as_deref() == Some("resource");
+                let binding = match args.as_slice() {
+                    [ArgValue::Literal(path)] if resource => Some(HttpBinding {
+                        method: String::new(),
+                        path: unq(path),
+                    }),
+                    [ArgValue::Name(method), ArgValue::Literal(path)]
+                        if !resource
+                            && method.len() == 1
+                            && HTTP_METHODS.contains(&method[0].as_str()) =>
+                    {
+                        Some(HttpBinding {
+                            method: method[0].clone(),
+                            path: unq(path),
+                        })
+                    }
+                    _ => None,
+                };
+                let Some(binding) = binding.filter(|b| {
+                    b.path.starts_with('/')
+                        && !b.path.contains(['?', '#'])
+                        && (!resource || !b.path.contains(['{', '}']))
+                }) else {
+                    self.err("E-SRC-004", file, range_of(&exposure), "resource exposure requires @http(absolutePath); function exposure requires @http(METHOD, absolutePath)", None);
+                    continue;
+                };
+                if decorator.name().is_none_or(|n| n.text() != "http") {
+                    self.err(
+                        "E-SRC-004",
+                        file,
+                        range_of(&exposure),
+                        "source exposures require @http",
+                        None,
+                    );
+                    continue;
+                }
+                let id = match self.resolve(&target.segments(), &module, file, range_of(&target)) {
+                    Some(Resolved::Type(TypeBase::Reference { resource: id })) if resource => id,
+                    Some(Resolved::Function(id)) if !resource => id,
+                    _ => {
+                        self.err(
+                            "E-SRC-004",
+                            file,
+                            range_of(&target),
+                            "exposure target kind does not match declaration",
+                            None,
+                        );
+                        continue;
+                    }
+                };
+                if !id.starts_with(&format!("{}/", self.pkg.name)) {
+                    self.err(
+                        "E-SRC-004",
+                        file,
+                        range_of(&target),
+                        "source exposures require a local declaration",
+                        None,
+                    );
+                    continue;
+                }
+                if !resource {
+                    let fields = self.function_input_types(&id, &module);
+                    for param in binding
+                        .path
+                        .split('{')
+                        .skip(1)
+                        .filter_map(|p| p.split('}').next())
+                    {
+                        if !fields.iter().any(|(name, _)| name == param) {
+                            self.err("E-HTTP-001", file, range_of(&exposure), format!("path parameter `{{{param}}}` is not a field of the function input"), None);
+                        }
+                    }
+                }
+                if self.source_http.insert(id, binding).is_some() {
+                    self.err(
+                        "E-SRC-004",
+                        file,
+                        range_of(&exposure),
+                        "duplicate HTTP exposure for declaration",
+                        None,
+                    );
+                }
+            }
+        }
+    }
+
+    /// Conservative syntax dependency closure. Every identifier matching a local
+    /// declaration participates, including names in recovery trees. False positives
+    /// cost a miss; missing edges would make cached semantic output unsafe.
+    fn declaration_keys(&self) -> BTreeMap<(String, String), String> {
+        let mut metadata = self.pkg.clone();
+        metadata.files.clear();
+        let header = format!(
+            "{:?}|{:?}|{:?}|{:?}|{:?}",
+            metadata,
+            self.imports,
+            self.files
+                .iter()
+                .map(|f| (&f.path, &f.module))
+                .collect::<Vec<_>>(),
+            self.symbols.keys().collect::<Vec<_>>(),
+            self.deps
+                .iter()
+                .map(|(name, ir)| (name, ir.content_hash()))
+                .collect::<Vec<_>>()
+        );
+        let header = hash_hex(&header);
+        let mut by_name: BTreeMap<&str, Vec<_>> = BTreeMap::new();
+        for key in self.symbols.keys() {
+            by_name.entry(&key.1).or_default().push(key.clone());
+        }
+        let mut edges = BTreeMap::new();
+        let mut material = BTreeMap::new();
+        for (key, symbol) in &self.symbols {
+            let words: BTreeSet<_> = symbol
+                .decl
+                .syntax()
+                .descendants_with_tokens()
+                .filter_map(|e| e.into_token())
+                .filter(|t| t.kind() == forgegraph_syntax::SyntaxKind::IDENT)
+                .map(|t| t.text().to_string())
+                .collect();
+            edges.insert(
+                key.clone(),
+                words
+                    .iter()
+                    .filter_map(|name| by_name.get(name.as_str()))
+                    .flatten()
+                    .cloned()
+                    .collect::<Vec<_>>(),
+            );
+            let id = self.id(&key.0, &key.1);
+            material.insert(
+                key.clone(),
+                format!(
+                    "{}|{:?}|{}|{:?}",
+                    self.files[symbol.file].path,
+                    symbol.decl.syntax().text_range(),
+                    symbol.decl.syntax(),
+                    self.source_http.get(&id)
+                ),
+            );
+        }
+        self.symbols
+            .keys()
+            .map(|key| {
+                let mut seen = BTreeSet::new();
+                let mut pending = vec![key.clone()];
+                while let Some(next) = pending.pop() {
+                    if seen.insert(next.clone()) {
+                        pending.extend(edges[&next].iter().cloned());
+                    }
+                }
+                let mut text = header.clone();
+                for dependency in seen {
+                    text.push_str(&material[&dependency]);
+                }
+                (key.clone(), hash_hex(&text))
+            })
+            .collect()
+    }
+
     fn build(&mut self) -> DomainIR {
+        self.collect_source_http();
+        let cache_keys = if self.declaration_cache.is_some() {
+            self.declaration_keys()
+        } else {
+            BTreeMap::new()
+        };
+        if let Some(cache) = &mut self.declaration_cache {
+            let ids: BTreeSet<_> = self
+                .symbols
+                .keys()
+                .map(|(m, n)| format!("{}/{m}/{n}", self.pkg.name))
+                .collect();
+            cache.entries.retain(|id, _| ids.contains(id));
+        }
         let mut modules: BTreeMap<String, Module> = BTreeMap::new();
         let keys: Vec<(String, String)> = self.symbols.keys().cloned().collect();
         for (module, name) in keys {
@@ -3885,11 +5150,50 @@ impl<'a> Ctx<'a> {
                 let s = &self.symbols[&(module.clone(), name.clone())];
                 (s.kind, s.exported, s.file, s.decl.clone())
             };
-            let m = modules.entry(module.clone()).or_insert_with(|| Module {
+            let mut m = Module {
                 id: module.clone(),
                 ..Default::default()
-            });
+            };
             let id = format!("{}/{}/{}", self.pkg.name, module, name);
+            let cache_id = id.clone();
+            // Lowering memoizes editor type/origin data across declarations. Include
+            // that input state so removing an earlier producer cannot leave a
+            // later cached consumer without its shared metadata.
+            let cache_key = cache_keys.get(&(module.clone(), name.clone())).map(|key| {
+                hash_hex(&format!(
+                    "{key}|{:?}|{:?}|{:?}",
+                    self.workflow_fields, self.workflow_origins, self.facet_origins
+                ))
+            });
+            if let Some(cache) = &mut self.declaration_cache {
+                if let Some(entry) = cache
+                    .entries
+                    .get(&id)
+                    .filter(|entry| Some(&entry.key) == cache_key.as_ref())
+                    .cloned()
+                {
+                    cache.hits += 1;
+                    append_module(modules.entry(module.clone()).or_default(), entry.module);
+                    self.diags.extend(entry.diagnostics);
+                    self.references.extend(entry.references);
+                    self.workflow_scopes.extend(entry.scopes);
+                    self.workflow_fields.extend(entry.fields);
+                    self.workflow_origins.extend(entry.origins);
+                    self.facet_origins.extend(entry.facets);
+                    continue;
+                }
+                cache.misses += 1;
+            }
+            let before = self.declaration_cache.as_ref().map(|_| {
+                (
+                    self.diags.len(),
+                    self.references.len(),
+                    self.workflow_scopes.len(),
+                    self.workflow_fields.clone(),
+                    self.workflow_origins.clone(),
+                    self.facet_origins.clone(),
+                )
+            });
             let mut extra_enums = Vec::new();
             match (kind, &decl) {
                 (SymKind::Enum, Declaration::Enum(e)) => {
@@ -3994,6 +5298,17 @@ impl<'a> Ctx<'a> {
                         extends,
                     });
                 }
+                (SymKind::Facet, Declaration::Facet(s)) => {
+                    self.require_edition_2027(file, range_of(s), "`facet`");
+                    let fields = self.facet_fields(s, &module, file);
+                    m.facets.push(Shape {
+                        id,
+                        name,
+                        exported,
+                        doc: decl.doc(),
+                        fields,
+                    });
+                }
                 (SymKind::Shape, Declaration::Shape(s)) => {
                     let mut fields = Vec::new();
                     for fd in s.fields() {
@@ -4054,12 +5369,227 @@ impl<'a> Ctx<'a> {
                         m.channels.push(ch);
                     }
                 }
+                (SymKind::Actor, Declaration::Actor(actor)) => {
+                    let states: Vec<_> = actor
+                        .items()
+                        .filter(|item| item.kind().as_deref() == Some("state"))
+                        .collect();
+                    if states.len() != 1 {
+                        self.err(
+                            "E-ACTOR-001",
+                            file,
+                            range_of(actor),
+                            "actor requires exactly one typed state",
+                            None,
+                        );
+                        continue;
+                    }
+                    let Some(target) = states[0].target() else {
+                        continue;
+                    };
+                    let Some(state) = self.type_ref_spec(&target, &module, file) else {
+                        continue;
+                    };
+                    if !matches!(state.base, TypeBase::Shape { .. }) {
+                        self.err(
+                            "E-ACTOR-001",
+                            file,
+                            range_of(actor),
+                            "actor state must be a shape",
+                            None,
+                        );
+                    }
+                    let mut messages = BTreeMap::new();
+                    let mut handlers = BTreeMap::new();
+                    for item in actor
+                        .items()
+                        .filter(|item| item.kind().as_deref() == Some("on"))
+                    {
+                        let (Some(command), Some(target)) = (item.command(), item.target()) else {
+                            continue;
+                        };
+                        let Some(Resolved::Function(function)) =
+                            self.resolve(&target.segments(), &module, file, range_of(&target))
+                        else {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler must be a function",
+                                None,
+                            );
+                            continue;
+                        };
+                        let fields = self.function_input_types(&function, &module);
+                        if fields.is_empty() {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler needs a typed input shape",
+                                None,
+                            );
+                            continue;
+                        }
+                        let Some(output) = self.function_output(&function, &module) else {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler must return its state shape",
+                                None,
+                            );
+                            continue;
+                        };
+                        if output.base != state.base {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler output must match actor state",
+                                None,
+                            );
+                        }
+                        let input = self
+                            .sym(&module, function.rsplit('/').next().unwrap_or_default())
+                            .and_then(|s| {
+                                if let Declaration::Function(f) = &s.decl {
+                                    f.input()
+                                } else {
+                                    None
+                                }
+                            });
+                        let Some(input) = input.and_then(|n| self.type_ref_spec(&n, &module, file))
+                        else {
+                            self.err(
+                                "E-ACTOR-002",
+                                file,
+                                range_of(&item),
+                                "actor handler must be local with a typed input",
+                                None,
+                            );
+                            continue;
+                        };
+                        if messages.insert(command.clone(), input).is_some() {
+                            self.err(
+                                "E-ACTOR-003",
+                                file,
+                                range_of(&item),
+                                "duplicate actor command",
+                                None,
+                            );
+                        }
+                        handlers.insert(command, function);
+                    }
+                    if messages.is_empty() {
+                        self.err(
+                            "E-ACTOR-002",
+                            file,
+                            range_of(actor),
+                            "actor needs at least one command",
+                            None,
+                        );
+                    }
+                    m.actors.push(Actor {
+                        id,
+                        key: actor.key().unwrap_or_default(),
+                        state,
+                        messages,
+                        handlers,
+                    });
+                }
+                (SymKind::WorkQueue, Declaration::WorkQueue(q)) => {
+                    let mut queue = WorkQueue {
+                        id,
+                        name,
+                        execute: String::new(),
+                        lease_ms: 90_000,
+                        max_attempts: 3,
+                        max_tasks: 128,
+                        max_runners: 64,
+                    };
+                    let mut seen = BTreeSet::new();
+                    for item in q.items() {
+                        let key = item.key().unwrap_or_default();
+                        if !seen.insert(key.clone()) {
+                            self.err(
+                                "E-QUEUE-001",
+                                file,
+                                range_of(&item),
+                                "duplicate queue setting",
+                                None,
+                            );
+                        }
+                        if key == "execute" {
+                            if let Some(target) = item.target() {
+                                if let Some(Resolved::Function(function)) = self.resolve(
+                                    &target.segments(),
+                                    &module,
+                                    file,
+                                    range_of(&target),
+                                ) {
+                                    queue.execute = function;
+                                } else {
+                                    self.err(
+                                        "E-QUEUE-001",
+                                        file,
+                                        range_of(&item),
+                                        "queue execute must name a function",
+                                        None,
+                                    );
+                                }
+                            }
+                        } else {
+                            let text = item.value().unwrap_or_default();
+                            let number = if key == "lease" {
+                                text.strip_suffix("ms")
+                                    .and_then(|s| s.parse::<u32>().ok())
+                                    .or_else(|| {
+                                        text.strip_suffix('s')
+                                            .and_then(|s| s.parse::<u32>().ok())
+                                            .and_then(|n| n.checked_mul(1000))
+                                    })
+                            } else {
+                                text.parse::<u32>().ok()
+                            }
+                            .unwrap_or(0);
+                            match key.as_str() {
+                                "lease" => queue.lease_ms = number,
+                                "retry" => queue.max_attempts = number,
+                                "capacity" => queue.max_tasks = number,
+                                "runners" => queue.max_runners = number,
+                                _ => {}
+                            }
+                        }
+                    }
+                    if queue.execute.is_empty()
+                        || !(1000..=300000).contains(&queue.lease_ms)
+                        || !(1..=10).contains(&queue.max_attempts)
+                        || !(1..=128).contains(&queue.max_tasks)
+                        || !(1..=64).contains(&queue.max_runners)
+                    {
+                        self.err("E-QUEUE-002",file,range_of(q),"queue needs execute, lease 1s..300s, retry 1..10, capacity 1..128 and runners 1..64",None);
+                    }
+                    m.work_queues.push(queue);
+                }
                 (SymKind::Workflow, Declaration::Workflow(w)) => {
                     if let Some(wf) = self.workflow(w, &module, file, exported) {
                         m.workflows.push(wf);
                     }
                 }
                 (SymKind::Source, Declaration::Source(s)) => {
+                    if s.exposures().next().is_some() {
+                        if s.target().is_some() || s.cron().is_some() || s.timezone().is_some() {
+                            self.err(
+                                "E-SRC-004",
+                                file,
+                                range_of(s),
+                                "HTTP exposures cannot share a scheduled source",
+                                None,
+                            );
+                        }
+                        continue;
+                    }
                     let target = s.target();
                     let Some(t) = target else {
                         self.err(
@@ -4103,8 +5633,43 @@ impl<'a> Ctx<'a> {
                 }
                 _ => {}
             }
-            let m = modules.get_mut(&module).unwrap();
             m.enums.extend(extra_enums);
+            if let (Some(cache), Some(key), Some(before)) =
+                (&mut self.declaration_cache, cache_key, before)
+            {
+                // Failed elaboration is never reused: recovery/suggestion context may change.
+                if !self.diags[before.0..].iter().any(Diagnostic::is_error) {
+                    cache.entries.insert(
+                        cache_id,
+                        CachedDeclaration {
+                            key,
+                            module: m.clone(),
+                            diagnostics: self.diags[before.0..].to_vec(),
+                            references: self.references[before.1..].to_vec(),
+                            scopes: self.workflow_scopes[before.2..].to_vec(),
+                            fields: self
+                                .workflow_fields
+                                .iter()
+                                .filter(|(k, v)| before.3.get(*k) != Some(*v))
+                                .map(|(k, v)| (k.clone(), v.clone()))
+                                .collect(),
+                            origins: self
+                                .workflow_origins
+                                .iter()
+                                .filter(|(k, v)| before.4.get(*k) != Some(*v))
+                                .map(|(k, v)| (k.clone(), v.clone()))
+                                .collect(),
+                            facets: self
+                                .facet_origins
+                                .iter()
+                                .filter(|(k, v)| before.5.get(*k) != Some(*v))
+                                .map(|(k, v)| (k.clone(), v.clone()))
+                                .collect(),
+                        },
+                    );
+                }
+            }
+            append_module(modules.entry(module).or_default(), m);
         }
         // subscriptions
         for fi in 0..self.files.len() {
@@ -4181,6 +5746,13 @@ impl<'a> Ctx<'a> {
         for m in &mut modules {
             m.enums.sort_by(|a, b| a.id.cmp(&b.id));
             m.types.sort_by(|a, b| a.id.cmp(&b.id));
+            m.facets.sort_by(|a, b| a.id.cmp(&b.id));
+            m.facet_origins = self
+                .facet_origins
+                .iter()
+                .filter(|(key, _)| key.starts_with(&format!("{}/{}/", self.pkg.name, m.id)))
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect();
             m.shapes.sort_by(|a, b| a.id.cmp(&b.id));
             m.resources.sort_by(|a, b| a.id.cmp(&b.id));
             m.functions.sort_by(|a, b| a.id.cmp(&b.id));
@@ -4203,7 +5775,7 @@ impl<'a> Ctx<'a> {
             })
             .collect();
         imports.sort_by(|a, b| a.alias.cmp(&b.alias));
-        let requires = if self.pkg.edition == "2027"
+        let mut requires = if self.pkg.edition == "2027"
             && modules.iter().any(|m| {
                 !m.purposes.is_empty()
                     || !m.data_classes.is_empty()
@@ -4215,6 +5787,89 @@ impl<'a> Ctx<'a> {
         } else {
             vec![]
         };
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.uniques.iter().any(|u| u.condition.is_some()))
+        }) {
+            requires.push("conditional-unique/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| {
+            m.projections.iter().any(|p| {
+                p.aggregates
+                    .iter()
+                    .any(|a| a.filter.is_some() || !matches!(a.function.as_str(), "count" | "sum"))
+            })
+        }) {
+            requires.push("projection-aggregates/1".into());
+            requires.sort();
+        }
+        if self.files.iter().any(|f| {
+            f.parse
+                .syntax()
+                .descendants()
+                .filter_map(ast::TypeRef::cast)
+                .any(|t| !t.element_types().is_empty())
+        }) {
+            requires.push("collections/1".into());
+            requires.sort();
+        }
+        if self.files.iter().any(|f| {
+            f.parse
+                .syntax()
+                .descendants()
+                .any(|n| ast::StepMap::cast(n).is_some())
+        }) {
+            requires.push("workflow-map/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.fields.iter().any(|f| f.sequence.is_some()))
+        }) {
+            requires.push("sequences/1".into());
+            requires.sort();
+        }
+        if modules
+            .iter()
+            .any(|m| m.resources.iter().any(|r| r.decorators.append_only))
+        {
+            requires.push("append-only/1".into());
+            requires.sort();
+        }
+        if modules
+            .iter()
+            .any(|m| m.resources.iter().any(|r| r.decorators.write_once))
+        {
+            requires.push("sealed-content/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| !m.work_queues.is_empty()) {
+            requires.push("work-queues/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.fields.iter().any(|f| f.secret))
+        }) {
+            requires.push("credentials/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| {
+            m.resources
+                .iter()
+                .any(|r| r.lists.iter().any(|l| l.search_mode.is_some()))
+        }) {
+            requires.push("search-exact/1".into());
+            requires.sort();
+        }
+        if modules.iter().any(|m| !m.actors.is_empty()) {
+            requires.push("actors/1".into());
+            requires.sort();
+        }
         DomainIR {
             version: DOMAIN_IR_VERSION.into(),
             requires,
@@ -4250,6 +5905,8 @@ fn blob_fields() -> Vec<Field> {
         ty,
         default: None,
         derived: None,
+        sequence: None,
+        secret: false,
         immutable: false,
         server_owned: true,
         synthesized: true,
@@ -4381,8 +6038,8 @@ impl<'a> Ctx<'a> {
             let aggregates: Vec<Aggregate> = q
                 .aggregates()
                 .into_iter()
-                .map(|(function, field, alias)| {
-                    if function != "count" {
+                .map(|(function, field, alias, predicate)| {
+                    if !matches!(function.as_str(), "count" | "exists" | "notExists") {
                         check(self, &field, &function);
                     }
                     let scale = fields.iter().find(|f| f.name == field).and_then(|f| match &f.ty.base {
@@ -4390,12 +6047,34 @@ impl<'a> Ctx<'a> {
                         TypeBase::Scalar { name, args } if name == "decimal" => args.first().and_then(|a| a.parse().ok()).or(Some(2)),
                         _ => None,
                     });
-                    if matches!(function.as_str(), "min" | "max") {
-                        self.err("W-PROJ-002", file, range_of(q), format!("`{function}` is not invertible; deletions and decreases trigger group recomputation for `{alias}`"), None);
+                    if function == "sum" && !fields.iter().any(|f|f.name == field && matches!(&f.ty.base,TypeBase::Scalar {name,..} if matches!(name.as_str(),"integer"|"decimal"|"money"))) {
+                        self.err("E-PROJ-004",file,range_of(q),"sum requires an integer, decimal or money field",None);
                     }
-                    Aggregate { function, field, alias, scale }
+                    if matches!(function.as_str(),"min"|"max"|"latest") && !fields.iter().any(|f|f.name == field && matches!(&f.ty.base,TypeBase::Scalar {name,..} if matches!(name.as_str(),"integer"|"decimal"|"money"|"date"|"datetime"))) {
+                        self.err("E-PROJ-004",file,range_of(q),"min/max/latest requires a numeric, date or datetime field",None);
+                    }
+                    let filter = predicate.as_ref().and_then(|e|self.expr(e,module,file,Some(&source)));
+                    Aggregate { function, field, alias, scale, filter }
                 })
                 .collect();
+            let mut aliases = BTreeSet::new();
+            for aggregate in &aggregates {
+                if !aliases.insert(&aggregate.alias)
+                    || by.contains(&aggregate.alias)
+                    || aggregate.alias == "generation"
+                {
+                    self.err(
+                        "E-PROJ-005",
+                        file,
+                        range_of(q),
+                        format!(
+                            "aggregate alias `{}` collides with another result field",
+                            aggregate.alias
+                        ),
+                        None,
+                    );
+                }
+            }
             if by.is_empty() {
                 self.err("E-PROJ-001", file, range_of(q), "a projection must group with `by <fields>`; ungrouped aggregates need a bounded working set", Some("add `by <field>`".into()));
             }
@@ -4605,6 +6284,10 @@ fn describe_type(t: &TypeSpec) -> String {
         TypeBase::Record { resource } => format!("{}.Record", short_id(resource)),
         TypeBase::Identity { resource } => format!("{}.Identity", short_id(resource)),
         TypeBase::Status { resource } => format!("{}.Status", short_id(resource)),
+        TypeBase::Collection {
+            collection,
+            element,
+        } => format!("{collection:?}<{element:?}>"),
         TypeBase::Message { channel, message } => format!("{}.{message}", short_id(channel)),
     }
 }

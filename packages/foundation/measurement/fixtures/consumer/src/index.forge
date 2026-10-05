@@ -1,0 +1,21 @@
+import measurement
+export resource ManufacturingPerformance @tenant @appendOnly {
+ id : id
+ observation : measurement.MetricObservation @unique
+ indicator : text length 1..128
+}
+export resource ServicePerformance @tenant @appendOnly {
+ id : id
+ observation : measurement.MetricObservation @unique
+ service : text length 1..128
+}
+export resource ClinicalPerformance @tenant @appendOnly {
+ id : id
+ observation : measurement.MetricObservation @unique
+ service : text length 1..128
+}
+export resource AgentPerformance @tenant @appendOnly {
+ id : id
+ observation : measurement.MetricObservation @unique
+ agent : text length 1..128
+}

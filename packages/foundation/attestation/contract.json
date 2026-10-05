@@ -1,0 +1,73 @@
+{
+  "slug": "attestation",
+  "layer": "substrate",
+  "issue": 100,
+  "dependencies": [
+    "party",
+    "specification",
+    "evidence",
+    "artifact",
+    "qualification"
+  ],
+  "facts": [
+    "ComplianceDeclaration",
+    "CredentialAssertion",
+    "SoftwareProvenance"
+  ],
+  "operations": [
+    "attestation authorized runtime services"
+  ],
+  "invariants": [
+    "Standalone issuer/typed subject/assertion envelope",
+    "Exact specification, sealed evidence and proof artifact",
+    "Shared validity, revocation and supersession",
+    "Qualification and Assurance consume shared attestations"
+  ],
+  "acceptance": [
+    {
+      "id": "F100-01",
+      "description": "Standalone issuer/typed subject/assertion envelope",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-attestation.test.ts"
+      ]
+    },
+    {
+      "id": "F100-02",
+      "description": "Exact specification, sealed evidence and proof artifact",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-attestation.test.ts"
+      ]
+    },
+    {
+      "id": "F100-03",
+      "description": "Shared validity, revocation and supersession",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-attestation.test.ts"
+      ]
+    },
+    {
+      "id": "F100-04",
+      "description": "Qualification and Assurance consume shared attestations",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-attestation.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "ComplianceDeclaration",
+    "CredentialAssertion",
+    "SoftwareProvenance"
+  ]
+}

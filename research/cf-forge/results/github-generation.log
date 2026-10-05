@@ -1,0 +1,118 @@
+Docker version 29.3.1, build c2be9ccfc3
+3.80.1: Pulling from fernapi/fern-typescript-sdk
+3be819c1c8cf: Already exists
+26e79d164890: Pulling fs layer
+26e8844941b1: Pulling fs layer
+6de234340041: Pulling fs layer
+c8b41c6a0717: Pulling fs layer
+96b80a9a0a5d: Pulling fs layer
+b181de3b491c: Pulling fs layer
+ea2a01e2fc76: Pulling fs layer
+aa9498ed7a7e: Pulling fs layer
+41472eabcacb: Pulling fs layer
+28586cf68d95: Pulling fs layer
+5c069833e47d: Pulling fs layer
+91f56a11b09b: Pulling fs layer
+a323069894cc: Pulling fs layer
+690511f10128: Pulling fs layer
+b181de3b491c: Waiting
+ea2a01e2fc76: Waiting
+aa9498ed7a7e: Waiting
+41472eabcacb: Waiting
+28586cf68d95: Waiting
+5c069833e47d: Waiting
+91f56a11b09b: Waiting
+a323069894cc: Waiting
+690511f10128: Waiting
+c8b41c6a0717: Waiting
+96b80a9a0a5d: Waiting
+26e79d164890: Verifying Checksum
+26e79d164890: Pull complete
+c8b41c6a0717: Verifying Checksum
+c8b41c6a0717: Download complete
+6de234340041: Verifying Checksum
+6de234340041: Download complete
+26e8844941b1: Verifying Checksum
+26e8844941b1: Download complete
+ea2a01e2fc76: Verifying Checksum
+ea2a01e2fc76: Download complete
+26e8844941b1: Pull complete
+6de234340041: Pull complete
+c8b41c6a0717: Pull complete
+b181de3b491c: Verifying Checksum
+b181de3b491c: Download complete
+41472eabcacb: Verifying Checksum
+41472eabcacb: Download complete
+aa9498ed7a7e: Verifying Checksum
+aa9498ed7a7e: Download complete
+5c069833e47d: Verifying Checksum
+5c069833e47d: Download complete
+28586cf68d95: Verifying Checksum
+28586cf68d95: Download complete
+a323069894cc: Download complete
+96b80a9a0a5d: Download complete
+96b80a9a0a5d: Pull complete
+b181de3b491c: Pull complete
+ea2a01e2fc76: Pull complete
+690511f10128: Verifying Checksum
+690511f10128: Download complete
+aa9498ed7a7e: Pull complete
+41472eabcacb: Pull complete
+28586cf68d95: Pull complete
+5c069833e47d: Pull complete
+91f56a11b09b: Verifying Checksum
+91f56a11b09b: Download complete
+91f56a11b09b: Pull complete
+a323069894cc: Pull complete
+690511f10128: Pull complete
+Digest: sha256:e806e9ff27d619caf84f9d5e52c9bc1f89e355dfd76d75faf1260b1115e1e192
+Status: Downloaded newer image for fernapi/fern-typescript-sdk:3.80.1
+docker.io/fernapi/fern-typescript-sdk:3.80.1
+==> Patching fern-typescript-sdk:3.80.1 for request wrappers / multipart keys / union base properties / HeadersIterator
+patched 3 multipart file property access call site(s)
+patched undiscriminated-union base properties into TS aliases
+patched deterministic canonical-IR shard ownership
+wrote /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp.RwzUiwotN7/cli.cjs
+patched Headers.ts iterator return types for TypeScript 6
+sha256:cbccf7f0c98d893068fb36bc408e6742358b665a1a52cec480a7da8ab3ce2b4a
+patched Fern container environment for canonical IR capture
+patched Fern canonical IR capture bind mount
+wrote /Volumes/dev/.worktrees/cf_forge/investigation/node_modules/.pnpm/fern-api@5.112.0/node_modules/fern-api/cli.cjs
+retagged fernapi/fern-typescript-sdk:3.80.1 with NODE_OPTIONS=--max-old-space-size=8192, --stack-size=8192, and scoped host CA
+==> Capturing Fern canonical TypeScript IR
+[api]: typescript-sdk Started.
+[api]: typescript-sdk fernapi/fern-typescript-sdk Started.
+[api]: typescript-sdk ✓ All checks passed
+[api]: typescript-sdk fernapi/fern-typescript-sdk Executing generator fernapi/fern-typescript-sdk using container image: fernapi/fern-typescript-sdk:3.80.1
+[api]: typescript-sdk fernapi/fern-typescript-sdk Forwarding CLOUDFLARE_FERN_CAPTURE_DIR=/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp.ubAV6QYho1/capture into the generator container
+[api]: typescript-sdk fernapi/fern-typescript-sdk Generator logs here: /private/var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/tmp-89536-1OJcM2nzxI0E
+[api]: typescript-sdk fernapi/fern-typescript-sdk Wrote files to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-KLjQHI/sdk
+[api]: typescript-sdk fernapi/fern-typescript-sdk Finished.
+[api]: typescript-sdk Finished.
+==> Canonical IR captured in 2s
+==> TypeScript shard 1/3
+==> TypeScript shard 2/3
+==> TypeScript shard 3/3
+[TIMING] code generation took 626ms
+[TIMING] fixPackageJson took 250ms
+[TIMING] checkFix took 5845ms
+[TIMING] code generation took 143ms
+[TIMING] fixPackageJson took 169ms
+[TIMING] checkFix took 5003ms
+[TIMING] code generation took 181ms
+[TIMING] fixPackageJson took 187ms
+[TIMING] checkFix took 5035ms
+==> 3 TypeScript shards finished in 8s
+merged 86 Fern files from 3 canonical-IR shards
+Finished in 60ms on 87 files using 12 threads.
+==> typescript-sdk: wrote /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-KLjQHI/sdk from 3 canonical-IR shards
+generate-sdk-map: wrote 2 entr(ies) to /var/folders/m8/j8x039qj43lc69vsf200z40h0000gn/T/forge-transformer-sdk-ts-KLjQHI/sdk/sdk-map.json
+  endpoints parsed: 2
+  expected non-ignored ops: 2
+  alias collisions resolved: 0
+  unmatched generated methods: 0
+  unresolved spec ops: 0
+forge-transformer-sdk-ts: generated 2 operations from /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/fixtures/github.json in /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-sdk
+real 64.17
+user 2.89
+sys 0.94

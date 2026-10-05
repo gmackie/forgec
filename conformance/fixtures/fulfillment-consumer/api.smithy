@@ -1,0 +1,757 @@
+$version: "2.0"
+
+namespace foundation.probe.fulfillment.consumers
+
+@error("client")
+structure Problem {
+    @required
+    code: String
+    @required
+    title: String
+    detail: String
+}
+
+structure ArtifactRecord {
+    @required
+    id: String
+    @required
+    key: String
+    @required
+    label: String
+}
+
+structure ArtifactCreateInput {
+    @required
+    key: String
+    @required
+    label: String
+}
+
+structure ArtifactPatchInput {
+}
+
+structure ArtifactComponentRecord {
+    @required
+    id: String
+    @required
+    name: String
+    @required
+    revision: String
+    next: String
+}
+
+structure ArtifactComponentCreateInput {
+    @required
+    name: String
+    @required
+    revision: String
+    next: String
+}
+
+structure ArtifactComponentPatchInput {
+}
+
+structure ArtifactContentRecord {
+    @required
+    id: String
+    @required
+    version: Long
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    uploadState: String
+    mediaType: String
+    byteCount: String
+    digest: String
+}
+
+structure ArtifactContentCreateInput {
+}
+
+structure ArtifactContentPatchInput {
+}
+
+structure ArtifactRevisionRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    artifact: String
+    @required
+    content: String
+    @required
+    digest: String
+    @required
+    mediaType: String
+    @required
+    byteCount: Long
+    specificationPin: String
+    realization: String
+    components: String
+}
+
+structure ArtifactRevisionCreateInput {
+    @required
+    artifact: String
+    @required
+    content: String
+    @required
+    digest: String
+    @required
+    mediaType: String
+    @required
+    byteCount: Long
+    specificationPin: String
+    realization: String
+    components: String
+}
+
+structure ArtifactRevisionPatchInput {
+}
+
+structure EvidenceBundleRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    key: String
+    @required
+    label: String
+    predecessor: String
+}
+
+structure EvidenceBundleCreateInput {
+    @required
+    key: String
+    @required
+    label: String
+    predecessor: String
+}
+
+structure EvidenceBundlePatchInput {
+}
+
+structure EvidenceItemRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    bundle: String
+    @required
+    source: String
+    @required
+    sourceRecord: String
+    @required
+    kind: String
+    @required
+    observedAt: String
+    revision: String
+    digest: String
+    @required
+    provenance: String
+}
+
+structure EvidenceItemCreateInput {
+    @required
+    bundle: String
+    @required
+    source: String
+    @required
+    sourceRecord: String
+    @required
+    kind: String
+    @required
+    observedAt: String
+    revision: String
+    digest: String
+    @required
+    provenance: String
+}
+
+structure EvidenceItemPatchInput {
+}
+
+structure EvidenceMemberRecord {
+    @required
+    id: String
+    @required
+    bundle: String
+    @required
+    item: String
+    next: String
+    @required
+    depth: Long
+}
+
+structure EvidenceMemberCreateInput {
+    @required
+    bundle: String
+    @required
+    item: String
+    next: String
+    @required
+    depth: Long
+}
+
+structure EvidenceMemberPatchInput {
+}
+
+structure EvidenceSealRecord {
+    @required
+    id: String
+    @required
+    createdAt: String
+    @required
+    updatedAt: String
+    @required
+    bundle: String
+    head: String
+    @required
+    recordedBy: String
+}
+
+structure EvidenceSealCreateInput {
+    @required
+    bundle: String
+    head: String
+    @required
+    recordedBy: String
+}
+
+structure EvidenceSealPatchInput {
+}
+
+structure EvidenceSourceRecord {
+    @required
+    id: String
+    @required
+    key: String
+    @required
+    label: String
+}
+
+structure EvidenceSourceCreateInput {
+    @required
+    key: String
+    @required
+    label: String
+}
+
+structure EvidenceSourcePatchInput {
+}
+
+structure FulfillmentRecord {
+    @required
+    id: String
+    @required
+    fulfillmentSet: String
+    @required
+    ordinal: Long
+    specificationPin: String
+    @required
+    executor: String
+    @required
+    requestedAt: String
+    evidence: String
+}
+
+structure FulfillmentCreateInput {
+    @required
+    fulfillmentSet: String
+    @required
+    ordinal: Long
+    specificationPin: String
+    @required
+    executor: String
+    @required
+    requestedAt: String
+    evidence: String
+}
+
+structure FulfillmentPatchInput {
+}
+
+structure FulfillmentEndRecord {
+    @required
+    id: String
+    @required
+    fulfillment: String
+    start: String
+    @required
+    outcome: String
+    @required
+    coverage: String
+    @required
+    endedAt: String
+    evidence: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure FulfillmentEndCreateInput {
+    @required
+    fulfillment: String
+    start: String
+    @required
+    outcome: String
+    @required
+    coverage: String
+    @required
+    endedAt: String
+    evidence: String
+    @required
+    reason: String
+    @required
+    recordedBy: String
+}
+
+structure FulfillmentEndPatchInput {
+}
+
+structure FulfillmentExecutorRecord {
+    @required
+    id: String
+    @required
+    key: String
+}
+
+structure FulfillmentExecutorCreateInput {
+    @required
+    key: String
+}
+
+structure FulfillmentExecutorPatchInput {
+}
+
+structure FulfillmentReplacementRecord {
+    @required
+    id: String
+    @required
+    prior: String
+    @required
+    priorEnd: String
+    @required
+    replacement: String
+    @required
+    reason: String
+}
+
+structure FulfillmentReplacementCreateInput {
+    @required
+    prior: String
+    @required
+    priorEnd: String
+    @required
+    replacement: String
+    @required
+    reason: String
+}
+
+structure FulfillmentReplacementPatchInput {
+}
+
+structure FulfillmentSetRecord {
+    @required
+    id: String
+    @required
+    label: String
+}
+
+structure FulfillmentSetCreateInput {
+    @required
+    label: String
+}
+
+structure FulfillmentSetPatchInput {
+}
+
+structure FulfillmentStartRecord {
+    @required
+    id: String
+    @required
+    fulfillment: String
+    @required
+    beganAt: String
+    @required
+    recordedBy: String
+}
+
+structure FulfillmentStartCreateInput {
+    @required
+    fulfillment: String
+    @required
+    beganAt: String
+    @required
+    recordedBy: String
+}
+
+structure FulfillmentStartPatchInput {
+}
+
+structure FulfillmentTaskLinkRecord {
+    @required
+    id: String
+    @required
+    fulfillment: String
+    @required
+    queue: String
+    @required
+    task: String
+}
+
+structure FulfillmentTaskLinkCreateInput {
+    @required
+    fulfillment: String
+    @required
+    queue: String
+    @required
+    task: String
+}
+
+structure FulfillmentTaskLinkPatchInput {
+}
+
+structure RealizationRecord {
+    @required
+    id: String
+    @required
+    pin: String
+    @required
+    buildHash: String
+    @required
+    manifestDigest: String
+}
+
+structure RealizationCreateInput {
+    @required
+    pin: String
+    @required
+    buildHash: String
+    @required
+    manifestDigest: String
+}
+
+structure RealizationPatchInput {
+}
+
+@http(method: "POST", uri: "/v1/specification/realizations")
+operation RealizationCreate {
+    input: RealizationCreateInput
+    output: RealizationRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/realizations/{id}")
+operation RealizationGet {
+    input: Unit
+    output: RealizationRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/realizations")
+operation RealizationList {
+    input: Unit
+    output: RealizationRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/realizations/queries/by-pin")
+operation RealizationList {
+    input: Unit
+    output: RealizationRecord
+    errors: [Problem]
+}
+
+structure RepositoryRecord {
+    @required
+    id: String
+    @required
+    version: Long
+    @required
+    key: String
+    @required
+    provider: String
+    @required
+    locator: String
+}
+
+structure RepositoryCreateInput {
+    @required
+    key: String
+    @required
+    provider: String
+    @required
+    locator: String
+}
+
+structure RepositoryPatchInput {
+    provider: String
+    locator: String
+}
+
+@http(method: "POST", uri: "/v1/specification/repositories")
+operation RepositoryCreate {
+    input: RepositoryCreateInput
+    output: RepositoryRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/repositories/{id}")
+operation RepositoryGet {
+    input: Unit
+    output: RepositoryRecord
+    errors: [Problem]
+}
+
+@http(method: "PATCH", uri: "/v1/specification/repositories/{id}")
+operation RepositoryUpdate {
+    input: RepositoryPatchInput
+    output: RepositoryRecord
+    errors: [Problem]
+}
+
+@http(method: "DELETE", uri: "/v1/specification/repositories/{id}")
+operation RepositoryDelete {
+    input: Unit
+    output: RepositoryRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/repositories/queries/by-key")
+operation RepositoryFind {
+    input: Unit
+    output: RepositoryRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/repositories")
+operation RepositoryList {
+    input: Unit
+    output: RepositoryRecord
+    errors: [Problem]
+}
+
+structure SpecificationPinRecord {
+    @required
+    id: String
+    @required
+    repository: String
+    @required
+    anchor: String
+    @required
+    revision: String
+}
+
+structure SpecificationPinCreateInput {
+    @required
+    repository: String
+    @required
+    anchor: String
+    @required
+    revision: String
+}
+
+structure SpecificationPinPatchInput {
+}
+
+@http(method: "POST", uri: "/v1/specification/pins")
+operation SpecificationPinCreate {
+    input: SpecificationPinCreateInput
+    output: SpecificationPinRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/pins/{id}")
+operation SpecificationPinGet {
+    input: Unit
+    output: SpecificationPinRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/pins/queries/by-repository-anchor-revision")
+operation SpecificationPinFind {
+    input: Unit
+    output: SpecificationPinRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/pins")
+operation SpecificationPinList {
+    input: Unit
+    output: SpecificationPinRecord
+    errors: [Problem]
+}
+
+@http(method: "GET", uri: "/v1/specification/pins/queries/by-repository-anchor")
+operation SpecificationPinList {
+    input: Unit
+    output: SpecificationPinRecord
+    errors: [Problem]
+}
+
+structure BobRunnerRecord {
+    @required
+    id: String
+    @required
+    executor: String
+    @required
+    runnerKey: String
+}
+
+structure BobRunnerCreateInput {
+    @required
+    executor: String
+    @required
+    runnerKey: String
+}
+
+structure BobRunnerPatchInput {
+}
+
+structure DevelopmentOutcomeRecord {
+    @required
+    id: String
+    @required
+    request: String
+    @required
+    execution: String
+    @required
+    commitSha: String
+}
+
+structure DevelopmentOutcomeCreateInput {
+    @required
+    request: String
+    @required
+    execution: String
+    @required
+    commitSha: String
+}
+
+structure DevelopmentOutcomePatchInput {
+}
+
+structure DevelopmentRequestRecord {
+    @required
+    id: String
+    @required
+    issueKey: String
+    @required
+    runs: String
+}
+
+structure DevelopmentRequestCreateInput {
+    @required
+    issueKey: String
+    @required
+    runs: String
+}
+
+structure DevelopmentRequestPatchInput {
+}
+
+structure LabOutcomeRecord {
+    @required
+    id: String
+    @required
+    request: String
+    @required
+    execution: String
+    @required
+    processedSamples: Long
+    @required
+    reportCode: String
+}
+
+structure LabOutcomeCreateInput {
+    @required
+    request: String
+    @required
+    execution: String
+    @required
+    processedSamples: Long
+    @required
+    reportCode: String
+}
+
+structure LabOutcomePatchInput {
+}
+
+structure LabRequestRecord {
+    @required
+    id: String
+    @required
+    assay: String
+    @required
+    requestedSamples: Long
+    @required
+    runs: String
+}
+
+structure LabRequestCreateInput {
+    @required
+    assay: String
+    @required
+    requestedSamples: Long
+    @required
+    runs: String
+}
+
+structure LabRequestPatchInput {
+}
+
+structure ProvisioningOutcomeRecord {
+    @required
+    id: String
+    @required
+    request: String
+    @required
+    execution: String
+    @required
+    provisionedEndpoint: String
+}
+
+structure ProvisioningOutcomeCreateInput {
+    @required
+    request: String
+    @required
+    execution: String
+    @required
+    provisionedEndpoint: String
+}
+
+structure ProvisioningOutcomePatchInput {
+}
+
+structure ProvisioningRequestRecord {
+    @required
+    id: String
+    @required
+    workspaceName: String
+    @required
+    runs: String
+}
+
+structure ProvisioningRequestCreateInput {
+    @required
+    workspaceName: String
+    @required
+    runs: String
+}
+
+structure ProvisioningRequestPatchInput {
+}
+

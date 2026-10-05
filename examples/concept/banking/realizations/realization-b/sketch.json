@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Temporal + keyed services",
+    "storage": "Postgres + object storage",
+    "transport": "Kafka",
+    "conflict": "OT",
+    "query": "PostGIS",
+    "batchSize": 1000,
+    "concurrency": 32,
+    "cacheTtl": 120
+  },
+  "obligations": [
+    "Double-entry and atomic balanced posting are explicit gaps: uniqueness is insufficient. Hospital dose limits and commerce refund ceilings recur without implying a new primitive yet.",
+    "As-of selects accounting time; recorded-at corrections need bitemporal treatment shared with benefits and insurance."
+  ]
+}

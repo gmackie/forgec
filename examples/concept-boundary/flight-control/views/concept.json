@@ -1,0 +1,74 @@
+{
+  "nodes": {
+    "@boundary/flight-control/_/AirframeIO": "external",
+    "@boundary/flight-control/_/ApproveFlightEnvelope": "process",
+    "@boundary/flight-control/_/ControlDecision": "fact",
+    "@boundary/flight-control/_/FlightEnvelope": "entity",
+    "@boundary/flight-control/_/FlightMode": "entity",
+    "@boundary/flight-control/_/FlightSample": "reference",
+    "@boundary/flight-control/_/ReactToFlightTick": "process",
+    "@boundary/flight-control/_/SurfaceDemand": "reference"
+  },
+  "edges": [
+    {
+      "from": "@boundary/flight-control/_/AirframeIO",
+      "to": "@boundary/flight-control/_/ReactToFlightTick",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#activation:tick",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/flight-control/_/AirframeIO",
+      "to": "@boundary/flight-control/_/ReactToFlightTick",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#input:sample",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/flight-control/_/ApproveFlightEnvelope",
+      "to": "@boundary/flight-control/_/FlightEnvelope",
+      "port": "@boundary/flight-control/_/ApproveFlightEnvelope#output:approval",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/flight-control/_/FlightEnvelope",
+      "to": "@boundary/flight-control/_/ReactToFlightTick",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#input:approval",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/flight-control/_/FlightMode",
+      "to": "@boundary/flight-control/_/ReactToFlightTick",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#input:previous",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/flight-control/_/FlightSample",
+      "to": "@boundary/flight-control/_/ReactToFlightTick",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#input:sample",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/flight-control/_/ReactToFlightTick",
+      "to": "@boundary/flight-control/_/AirframeIO",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/flight-control/_/ReactToFlightTick",
+      "to": "@boundary/flight-control/_/ControlDecision",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#output:decision",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/flight-control/_/ReactToFlightTick",
+      "to": "@boundary/flight-control/_/FlightMode",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#output:state",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/flight-control/_/ReactToFlightTick",
+      "to": "@boundary/flight-control/_/SurfaceDemand",
+      "port": "@boundary/flight-control/_/ReactToFlightTick#output:command",
+      "kind": "export"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+SKETCH ONLY — Industrial packaging line / PLC coordination
+Process: @boundary/packaging-line/_/ReactToScan
+Inputs:
+@boundary/packaging-line/_/ReactToScan#input:sample
+@boundary/packaging-line/_/ReactToScan#input:approval
+@boundary/packaging-line/_/ReactToScan#input:previous
+Outputs:
+@boundary/packaging-line/_/ReactToScan#output:state
+@boundary/packaging-line/_/ReactToScan#output:decision
+@boundary/packaging-line/_/ReactToScan#output:command
+
+(* Interface sketch only; no validated PLC program. *)
+IF NOT ScanImage.guardClosed OR ScanImage.jamDetected THEN
+  nextMode := faulted; conveyorEnable := FALSE; sealRequest := FALSE;
+ELSE
+  (* External validated sequencer accounts for dwell, edges and mode transitions. *)
+  nextMode, conveyorEnable, sealRequest := VALIDATED_SEQUENCE(...);
+END_IF;
+(* Latch one output image per scan; an old sealRequest must not be retriggered. *)
+Emergency stop and certified safety logic are outside this sketch.

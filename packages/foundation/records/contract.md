@@ -1,0 +1,11 @@
+# Records and retention
+
+Business-triggered retention and durable disposition decisions for #97. A category can pin a Classification ConceptRevision. An immutable rule declares the trigger, period in days, disposition kind (Archive, Destroy, Anonymize, Transfer), authority, citation, and optional sealed Evidence. Domain resources attach a typed Record; ArtifactRecord attaches an exact ArtifactRevision.
+
+`Records.register` computes the deadline from the business trigger, not insertion time. `hold`, `release`, and `dispose` append to a per-record bounded journal. Unique `(record, ordinal)` claims and reference rules arbitrate concurrent commands. A disposition cannot follow an active hold or precede the deadline; release names exactly one hold; each hold can be released only once. Disposition is terminal for this management decision, and retains immutable explanation/evidence. Replay reads use Engine authorization, including evidence support. Journals are bounded to 128 entries and fail closed at capacity.
+
+These are decisions, not physical TTL/deletion calls. An L1 executor consumes an authorized disposition decision and records its own execution evidence; it must not delete the decision history along with content. Archive/transfer start a new management lifecycle if further retention is required. Rule changes create new rules/records with domain-owned supersession links; historical decisions never change in place.
+
+Applications must expose the Records service through authorized controllers and deny untrusted direct Record.create/RecordEvent.create access. Calendar/deadline derivation and full replay checks are service responsibilities; journal counts, predecessor/ordinal constraints, active-hold gating, and recorded deadline checks also apply to generated writes. Never accept client-selected retention deadlines as policy decisions. Gatekeeper remains responsible for who may invoke each command.
+
+Consumer fixtures cover compliance invoices, applicant deletion, and litigation records without a universal entity reference. Runtime tests exercise memory/SQLite; optional PostgreSQL runs use the existing Foundation harness. Live provider lifecycle execution is not certified by these tests.

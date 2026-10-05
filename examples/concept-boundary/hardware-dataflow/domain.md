@@ -1,0 +1,9 @@
+# One-slot hardware dataflow stage
+
+A streaming pipeline accepts an 8-bit sample when in_valid && in_ready at a rising clock edge. Its single output slot retains a sample until out_valid && out_ready. The stage can consume and replace the slot on the same edge, supporting one sample per cycle when the sink remains ready. During backpressure it must keep output data and validity stable. A synchronous reset clears the slot and deliberately discards any pending sample; conservation is stated between resets.
+
+ValidatePipeline exports source, testbench, constraint, vector and tool identities to HDLToolchain. RecordPipelineValidation records the resulting report and alone owns PipelineValidation and PipelineValidationRecorded. RTL registers and individual clocked samples are external computational state, not durable entities. Compile failure, mismatched source identity, assertion failure and successful directed simulation are different evidence statuses; success does not authorize deployment or imply timing closure.
+
+The testbench fills the stage, holds a downstream stall, attempts blocked input, performs simultaneous consume/replace, runs consecutive transfers and drains it. A scoreboard checks accepted/emitted order and occupancy, and a separate check verifies stability under stall. Icarus simulation accepted and emitted three samples with maximum occupancy one. This demonstrates the executable seam and a useful local test, not exhaustive verification of every stimulus or a physical implementation.
+
+The stage has one clock. Crossing into an unrelated sink clock would require an asynchronous FIFO or another analyzed handshake, with reset and metastability assumptions. Connecting a normal process edge or reusing this combinational ready signal across domains would not supply that behavior.

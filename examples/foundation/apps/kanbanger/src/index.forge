@@ -1,0 +1,16 @@
+import intake
+export resource IssueSubmission
+  @tenant
+  @appendOnly
+{
+  id : id
+  issueId : text length 1..128 @unique
+  teamId : text length 1..128
+  workspaceId : text length 1..128
+  creatorId : text length 1..128
+  submission : intake.Submission @unique
+  rules {
+    submission.sourceKey == issueId
+  }
+  find by issueId
+}

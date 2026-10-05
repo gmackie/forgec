@@ -1,0 +1,88 @@
+import case-management
+import specification
+import evidence
+import evaluation
+import decision
+import fulfillment
+import change
+import service-level
+import risk
+import assurance
+export resource Incident @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ case : case-management.Case @unique
+ occurredAt : datetime
+ description : text length 1..1000
+ source : evidence.EvidenceSeal
+ serviceLevel : service-level.ServiceLevelInstance?
+ risk : risk.Risk?
+ finding : assurance.Finding?
+}
+export resource Problem @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ case : case-management.Case @unique
+ hypothesis : specification.SpecificationPin
+ support : evidence.EvidenceSeal
+ diagnosis : evaluation.EvaluationRun
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ rules { accepted.decisionCase == approval }
+}
+export resource IncidentCorrelation @tenant @appendOnly {
+ id : id
+ incident : Incident
+ problem : Problem
+ rationale : text length 1..1000
+ support : evidence.EvidenceSeal
+ unique incident, problem
+ list by problem
+}
+export resource KnownProblem @tenant @appendOnly {
+ id : id
+ problem : Problem @unique
+ diagnosis : evaluation.EvaluationFinish
+ workaround : specification.SpecificationPin
+ support : evidence.EvidenceSeal
+ at : datetime
+ rules { diagnosis.run == problem.diagnosis
+ diagnosis.outcome == "Completed"
+ diagnosis.finishedAt <= at }
+ find by problem
+}
+export resource ProblemRemediation @tenant @appendOnly {
+ id : id
+ problem : Problem
+ fulfillment : fulfillment.Fulfillment @unique
+ change : change.Change?
+ verification : evaluation.EvaluationRun
+ approval : decision.DecisionCase
+ accepted : decision.DecisionOption
+ rules { accepted.decisionCase == approval }
+}
+export resource ProblemVerification @tenant @appendOnly {
+ id : id
+ remediation : ProblemRemediation @unique
+ evaluation : evaluation.EvaluationFinish
+ support : evidence.EvidenceSeal
+ at : datetime
+ rules { evaluation.run == remediation.verification
+ evaluation.outcome == "Completed"
+ evaluation.finishedAt <= at }
+}
+export resource IncidentResolution @tenant @appendOnly {
+ id : id
+ incident : Incident
+ correlation : IncidentCorrelation
+ verification : ProblemVerification
+ remediation : ProblemRemediation
+ closure : case-management.CaseEvent
+ rules { correlation.incident == incident
+ correlation.problem == remediation.problem
+ verification.remediation == remediation
+ closure.case == incident.case
+ closure.kind == "close"
+ closure.at >= verification.at }
+ unique incident, closure
+}

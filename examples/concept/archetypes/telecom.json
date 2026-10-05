@@ -1,0 +1,123 @@
+{
+  "version": "concept-ir/2",
+  "package": "telecom",
+  "entities": {
+    "Order": {
+      "name": "Order",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "ServiceOffering": {
+      "name": "ServiceOffering",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "Activation": {
+      "name": "Activation",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    },
+    "ServiceResponse": {
+      "name": "ServiceResponse",
+      "fields": {},
+      "invariants": [],
+      "lifecycle": null,
+      "subject": null,
+      "recordContext": null,
+      "purposeScoped": false,
+      "capabilities": [],
+      "purposeBindings": []
+    }
+  },
+  "facts": {},
+  "externals": {},
+  "principals": {},
+  "policies": {},
+  "processes": {},
+  "purposes": {},
+  "dataClasses": {},
+  "shapes": {},
+  "enums": {},
+  "archetypes": {
+    "definitions": {
+      "RequestFulfillment": {
+        "roles": {
+          "request": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "specification": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "fulfillment": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          },
+          "outcome": {
+            "kind": "entity",
+            "required": true,
+            "lifecycle": null
+          }
+        },
+        "relationships": {
+          "requests": {
+            "request": "request",
+            "specification": "specification"
+          },
+          "fulfills": {
+            "fulfillment": "fulfillment",
+            "request": "request"
+          },
+          "produces": {
+            "fulfillment": "fulfillment",
+            "outcome": "outcome"
+          }
+        },
+        "contracts": {},
+        "outputs": [
+          "outcome"
+        ],
+        "extensible": true
+      }
+    },
+    "profiles": {
+      "telecom": {
+        "bindings": {
+          "RequestFulfillment": {
+            "request": "Order",
+            "specification": "ServiceOffering",
+            "fulfillment": "Activation",
+            "outcome": "ServiceResponse"
+          }
+        },
+        "label": "telecom",
+        "aliases": [],
+        "constraints": {},
+        "extensions": [],
+        "source": "examples/concept/archetypes/telecom.json#/archetypes/profiles/telecom"
+      }
+    }
+  }
+}

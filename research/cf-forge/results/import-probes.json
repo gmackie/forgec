@@ -1,0 +1,56 @@
+[
+  {
+    "name": "cloudflare",
+    "exit": 0,
+    "seconds": 0.45856391615234315,
+    "stdout": "",
+    "stderr": "@research/cloudflare: imported 2 operations (0 skipped), 50 unsupported features, 0 foreign identifiers, 0 callbacks/webhooks -> /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-cloudflare\nreview /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-cloudflare/import-report.json and /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-cloudflare/FOREIGN_IDS.md\n",
+    "operations": [
+      {
+        "operation_id": "dns-records-for-a-zone-list-dns-records",
+        "function": "DnsRecordsForAZoneListDnsRecords",
+        "method": "GET",
+        "path": "/zones/{zone_id}/dns_records"
+      },
+      {
+        "operation_id": "dns-records-for-a-zone-create-dns-record",
+        "function": "DnsRecordsForAZoneCreateDnsRecord",
+        "method": "POST",
+        "path": "/zones/{zone_id}/dns_records"
+      }
+    ],
+    "unsupportedCount": 50,
+    "check": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": "error[E-TYPE-004]: src/index.forge:320:23: unrecognized refinement\nerror[E-SYN-001]: src/index.forge:320:26: expected a literal, found `-`\nerror[E-SYN-001]: src/index.forge:320:26: expected end of line, found `-`\n@research/cloudflare: 3 error(s), 0 warning(s)\n"
+    }
+  },
+  {
+    "name": "github",
+    "exit": 0,
+    "seconds": 0.025568458018824458,
+    "stdout": "",
+    "stderr": "@research/github: imported 2 operations (0 skipped), 23 unsupported features, 52 foreign identifiers, 0 callbacks/webhooks -> /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-github\nreview /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-github/import-report.json and /Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/import-github/FOREIGN_IDS.md\n",
+    "operations": [
+      {
+        "operation_id": "issues/list-for-repo",
+        "function": "IssuesListForRepo",
+        "method": "GET",
+        "path": "/repos/{owner}/{repo}/issues"
+      },
+      {
+        "operation_id": "issues/create",
+        "function": "IssuesCreate",
+        "method": "POST",
+        "path": "/repos/{owner}/{repo}/issues"
+      }
+    ],
+    "unsupportedCount": 23,
+    "check": {
+      "exit": 0,
+      "stdout": "@research/github: ok (1 file(s), 0 dependency(ies), 0 warning(s))\n",
+      "stderr": ""
+    }
+  }
+]

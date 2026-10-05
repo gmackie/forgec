@@ -4,12 +4,15 @@ import type { Resource } from "./model.js";
 import { MemoryObjectStore } from "./adapters/memory-objects.js";
 import { Clock, CursorSecret, IdGen, Objects, Storage, type ObjectStoreAdapter, type StorageAdapter } from "./services.js";
 
-/** Clocks of every test layer created in this process; Engine.testClockJump advances the latest. */
-export const testClocks: { jump: (ms: number) => void }[] = [];
+/** Test clocks belong to a layer, shared only by engines using that exact layer.
+ * Weak keys avoid retaining fixtures after their engines have been discarded. */
+const testClocks = new WeakMap<object, { jump: (ms: number) => void }>();
+export function jumpTestClock(layer: object, ms: number): void {
+  testClocks.get(layer)?.jump(ms);
+}
 
 export function testLayer(storage: StorageAdapter, opts: { start?: string; secret?: string; runId?: string; objects?: ObjectStoreAdapter; idPrefix?: string } = {}) {
   let t = Date.parse(opts.start ?? "2026-01-01T00:00:00.000Z");
-  testClocks.push({ jump: (ms) => void (t += ms) });
   const counters = new Map<string, number>();
   let ops = 0;
   // Operation ids seed provider idempotency tokens; against shared live stores they must not repeat across runs.
@@ -24,5 +27,7 @@ export function testLayer(storage: StorageAdapter, opts: { start?: string; secre
     },
     opId: () => `${runId}op_${String(++ops).padStart(6, "0")}`,
   });
-  return Layer.mergeAll(clock, ids, Layer.succeed(Storage)(storage), Layer.succeed(CursorSecret)({ key: opts.secret ?? "test-secret" }), Layer.succeed(Objects)(opts.objects ?? new MemoryObjectStore()));
+  const layer = Layer.mergeAll(clock, ids, Layer.succeed(Storage)(storage), Layer.succeed(CursorSecret)({ key: opts.secret ?? "test-secret" }), Layer.succeed(Objects)(opts.objects ?? new MemoryObjectStore()));
+  testClocks.set(layer, { jump: ms => void (t += ms) });
+  return layer;
 }

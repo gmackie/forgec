@@ -1,0 +1,21 @@
+import case-management
+export resource SupportCase @tenant @appendOnly {
+ id : id
+ case : case-management.Case @unique
+ product : text length 1..128
+}
+export resource CareEpisode @tenant @appendOnly {
+ id : id
+ case : case-management.Case @unique
+ service : text length 1..128
+}
+export resource InvestigationCase @tenant @appendOnly {
+ id : id
+ case : case-management.Case @unique
+ allegation : text length 1..500
+}
+export resource LegalMatter @tenant @appendOnly {
+ id : id
+ case : case-management.Case @unique
+ jurisdiction : text length 1..128
+}

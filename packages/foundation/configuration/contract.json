@@ -1,0 +1,116 @@
+{
+  "slug": "configuration",
+  "layer": "substrate",
+  "issue": 94,
+  "dependencies": [
+    "specification"
+  ],
+  "facts": [
+    "ParameterDefinition: a typed parameter declared by a SpecificationPin",
+    "Configuration: one authored layer, optionally inheriting from a lower one",
+    "ParameterAssignment: exactly one of a literal value or a secret reference",
+    "ResolvedConfiguration and ResolvedValue: a digest-identified resolution carrying the configuration each value came from"
+  ],
+  "operations": [
+    "DeclareParameter(pin, key, valueType, required, defaultValue?)",
+    "Configure(pin, key, layer, parent?); Assign(configuration, parameter, value | secretRef)",
+    "Resolve(configuration, resolvedAt); ListResolvedValues(resolved)"
+  ],
+  "invariants": [
+    "Configuration is not arbitrary JSON: every assignment names a parameter declared by the same pinned specification revision, so an unknown key cannot be set and a retyped key cannot be silently inherited",
+    "Precedence is a total order along the inheritance chain: a child's layer ordinal is strictly greater than its parent's, so resolution is deterministic and independent of traversal direction",
+    "Secret parameters carry a reference and never a literal, and may not carry a default; this package stores no secret material",
+    "A resolution is identified by a digest over its resolved values, so the same desired state has the same identity and resolving twice is one fact",
+    "Every resolved value records the configuration it came from, so a surprising value is attributable without re-deriving the chain",
+    "Configuration is authored and resolved independently of anything observing it; desired-versus-observed reconciliation is a separate lifecycle owned elsewhere"
+  ],
+  "acceptance": [
+    {
+      "id": "F94-01",
+      "description": "typed configuration definition against SpecificationPin.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F94-02",
+      "description": "defaults + explicit overrides.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F94-03",
+      "description": "composition/inheritance rules with deterministic resolution.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F94-04",
+      "description": "environment/context bindings without provider lock-in.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F94-05",
+      "description": "secret references do not expose secret values.",
+      "kind": "compile",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration.test.ts",
+        "packages/runtime/test/foundation-configuration-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F94-06",
+      "description": "resolved configuration has stable/provenance-aware identity.",
+      "kind": "runtime",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F94-07",
+      "description": "fixtures for workspace agent, industrial device/process, SaaS tenant and deployment configuration.",
+      "kind": "fixture",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration-consumer.test.ts"
+      ],
+      "verification": "local"
+    },
+    {
+      "id": "F94-08",
+      "description": "Reconciliation can consume configuration without owning it.",
+      "kind": "fixture",
+      "status": "passing",
+      "evidence": [
+        "packages/runtime/test/foundation-configuration-consumer.test.ts"
+      ],
+      "verification": "local"
+    }
+  ],
+  "fixtures": [
+    "workspace-agent",
+    "industrial-process-unit",
+    "saas-tenant-plan",
+    "deployment-configuration"
+  ]
+}

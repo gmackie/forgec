@@ -1,0 +1,469 @@
+{
+  "schemaVersion": 1,
+  "layer": "substrate",
+  "status": "implementation-in-progress",
+  "packages": [
+    {
+      "slug": "specification",
+      "issue": 26,
+      "dependencies": [],
+      "contract": "packages/foundation/specification/contract.json",
+      "acceptanceIds": [
+        "F26-01",
+        "F26-02",
+        "F26-03",
+        "F26-04",
+        "F26-05",
+        "F26-06",
+        "F26-07"
+      ]
+    },
+    {
+      "slug": "configuration",
+      "issue": 94,
+      "dependencies": [
+        "specification"
+      ],
+      "contract": "packages/foundation/configuration/contract.json",
+      "acceptanceIds": [
+        "F94-01",
+        "F94-02",
+        "F94-03",
+        "F94-04",
+        "F94-05",
+        "F94-06",
+        "F94-07",
+        "F94-08"
+      ]
+    },
+    {
+      "slug": "artifact",
+      "issue": 27,
+      "dependencies": [
+        "specification"
+      ],
+      "contract": "packages/foundation/artifact/contract.json",
+      "acceptanceIds": [
+        "F27-01",
+        "F27-02",
+        "F27-03",
+        "F27-04",
+        "F27-05",
+        "F27-06",
+        "F27-07"
+      ]
+    },
+    {
+      "slug": "identifiers",
+      "issue": 28,
+      "dependencies": [],
+      "contract": "packages/foundation/identifiers/contract.json",
+      "acceptanceIds": [
+        "F28-01",
+        "F28-02",
+        "F28-03",
+        "F28-04",
+        "F28-05",
+        "F28-06"
+      ]
+    },
+    {
+      "slug": "consent",
+      "issue": 93,
+      "dependencies": [],
+      "contract": "packages/foundation/consent/contract.json",
+      "acceptanceIds": [
+        "F93-01",
+        "F93-02",
+        "F93-03",
+        "F93-04",
+        "F93-05",
+        "F93-06",
+        "F93-07",
+        "F93-08"
+      ]
+    },
+    {
+      "slug": "reachability",
+      "issue": 91,
+      "dependencies": [],
+      "contract": "packages/foundation/reachability/contract.json",
+      "acceptanceIds": [
+        "F91-01",
+        "F91-02",
+        "F91-03",
+        "F91-04",
+        "F91-05",
+        "F91-06",
+        "F91-07",
+        "F91-08"
+      ]
+    },
+    {
+      "slug": "participation",
+      "issue": 29,
+      "dependencies": [
+        "party"
+      ],
+      "contract": "packages/foundation/participation/contract.json",
+      "acceptanceIds": [
+        "F29-01",
+        "F29-02",
+        "F29-03",
+        "F29-04",
+        "F29-05",
+        "F29-06"
+      ]
+    },
+    {
+      "slug": "entitlement",
+      "issue": 30,
+      "dependencies": [
+        "party"
+      ],
+      "contract": "packages/foundation/entitlement/contract.json",
+      "acceptanceIds": [
+        "F30-01",
+        "F30-02",
+        "F30-03",
+        "F30-04",
+        "F30-05",
+        "F30-06",
+        "F30-07"
+      ]
+    },
+    {
+      "slug": "fulfillment",
+      "issue": 31,
+      "dependencies": [
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/fulfillment/contract.json",
+      "acceptanceIds": [
+        "F31-01",
+        "F31-02",
+        "F31-03",
+        "F31-04",
+        "F31-05",
+        "F31-06"
+      ]
+    },
+    {
+      "slug": "evaluation",
+      "issue": 32,
+      "dependencies": [
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/evaluation/contract.json",
+      "acceptanceIds": [
+        "F32-01",
+        "F32-02",
+        "F32-03",
+        "F32-04",
+        "F32-05",
+        "F32-06"
+      ]
+    },
+    {
+      "slug": "evidence",
+      "issue": 33,
+      "dependencies": [
+        "artifact"
+      ],
+      "contract": "packages/foundation/evidence/contract.json",
+      "acceptanceIds": [
+        "F33-01",
+        "F33-02",
+        "F33-03",
+        "F33-04",
+        "F33-05",
+        "F33-06"
+      ]
+    },
+    {
+      "slug": "allocation",
+      "issue": 34,
+      "dependencies": [],
+      "contract": "packages/foundation/allocation/contract.json",
+      "acceptanceIds": [
+        "F34-01",
+        "F34-02",
+        "F34-03",
+        "F34-04",
+        "F34-05",
+        "F34-06"
+      ]
+    },
+    {
+      "slug": "usage",
+      "issue": 35,
+      "dependencies": [],
+      "contract": "packages/foundation/usage/contract.json",
+      "acceptanceIds": [
+        "F35-01",
+        "F35-02",
+        "F35-03",
+        "F35-04",
+        "F35-05",
+        "F35-06",
+        "F35-07"
+      ]
+    },
+    {
+      "slug": "ledger",
+      "issue": 36,
+      "dependencies": [],
+      "contract": "packages/foundation/ledger/contract.json",
+      "acceptanceIds": [
+        "F36-01",
+        "F36-02",
+        "F36-03",
+        "F36-04",
+        "F36-05",
+        "F36-06",
+        "F36-07"
+      ]
+    },
+    {
+      "slug": "lineage",
+      "issue": 37,
+      "dependencies": [
+        "specification"
+      ],
+      "contract": "packages/foundation/lineage/contract.json",
+      "acceptanceIds": [
+        "F37-01",
+        "F37-02",
+        "F37-03",
+        "F37-04",
+        "F37-05",
+        "F37-06",
+        "F37-07"
+      ]
+    },
+    {
+      "slug": "delivery",
+      "issue": 38,
+      "dependencies": [
+        "artifact",
+        "evidence"
+      ],
+      "contract": "packages/foundation/delivery/contract.json",
+      "acceptanceIds": [
+        "F38-01",
+        "F38-02",
+        "F38-03",
+        "F38-04",
+        "F38-05",
+        "F38-06",
+        "F38-07"
+      ]
+    },
+    {
+      "slug": "party",
+      "issue": 52,
+      "dependencies": [
+        "identifiers"
+      ],
+      "contract": "packages/foundation/party/contract.json",
+      "acceptanceIds": [
+        "F52-01",
+        "F52-02",
+        "F52-03",
+        "F52-04",
+        "F52-05",
+        "F52-06"
+      ]
+    },
+    {
+      "slug": "place",
+      "issue": 53,
+      "dependencies": [
+        "identifiers"
+      ],
+      "contract": "packages/foundation/place/contract.json",
+      "acceptanceIds": [
+        "F53-01",
+        "F53-02",
+        "F53-03",
+        "F53-04",
+        "F53-05"
+      ]
+    },
+    {
+      "slug": "classification",
+      "issue": 54,
+      "dependencies": [
+        "identifiers"
+      ],
+      "contract": "packages/foundation/classification/contract.json",
+      "acceptanceIds": [
+        "F54-01",
+        "F54-02",
+        "F54-03",
+        "F54-04",
+        "F54-05",
+        "F54-06"
+      ]
+    },
+    {
+      "slug": "availability",
+      "issue": 55,
+      "dependencies": [
+        "specification"
+      ],
+      "contract": "packages/foundation/availability/contract.json",
+      "acceptanceIds": [
+        "F55-01",
+        "F55-02",
+        "F55-03",
+        "F55-04",
+        "F55-05",
+        "F55-06"
+      ]
+    },
+    {
+      "slug": "qualification",
+      "issue": 56,
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/qualification/contract.json",
+      "acceptanceIds": [
+        "F56-01",
+        "F56-02",
+        "F56-03",
+        "F56-04",
+        "F56-05",
+        "F56-06"
+      ]
+    },
+    {
+      "slug": "resource-relations",
+      "issue": 79,
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/resource-relations/contract.json",
+      "acceptanceIds": [
+        "F79-01",
+        "F79-02",
+        "F79-03",
+        "F79-04",
+        "F79-05",
+        "F79-06",
+        "F79-07",
+        "F79-08",
+        "F79-SEMANTIC",
+        "F79-STORE"
+      ]
+    },
+    {
+      "issue": 101,
+      "slug": "coded-domain",
+      "dependencies": [
+        "identifiers",
+        "classification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/coded-domain/contract.json",
+      "acceptanceIds": [
+        "F101-identity",
+        "F101-meaning",
+        "F101-labels",
+        "F101-mapping",
+        "F101-fixtures"
+      ]
+    },
+    {
+      "issue": 100,
+      "slug": "attestation",
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence",
+        "artifact",
+        "qualification"
+      ],
+      "contract": "packages/foundation/attestation/contract.json",
+      "acceptanceIds": [
+        "F100-01",
+        "F100-02",
+        "F100-03",
+        "F100-04"
+      ]
+    },
+    {
+      "issue": 99,
+      "slug": "party-relationship",
+      "dependencies": [
+        "party",
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/party-relationship/contract.json",
+      "acceptanceIds": [
+        "F99-01",
+        "F99-02",
+        "F99-03",
+        "F99-04"
+      ]
+    },
+    {
+      "issue": 92,
+      "slug": "delegation",
+      "dependencies": [
+        "party",
+        "entitlement",
+        "specification",
+        "evidence"
+      ],
+      "contract": "packages/foundation/delegation/contract.json",
+      "acceptanceIds": [
+        "F92-01",
+        "F92-02",
+        "F92-03",
+        "F92-04"
+      ]
+    },
+    {
+      "issue": 124,
+      "slug": "measurement",
+      "dependencies": [
+        "specification",
+        "evidence",
+        "evaluation",
+        "fulfillment"
+      ],
+      "contract": "packages/foundation/measurement/contract.json",
+      "acceptanceIds": [
+        "F124-01",
+        "F124-02",
+        "F124-03",
+        "F124-04",
+        "F124-05"
+      ]
+    },
+    {
+      "issue": 127,
+      "slug": "composition",
+      "dependencies": [
+        "specification",
+        "resource-relations"
+      ],
+      "contract": "packages/foundation/composition/contract.json",
+      "acceptanceIds": [
+        "F127-01",
+        "F127-02",
+        "F127-03",
+        "F127-04"
+      ]
+    }
+  ]
+}

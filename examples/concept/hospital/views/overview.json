@@ -1,0 +1,407 @@
+{
+  "nodes": {
+    "@corpus/hospital/_/ClinicalLab": "external",
+    "@corpus/hospital/_/EmergencyAccess": "policy",
+    "@corpus/hospital/_/EmergencyAccessUsed": "fact",
+    "@corpus/hospital/_/EmergencyRead": "process",
+    "@corpus/hospital/_/Encounter": "entity",
+    "@corpus/hospital/_/Insurer": "external",
+    "@corpus/hospital/_/LabResult": "entity",
+    "@corpus/hospital/_/LabResultReceived": "fact",
+    "@corpus/hospital/_/MaintainEncounter": "process",
+    "@corpus/hospital/_/MedicationAdministered": "fact",
+    "@corpus/hospital/_/MedicationOrder": "entity",
+    "@corpus/hospital/_/Operator": "principal",
+    "@corpus/hospital/_/Patient": "entity",
+    "@corpus/hospital/_/PatientAdmitted": "fact",
+    "@corpus/hospital/_/PatientTransferred": "fact",
+    "@corpus/hospital/_/Pharmacy": "external",
+    "@corpus/hospital/_/PrescribeMedication": "process",
+    "@corpus/hospital/_/ReceiveLab": "process",
+    "@corpus/hospital/_/RegisterPatient": "process",
+    "@corpus/hospital/_/ScopedAccess": "policy",
+    "@corpus/hospital/_/Transfer": "entity",
+    "@corpus/hospital/_/TransferPatient": "process",
+    "@corpus/hospital/_/Treatment": "purpose"
+  },
+  "edges": [
+    {
+      "from": "@corpus/hospital/_/ClinicalLab",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/hospital/_/ClinicalLab",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#input:Patient",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/hospital/_/EmergencyAccess",
+      "to": "@corpus/hospital/_/EmergencyRead",
+      "port": "@corpus/hospital/_/EmergencyRead",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/EmergencyAccess",
+      "to": "@corpus/hospital/_/EmergencyRead",
+      "port": "@corpus/hospital/_/EmergencyRead#input:Encounter",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/EmergencyAccess",
+      "to": "@corpus/hospital/_/Operator",
+      "port": "@corpus/hospital/_/EmergencyAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/EmergencyAccess",
+      "to": "@corpus/hospital/_/Patient",
+      "port": "@corpus/hospital/_/EmergencyAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/hospital/_/EmergencyAccess",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/EmergencyAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/hospital/_/EmergencyRead",
+      "to": "@corpus/hospital/_/EmergencyAccessUsed",
+      "port": "@corpus/hospital/_/EmergencyRead#output:EmergencyAccessUsed",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/EmergencyRead",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/EmergencyRead",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/hospital/_/Encounter",
+      "to": "@corpus/hospital/_/EmergencyRead",
+      "port": "@corpus/hospital/_/EmergencyRead#input:Encounter",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/Encounter",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:Encounter",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/Encounter",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#input:Encounter",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/Encounter",
+      "to": "@corpus/hospital/_/TransferPatient",
+      "port": "@corpus/hospital/_/TransferPatient#input:Encounter",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/Insurer",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:coverage",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/hospital/_/LabResult",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:LabResult",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/LabResultReceived",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#activation:LabResultReceived",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/hospital/_/LabResultReceived",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#input:LabResultReceived",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/LabResultReceived",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#wait:LabResultReceived",
+      "kind": "wait"
+    },
+    {
+      "from": "@corpus/hospital/_/MaintainEncounter",
+      "to": "@corpus/hospital/_/Encounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#output:Encounter",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/MaintainEncounter",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/MaintainEncounter",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/hospital/_/Operator",
+      "to": "@corpus/hospital/_/EmergencyRead",
+      "port": "@corpus/hospital/_/EmergencyRead",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/Operator",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/Operator",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/Operator",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/Operator",
+      "to": "@corpus/hospital/_/RegisterPatient",
+      "port": "@corpus/hospital/_/RegisterPatient",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/Operator",
+      "to": "@corpus/hospital/_/TransferPatient",
+      "port": "@corpus/hospital/_/TransferPatient",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/Patient",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:coverage",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/Patient",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#input:Patient",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/PatientAdmitted",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#activation:PatientAdmitted",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/hospital/_/PatientAdmitted",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#input:PatientAdmitted",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/PatientTransferred",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#activation:PatientTransferred",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/hospital/_/PatientTransferred",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#input:PatientTransferred",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/MedicationAdministered",
+      "port": "@corpus/hospital/_/PrescribeMedication#output:MedicationAdministered",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/MedicationOrder",
+      "port": "@corpus/hospital/_/PrescribeMedication#output:MedicationOrder",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/MedicationOrder",
+      "port": "@corpus/hospital/_/PrescribeMedication#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/Pharmacy",
+      "port": "@corpus/hospital/_/PrescribeMedication#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/PrescribeMedication",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/hospital/_/ReceiveLab",
+      "to": "@corpus/hospital/_/LabResult",
+      "port": "@corpus/hospital/_/ReceiveLab#output:LabResult",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/ReceiveLab",
+      "to": "@corpus/hospital/_/LabResultReceived",
+      "port": "@corpus/hospital/_/ReceiveLab#output:LabResultReceived",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/ReceiveLab",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/ReceiveLab",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/hospital/_/RegisterPatient",
+      "to": "@corpus/hospital/_/Patient",
+      "port": "@corpus/hospital/_/RegisterPatient#output:Patient",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/RegisterPatient",
+      "to": "@corpus/hospital/_/PatientAdmitted",
+      "port": "@corpus/hospital/_/RegisterPatient#output:PatientAdmitted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/RegisterPatient",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/RegisterPatient",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#input:LabResultReceived",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#input:PatientAdmitted",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/MaintainEncounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#input:PatientTransferred",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/Operator",
+      "port": "@corpus/hospital/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/Patient",
+      "port": "@corpus/hospital/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:Encounter",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:LabResult",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/PrescribeMedication",
+      "port": "@corpus/hospital/_/PrescribeMedication#input:coverage",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#input:Encounter",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/ReceiveLab",
+      "port": "@corpus/hospital/_/ReceiveLab#input:Patient",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/RegisterPatient",
+      "port": "@corpus/hospital/_/RegisterPatient",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/TransferPatient",
+      "port": "@corpus/hospital/_/TransferPatient",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/TransferPatient",
+      "port": "@corpus/hospital/_/TransferPatient#input:Encounter",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/hospital/_/ScopedAccess",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/ScopedAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/hospital/_/TransferPatient",
+      "to": "@corpus/hospital/_/PatientTransferred",
+      "port": "@corpus/hospital/_/TransferPatient#output:PatientTransferred",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/TransferPatient",
+      "to": "@corpus/hospital/_/Transfer",
+      "port": "@corpus/hospital/_/TransferPatient#output:Transfer",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/TransferPatient",
+      "to": "@corpus/hospital/_/Treatment",
+      "port": "@corpus/hospital/_/TransferPatient",
+      "kind": "purpose"
+    }
+  ]
+}

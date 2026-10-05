@@ -90,6 +90,34 @@ export class GitRepository {
     private readonly token: string,
     private readonly fetcher: typeof fetch = fetch,
   ) {}
+  onBranch(branch: string) {
+    const parsed=gitProjectSchema.safeParse({...this.project,branch});
+    if(!parsed.success)throw new Problem(400,"Enter a valid Git branch name.");
+    return new GitRepository(parsed.data,this.token,this.fetcher);
+  }
+  async head(): Promise<string> {
+    const ref=await this.request(`/repos/${this.project.repository}/git/ref/heads/${this.project.branch.split("/").map(encodeURIComponent).join("/")}`);
+    if(!/^[a-f0-9]{40}$/.test(ref.object?.sha || ""))throw new Problem(502,"Git returned an invalid branch revision.");
+    return ref.object.sha;
+  }
+  async branches(page=1): Promise<{items:{name:string;revision:string;protected:boolean}[];hasMore:boolean}> {
+    const rows=await this.request(`/repos/${this.project.repository}/branches?per_page=100&page=${page}`);
+    if(!Array.isArray(rows))throw new Problem(502,"Git returned an invalid branch list.");
+    return {items:rows.map((r:any)=>({name:r.name,revision:r.commit.sha,protected:!!r.protected})),hasMore:rows.length===100};
+  }
+  async history(page=1): Promise<{items:{revision:string;message:string;url:string;author:string;at:string}[];hasMore:boolean}> {
+    const rows=await this.request(`/repos/${this.project.repository}/commits?sha=${encodeURIComponent(this.project.branch)}&per_page=30&page=${page}`);
+    if(!Array.isArray(rows))throw new Problem(502,"Git returned an invalid commit list.");
+    return {items:rows.map((r:any)=>({revision:r.sha,message:String(r.commit.message).slice(0,4000),url:r.html_url,author:r.commit.author?.name || "Unknown",at:r.commit.author?.date || ""})),hasMore:rows.length===30};
+  }
+  async createBranch(name: string, revision: string) {
+    this.onBranch(name);
+    if(!/^[a-f0-9]{40}$/.test(revision))throw new Problem(400,"Invalid base revision.");
+    // Resolve the revision through this repository before creating a reference.
+    await this.snapshot(revision);
+    await this.request(`/repos/${this.project.repository}/git/refs`,{ref:`refs/heads/${name}`,sha:revision});
+    return {name,revision};
+  }
   private async request(path: string, body?: unknown): Promise<any> {
     const response = await this.fetcher(`https://api.github.com${path}`, {
       method: body ? "POST" : "GET",
@@ -106,7 +134,7 @@ export class GitRepository {
     });
     if (!response.ok)
       throw new Problem(
-        response.status === 404 ? 404 : 502,
+        response.status === 404 ? 404 : response.status === 422 ? 409 : 502,
         "Git request failed. Check repository access and branch protection.",
       );
     return response.json();

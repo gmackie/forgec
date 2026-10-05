@@ -1,0 +1,102 @@
+{
+  "slug": "inventory",
+  "layer": "system",
+  "issue": 126,
+  "dependencies": [
+    "specification",
+    "identifiers",
+    "place",
+    "party",
+    "resource-relations",
+    "allocation",
+    "evidence",
+    "demand"
+  ],
+  "facts": [
+    "WarehouseStock",
+    "ManufacturingStock",
+    "ClinicalStock",
+    "ITStock",
+    "VisibilityEvent"
+  ],
+  "operations": [
+    "inventory authorized runtime services"
+  ],
+  "invariants": [
+    "Serialized and fungible item identities with typed positions",
+    "Immutable receipt issue transfer return and condition history",
+    "Atomic stock reservations composed with Allocation",
+    "Evidence-backed physical count reconciliation and reorder gap",
+    "EPCIS-inspired object aggregation transformation transaction and association links",
+    "Warehouse manufacturing clinical and IT profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F126-01",
+      "description": "Serialized and fungible item identities with typed positions",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-inventory.test.ts"
+      ]
+    },
+    {
+      "id": "F126-02",
+      "description": "Immutable receipt issue transfer return and condition history",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-inventory.test.ts"
+      ]
+    },
+    {
+      "id": "F126-03",
+      "description": "Atomic stock reservations composed with Allocation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-inventory.test.ts"
+      ]
+    },
+    {
+      "id": "F126-04",
+      "description": "Evidence-backed physical count reconciliation and reorder gap",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-inventory.test.ts"
+      ]
+    },
+    {
+      "id": "F126-05",
+      "description": "EPCIS-inspired object aggregation transformation transaction and association links",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-inventory.test.ts"
+      ]
+    },
+    {
+      "id": "F126-06",
+      "description": "Warehouse manufacturing clinical and IT profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-inventory.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "WarehouseStock",
+    "ManufacturingStock",
+    "ClinicalStock",
+    "ITStock",
+    "VisibilityEvent"
+  ]
+}

@@ -1,5 +1,7 @@
-//! Browser bridge for the real Forge parser and compiler. No filesystem or network access.
+//! Browser bridge for the real Forge parser, compiler, and offline OpenAPI importer.
+//! Import receives document text from the caller and does not fetch URLs.
 
+use forgegraph_codegen::openapi_import::{ImportOptions, import_openapi};
 use forgegraph_semantic::{Package, compile};
 use forgegraph_syntax::SyntaxNode;
 use serde::Deserialize;
@@ -11,6 +13,9 @@ struct Input {
     name: String,
     current_file: String,
     files: Vec<File>,
+    /// `"ir"` asks for the compiled domain IR. Ordinary editor checks omit it.
+    #[serde(default)]
+    emit: Option<String>,
 }
 #[derive(Deserialize)]
 struct File {
@@ -149,9 +154,85 @@ pub fn inspect(input: &str) -> Value {
             diagnostic
         })
         .collect();
-    json!({"tree":syntax,"documents":documents,"dataSemantics":data_semantics,"dataClasses":data_classes,"symbols":symbols,"diagnostics":diagnostics,
+    let mut result = json!({"tree":syntax,"documents":documents,"dataSemantics":data_semantics,"dataClasses":data_classes,"symbols":symbols,"diagnostics":diagnostics,
         "taxonomy":serde_json::from_str::<Value>(forgegraph_semantic::taxonomy::TAXONOMY_JSON).expect("built-in taxonomy"),
-        "scalars":forgegraph_semantic::compiler::SCALARS})
+        "scalars":forgegraph_semantic::compiler::SCALARS});
+    if input.emit.as_deref() == Some("ir")
+        && let Some(ir) = &compilation.ir
+    {
+        result["ir"] = serde_json::to_value(ir).expect("domain IR serializes");
+    }
+    result
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ImportRequest {
+    text: String,
+    package: String,
+    #[serde(default)]
+    allow_hosts: Vec<String>,
+}
+
+/// Import a pinned-offline OpenAPI document with the real importer. No network and no pins.
+pub fn import_spec(input: &str) -> Value {
+    let Ok(input) = serde_json::from_str::<ImportRequest>(input) else {
+        return json!({"error": "Invalid OpenAPI import request"});
+    };
+    if input.text.len() > 200_000 {
+        return json!({"error": "OpenAPI document is larger than 200 KB"});
+    }
+    let imported = import_openapi(
+        &input.text,
+        &ImportOptions {
+            package: input.package,
+            allow_hosts: input.allow_hosts,
+            ..ImportOptions::default()
+        },
+    );
+    match imported {
+        Err(error) => json!({"error": error}),
+        Ok(output) => {
+            let files: Vec<Value> = output
+                .files
+                .iter()
+                .filter(|(path, _)| path.ends_with(".forge"))
+                .map(|(path, text)| json!({"path": path, "text": text}))
+                .collect();
+            let report = &output.report;
+            json!({
+                "files": files,
+                "report": {
+                    "source": {
+                        "title": report.source.title,
+                        "version": report.source.version,
+                        "openapi": report.source.openapi,
+                    },
+                    "hosts": report.hosts,
+                    "operations": report.operations.iter().map(|op| json!({
+                        "operationId": op.operation_id,
+                        "function": op.function,
+                        "method": op.method,
+                        "path": op.path,
+                    })).collect::<Vec<_>>(),
+                    "skippedOperations": report.skipped_operations,
+                    "unsupported": report.unsupported.iter().map(|item| json!({
+                        "feature": item.feature,
+                        "at": item.at,
+                        "note": item.note,
+                    })).collect::<Vec<_>>(),
+                    "foreignIdentifiers": report.foreign_identifiers.iter().map(|item| json!({
+                        "shape": item.shape,
+                        "field": item.field,
+                    })).collect::<Vec<_>>(),
+                    "callbacks": report.callbacks.iter().map(|item| json!({
+                        "name": item.name,
+                        "kind": item.kind,
+                    })).collect::<Vec<_>>(),
+                }
+            })
+        }
+    }
 }
 
 // A small owned-buffer ABI avoids a generated JS dependency. Only the browser worker calls it.
@@ -175,10 +256,18 @@ mod wasm {
     pub unsafe extern "C" fn editor_inspect(ptr: *const u8, len: usize) -> u64 {
         let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
         let source = std::str::from_utf8(bytes).unwrap_or("");
-        let output = super::inspect(source)
-            .to_string()
-            .into_bytes()
-            .into_boxed_slice();
+        pack(&super::inspect(source))
+    }
+    /// # Safety
+    /// `ptr` must reference `len` initialized bytes in this module's memory for this call.
+    #[unsafe(no_mangle)]
+    pub unsafe extern "C" fn editor_import_openapi(ptr: *const u8, len: usize) -> u64 {
+        let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
+        let source = std::str::from_utf8(bytes).unwrap_or("");
+        pack(&super::import_spec(source))
+    }
+    fn pack(value: &serde_json::Value) -> u64 {
+        let output = value.to_string().into_bytes().into_boxed_slice();
         let len = output.len();
         let ptr = Box::into_raw(output).cast::<u8>();
         ((ptr as u64) << 32) | len as u64
@@ -211,6 +300,26 @@ mod tests {
                 .any(|n| n["kind"] == "FIELD_DECL")
         );
         assert_eq!(result["taxonomy"]["version"], "data-taxonomy/1");
+        assert!(result.get("ir").is_none());
+    }
+
+    #[test]
+    fn emits_domain_ir_for_a_scheduled_source_when_asked() {
+        let result = inspect(
+            &json!({"name":"@local/test","currentFile":"main.forge","emit":"ir","files":[{"path":"main.forge","text":"function Build {\n}\nsource Nightly {\n  cron \"0 8 * * *\"\n  timezone \"UTC\"\n  -> Build\n}\n"}]}).to_string(),
+        );
+        assert_eq!(result["diagnostics"], json!([]));
+        assert_eq!(result["ir"]["modules"][0]["sources"][0]["name"], "Nightly");
+        assert_eq!(
+            result["ir"]["modules"][0]["sources"][0]["cron"],
+            "0 8 * * *"
+        );
+        assert!(
+            result["ir"]["modules"][0]["sources"][0]["target"]
+                .as_str()
+                .unwrap()
+                .ends_with("/Build")
+        );
     }
 
     #[test]
@@ -241,5 +350,70 @@ mod tests {
         let result = inspect(&json!({"name":"@local/test", "currentFile":"main.forge", "files":[{"path":"main.forge","text":"resource Person {\n id : id\n email : MissingType\n}\n"}]}).to_string());
         assert!(!result["diagnostics"].as_array().unwrap().is_empty());
         assert!(result["diagnostics"].to_string().contains("MissingType"));
+    }
+
+    #[test]
+    fn imports_a_sample_openapi_document_without_fetching() {
+        let billing =
+            include_str!("../../../packages/console/web/editor/samples/billing.openapi.json");
+        let result = import_spec(
+            &json!({
+                "text": billing,
+                "package": "@external/billing",
+                "allowHosts": ["billing.vendor.example"]
+            })
+            .to_string(),
+        );
+        assert!(result.get("error").is_none(), "{result}");
+        let operations = result["report"]["operations"].as_array().unwrap();
+        assert_eq!(operations[0]["function"], "CreateInvoice");
+        assert_eq!(operations[0]["method"], "POST");
+        assert_eq!(operations[0]["path"], "/invoices");
+        let source = result["files"][0]["text"].as_str().unwrap();
+        assert!(source.contains("customer_id : text"));
+        assert!(source.contains("@http(POST, \"/invoices\")"));
+        assert!(
+            result["report"]["foreignIdentifiers"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|item| item["field"] == "customer_id")
+        );
+        let refused = import_spec(
+            &json!({
+                "text": billing.replace("https://billing.vendor.example/v1", "http://127.0.0.1/"),
+                "package": "@external/billing",
+                "allowHosts": ["billing.vendor.example"]
+            })
+            .to_string(),
+        );
+        assert!(
+            refused["error"].as_str().unwrap().contains("private"),
+            "{refused}"
+        );
+        let source = result["files"][0]["text"].as_str().unwrap();
+        let compiled = inspect(
+            &json!({
+                "name": "@external/billing",
+                "currentFile": "external/billing.forge",
+                "files": [{"path": "external/billing.forge", "text": source}]
+            })
+            .to_string(),
+        );
+        let errors: Vec<_> = compiled["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|diagnostic| diagnostic["severity"] == "error")
+            .cloned()
+            .collect();
+        assert!(errors.is_empty(), "{errors:?}");
+        assert!(
+            compiled["symbols"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|symbol| symbol["name"] == "CreateInvoice")
+        );
     }
 }

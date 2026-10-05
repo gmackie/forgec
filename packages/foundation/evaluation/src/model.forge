@@ -1,0 +1,84 @@
+import specification
+import evidence
+
+export enum EvaluationOutcome {
+  Completed
+  Failed
+  Cancelled
+}
+export resource EvaluationSet
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+}
+export resource EvaluationExecutor
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  label : text length 1..200
+}
+export resource EvaluationRun
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  evaluationSet : EvaluationSet
+  definition : specification.SpecificationPin
+  executor : EvaluationExecutor
+  parent : EvaluationRun?
+  depth : integer >= 1 <= 64
+  rules {
+    (parent == null && depth == 1) || (parent != null && depth > parent.depth && parent.evaluationSet == evaluationSet)
+  }
+  list by evaluationSet
+  list by definition
+}
+export resource EvaluationStart
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  run : EvaluationRun @unique
+  startedAt : datetime
+  recordedBy : text length 1..128
+  find by run
+}
+export resource EvaluationFinish
+  @tenant
+  @appendOnly
+{
+  id : id
+  run : EvaluationRun @unique
+  start : EvaluationStart?
+  outcome : EvaluationOutcome
+  finishedAt : datetime
+  support : evidence.EvidenceSeal?
+  reason : text length 1..500
+  recordedBy : text length 1..128
+  rules {
+    start == null || (start.run == run && finishedAt >= start.startedAt)
+    outcome == EvaluationOutcome.Cancelled || start != null
+  }
+  find by run
+}
+
+// Migration records preserve historical runs while excluding their results from
+// new authority decisions. Re-evaluation creates a new run; quarantine is final.
+export resource EvaluationQuarantine
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  run : EvaluationRun @unique
+  sourceDigest : text length 64..64
+  reason : text length 1..500
+  recordedBy : text length 1..128
+  find by run
+}

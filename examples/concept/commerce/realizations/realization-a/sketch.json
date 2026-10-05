@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Cloudflare Workflows + Durable Objects",
+    "storage": "D1 + R2",
+    "transport": "Queues",
+    "conflict": "CRDT",
+    "query": "H3",
+    "batchSize": 100,
+    "concurrency": 8,
+    "cacheTtl": 30
+  },
+  "obligations": [
+    "Cross-record quantity and money invariants cannot be expressed by Unique. Compare banking balancing and benefits retroactive corrections before proposing an invariant facet.",
+    "A workflow wait names an occurrence but cannot bind it to an order or prove compensation order. Correlation and exactly-once refund behavior remain unproven."
+  ]
+}

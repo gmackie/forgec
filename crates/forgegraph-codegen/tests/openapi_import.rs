@@ -197,3 +197,98 @@ fn callbacks_webhooks_and_servers_on_private_hosts_are_refused() {
             .contains("sha256")
     );
 }
+
+#[test]
+fn recursive_schemas_return_an_error_without_aborting() {
+    const CHILD: &str = "FORGE_TEST_RECURSIVE_IMPORT_CHILD";
+    if std::env::var_os(CHILD).is_some() {
+        let doc = serde_json::json!({
+            "openapi": "3.1.0", "info": {"title": "Recursive", "version": "1.0.0"},
+            "paths": {}, "components": {"schemas": {"Node": {
+                "type": "object", "properties": {"next": {"$ref": "#/components/schemas/Node"}}
+            }}}
+        });
+        for schemas in [
+            doc["components"]["schemas"].clone(),
+            serde_json::json!({"Node": {"allOf": [{"$ref": "#/components/schemas/Node"}]}}),
+            serde_json::json!({"Node": {"$ref": "#/components/schemas/Other"}, "Other": {"$ref": "#/components/schemas/Node"}}),
+            serde_json::json!({"Node": {"type": "object", "properties": {"other": {"$ref": "#/components/schemas/Other"}}}, "Other": {"type": "object", "properties": {"node": {"$ref": "#/components/schemas/Node"}}}}),
+        ] {
+            let mut doc = doc.clone();
+            doc["components"]["schemas"] = schemas;
+            let err = import_openapi(&doc.to_string(), &pinned()).expect_err("recursive schema");
+            assert!(err.contains("recursive") && err.contains("Node"), "{err}");
+        }
+        return;
+    }
+    let output = std::process::Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "recursive_schemas_return_an_error_without_aborting",
+            "--nocapture",
+        ])
+        .env(CHILD, "1")
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "child failed: {:?}\n{}",
+        output.status,
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+fn import_field(schema: serde_json::Value) -> forgegraph_codegen::openapi_import::ImportOutput {
+    let doc = serde_json::json!({
+        "openapi": "3.1.0", "info": {"title": "Bounds", "version": "1.0.0"},
+        "paths": {}, "components": {"schemas": {"Item": {
+            "type": "object", "properties": {"value": schema}
+        }}}
+    });
+    import_openapi(&doc.to_string(), &pinned()).unwrap()
+}
+
+fn assert_import_compiles(out: &forgegraph_codegen::openapi_import::ImportOutput) {
+    let dir = tempfile::tempdir().unwrap();
+    for (path, text) in &out.files {
+        let p = dir.path().join(path);
+        std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+        std::fs::write(p, text).unwrap();
+    }
+    let pkg = forgegraph_semantic::load_package(dir.path()).unwrap();
+    let compiled = forgegraph_semantic::compile(&pkg, &[]);
+    assert!(
+        compiled
+            .diagnostics
+            .iter()
+            .all(|d| d.severity != forgegraph_semantic::Severity::Error),
+        "{:?}",
+        compiled.diagnostics
+    );
+}
+
+#[test]
+fn negative_bounds_are_reported_and_generated_output_compiles() {
+    for ty in ["integer", "number"] {
+        for bound in ["minimum", "maximum"] {
+            let out = import_field(serde_json::json!({"type": ty, bound: -1}));
+            assert_import_compiles(&out);
+            assert!(
+                out.report
+                    .unsupported
+                    .iter()
+                    .any(|u| u.feature == bound && u.at == "components.schemas.Item.value")
+            );
+        }
+    }
+}
+
+#[test]
+fn typed_maps_report_widening_to_json() {
+    let out = import_field(
+        serde_json::json!({"type": "object", "additionalProperties": {"type": "string"}}),
+    );
+    assert!(out.report.unsupported.iter().any(|u| u.feature == "additionalProperties" && u.at == "components.schemas.Item.value"));
+    assert!(out.files["src/index.forge"].contains("value : json?"));
+    assert_import_compiles(&out);
+}

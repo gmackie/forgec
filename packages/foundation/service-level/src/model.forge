@@ -1,0 +1,131 @@
+import agreement
+import entitlement
+import evaluation
+import fulfillment
+import availability
+import specification
+export enum ServiceClock {
+  UTC
+  Business
+}
+export resource ServiceLevelPolicy
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  specification : specification.SpecificationPin
+  clock : ServiceClock
+  calendar : availability.AvailabilityCalendarRevision?
+  rules {
+    (clock == ServiceClock.Business) == (calendar != null)
+  }
+}
+export resource ServiceLevelObjective
+  @tenant
+  @appendOnly
+{
+  id : id
+  policy : ServiceLevelPolicy
+  name : text length 1..128
+  targetMinutes : integer >= 1 <= 44640
+  warningMinutes : integer >= 0 <= 44640
+  rules {
+    warningMinutes <= targetMinutes
+  }
+  unique policy, name
+}
+export resource ServiceLevelInstance
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  key : text length 1..128 @unique
+  objective : ServiceLevelObjective
+  agreement : agreement.Agreement
+  right : agreement.AgreementEntitlementLink
+  entitlement : entitlement.Entitlement
+  entitlementEnd : entitlement.EntitlementEnd?
+  fulfillment : fulfillment.Fulfillment
+  startedAt : datetime
+  horizon : datetime
+  rules {
+    right.agreement == agreement
+    right.entitlement == entitlement
+    startedAt >= entitlement.validFrom
+    entitlement.validUntil == null || startedAt < entitlement.validUntil
+    entitlementEnd == null || (entitlementEnd.entitlement == entitlement && startedAt < entitlementEnd.effectiveAt)
+    horizon > startedAt
+  }
+}
+export enum ServiceEventKind {
+  Paused
+  Resumed
+  Assessed
+}
+export enum ServiceVerdict {
+  Paused
+  Running
+  AtRisk
+  Met
+  Breached
+}
+export resource ServiceLevelEvent
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  instance : ServiceLevelInstance
+  ordinal : integer >= 0 <= 63
+  previous : ServiceLevelEvent? @unique
+  kind : ServiceEventKind
+  at : datetime
+  elapsedMinutes : integer >= 0 <= 44640
+  verdict : ServiceVerdict
+  evaluation : evaluation.EvaluationFinish? @unique
+  finished : fulfillment.FulfillmentEnd?
+  reason : text length 1..500
+  recordedBy : text length 1..128
+  rules {
+    (previous == null && ordinal == 0) || (previous != null && previous.instance == instance && ordinal == previous.ordinal + 1)
+    previous == null || previous.finished == null
+    at >= instance.startedAt
+    at <= instance.horizon
+    previous == null || at >= previous.at
+    (kind == ServiceEventKind.Assessed) == (evaluation != null)
+    kind == ServiceEventKind.Assessed || finished == null
+    finished == null || (finished.fulfillment == instance.fulfillment && finished.endedAt <= at)
+    evaluation == null || evaluation.outcome == "Completed"
+  }
+  unique instance, ordinal
+  find by instance, ordinal
+}
+export resource ServiceLevelBreach
+  @tenant
+  @appendOnly
+{
+  id : id
+  instance : ServiceLevelInstance @unique
+  assessment : ServiceLevelEvent @unique
+  rules {
+    assessment.instance == instance
+    assessment.kind == ServiceEventKind.Assessed
+    assessment.verdict == ServiceVerdict.Breached
+  }
+  find by instance
+}
+export resource ServiceLevelRemedy
+  @tenant
+  @appendOnly
+{
+  id : id
+  breach : ServiceLevelBreach @unique
+  obligation : entitlement.Obligation? @unique
+  fulfillment : fulfillment.Fulfillment? @unique
+  rules {
+    obligation != null || fulfillment != null
+  }
+  find by breach
+}

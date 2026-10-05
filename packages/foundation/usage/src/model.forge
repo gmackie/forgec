@@ -1,0 +1,68 @@
+/// Domain vocabulary fixes one exact unit per dimension; conversion is explicit above.
+export resource UsageDimension
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim lowercase length 1..128 @unique
+  unit : text trim length 1..64
+  find by key
+}
+export resource UsageSource
+  @tenant
+  @appendOnly
+{
+  id : id
+  key : text trim length 1..128 @unique
+  find by key
+}
+export resource UsageStream
+  @tenant
+  @appendOnly
+{
+  id : id
+  label : text length 1..200
+  dimension : UsageDimension
+}
+export resource UsageEvent
+  @tenant
+  @appendOnly
+{
+  id : id
+  stream : UsageStream
+  dimension : UsageDimension
+  unit : text trim length 1..64
+  quantity : decimal<6> >= 0
+  ordinal : integer >= 1
+  source : UsageSource
+  eventKey : text length 1..200
+  occurredAt : datetime?
+  intervalStart : datetime?
+  intervalEnd : datetime?
+  replacementFor : UsageEvent?
+  rules {
+    dimension == stream.dimension
+    unit == dimension.unit
+    (occurredAt != null && intervalStart == null && intervalEnd == null) || (occurredAt == null && intervalStart != null && intervalEnd != null && intervalStart < intervalEnd)
+    replacementFor == null || (replacementFor.stream == stream && replacementFor.dimension == dimension && ordinal > replacementFor.ordinal)
+  }
+  unique source, eventKey
+  unique stream, ordinal
+  find by source, eventKey
+  list by stream
+    order by ordinal asc
+}
+/// A staged replacement contributes only after this terminal link is committed.
+export resource UsageCorrection
+  @tenant
+  @appendOnly
+{
+  id : id
+  event : UsageEvent @unique
+  replacement : UsageEvent?
+  reason : text length 1..500
+  rules {
+    replacement == null || replacement.replacementFor == event
+  }
+  find by event
+}

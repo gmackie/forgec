@@ -1,0 +1,38 @@
+/// LevelForge-style composition. No inheritance or runtime subtype.
+facet Spatial2D {
+  x : decimal<3> = 0
+  y : decimal<3> = 0
+  rotation : decimal<3> = 0
+}
+facet Renderable {
+  assetUrl : url?
+  visible : boolean = true
+}
+facet Damageable {
+  health : integer >= 0
+  maxHealth : integer > 0
+}
+export resource Hazard
+  @tenant
+  @versioned
+  @crud("/v1/hazards")
+  @facet(Spatial2D, Renderable, Damageable)
+{
+  id : id
+  damage : integer >= 0
+  rules { health <= maxHealth }
+}
+
+/// Business fixture: reusable contact metadata.
+facet ContactDetails {
+  email : email?
+  phone : text? length <= 40
+}
+export resource Supplier @tenant @versioned @crud("/v1/suppliers") @facet(ContactDetails) {
+  id : id
+  name : text length 1..200
+}
+export resource Customer @tenant @versioned @crud("/v1/customers") @facet(ContactDetails) {
+  id : id
+  name : text length 1..200
+}

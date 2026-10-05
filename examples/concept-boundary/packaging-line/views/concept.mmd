@@ -1,0 +1,8 @@
+flowchart LR
+  ApproveRecipe --> ApprovedRecipe
+  LineIO -->|Tick and ScanImage| ReactToScan
+  ApprovedRecipe --> ReactToScan
+  LineMode -->|previous| ReactToScan
+  ReactToScan --> LineMode
+  ReactToScan --> ScanDecision
+  ReactToScan -->|ActuatorIntent| LineIO

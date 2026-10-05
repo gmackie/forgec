@@ -1,0 +1,91 @@
+{
+  "slug": "returns",
+  "layer": "system",
+  "issue": 131,
+  "dependencies": [
+    "inventory",
+    "agreement-catalog",
+    "entitlement",
+    "party",
+    "fulfillment",
+    "evaluation",
+    "decision",
+    "evidence",
+    "billing",
+    "settlement"
+  ],
+  "facts": [
+    "CommerceReturn",
+    "WarrantyReturn",
+    "MaterialReturn",
+    "LoanReturn"
+  ],
+  "operations": [
+    "returns authorized runtime services"
+  ],
+  "invariants": [
+    "Typed return origin request entitlement and bounded authorization claims",
+    "Partial reverse receipt and custody through admitted Inventory movements",
+    "Pinned inspection and accepted disposition evidence",
+    "Separate refund credit and replacement remedy validation",
+    "Commerce warranty material and reusable-asset profiles"
+  ],
+  "acceptance": [
+    {
+      "id": "F131-01",
+      "description": "Typed return origin request entitlement and bounded authorization claims",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-returns.test.ts"
+      ]
+    },
+    {
+      "id": "F131-02",
+      "description": "Partial reverse receipt and custody through admitted Inventory movements",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-returns.test.ts"
+      ]
+    },
+    {
+      "id": "F131-03",
+      "description": "Pinned inspection and accepted disposition evidence",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-returns.test.ts"
+      ]
+    },
+    {
+      "id": "F131-04",
+      "description": "Separate refund credit and replacement remedy validation",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-returns.test.ts"
+      ]
+    },
+    {
+      "id": "F131-05",
+      "description": "Commerce warranty material and reusable-asset profiles",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-returns.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "CommerceReturn",
+    "WarrantyReturn",
+    "MaterialReturn",
+    "LoanReturn"
+  ]
+}

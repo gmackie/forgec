@@ -1,0 +1,41 @@
+{
+  "nodes": {
+    "@corpus/insurance/_/AssessClaim": "process",
+    "@corpus/insurance/_/MedicalProvider": "external",
+    "@corpus/insurance/_/PoliceRecords": "external",
+    "@corpus/insurance/_/ReceiveEvidence": "process",
+    "@corpus/insurance/_/RepairNetwork": "external"
+  },
+  "edges": [
+    {
+      "from": "@corpus/insurance/_/AssessClaim",
+      "to": "@corpus/insurance/_/RepairNetwork",
+      "port": "@corpus/insurance/_/AssessClaim#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/insurance/_/MedicalProvider",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:MedicalProvider",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/insurance/_/PoliceRecords",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:PoliceRecords",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/insurance/_/RepairNetwork",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/insurance/_/RepairNetwork",
+      "to": "@corpus/insurance/_/ReceiveEvidence",
+      "port": "@corpus/insurance/_/ReceiveEvidence#input:RepairNetwork",
+      "kind": "acquire"
+    }
+  ]
+}

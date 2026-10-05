@@ -1,0 +1,38 @@
+✔ generated SDK supplies transport behind an external binding (21.63ms)
+✔ connection rejects another tenant before resolving credentials or sending traffic (1.94275ms)
+✖ uncertain writes return an explicit outcome without retry or credential leakage (5.274166ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60142.009875
+
+✖ failing tests:
+
+test at research/cf-forge/bindings.test.mjs:14:1
+✖ uncertain writes return an explicit outcome without retry or credential leakage (5.274166ms)
+  Error [CloudflareApiError]: fetch failed
+      at handleNonStatusCodeError (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-sdk/sdk/errors/handleNonStatusCodeError.ts:29:19)
+      at IssuesClient.__create (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/.cache/github-sdk/sdk/api/resources/issues/client/Client.ts:254:16)
+      at async file:///Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/binding.mjs:14:18
+      at async <anonymous> (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:14:178)
+      at async vendor (/Volumes/dev/.worktrees/forge/cf-forge-investigation/research/cf-forge/bindings.test.mjs:9:505)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    statusCode: undefined,
+    body: undefined,
+    rawResponse: { headers: {}, redirected: false, status: 0, statusText: 'Unknown Error', type: 'error', url: '' },
+    cause: [TypeError: fetch failed] {
+      [cause]: Error [SocketError]: other side closed
+          at Socket.onHttpSocketEnd (node:internal/deps/undici/undici:7635:26)
+          at Socket.emit (node:events:520:35)
+          at endReadableNT (node:internal/streams/readable:1729:12)
+          at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+        code: 'UND_ERR_SOCKET',
+        socket: [Object]
+      }
+    }
+  }

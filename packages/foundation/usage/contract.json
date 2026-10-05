@@ -1,0 +1,105 @@
+{
+  "slug": "usage",
+  "layer": "substrate",
+  "issue": 35,
+  "dependencies": [],
+  "facts": [
+    "UsageDimension: immutable dimension key and exact unit",
+    "UsageSource: tenant-scoped ingestion authority identity",
+    "UsageStream: typed subject-owned dimension-specific handle",
+    "UsageEvent: immutable decimal<6> quantity, point or interval, source identity and ordered optional replacement provenance",
+    "UsageCorrection: immutable unique terminal replacement/retraction fact"
+  ],
+  "operations": [
+    "Usage.ingest with source-identity replay/conflict detection",
+    "Usage.correct and Usage.retract with unique terminal facts",
+    "Usage.aggregate with exact BigInt sum and contributing immutable IDs",
+    "Usage.replay with authorization and dimension validation"
+  ],
+  "invariants": [
+    "Same tenant/source/event key and same normalized payload are idempotent; conflicting payload is rejected",
+    "Dimension/unit and per-stream ordinal are explicit; conversion and sequence allocation remain external",
+    "Point uses occurredAt; interval uses start/end with start < end and half-open semantics; partial interval aggregation fails",
+    "Raw measurements are immutable; staged forward-ordinal same-stream replacements contribute only through committed correction links",
+    "Each original has one terminal correction; competing correction/retraction admits one winner; forward ordinals prevent cycles",
+    "Aggregation fails closed on unreadable events/corrections, uses exact minor units and provides a reproducible contributing-ID manifest",
+    "Live aggregation is bounded and not a transactional snapshot; authoritative billing requires a separate closure protocol"
+  ],
+  "acceptance": [
+    {
+      "id": "F35-01",
+      "description": "UsageEvent model",
+      "kind": "compile",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-usage.test.ts"
+      ]
+    },
+    {
+      "id": "F35-02",
+      "description": "dimension/unit representation",
+      "kind": "compile",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-usage.test.ts"
+      ]
+    },
+    {
+      "id": "F35-03",
+      "description": "interval and point-event semantics",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-usage.test.ts"
+      ]
+    },
+    {
+      "id": "F35-04",
+      "description": "idempotent ingestion/source identity",
+      "kind": "concurrency",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-usage.test.ts"
+      ]
+    },
+    {
+      "id": "F35-05",
+      "description": "correction/supersession semantics",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-usage.test.ts"
+      ]
+    },
+    {
+      "id": "F35-06",
+      "description": "aggregation projections",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-usage.test.ts"
+      ]
+    },
+    {
+      "id": "F35-07",
+      "description": "fixtures for LLM tokens, compute time and machine hours",
+      "kind": "fixture",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-usage.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "llm-tokens",
+    "compute-time",
+    "machine-hours"
+  ]
+}

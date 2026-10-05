@@ -1,0 +1,57 @@
+export enum ObjectFormat {
+  Sha1 = "sha1"
+  Sha256 = "sha256"
+}
+export enum PublicationOutcome {
+  Pending = "pending"
+  Accepted = "accepted"
+  Rejected = "rejected"
+  Observed = "observed"
+}
+export shape Revision {
+  tenant : text length 1..1024
+  artifact : text length 1..1024
+  generation : text length 1..1024
+  repositoryId : text length 1..1024
+  objectFormat : ObjectFormat
+  oid : text length 40..64 pattern "^[a-f0-9]+$"
+  tree : text length 40..64 pattern "^[a-f0-9]+$"
+}
+export shape ResolveInput {
+  artifact : text length 1..1024
+  selector : text length 1..1024
+}
+export shape ReadFileInput {
+  revision : Revision
+  path : text length 1..1024
+  maxBytes : integer >= 1 <= 1048576
+}
+export shape FileContent {
+  base64 : text length <= 1398104
+  mediaType : text length <= 1024
+}
+export shape PublicationInput {
+  key : text length 1..1024
+  ref : text length 1..1024
+  expected : text? length 40..64 pattern "^[a-f0-9]+$"
+  revision : Revision
+}
+export shape PublicationResult {
+  outcome : PublicationOutcome
+}
+export function Resolve {
+  input ResolveInput
+  output Revision
+}
+export function ReadFile {
+  input ReadFileInput
+  output FileContent
+}
+export function Publish {
+  input PublicationInput
+  output PublicationResult
+}
+export function Recover {
+  input PublicationInput
+  output PublicationResult
+}

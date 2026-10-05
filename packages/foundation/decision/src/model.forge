@@ -1,0 +1,133 @@
+import participation
+import evidence
+import evaluation
+export enum DecisionRule {
+  Single
+  First
+  Quorum
+  Unanimous
+  ChooseOne
+  Ranked
+}
+type DecisionOrdinal = integer >= 0 <= 15
+export resource DecisionElector
+  @tenant
+  @appendOnly
+{
+  id : id
+  participation : participation.Participation
+  ended : participation.ParticipationEnd?
+  next : DecisionElector?
+  depth : integer >= 1 <= 16
+  rules {
+    ended == null || ended.participation == participation
+    (next == null && depth == 1) || (next != null && depth == next.depth + 1)
+  }
+}
+export resource DecisionCase
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  participationSet : participation.ParticipationSet
+  eligibilityAt : datetime
+  electors : DecisionElector
+  rule : DecisionRule
+  ruleVersion : text pattern "^decision-rule/1$"
+  threshold : integer >= 1 <= 16
+  optionCount : integer >= 1 <= 16
+  deadline : datetime
+  support : evidence.EvidenceSeal?
+  evaluation : evaluation.EvaluationFinish?
+  reconsideration : DecisionCase?
+  rules {
+    deadline > createdAt
+    eligibilityAt <= createdAt
+  }
+}
+export resource DecisionOption
+  @tenant
+  @appendOnly
+{
+  id : id
+  decisionCase : DecisionCase
+  ordinal : DecisionOrdinal
+  label : text length 1..200
+  rules {
+    ordinal < decisionCase.optionCount
+  }
+  unique decisionCase, ordinal
+  find by decisionCase, ordinal
+}
+export resource DecisionResponse
+  @tenant
+  @appendOnly
+{
+  id : id
+  decisionCase : DecisionCase
+  voter : participation.Participation
+  ranking : list<DecisionOrdinal> length 1..16
+  support : evidence.EvidenceSeal?
+  recordedBy : text length 1..128
+  unique decisionCase, voter
+  find by decisionCase, voter
+}
+export resource DecisionOutcomeMember
+  @tenant
+  @appendOnly
+{
+  id : id
+  response : DecisionResponse
+  next : DecisionOutcomeMember?
+  depth : integer >= 1 <= 16
+  rules {
+    (next == null && depth == 1) || (next != null && depth == next.depth + 1)
+  }
+}
+export resource DecisionOutcome
+  @tenant
+  @appendOnly
+{
+  id : id
+  decisionCase : DecisionCase
+  selected : DecisionOption
+  responses : DecisionOutcomeMember
+  snapshotDigest : text length 64..64 pattern "^[0-9a-f]{64}$"
+  rules {
+    selected.decisionCase == decisionCase
+  }
+}
+export enum DecisionEventKind {
+  Responded
+  Withdrawn
+  Finalized
+  Expired
+}
+export resource DecisionEvent
+  @tenant
+  @timestamps
+  @appendOnly
+{
+  id : id
+  decisionCase : DecisionCase
+  ordinal : integer >= 0 <= 63
+  previous : DecisionEvent? @unique
+  kind : DecisionEventKind
+  response : DecisionResponse?
+  outcome : DecisionOutcome?
+  recordedBy : text length 1..128
+  rules {
+    (previous == null && ordinal == 0) || (previous != null && previous.decisionCase == decisionCase && ordinal == previous.ordinal + 1)
+    previous == null || (previous.kind != DecisionEventKind.Finalized && previous.kind != DecisionEventKind.Expired)
+    (kind == DecisionEventKind.Responded || kind == DecisionEventKind.Withdrawn) == (response != null)
+    (kind == DecisionEventKind.Finalized) == (outcome != null)
+    response == null || response.decisionCase == decisionCase
+    outcome == null || outcome.decisionCase == decisionCase
+    kind == DecisionEventKind.Expired || createdAt < decisionCase.deadline
+    kind != DecisionEventKind.Expired || createdAt >= decisionCase.deadline
+  }
+  unique decisionCase, ordinal
+  unique kind, response
+  find by decisionCase, ordinal
+}

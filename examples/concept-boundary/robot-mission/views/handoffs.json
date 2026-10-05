@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "conceptHash": "3d9a2f0746b8372b0ee3eadde1845d147c244c1a411bc2a28abc85bbccd520a6",
+  "boundarySemanticHash": "6ff5c4d4f4c0f24e5a7ad99eed47dbf255f2acb4fb6b667e9952433ab0b93e4a",
+  "artifacts": [
+    {
+      "id": "controller-interface",
+      "sha256": "ee81b4cf78f8d7748fccbe36feaf8519ebb00ed4c8f0a83d0907007b014cab4d",
+      "path": "specialized-model/controller-interface.txt",
+      "process": "@boundary/robot-mission/_/AdvanceMission",
+      "inputPorts": [
+        "@boundary/robot-mission/_/AdvanceMission#input:mission",
+        "@boundary/robot-mission/_/AdvanceMission#input:assessment",
+        "@boundary/robot-mission/_/AdvanceMission#input:receipt"
+      ],
+      "outputPorts": [
+        "@boundary/robot-mission/_/AdvanceMission#output:decision",
+        "@boundary/robot-mission/_/AdvanceMission#output:command"
+      ],
+      "status": "sketch",
+      "claim": "Interface only; no plant simulation, analyzer or safety certification executed."
+    }
+  ]
+}

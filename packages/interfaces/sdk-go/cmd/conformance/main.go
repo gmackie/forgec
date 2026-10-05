@@ -38,6 +38,26 @@ func main() {
 		{"page", "Customer.list.byTier", map[string]any{"params": map[string]any{"tier": "standard"}, "limit": 5}},
 		{"missing", "Customer.get", map[string]any{"id": "nope"}},
 	}
+	if len(os.Args) > 3 {
+		data, err := os.ReadFile(os.Args[3])
+		if err != nil {
+			panic(err)
+		}
+		var fixture []struct {
+			Step      string         `json:"step"`
+			Operation string         `json:"operation"`
+			Input     map[string]any `json:"input"`
+		}
+		decoder := json.NewDecoder(strings.NewReader(string(data)))
+		decoder.UseNumber()
+		if err := decoder.Decode(&fixture); err != nil {
+			panic(err)
+		}
+		steps = nil
+		for _, s := range fixture {
+			steps = append(steps, step{s.Step, s.Operation, s.Input})
+		}
+	}
 	var out []map[string]any
 	seen := map[string]map[string]any{}
 	// "$step.field" placeholders chain ids from earlier steps
@@ -49,6 +69,12 @@ func main() {
 				parts := strings.SplitN(x[1:], ".", 2)
 				return seen[parts[0]][parts[1]]
 			}
+		case []any:
+			out := make([]any, len(x))
+			for i, y := range x {
+				out[i] = bind(y)
+			}
+			return out
 		case map[string]any:
 			out := map[string]any{}
 			for k, y := range x {

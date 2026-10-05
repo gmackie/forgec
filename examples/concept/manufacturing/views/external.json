@@ -1,0 +1,34 @@
+{
+  "nodes": {
+    "@corpus/manufacturing/_/DetectExcursion": "process",
+    "@corpus/manufacturing/_/Historian": "external",
+    "@corpus/manufacturing/_/PlantControl": "external",
+    "@corpus/manufacturing/_/ReceiveTelemetry": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/manufacturing/_/DetectExcursion",
+      "to": "@corpus/manufacturing/_/PlantControl",
+      "port": "@corpus/manufacturing/_/DetectExcursion#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/manufacturing/_/Historian",
+      "to": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry#input:backfill",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/manufacturing/_/PlantControl",
+      "to": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/manufacturing/_/PlantControl",
+      "to": "@corpus/manufacturing/_/ReceiveTelemetry",
+      "port": "@corpus/manufacturing/_/ReceiveTelemetry#input:Machine",
+      "kind": "acquire"
+    }
+  ]
+}

@@ -268,10 +268,58 @@ impl Importer {
             .ok_or_else(|| format!("{at}: pinned file for {url} has no {ptr}"))
     }
 
+    /// Validate the graph we expand, before either enum collection or shape naming.
+    /// Generated names cannot detect cycles: each visit would get a longer name.
+    fn validate_expansion(
+        &self,
+        schema: &Value,
+        at: &str,
+        active: &mut BTreeSet<String>,
+        checked: &mut BTreeSet<String>,
+        depth: usize,
+    ) -> Result<(), String> {
+        if depth >= 64 {
+            return Err(format!(
+                "{at}: schema expansion exceeds the supported depth of 64"
+            ));
+        }
+        if let Some(r) = schema.get("$ref").and_then(Value::as_str) {
+            if active.contains(r) {
+                return Err(format!(
+                    "{at}: recursive schema reference {r} is unsupported"
+                ));
+            }
+            if !checked.contains(r) {
+                active.insert(r.to_string());
+                self.validate_expansion(&self.resolve(r, at)?, at, active, checked, depth + 1)?;
+                active.remove(r);
+                checked.insert(r.to_string());
+            }
+        }
+        if let Some(props) = schema.get("properties").and_then(Value::as_object) {
+            for (name, value) in props {
+                self.validate_expansion(
+                    value,
+                    &format!("{at}.{name}"),
+                    active,
+                    checked,
+                    depth + 1,
+                )?;
+            }
+        }
+        if let Some(parts) = schema.get("allOf").and_then(Value::as_array) {
+            for value in parts {
+                self.validate_expansion(value, at, active, checked, depth + 1)?;
+            }
+        }
+        Ok(())
+    }
+
     /// Follow `$ref`s (bounded) and merge `allOf` object members.
     fn deref(&self, schema: &Value, at: &str) -> Result<Value, String> {
+        self.validate_expansion(schema, at, &mut BTreeSet::new(), &mut BTreeSet::new(), 0)?;
         let mut cur = schema.clone();
-        for _ in 0..16 {
+        for _ in 0..64 {
             if let Some(Value::String(r)) = cur.get("$ref") {
                 cur = self.resolve(r, at)?;
                 continue;
@@ -418,23 +466,26 @@ impl Importer {
                     }
                 }
             }
-            Some("integer") => {
-                let mut t = format!("integer{opt}");
-                if let Some(v) = s.get("minimum") {
-                    t.push_str(&format!(" >= {v}"));
-                }
-                if let Some(v) = s.get("maximum") {
-                    t.push_str(&format!(" <= {v}"));
-                }
-                t
-            }
-            Some("number") => {
-                let mut t = format!("decimal{opt}");
-                if let Some(v) = s.get("minimum") {
-                    t.push_str(&format!(" >= {v}"));
-                }
-                if let Some(v) = s.get("maximum") {
-                    t.push_str(&format!(" <= {v}"));
+            Some("integer") | Some("number") => {
+                let base = if ty.as_deref() == Some("integer") {
+                    "integer"
+                } else {
+                    "decimal"
+                };
+                let mut t = format!("{base}{opt}");
+                for (key, op) in [("minimum", ">="), ("maximum", "<=")] {
+                    if let Some(v) = s.get(key) {
+                        let literal = v.to_string();
+                        // Forge refinements currently accept unsigned plain numeric literals.
+                        if v.is_number()
+                            && !literal.starts_with('-')
+                            && !literal.contains(['e', 'E'])
+                        {
+                            t.push_str(&format!(" {op} {literal}"));
+                        } else {
+                            self.unsupported(key, at, &format!("bound {v} cannot be expressed as a Forge numeric refinement; omitted"));
+                        }
+                    }
                 }
                 t
             }
@@ -452,7 +503,14 @@ impl Importer {
                 self.shape(&name, &s, at)?;
                 format!("{name}{opt}")
             }
-            Some("object") | None => format!("json{opt}"),
+            Some("object") | None => {
+                if s.get("additionalProperties")
+                    .is_some_and(|v| v.is_object() || v == &Value::Bool(false))
+                {
+                    self.unsupported("additionalProperties", at, "map value constraints have no Forge shape equivalent; typed as json (opaque)");
+                }
+                format!("json{opt}")
+            }
             Some(other) => {
                 self.unsupported("type", at, &format!("unknown type {other}; skipped"));
                 return Ok(None);

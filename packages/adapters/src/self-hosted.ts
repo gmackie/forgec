@@ -14,7 +14,7 @@ import type { DeploymentPlan } from "./deployment-plan.js";
 
 export interface SelfHostedPack { files: Record<string, string>; secrets: { name: string; docker: string; nixos: string }[] }
 
-export const BASE_IMAGE = "docker.io/library/node:22-bookworm-slim";
+export const BASE_IMAGE = "docker.io/library/node:24-bookworm-slim";
 
 export function emitSelfHosted(plan: DeploymentPlan, o: { baseDigest?: string; temporal?: boolean } = {}): SelfHostedPack {
   if (plan.target !== "self-hosted") throw new Error(`plan target ${plan.target} is not self-hosted`);
@@ -56,7 +56,7 @@ ENTRYPOINT ["node", "--enable-source-maps", "dist/server.js"]
   };
   const flake = `{
   description = "Forge self-hosted pack for ${plan.app} (${plan.artifact.slice(0, 12)})";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   outputs = { self, nixpkgs }: let
     systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
     forAll = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.\${system});
@@ -85,7 +85,7 @@ ENTRYPOINT ["node", "--enable-source-maps", "dist/server.js"]
           wantedBy = [ "multi-user.target" ];
           after = [ "network-online.target" "postgresql.service" ];
           serviceConfig = {
-            ExecStart = "\${pkgs.nodejs_22}/bin/node --enable-source-maps \${self.packages.\${pkgs.system}.default}/lib/forge/server.js";
+            ExecStart = "\${pkgs.nodejs_24}/bin/node --enable-source-maps \${self.packages.\${pkgs.system}.default}/lib/forge/server.js";
             User = "forge"; Group = "forge";
             DynamicUser = false;
             ProtectSystem = "strict"; ProtectHome = true; PrivateTmp = true; NoNewPrivileges = true;

@@ -1,6 +1,6 @@
 {
   "name": "@forgegraph/runtime",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Effect runtime for ForgeGraph applications: engine, storage adapters (D1, DynamoDB, PostgreSQL, memory), hosts (Cloudflare, AWS, Node), workflows, schedules, realtime, governance and telemetry.",
   "license": "Apache-2.0",
   "author": "ForgeGraph contributors",
@@ -15,7 +15,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=22.5"
+    "node": ">=24"
   },
   "sideEffects": false,
   "files": [
@@ -126,6 +126,96 @@
       "source": "./src/adapters/memory-objects.ts",
       "import": "./dist/adapters/memory-objects.js",
       "default": "./dist/adapters/memory-objects.js"
+    },
+    "./git-specification": {
+      "types": "./dist/foundation/git-specification.d.ts",
+      "source": "./src/foundation/git-specification.ts",
+      "import": "./dist/foundation/git-specification.js",
+      "default": "./dist/foundation/git-specification.js"
+    },
+    "./foundation/apps/bob": {
+      "types": "./dist/foundation/apps/bob.d.ts",
+      "source": "./src/foundation/apps/bob.ts",
+      "import": "./dist/foundation/apps/bob.js",
+      "default": "./dist/foundation/apps/bob.js"
+    },
+    "./foundation/apps/forgegraph": {
+      "types": "./dist/foundation/apps/forgegraph.d.ts",
+      "source": "./src/foundation/apps/forgegraph.ts",
+      "import": "./dist/foundation/apps/forgegraph.js",
+      "default": "./dist/foundation/apps/forgegraph.js"
+    },
+    "./foundation/apps/kanbanger": {
+      "types": "./dist/foundation/apps/kanbanger.d.ts",
+      "source": "./src/foundation/apps/kanbanger.ts",
+      "import": "./dist/foundation/apps/kanbanger.js",
+      "default": "./dist/foundation/apps/kanbanger.js"
+    },
+    "./foundation/apps/latchflow": {
+      "types": "./dist/foundation/apps/latchflow.d.ts",
+      "source": "./src/foundation/apps/latchflow.ts",
+      "import": "./dist/foundation/apps/latchflow.js",
+      "default": "./dist/foundation/apps/latchflow.js"
+    },
+    "./foundation/apps/levelforge": {
+      "types": "./dist/foundation/apps/levelforge.d.ts",
+      "source": "./src/foundation/apps/levelforge.ts",
+      "import": "./dist/foundation/apps/levelforge.js",
+      "default": "./dist/foundation/apps/levelforge.js"
+    },
+    "./foundation/apps/stream-conductor": {
+      "types": "./dist/foundation/apps/stream-conductor.d.ts",
+      "source": "./src/foundation/apps/stream-conductor.ts",
+      "import": "./dist/foundation/apps/stream-conductor.js",
+      "default": "./dist/foundation/apps/stream-conductor.js"
+    },
+    "./versioned-artifacts": {
+      "types": "./dist/versioned-artifacts.d.ts",
+      "source": "./src/versioned-artifacts.ts",
+      "import": "./dist/versioned-artifacts.js",
+      "default": "./dist/versioned-artifacts.js"
+    },
+    "./cloudflare-artifacts": {
+      "types": "./dist/adapters/cloudflare-artifacts.d.ts",
+      "source": "./src/adapters/cloudflare-artifacts.ts",
+      "import": "./dist/adapters/cloudflare-artifacts.js",
+      "default": "./dist/adapters/cloudflare-artifacts.js"
+    },
+    "./artifact-publication": {
+      "types": "./dist/artifact-publication.d.ts",
+      "source": "./src/artifact-publication.ts",
+      "import": "./dist/artifact-publication.js",
+      "default": "./dist/artifact-publication.js"
+    },
+    "./artifact-publication-sql": {
+      "types": "./dist/adapters/artifact-publication-sql.d.ts",
+      "source": "./src/adapters/artifact-publication-sql.ts",
+      "import": "./dist/adapters/artifact-publication-sql.js",
+      "default": "./dist/adapters/artifact-publication-sql.js"
+    },
+    "./artifact-publication-git": {
+      "types": "./dist/adapters/artifact-publication-git.d.ts",
+      "source": "./src/adapters/artifact-publication-git.ts",
+      "import": "./dist/adapters/artifact-publication-git.js",
+      "default": "./dist/adapters/artifact-publication-git.js"
+    },
+    "./artifact-workspace-git": {
+      "types": "./dist/adapters/artifact-workspace-git.d.ts",
+      "source": "./src/adapters/artifact-workspace-git.ts",
+      "import": "./dist/adapters/artifact-workspace-git.js",
+      "default": "./dist/adapters/artifact-workspace-git.js"
+    },
+    "./libsql-executor": {
+      "types": "./dist/adapters/libsql-executor.d.ts",
+      "source": "./src/adapters/libsql-executor.ts",
+      "import": "./dist/adapters/libsql-executor.js",
+      "default": "./dist/adapters/libsql-executor.js"
+    },
+    "./artifact-functions": {
+      "types": "./dist/artifact-functions.d.ts",
+      "source": "./src/artifact-functions.ts",
+      "import": "./dist/artifact-functions.js",
+      "default": "./dist/artifact-functions.js"
     }
   },
   "scripts": {
@@ -143,6 +233,7 @@
     "@aws-sdk/lib-dynamodb": "^3.1136.0",
     "@aws-sdk/s3-request-presigner": "^3.1136.0",
     "@aws-sdk/util-dynamodb": "3.996.9",
+    "@forgegraph/capability-manifest": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "effect": "4.0.0-rc.116",
     "pg": "^8.23.0",
@@ -150,6 +241,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250920.0",
+    "@libsql/client": "0.18.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.23.1",
     "@types/ws": "^8.18.1",

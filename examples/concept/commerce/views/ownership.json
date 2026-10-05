@@ -1,0 +1,75 @@
+{
+  "nodes": {
+    "@corpus/commerce/_/CancelOrder": "process",
+    "@corpus/commerce/_/CancellationRequested": "fact",
+    "@corpus/commerce/_/MaintainOrder": "process",
+    "@corpus/commerce/_/ManageRefund": "process",
+    "@corpus/commerce/_/ManageReturn": "process",
+    "@corpus/commerce/_/ManageShipment": "process",
+    "@corpus/commerce/_/Order": "entity",
+    "@corpus/commerce/_/PaymentAuthorized": "fact",
+    "@corpus/commerce/_/ReceivePayment": "process",
+    "@corpus/commerce/_/Refund": "entity",
+    "@corpus/commerce/_/RefundIssued": "fact",
+    "@corpus/commerce/_/Return": "entity",
+    "@corpus/commerce/_/ReturnReceived": "fact",
+    "@corpus/commerce/_/Shipment": "entity",
+    "@corpus/commerce/_/ShipmentDelivered": "fact"
+  },
+  "edges": [
+    {
+      "from": "@corpus/commerce/_/CancelOrder",
+      "to": "@corpus/commerce/_/CancellationRequested",
+      "port": "@corpus/commerce/_/CancelOrder#output:CancellationRequested",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/MaintainOrder",
+      "to": "@corpus/commerce/_/Order",
+      "port": "@corpus/commerce/_/MaintainOrder#output:Order",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageRefund",
+      "to": "@corpus/commerce/_/Refund",
+      "port": "@corpus/commerce/_/ManageRefund#output:Refund",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageRefund",
+      "to": "@corpus/commerce/_/RefundIssued",
+      "port": "@corpus/commerce/_/ManageRefund#output:RefundIssued",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageReturn",
+      "to": "@corpus/commerce/_/Return",
+      "port": "@corpus/commerce/_/ManageReturn#output:Return",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageReturn",
+      "to": "@corpus/commerce/_/ReturnReceived",
+      "port": "@corpus/commerce/_/ManageReturn#output:ReturnReceived",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/Shipment",
+      "port": "@corpus/commerce/_/ManageShipment#output:Shipment",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/commerce/_/ManageShipment",
+      "to": "@corpus/commerce/_/ShipmentDelivered",
+      "port": "@corpus/commerce/_/ManageShipment#output:ShipmentDelivered",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/commerce/_/ReceivePayment",
+      "to": "@corpus/commerce/_/PaymentAuthorized",
+      "port": "@corpus/commerce/_/ReceivePayment#output:PaymentAuthorized",
+      "kind": "emit"
+    }
+  ]
+}

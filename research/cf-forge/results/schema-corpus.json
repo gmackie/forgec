@@ -1,0 +1,163 @@
+[
+  {
+    "case": "string",
+    "schema": {
+      "type": "string"
+    },
+    "importExit": 0,
+    "unsupported": [],
+    "generated": "// Imported from OpenAPI 3.1.0 \"string\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : text?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "optional-null-31",
+    "schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "importExit": 0,
+    "unsupported": [],
+    "generated": "// Imported from OpenAPI 3.1.0 \"optional-null-31\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : text?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "nullable-30",
+    "schema": {
+      "type": "string",
+      "nullable": true
+    },
+    "importExit": 0,
+    "unsupported": [],
+    "generated": "// Imported from OpenAPI 3.0.3 \"nullable-30\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : text?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "array",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 10
+    },
+    "importExit": 0,
+    "unsupported": [
+      {
+        "feature": "array",
+        "at": "paths./items.post.requestBody.value",
+        "note": "Forge shapes have no list type; typed as json (opaque)"
+      }
+    ],
+    "generated": "// Imported from OpenAPI 3.1.0 \"array\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : json?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "map",
+    "schema": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "importExit": 0,
+    "unsupported": [],
+    "generated": "// Imported from OpenAPI 3.1.0 \"map\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : json?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "union",
+    "schema": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    },
+    "importExit": 0,
+    "unsupported": [
+      {
+        "feature": "oneOf",
+        "at": "paths./items.post.requestBody.value",
+        "note": "union schemas have no Forge shape; typed as json (opaque)"
+      }
+    ],
+    "generated": "// Imported from OpenAPI 3.1.0 \"union\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : json?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "negative-minimum",
+    "schema": {
+      "type": "number",
+      "minimum": -1
+    },
+    "importExit": 0,
+    "unsupported": [],
+    "generated": "// Imported from OpenAPI 3.1.0 \"negative-minimum\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : decimal? >= -1\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 1,
+    "diagnostics": "error[E-TYPE-004]: src/index.forge:9:20: unrecognized refinement\nerror[E-SYN-001]: src/index.forge:9:23: expected a literal, found `-`\nerror[E-SYN-001]: src/index.forge:9:23: expected end of line, found `-`\n@corpus/negative-minimum: 3 error(s), 0 warning(s)\n"
+  },
+  {
+    "case": "decimal",
+    "schema": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]{2}$"
+    },
+    "importExit": 0,
+    "unsupported": [],
+    "generated": "// Imported from OpenAPI 3.1.0 \"decimal\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : text? pattern \"^[0-9]+\\\\.[0-9]{2}$\"\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "enum",
+    "schema": {
+      "type": "string",
+      "enum": [
+        "a",
+        "b"
+      ]
+    },
+    "importExit": 0,
+    "unsupported": [],
+    "generated": "// Imported from OpenAPI 3.1.0 \"enum\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport enum CreateItemInputValue {\n  A = \"a\"\n  B = \"b\"\n}\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  value : CreateItemInputValue?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  },
+  {
+    "case": "recursive",
+    "schema": {
+      "$ref": "#/components/schemas/Recursive"
+    },
+    "importExit": -6,
+    "diagnostics": "\nthread 'main' (370964262) has overflowed its stack\nfatal runtime error: stack overflow, aborting\n"
+  },
+  {
+    "case": "binary",
+    "schema": {
+      "type": "string",
+      "format": "binary"
+    },
+    "importExit": 0,
+    "unsupported": [
+      {
+        "feature": "binary",
+        "at": "paths./items.post.requestBody.value",
+        "note": "binary strings are not importable as shape fields; skipped"
+      }
+    ],
+    "generated": "// Imported from OpenAPI 3.1.0 \"binary\" v1.0.0 by `forgec import-openapi`. Regenerate; do not edit.\n// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.\n\nexport shape CreateItemOutput {\n  id : text?\n}\n\nexport shape CreateItemInput {\n  _ : json?\n}\n\nexport function CreateItem\n  @http(POST, \"/items\")\n{\n  input CreateItemInput\n  output CreateItemOutput\n}\n\n",
+    "checkExit": 0,
+    "diagnostics": ""
+  }
+]

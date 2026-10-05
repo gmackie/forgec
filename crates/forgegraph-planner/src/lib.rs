@@ -50,7 +50,7 @@ pub struct Plans {
 
 pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
     validate(ir)?;
-    Ok(Plans {
+    let plans = Plans {
         contracts: contracts::plan(ir),
         sql: sql::plan(ir),
         dynamo: dynamo::plan(ir),
@@ -60,14 +60,291 @@ pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
         schedules: schedules::plan(ir),
         realtime: realtime::plan(ir),
         observability: observability::plan(ir),
-    })
+    };
+    validate_names(&plans)?;
+    Ok(plans)
+}
+
+/// Existing emitters use short physical/client names. Until namespacing is supported,
+/// refuse ambiguous output instead of generating a schema that overwrites a sibling.
+fn validate_names(plans: &Plans) -> Result<(), PlanError> {
+    fn unique<'a>(
+        kind: &str,
+        items: impl Iterator<Item = (&'a str, &'a str)>,
+    ) -> Result<(), PlanError> {
+        let mut seen = std::collections::BTreeMap::new();
+        for (name, id) in items {
+            if let Some(previous) = seen.insert(name, id) {
+                return Err(PlanError {
+                    code: "E-PLAN-003".into(),
+                    message: format!(
+                        "{kind} collision `{name}` between `{previous}` and `{id}`; co-deployed names must be distinct"
+                    ),
+                    declaration: id.into(),
+                });
+            }
+        }
+        Ok(())
+    }
+    unique(
+        "table",
+        plans
+            .sql
+            .tables
+            .iter()
+            .chain(&plans.sql.system_tables)
+            .map(|t| (t.name.as_str(), t.resource.as_deref().unwrap_or("system"))),
+    )?;
+    unique(
+        "index",
+        plans
+            .sql
+            .indexes
+            .iter()
+            .map(|i| (i.name.as_str(), i.table.as_str())),
+    )?;
+    unique(
+        "resource name",
+        plans
+            .contracts
+            .resources
+            .iter()
+            .map(|r| (r.name.as_str(), r.id.as_str())),
+    )?;
+    unique(
+        "wire name",
+        plans
+            .contracts
+            .resources
+            .iter()
+            .map(|r| (r.wire_name.as_str(), r.id.as_str())),
+    )?;
+    unique(
+        "function name",
+        plans
+            .contracts
+            .functions
+            .iter()
+            .map(|f| (f.name.as_str(), f.id.as_str())),
+    )?;
+    let mut routes = std::collections::BTreeMap::new();
+    for (http, id) in plans
+        .contracts
+        .resources
+        .iter()
+        .flat_map(|r| {
+            r.operations
+                .iter()
+                .filter_map(|o| o.http.as_ref().map(|h| (h, o.id.as_str())))
+        })
+        .chain(
+            plans
+                .contracts
+                .functions
+                .iter()
+                .filter_map(|f| f.http.as_ref().map(|h| (h, f.id.as_str()))),
+        )
+    {
+        let key = (http.method.as_str(), http.path.as_str());
+        if let Some(previous) = routes.insert(key, id) {
+            return Err(PlanError {
+                code: "E-PLAN-003".into(),
+                message: format!(
+                    "HTTP route collision `{} {}` between `{previous}` and `{id}`",
+                    key.0, key.1
+                ),
+                declaration: id.into(),
+            });
+        }
+    }
+    Ok(())
+}
+
+fn validate_collection(
+    ir: &DomainIR,
+    ty: &forgegraph_semantic::ir::TypeSpec,
+    depth: usize,
+    path: &str,
+) -> Result<(), PlanError> {
+    use forgegraph_semantic::ir::TypeBase;
+    let fail = |message: &str| PlanError {
+        code: "E-PLAN-COLLECTION-001".into(),
+        declaration: path.into(),
+        message: message.into(),
+    };
+    if depth > 4 {
+        return Err(fail(
+            "collection/shape nesting exceeds portable depth four or contains a recursive shape",
+        ));
+    }
+    match &ty.base {
+        TypeBase::Collection { element, .. } => validate_collection(ir, element, depth + 1, path)?,
+        TypeBase::Shape { id } if depth > 0 => {
+            let shape = ir.find_shape(id).ok_or_else(|| {
+                fail("collection shape must be available in the compiled package")
+            })?;
+            for f in &shape.fields {
+                validate_collection(ir, &f.ty, depth + 1, path)?;
+            }
+        }
+        TypeBase::Reference { .. } | TypeBase::Record { .. } | TypeBase::Message { .. }
+            if depth > 0 =>
+        {
+            return Err(fail(
+                "nested resource references/records/messages require integrity and purpose-aware codecs not supported by this profile; use ids or shapes",
+            ));
+        }
+        TypeBase::Scalar { name, .. } if depth > 0 && name == "json" => {
+            return Err(fail("opaque JSON is not a typed collection element"));
+        }
+        _ => {}
+    }
+    Ok(())
 }
 
 /// Physical-plan validation shared by both targets (plan §3.3): never turn an
 /// indexed query into a scan or an equality partition into an ambiguous one.
 fn validate(ir: &DomainIR) -> Result<(), PlanError> {
+    if ir.modules.iter().any(|m| !m.actors.is_empty())
+        && (ir.package.profile != "actor-preview"
+            || ir.package.targets.is_empty()
+            || ir
+                .package
+                .targets
+                .iter()
+                .any(|t| !matches!(t.as_str(), "node-sqlite" | "cloudflare-do-preview")))
+    {
+        return Err(PlanError {code:"E-PLAN-ACTOR-001".into(),declaration:ir.package.name.clone(),message:"actors require the explicit actor-preview profile and node-sqlite/cloudflare-do-preview targets; production distributed certification is not available".into()});
+    }
     for m in &ir.modules {
+        for actor in &m.actors {
+            validate_collection(ir, &actor.state, 0, &actor.id)?;
+            for ty in actor.messages.values() {
+                validate_collection(ir, ty, 0, &actor.id)?;
+            }
+            for handler in actor.handlers.values() {
+                if let Some(function) = ir
+                    .modules
+                    .iter()
+                    .flat_map(|m| &m.functions)
+                    .find(|f| &f.id == handler)
+                    && (!function.uses.is_empty() || !function.sends.is_empty())
+                {
+                    return Err(PlanError {code:"E-PLAN-ACTOR-002".into(),declaration:actor.id.clone(),message:"actor preview handlers must be pure reducers; stage external effects through the actor effect ledger instead of function uses/sends".into()});
+                }
+            }
+        }
+        for projection in &m.projections {
+            if let Some(source) = ir
+                .modules
+                .iter()
+                .flat_map(|m| &m.resources)
+                .find(|r| r.id == projection.source)
+                && !source.decorators.versioned
+            {
+                return Err(PlanError {code:"E-PLAN-PROJECTION-001".into(),declaration:projection.id.clone(),message:"incremental projections require a @versioned source for revision-based contribution deduplication".into()});
+            }
+        }
+        for alias in &m.types {
+            validate_collection(ir, &alias.ty, 0, &alias.id)?;
+        }
+        for (id, ty) in m
+            .functions
+            .iter()
+            .flat_map(|f| f.input.iter().chain(&f.output).map(move |ty| (&f.id, ty)))
+            .chain(
+                m.workflows
+                    .iter()
+                    .flat_map(|w| w.input.iter().chain(&w.output).map(move |ty| (&w.id, ty))),
+            )
+        {
+            validate_collection(ir, ty, 0, id)?;
+        }
+        for channel in &m.channels {
+            for field in channel.messages.iter().flat_map(|msg| &msg.fields) {
+                validate_collection(ir, &field.ty, 0, &channel.id)?;
+            }
+        }
+        for cache in &m.caches {
+            for field in &cache.keys {
+                if matches!(
+                    field.ty.base,
+                    forgegraph_semantic::ir::TypeBase::Collection { .. }
+                ) {
+                    return Err(PlanError {
+                        code: "E-PLAN-COLLECTION-002".into(),
+                        declaration: cache.id.clone(),
+                        message: "collection cache keys are not supported by the portable profile"
+                            .into(),
+                    });
+                }
+            }
+        }
+        for shape in &m.shapes {
+            for f in &shape.fields {
+                validate_collection(ir, &f.ty, 0, &shape.id)?;
+            }
+        }
         for r in &m.resources {
+            let secrets: Vec<_> = r
+                .fields
+                .iter()
+                .filter(|f| f.secret)
+                .map(|f| f.name.as_str())
+                .collect();
+            if !secrets.is_empty() {
+                let indexed = r
+                    .uniques
+                    .iter()
+                    .flat_map(|u| u.fields.iter().chain(&u.within))
+                    .chain(
+                        r.lists
+                            .iter()
+                            .flat_map(|l| l.fields.iter().chain(l.order.iter().map(|o| &o.field))),
+                    );
+                if indexed.into_iter().any(|f| secrets.contains(&f.as_str()))
+                    || !r.rules.is_empty()
+                    || r.fields.iter().any(|f| f.derived.is_some())
+                {
+                    return Err(PlanError {code:"E-PLAN-SECRET-001".into(),declaration:r.id.clone(),message:"credential resources cannot index secrets or use row rules/derived fields in this profile".into()});
+                }
+                if m.projections.iter().any(|p| p.source == r.id) || !m.views.is_empty() {
+                    return Err(PlanError {
+                        code: "E-PLAN-SECRET-001".into(),
+                        declaration: r.id.clone(),
+                        message: "credential resources cannot feed read models in this profile"
+                            .into(),
+                    });
+                }
+            }
+            for f in &r.fields {
+                validate_collection(ir, &f.ty, 0, &r.id)?;
+            }
+            for key in r
+                .uniques
+                .iter()
+                .flat_map(|u| u.fields.iter().chain(&u.within))
+                .chain(
+                    r.lists
+                        .iter()
+                        .flat_map(|l| l.fields.iter().chain(l.order.iter().map(|o| &o.field))),
+                )
+            {
+                if r.fields.iter().any(|f| {
+                    &f.name == key
+                        && matches!(
+                            f.ty.base,
+                            forgegraph_semantic::ir::TypeBase::Collection { .. }
+                        )
+                }) {
+                    return Err(PlanError {code:"E-PLAN-COLLECTION-002".into(),declaration:r.id.clone(),message:"collections cannot be index, uniqueness or order keys in the portable profile".into()});
+                }
+            }
+            for search in r.lists.iter().filter(|l| l.search_mode.is_some()) {
+                if search.search_mode.as_deref()!=Some("exact") || search.fields.len()>4 || search.fields.iter().any(|name|r.fields.iter().find(|f|&f.name==name).is_some_and(|f|matches!(&f.ty.base,forgegraph_semantic::ir::TypeBase::Scalar {name,..} if name=="text") && !f.ty.constraints.iter().any(|c|matches!(c,forgegraph_semantic::ir::Constraint::Length {max:Some(max),..} if *max<=128)))) {
+                    return Err(PlanError {code:"E-PLAN-SEARCH-001".into(),declaration:r.id.clone(),message:"portable exact search supports at most four equality fields and requires text length <= 128; no scan fallback is available".into()});
+                }
+            }
             for l in &r.lists {
                 for f in &l.fields {
                     let field = r

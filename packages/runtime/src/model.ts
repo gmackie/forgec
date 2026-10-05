@@ -10,6 +10,7 @@ export interface TypeSpec {
   constraints: Constraint[];
 }
 export type TypeBase =
+  | { kind: "collection"; collection: "list" | "set" | "map"; element: TypeSpec }
   | { kind: "scalar"; name: string; args: string[] }
   | { kind: "enum"; id: string }
   | { kind: "shape"; id: string }
@@ -39,6 +40,8 @@ export type Expr =
   | { kind: "call"; callee: string[]; args: Expr[] };
 
 export interface Field {
+  secret?: boolean;
+  sequence?: {partition: string | null; start: number; max: number};
   name: string;
   type: TypeSpec;
   default?: Literal;
@@ -48,10 +51,10 @@ export interface Field {
   synthesized: boolean;
   hidden?: boolean;
 }
-export interface Unique { name: string; fields: string[]; within: string[] }
+export interface Unique { name: string; fields: string[]; within: string[]; condition?: { field: string; values: string[] } }
 export interface Find { name: string; fields: string[]; coveredBy: string }
 export interface OrderKey { field: string; direction: string }
-export interface List { name: string; fields: string[]; order: OrderKey[] }
+export interface List { searchMode?: "exact"; name: string; fields: string[]; order: OrderKey[] }
 export interface Transition { action: string; from: string[]; to: string; input: Field[] }
 export interface Lifecycle { field: string; enumId: string; states: string[]; initial: string; terminals: string[]; transitions: Transition[] }
 export interface HttpBinding { method: string; path: string }
@@ -62,7 +65,7 @@ export interface Resource {
   name: string;
   kind: "resource" | "blob";
   content?: ContentPolicy;
-  decorators: { tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; hierarchical?: boolean; effectiveDated?: { uniqueBy: string[] }; crud?: { path: string; operations?: string[]; actions: string[] }; purposeScoped?: boolean; subject?: { binding: "kind"; kind: string } | { binding: "from"; field: string }; recordContext?: string };
+  decorators: { appendOnly?: boolean; writeOnce?: boolean; tenant: boolean; timestamps: boolean; softDelete: boolean; versioned: boolean; audited: boolean; hierarchical?: boolean; effectiveDated?: { uniqueBy: string[] }; crud?: { path: string; operations?: string[]; actions: string[] }; purposeScoped?: boolean; subject?: { binding: "kind"; kind: string } | { binding: "from"; field: string }; recordContext?: string };
   fields: Field[];
   uniques: Unique[];
   finds: Find[];
@@ -86,11 +89,12 @@ export interface FunctionDecl {
 export interface WebSocketBinding { path: string }
 export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; websocket?: WebSocketBinding; messages: { name: string; fields: Field[] }[] }
 export interface ViewDecl { id: string; name: string; source: string; by: string[]; where?: Expr; order: OrderKey[]; fields: string[] }
-export interface AggregateDecl { function: "count" | "sum" | "min" | "max"; field: string; alias: string; scale?: number }
+export interface AggregateDecl { function: "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"; field: string; alias: string; scale?: number; filter?: Expr }
 export interface ProjectionDecl { id: string; name: string; source: string; by: string[]; where?: Expr; aggregates: AggregateDecl[]; crud?: { path: string; operations?: string[]; actions: string[] } }
 export interface CacheDecl { id: string; name: string; keys: Field[]; loader: Expr; freshUntil: Expr; staleUntil?: Expr }
 export type WorkflowTerminal = { kind: "return"; value: Expr } | { kind: "fail"; error: string };
 export type WorkflowStep =
+  | { kind: "map"; id: string; binding: string; source: Expr; concurrency: number; max_items: number; call: Extract<WorkflowStep, {kind: "call"}> }
   | { kind: "call"; id: string; target: { kind: "function"; function: string } | { kind: "transition"; resource: string; action: string }; args: { name: string; value: Expr }[]; catches: { error: string; then: WorkflowTerminal }[] }
   | { kind: "sleep"; id: string; duration: string }
   | { kind: "wait"; id: string; channel: string; message: string; correlate?: { field: string; value: Expr }; timeout?: { duration: string; then: WorkflowTerminal } }
@@ -104,7 +108,9 @@ export interface RealtimePlan { version: string; profile: { frame: string; maxFr
 export interface ObservabilityPlan { version: string; dimensions: string[]; classification: Record<string, string>; window: string; operations: { operation: string; kind: string; resource?: string; class: string; slo: { availability: string; latencyGood: string; latencyWithinMs: number; window: string }; histogramBoundariesMs: number[]; businessErrors: string[] }[] }
 export interface WorkflowsPlan { version: string; workflows: { id: string; name: string; version: number; graphHash: string; cloudflare: { name: string; binding: string; className: string }; aws: { stateMachine: string; definition: unknown } }[] }
 export interface SourceDecl { id: string; name: string; cron?: string; timezone?: string; target: string }
-export interface Module { id: string; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[]; purposes?: PurposeDecl[]; dataClasses?: DataClassDecl[] }
+export interface Module {
+  actors?: import("./actors.js").ActorDefinition[];
+  workQueues?: (import("./work-queues.js").QueueDefinition & {name:string;execute:string})[]; id: string; shapes?: { id: string; fields: Field[] }[]; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[]; purposes?: PurposeDecl[]; dataClasses?: DataClassDecl[] }
 export interface MessagingPlan {
   channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
   subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
@@ -113,7 +119,7 @@ export interface MessagingPlan {
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["governance/1"];
+export const KNOWN_FEATURES = ["sealed-content/1", "append-only/1", "governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1", "actors/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }
@@ -161,6 +167,26 @@ export class Model {
     this.sources = bundle.ir.modules.flatMap((m) => m.sources ?? []);
     for (const m of bundle.ir.modules) for (const e of m.enums) this.enums.set(e.id, e);
     for (const r of this.resources) {
+      const validateReferencePath = (expression: Expr): void => {
+        switch (expression.kind) {
+          case "name":
+            if (expression.path.length > 2 && r.fields.some(f => f.name === expression.path[0] && f.type.base.kind === "reference")) {
+              throw new Error(`unsupported multi-hop reference expression ${expression.path.join(".")} on ${r.id}; recompile with a direct reference`);
+            }
+            break;
+          case "binary": validateReferencePath(expression.lhs); validateReferencePath(expression.rhs); break;
+          case "unary": validateReferencePath(expression.operand); break;
+          case "call": expression.args.forEach(validateReferencePath); break;
+          case "literal": break;
+        }
+      };
+      r.rules.forEach(validateReferencePath);
+      for (const field of r.fields) if (field.derived) validateReferencePath(field.derived);
+      for (const view of this.views) if (view.source === r.id && view.where) validateReferencePath(view.where);
+      for (const projection of this.projections) if (projection.source === r.id) {
+        if (projection.where) validateReferencePath(projection.where);
+        for (const aggregate of projection.aggregates) if (aggregate.filter) validateReferencePath(aggregate.filter);
+      }
       this.byId.set(r.id, r);
       for (const op of r.operations) this.ops.set(op.id, { op, resource: r });
     }

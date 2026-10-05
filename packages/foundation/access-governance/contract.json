@@ -1,0 +1,87 @@
+{
+  "slug": "access-governance",
+  "layer": "system",
+  "issue": 98,
+  "dependencies": [
+    "delegation",
+    "entitlement",
+    "participation",
+    "qualification",
+    "decision",
+    "evidence",
+    "attestation",
+    "specification"
+  ],
+  "facts": [
+    "WorkforceAccess",
+    "TenantAccess",
+    "ServiceAccountAccess"
+  ],
+  "operations": [
+    "access-governance authorized runtime services"
+  ],
+  "invariants": [
+    "Prebound approval and exact grant provenance including delegated authority",
+    "Assigned periodic/ad-hoc reviews and segregation-of-duties findings",
+    "Continue/modify/revoke outcomes with evidence and attestation certification",
+    "Effective-access explanation includes expiry, qualifications and delegation chain",
+    "Workforce, SaaS and service-account profiles with separate Gatekeeper policy"
+  ],
+  "acceptance": [
+    {
+      "id": "F98-01",
+      "description": "Prebound approval and exact grant provenance including delegated authority",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-access-governance.test.ts"
+      ]
+    },
+    {
+      "id": "F98-02",
+      "description": "Assigned periodic/ad-hoc reviews and segregation-of-duties findings",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-access-governance.test.ts"
+      ]
+    },
+    {
+      "id": "F98-03",
+      "description": "Continue/modify/revoke outcomes with evidence and attestation certification",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-access-governance.test.ts"
+      ]
+    },
+    {
+      "id": "F98-04",
+      "description": "Effective-access explanation includes expiry, qualifications and delegation chain",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-access-governance.test.ts"
+      ]
+    },
+    {
+      "id": "F98-05",
+      "description": "Workforce, SaaS and service-account profiles with separate Gatekeeper policy",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-access-governance.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "WorkforceAccess",
+    "TenantAccess",
+    "ServiceAccountAccess"
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "nodes": {
+    "@boundary/consensus/_/ApplyCommitted": "process",
+    "@boundary/consensus/_/CheckProtocol": "process",
+    "@boundary/consensus/_/ClientCommand": "reference",
+    "@boundary/consensus/_/CommandCommitted": "fact",
+    "@boundary/consensus/_/CommitCertificate": "reference",
+    "@boundary/consensus/_/ProposeCommand": "process",
+    "@boundary/consensus/_/ProtocolEngine": "external",
+    "@boundary/consensus/_/RecordVerification": "process",
+    "@boundary/consensus/_/ReplicatedState": "entity",
+    "@boundary/consensus/_/TLC": "external",
+    "@boundary/consensus/_/VerificationReport": "reference",
+    "@boundary/consensus/_/VerificationRequest": "reference",
+    "@boundary/consensus/_/VerificationRun": "entity",
+    "@boundary/consensus/_/VerificationRunRecorded": "fact"
+  },
+  "edges": [
+    {
+      "from": "@boundary/consensus/_/ApplyCommitted",
+      "to": "@boundary/consensus/_/CommandCommitted",
+      "port": "@boundary/consensus/_/ApplyCommitted#output:committed",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/consensus/_/ApplyCommitted",
+      "to": "@boundary/consensus/_/ReplicatedState",
+      "port": "@boundary/consensus/_/ApplyCommitted#output:state",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/consensus/_/CheckProtocol",
+      "to": "@boundary/consensus/_/TLC",
+      "port": "@boundary/consensus/_/CheckProtocol#output:request",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/consensus/_/CheckProtocol",
+      "to": "@boundary/consensus/_/VerificationRequest",
+      "port": "@boundary/consensus/_/CheckProtocol#output:request",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/consensus/_/ClientCommand",
+      "to": "@boundary/consensus/_/ProposeCommand",
+      "port": "@boundary/consensus/_/ProposeCommand#input:command",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/consensus/_/CommitCertificate",
+      "to": "@boundary/consensus/_/ApplyCommitted",
+      "port": "@boundary/consensus/_/ApplyCommitted#input:certificate",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/consensus/_/ProposeCommand",
+      "to": "@boundary/consensus/_/ClientCommand",
+      "port": "@boundary/consensus/_/ProposeCommand#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/consensus/_/ProposeCommand",
+      "to": "@boundary/consensus/_/ProtocolEngine",
+      "port": "@boundary/consensus/_/ProposeCommand#output:command",
+      "kind": "export"
+    },
+    {
+      "from": "@boundary/consensus/_/ProtocolEngine",
+      "to": "@boundary/consensus/_/ApplyCommitted",
+      "port": "@boundary/consensus/_/ApplyCommitted#activation:committed",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/consensus/_/ProtocolEngine",
+      "to": "@boundary/consensus/_/ApplyCommitted",
+      "port": "@boundary/consensus/_/ApplyCommitted#input:certificate",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/consensus/_/RecordVerification",
+      "to": "@boundary/consensus/_/VerificationRun",
+      "port": "@boundary/consensus/_/RecordVerification#output:record",
+      "kind": "produce"
+    },
+    {
+      "from": "@boundary/consensus/_/RecordVerification",
+      "to": "@boundary/consensus/_/VerificationRunRecorded",
+      "port": "@boundary/consensus/_/RecordVerification#output:recorded",
+      "kind": "emit"
+    },
+    {
+      "from": "@boundary/consensus/_/TLC",
+      "to": "@boundary/consensus/_/RecordVerification",
+      "port": "@boundary/consensus/_/RecordVerification#activation:completed",
+      "kind": "activate"
+    },
+    {
+      "from": "@boundary/consensus/_/TLC",
+      "to": "@boundary/consensus/_/RecordVerification",
+      "port": "@boundary/consensus/_/RecordVerification#input:report",
+      "kind": "acquire"
+    },
+    {
+      "from": "@boundary/consensus/_/VerificationReport",
+      "to": "@boundary/consensus/_/RecordVerification",
+      "port": "@boundary/consensus/_/RecordVerification#input:report",
+      "kind": "input"
+    },
+    {
+      "from": "@boundary/consensus/_/VerificationRequest",
+      "to": "@boundary/consensus/_/CheckProtocol",
+      "port": "@boundary/consensus/_/CheckProtocol#input:request",
+      "kind": "input"
+    }
+  ]
+}

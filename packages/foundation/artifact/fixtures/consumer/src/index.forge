@@ -1,0 +1,21 @@
+import artifact
+resource BuildOutput @tenant @appendOnly {
+  id : id
+  revision : artifact.ArtifactRevision
+  buildHash : text length 64..64
+}
+resource EvidenceDocument @tenant @appendOnly {
+  id : id
+  revision : artifact.ArtifactRevision
+  observation : text length 1..200
+}
+resource GeneratedAsset @tenant @appendOnly {
+  id : id
+  revision : artifact.ArtifactRevision
+  generator : text length 1..128
+}
+resource Document @tenant @appendOnly {
+  id : id
+  revision : artifact.ArtifactRevision
+  title : text length 1..200
+}

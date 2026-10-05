@@ -1,0 +1,91 @@
+{
+  "slug": "campaign",
+  "layer": "system",
+  "issue": 133,
+  "dependencies": [
+    "specification",
+    "notifications",
+    "delivery",
+    "artifact",
+    "agreement-catalog",
+    "planning-budget",
+    "scheduling",
+    "collaboration",
+    "measurement",
+    "evidence"
+  ],
+  "facts": [
+    "MarketingCampaign",
+    "PublicHealthCampaign",
+    "RecruitingCampaign",
+    "SecurityAwarenessCampaign"
+  ],
+  "operations": [
+    "campaign authorized runtime services"
+  ],
+  "invariants": [
+    "Objective and serialized lifecycle govern wave admission",
+    "Reusable pinned audience selection and evidenced reachability are explicit host admissions",
+    "Complete bounded waves bind content, scheduling and budget",
+    "Responses require admitted recipient interactions and pinned attribution",
+    "Performance consumes verified Measurement assessments"
+  ],
+  "acceptance": [
+    {
+      "id": "F133-01",
+      "description": "Objective and serialized lifecycle govern wave admission",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-campaign.test.ts"
+      ]
+    },
+    {
+      "id": "F133-02",
+      "description": "Reusable pinned audience selection and evidenced reachability are explicit host admissions",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-campaign.test.ts"
+      ]
+    },
+    {
+      "id": "F133-03",
+      "description": "Complete bounded waves bind content, scheduling and budget",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-campaign.test.ts"
+      ]
+    },
+    {
+      "id": "F133-04",
+      "description": "Responses require admitted recipient interactions and pinned attribution",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-campaign.test.ts"
+      ]
+    },
+    {
+      "id": "F133-05",
+      "description": "Performance consumes verified Measurement assessments",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-campaign.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "MarketingCampaign",
+    "PublicHealthCampaign",
+    "RecruitingCampaign",
+    "SecurityAwarenessCampaign"
+  ]
+}

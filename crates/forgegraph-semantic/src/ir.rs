@@ -19,7 +19,18 @@ pub struct DomainIR {
 }
 
 /// Features this compiler/runtime build understands. Unknown `requires` entries fail closed.
-pub const KNOWN_FEATURES: &[&str] = &["governance/1"];
+pub const KNOWN_FEATURES: &[&str] = &[
+    "governance/1",
+    "conditional-unique/1",
+    "projection-aggregates/1",
+    "collections/1",
+    "workflow-map/1",
+    "sequences/1",
+    "work-queues/1",
+    "credentials/1",
+    "search-exact/1",
+    "actors/1",
+];
 
 impl DomainIR {
     /// Load an IR produced by another build: version and critical features must be understood.
@@ -96,6 +107,12 @@ pub struct Module {
     pub enums: Vec<EnumDecl>,
     pub types: Vec<TypeAlias>,
     pub shapes: Vec<Shape>,
+    /// Compile-time field templates, never runtime supertypes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub facets: Vec<Shape>,
+    /// Effective field anchor -> originating facet field anchor. No source paths.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub facet_origins: std::collections::BTreeMap<String, String>,
     pub resources: Vec<Resource>,
     pub functions: Vec<Function>,
     pub channels: Vec<Channel>,
@@ -109,6 +126,10 @@ pub struct Module {
     pub caches: Vec<Cache>,
     #[serde(default)]
     pub workflows: Vec<Workflow>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub work_queues: Vec<WorkQueue>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub actors: Vec<Actor>,
     /// Edition 2027 governance vocabulary (plan D07/D11): meaning, never authority.
     #[serde(default)]
     pub purposes: Vec<Purpose>,
@@ -192,6 +213,28 @@ pub struct PurposeBinding {
     pub capability: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkQueue {
+    pub id: String,
+    pub name: String,
+    pub execute: String,
+    pub lease_ms: u32,
+    pub max_attempts: u32,
+    pub max_tasks: u32,
+    pub max_runners: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Actor {
+    pub id: String,
+    pub key: String,
+    pub state: TypeSpec,
+    pub messages: std::collections::BTreeMap<String, TypeSpec>,
+    pub handlers: std::collections::BTreeMap<String, String>,
+}
+
 /// Durable composition of capabilities with explicit control flow (plan §15).
 /// Step ids are the declared step names: semantic identifiers, never positions.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -219,6 +262,14 @@ pub struct Workflow {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum Step {
+    Map {
+        id: String,
+        binding: String,
+        source: Expr,
+        concurrency: u32,
+        max_items: u32,
+        call: Box<Step>,
+    },
     Call {
         id: String,
         target: CallTarget,
@@ -260,6 +311,7 @@ impl Step {
     /// `kind:id` label used by tooling and tests.
     pub fn kind(&self) -> String {
         match self {
+            Step::Map { id, .. } => format!("map:{id}"),
             Step::Call { id, .. } => format!("call:{id}"),
             Step::Sleep { id, .. } => format!("sleep:{id}"),
             Step::Wait { id, .. } => format!("wait:{id}"),
@@ -335,6 +387,8 @@ pub struct View {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Aggregate {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter: Option<Expr>,
     pub function: String,
     pub field: String,
     pub alias: String,
@@ -428,14 +482,44 @@ pub struct TypeSpec {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum TypeBase {
-    Scalar { name: String, args: Vec<String> },
-    Enum { id: String },
-    Shape { id: String },
-    Reference { resource: String },
-    Record { resource: String },
-    Identity { resource: String },
-    Status { resource: String },
-    Message { channel: String, message: String },
+    Collection {
+        collection: CollectionKind,
+        element: Box<TypeSpec>,
+    },
+    Scalar {
+        name: String,
+        args: Vec<String>,
+    },
+    Enum {
+        id: String,
+    },
+    Shape {
+        id: String,
+    },
+    Reference {
+        resource: String,
+    },
+    Record {
+        resource: String,
+    },
+    Identity {
+        resource: String,
+    },
+    Status {
+        resource: String,
+    },
+    Message {
+        channel: String,
+        message: String,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum CollectionKind {
+    List,
+    Set,
+    Map,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -487,6 +571,10 @@ pub struct Shape {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Field {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub secret: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sequence: Option<Sequence>,
     pub name: String,
     #[serde(rename = "type")]
     pub ty: TypeSpec,
@@ -502,6 +590,14 @@ pub struct Field {
     pub hidden: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub doc: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Sequence {
+    pub partition: Option<String>,
+    pub start: u64,
+    pub max: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -531,6 +627,10 @@ pub enum Expr {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResourceDecorators {
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub write_once: bool,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub append_only: bool,
     pub tenant: bool,
     pub timestamps: bool,
     pub soft_delete: bool,
@@ -606,8 +706,18 @@ pub struct ContentPolicy {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct UniqueCondition {
+    pub field: String,
+    /// Canonical enum wire values. The predicate holds when the field matches any value.
+    pub values: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Unique {
     pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub condition: Option<UniqueCondition>,
     pub fields: Vec<String>,
     pub within: Vec<String>,
 }
@@ -623,6 +733,8 @@ pub struct Find {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct List {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub search_mode: Option<String>,
     pub name: String,
     pub fields: Vec<String>,
     pub order: Vec<OrderKey>,

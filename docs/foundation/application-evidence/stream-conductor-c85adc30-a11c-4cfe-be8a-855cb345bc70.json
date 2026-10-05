@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "suite": "applications",
+  "application": "stream-conductor",
+  "status": "passing",
+  "runId": "c85adc30-a11c-4cfe-be8a-855cb345bc70",
+  "sourceRevision": "6783448b79460ad15050b588c92a3cbff31c59bf",
+  "sourceRevisionScope": "Pinned files verified against immutable revision; unrelated working-copy files are not certified",
+  "sourceFiles": [
+    {
+      "path": "apps/web/src/server/services/foundation-production.ts",
+      "sha256": "5a6df15a23b562b3a72aca0453aa384f2b6bcdfb126d61c2a746a1bf48a5d37d"
+    },
+    {
+      "path": "apps/web/src/server/routers/production.ts",
+      "sha256": "d7c5a516cb5bfbd92ba608853bcdc2b3e3db40522aaca53425108defe40cdb00"
+    },
+    {
+      "path": "apps/web/src/server/services/foundation-production.test.ts",
+      "sha256": "9a0cceeec169e1a5777ac0b11638db5e75e033c2f2ab2ae78d40cea72642df3b"
+    },
+    {
+      "path": "apps/web/src/server/routers/production-foundation.test.ts",
+      "sha256": "bebbc35cd576b89600425c6a4da7bf08efaaf830f1dde93f1220fe7499abe1fd"
+    },
+    {
+      "path": "packages/db/src/schema/production.ts",
+      "sha256": "4eeb62340c0ba6d9f3d0fb7c209277e2a6c2f64772a99cd8232c5c07e9c8ac8f"
+    },
+    {
+      "path": "packages/db/src/schema/organizations.ts",
+      "sha256": "bcd21954d9432cbde193451305b1bd9a40f0c2c1c95992704755393ba42ee4b1"
+    }
+  ],
+  "sourceFingerprint": "221819a25053ac9c59d08c898583bd210afb7d6462b8a34101e77be15e01ff60",
+  "scope": "Local opt-in integration with pinned actual application source; not deployed adoption",
+  "artifacts": [
+    {
+      "path": "api.smithy",
+      "sha256": "fe496322b1bd811f70a28aaaa3ee569cfed41ac8fe6d4fb40e20f52a193748c3"
+    },
+    {
+      "path": "app.json",
+      "sha256": "45f2b8060a8d2b5df6e205593bc9e58ea5d1c0df10b64e55224493741bf158cd"
+    },
+    {
+      "path": "client.ts",
+      "sha256": "fc0a30c94d1c119cc9ed29d02eb3941f32bee5a9caf1b4442283f0b793cebb66"
+    },
+    {
+      "path": "d1/0001_init.sql",
+      "sha256": "303191f902e4729c00b72839140ce6aa6b37f27ba2c8e102df4bc85226bdd0fa"
+    },
+    {
+      "path": "openapi.json",
+      "sha256": "bd376929a328d3090a7b82349f57f9cadd2df7e9cb41bae21e766254ee14465b"
+    },
+    {
+      "path": "postgres/0001_init.sql",
+      "sha256": "62fd70579477fc3b50d165aaf4abcd31f03b8c334bb6bc168beb456e94a10197"
+    },
+    {
+      "path": "README.md",
+      "sha256": "9bcdf095e1fee71fd3c9e30872aa46364f99381a313f35ba620edcff287c1d01"
+    },
+    {
+      "path": "source-map.json",
+      "sha256": "040c4658185cdfe6ad4a0f79acd6e25b3f694340ab3942210b4c9db6a282ff4c"
+    }
+  ],
+  "passedTests": [
+    "memory: actual Stream Conductor acknowledgment projects typed fulfillment and replays",
+    "memory: actual Stream Conductor seam rejects foreign or uncertain commands and reports denied projection",
+    "sqlite: actual Stream Conductor acknowledgment projects typed fulfillment and replays",
+    "sqlite: actual Stream Conductor seam rejects foreign or uncertain commands and reports denied projection"
+  ],
+  "verifiedAt": "2026-09-23T15:07:11.030Z",
+  "testReportSha256": "00530196ca97ea4573023e243c5997629deffda58c86e08f7a40d50a6a9c413a"
+}

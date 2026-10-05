@@ -5,6 +5,7 @@ Prints one canonical JSON array of step outcomes. The vitest harness runs the
 same steps through the TypeScript and Go clients and compares.
 """
 import sys
+import json
 from decimal import Decimal
 
 from forge_api import Client, InvocationFailed, ProblemError, canonical
@@ -36,11 +37,17 @@ def main() -> int:
         if isinstance(v, str) and v.startswith("$"):
             step, field = v[1:].split(".", 1)
             return seen[step][field]
+        if isinstance(v, list):
+            return [bind(x) for x in v]
         if isinstance(v, dict):
             return {k: bind(x) for k, x in v.items()}
         return v
 
-    for name, op, inp in STEPS:
+    steps = STEPS
+    if len(sys.argv) > 3:
+        with open(sys.argv[3], encoding="utf8") as fixture:
+            steps = [(s["step"], s["operation"], s["input"]) for s in json.load(fixture)]
+    for name, op, inp in steps:
         try:
             value = client.call(op, bind(inp))
             seen[name] = value

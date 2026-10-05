@@ -1,0 +1,45 @@
+{
+  "temporal": {
+    "@forgegraph/foundation/resource-relations/_/PartyResourceRelation": {
+      "valid": {
+        "from": "validFrom",
+        "to": "validUntil"
+      }
+    },
+    "@forgegraph/foundation/resource-relations/_/RelationSource": {
+      "occurrence": "occurredAt"
+    },
+    "@forgegraph/foundation/resource-relations/_/RelationCommit": {
+      "occurrence": "effectiveAt",
+      "knowledge": {
+        "from": "createdAt"
+      }
+    }
+  },
+  "relationships": {
+    "@forgegraph/foundation/resource-relations/_/PartyResourceRoles": {
+      "carrier": "@forgegraph/foundation/resource-relations/_/PartyResourceRelation",
+      "endpoints": {
+        "party": {
+          "field": "party",
+          "target": "@forgegraph/foundation/party/_/Party"
+        },
+        "resource": {
+          "field": "subject",
+          "target": "@forgegraph/foundation/resource-relations/_/ResourceSubject"
+        },
+        "kind": {
+          "field": "kind",
+          "target": "@forgegraph/foundation/resource-relations/_/RelationKind"
+        },
+        "scope": {
+          "field": "scope",
+          "target": "@forgegraph/foundation/resource-relations/_/RelationScope"
+        }
+      },
+      "evidence": [
+        "@forgegraph/foundation/evidence/_/EvidenceSeal"
+      ]
+    }
+  }
+}

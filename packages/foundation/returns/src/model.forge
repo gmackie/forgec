@@ -1,0 +1,106 @@
+import inventory
+import agreement-catalog
+import entitlement
+import party
+import fulfillment
+import evaluation
+import decision
+import evidence
+import billing
+import settlement
+export resource ReturnOrigin @tenant @appendOnly {
+ id : id
+ issue : inventory.InventoryMovement @unique
+ customer : party.Party
+ supplier : party.Party
+ agreement : agreement-catalog.Agreement?
+ fulfillment : fulfillment.Fulfillment
+ entitlement : entitlement.Entitlement @unique
+ right : entitlement.RightDefinition
+ scope : entitlement.EntitlementScope
+ rules { entitlement.holder == customer
+ entitlement.right == right
+ entitlement.scope == scope
+ issue.kind == "issue"
+ customer != supplier
+ agreement == null || agreement.customer == customer
+ agreement == null || agreement.supplier == supplier }
+}
+export enum ReturnDispositionKind { restock
+ repair
+ replace
+ scrap
+ supplier }
+export enum ReturnRemedyKind { none
+ credit
+ refund
+ replacement }
+export resource ReturnRequest @tenant @appendOnly {
+ id : id
+ key : text length 1..128 @unique
+ origin : ReturnOrigin
+ entitlement : entitlement.Entitlement
+ quantity : decimal<6> > 0
+ reason : text length 1..1000
+ requestedAt : datetime
+ authorization : decision.DecisionCase
+ authorizedOption : decision.DecisionOption
+ inspection : evaluation.EvaluationRun
+ dispositionDecision : decision.DecisionCase
+ dispositionOption : decision.DecisionOption
+ disposition : ReturnDispositionKind
+ remedy : ReturnRemedyKind
+ amount : decimal<6> >= 0
+ unit : text length 1..64
+ rules { entitlement == origin.entitlement
+ entitlement.holder == origin.customer
+ entitlement.right == origin.right
+ entitlement.scope == origin.scope
+ authorizedOption.decisionCase == authorization
+ dispositionOption.decisionCase == dispositionDecision
+ (remedy == ReturnRemedyKind.credit || remedy == ReturnRemedyKind.refund) == (amount > 0) }
+}
+export resource ReturnAuthorization @tenant @appendOnly {
+ id : id
+ origin : ReturnOrigin
+ request : ReturnRequest @unique
+ ordinal : integer >= 1 <= 128
+ previous : ReturnAuthorization?
+ at : datetime
+ rules { request.origin == origin
+ at >= request.requestedAt
+ (previous == null && ordinal == 1) || (previous != null && previous.origin == origin && ordinal == previous.ordinal + 1 && at >= previous.at) }
+ unique origin, ordinal
+ find by origin, ordinal
+}
+export resource ReturnReceipt @tenant @appendOnly {
+ id : id
+ authorization : ReturnAuthorization @unique
+ movement : inventory.InventoryMovement @unique
+ rules { movement.kind == "returned"
+ movement.at >= authorization.at }
+ find by authorization
+}
+export resource ReturnDisposition @tenant @appendOnly {
+ id : id
+ receipt : ReturnReceipt @unique
+ inspection : evaluation.EvaluationFinish
+ support : evidence.EvidenceSeal
+ movement : inventory.InventoryMovement? @unique
+ work : fulfillment.Fulfillment?
+ at : datetime
+ rules { inspection.outcome == "Completed"
+ inspection.finishedAt <= at }
+ find by receipt
+}
+export resource ReturnRemedy @tenant @appendOnly {
+ id : id
+ disposition : ReturnDisposition @unique
+ replacement : fulfillment.Fulfillment? @unique
+ refund : settlement.SettlementPosition? @unique
+ creditBill : billing.Bill?
+ credit : billing.BillingCharge? @unique
+ at : datetime
+ rules { at >= disposition.at
+ (credit == null) == (creditBill == null) }
+}

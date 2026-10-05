@@ -1,0 +1,92 @@
+{
+  "slug": "dispute-appeal",
+  "layer": "system",
+  "issue": 134,
+  "dependencies": [
+    "case-management",
+    "party",
+    "participation",
+    "specification",
+    "evidence",
+    "evaluation",
+    "decision",
+    "billing",
+    "assurance",
+    "fulfillment",
+    "change"
+  ],
+  "facts": [
+    "BillingDispute",
+    "BenefitsAppeal",
+    "ModerationAppeal",
+    "QualityAppeal"
+  ],
+  "operations": [
+    "dispute-appeal authorized runtime services"
+  ],
+  "invariants": [
+    "Typed contested facts remain immutable while review facts accumulate",
+    "Pinned jurisdiction, grounds, evidence and reviewer authority gate review",
+    "Four outcomes consume completed review and admitted Decision",
+    "Bounded recursive appeals preserve predecessor decisions and deadlines",
+    "Remedy execution is separate and validates linked work or issued adjustment"
+  ],
+  "acceptance": [
+    {
+      "id": "F134-01",
+      "description": "Typed contested facts remain immutable while review facts accumulate",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-dispute-appeal.test.ts"
+      ]
+    },
+    {
+      "id": "F134-02",
+      "description": "Pinned jurisdiction, grounds, evidence and reviewer authority gate review",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-dispute-appeal.test.ts"
+      ]
+    },
+    {
+      "id": "F134-03",
+      "description": "Four outcomes consume completed review and admitted Decision",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-dispute-appeal.test.ts"
+      ]
+    },
+    {
+      "id": "F134-04",
+      "description": "Bounded recursive appeals preserve predecessor decisions and deadlines",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-dispute-appeal.test.ts"
+      ]
+    },
+    {
+      "id": "F134-05",
+      "description": "Remedy execution is separate and validates linked work or issued adjustment",
+      "kind": "runtime",
+      "status": "passing",
+      "verification": "local",
+      "evidence": [
+        "packages/runtime/test/foundation-dispute-appeal.test.ts"
+      ]
+    }
+  ],
+  "fixtures": [
+    "BillingDispute",
+    "BenefitsAppeal",
+    "ModerationAppeal",
+    "QualityAppeal"
+  ]
+}

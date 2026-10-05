@@ -1,0 +1,114 @@
+import participation
+import artifact
+export facet Discussable {
+  discussion : Thread?
+}
+export resource Thread
+  @tenant
+  @appendOnly
+{
+  id : id
+  participants : participation.ParticipationSet
+  title : text length 1..200
+}
+export resource ThreadParticipant
+  @tenant
+  @appendOnly
+{
+  id : id
+  thread : Thread
+  membership : participation.Participation
+  rules {
+    membership.participationSet == thread.participants
+  }
+  unique thread, membership
+}
+export resource ThreadEntry
+  @tenant
+  @appendOnly
+{
+  id : id
+  thread : Thread
+  author : ThreadParticipant
+  body : text length 1..10000
+  corrects : ThreadEntry? @unique
+  recordedAt : datetime
+  rules {
+    author.thread == thread
+    corrects == null || (corrects.thread == thread && corrects.author == author && recordedAt >= corrects.recordedAt)
+  }
+}
+export resource Reaction
+  @tenant
+  @appendOnly
+{
+  id : id
+  thread : Thread
+  entry : ThreadEntry
+  author : ThreadParticipant
+  code : text length 1..64
+  rules {
+    author.thread == thread && entry.thread == thread
+  }
+  unique entry, author, code
+}
+export resource Mention
+  @tenant
+  @appendOnly
+{
+  id : id
+  thread : Thread
+  entry : ThreadEntry
+  participant : ThreadParticipant
+  rules {
+    participant.thread == thread && entry.thread == thread
+  }
+  unique entry, participant
+}
+export resource AttachmentLink
+  @tenant
+  @appendOnly
+{
+  id : id
+  thread : Thread
+  entry : ThreadEntry
+  revision : artifact.ArtifactRevision
+  rules {
+    entry.thread == thread
+  }
+  unique entry, revision
+}
+export enum ThreadEventKind {
+  Entry
+  Reaction
+  Mention
+  Attachment
+  Close
+  Reopen
+}
+export resource ThreadEvent
+  @tenant
+  @appendOnly
+{
+  id : id
+  thread : Thread
+  sequence : integer >= 1 <= 128
+  previous : ThreadEvent?
+  kind : ThreadEventKind
+  actor : ThreadParticipant
+  at : datetime
+  closed : boolean
+  entry : ThreadEntry? @unique
+  reaction : Reaction? @unique
+  mention : Mention? @unique
+  attachment : AttachmentLink? @unique
+  rules {
+    actor.thread == thread
+    (previous == null && sequence == 1) || (previous != null && previous.thread == thread && sequence == previous.sequence + 1 && at >= previous.at)
+    (kind == "Reopen" && previous != null && previous.closed && !closed) || (kind != "Reopen" && (previous == null || !previous.closed) && ( (kind == "Close" && closed) || (kind != "Close" && !closed)))
+    (kind == "Entry" && entry != null && entry.thread == thread && entry.author == actor && entry.recordedAt == at && reaction == null && mention == null && attachment == null) || (kind == "Reaction" && reaction != null && reaction.thread == thread && reaction.author == actor && entry == null && mention == null && attachment == null) || (kind == "Mention" && mention != null && mention.thread == thread && entry == null && reaction == null && attachment == null) || (kind == "Attachment" && attachment != null && attachment.thread == thread && entry == null && reaction == null && mention == null) || ( (kind == "Close" || kind == "Reopen") && entry == null && reaction == null && mention == null && attachment == null)
+  }
+  unique thread, sequence
+  list by thread
+    order by sequence asc
+}

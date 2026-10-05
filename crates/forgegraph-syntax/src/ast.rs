@@ -87,6 +87,7 @@ pub enum Declaration {
     Enum(EnumDecl),
     Type(TypeDecl),
     Shape(ShapeDecl),
+    Facet(FacetDecl),
     Resource(ResourceDecl),
     Blob(BlobDecl),
     Cache(CacheDecl),
@@ -97,6 +98,8 @@ pub enum Declaration {
     Source(SourceDecl),
     Subscription(SubscriptionDecl),
     Workflow(WorkflowDecl),
+    WorkQueue(WorkQueueDecl),
+    Actor(ActorDecl),
     Purpose(PurposeDecl),
     DataClass(DataClassDecl),
 }
@@ -108,6 +111,7 @@ impl Declaration {
             K::ENUM_DECL => Self::Enum(EnumDecl(node)),
             K::TYPE_DECL => Self::Type(TypeDecl(node)),
             K::SHAPE_DECL => Self::Shape(ShapeDecl(node)),
+            K::FACET_DECL => Self::Facet(FacetDecl(node)),
             K::RESOURCE_DECL => Self::Resource(ResourceDecl(node)),
             K::BLOB_DECL => Self::Blob(BlobDecl(node)),
             K::CACHE_DECL => Self::Cache(CacheDecl(node)),
@@ -117,6 +121,8 @@ impl Declaration {
             K::CHANNEL_DECL => Self::Channel(ChannelDecl(node)),
             K::SOURCE_DECL => Self::Source(SourceDecl(node)),
             K::SUBSCRIPTION_DECL => Self::Subscription(SubscriptionDecl(node)),
+            K::ACTOR_DECL => Self::Actor(ActorDecl(node)),
+            K::WORK_QUEUE_DECL => Self::WorkQueue(WorkQueueDecl(node)),
             K::WORKFLOW_DECL => Self::Workflow(WorkflowDecl(node)),
             K::PURPOSE_DECL => Self::Purpose(PurposeDecl(node)),
             K::DATA_CLASS_DECL => Self::DataClass(DataClassDecl(node)),
@@ -130,6 +136,7 @@ impl Declaration {
             Self::Enum(n) => &n.0,
             Self::Type(n) => &n.0,
             Self::Shape(n) => &n.0,
+            Self::Facet(n) => &n.0,
             Self::Resource(n) => &n.0,
             Self::Blob(n) => &n.0,
             Self::Cache(n) => &n.0,
@@ -138,6 +145,8 @@ impl Declaration {
             Self::Channel(n) => &n.0,
             Self::Source(n) => &n.0,
             Self::Subscription(n) => &n.0,
+            Self::Actor(n) => &n.0,
+            Self::WorkQueue(n) => &n.0,
             Self::Workflow(n) => &n.0,
             Self::Purpose(n) => &n.0,
             Self::DataClass(n) => &n.0,
@@ -161,6 +170,7 @@ impl Declaration {
                         | "enum"
                         | "type"
                         | "shape"
+                        | "facet"
                         | "resource"
                         | "blob"
                         | "cache"
@@ -169,6 +179,9 @@ impl Declaration {
                         | "function"
                         | "channel"
                         | "source"
+                        | "workflow"
+                        | "workQueue"
+                        | "actor"
                 )
             }),
         }
@@ -241,6 +254,12 @@ impl TypeDecl {
     }
 }
 
+node!(FacetDecl, FACET_DECL);
+impl FacetDecl {
+    pub fn fields(&self) -> impl Iterator<Item = FieldDecl> + '_ {
+        children(&self.0)
+    }
+}
 node!(ShapeDecl, SHAPE_DECL);
 impl ShapeDecl {
     pub fn name(&self) -> Option<SyntaxToken> {
@@ -265,6 +284,16 @@ impl TypeExpr {
 }
 node!(TypeRef, TYPE_REF);
 impl TypeRef {
+    pub fn element_types(&self) -> Vec<TypeExpr> {
+        child::<TypeArgs>(&self.0)
+            .map(|a| {
+                children::<TypeArg>(&a.0)
+                    .filter_map(|arg| child::<TypeExpr>(&arg.0))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     pub fn name(&self) -> Option<QualifiedName> {
         child(&self.0)
     }
@@ -596,7 +625,7 @@ impl QueryDecl {
             .unwrap_or_default()
     }
     /// (function, field, alias)
-    pub fn aggregates(&self) -> Vec<(String, String, String)> {
+    pub fn aggregates(&self) -> Vec<(String, String, String, Option<Expr>)> {
         children::<AggregateDecl>(&self.0)
             .filter_map(|a| {
                 let toks: Vec<String> = idents(&a.0).map(|t| t.text().to_string()).collect();
@@ -607,7 +636,12 @@ impl QueryDecl {
                 } else {
                     field.clone()
                 };
-                Some((f, field, alias))
+                Some((
+                    f,
+                    field,
+                    alias,
+                    child::<WhereDecl>(&a.0).and_then(|w| w.0.children().find_map(Expr::cast)),
+                ))
             })
             .collect()
     }
@@ -623,6 +657,12 @@ node!(AggregateDecl, AGGREGATE_DECL);
 
 node!(UniqueDecl, UNIQUE_DECL);
 impl UniqueDecl {
+    pub fn condition(&self) -> Option<(String, Vec<String>)> {
+        let node = self.0.children().find(|n| n.kind() == K::WHERE_DECL)?;
+        let names: Vec<String> = idents(&node).map(|t| t.text().to_string()).collect();
+        Some((names.get(1)?.clone(), names.into_iter().skip(3).collect()))
+    }
+
     pub fn fields(&self) -> Vec<String> {
         children::<FieldList>(&self.0)
             .next()
@@ -653,6 +693,14 @@ impl FindDecl {
 }
 node!(ListDecl, LIST_DECL);
 impl ListDecl {
+    pub fn search_mode(&self) -> Option<String> {
+        let mut ids = idents(&self.0);
+        if ids.next().is_some_and(|t| t.text() == "search") {
+            ids.next().map(|t| t.text().to_string())
+        } else {
+            None
+        }
+    }
     pub fn fields(&self) -> Option<FieldList> {
         child(&self.0)
     }
@@ -911,7 +959,23 @@ impl MessageDecl {
 }
 
 node!(SourceDecl, SOURCE_DECL);
+node!(SourceExposure, SOURCE_EXPOSURE);
+impl SourceExposure {
+    pub fn decorator(&self) -> Option<Decorator> {
+        child(&self.0)
+    }
+    pub fn target(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+    pub fn kind(&self) -> Option<String> {
+        idents(&self.0).next().map(|t| t.text().into())
+    }
+}
 impl SourceDecl {
+    pub fn exposures(&self) -> impl Iterator<Item = SourceExposure> + '_ {
+        children(&self.0)
+    }
+
     pub fn name(&self) -> Option<SyntaxToken> {
         idents(&self.0).find(|t| !matches!(t.text(), "export" | "source"))
     }
@@ -930,6 +994,47 @@ node!(TimezoneDecl, TIMEZONE_DECL);
 node!(TargetDecl, TARGET_DECL);
 
 // -------------------------------------------------------------- workflows
+node!(ActorDecl, ACTOR_DECL);
+impl ActorDecl {
+    pub fn items(&self) -> impl Iterator<Item = ActorItem> + '_ {
+        children(&self.0)
+    }
+    pub fn key(&self) -> Option<String> {
+        idents(&self.0).last().map(|t| t.text().to_string())
+    }
+}
+node!(ActorItem, ACTOR_ITEM);
+impl ActorItem {
+    pub fn kind(&self) -> Option<String> {
+        idents(&self.0).next().map(|t| t.text().to_string())
+    }
+    pub fn command(&self) -> Option<String> {
+        idents(&self.0).nth(1).map(|t| t.text().to_string())
+    }
+    pub fn target(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+}
+node!(WorkQueueDecl, WORK_QUEUE_DECL);
+impl WorkQueueDecl {
+    pub fn items(&self) -> impl Iterator<Item = WorkQueueItem> + '_ {
+        children(&self.0)
+    }
+}
+node!(WorkQueueItem, WORK_QUEUE_ITEM);
+impl WorkQueueItem {
+    pub fn key(&self) -> Option<String> {
+        idents(&self.0).next().map(|t| t.text().to_string())
+    }
+    pub fn value(&self) -> Option<String> {
+        tokens(&self.0)
+            .find(|t| matches!(t.kind(), K::DURATION | K::INT))
+            .map(|t| t.text().to_string())
+    }
+    pub fn target(&self) -> Option<QualifiedName> {
+        child(&self.0)
+    }
+}
 node!(WorkflowDecl, WORKFLOW_DECL);
 impl WorkflowDecl {
     pub fn name(&self) -> Option<SyntaxToken> {
@@ -1008,6 +1113,7 @@ impl StepDecl {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StepBody {
     Call(StepCall),
+    Map(StepMap),
     Sleep(StepSleep),
     Wait(StepWait),
 }
@@ -1015,10 +1121,29 @@ impl StepBody {
     pub fn cast(node: SyntaxNode) -> Option<Self> {
         Some(match node.kind() {
             K::STEP_CALL => Self::Call(StepCall(node)),
+            K::STEP_MAP => Self::Map(StepMap(node)),
             K::STEP_SLEEP => Self::Sleep(StepSleep(node)),
             K::STEP_WAIT => Self::Wait(StepWait(node)),
             _ => return None,
         })
+    }
+}
+node!(StepMap, STEP_MAP);
+impl StepMap {
+    pub fn binding(&self) -> Option<SyntaxToken> {
+        idents(&self.0).nth(1)
+    }
+    pub fn source(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+    pub fn concurrency(&self) -> Option<SyntaxToken> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|e| e.into_token())
+            .find(|t| t.kind() == K::INT)
+    }
+    pub fn call(&self) -> Option<StepCall> {
+        child(&self.0)
     }
 }
 node!(StepCall, STEP_CALL);

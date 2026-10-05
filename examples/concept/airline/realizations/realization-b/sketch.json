@@ -1,0 +1,18 @@
+{
+  "concept": "../../concept-ir.json",
+  "status": "sketch-not-proof",
+  "implementation": {
+    "runtime": "Temporal + keyed services",
+    "storage": "Postgres + object storage",
+    "transport": "Kafka",
+    "conflict": "OT",
+    "query": "PostGIS",
+    "batchSize": 1000,
+    "concurrency": 32,
+    "cacheTtl": 120
+  },
+  "obligations": [
+    "Typed feasibility return ports are linked and type-checked; the realization must still prove actual data flow and temporal applicability.",
+    "Constraint satisfaction, ranking and approval-before-application are not proved by the current graph. Compare marketplace matching and clinical human decisions."
+  ]
+}

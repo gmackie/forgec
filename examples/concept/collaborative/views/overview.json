@@ -1,0 +1,384 @@
+{
+  "nodes": {
+    "@corpus/collaborative/_/Collaboration": "purpose",
+    "@corpus/collaborative/_/Comment": "entity",
+    "@corpus/collaborative/_/CommentAdded": "fact",
+    "@corpus/collaborative/_/Document": "entity",
+    "@corpus/collaborative/_/DocumentEdited": "fact",
+    "@corpus/collaborative/_/DocumentRestored": "fact",
+    "@corpus/collaborative/_/MaintainDocument": "process",
+    "@corpus/collaborative/_/ManageComment": "process",
+    "@corpus/collaborative/_/ManageShare": "process",
+    "@corpus/collaborative/_/ManageWorkspace": "process",
+    "@corpus/collaborative/_/Membership": "entity",
+    "@corpus/collaborative/_/NotificationService": "external",
+    "@corpus/collaborative/_/OfflineClient": "external",
+    "@corpus/collaborative/_/Operator": "principal",
+    "@corpus/collaborative/_/PublishVersion": "process",
+    "@corpus/collaborative/_/ReceiveEdits": "process",
+    "@corpus/collaborative/_/RestoreVersion": "process",
+    "@corpus/collaborative/_/ScopedAccess": "policy",
+    "@corpus/collaborative/_/Share": "entity",
+    "@corpus/collaborative/_/ShareGranted": "fact",
+    "@corpus/collaborative/_/ShareRevoked": "fact",
+    "@corpus/collaborative/_/Version": "entity",
+    "@corpus/collaborative/_/VersionPublished": "fact",
+    "@corpus/collaborative/_/Workspace": "entity"
+  },
+  "edges": [
+    {
+      "from": "@corpus/collaborative/_/Document",
+      "to": "@corpus/collaborative/_/ManageComment",
+      "port": "@corpus/collaborative/_/ManageComment#input:Document",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/collaborative/_/Document",
+      "to": "@corpus/collaborative/_/ManageShare",
+      "port": "@corpus/collaborative/_/ManageShare#input:Document",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/collaborative/_/Document",
+      "to": "@corpus/collaborative/_/PublishVersion",
+      "port": "@corpus/collaborative/_/PublishVersion#activation:change",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/collaborative/_/Document",
+      "to": "@corpus/collaborative/_/PublishVersion",
+      "port": "@corpus/collaborative/_/PublishVersion#input:Document",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/collaborative/_/DocumentEdited",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument#activation:DocumentEdited",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/collaborative/_/DocumentEdited",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument#input:DocumentEdited",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/collaborative/_/DocumentRestored",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument#activation:DocumentRestored",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/collaborative/_/DocumentRestored",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument#input:DocumentRestored",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/collaborative/_/MaintainDocument",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/MaintainDocument",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/MaintainDocument",
+      "to": "@corpus/collaborative/_/Document",
+      "port": "@corpus/collaborative/_/MaintainDocument#output:Document",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageComment",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/ManageComment",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageComment",
+      "to": "@corpus/collaborative/_/Comment",
+      "port": "@corpus/collaborative/_/ManageComment#output:Comment",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageComment",
+      "to": "@corpus/collaborative/_/Comment",
+      "port": "@corpus/collaborative/_/ManageComment#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageComment",
+      "to": "@corpus/collaborative/_/CommentAdded",
+      "port": "@corpus/collaborative/_/ManageComment#output:CommentAdded",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageComment",
+      "to": "@corpus/collaborative/_/NotificationService",
+      "port": "@corpus/collaborative/_/ManageComment#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageShare",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/ManageShare",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageShare",
+      "to": "@corpus/collaborative/_/Share",
+      "port": "@corpus/collaborative/_/ManageShare#output:Share",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageShare",
+      "to": "@corpus/collaborative/_/ShareGranted",
+      "port": "@corpus/collaborative/_/ManageShare#output:ShareGranted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageShare",
+      "to": "@corpus/collaborative/_/ShareRevoked",
+      "port": "@corpus/collaborative/_/ManageShare#output:ShareRevoked",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageWorkspace",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/ManageWorkspace",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageWorkspace",
+      "to": "@corpus/collaborative/_/Membership",
+      "port": "@corpus/collaborative/_/ManageWorkspace#output:Membership",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/collaborative/_/ManageWorkspace",
+      "to": "@corpus/collaborative/_/Workspace",
+      "port": "@corpus/collaborative/_/ManageWorkspace#output:Workspace",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/collaborative/_/Membership",
+      "to": "@corpus/collaborative/_/ManageShare",
+      "port": "@corpus/collaborative/_/ManageShare#input:Membership",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/collaborative/_/OfflineClient",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/collaborative/_/OfflineClient",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits#input:Workspace",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/collaborative/_/Operator",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/Operator",
+      "to": "@corpus/collaborative/_/ManageComment",
+      "port": "@corpus/collaborative/_/ManageComment",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/Operator",
+      "to": "@corpus/collaborative/_/ManageShare",
+      "port": "@corpus/collaborative/_/ManageShare",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/Operator",
+      "to": "@corpus/collaborative/_/ManageWorkspace",
+      "port": "@corpus/collaborative/_/ManageWorkspace",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/Operator",
+      "to": "@corpus/collaborative/_/PublishVersion",
+      "port": "@corpus/collaborative/_/PublishVersion",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/Operator",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/Operator",
+      "to": "@corpus/collaborative/_/RestoreVersion",
+      "port": "@corpus/collaborative/_/RestoreVersion",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/PublishVersion",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/PublishVersion",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/PublishVersion",
+      "to": "@corpus/collaborative/_/Version",
+      "port": "@corpus/collaborative/_/PublishVersion#output:Version",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/collaborative/_/PublishVersion",
+      "to": "@corpus/collaborative/_/VersionPublished",
+      "port": "@corpus/collaborative/_/PublishVersion#output:VersionPublished",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/collaborative/_/ReceiveEdits",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/ReceiveEdits",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/ReceiveEdits",
+      "to": "@corpus/collaborative/_/DocumentEdited",
+      "port": "@corpus/collaborative/_/ReceiveEdits#output:DocumentEdited",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/collaborative/_/RestoreVersion",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/RestoreVersion",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/RestoreVersion",
+      "to": "@corpus/collaborative/_/DocumentRestored",
+      "port": "@corpus/collaborative/_/RestoreVersion#output:DocumentRestored",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/Collaboration",
+      "port": "@corpus/collaborative/_/ScopedAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument#input:DocumentEdited",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/MaintainDocument",
+      "port": "@corpus/collaborative/_/MaintainDocument#input:DocumentRestored",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ManageComment",
+      "port": "@corpus/collaborative/_/ManageComment",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ManageComment",
+      "port": "@corpus/collaborative/_/ManageComment#input:Document",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ManageShare",
+      "port": "@corpus/collaborative/_/ManageShare",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ManageShare",
+      "port": "@corpus/collaborative/_/ManageShare#input:Document",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ManageShare",
+      "port": "@corpus/collaborative/_/ManageShare#input:Membership",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ManageWorkspace",
+      "port": "@corpus/collaborative/_/ManageWorkspace",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/Operator",
+      "port": "@corpus/collaborative/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/PublishVersion",
+      "port": "@corpus/collaborative/_/PublishVersion",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/PublishVersion",
+      "port": "@corpus/collaborative/_/PublishVersion#input:Document",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits#input:Workspace",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/RestoreVersion",
+      "port": "@corpus/collaborative/_/RestoreVersion",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/RestoreVersion",
+      "port": "@corpus/collaborative/_/RestoreVersion#input:Version",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/collaborative/_/ScopedAccess",
+      "to": "@corpus/collaborative/_/Workspace",
+      "port": "@corpus/collaborative/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/collaborative/_/Version",
+      "to": "@corpus/collaborative/_/RestoreVersion",
+      "port": "@corpus/collaborative/_/RestoreVersion#input:Version",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/collaborative/_/Workspace",
+      "to": "@corpus/collaborative/_/ReceiveEdits",
+      "port": "@corpus/collaborative/_/ReceiveEdits#input:Workspace",
+      "kind": "input"
+    }
+  ]
+}

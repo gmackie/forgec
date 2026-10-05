@@ -1,0 +1,458 @@
+{
+  "nodes": {
+    "@corpus/benefits/_/Appeal": "entity",
+    "@corpus/benefits/_/AppealDecided": "fact",
+    "@corpus/benefits/_/AppealFiled": "fact",
+    "@corpus/benefits/_/ApplicationSubmitted": "fact",
+    "@corpus/benefits/_/BenefitAward": "entity",
+    "@corpus/benefits/_/BenefitDetermination": "purpose",
+    "@corpus/benefits/_/DeliverNotice": "process",
+    "@corpus/benefits/_/DetermineEligibility": "process",
+    "@corpus/benefits/_/EligibilityCase": "entity",
+    "@corpus/benefits/_/EligibilityDetermined": "fact",
+    "@corpus/benefits/_/Evidence": "entity",
+    "@corpus/benefits/_/HearAppeal": "process",
+    "@corpus/benefits/_/Household": "entity",
+    "@corpus/benefits/_/IncomeRegistry": "external",
+    "@corpus/benefits/_/IssueAward": "process",
+    "@corpus/benefits/_/MaintainHousehold": "process",
+    "@corpus/benefits/_/NoticeDelivered": "fact",
+    "@corpus/benefits/_/NoticeService": "external",
+    "@corpus/benefits/_/Operator": "principal",
+    "@corpus/benefits/_/PublishRules": "process",
+    "@corpus/benefits/_/ReceiveEvidence": "process",
+    "@corpus/benefits/_/RecertificationRequested": "fact",
+    "@corpus/benefits/_/Recertify": "process",
+    "@corpus/benefits/_/RetroactiveAdjustmentIssued": "fact",
+    "@corpus/benefits/_/RuleSet": "entity",
+    "@corpus/benefits/_/ScopedAccess": "policy"
+  },
+  "edges": [
+    {
+      "from": "@corpus/benefits/_/ApplicationSubmitted",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#activation:ApplicationSubmitted",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/benefits/_/ApplicationSubmitted",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:ApplicationSubmitted",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/BenefitAward",
+      "to": "@corpus/benefits/_/DeliverNotice",
+      "port": "@corpus/benefits/_/DeliverNotice#input:BenefitAward",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/DeliverNotice",
+      "to": "@corpus/benefits/_/BenefitAward",
+      "port": "@corpus/benefits/_/DeliverNotice#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/benefits/_/DeliverNotice",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/DeliverNotice",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/DeliverNotice",
+      "to": "@corpus/benefits/_/NoticeDelivered",
+      "port": "@corpus/benefits/_/DeliverNotice#output:NoticeDelivered",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/benefits/_/DeliverNotice",
+      "to": "@corpus/benefits/_/NoticeService",
+      "port": "@corpus/benefits/_/DeliverNotice#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/benefits/_/DetermineEligibility",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/DetermineEligibility",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/DetermineEligibility",
+      "to": "@corpus/benefits/_/EligibilityCase",
+      "port": "@corpus/benefits/_/DetermineEligibility#output:EligibilityCase",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/benefits/_/DetermineEligibility",
+      "to": "@corpus/benefits/_/EligibilityDetermined",
+      "port": "@corpus/benefits/_/DetermineEligibility#output:EligibilityDetermined",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/benefits/_/EligibilityCase",
+      "to": "@corpus/benefits/_/HearAppeal",
+      "port": "@corpus/benefits/_/HearAppeal#input:EligibilityCase",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/EligibilityCase",
+      "to": "@corpus/benefits/_/Recertify",
+      "port": "@corpus/benefits/_/Recertify#input:EligibilityCase",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/EligibilityDetermined",
+      "to": "@corpus/benefits/_/HearAppeal",
+      "port": "@corpus/benefits/_/HearAppeal#wait:EligibilityDetermined",
+      "kind": "wait"
+    },
+    {
+      "from": "@corpus/benefits/_/EligibilityDetermined",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward#activation:EligibilityDetermined",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/benefits/_/EligibilityDetermined",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward#input:EligibilityDetermined",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/Evidence",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:Evidence",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/Evidence",
+      "to": "@corpus/benefits/_/HearAppeal",
+      "port": "@corpus/benefits/_/HearAppeal#input:Evidence",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/Evidence",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward#input:Evidence",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/HearAppeal",
+      "to": "@corpus/benefits/_/Appeal",
+      "port": "@corpus/benefits/_/HearAppeal#output:Appeal",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/benefits/_/HearAppeal",
+      "to": "@corpus/benefits/_/AppealDecided",
+      "port": "@corpus/benefits/_/HearAppeal#output:AppealDecided",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/benefits/_/HearAppeal",
+      "to": "@corpus/benefits/_/AppealFiled",
+      "port": "@corpus/benefits/_/HearAppeal#output:AppealFiled",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/benefits/_/HearAppeal",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/HearAppeal",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/HearAppeal",
+      "to": "@corpus/benefits/_/RetroactiveAdjustmentIssued",
+      "port": "@corpus/benefits/_/HearAppeal#output:RetroactiveAdjustmentIssued",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/benefits/_/Household",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:Household",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/Household",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence#input:Household",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/IncomeRegistry",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/benefits/_/IncomeRegistry",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence#input:Household",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/benefits/_/IssueAward",
+      "to": "@corpus/benefits/_/BenefitAward",
+      "port": "@corpus/benefits/_/IssueAward#output:BenefitAward",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/benefits/_/IssueAward",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/IssueAward",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/MaintainHousehold",
+      "to": "@corpus/benefits/_/ApplicationSubmitted",
+      "port": "@corpus/benefits/_/MaintainHousehold#output:ApplicationSubmitted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/benefits/_/MaintainHousehold",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/MaintainHousehold",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/MaintainHousehold",
+      "to": "@corpus/benefits/_/Household",
+      "port": "@corpus/benefits/_/MaintainHousehold#output:Household",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/benefits/_/NoticeDelivered",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward#wait:NoticeDelivered",
+      "kind": "wait"
+    },
+    {
+      "from": "@corpus/benefits/_/NoticeService",
+      "to": "@corpus/benefits/_/DeliverNotice",
+      "port": "@corpus/benefits/_/DeliverNotice#activation:external",
+      "kind": "activate"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/DeliverNotice",
+      "port": "@corpus/benefits/_/DeliverNotice",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/HearAppeal",
+      "port": "@corpus/benefits/_/HearAppeal",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/MaintainHousehold",
+      "port": "@corpus/benefits/_/MaintainHousehold",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/PublishRules",
+      "port": "@corpus/benefits/_/PublishRules",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/Operator",
+      "to": "@corpus/benefits/_/Recertify",
+      "port": "@corpus/benefits/_/Recertify",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/PublishRules",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/PublishRules",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/PublishRules",
+      "to": "@corpus/benefits/_/RuleSet",
+      "port": "@corpus/benefits/_/PublishRules#output:RuleSet",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/benefits/_/ReceiveEvidence",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/ReceiveEvidence",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/ReceiveEvidence",
+      "to": "@corpus/benefits/_/Evidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence#output:Evidence",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/benefits/_/Recertify",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/Recertify",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/Recertify",
+      "to": "@corpus/benefits/_/RecertificationRequested",
+      "port": "@corpus/benefits/_/Recertify#output:RecertificationRequested",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/benefits/_/RuleSet",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:RuleSet",
+      "kind": "input"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/BenefitDetermination",
+      "port": "@corpus/benefits/_/ScopedAccess",
+      "kind": "purpose"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/DeliverNotice",
+      "port": "@corpus/benefits/_/DeliverNotice",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/DeliverNotice",
+      "port": "@corpus/benefits/_/DeliverNotice#input:BenefitAward",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:ApplicationSubmitted",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:Evidence",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:Household",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/DetermineEligibility",
+      "port": "@corpus/benefits/_/DetermineEligibility#input:RuleSet",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/HearAppeal",
+      "port": "@corpus/benefits/_/HearAppeal",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/HearAppeal",
+      "port": "@corpus/benefits/_/HearAppeal#input:EligibilityCase",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/HearAppeal",
+      "port": "@corpus/benefits/_/HearAppeal#input:Evidence",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/Household",
+      "port": "@corpus/benefits/_/ScopedAccess",
+      "kind": "resource"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward#input:EligibilityDetermined",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/IssueAward",
+      "port": "@corpus/benefits/_/IssueAward#input:Evidence",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/MaintainHousehold",
+      "port": "@corpus/benefits/_/MaintainHousehold",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/Operator",
+      "port": "@corpus/benefits/_/ScopedAccess",
+      "kind": "principal"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/PublishRules",
+      "port": "@corpus/benefits/_/PublishRules",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/ReceiveEvidence",
+      "port": "@corpus/benefits/_/ReceiveEvidence#input:Household",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/Recertify",
+      "port": "@corpus/benefits/_/Recertify",
+      "kind": "authorize"
+    },
+    {
+      "from": "@corpus/benefits/_/ScopedAccess",
+      "to": "@corpus/benefits/_/Recertify",
+      "port": "@corpus/benefits/_/Recertify#input:EligibilityCase",
+      "kind": "authorize"
+    }
+  ]
+}

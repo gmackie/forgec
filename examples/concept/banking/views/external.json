@@ -1,0 +1,27 @@
+{
+  "nodes": {
+    "@corpus/banking/_/CardNetwork": "external",
+    "@corpus/banking/_/SettleCard": "process",
+    "@corpus/banking/_/SettlementBank": "external"
+  },
+  "edges": [
+    {
+      "from": "@corpus/banking/_/CardNetwork",
+      "to": "@corpus/banking/_/SettleCard",
+      "port": "@corpus/banking/_/SettleCard#input:Account",
+      "kind": "acquire"
+    },
+    {
+      "from": "@corpus/banking/_/SettleCard",
+      "to": "@corpus/banking/_/SettlementBank",
+      "port": "@corpus/banking/_/SettleCard#output:external",
+      "kind": "export"
+    },
+    {
+      "from": "@corpus/banking/_/SettlementBank",
+      "to": "@corpus/banking/_/SettleCard",
+      "port": "@corpus/banking/_/SettleCard#input:bankStatement",
+      "kind": "acquire"
+    }
+  ]
+}

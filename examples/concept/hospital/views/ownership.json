@@ -1,0 +1,82 @@
+{
+  "nodes": {
+    "@corpus/hospital/_/EmergencyAccessUsed": "fact",
+    "@corpus/hospital/_/EmergencyRead": "process",
+    "@corpus/hospital/_/Encounter": "entity",
+    "@corpus/hospital/_/LabResult": "entity",
+    "@corpus/hospital/_/LabResultReceived": "fact",
+    "@corpus/hospital/_/MaintainEncounter": "process",
+    "@corpus/hospital/_/MedicationAdministered": "fact",
+    "@corpus/hospital/_/MedicationOrder": "entity",
+    "@corpus/hospital/_/Patient": "entity",
+    "@corpus/hospital/_/PatientAdmitted": "fact",
+    "@corpus/hospital/_/PatientTransferred": "fact",
+    "@corpus/hospital/_/PrescribeMedication": "process",
+    "@corpus/hospital/_/ReceiveLab": "process",
+    "@corpus/hospital/_/RegisterPatient": "process",
+    "@corpus/hospital/_/Transfer": "entity",
+    "@corpus/hospital/_/TransferPatient": "process"
+  },
+  "edges": [
+    {
+      "from": "@corpus/hospital/_/EmergencyRead",
+      "to": "@corpus/hospital/_/EmergencyAccessUsed",
+      "port": "@corpus/hospital/_/EmergencyRead#output:EmergencyAccessUsed",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/MaintainEncounter",
+      "to": "@corpus/hospital/_/Encounter",
+      "port": "@corpus/hospital/_/MaintainEncounter#output:Encounter",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/MedicationAdministered",
+      "port": "@corpus/hospital/_/PrescribeMedication#output:MedicationAdministered",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/PrescribeMedication",
+      "to": "@corpus/hospital/_/MedicationOrder",
+      "port": "@corpus/hospital/_/PrescribeMedication#output:MedicationOrder",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/ReceiveLab",
+      "to": "@corpus/hospital/_/LabResult",
+      "port": "@corpus/hospital/_/ReceiveLab#output:LabResult",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/ReceiveLab",
+      "to": "@corpus/hospital/_/LabResultReceived",
+      "port": "@corpus/hospital/_/ReceiveLab#output:LabResultReceived",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/RegisterPatient",
+      "to": "@corpus/hospital/_/Patient",
+      "port": "@corpus/hospital/_/RegisterPatient#output:Patient",
+      "kind": "produce"
+    },
+    {
+      "from": "@corpus/hospital/_/RegisterPatient",
+      "to": "@corpus/hospital/_/PatientAdmitted",
+      "port": "@corpus/hospital/_/RegisterPatient#output:PatientAdmitted",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/TransferPatient",
+      "to": "@corpus/hospital/_/PatientTransferred",
+      "port": "@corpus/hospital/_/TransferPatient#output:PatientTransferred",
+      "kind": "emit"
+    },
+    {
+      "from": "@corpus/hospital/_/TransferPatient",
+      "to": "@corpus/hospital/_/Transfer",
+      "port": "@corpus/hospital/_/TransferPatient#output:Transfer",
+      "kind": "produce"
+    }
+  ]
+}

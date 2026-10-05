@@ -1,0 +1,50 @@
+import delivery
+resource EmailDestination
+  @tenant
+  @appendOnly
+{
+  id : id
+  destination : delivery.DeliveryDestination @unique
+  address : email
+}
+resource WebhookDestination
+  @tenant
+  @appendOnly
+{
+  id : id
+  destination : delivery.DeliveryDestination @unique
+  url : text length 1..2000
+}
+resource FileExportDestination
+  @tenant
+  @appendOnly
+{
+  id : id
+  destination : delivery.DeliveryDestination @unique
+  location : text length 1..2000
+}
+resource EmailContent
+  @tenant
+  @appendOnly
+{
+  id : id
+  intent : delivery.DeliveryIntent @unique
+  subject : text length 1..200
+  body : text length 1..2000
+}
+resource WebhookContent
+  @tenant
+  @appendOnly
+{
+  id : id
+  intent : delivery.DeliveryIntent @unique
+  eventKey : text length 1..200
+}
+resource FileExport
+  @tenant
+  @appendOnly
+{
+  id : id
+  intent : delivery.DeliveryIntent @unique
+  filename : text length 1..200
+}

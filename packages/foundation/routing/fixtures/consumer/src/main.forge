@@ -1,0 +1,25 @@
+import routing
+resource SupportAgent
+  @tenant
+{
+  id : id
+  resource : routing.RoutingResource
+}
+resource Technician
+  @tenant
+{
+  id : id
+  resource : routing.RoutingResource
+}
+resource Reviewer
+  @tenant
+{
+  id : id
+  resource : routing.RoutingResource
+}
+resource BobRunner
+  @tenant
+{
+  id : id
+  resource : routing.RoutingResource
+}

@@ -11,7 +11,7 @@ observable semantics everywhere:
 
 | | Cloudflare | AWS | Node / self-hosted |
 | --- | --- | --- | --- |
-| compute | Workers | Lambda + HTTP API | Node 22+ HTTP server |
+| compute | Workers | Lambda + HTTP API | Node 24+ HTTP server |
 | data | D1 | DynamoDB | PostgreSQL, SQLite, libsql |
 | blobs | R2 | S3 | filesystem / S3-compatible |
 | queues | Queues | SQS | PostgreSQL outbox |

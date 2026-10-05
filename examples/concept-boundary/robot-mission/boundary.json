@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "slug": "robot-mission",
+  "outcomes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "concerns": [
+    {
+      "id": "mission-revision",
+      "description": "Goal revisions, scene provenance and command decisions",
+      "layer": "L0",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/robot-mission/_/Mission",
+        "@boundary/robot-mission/_/PerceptionSnapshot",
+        "@boundary/robot-mission/_/CommandDecision"
+      ],
+      "pressures": [
+        "traceability",
+        "sensor-actuator"
+      ],
+      "rationale": "Changing observation identity or the logical Mission owner changes the command contract independently of ROS transport."
+    },
+    {
+      "id": "mode-lease",
+      "description": "Hold/Stop behavior, stale observation rejection and command expiry",
+      "layer": "L0-facet",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/robot-mission/_/AdvanceMission",
+        "@boundary/robot-mission/_/Mission"
+      ],
+      "pressures": [
+        "modes",
+        "fail-safe",
+        "deadlines"
+      ],
+      "rationale": "Admissible reactions require a cross-domain mode and freshness contract; event edges do not enforce a stop deadline."
+    },
+    {
+      "id": "planner-strategy",
+      "description": "Planner search and ROS service/action adapters",
+      "layer": "L1",
+      "outcome": "A",
+      "conceptRefs": [
+        "@boundary/robot-mission/_/AssessPlan",
+        "@boundary/robot-mission/_/TrajectorySolver"
+      ],
+      "pressures": [],
+      "rationale": "Algorithms and transports are replaceable only while goal, feasibility and candidate validity meanings remain fixed."
+    },
+    {
+      "id": "onboard-placement",
+      "description": "Executive, GPU planning and isolated onboard stop controller",
+      "layer": "L2",
+      "outcome": "B",
+      "conceptRefs": [
+        "@boundary/robot-mission/_/AdvanceMission",
+        "@boundary/robot-mission/_/LocalController"
+      ],
+      "pressures": [
+        "hardware-placement",
+        "platform-mapping",
+        "resource-budgets"
+      ],
+      "rationale": "Allocation preserves one logical executive; independent stop-path obligations constrain deployment."
+    },
+    {
+      "id": "control-dynamics",
+      "description": "Trajectory integration, geometric collision tests and physical stability",
+      "layer": "external",
+      "outcome": "C",
+      "conceptRefs": [
+        "@boundary/robot-mission/_/TrajectorySolver",
+        "@boundary/robot-mission/_/LocalController"
+      ],
+      "pressures": [
+        "continuous-time",
+        "simulation-artifacts"
+      ],
+      "rationale": "Numerical plant evolution and stability require solver semantics and physical assumptions beyond durable fact composition."
+    }
+  ],
+  "facets": [
+    {
+      "id": "mission-mode-lease",
+      "kind": "mode",
+      "status": "proposed",
+      "targets": [
+        "@boundary/robot-mission/_/AdvanceMission"
+      ],
+      "parameters": {
+        "staleSceneAction": "Hold",
+        "expiredLeaseAction": "Stop",
+        "revisionMatch": "exact"
+      },
+      "meaning": "Only a current candidate for the current goal revision may authorize leased motion.",
+      "obligations": [
+        "Realization must compare candidate revision and scene sequence before export.",
+        "Clock, freshness threshold and stop latency require measured implementation evidence; no safety guarantee follows from this sidecar."
+      ]
+    },
+    {
+      "id": "onboard-budget",
+      "kind": "resource-budget",
+      "status": "proposed",
+      "targets": [
+        "@boundary/robot-mission/_/AssessPlan",
+        "@boundary/robot-mission/_/AdvanceMission"
+      ],
+      "parameters": {
+        "planningQueue": "bounded",
+        "overloadAction": "Hold"
+      },
+      "meaning": "Planning overload must not starve command expiry handling.",
+      "obligations": [
+        "Specify queue bounds and scheduling isolation at realization.",
+        "Validate watchdog behavior under delayed, duplicated and absent planner results."
+      ]
+    }
+  ],
+  "realization": {
+    "strategy": "Revision-aware executive with planner and controller adapters; only ReviseMission owns Mission.",
+    "placement": "Onboard executive and independent local controller; planner may use a GPU.",
+    "limitations": [
+      "No control law, scheduler, WCET analysis or physical safety proof is implemented.",
+      "Controller watchdog and coordinate-frame transformations require separate validation."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "controller-interface",
+      "path": "specialized-model/controller-interface.txt",
+      "format": "Controller/plant interface sketch",
+      "status": "sketch",
+      "process": "@boundary/robot-mission/_/AdvanceMission",
+      "inputPorts": [
+        "@boundary/robot-mission/_/AdvanceMission#input:mission",
+        "@boundary/robot-mission/_/AdvanceMission#input:assessment",
+        "@boundary/robot-mission/_/AdvanceMission#input:receipt"
+      ],
+      "outputPorts": [
+        "@boundary/robot-mission/_/AdvanceMission#output:decision",
+        "@boundary/robot-mission/_/AdvanceMission#output:command"
+      ],
+      "claim": "Interface only; no plant simulation, analyzer or safety certification executed."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Ptolemy II models of computation",
+      "url": "https://ptolemy.berkeley.edu/ptolemyII/",
+      "supports": "Directors define distinct continuous-time, discrete-event, synchronous/reactive and dataflow laws; typed graph edges alone do not supply them."
+    },
+    {
+      "title": "AUTOSAR Classic Platform",
+      "url": "https://www.autosar.org/standards/classic-platform",
+      "supports": "Application, RTE and basic software separation illustrates logical contract versus platform realization; no AUTOSAR conformance claimed."
+    },
+    {
+      "title": "Arcadia method",
+      "url": "https://mbse-capella.org/arcadia.html",
+      "supports": "Logical architecture versus physical architecture supports keeping semantic ownership independent of processor placement."
+    },
+    {
+      "title": "ROS 2 managed node lifecycle",
+      "url": "https://design.ros2.org/articles/node_lifecycle.html",
+      "supports": "Managed lifecycle states supervise implementation nodes; they are not Mission.mode or a proof of physical safety."
+    }
+  ]
+}

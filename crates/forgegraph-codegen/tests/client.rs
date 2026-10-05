@@ -124,3 +124,45 @@ fn smithy_export_is_stable() {
     assert!(idl.contains("operation CustomerCreate {"));
     insta::assert_snapshot!("smithy", idl);
 }
+
+#[test]
+fn collection_clients_preserve_elements_and_nullable_arrays() {
+    let c = compile(&forgegraph_semantic::Package::inline("@test/types",vec![("src/a.forge".into(), "shape Item { name : text }\nresource R { id : id\n items : list<Item>? length <= 8\n labels : map<text,text> length <= 8\n}".into())]),&[]);
+    assert!(c.ir.is_some(), "{}", c.render());
+    let plans = plan(&c.ir.unwrap()).unwrap();
+    let ts = client_ts(&plans.contracts);
+    assert!(ts.contains("Array<{ \"name\": string }> | null"), "{ts}");
+    assert!(ts.contains("Record<string, string>"), "{ts}");
+}
+
+#[test]
+fn bounded_collection_contracts_preserve_elements_and_wire_bounds() {
+    let root = Path::new(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/collections"
+    ));
+    let ir = compile(&load_package(root).unwrap(), &[]).ir.unwrap();
+    let plans = plan(&ir).unwrap();
+    let doc = forgegraph_codegen::openapi(&plans.contracts, &plans.observability);
+    let fields = &doc["components"]["schemas"]["LevelDefinitionCreate"]["properties"];
+    assert_eq!(fields["objectives"]["minItems"], 1);
+    assert_eq!(fields["objectives"]["maxItems"], 20);
+    assert_eq!(
+        fields["objectives"]["items"]["properties"]["score"]["type"],
+        "integer"
+    );
+    assert_eq!(fields["tags"]["uniqueItems"], true);
+    assert_eq!(fields["metadata"]["maxProperties"], 64);
+    assert_eq!(fields["metadata"]["additionalProperties"]["type"], "string");
+    assert_eq!(fields["grid"]["items"]["maxItems"], 8);
+    assert_eq!(fields["grid"]["items"]["items"]["type"], "integer");
+    assert_eq!(
+        doc["paths"]["/v1/levels"]["post"]["operationId"],
+        "@dogfood/collections/_/LevelDefinition.create"
+    );
+    let ts = client_ts(&plans.contracts);
+    assert!(ts.contains("objectives: Array<{ \"title\": string; \"score\": number }>;"));
+    assert!(ts.contains("metadata: Record<string, string>;"));
+    assert!(ts.contains("grid: Array<Array<number>>;"));
+    assert!(ts.contains("tags: Array<string>;"));
+}
