@@ -24,10 +24,18 @@ export interface Audit {
   actor?: string;
 }
 export interface State {
+  /** Storage version: every write increments it, including audit-only appends. */
   revision: number;
+  /**
+   * The app/environment configuration version clients send as `If-Match`. Only configuration
+   * changes increment it, so recording an audit entry (e.g. issuing a registry credential) does
+   * not make an editor in another tab look stale. Absent in states written before it existed.
+   */
+  configRevision?: number;
   apps: App[];
   audit: Audit[];
 }
+export const configRevision = (state: State): number => state.configRevision ?? state.revision;
 export const emptyState = (): State => ({ revision: 0, apps: [], audit: [] });
 export interface StateStore {
   reservePublication(key: string): Promise<boolean>;
