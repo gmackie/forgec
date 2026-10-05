@@ -667,6 +667,7 @@ pub fn field_schema(ir: &DomainIR, owner: &Resource, f: &Field) -> Value {
         if f.ty.optional {
             let t = obj.get("type").cloned().unwrap_or(json!("string"));
             obj.insert("type".into(), json!([t, "null"]));
+            allow_null_in_enum(obj);
         }
         if let Some(d) = &f.default {
             obj.insert("default".into(), literal_json(d));
@@ -710,8 +711,21 @@ fn collection_element_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> 
     if ty.optional {
         let base = schema["type"].clone();
         schema["type"] = json!([base, "null"]);
+        if let Some(obj) = schema.as_object_mut() {
+            allow_null_in_enum(obj);
+        }
     }
     schema
+}
+
+/// `enum` is exhaustive in JSON Schema, so a nullable enumerated value must list `null` too;
+/// otherwise a strict validator rejects the `null` that `type: [.., "null"]` allows (#199).
+fn allow_null_in_enum(obj: &mut serde_json::Map<String, Value>) {
+    if let Some(Value::Array(values)) = obj.get_mut("enum")
+        && !values.iter().any(Value::is_null)
+    {
+        values.push(Value::Null);
+    }
 }
 fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
     let mut s = match &ty.base {
