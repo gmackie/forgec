@@ -61,13 +61,16 @@ enum Cmd {
         #[arg(long, requires = "focus", value_delimiter = ',')]
         relations: Vec<String>,
     },
-    /// Compile and write generated artifacts (app bundle, D1 migration, TS client).
+    /// Compile and write generated artifacts (app bundle, D1 migration, TS client, OpenAPI, contract IR).
     Build {
         #[arg(default_value = ".")]
         path: PathBuf,
         /// Output directory (default: `<package>/generated`).
         #[arg(long)]
         out: Option<PathBuf>,
+        /// ForgeGraph app slug for `contract.json` (default: the unscoped package name).
+        #[arg(long)]
+        service_id: Option<String>,
     },
     /// Write `forge.lock`, pinning dependency contracts and the compiler version.
     Lock {
@@ -433,7 +436,18 @@ fn main() -> Result<()> {
                 std::process::exit(1);
             }
         }
-        Cmd::Build { path, out } => {
+        Cmd::Build {
+            path,
+            out,
+            service_id,
+        } => {
+            if let Some(id) = &service_id
+                && !forgegraph_codegen::contract_ir::emit::is_identifier(id)
+            {
+                bail!(
+                    "--service-id `{id}` is not an identifier (letters, digits, _ and -, starting with a letter)"
+                );
+            }
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             verify_extensions(&loaded.package)?;
             verify_lock(&path, &loaded.deps, &loaded.selected)?;
@@ -507,6 +521,18 @@ fn main() -> Result<()> {
                 out_dir.join("openapi.json"),
                 serde_json::to_string_pretty(&openapi)?,
             )?;
+            // ForgeGraph's registry format, the same projection as openapi.json (`fg contract publish`).
+            let contract_options = forgegraph_codegen::contract_ir::EmitOptions {
+                package: ir.package.name.clone(),
+                service_id,
+            };
+            match forgegraph_codegen::contract_ir::emit(&openapi, &contract_options) {
+                Ok(contract) => std::fs::write(
+                    out_dir.join("contract.json"),
+                    serde_json::to_string_pretty(&contract)? + "\n",
+                )?,
+                Err(e) => eprintln!("warning[W-CONTRACT-001]: contract.json not written: {e}"),
+            }
             std::fs::write(
                 out_dir.join("api.smithy"),
                 forgegraph_codegen::smithy(&plans.contracts),
