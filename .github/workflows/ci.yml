@@ -95,6 +95,8 @@ jobs:
       # generated fixtures must match what the compiler emits from the sources in this commit
       - run: ./scripts/refresh-fixtures.sh
       - run: git diff --exit-code -- conformance/fixtures conformance/foundation/composition.app.json examples/acme/generated || (echo "::error::generated fixtures are stale; run ./scripts/refresh-fixtures.sh" && exit 1)
+      # every package's contract.json must pass ForgeGraph's validateContract (vendored)
+      - run: ./scripts/validate-contracts.sh
       - name: Foundation PostgreSQL invariant traces
         run: node scripts/verify-foundation.mjs --suite providers --provider postgres
       - uses: actions/upload-artifact@v4

@@ -30,7 +30,8 @@
     "run": "node --experimental-strip-types src/cli.ts",
     "bench": "node --experimental-strip-types src/bench.ts",
     "certify": "node --experimental-strip-types src/certify.ts",
-    "differential": "node --experimental-strip-types src/differential-cli.ts"
+    "differential": "node --experimental-strip-types src/differential-cli.ts",
+    "contract-ir": "node --import ./contract-ir/ts-resolve.mjs --experimental-strip-types contract-ir/validate.ts"
   },
   "dependencies": {
     "@forgegraph/runtime": "workspace:*",
@@ -44,7 +45,8 @@
     "typescript": "^5.9.0",
     "vitest": "^5.0.0",
     "pg": "^8.23.0",
-    "@types/pg": "^8.23.1"
+    "@types/pg": "^8.23.1",
+    "zod": "^4.6.5"
   },
   "private": true,
   "forgegraph": {
