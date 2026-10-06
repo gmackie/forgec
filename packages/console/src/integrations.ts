@@ -21,6 +21,7 @@ import {
   type ContractIr,
   type OpenApiOperation,
 } from "./contract-openapi.js";
+import { sampleInput } from "./runtime-control.js";
 
 /** Secret names an integration may reference. A fixed prefix keeps instance secrets (signing keys,
  * admin tokens) from being named as an integration credential and sent to another host. */
@@ -60,6 +61,8 @@ export interface IntegrationsConfig {
   FORGEGRAPH_URL?: string | undefined;
   FORGEGRAPH_TOKEN?: string | undefined;
   INTEGRATIONS_JSON?: string | undefined;
+  /** "true" only in local acceptance tests: allow http and loopback base URLs. */
+  INTEGRATIONS_ALLOW_HTTP?: string | undefined;
 }
 
 export interface IntegrationSummary {
@@ -80,7 +83,7 @@ const BLOCKED_HOST =
  * metadata endpoints are usually reached) and internal names are refused. Name resolution is
  * not checked, because Workers cannot resolve names before connecting.
  */
-export function publicBaseUrl(raw: string): string {
+export function publicBaseUrl(raw: string, insecure = false): string {
   let url: URL;
   try {
     url = new URL(raw);
@@ -88,6 +91,12 @@ export function publicBaseUrl(raw: string): string {
     throw new Error(`Invalid integration base URL: ${raw}`);
   }
   const host = url.hostname.replace(/^\[|\]$/g, "");
+  // Local acceptance tests only (INTEGRATIONS_ALLOW_HTTP): any http(s) host, still no credentials.
+  if (insecure) {
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash)
+      throw new Error(`Invalid integration base URL: ${raw}`);
+    return url.origin + url.pathname.replace(/\/+$/, "");
+  }
   if (
     url.protocol !== "https:" ||
     url.username ||
@@ -104,12 +113,12 @@ export function publicBaseUrl(raw: string): string {
   return url.origin + url.pathname.replace(/\/+$/, "");
 }
 
-export function integrationOverrides(json: string | undefined): IntegrationOverride[] {
+export function integrationOverrides(json: string | undefined, insecure = false): IntegrationOverride[] {
   if (!json) return [];
   const list = z.array(overrideSchema).max(200).parse(JSON.parse(json));
   if (new Set(list.map((o) => o.app)).size !== list.length)
     throw new Error("Duplicate app in INTEGRATIONS_JSON.");
-  for (const o of list) if (o.baseUrl) publicBaseUrl(o.baseUrl);
+  for (const o of list) if (o.baseUrl) publicBaseUrl(o.baseUrl, insecure);
   return list;
 }
 
@@ -127,8 +136,9 @@ export class ForgeGraphRegistry {
     url: string,
     private readonly token: string,
     private readonly fetcher: typeof fetch = fetch,
+    insecure = false,
   ) {
-    this.base = publicBaseUrl(url);
+    this.base = publicBaseUrl(url, insecure);
   }
   private async get(path: string): Promise<{ status: number; value: any }> {
     let response: Response;
@@ -169,13 +179,30 @@ export class ForgeGraphRegistry {
 }
 
 /** The origin of an app's health check: where its API is unless configured otherwise. */
-function healthOrigin(url: string | null | undefined): string | null {
+function healthOrigin(url: string | null | undefined, insecure: boolean): string | null {
   if (!url) return null;
   try {
-    return publicBaseUrl(new URL(url).origin);
+    return publicBaseUrl(new URL(url).origin, insecure);
   } catch {
     return null;
   }
+}
+
+/** Starting values for the request builder: required parameters and a body from the schema. */
+function sampleRequest(op: OpenApiOperation, doc: unknown) {
+  const values = (where: "path" | "query" | "header") =>
+    Object.fromEntries(
+      op.parameters
+        .filter((p) => p.in === where && p.required)
+        .map((p) => [p.name, sampleInput(p.schema, doc) ?? ""]),
+    );
+  const json = op.requestBody && Object.entries(op.requestBody.content).find(([type]) => /json/i.test(type));
+  return {
+    path: values("path"),
+    query: values("query"),
+    headers: values("header"),
+    ...(json ? { body: sampleInput(json[1].schema, doc) ?? {} } : {}),
+  };
 }
 
 const CACHE_MS = 5 * 60_000;
@@ -228,6 +255,7 @@ export class Integrations {
     private readonly secrets: Record<string, unknown>,
     private readonly fetcher: typeof fetch = fetch,
     private readonly now: () => number = Date.now,
+    private readonly insecure = false,
   ) {}
 
   private async appList(): Promise<ForgeGraphApp[]> {
@@ -243,7 +271,7 @@ export class Integrations {
       name: o?.name ?? app.name,
       app: app.slug,
       description: app.description ?? null,
-      baseUrl: o?.baseUrl ? publicBaseUrl(o.baseUrl) : healthOrigin(app.healthCheckUrl),
+      baseUrl: o?.baseUrl ? publicBaseUrl(o.baseUrl, this.insecure) : healthOrigin(app.healthCheckUrl, this.insecure),
       auth: o?.auth?.kind ?? "none",
       writes: o?.writes ?? false,
     };
@@ -274,10 +302,12 @@ export class Integrations {
   async describe(id: string) {
     const integration = await this.find(id);
     const contract = await this.contract(id);
+    const doc = { components: { schemas: contract.components } };
     const operations = contract.operations
       .map(describeOperation)
       .filter((o): o is OpenApiOperation => o !== null)
-      .sort((a, b) => a.operationId.localeCompare(b.operationId));
+      .sort((a, b) => a.operationId.localeCompare(b.operationId))
+      .map((o) => ({ ...o, sample: sampleRequest(o, doc) }));
     return {
       integration,
       contract: {
@@ -290,9 +320,14 @@ export class Integrations {
       components: contract.components,
     };
   }
-  async openapi(id: string) {
+  /** OpenAPI for the integration, optionally only some operations (the graph importer is size-capped). */
+  async openapi(id: string, only: string[] = []) {
     const integration = await this.find(id);
-    return contractToOpenApi(await this.contract(id), {
+    const contract = await this.contract(id);
+    const picked = only.length ? { ...contract, operations: contract.operations.filter((o) => only.includes(o.id)) } : contract;
+    if (only.length && picked.operations.length !== new Set(only).size)
+      throw new Problem(404, "The contract has no such operation.");
+    return contractToOpenApi(picked, {
       title: integration.name,
       ...(integration.baseUrl ? { serverUrl: integration.baseUrl } : {}),
     });
@@ -444,9 +479,13 @@ export class Integrations {
 export function integrationsFrom(config: IntegrationsConfig): Integrations | null {
   if (!config.FORGEGRAPH_URL) return null;
   if (!config.FORGEGRAPH_TOKEN) throw new Error("FORGEGRAPH_TOKEN is required with FORGEGRAPH_URL.");
+  const insecure = config.INTEGRATIONS_ALLOW_HTTP === "true";
   return new Integrations(
-    new ForgeGraphRegistry(config.FORGEGRAPH_URL, config.FORGEGRAPH_TOKEN),
-    integrationOverrides(config.INTEGRATIONS_JSON),
+    new ForgeGraphRegistry(config.FORGEGRAPH_URL, config.FORGEGRAPH_TOKEN, fetch, insecure),
+    integrationOverrides(config.INTEGRATIONS_JSON, insecure),
     config as Record<string, unknown>,
+    fetch,
+    Date.now,
+    insecure,
   );
 }

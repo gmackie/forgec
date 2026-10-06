@@ -30,7 +30,7 @@ import {
 } from "./editor/workspace.js";
 import { VisualDocument } from "./editor/document.js";
 import { named, patch, textOf } from "./editor/model.js";
-import { OpenApiOnboarding, type DiscoveredApi } from "./openapi-onboarding.js";
+import { OpenApiOnboarding, type DiscoveredApi, type PendingSpec } from "./openapi-onboarding.js";
 import { cutWire, deleteDeclaration, snapTargets, snapWire } from "./editor/playground-wires.js";
 import { Edit } from "./editor/document.js";
 import "./editor/editor.css";
@@ -215,6 +215,7 @@ export function PlaygroundEditor({
   readonlyView,
   opened,
   onUseDraft,
+  pendingSpec,
 }: {
   inspect?: Inspect;
   initialProject?: Project;
@@ -222,6 +223,8 @@ export function PlaygroundEditor({
   readonlyView?: { ir: DomainIR; reason: string } | null;
   opened?: OpenedPackage | null;
   onUseDraft?: (() => void) | undefined;
+  /** An OpenAPI document to open in the importer (from the Integrations tab). */
+  pendingSpec?: PendingSpec | null;
 }) {
   const { compile, importSpec } = useCompiler(inspect);
   const openApi = !inspect || inspect.importOpenApi ? importSpec : null;
@@ -688,7 +691,7 @@ export function PlaygroundEditor({
             </div>
           )}
           {openApi && !readonly ? (
-            <OpenApiOnboarding importSpec={openApi} onUse={useExternal} onAdd={addExternal} />
+            <OpenApiOnboarding importSpec={openApi} onUse={useExternal} onAdd={addExternal} pending={pendingSpec} />
           ) : null}
           {!ready ? <p>Checking source…</p> : null}
           {ready && !graph.nodes.length ? (
@@ -1082,7 +1085,8 @@ export function PlaygroundPage({
   opened?: OpenedPackage | null;
   onUseDraft?: (() => void) | undefined;
 }) {
-  const [tab, setTab] = useState<"graph" | "deployed">(initialTarget && !opened ? "deployed" : "graph");
+  const [tab, setTab] = useState<"graph" | "deployed" | "integrations">(initialTarget && !opened ? "deployed" : "graph");
+  const [pendingSpec, setPendingSpec] = useState<PendingSpec | null>(null);
   useEffect(() => {
     if (opened) setTab("graph");
     else if (initialTarget) setTab("deployed");
@@ -1096,14 +1100,45 @@ export function PlaygroundPage({
         <button type="button" role="tab" aria-selected={tab === "deployed"} onClick={() => setTab("deployed")}>
           Deployed environment
         </button>
+        <button type="button" role="tab" aria-selected={tab === "integrations"} onClick={() => setTab("integrations")}>
+          Integrations
+        </button>
       </div>
       {tab === "graph" ? (
-        <PlaygroundEditor opened={opened ?? null} onUseDraft={onUseDraft} />
-      ) : (
+        <PlaygroundEditor opened={opened ?? null} onUseDraft={onUseDraft} pendingSpec={pendingSpec} />
+      ) : tab === "deployed" ? (
         <DeployedPlayground api={api} initialTarget={initialTarget} />
+      ) : (
+        <IntegrationsPlayground
+          api={api}
+          onUseInGraph={(spec) => {
+            setPendingSpec(spec);
+            setTab("graph");
+          }}
+        />
       )}
     </div>
   );
+}
+
+function IntegrationsPlayground({
+  api,
+  onUseInGraph,
+}: {
+  api: Api;
+  onUseInGraph: (spec: PendingSpec) => void;
+}) {
+  const [Explorer, setExplorer] = useState<typeof import("./integrations.js").IntegrationsExplorer | null>(null);
+  useEffect(() => {
+    let live = true;
+    void import("./integrations.js").then((module) => {
+      if (live) setExplorer(() => module.IntegrationsExplorer);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  return Explorer ? <Explorer api={api} onUseInGraph={onUseInGraph} /> : <p>Loading integrations…</p>;
 }
 
 function DeployedPlayground({

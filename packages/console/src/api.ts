@@ -319,7 +319,7 @@ function route(request: Request) {
       if(!integrations)return yield* Effect.fail(new Problem(404,'Integrations are not configured on this instance.'));
       const [,id,section]=integrationRoute as unknown as [string,string,string|undefined];
       if(!section&&method==='GET')return json(yield* attempt(()=>integrations.describe(id)));
-      if(section==='openapi'&&method==='GET')return json(yield* attempt(()=>integrations.openapi(id)));
+      if(section==='openapi'&&method==='GET')return json(yield* attempt(()=>integrations.openapi(id,url.searchParams.getAll('operation').slice(0,100))));
       if(section==='call'&&method==='POST'){
         const input=yield* attempt(async()=>decode(callSchema,await body(request)));
         const result=yield* attempt(()=>integrations.call(id,input));

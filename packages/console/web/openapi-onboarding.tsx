@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { OpenApiImport, OpenApiImportRequest, OpenApiReport } from "./editor/language.js";
 import { openApiSamples } from "./editor/openapi-samples.js";
 
@@ -20,14 +20,24 @@ function fieldsOf(report: OpenApiReport) {
   return [...new Set(report.foreignIdentifiers.map((item) => item.field))];
 }
 
+/** A document handed over from elsewhere in the console (the Integrations tab). */
+export interface PendingSpec {
+  text: string;
+  packageName: string;
+  /** The only server host the document may name. */
+  host: string | null;
+}
+
 export function OpenApiOnboarding({
   importSpec,
   onUse,
   onAdd,
+  pending,
 }: {
   importSpec: (request: OpenApiImportRequest) => Promise<OpenApiImport>;
   onUse: (api: DiscoveredApi) => void;
   onAdd: (api: DiscoveredApi) => void;
+  pending?: PendingSpec | null | undefined;
 }) {
   const [packageName, setPackageName] = useState("@external/api");
   const [pasted, setPasted] = useState("");
@@ -72,10 +82,19 @@ export function OpenApiOnboarding({
     }
   }
 
+  const panel = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    if (!pending) return;
+    if (panel.current) panel.current.open = true;
+    setPackageName(pending.packageName);
+    setPasted(pending.text);
+    void discover(pending.text, pending.packageName, null, pending.host ? [pending.host] : []);
+  }, [pending]);
+
   const foreign = preview ? fieldsOf(preview.report) : [];
 
   return (
-    <details className="playground-openapi">
+    <details className="playground-openapi" ref={panel}>
       <summary>Import OpenAPI</summary>
       <p className="muted small">
         Import an OpenAPI 3 document in this browser. Forge does not call the host.

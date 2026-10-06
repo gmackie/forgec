@@ -56,6 +56,10 @@ describe("contract IR → OpenAPI", () => {
 describe("integration settings", () => {
   it("accepts only public https base URLs", () => {
     expect(publicBaseUrl("https://api.example.com/v1/")).toBe("https://api.example.com/v1");
+    // The local acceptance switch allows loopback http, still without credentials or queries.
+    expect(publicBaseUrl("http://127.0.0.1:8789/api/", true)).toBe("http://127.0.0.1:8789/api");
+    expect(() => publicBaseUrl("http://u:p@127.0.0.1:8789", true)).toThrow();
+    expect(() => publicBaseUrl("ftp://127.0.0.1", true)).toThrow();
     for (const bad of [
       "http://api.example.com",
       "https://127.0.0.1",
@@ -143,6 +147,19 @@ describe("integration catalog", () => {
     await integrations.describe("notes");
     expect(registryCalls.filter((u) => u.includes("contracts"))).toHaveLength(1);
     await expect(integrations.describe("quiet")).rejects.toMatchObject({ status: 404, message: expect.stringContaining("fg contract publish") });
+  });
+  it("gives each operation a starting request from its schemas, resolving $refs", async () => {
+    const { integrations } = setup();
+    const ops = (await integrations.describe("notes")).operations;
+    expect(ops.find((o) => o.operationId === "notes.notes.get")!.sample).toEqual({ path: { id: "sample" }, query: { view: "full" }, headers: {} });
+    expect(ops.find((o) => o.operationId === "notes.notes.create")!.sample.body).toEqual({ title: "sample" });
+  });
+  it("converts only the requested operations for the graph importer", async () => {
+    const { integrations } = setup();
+    const doc = (await integrations.openapi("notes", ["notes.notes.get"])) as any;
+    expect(Object.keys(doc.paths)).toEqual(["/notes/{id}"]);
+    expect(Object.keys(doc.paths["/notes/{id}"])).toEqual(["get"]);
+    await expect(integrations.openapi("notes", ["notes.notes.nope"])).rejects.toMatchObject({ status: 404 });
   });
   it("names a refused ForgeGraph token without revealing it", async () => {
     const registry = new ForgeGraphRegistry("https://fg.example.com", "fg-read-token", (async () => new Response("no", { status: 403 })) as typeof fetch);
