@@ -1,0 +1,62 @@
+{
+  "irVersion": 1,
+  "serviceId": "notes",
+  "apiId": "NotesApi",
+  "operations": [
+    {
+      "id": "notes.notes.get",
+      "serviceId": "notes", "groupId": "notes", "endpointId": "get",
+      "transport": { "type": "http", "method": "GET", "path": "/notes/:id", "openApiPath": "/notes/{id}" },
+      "policy": { "isPublic": true, "authentication": { "mode": "user", "derived": "user", "mismatch": false, "schemes": ["bearer"] }, "sla": { "policy": {}, "provenance": {} } },
+      "request": {
+        "params": { "jsonSchema": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" } } }, "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000001" },
+        "query": { "jsonSchema": { "type": "object", "required": ["view"], "properties": { "view": { "type": "string", "enum": ["full", "summary"] }, "lang": { "type": "string" } } }, "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000002" },
+        "headers": { "jsonSchema": { "type": "object", "properties": { "X-Trace": { "type": "string" } } }, "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000003" },
+        "bodies": []
+      },
+      "successes": [{ "status": 200, "bodies": [{ "contentType": "application/json", "schema": { "jsonSchema": { "$ref": "#/components/schemas/Note" }, "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000004" } }] }],
+      "errors": [{ "status": 404, "bodies": [] }],
+      "middleware": [],
+      "fingerprint": "sha256:00000000000000000000000000000000000000000000000000000000000000a1"
+    },
+    {
+      "id": "notes.notes.create",
+      "serviceId": "notes", "groupId": "notes", "endpointId": "create",
+      "transport": { "type": "http", "method": "POST", "path": "/notes", "openApiPath": "/notes" },
+      "policy": { "isPublic": false, "authentication": { "mode": "user", "derived": "user", "mismatch": false, "schemes": ["bearer"] }, "sla": { "policy": {}, "provenance": {} } },
+      "request": {
+        "bodies": [{ "contentType": "application/json", "schema": { "jsonSchema": { "type": "object", "required": ["title"], "properties": { "title": { "type": "string" } } }, "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000005" } }]
+      },
+      "successes": [{ "status": 201, "bodies": [{ "contentType": "application/json", "schema": { "jsonSchema": { "$ref": "#/components/schemas/Note" }, "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000004" } }] }],
+      "errors": [],
+      "middleware": [],
+      "fingerprint": "sha256:00000000000000000000000000000000000000000000000000000000000000a2"
+    },
+    {
+      "id": "notes.notes.remove",
+      "serviceId": "notes", "groupId": "notes", "endpointId": "remove",
+      "transport": { "type": "http", "method": "DELETE", "path": "/notes/:id", "openApiPath": "/notes/{id}" },
+      "policy": { "isPublic": false, "authentication": { "mode": "user", "derived": "user", "mismatch": false, "schemes": ["bearer"] }, "sla": { "policy": {}, "provenance": {} } },
+      "request": { "params": { "jsonSchema": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" } } }, "fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000001" }, "bodies": [] },
+      "successes": [{ "status": 204, "bodies": [] }],
+      "errors": [],
+      "middleware": [],
+      "fingerprint": "sha256:00000000000000000000000000000000000000000000000000000000000000a3"
+    },
+    {
+      "id": "notes.sync.pull",
+      "serviceId": "notes", "groupId": "sync", "endpointId": "pull",
+      "transport": { "type": "rpc", "procedure": "SyncPull" },
+      "policy": { "isPublic": false, "authentication": { "mode": "service", "derived": "service", "mismatch": false, "schemes": [] }, "sla": { "policy": {}, "provenance": {} } },
+      "request": { "bodies": [] },
+      "successes": [],
+      "errors": [],
+      "middleware": [],
+      "fingerprint": "sha256:00000000000000000000000000000000000000000000000000000000000000a4"
+    }
+  ],
+  "components": { "Note": { "type": "object", "required": ["id", "title"], "properties": { "id": { "type": "string" }, "title": { "type": "string" } } } },
+  "securitySchemes": { "bearer": { "type": "http", "scheme": "bearer" } },
+  "fingerprint": "sha256:00000000000000000000000000000000000000000000000000000000000000ff",
+  "generator": { "name": "synthetic-test-fixture", "version": "0" }
+}

@@ -3,6 +3,8 @@ import { R2Oci, type R2Like } from "./r2-oci.js";
 import { accessAuth, tokenAuth, type AuthAdapter } from "./auth.js";
 import { accessKeys } from "./access-jwks.js";
 export interface Config {
+  /** Integration credentials, named by INTEGRATIONS_JSON (`INTEGRATION_*`). */
+  [integrationSecret: `INTEGRATION_${string}`]: string | undefined;
   RUNTIME_TARGETS_JSON?: string;
   DEPLOYMENT_TARGETS_JSON?: string;
   GIT_PROJECTS_JSON?: string;
@@ -10,6 +12,12 @@ export interface Config {
   /** Forgejo origin for `provider: "forgejo"` Git projects, e.g. https://git.forgegraf.com. */
   FORGEJO_URL?: string;
   FORGEJO_TOKEN?: string;
+  /** ForgeGraph origin whose contract registry lists this instance's integrations. */
+  FORGEGRAPH_URL?: string;
+  /** A ForgeGraph `read`-scope API token. */
+  FORGEGRAPH_TOKEN?: string;
+  /** Per-app integration settings (base URL, credential, writes); see src/integrations.ts. */
+  INTEGRATIONS_JSON?: string;
   ADMIN_TOKEN?: string;
   /** "token" (default) or "cloudflare-access". */
   AUTH_MODE?: string;
@@ -72,6 +80,20 @@ export function missingConfiguration(
   if (providers.includes("forgejo")) {
     if (!config.FORGEJO_URL) missing.push("FORGEJO_URL");
     if (!config.FORGEJO_TOKEN) missing.push("FORGEJO_TOKEN");
+  }
+  if (config.FORGEGRAPH_URL && !config.FORGEGRAPH_TOKEN) missing.push("FORGEGRAPH_TOKEN");
+  // Credentials named by integrations; a missing one fails every call to that integration.
+  try {
+    const entries = JSON.parse(config.INTEGRATIONS_JSON || "[]");
+    if (Array.isArray(entries))
+      for (const entry of entries) {
+        const auth = entry?.auth ?? {};
+        for (const name of [auth.secret, auth.clientId, auth.clientSecret])
+          if (typeof name === "string" && !(config as Record<string, unknown>)[name] && !missing.includes(name))
+            missing.push(name);
+      }
+  } catch {
+    // Malformed JSON is invalid, not absent; integrationOverrides reports it.
   }
   return missing;
 }

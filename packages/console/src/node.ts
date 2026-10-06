@@ -3,6 +3,7 @@ import studioMigration from "../migrations/0003_studio.sql";
 import credentialsMigration from "../migrations/0003_registry_credentials.sql";
 import { credentialStore, type SqlLike } from "./credentials.js";
 import {runtimeConnections} from "./runtime-control.js";
+import {integrationsFrom} from "./integrations.js";
 import {deploymentConnections} from "./deployment-control.js";
 import { createServer } from "node:http";
 import { readFile, mkdir } from "node:fs/promises";
@@ -52,6 +53,7 @@ const api = createApi({
   git: gitRepositories(config),
   runtimes: runtimeConnections(config),
   deployments: deploymentConnections(config),
+  integrations: integrationsFrom(config),
 });
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "web");
 const types: Record<string, string> = {

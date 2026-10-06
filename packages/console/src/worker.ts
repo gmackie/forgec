@@ -1,6 +1,13 @@
 import { Studio } from "./studio.js";
 import type { D1Like } from "@forgegraph/runtime/d1";
 import {runtimeConnections} from "./runtime-control.js";
+import {integrationsFrom, type Integrations} from "./integrations.js";
+// One instance per isolate, so the contract cache outlives a request.
+const integrationsByEnv = new WeakMap<object, Integrations | null>();
+function integrationsFor(env: Env): Integrations | null {
+  if (!integrationsByEnv.has(env)) integrationsByEnv.set(env, integrationsFrom(env));
+  return integrationsByEnv.get(env)!;
+}
 import {deploymentConnections} from "./deployment-control.js";
 import type { D1Database } from "@cloudflare/workers-types";
 import { gitRepositories } from "./git.js";
@@ -152,6 +159,7 @@ export default {
         git: gitRepositories(env),
         runtimes: runtimeConnections(env),
         deployments: deploymentConnections(env),
+        integrations: integrationsFor(env),
       });
       return secure(await api(request), env);
     } catch (error) {
