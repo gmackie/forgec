@@ -42,6 +42,39 @@ checks the open files without resolving external package dependencies. Run `forg
 in the actual project for dependency-aware validation. Changing a declaration name edits
 that source token; it does not automatically rename references in other locations.
 
+### Integrations
+
+The console can browse and call the APIs of the apps ForgeGraph manages. Set `FORGEGRAPH_URL`
+and `FORGEGRAPH_TOKEN` (a ForgeGraph `read`-scope token, `forge token create --scope read`): every
+app in the token's workspaces becomes an integration, described by the contract it publishes with
+`fg contract publish` (ForgeGraph's contract IR v1, converted here to OpenAPI 3.1). An app that has
+published no contract is listed but cannot be called until it does.
+
+Calls go through the console, never from the browser. A call can only name an operation in the
+contract and only its declared parameters; path values are encoded so they cannot add segments;
+redirects are refused; responses are capped at 2 MB and limited to a few informational headers.
+Reads are the default. A write needs the integration's `writes` opt-in **and** a confirmation on
+that call, and is recorded in the audit log with the operator, operation and status (reads are not
+audited, so routine traffic cannot push credential grants out of the 200-entry log).
+
+`INTEGRATIONS_JSON` configures what the registry does not know, per app slug:
+
+```json
+[{"app":"forgegraph","baseUrl":"https://forgegraph.example.com/api/fg","auth":{"kind":"bearer","secret":"INTEGRATION_FORGEGRAPH"}},
+ {"app":"billing","auth":{"kind":"cloudflare-access","clientId":"INTEGRATION_BILLING_ID","clientSecret":"INTEGRATION_BILLING_SECRET"},"writes":true},
+ {"app":"internal-tool","hidden":true}]
+```
+
+- `baseUrl` — where the API is, path prefix included. Defaults to the origin of the app's
+  ForgeGraph health check. Only public `https` hostnames are accepted: no IP literals, ports,
+  credentials or internal names (`localhost`, `*.local`, `*.internal`, …).
+- `auth` — `none`, `bearer`, `header` (`{"name": "X-Api-Key", "secret": …}`) or
+  `cloudflare-access` (a service token for apps behind Access). Secrets are referenced by name and
+  must be called `INTEGRATION_*`, so an integration can never be pointed at the instance's own
+  signing key or admin token. Store them like any other secret; `/healthz` lists missing ones.
+- `writes` — allow non-GET operations (each still needs confirmation). `hidden` — leave the app
+  out of the playground.
+
 ### Git-backed applications
 
 Configure projects on the instance with `GIT_PROJECTS_JSON`. A project is on GitHub unless it

@@ -10,6 +10,7 @@ import {
 } from "./model.js";
 import { deploymentAction, type DeploymentConnection } from "./deployment-control.js";
 import type { RuntimeConnection } from "./runtime-control.js";
+import { callSchema, type Integrations } from "./integrations.js";
 import { gitCommitSchema, type GitRepository } from "./git.js";
 import type { Studio } from "./studio.js";
 import type { OciRegistry } from "./oci.js";
@@ -131,6 +132,8 @@ export interface ApiOptions {
   git?: GitRepository[];
   runtimes?: RuntimeConnection[];
   deployments?: DeploymentConnection[];
+  /** External APIs from ForgeGraph's contract registry; null when FORGEGRAPH_URL is unset. */
+  integrations?: Integrations | null;
 }
 class Management extends Context.Service<Management, ApiOptions>()(
   "forge-console/Management",
@@ -304,6 +307,27 @@ function route(request: Request) {
         const input=yield* attempt(async()=>decode(z.object({operationId:z.string().min(1).max(300),input:z.record(z.string(),z.unknown()),buildHash:z.string().min(1).max(200),deploymentRevision:z.string().max(200).optional(),purpose:z.string().max(200).optional(),idempotencyKey:z.string().max(200).optional()}).strict(),await body(request)));
         if(runtimeRoute[2] === "record") return json(yield* attempt(()=>target.record(input)));
         return json(yield* attempt(()=>target.invoke(input)));
+      }
+    }
+    if(path==='/integrations'&&method==='GET'){
+      if(!o.integrations)return json({configured:false,integrations:[]});
+      return json({configured:true,integrations:yield* attempt(()=>o.integrations!.list())});
+    }
+    const integrationRoute=path.match(/^\/integrations\/([a-z0-9][a-z0-9-]{0,62})(?:\/(openapi|call))?$/);
+    if(integrationRoute){
+      const integrations=o.integrations;
+      if(!integrations)return yield* Effect.fail(new Problem(404,'Integrations are not configured on this instance.'));
+      const [,id,section]=integrationRoute as unknown as [string,string,string|undefined];
+      if(!section&&method==='GET')return json(yield* attempt(()=>integrations.describe(id)));
+      if(section==='openapi'&&method==='GET')return json(yield* attempt(()=>integrations.openapi(id)));
+      if(section==='call'&&method==='POST'){
+        const input=yield* attempt(async()=>decode(callSchema,await body(request)));
+        const result=yield* attempt(()=>integrations.call(id,input));
+        // Writes reach real systems, so each one is attributed. Reads are not audited: the log
+        // keeps 200 entries and routine reads would push out credential grants.
+        if(input.confirmWrite)
+          yield* attempt(()=>appendAudit(o,'Integration write',`${id} ${input.operationId} → ${result.status}`,identity.actor));
+        return json(result);
       }
     }
     if(path==='/deployments/targets'&&method==='GET')return json({targets:(o.deployments||[]).map(t=>t.public)});

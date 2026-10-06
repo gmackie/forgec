@@ -4,6 +4,13 @@
 
 ### Added
 
+- Console integrations: with `FORGEGRAPH_URL` and a read-scope `FORGEGRAPH_TOKEN`, every
+  ForgeGraph app is listed as an integration described by its published contract (contract IR v1,
+  converted to OpenAPI 3.1), and its operations can be called through the console. Base URLs,
+  credentials (bearer, header or Cloudflare Access service token, `INTEGRATION_*` secrets only) and
+  write access are set per app in `INTEGRATIONS_JSON`; reads are the default, writes need an opt-in
+  and a per-call confirmation and are audited. The playground UI follows.
+
 - `@forgegraph/foundation/configuration` (experimental): typed parameterization
   against a pinned specification revision, layered defaults and overrides,
   deterministic resolution, and resolutions identified by a digest over their
