@@ -12,6 +12,26 @@
   and a per-call confirmation and are audited. The playground's new **Integrations** tab browses
   operations by group, builds requests from their schemas, confirms writes, keeps drafts per
   operation, and can hand an operation to the Graph tab's OpenAPI importer.
+- `forgec build` writes `contract.json`, ForgeGraph's contract IR v1, next to
+  `openapi.json` and derived from it: one operation per `@crud` route, `@http`
+  function and workflow route, ids `<serviceId>.<group>.<endpoint>`
+  (`--service-id` sets the app slug; the default is the unscoped package name),
+  authentication from the security requirement, and each operation's SLO as
+  `policy.slo`. Fingerprints are hashed over the bytes `JSON.stringify` would
+  produce, so ForgeGraph's `validateContract` accepts the file as written; the
+  conformance suite runs that validator, vendored, over a curated set of contracts
+  and CI sweeps every package in the repository with `scripts/validate-contracts.sh`.
+  `fg contract publish --file generated/contract.json` publishes it.
+- `forgec import-contract <contract.json> --package <name> --out <dir>` turns a
+  contract IR document into a Forge package through OpenAPI 3.1 and the OpenAPI
+  importer, reporting RPC procedures, unbindable methods, anonymous or public
+  operations, SLA/SLO policy, middleware, alternate media and non-Problem error
+  bodies instead of approximating them. A contract whose fingerprints do not
+  match is refused.
+- `forgec contract-diff <a> <b> [--ignore <kind>]` compares two contracts per
+  route (request and response schemas after `$ref` inlining, statuses, policy)
+  and exits 1 on any difference not declared expected. See `docs/contract-ir.md`
+  for the round trip and which differences it is expected to show.
 
 - `@forgegraph/foundation/configuration` (experimental): typed parameterization
   against a pinned specification revision, layered defaults and overrides,
@@ -99,6 +119,9 @@
 
 ### Fixed
 
+- An optional `json` field's contract schema stays `{}` (which already admits
+  `null`) instead of becoming `{"type": ["string", "null"]}`, which rejected every
+  JSON value but strings.
 - `D1Storage.list` omits `WHERE` when there are no predicates; a resource with
   neither `@tenant` nor `@softDelete` listed without filters failed with a SQLite
   syntax error. (#197, #203)

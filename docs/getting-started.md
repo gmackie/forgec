@@ -27,7 +27,7 @@ Every `forgec` command below also works as
 ```
 forgec check examples/acme      # parse, resolve, check, verify forge.lock
 forgec fmt --check examples/acme
-forgec build examples/acme      # writes examples/acme/generated/{app.json, d1/0001_init.sql, client.ts}
+forgec build examples/acme      # writes examples/acme/generated/{app.json, d1/0001_init.sql, client.ts, openapi.json, contract.json}
 ```
 
 `app.json` is the app bundle: the DomainIR plus every target-independent plan
