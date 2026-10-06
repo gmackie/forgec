@@ -190,7 +190,7 @@ pub fn check_host(url: &str, allow: &[String]) -> Result<String, String> {
 }
 
 // ------------------------------------------------------------------ naming
-fn pascal(s: &str) -> String {
+pub(crate) fn pascal(s: &str) -> String {
     let mut out = String::new();
     let mut up = true;
     for c in s.chars() {

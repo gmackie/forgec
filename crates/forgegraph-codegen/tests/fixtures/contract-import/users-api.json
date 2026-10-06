@@ -1,0 +1,599 @@
+{
+  "irVersion": 1,
+  "serviceId": "users",
+  "apiId": "UsersApi",
+  "operations": [
+    {
+      "id": "users.users.getUser",
+      "serviceId": "users",
+      "groupId": "users",
+      "endpointId": "getUser",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/users/:id",
+        "openApiPath": "/users/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "mixed",
+          "derived": "mixed",
+          "mismatch": false,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        },
+        "sla": {
+          "policy": {
+            "latency": {
+              "p99Ms": 200
+            }
+          },
+          "provenance": {
+            "latency.p99Ms": "endpoint"
+          }
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "expand": {
+                "type": "string",
+                "enum": [
+                  "role",
+                  "none"
+                ]
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:caa558b9655123e1af5af1744914bb3b2c1dac1dd52138f3dbed9a42f5749523"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "x-request-id": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:65ebf1182825bf0468e0da3039649e167f53c4df61a76002facf3a2538a238ce"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "User",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "fingerprint": "sha256:41b0d0429e495d2d5c2553090be2dcf07a316e99e1d960b0077d43b661c11a0d"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "Api Error",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Api Error"
+                },
+                "fingerprint": "sha256:2991e8522dd95d41b64385faa9ac463b0f190bf5575c8e7c06de889f52e635ea"
+              }
+            }
+          ]
+        },
+        {
+          "status": 500,
+          "bodies": []
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@app/Session",
+          "security": true,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        },
+        {
+          "key": "@app/RateLimit",
+          "security": false,
+          "schemes": []
+        }
+      ],
+      "fingerprint": "sha256:2f4bdf136226631cc3b153ab8e5cf5b0c842f08b4fa59d380442904a695913f8"
+    },
+    {
+      "id": "users.users.createUser",
+      "serviceId": "users",
+      "groupId": "users",
+      "endpointId": "createUser",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/users",
+        "openApiPath": "/users"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "mixed",
+          "derived": "mixed",
+          "mismatch": false,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 300
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "NewUser",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/NewUser"
+              },
+              "fingerprint": "sha256:2e1f49fd92d681ada0aa961bcc02fbaa68b928f03467f1ba774e92f3c481a706"
+            }
+          },
+          {
+            "contentType": "multipart/form-data",
+            "schema": {
+              "jsonSchema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "contentEncoding": "base64"
+                  }
+                }
+              },
+              "fingerprint": "sha256:af2fc4ea4945ac0577b34b433ee23e7d6752149996f6391ec430bbea3e610269"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 201,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "User",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "fingerprint": "sha256:41b0d0429e495d2d5c2553090be2dcf07a316e99e1d960b0077d43b661c11a0d"
+              }
+            }
+          ]
+        },
+        {
+          "status": 202,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "properties": {
+                    "jobId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "jobId"
+                  ]
+                },
+                "fingerprint": "sha256:c28ebc79ca03b36523003af0d5ad79f2c96196565b446ddaefce3f20fad5ddf1"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:8e61c9b907dc1acbfa3ec1fa246b5302d60d9c8d03d61d646c8ce33d68e06b5f"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": []
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@app/Session",
+          "security": true,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:8cf3e91031b464293eef2ca8dc21361f3320ad01c6f45caef7ed6f25c3be77fe"
+    },
+    {
+      "id": "users.users.listUsers",
+      "serviceId": "users",
+      "groupId": "users",
+      "endpointId": "listUsers",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/users",
+        "openApiPath": "/users"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "agent",
+          "derived": "mixed",
+          "declared": "agent",
+          "mismatch": true,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "cursor": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:53a897ea68ca88afec61dfe18554351b0ad436df5f3b72ade748e181fefe66a7"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next"
+                  ]
+                },
+                "fingerprint": "sha256:3eee5c959db68e8308cdf567c86342152229db97ce2b5d09bd471036ea4fa4ce"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [],
+      "middleware": [
+        {
+          "key": "@app/Session",
+          "security": true,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:c3f2d1e4d7117253434b10e1fdda0806aca52d33e152666740f0eb8a080b6180"
+    },
+    {
+      "id": "users.users.headUser",
+      "serviceId": "users",
+      "groupId": "users",
+      "endpointId": "headUser",
+      "transport": {
+        "type": "http",
+        "method": "HEAD",
+        "path": "/users/:id",
+        "openApiPath": "/users/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "mixed",
+          "derived": "mixed",
+          "mismatch": false,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": []
+        }
+      ],
+      "errors": [],
+      "middleware": [
+        {
+          "key": "@app/Session",
+          "security": true,
+          "schemes": [
+            "session",
+            "token"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:c5f27a4d2ab3fd0224d1e634b29f5fd19215c68e7be22c18f10ac3149ed04d52"
+    },
+    {
+      "id": "users.health.check",
+      "serviceId": "users",
+      "groupId": "health",
+      "endpointId": "check",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/health",
+        "openApiPath": "/health"
+      },
+      "policy": {
+        "isPublic": true,
+        "authentication": {
+          "mode": "anonymous",
+          "derived": "anonymous",
+          "mismatch": false,
+          "schemes": []
+        },
+        "sla": {
+          "policy": {
+            "availability": 0.9995
+          },
+          "provenance": {
+            "availability": "service"
+          }
+        }
+      },
+      "request": {
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 204,
+          "bodies": []
+        }
+      ],
+      "errors": [],
+      "middleware": [],
+      "fingerprint": "sha256:2eebb27a5958a3daa79c58aceecfda852b787820b5d608cc2b2cc693001a2434"
+    },
+    {
+      "id": "users.jobs.run",
+      "serviceId": "users",
+      "groupId": "jobs",
+      "endpointId": "run",
+      "transport": {
+        "type": "rpc",
+        "procedure": "jobs.run"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "token"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        }
+      },
+      "request": {
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "jsonSchema": {
+                "type": "object"
+              },
+              "fingerprint": "sha256:a6981b59cb444c8a790e46c07c5224165bc07d5a90fda9fc9d6f704c216c4680"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": []
+        }
+      ],
+      "errors": [],
+      "middleware": [],
+      "fingerprint": "sha256:546b45cad48ace033b26593af4b6abab2442bb5d228c95074ad458b1c2785652"
+    }
+  ],
+  "components": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "$ref": "#/components/schemas/Role"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "NewUser": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "$ref": "#/components/schemas/Role"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "Role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "member"
+      ]
+    },
+    "Api Error": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ]
+    }
+  },
+  "securitySchemes": {
+    "session": {
+      "type": "apiKey",
+      "in": "cookie",
+      "name": "sid"
+    },
+    "token": {
+      "type": "http",
+      "scheme": "bearer"
+    }
+  },
+  "fingerprint": "sha256:bcb3cc93986a5c3fcb57ce1d5ce0e60f6c8992ce271ac065ececa3d278e9d66b",
+  "generator": {
+    "name": "@forgegraph/contract",
+    "version": "0.1.0"
+  }
+}

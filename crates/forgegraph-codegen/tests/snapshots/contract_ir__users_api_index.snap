@@ -1,0 +1,80 @@
+---
+source: crates/forgegraph-codegen/tests/contract_ir.rs
+expression: src
+---
+// Imported from OpenAPI 3.1.0 "UsersApi" v0.0.0 by `forgec import-contract` (contract IR v1 via openapi.json). Regenerate; do not edit.
+// Foreign identifiers are `text` (see FOREIGN_IDS.md); unsupported features are listed in import-report.json.
+
+export enum Role {
+  Admin = "admin"
+  Member = "member"
+}
+
+export enum UsersGetUserExpand {
+  Role = "role"
+  None = "none"
+}
+
+export shape User {
+  id : text
+  name : text length >= 1
+  role : Role
+}
+
+export shape NewUser {
+  name : text length >= 1
+  role : Role?
+}
+
+export shape ApiError {
+  message : text
+}
+
+export shape UsersGetUserInput {
+  id : text
+  expand : UsersGetUserExpand?
+}
+
+export shape UsersListUsersOutput {
+  items : json
+  next : text?
+}
+
+export shape UsersListUsersInput {
+  limit : integer? >= 1 <= 100
+  cursor : text?
+}
+
+export function UsersGetUser
+  @http(GET, "/users/{id}")
+{
+  input UsersGetUserInput
+  output User
+
+  errors {
+    NotFound
+  }
+}
+
+export function UsersCreateUser
+  @http(POST, "/users")
+{
+  input NewUser
+  output User
+
+  errors {
+    Conflict
+  }
+}
+
+export function UsersListUsers
+  @http(GET, "/users")
+{
+  input UsersListUsersInput
+  output UsersListUsersOutput
+}
+
+export function HealthCheck
+  @http(GET, "/health")
+{
+}
