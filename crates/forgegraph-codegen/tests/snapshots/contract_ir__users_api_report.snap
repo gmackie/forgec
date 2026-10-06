@@ -1,0 +1,138 @@
+---
+source: crates/forgegraph-codegen/tests/contract_ir.rs
+expression: "out.files[\"import-report.json\"]"
+---
+{
+  "version": "contract-import/1",
+  "package": "@acme/users",
+  "source": {
+    "title": "UsersApi",
+    "version": "0.0.0",
+    "openapi": "3.1.0"
+  },
+  "hosts": [],
+  "pins": [],
+  "operations": [
+    {
+      "operation_id": "users.users.getUser",
+      "function": "UsersGetUser",
+      "method": "GET",
+      "path": "/users/{id}"
+    },
+    {
+      "operation_id": "users.users.createUser",
+      "function": "UsersCreateUser",
+      "method": "POST",
+      "path": "/users"
+    },
+    {
+      "operation_id": "users.users.listUsers",
+      "function": "UsersListUsers",
+      "method": "GET",
+      "path": "/users"
+    },
+    {
+      "operation_id": "users.health.check",
+      "function": "HealthCheck",
+      "method": "GET",
+      "path": "/health"
+    }
+  ],
+  "skipped_operations": [
+    "users.jobs.run",
+    "users.users.headUser"
+  ],
+  "unsupported": [
+    {
+      "feature": "anonymous-operation",
+      "at": "operations.users.health.check.policy.authentication",
+      "note": "the Forge runtime authenticates every request; the imported function requires a credential"
+    },
+    {
+      "feature": "public-visibility",
+      "at": "operations.users.health.check.policy.isPublic",
+      "note": "Forge has no public-operation marker; not imported"
+    },
+    {
+      "feature": "sla-policy",
+      "at": "operations.users.health.check.policy.sla",
+      "note": "Forge declares SLOs, not SLA policies; not imported"
+    },
+    {
+      "feature": "rpc-transport",
+      "at": "operations.users.jobs.run.transport",
+      "note": "RPC procedures have no HTTP binding in Forge; operation skipped"
+    },
+    {
+      "feature": "slo",
+      "at": "operations.users.users.createUser.policy.slo",
+      "note": "per-operation objectives are not imported; declare `slo { ... }` on the function or `[observability.slo]` defaults"
+    },
+    {
+      "feature": "alternate-media",
+      "at": "operations.users.users.createUser.request.bodies",
+      "note": "multipart/form-data alongside a JSON body is not importable; only the JSON body is"
+    },
+    {
+      "feature": "additional-success-response",
+      "at": "operations.users.users.createUser.successes.202",
+      "note": "a Forge function has one output; only the first success body is imported"
+    },
+    {
+      "feature": "error-body",
+      "at": "operations.users.users.getUser.errors.404",
+      "note": "Forge errors are Problem Details; the declared error body is not imported"
+    },
+    {
+      "feature": "server-error-response",
+      "at": "operations.users.users.getUser.errors.500",
+      "note": "server errors are runtime failures in Forge, not declared errors; not imported"
+    },
+    {
+      "feature": "middleware",
+      "at": "operations.users.users.getUser.middleware",
+      "note": "middleware `@app/RateLimit` has no Forge equivalent; not imported"
+    },
+    {
+      "feature": "sla-policy",
+      "at": "operations.users.users.getUser.policy.sla",
+      "note": "Forge declares SLOs, not SLA policies; not imported"
+    },
+    {
+      "feature": "http-method",
+      "at": "operations.users.users.headUser.transport",
+      "note": "@http binds GET, POST, PUT, PATCH and DELETE only, not HEAD; operation skipped"
+    },
+    {
+      "feature": "declared-authentication",
+      "at": "operations.users.users.listUsers.policy.authentication",
+      "note": "declared mode `agent` has no Forge annotation; not imported"
+    },
+    {
+      "feature": "array",
+      "at": "paths./users.get.responses.200.items",
+      "note": "Forge shapes have no list type; typed as json (opaque)"
+    },
+    {
+      "feature": "header-parameter",
+      "at": "paths./users/{id}.get.parameters.x-request-id",
+      "note": "header/cookie parameters are transport concerns; not part of the input shape"
+    }
+  ],
+  "foreign_identifiers": [],
+  "callbacks": [],
+  "security": [
+    {
+      "scheme": "session",
+      "type": "apiKey",
+      "in": "cookie",
+      "name": "sid"
+    },
+    {
+      "scheme": "token",
+      "type": "http",
+      "in": null,
+      "name": null
+    }
+  ]
+}

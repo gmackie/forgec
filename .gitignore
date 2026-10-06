@@ -45,3 +45,7 @@ packages/console/wrangler.preview.jsonc
 
 # Private disposable artifact certification credentials and cleanup state
 .artifact-cert-private/
+
+# `forgec build --out conformance/fixtures/<slug>` also writes contract.json; only the curated
+# set in conformance/fixtures/contract-ir is committed (scripts/refresh-fixtures.sh).
+conformance/fixtures/**/contract.json

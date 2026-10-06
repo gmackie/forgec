@@ -233,6 +233,142 @@ fn build_writes_the_generated_bundle_migration_and_client() {
     );
 }
 
+/// `contract.json` (ForgeGraph contract IR v1) is written next to `openapi.json`;
+/// `import-contract` turns it into a package and `contract-diff` compares contracts.
+#[test]
+fn build_writes_contract_ir_and_import_and_diff_round_trip_it() {
+    let root = std::env::temp_dir().join(format!("forge-contract-ir-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    let run = |args: &[&str]| forgec().args(args).output().unwrap();
+    let path = |p: &str| root.join(p).to_str().unwrap().to_string();
+    let desk = examples().join("studio-desk");
+    let out = run(&[
+        "build",
+        desk.to_str().unwrap(),
+        "--out",
+        &path("a0"),
+        "--service-id",
+        "desk",
+    ]);
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let contract: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(root.join("a0/contract.json")).unwrap())
+            .unwrap();
+    assert_eq!(contract["irVersion"], 1);
+    assert_eq!(contract["serviceId"], "desk");
+    assert_eq!(contract["operations"].as_array().unwrap().len(), 29);
+    assert_eq!(contract["generator"]["name"], "forgec");
+    // An invalid app slug is refused before anything is written.
+    let bad = run(&[
+        "build",
+        desk.to_str().unwrap(),
+        "--out",
+        &path("bad"),
+        "--service-id",
+        "9desk",
+    ]);
+    assert!(!bad.status.success());
+    assert!(String::from_utf8_lossy(&bad.stderr).contains("not an identifier"));
+
+    let imported = run(&[
+        "import-contract",
+        &path("a0/contract.json"),
+        "--package",
+        "@demo/service-desk",
+        "--out",
+        &path("s1"),
+    ]);
+    assert!(
+        imported.status.success(),
+        "{}",
+        String::from_utf8_lossy(&imported.stderr)
+    );
+    assert!(
+        String::from_utf8_lossy(&imported.stderr).contains("imported 29 operations (0 skipped)")
+    );
+    for f in [
+        "forge.toml",
+        "src/index.forge",
+        "import-report.json",
+        "openapi.json",
+    ] {
+        assert!(root.join("s1").join(f).exists(), "{f}");
+    }
+    let rebuilt = run(&[
+        "build",
+        &path("s1"),
+        "--out",
+        &path("a1"),
+        "--service-id",
+        "desk",
+    ]);
+    assert!(
+        rebuilt.status.success(),
+        "{}",
+        String::from_utf8_lossy(&rebuilt.stderr)
+    );
+
+    // Same contract: clean, exit 0. Re-imported: differences, exit 1, unless declared expected.
+    let same = run(&[
+        "contract-diff",
+        &path("a0/contract.json"),
+        &path("a0/contract.json"),
+    ]);
+    assert!(same.status.success());
+    let differs = run(&[
+        "contract-diff",
+        &path("a0/contract.json"),
+        &path("a1/contract.json"),
+    ]);
+    assert_eq!(differs.status.code(), Some(1));
+    let report: serde_json::Value = serde_json::from_slice(&differs.stdout).unwrap();
+    assert!(report["blocking"].as_u64().unwrap() > 0);
+    let mut args = vec![
+        "contract-diff".to_string(),
+        path("a0/contract.json"),
+        path("a1/contract.json"),
+    ];
+    for kind in [
+        "id",
+        "request",
+        "successes",
+        "errors",
+        "response",
+        "policy.slo",
+    ] {
+        args.extend(["--ignore".to_string(), kind.to_string()]);
+    }
+    let expected = forgec().args(&args).output().unwrap();
+    assert!(
+        expected.status.success(),
+        "{}",
+        String::from_utf8_lossy(&expected.stdout)
+    );
+
+    // A tampered contract is refused.
+    let tampered = std::fs::read_to_string(root.join("a0/contract.json"))
+        .unwrap()
+        .replace("/v1/contacts", "/v2/contacts");
+    std::fs::write(root.join("tampered.json"), tampered).unwrap();
+    let refused = run(&[
+        "import-contract",
+        &path("tampered.json"),
+        "--package",
+        "@x/y",
+        "--out",
+        &path("s2"),
+    ]);
+    assert_eq!(refused.status.code(), Some(1));
+    assert!(
+        String::from_utf8_lossy(&refused.stderr).contains("fingerprint does not match content")
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
+
 #[test]
 fn compat_classifies_changes_per_compatibility_stream() {
     let dir = std::env::temp_dir().join(format!("forge-compat-{}", std::process::id()));

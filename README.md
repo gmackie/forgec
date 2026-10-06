@@ -64,8 +64,9 @@ forgec migrate ./acme --from ./previous
 ```
 
 `forgec build` emits the deployment plan, the SQL or DynamoDB access plan, the
-migrations, the typed TypeScript client, the OpenAPI document and the Smithy
-model. Your handwritten code lives in `impl/` and never mentions a provider.
+migrations, the typed TypeScript client, the OpenAPI document, the Smithy
+model and the ForgeGraph contract (`contract.json`, see
+[docs/contract-ir.md](docs/contract-ir.md)). Your handwritten code lives in `impl/` and never mentions a provider.
 
 Start with [docs/getting-started.md](docs/getting-started.md), then
 [docs/language.md](docs/language.md).

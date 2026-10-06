@@ -61,13 +61,16 @@ enum Cmd {
         #[arg(long, requires = "focus", value_delimiter = ',')]
         relations: Vec<String>,
     },
-    /// Compile and write generated artifacts (app bundle, D1 migration, TS client).
+    /// Compile and write generated artifacts (app bundle, D1 migration, TS client, OpenAPI, contract IR).
     Build {
         #[arg(default_value = ".")]
         path: PathBuf,
         /// Output directory (default: `<package>/generated`).
         #[arg(long)]
         out: Option<PathBuf>,
+        /// ForgeGraph app slug for `contract.json` (default: the unscoped package name).
+        #[arg(long)]
+        service_id: Option<String>,
     },
     /// Write `forge.lock`, pinning dependency contracts and the compiler version.
     Lock {
@@ -98,6 +101,24 @@ enum Cmd {
         /// Hosts that servers/callbacks may name (repeatable). Empty allows any public host.
         #[arg(long = "allow-host")]
         allow_hosts: Vec<String>,
+    },
+    /// Import a ForgeGraph contract IR v1 document (`contract.json`) as a Forge package, via OpenAPI 3.1.
+    ImportContract {
+        contract: PathBuf,
+        /// Forge package name, e.g. `@acme/billing`.
+        #[arg(long)]
+        package: String,
+        /// Output directory for the generated package.
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Compare two contract IR documents per operation (routes, schemas, statuses, policy). Exit 1 on differences.
+    ContractDiff {
+        a: PathBuf,
+        b: PathBuf,
+        /// Difference kinds (or dotted prefixes) that are expected and do not fail, e.g. `id`, `policy`.
+        #[arg(long = "ignore")]
+        ignore: Vec<String>,
     },
     /// Governance-aware migration plan between two built bundles (phased DAG; blocked steps named).
     Migrate { old: PathBuf, new: PathBuf },
@@ -433,7 +454,18 @@ fn main() -> Result<()> {
                 std::process::exit(1);
             }
         }
-        Cmd::Build { path, out } => {
+        Cmd::Build {
+            path,
+            out,
+            service_id,
+        } => {
+            if let Some(id) = &service_id
+                && !forgegraph_codegen::contract_ir::emit::is_identifier(id)
+            {
+                bail!(
+                    "--service-id `{id}` is not an identifier (letters, digits, _ and -, starting with a letter)"
+                );
+            }
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
             verify_extensions(&loaded.package)?;
             verify_lock(&path, &loaded.deps, &loaded.selected)?;
@@ -507,6 +539,18 @@ fn main() -> Result<()> {
                 out_dir.join("openapi.json"),
                 serde_json::to_string_pretty(&openapi)?,
             )?;
+            // ForgeGraph's registry format, the same projection as openapi.json (`fg contract publish`).
+            let contract_options = forgegraph_codegen::contract_ir::EmitOptions {
+                package: ir.package.name.clone(),
+                service_id,
+            };
+            match forgegraph_codegen::contract_ir::emit(&openapi, &contract_options) {
+                Ok(contract) => std::fs::write(
+                    out_dir.join("contract.json"),
+                    serde_json::to_string_pretty(&contract)? + "\n",
+                )?,
+                Err(e) => eprintln!("warning[W-CONTRACT-001]: contract.json not written: {e}"),
+            }
             std::fs::write(
                 out_dir.join("api.smithy"),
                 forgegraph_codegen::smithy(&plans.contracts),
@@ -638,6 +682,56 @@ fn main() -> Result<()> {
                     eprintln!("import refused: {e}");
                     std::process::exit(1);
                 }
+            }
+        }
+        Cmd::ImportContract {
+            contract,
+            package,
+            out,
+        } => {
+            let text = std::fs::read_to_string(&contract)?;
+            let opts = forgegraph_codegen::openapi_import::ImportOptions {
+                package,
+                ..Default::default()
+            };
+            match forgegraph_codegen::contract_ir::import_contract(&text, &opts) {
+                Ok(result) => {
+                    for (rel, content) in &result.files {
+                        let target = out.join(rel);
+                        if let Some(parent) = target.parent() {
+                            std::fs::create_dir_all(parent)?;
+                        }
+                        std::fs::write(target, content)?;
+                    }
+                    let r = &result.report;
+                    eprintln!(
+                        "{}: imported {} operations ({} skipped), {} unsupported features, {} foreign identifiers -> {}",
+                        r.package,
+                        r.operations.len(),
+                        r.skipped_operations.len(),
+                        r.unsupported.len(),
+                        r.foreign_identifiers.len(),
+                        out.display()
+                    );
+                    if !r.unsupported.is_empty() || !r.skipped_operations.is_empty() {
+                        eprintln!("review {}", out.join("import-report.json").display());
+                    }
+                }
+                Err(e) => {
+                    eprintln!("import refused: {e}");
+                    std::process::exit(1);
+                }
+            }
+        }
+        Cmd::ContractDiff { a, b, ignore } => {
+            let read = |p: &Path| -> Result<serde_json::Value> {
+                serde_json::from_str(&std::fs::read_to_string(p)?)
+                    .with_context(|| format!("{} is not JSON", p.display()))
+            };
+            let report = forgegraph_codegen::contract_ir::diff(&read(&a)?, &read(&b)?, &ignore);
+            println!("{}", serde_json::to_string_pretty(&report)?);
+            if !report.is_clean() {
+                std::process::exit(1);
             }
         }
         Cmd::Migrate { old, new } => {

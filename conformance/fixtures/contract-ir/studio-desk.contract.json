@@ -1,0 +1,6027 @@
+{
+  "irVersion": 1,
+  "serviceId": "service-desk",
+  "apiId": "@demo/service-desk",
+  "operations": [
+    {
+      "id": "service-desk.Contact.create",
+      "serviceId": "service-desk",
+      "groupId": "Contact",
+      "endpointId": "create",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/contacts",
+        "openApiPath": "/v1/contacts"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:c737fc8f90f91aea8642eb049490fbfc45bb300a3e3fc8683e10b38c32ffa4e3"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "ContactCreate",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/ContactCreate"
+              },
+              "fingerprint": "sha256:74a600da21e1f0ea0134945776c3c134f9c6e6eb4d4ca8caebf9d6d65b48467d"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 201,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "ContactRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/ContactRecord"
+                },
+                "fingerprint": "sha256:9d016fee63b9cd03aad16afba518ce786067e122b123150c9719a70c63fbc943"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:9833e5750e1580bd6962fc9454da063fb983f816ba605193c4c9decd0cde60e6"
+    },
+    {
+      "id": "service-desk.Contact.delete",
+      "serviceId": "service-desk",
+      "groupId": "Contact",
+      "endpointId": "delete",
+      "transport": {
+        "type": "http",
+        "method": "DELETE",
+        "path": "/v1/contacts/:id",
+        "openApiPath": "/v1/contacts/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "ContactRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/ContactRecord"
+                },
+                "fingerprint": "sha256:9d016fee63b9cd03aad16afba518ce786067e122b123150c9719a70c63fbc943"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:0739848389842e4b5caf166cba1b2768894ae39972e8614d7bb7291c991c99c0"
+    },
+    {
+      "id": "service-desk.Contact.get",
+      "serviceId": "service-desk",
+      "groupId": "Contact",
+      "endpointId": "get",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/contacts/:id",
+        "openApiPath": "/v1/contacts/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "ContactRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/ContactRecord"
+                },
+                "fingerprint": "sha256:9d016fee63b9cd03aad16afba518ce786067e122b123150c9719a70c63fbc943"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:86b67b948e7e8abdd9140f601156bb4af11af8701e5235a238d48362daa52deb"
+    },
+    {
+      "id": "service-desk.Contact.list-all",
+      "serviceId": "service-desk",
+      "groupId": "Contact",
+      "endpointId": "list-all",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/contacts",
+        "openApiPath": "/v1/contacts"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:951b99935823dadd0b05e8a19c5460287efe5e1e10a75ce7d83034d2b4dd12f6"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next",
+                    "limit"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ContactRecord"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:662a369fd80d1cd86e7818240092149b108ce5ad6a4b32f3b3ad0ad0883ae6ac"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:0852b429aead94255c38688182bc5f957ca49152f3ed03862ef9fcacc8176846"
+    },
+    {
+      "id": "service-desk.Contact.list-byOrganization",
+      "serviceId": "service-desk",
+      "groupId": "Contact",
+      "endpointId": "list-byOrganization",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/contacts/queries/by-organization",
+        "openApiPath": "/v1/contacts/queries/by-organization"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "organization": {
+                "type": "string",
+                "x-forge-reference": "@demo/service-desk/_/Organization"
+              },
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            },
+            "required": [
+              "organization"
+            ]
+          },
+          "fingerprint": "sha256:f184617ff1c85cb64eeab84cf7ce6065935ca43f9b5171a2ed64e247b3ccb37d"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next",
+                    "limit"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ContactRecord"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:662a369fd80d1cd86e7818240092149b108ce5ad6a4b32f3b3ad0ad0883ae6ac"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:782dfb6aa9b7faef46542bea8ed397d29176e898728ee7426df227f71102d8a9"
+    },
+    {
+      "id": "service-desk.Contact.update",
+      "serviceId": "service-desk",
+      "groupId": "Contact",
+      "endpointId": "update",
+      "transport": {
+        "type": "http",
+        "method": "PATCH",
+        "path": "/v1/contacts/:id",
+        "openApiPath": "/v1/contacts/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "ContactPatch",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/ContactPatch"
+              },
+              "fingerprint": "sha256:e856126df4a67f157dc669dd0fd3b830f38825343cde6c6a20a2a9356ffc3b38"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "ContactRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/ContactRecord"
+                },
+                "fingerprint": "sha256:9d016fee63b9cd03aad16afba518ce786067e122b123150c9719a70c63fbc943"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:b4d69ad119c82cdc9a9bf29e63ecdc2f25359c56ad8ddc93d3d26877c0653944"
+    },
+    {
+      "id": "service-desk.EscalationFollowUp.cancel",
+      "serviceId": "service-desk",
+      "groupId": "EscalationFollowUp",
+      "endpointId": "cancel",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/workflows/escalation-follow-up/:id/cancel",
+        "openApiPath": "/v1/workflows/escalation-follow-up/{id}/cancel"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "WorkflowInstance",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/WorkflowInstance"
+                },
+                "fingerprint": "sha256:8c249f865e35afeccb0fee86b7d7e6565faa86cc5fffc09ba0550a03f98c00b5"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:4a7bf2bc762e99ff2842ee9eefc39b6f344980258d29d97b386d5be07888e786"
+    },
+    {
+      "id": "service-desk.EscalationFollowUp.get",
+      "serviceId": "service-desk",
+      "groupId": "EscalationFollowUp",
+      "endpointId": "get",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/workflows/escalation-follow-up/:id",
+        "openApiPath": "/v1/workflows/escalation-follow-up/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "WorkflowInstance",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/WorkflowInstance"
+                },
+                "fingerprint": "sha256:8c249f865e35afeccb0fee86b7d7e6565faa86cc5fffc09ba0550a03f98c00b5"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:82532d60e0d367547f1dad442a8ade918130d17f7b526aef16d1bd9e88770482"
+    },
+    {
+      "id": "service-desk.EscalationFollowUp.signal",
+      "serviceId": "service-desk",
+      "groupId": "EscalationFollowUp",
+      "endpointId": "signal",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/workflows/escalation-follow-up/signals/:message",
+        "openApiPath": "/v1/workflows/escalation-follow-up/signals/{message}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "message"
+            ]
+          },
+          "fingerprint": "sha256:f3cf840163bafe25ad3584518fc014826d93ba5e7f08649524fbb618101f8f0d"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "jsonSchema": {
+                "type": "object",
+                "required": [
+                  "payload"
+                ],
+                "properties": {
+                  "messageId": {
+                    "type": "string"
+                  },
+                  "payload": {
+                    "type": "object"
+                  }
+                }
+              },
+              "fingerprint": "sha256:8a720a858403e6337c7d945cf45e6e9f6d1ef9b936484fc59813e4aaebe7f135"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "properties": {
+                    "delivered": {
+                      "type": "integer"
+                    },
+                    "held": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:2116276dcd252c0f879915b2f607a18f8602585524a72e313878b199be9ccb7e"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:ef4efeeb0688e95b748114809b9d10be2ca4daac18f5317cb596bf50bd6d19d1"
+    },
+    {
+      "id": "service-desk.EscalationFollowUp.start",
+      "serviceId": "service-desk",
+      "groupId": "EscalationFollowUp",
+      "endpointId": "start",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/workflows/escalation-follow-up",
+        "openApiPath": "/v1/workflows/escalation-follow-up"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        }
+      },
+      "request": {
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:c737fc8f90f91aea8642eb049490fbfc45bb300a3e3fc8683e10b38c32ffa4e3"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "jsonSchema": {
+                "type": "object",
+                "properties": {
+                  "ticket": {
+                    "type": "string",
+                    "x-forge-reference": "@demo/service-desk/_/Ticket"
+                  },
+                  "expectedVersion": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ticket",
+                  "expectedVersion"
+                ]
+              },
+              "fingerprint": "sha256:51723404c85950dfb3a5aed5846ea359dffd13554d22d814c7e16617e66f3584"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "WorkflowInstance",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/WorkflowInstance"
+                },
+                "fingerprint": "sha256:8c249f865e35afeccb0fee86b7d7e6565faa86cc5fffc09ba0550a03f98c00b5"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:77445b63215a7ea61dc838602934dcc4dfe50a92fb542cb21253524740594446"
+    },
+    {
+      "id": "service-desk.Organization.create",
+      "serviceId": "service-desk",
+      "groupId": "Organization",
+      "endpointId": "create",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/organizations",
+        "openApiPath": "/v1/organizations"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:c737fc8f90f91aea8642eb049490fbfc45bb300a3e3fc8683e10b38c32ffa4e3"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "OrganizationCreate",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/OrganizationCreate"
+              },
+              "fingerprint": "sha256:f4d46dd2d5d9a56f7097ccce4c7f350c7f9b3f46c70f546e58cfd6380c256464"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 201,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "OrganizationRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/OrganizationRecord"
+                },
+                "fingerprint": "sha256:3a8813421de3980c0e30ff5cc01b427685e4cf87006e74ab9dfe9ec37869986f"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:cb4ad9d3ca2e6a31f7c6c47fab18339a538ec2af986e76955e1a4f2dcec20608"
+    },
+    {
+      "id": "service-desk.Organization.delete",
+      "serviceId": "service-desk",
+      "groupId": "Organization",
+      "endpointId": "delete",
+      "transport": {
+        "type": "http",
+        "method": "DELETE",
+        "path": "/v1/organizations/:id",
+        "openApiPath": "/v1/organizations/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "OrganizationRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/OrganizationRecord"
+                },
+                "fingerprint": "sha256:3a8813421de3980c0e30ff5cc01b427685e4cf87006e74ab9dfe9ec37869986f"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:f110a660761dcded78f8dec2dbd189e708e58efd3e64f60ff8004e9437f7c2f6"
+    },
+    {
+      "id": "service-desk.Organization.find-byCode",
+      "serviceId": "service-desk",
+      "groupId": "Organization",
+      "endpointId": "find-byCode",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/organizations/queries/by-code",
+        "openApiPath": "/v1/organizations/queries/by-code"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "x-forge-type": "text",
+                "minLength": 3,
+                "maxLength": 24,
+                "x-forge-normalizers": [
+                  "trim",
+                  "uppercase"
+                ]
+              }
+            },
+            "required": [
+              "code"
+            ]
+          },
+          "fingerprint": "sha256:4efd1457028c23662944c809d2b685a51650297f04192bc3d716a791ad13a5f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "OrganizationRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/OrganizationRecord"
+                },
+                "fingerprint": "sha256:3a8813421de3980c0e30ff5cc01b427685e4cf87006e74ab9dfe9ec37869986f"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:81ff47114dc8d8f806daba0bc113075ecc6dea30f4f77767a8efc1185849f727"
+    },
+    {
+      "id": "service-desk.Organization.get",
+      "serviceId": "service-desk",
+      "groupId": "Organization",
+      "endpointId": "get",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/organizations/:id",
+        "openApiPath": "/v1/organizations/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "OrganizationRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/OrganizationRecord"
+                },
+                "fingerprint": "sha256:3a8813421de3980c0e30ff5cc01b427685e4cf87006e74ab9dfe9ec37869986f"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:fddb17c9d98b823c9c851e909cd13f8bea29f3e66cc273f238a1227ad49e5924"
+    },
+    {
+      "id": "service-desk.Organization.list-all",
+      "serviceId": "service-desk",
+      "groupId": "Organization",
+      "endpointId": "list-all",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/organizations",
+        "openApiPath": "/v1/organizations"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:951b99935823dadd0b05e8a19c5460287efe5e1e10a75ce7d83034d2b4dd12f6"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next",
+                    "limit"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrganizationRecord"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:54edbe3d8e3a0fe572361a52ad33372f66646b9b62872be358774cd311bbc4f0"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:89fcfbbb56ac904fd74aa66950bbd7345479e4ae97917f20234bbca7b397d166"
+    },
+    {
+      "id": "service-desk.Organization.list-byTier",
+      "serviceId": "service-desk",
+      "groupId": "Organization",
+      "endpointId": "list-byTier",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/organizations/queries/by-tier",
+        "openApiPath": "/v1/organizations/queries/by-tier"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "tier": {
+                "type": "string",
+                "enum": [
+                  "starter",
+                  "growth",
+                  "enterprise"
+                ],
+                "x-forge-enum": "@demo/service-desk/_/CustomerTier",
+                "default": "Starter"
+              },
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            },
+            "required": [
+              "tier"
+            ]
+          },
+          "fingerprint": "sha256:7b937f303368506f466a8afeaca538b30ff3833651135c6afc0523b797a3383e"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next",
+                    "limit"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrganizationRecord"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:54edbe3d8e3a0fe572361a52ad33372f66646b9b62872be358774cd311bbc4f0"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:6259c562bbe9e3298c9c8d8375d65a74b88095f91e79a8488c1219d4e8765bdd"
+    },
+    {
+      "id": "service-desk.Organization.update",
+      "serviceId": "service-desk",
+      "groupId": "Organization",
+      "endpointId": "update",
+      "transport": {
+        "type": "http",
+        "method": "PATCH",
+        "path": "/v1/organizations/:id",
+        "openApiPath": "/v1/organizations/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "OrganizationPatch",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/OrganizationPatch"
+              },
+              "fingerprint": "sha256:b7dfeaac87f8dc4975e082d90613e2ca7e2afc4cb3ff07d62a86789245641fd9"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "OrganizationRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/OrganizationRecord"
+                },
+                "fingerprint": "sha256:3a8813421de3980c0e30ff5cc01b427685e4cf87006e74ab9dfe9ec37869986f"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:1c0a96b35a4512be82910ec3cccf50e17a54ee80a94fffdeed72fe7d10e25d02"
+    },
+    {
+      "id": "service-desk.Ticket.create",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "create",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/tickets",
+        "openApiPath": "/v1/tickets"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:c737fc8f90f91aea8642eb049490fbfc45bb300a3e3fc8683e10b38c32ffa4e3"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "TicketCreate",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/TicketCreate"
+              },
+              "fingerprint": "sha256:54ef0bfadfbca2b23a86e08dab3155db5708f7e2d75782e43bcbb868a3169890"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 201,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:9ddc87727117ff12b778f08f11e2de1dbf176ef2c17772609cccb43632ee0e9a"
+    },
+    {
+      "id": "service-desk.Ticket.delete",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "delete",
+      "transport": {
+        "type": "http",
+        "method": "DELETE",
+        "path": "/v1/tickets/:id",
+        "openApiPath": "/v1/tickets/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:b81b2d5557701703de690589c00a9bfdc07e9029a40bf300ef8717cc8b7f4c97"
+    },
+    {
+      "id": "service-desk.Ticket.get",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "get",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/tickets/:id",
+        "openApiPath": "/v1/tickets/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:1bddb65bb1177e30d76c91cfa3d176a44bb5532feef4ed5e74d0227952314564"
+    },
+    {
+      "id": "service-desk.Ticket.list-all",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "list-all",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/tickets",
+        "openApiPath": "/v1/tickets"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:951b99935823dadd0b05e8a19c5460287efe5e1e10a75ce7d83034d2b4dd12f6"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next",
+                    "limit"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TicketRecord"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:988d8705b7aafa54d8b6b1c4478acd17ac26a5b41520a26ddabbd472ea08add8"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:2ed2876dc83b7850c3ac55e6d1ade84af09919183aaaf26e4262cd6a30edaa83"
+    },
+    {
+      "id": "service-desk.Ticket.list-byRequester",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "list-byRequester",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/tickets/queries/by-requester",
+        "openApiPath": "/v1/tickets/queries/by-requester"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "requester": {
+                "type": "string",
+                "x-forge-reference": "@demo/service-desk/_/Contact"
+              },
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            },
+            "required": [
+              "requester"
+            ]
+          },
+          "fingerprint": "sha256:c92fc151d5d55982743679aa07b8e3262c419a68d26baf738808a982dfeed656"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next",
+                    "limit"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TicketRecord"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:988d8705b7aafa54d8b6b1c4478acd17ac26a5b41520a26ddabbd472ea08add8"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:7a28d2d50e30d652e04ede2370835f62f0b4dddb3ba4ce2913a998a9b7dbe45c"
+    },
+    {
+      "id": "service-desk.Ticket.list-byStatusPriority",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "list-byStatusPriority",
+      "transport": {
+        "type": "http",
+        "method": "GET",
+        "path": "/v1/tickets/queries/by-status-priority",
+        "openApiPath": "/v1/tickets/queries/by-status-priority"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 500
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "query": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "New",
+                  "Closed",
+                  "Active",
+                  "Resolved"
+                ],
+                "x-forge-status": "@demo/service-desk/_/Ticket",
+                "readOnly": true
+              },
+              "priority": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "normal",
+                  "urgent"
+                ],
+                "x-forge-enum": "@demo/service-desk/_/TicketPriority",
+                "default": "Normal"
+              },
+              "cursor": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              }
+            },
+            "required": [
+              "status",
+              "priority"
+            ]
+          },
+          "fingerprint": "sha256:f0904a0fd834bfd9f0901111bfcf02b4f2c0d799110fd10ac4dea5dce91db258"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:7a219a402c548055562523c60a1dff0247857d177b6bdc0a1ea3b79e781a64f3"
+        },
+        "bodies": []
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next",
+                    "limit"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TicketRecord"
+                      }
+                    },
+                    "next": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "fingerprint": "sha256:988d8705b7aafa54d8b6b1c4478acd17ac26a5b41520a26ddabbd472ea08add8"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 400,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:0a3be0d03a12e25897b7e9c753b534674aa5ce3d816a928175558ee1f6cbe0d6"
+    },
+    {
+      "id": "service-desk.Ticket.status-assign",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "status-assign",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/tickets/:id/actions/assign",
+        "openApiPath": "/v1/tickets/{id}/actions/assign"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "TicketAssignInput",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/TicketAssignInput"
+              },
+              "fingerprint": "sha256:d28082beccd02b5dbf01d6a985ed861f3439adb68a6506af84411935cfc9c4b2"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:3468fbb7208efa1b4aac04ae2e1db4106b705c143201a89989d2feb3dd5ddf36"
+    },
+    {
+      "id": "service-desk.Ticket.status-close",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "status-close",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/tickets/:id/actions/close",
+        "openApiPath": "/v1/tickets/{id}/actions/close"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "TicketCloseInput",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/TicketCloseInput"
+              },
+              "fingerprint": "sha256:52ea16ea3c24c5c67f7c96c811aa39f5f1d565132d8cab95b42d1c0d9ee033d6"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:4e13d317fe4a47f358dfec1c9aef6c07b2556824707808d5d44f3afcf8509252"
+    },
+    {
+      "id": "service-desk.Ticket.status-reopen",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "status-reopen",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/tickets/:id/actions/reopen",
+        "openApiPath": "/v1/tickets/{id}/actions/reopen"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "TicketReopenInput",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/TicketReopenInput"
+              },
+              "fingerprint": "sha256:60c784e2cab9ff09ceca0a5bde2b103499979781abb461557f9ecc581566dc68"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:2f14c33f0b037a3166636b23488e01961e943934a3db04fd6ec7af9f064a5206"
+    },
+    {
+      "id": "service-desk.Ticket.status-resolve",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "status-resolve",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/tickets/:id/actions/resolve",
+        "openApiPath": "/v1/tickets/{id}/actions/resolve"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "TicketResolveInput",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/TicketResolveInput"
+              },
+              "fingerprint": "sha256:c08f21a17fac321280f101e08867d4bd6f469abf92679e9f510c8e2653dbcac0"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:5783f26c31e0f7746fc9b17339e5de8bc85985efdbde92712c67f5523a5d7b13"
+    },
+    {
+      "id": "service-desk.Ticket.update",
+      "serviceId": "service-desk",
+      "groupId": "Ticket",
+      "endpointId": "update",
+      "transport": {
+        "type": "http",
+        "method": "PATCH",
+        "path": "/v1/tickets/:id",
+        "openApiPath": "/v1/tickets/{id}"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "params": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "fingerprint": "sha256:5d6483183ac742d3ff2c4b5ccdbf38c32372e4f6cae0b7b389e479a60cc7c3f4"
+        },
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "If-Match"
+            ]
+          },
+          "fingerprint": "sha256:551d627d09972e9427cbc2bb70e9bf96a6ff87865132417d2fa0045f5f8665c4"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "id": "TicketPatch",
+              "jsonSchema": {
+                "$ref": "#/components/schemas/TicketPatch"
+              },
+              "fingerprint": "sha256:b4f8b29b2eb51e0c1cc52ca17edab85881f1d1d60a1f59ac13d71c8fbdb9d6e4"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketRecord"
+                },
+                "fingerprint": "sha256:e5f9d7af9c65cb6a3bb54a8a0baca9c5d5ca39b5e7e4aa811df148a64abc4c85"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 404,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 428,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:19ed23382c43541fda229dabb161e01c9030d674f973e17599abc3aec183015c"
+    },
+    {
+      "id": "service-desk.functions.EscalateTicket",
+      "serviceId": "service-desk",
+      "groupId": "functions",
+      "endpointId": "EscalateTicket",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/escalations",
+        "openApiPath": "/v1/escalations"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              },
+              "If-Match": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:2a48fa45dc8cbb65c05c4fb7695cdcdd6ff1817eb00a441d8118e4ceba09ccfd"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "jsonSchema": {
+                "type": "object",
+                "properties": {
+                  "ticket": {
+                    "type": "string",
+                    "x-forge-reference": "@demo/service-desk/_/Ticket"
+                  },
+                  "expectedVersion": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "x-forge-type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "ticket",
+                  "expectedVersion"
+                ]
+              },
+              "fingerprint": "sha256:51723404c85950dfb3a5aed5846ea359dffd13554d22d814c7e16617e66f3584"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "id": "TicketCustomerSupportRecord",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/TicketCustomerSupportRecord"
+                },
+                "fingerprint": "sha256:2a3be249b1dedd645d49283599db8b8b78a607480ed9662f975b795f6e485f2d"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:b1dd3f48f140cae008104a226f90fe7d1419162467d0d98f671e552b6fcfd3cd"
+    }
+  ],
+  "components": {
+    "Problem": {
+      "type": "object",
+      "required": [
+        "type",
+        "title",
+        "status",
+        "code"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "uri"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "code": {
+          "type": "string",
+          "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ContactRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "organization": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Organization"
+        },
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "x-forge-type": "email"
+        },
+        "marketingOptIn": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "createdAt",
+        "updatedAt",
+        "organization",
+        "name",
+        "email",
+        "marketingOptIn"
+      ]
+    },
+    "ContactCreate": {
+      "type": "object",
+      "properties": {
+        "organization": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Organization"
+        },
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "x-forge-type": "email"
+        },
+        "marketingOptIn": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "organization",
+        "name",
+        "email"
+      ]
+    },
+    "ContactPatch": {
+      "type": "object",
+      "properties": {
+        "organization": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Organization"
+        },
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "x-forge-type": "email"
+        },
+        "marketingOptIn": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "OrganizationRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "code": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 3,
+          "maxLength": 24,
+          "x-forge-normalizers": [
+            "trim",
+            "uppercase"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "starter",
+            "growth",
+            "enterprise"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/CustomerTier",
+          "default": "Starter"
+        },
+        "active": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "createdAt",
+        "updatedAt",
+        "code",
+        "name",
+        "tier",
+        "active"
+      ]
+    },
+    "OrganizationCreate": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 3,
+          "maxLength": 24,
+          "x-forge-normalizers": [
+            "trim",
+            "uppercase"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "starter",
+            "growth",
+            "enterprise"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/CustomerTier",
+          "default": "Starter"
+        },
+        "active": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "name"
+      ]
+    },
+    "OrganizationPatch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "starter",
+            "growth",
+            "enterprise"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/CustomerTier",
+          "default": "Starter"
+        },
+        "active": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReplyRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "ticket": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Ticket"
+        },
+        "author": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Contact"
+        },
+        "body": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "internal"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/ReplyVisibility",
+          "default": "Customer"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "createdAt",
+        "updatedAt",
+        "ticket",
+        "author",
+        "body",
+        "visibility"
+      ]
+    },
+    "ReplyCreate": {
+      "type": "object",
+      "properties": {
+        "ticket": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Ticket"
+        },
+        "author": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Contact"
+        },
+        "body": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "internal"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/ReplyVisibility",
+          "default": "Customer"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "ticket",
+        "author",
+        "body"
+      ]
+    },
+    "ReplyPatch": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "internal"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/ReplyVisibility",
+          "default": "Customer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ServicePlanRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "organization": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Organization"
+        },
+        "includedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 10
+        },
+        "usedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "availableHours": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "renewsOn": {
+          "type": "string",
+          "format": "date",
+          "x-forge-type": "date"
+        },
+        "autoRenew": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "createdAt",
+        "updatedAt",
+        "organization",
+        "includedHours",
+        "usedHours",
+        "availableHours",
+        "renewsOn",
+        "autoRenew"
+      ]
+    },
+    "ServicePlanCreate": {
+      "type": "object",
+      "properties": {
+        "organization": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Organization"
+        },
+        "includedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 10
+        },
+        "usedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "renewsOn": {
+          "type": "string",
+          "format": "date",
+          "x-forge-type": "date"
+        },
+        "autoRenew": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "organization",
+        "renewsOn"
+      ]
+    },
+    "ServicePlanPatch": {
+      "type": "object",
+      "properties": {
+        "includedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 10
+        },
+        "usedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "renewsOn": {
+          "type": "string",
+          "format": "date",
+          "x-forge-type": "date"
+        },
+        "autoRenew": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "TicketRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-forge-type": "datetime",
+          "x-forge-precision": "ms",
+          "readOnly": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "New",
+            "Closed",
+            "Active",
+            "Resolved"
+          ],
+          "x-forge-status": "@demo/service-desk/_/Ticket",
+          "readOnly": true
+        },
+        "requester": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Contact"
+        },
+        "title": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-forge-normalizers": [
+            "trim"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "urgent"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/TicketPriority",
+          "default": "Normal"
+        },
+        "estimatedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "spentHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "remainingHours": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "dueOn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "x-forge-type": "date"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "createdAt",
+        "updatedAt",
+        "status",
+        "requester",
+        "title",
+        "description",
+        "priority",
+        "estimatedHours",
+        "spentHours",
+        "remainingHours",
+        "dueOn"
+      ]
+    },
+    "TicketCreate": {
+      "type": "object",
+      "properties": {
+        "requester": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Contact"
+        },
+        "title": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-forge-normalizers": [
+            "trim"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "urgent"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/TicketPriority",
+          "default": "Normal"
+        },
+        "estimatedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "spentHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "dueOn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "x-forge-type": "date"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "requester",
+        "title",
+        "description"
+      ]
+    },
+    "TicketPatch": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-forge-normalizers": [
+            "trim"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "urgent"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/TicketPriority",
+          "default": "Normal"
+        },
+        "estimatedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "spentHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "dueOn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "x-forge-type": "date"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TicketAssignInput": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "TicketResolveInput": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "TicketReopenInput": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "TicketCloseInput": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "ContactCustomerSupportRecord": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "x-forge-type": "email"
+        },
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "organization": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Organization"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "id",
+        "name",
+        "organization"
+      ]
+    },
+    "ContactIncidentResponseRecord": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "x-forge-type": "email"
+        },
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "organization": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Organization"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "id",
+        "name",
+        "organization"
+      ]
+    },
+    "ContactMarketingRecord": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "x-forge-type": "email"
+        },
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "marketingOptIn": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "id",
+        "marketingOptIn"
+      ]
+    },
+    "ReplyCustomerSupportRecord": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Contact"
+        },
+        "body": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "ticket": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Ticket"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "internal"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/ReplyVisibility",
+          "default": "Customer"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "author",
+        "body",
+        "id",
+        "ticket",
+        "visibility"
+      ]
+    },
+    "TicketCustomerSupportRecord": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "dueOn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "x-forge-type": "date"
+        },
+        "estimatedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "urgent"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/TicketPriority",
+          "default": "Normal"
+        },
+        "remainingHours": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "requester": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Contact"
+        },
+        "spentHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "New",
+            "Closed",
+            "Active",
+            "Resolved"
+          ],
+          "x-forge-status": "@demo/service-desk/_/Ticket",
+          "readOnly": true
+        },
+        "title": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-forge-normalizers": [
+            "trim"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "description",
+        "dueOn",
+        "estimatedHours",
+        "id",
+        "priority",
+        "remainingHours",
+        "requester",
+        "spentHours",
+        "status",
+        "title"
+      ]
+    },
+    "TicketIncidentResponseRecord": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "dueOn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "x-forge-type": "date"
+        },
+        "estimatedHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "id": {
+          "type": "string",
+          "x-forge-type": "id",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "readOnly": true
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "normal",
+            "urgent"
+          ],
+          "x-forge-enum": "@demo/service-desk/_/TicketPriority",
+          "default": "Normal"
+        },
+        "remainingHours": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "readOnly": true
+        },
+        "requester": {
+          "type": "string",
+          "x-forge-reference": "@demo/service-desk/_/Contact"
+        },
+        "spentHours": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "x-forge-type": "integer",
+          "default": 0
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "New",
+            "Closed",
+            "Active",
+            "Resolved"
+          ],
+          "x-forge-status": "@demo/service-desk/_/Ticket",
+          "readOnly": true
+        },
+        "title": {
+          "type": "string",
+          "x-forge-type": "text",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-forge-normalizers": [
+            "trim"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "description",
+        "dueOn",
+        "estimatedHours",
+        "id",
+        "priority",
+        "remainingHours",
+        "requester",
+        "spentHours",
+        "status",
+        "title"
+      ]
+    },
+    "WorkflowInstance": {
+      "type": "object",
+      "required": [
+        "id",
+        "workflow",
+        "version",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "workflow": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "running",
+            "waiting",
+            "sleeping",
+            "completed",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "bindings": {
+          "type": "object"
+        },
+        "history": {
+          "type": "array"
+        },
+        "output": {},
+        "error": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "securitySchemes": {
+    "bearer": {
+      "type": "http",
+      "scheme": "bearer",
+      "bearerFormat": "JWT"
+    }
+  },
+  "fingerprint": "sha256:976fa7fc8caa429cd762c4d59b8d3c3393b47ccb870cd80c54af52f81e11acd1",
+  "generator": {
+    "name": "forgec",
+    "version": "0.4.0"
+  }
+}

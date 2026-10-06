@@ -41,3 +41,18 @@ for feature_slug in collections credentials search issue-numbers project-portfol
   cp "$feature_out/d1/0001_init.sql" "conformance/fixtures/$feature_slug/d1/0001_init.sql"
   cp "$feature_out/postgres/0001_init.sql" "conformance/fixtures/$feature_slug/postgres/0001_init.sql"
 done
+
+# Contract IR (ForgeGraph's registry format): a curated set covering the emitter's features
+# (@crud routes, lifecycle actions, functions, workflows, SLO classes, dependencies), validated by
+# conformance/test/contract-ir.test.ts. Every other package is swept by scripts/validate-contracts.sh.
+contract_ir_fixtures=(
+  examples/studio-desk
+  examples/console-playground
+  examples/acme
+  packages/foundation/billing
+)
+mkdir -p conformance/fixtures/contract-ir
+for contract_source in "${contract_ir_fixtures[@]}"; do
+  cargo run -q -p forgegraph-cli -- build "$contract_source" --out "$feature_out" >/dev/null
+  cp "$feature_out/contract.json" "conformance/fixtures/contract-ir/$(basename "$contract_source").contract.json"
+done
