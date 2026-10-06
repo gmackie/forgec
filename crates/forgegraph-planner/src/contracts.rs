@@ -664,7 +664,8 @@ fn output_schema(ir: &DomainIR, t: &TypeSpec) -> Value {
 pub fn field_schema(ir: &DomainIR, owner: &Resource, f: &Field) -> Value {
     let mut s = type_schema(ir, owner, &f.ty);
     if let Some(obj) = s.as_object_mut() {
-        if f.ty.optional {
+        // `json` (`{}`) already admits null; only a typed schema gains `"null"`.
+        if f.ty.optional && (obj.contains_key("type") || obj.contains_key("$ref")) {
             let t = obj.get("type").cloned().unwrap_or(json!("string"));
             obj.insert("type".into(), json!([t, "null"]));
             allow_null_in_enum(obj);
