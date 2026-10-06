@@ -291,3 +291,59 @@
 .ops-request-context summary { cursor: pointer; font-size: 13px; }
 .ops-request-context button { justify-self: start; }
 .ops-history-context { display: block; margin-top: 6px; font-weight: 400; color: #64748b; overflow-wrap: anywhere; }
+/* Integrations tab */
+.integration-operations {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.integration-operations h3 {
+  margin: 12px 0 2px;
+}
+.integration-fields {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  border: 1px solid #d9e2ef;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.integration-fields legend {
+  font: 600 12px sans-serif;
+  color: #4b5a72;
+  padding: 0 4px;
+}
+.integration-fields label {
+  display: grid;
+  grid-template-columns: minmax(120px, 30%) 1fr;
+  align-items: center;
+  gap: 12px;
+  font: 12px monospace;
+}
+.integration-headers {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0 0 12px;
+  font: 12px monospace;
+}
+.integration-headers dt {
+  color: #6c7a91;
+}
+.integration-headers dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.integration-history {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  font-size: 13px;
+}
+.ops-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.status-unknown {
+  color: #8a5a00;
+}

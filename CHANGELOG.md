@@ -9,7 +9,9 @@
   converted to OpenAPI 3.1), and its operations can be called through the console. Base URLs,
   credentials (bearer, header or Cloudflare Access service token, `INTEGRATION_*` secrets only) and
   write access are set per app in `INTEGRATIONS_JSON`; reads are the default, writes need an opt-in
-  and a per-call confirmation and are audited. The playground UI follows.
+  and a per-call confirmation and are audited. The playground's new **Integrations** tab browses
+  operations by group, builds requests from their schemas, confirms writes, keeps drafts per
+  operation, and can hand an operation to the Graph tab's OpenAPI importer.
 
 - `@forgegraph/foundation/configuration` (experimental): typed parameterization
   against a pinned specification revision, layered defaults and overrides,

@@ -18,6 +18,8 @@ export interface Config {
   FORGEGRAPH_TOKEN?: string;
   /** Per-app integration settings (base URL, credential, writes); see src/integrations.ts. */
   INTEGRATIONS_JSON?: string;
+  /** "true" only for local acceptance tests: allow http and loopback integration URLs. */
+  INTEGRATIONS_ALLOW_HTTP?: string;
   ADMIN_TOKEN?: string;
   /** "token" (default) or "cloudflare-access". */
   AUTH_MODE?: string;

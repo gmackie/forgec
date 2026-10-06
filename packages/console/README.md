@@ -75,6 +75,13 @@ audited, so routine traffic cannot push credential grants out of the 200-entry l
 - `writes` — allow non-GET operations (each still needs confirmation). `hidden` — leave the app
   out of the playground.
 
+In the playground, **Integrations** lists the apps, groups each contract's operations by group,
+and builds a request from the operation's parameters and body schema (starting from generated
+samples). Drafts are kept per operation in the browser; responses are not. **Use in graph** hands
+the selected operation, as OpenAPI, to the Graph tab's importer, which keeps large contracts under
+its size limit. `INTEGRATIONS_ALLOW_HTTP=true` permits http and loopback base URLs and exists only
+for the local acceptance server (`scripts/local-test-server.mjs`); never set it on an instance.
+
 ### Git-backed applications
 
 Configure projects on the instance with `GIT_PROJECTS_JSON`. A project is on GitHub unless it
