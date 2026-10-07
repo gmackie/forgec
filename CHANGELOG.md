@@ -2,8 +2,22 @@
 
 ## Unreleased
 
+## 0.5.0 (2026-10-06)
+
+`forgec build` now emits ForgeGraph's contract IR (`contract.json`), and
+`forgec import-contract` and `forgec contract-diff` take it back in and compare
+it. Projections' `latest` aggregate is **breaking**: it is now
+`latest <field> by <orderField>`. References accept `"$self"`, `floor` and
+datetime arithmetic evaluate at runtime, and the console gains Forgejo Git
+projects and an Integrations tab backed by ForgeGraph's contract registry.
+
 ### Added
 
+- Console Forgejo Git projects: a project may set `"provider": "forgejo"` and
+  commit through `FORGEJO_URL` and `FORGEJO_TOKEN` (minted by
+  `forge forgejo-token`) instead of a GitHub token. `/healthz` reports a
+  configured provider's missing credential, and a Forgejo-only instance no
+  longer needs `GITHUB_TOKEN`.
 - Console integrations: with `FORGEGRAPH_URL` and a read-scope `FORGEGRAPH_TOKEN`, every
   ForgeGraph app is listed as an integration described by its published contract (contract IR v1,
   converted to OpenAPI 3.1), and its operations can be called through the console. Base URLs,
