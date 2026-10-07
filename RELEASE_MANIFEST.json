@@ -1,11 +1,21 @@
 {
   "version": "release-manifest/1",
-  "generatedAt": "2026-10-01T05:12:50.362Z",
-  "allRequiredProfilesCertified": true,
+  "generatedAt": "2026-10-07T19:36:28.594Z",
+  "allRequiredProfilesCertified": false,
+  "incomplete": {
+    "requiredNotCertified": [
+      "cloudflare-d1",
+      "aws-dynamodb",
+      "node-postgres",
+      "sqlite-node",
+      "runtime-memory"
+    ],
+    "note": "this release does not claim full profile support; see each entry's reason"
+  },
   "pins": {
     "compiler": {
       "crate": "forgegraph-cli",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "rustVersion": "1.97",
       "ir": "domain-ir/1",
       "contracts": "contracts/1",
@@ -16,7 +26,7 @@
     },
     "runtime": {
       "package": "@forgegraph/runtime",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "effect": "4.0.0-rc.116",
       "typescript": "^5.9.0",
       "node": "v24.14.0",
@@ -26,7 +36,7 @@
     },
     "interfaces": {
       "package": "@forgegraph/interfaces",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "openapi": "3.1.0",
       "smithy": "2.0",
       "mcp": [
@@ -59,8 +69,8 @@
     }
   },
   "identity": {
-    "buildHash": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
-    "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
+    "buildHash": "32e9b0b863f61fef49205532c4afb710da13b3a6e0961de915887fe192b60efb",
+    "sourceFingerprint": "7886d9111a2c57652b59d8324792a43646a7b18c5155d01c324016b9b0ae4bad",
     "node": "v24.14.0",
     "scenarioIds": [
       "m2.concurrency",
@@ -89,7 +99,7 @@
         "runtime": "cloudflare-workers",
         "deployment": "wrangler"
       },
-      "status": "certified",
+      "status": "unverified",
       "features": [
         "crud",
         "changesets",
@@ -113,7 +123,8 @@
           "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
           "ref": "conformance/certification/latest.json"
         }
-      ]
+      ],
+      "reason": "live certification is for build 92d084e2bbea; the current build is 32e9b0b863f6: re-run pnpm certify"
     },
     {
       "profile": "aws-dynamodb",
@@ -123,7 +134,7 @@
         "runtime": "lambda-nodejs22",
         "deployment": "cdk"
       },
-      "status": "certified",
+      "status": "unverified",
       "features": [
         "crud",
         "changesets",
@@ -147,7 +158,8 @@
           "build": "92d084e2bbea13033af5aec65eb88d81cad2eb8f9b0210340cf33577bdfcc0ab",
           "ref": "conformance/certification/latest.json"
         }
-      ]
+      ],
+      "reason": "live certification is for build 92d084e2bbea; the current build is 32e9b0b863f6: re-run pnpm certify"
     },
     {
       "profile": "node-postgres",
@@ -157,7 +169,7 @@
         "runtime": "node-24",
         "deployment": "local/self-hosted"
       },
-      "status": "certified",
+      "status": "unverified",
       "features": [
         "local scenario semantics",
         "storage adapter differential"
@@ -201,7 +213,8 @@
           "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
           "ref": "conformance/certification/differential.json"
         }
-      ]
+      ],
+      "reason": "differential evidence lacks matching current build, source, runtime and scenario identity"
     },
     {
       "profile": "sqlite-node",
@@ -211,7 +224,7 @@
         "runtime": "node-24",
         "deployment": "self-hosted"
       },
-      "status": "certified",
+      "status": "unverified",
       "features": [
         "local scenario semantics",
         "storage adapter differential"
@@ -255,12 +268,13 @@
           "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
           "ref": "conformance/certification/differential.json"
         }
-      ]
+      ],
+      "reason": "differential evidence lacks matching current build, source, runtime and scenario identity"
     },
     {
       "profile": "runtime-memory",
       "tuple": null,
-      "status": "certified",
+      "status": "unverified",
       "features": [
         "local scenario semantics",
         "storage adapter differential"
@@ -304,7 +318,8 @@
           "sourceFingerprint": "d40c66f8377df2277e4c6c6b092438fb38db2d38d4779ce256f415627e68eaf6",
           "ref": "conformance/certification/differential.json"
         }
-      ]
+      ],
+      "reason": "differential evidence lacks matching current build, source, runtime and scenario identity"
     }
   ],
   "notCertified": [

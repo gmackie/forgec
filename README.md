@@ -128,7 +128,7 @@ their alternatives are in [`docs/decisions/`](docs/decisions).
 
 ## Status
 
-0.3.0 was the first public release; the current version is 0.4.0. The API
+0.3.0 was the first public release; the current version is 0.5.0. The API
 surface is 0.x and will move — pin exact versions.
 
 **No profile is certified against this build.**
