@@ -128,6 +128,7 @@ export function IntegrationsExplorer({
   onUseInGraph?: ((spec: { text: string; packageName: string; host: string | null }) => void) | undefined;
 }) {
   const [configured, setConfigured] = useState<boolean | null>(null);
+  const [forgegraph, setForgegraph] = useState(false);
   const [integrations, setIntegrations] = useState<IntegrationSummary[]>([]);
   const [selected, setSelected] = useState("");
   const [described, setDescribed] = useState<Described | null>(null);
@@ -144,10 +145,11 @@ export function IntegrationsExplorer({
 
   useEffect(() => {
     let alive = true;
-    api<{ configured: boolean; integrations: IntegrationSummary[] }>("/integrations")
+    api<{ configured: boolean; forgegraph?: boolean; integrations: IntegrationSummary[] }>("/integrations")
       .then((r) => {
         if (!alive) return;
         setConfigured(r.configured);
+        setForgegraph(r.forgegraph === true);
         setIntegrations(r.integrations);
         setSelected((s) => s || r.integrations[0]?.id || "");
       })
@@ -253,10 +255,10 @@ export function IntegrationsExplorer({
       <header className="heading">
         <div>
           <p className="eyebrow">INTEGRATIONS</p>
-          <h1>App APIs</h1>
+          <h1>Integrations</h1>
           <p className="muted">
-            Browse and call the APIs of apps ForgeGraph manages, from the contracts they publish. Requests go
-            through this console, which adds the credentials.
+            Browse and call ForgeGraph apps and pinned third-party APIs. Requests go through this console, which
+            adds the credentials.
           </p>
         </div>
         <PlugsConnectedIcon size={34} />
@@ -270,13 +272,19 @@ export function IntegrationsExplorer({
           </p>
         </section>
       )}
+      {configured && !forgegraph && (
+        <p className="muted">
+          Presets are available now. ForgeGraph apps join this list once <code>FORGEGRAPH_URL</code> and a
+          read-scope <code>FORGEGRAPH_TOKEN</code> are set, and each app publishes a contract.
+        </p>
+      )}
       {configured && (
         <div className="ops-toolbar">
           <Select
             aria-label="Integration"
             value={selected}
             items={Object.fromEntries(integrations.map((i) => [i.id, i.name]))}
-            placeholder="Choose an app"
+            placeholder="Choose an integration"
             disabled={busy || loading}
             onValueChange={(v) => setSelected(String(v))}
           />
@@ -295,7 +303,8 @@ export function IntegrationsExplorer({
             </span>
             <code>{integration.baseUrl ?? "Set baseUrl in INTEGRATIONS_JSON"}</code>
             <small>
-              {described.operations.length} operations · contract {described.contract.fingerprint.slice(7, 19)} ·{" "}
+              {described.operations.length} operations · {integration.source === "preset" ? "preset" : "ForgeGraph app"} ·{" "}
+              contract {described.contract.fingerprint.slice(7, 19)} ·{" "}
               {integration.writes ? "writes allowed with confirmation" : "read-only"}
             </small>
           </div>

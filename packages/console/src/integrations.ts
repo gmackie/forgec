@@ -2,9 +2,11 @@
  * Integrations: external HTTP APIs the playground can browse and call.
  *
  * The catalog comes from ForgeGraph's contract registry: every app in the workspace is an
- * integration, described by its published contract. `INTEGRATIONS_JSON` supplies what the
- * registry does not know — a base URL when the app's health-check origin is not its API, how to
- * authenticate, and whether writes are allowed.
+ * integration, described by its published contract. Third-party presets (GitHub, Cloudflare,
+ * Stripe, Linear) sit beside those apps. `INTEGRATIONS_JSON` supplies what the registry does
+ * not know — a base URL when the app's health-check origin is not its API, how to authenticate,
+ * and whether writes are allowed. A preset's own base URL and auth apply until an override
+ * replaces them. The override wins, including `baseUrl`.
  *
  * Calls are proxied by this server, never made from the browser: the base URL is pinned per
  * integration, only operations in the contract can be called with only their declared
@@ -22,6 +24,9 @@ import {
   type OpenApiOperation,
 } from "./contract-openapi.js";
 import { sampleInput } from "./runtime-control.js";
+import { builtinPresets, type IntegrationPreset } from "./presets/catalog.js";
+import { loadSpecText } from "./presets/load.js";
+import { openApiView, type ParsedSpec } from "./presets/parse.js";
 
 /** Secret names an integration may reference. A fixed prefix keeps instance secrets (signing keys,
  * admin tokens) from being named as an integration credential and sent to another host. */
@@ -74,6 +79,7 @@ export interface IntegrationSummary {
   baseUrl: string | null;
   auth: IntegrationAuth["kind"];
   writes: boolean;
+  source: "app" | "preset";
 }
 
 const BLOCKED_HOST =
@@ -249,16 +255,23 @@ export interface IntegrationResult {
 export class Integrations {
   private appsCache: { at: number; apps: ForgeGraphApp[] } | null = null;
   private contracts = new Map<string, { at: number; contract: ContractIr | null }>();
+  private presetDocs = new Map<string, { at: number; spec: ParsedSpec }>();
+  /** True when ForgeGraph's app registry is configured. Presets are listed either way. */
+  readonly forgegraph: boolean;
   constructor(
-    private readonly registry: ForgeGraphRegistry,
+    private readonly registry: ForgeGraphRegistry | null,
     private readonly overrides: IntegrationOverride[],
     private readonly secrets: Record<string, unknown>,
     private readonly fetcher: typeof fetch = fetch,
     private readonly now: () => number = Date.now,
     private readonly insecure = false,
-  ) {}
+    private readonly presets: readonly IntegrationPreset[] = [],
+  ) {
+    this.forgegraph = registry !== null;
+  }
 
   private async appList(): Promise<ForgeGraphApp[]> {
+    if (!this.registry) return [];
     if (this.appsCache && this.now() - this.appsCache.at < CACHE_MS) return this.appsCache.apps;
     const apps = await this.registry.apps();
     this.appsCache = { at: this.now(), apps };
@@ -274,22 +287,51 @@ export class Integrations {
       baseUrl: o?.baseUrl ? publicBaseUrl(o.baseUrl, this.insecure) : healthOrigin(app.healthCheckUrl, this.insecure),
       auth: o?.auth?.kind ?? "none",
       writes: o?.writes ?? false,
+      source: "app",
+    };
+  }
+  private presetSummary(preset: IntegrationPreset): IntegrationSummary {
+    const o = this.overrides.find((x) => x.app === preset.id);
+    return {
+      id: preset.id,
+      name: o?.name ?? preset.name,
+      app: preset.id,
+      description: preset.description,
+      baseUrl: o?.baseUrl ? publicBaseUrl(o.baseUrl, this.insecure) : publicBaseUrl(preset.baseUrl, this.insecure),
+      auth: o?.auth?.kind ?? preset.auth.kind,
+      writes: o?.writes ?? false,
+      source: "preset",
     };
   }
   async list(): Promise<IntegrationSummary[]> {
     const hidden = new Set(this.overrides.filter((o) => o.hidden).map((o) => o.app));
-    return (await this.appList())
-      .filter((a) => !hidden.has(a.slug))
-      .map((a) => this.summary(a))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const apps = (await this.appList()).filter((app) => !hidden.has(app.slug));
+    const appIds = new Set(apps.map((app) => app.slug));
+    const presets = this.presets.filter((preset) => !hidden.has(preset.id) && !appIds.has(preset.id));
+    return [...apps.map((app) => this.summary(app)), ...presets.map((preset) => this.presetSummary(preset))].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }
   private async find(id: string): Promise<IntegrationSummary> {
-    const app = (await this.appList()).find((a) => a.slug === id);
-    if (!app || this.overrides.some((o) => o.app === id && o.hidden))
+    if (this.overrides.some((o) => o.app === id && o.hidden))
       throw new Problem(404, "Integration is not available on this instance.");
-    return this.summary(app);
+    const app = (await this.appList()).find((a) => a.slug === id);
+    if (app) return this.summary(app);
+    const preset = this.presets.find((item) => item.id === id);
+    if (preset) return this.presetSummary(preset);
+    throw new Problem(404, "Integration is not available on this instance.");
+  }
+  private async presetSpec(id: string): Promise<ParsedSpec> {
+    const preset = this.presets.find((item) => item.id === id);
+    if (!preset) throw new Problem(404, "Integration is not available on this instance.");
+    const cached = this.presetDocs.get(id);
+    if (cached && this.now() - cached.at < CACHE_MS) return cached.spec;
+    const spec = await loadSpecText(preset.document, preset.sha256);
+    this.presetDocs.set(id, { at: this.now(), spec });
+    return spec;
   }
   private async contract(id: string): Promise<ContractIr> {
+    if (!this.registry) throw new Problem(404, "Integration is not available on this instance.");
     const cached = this.contracts.get(id);
     const contract =
       cached && this.now() - cached.at < CACHE_MS ? cached.contract : await this.registry.contract(id);
@@ -301,6 +343,17 @@ export class Integrations {
   /** The integration with its operations, for the playground's explorer. */
   async describe(id: string) {
     const integration = await this.find(id);
+    if (integration.source === "preset") {
+      const spec = await this.presetSpec(id);
+      const operations = spec.operations.map((operation) => ({ ...operation, sample: sampleRequest(operation, spec.sampleDoc) }));
+      return {
+        integration,
+        contract: { fingerprint: `sha256:${this.presets.find((preset) => preset.id === id)!.sha256}`, serviceId: id, operationCount: spec.operations.length },
+        operations,
+        securitySchemes: spec.securitySchemes,
+        components: spec.components,
+      };
+    }
     const contract = await this.contract(id);
     const doc = { components: { schemas: contract.components } };
     const operations = contract.operations
@@ -323,6 +376,10 @@ export class Integrations {
   /** OpenAPI for the integration, optionally only some operations (the graph importer is size-capped). */
   async openapi(id: string, only: string[] = []) {
     const integration = await this.find(id);
+    if (integration.source === "preset") {
+      const spec = await this.presetSpec(id);
+      return openApiView(spec, { title: integration.name, ...(integration.baseUrl ? { serverUrl: integration.baseUrl } : {}) }, only);
+    }
     const contract = await this.contract(id);
     const picked = only.length ? { ...contract, operations: contract.operations.filter((o) => only.includes(o.id)) } : contract;
     if (only.length && picked.operations.length !== new Set(only).size)
@@ -339,8 +396,10 @@ export class Integrations {
       throw new Problem(503, `The integration's credential is not configured on this instance (${name}).`);
     return value;
   }
-  private authHeaders(id: string): Record<string, string> {
-    const auth = this.overrides.find((o) => o.app === id)?.auth;
+  private authHeaders(integration: IntegrationSummary): Record<string, string> {
+    const override = this.overrides.find((o) => o.app === integration.id)?.auth;
+    const preset = integration.source === "preset" ? this.presets.find((item) => item.id === integration.id) : undefined;
+    const auth = override ?? preset?.auth;
     if (!auth || auth.kind === "none") return {};
     if (auth.kind === "bearer") return { authorization: `Bearer ${this.secret(auth.secret)}` };
     if (auth.kind === "header") return { [auth.name.toLowerCase()]: this.secret(auth.secret) };
@@ -355,9 +414,10 @@ export class Integrations {
     const integration = await this.find(id);
     if (!integration.baseUrl)
       throw new Problem(409, "This integration has no base URL. Set one in INTEGRATIONS_JSON.");
-    const op = (await this.contract(id)).operations
-      .map(describeOperation)
-      .find((o) => o?.operationId === input.operationId);
+    const op =
+      integration.source === "preset"
+        ? (await this.presetSpec(id)).operations.find((operation) => operation.operationId === input.operationId)
+        : (await this.contract(id)).operations.map(describeOperation).find((operation) => operation?.operationId === input.operationId);
     if (!op) throw new Problem(404, "The contract has no such operation.");
     const write = !["get", "head"].includes(op.method);
     if (write && !integration.writes)
@@ -412,7 +472,7 @@ export class Integrations {
       requestBody = JSON.stringify(input.body);
     } else if (input.body !== undefined) throw new Problem(400, "This operation takes no request body.");
     // Credentials last, so nothing above can replace them.
-    Object.assign(headers, this.authHeaders(id));
+    Object.assign(headers, this.authHeaders(integration));
 
     const started = this.now();
     let response: Response;
@@ -476,16 +536,21 @@ export class Integrations {
   }
 }
 
-export function integrationsFrom(config: IntegrationsConfig): Integrations | null {
-  if (!config.FORGEGRAPH_URL) return null;
-  if (!config.FORGEGRAPH_TOKEN) throw new Error("FORGEGRAPH_TOKEN is required with FORGEGRAPH_URL.");
+export function integrationsFrom(config: IntegrationsConfig): Integrations {
   const insecure = config.INTEGRATIONS_ALLOW_HTTP === "true";
+  let registry: ForgeGraphRegistry | null = null;
+  if (config.FORGEGRAPH_URL) {
+    const token = config.FORGEGRAPH_TOKEN;
+    if (!token) throw new Error("FORGEGRAPH_TOKEN is required with FORGEGRAPH_URL.");
+    registry = new ForgeGraphRegistry(config.FORGEGRAPH_URL, token, fetch, insecure);
+  }
   return new Integrations(
-    new ForgeGraphRegistry(config.FORGEGRAPH_URL, config.FORGEGRAPH_TOKEN, fetch, insecure),
+    registry,
     integrationOverrides(config.INTEGRATIONS_JSON, insecure),
     config as Record<string, unknown>,
     fetch,
     Date.now,
     insecure,
+    builtinPresets,
   );
 }

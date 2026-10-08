@@ -135,8 +135,8 @@ describe("integration catalog", () => {
       { app: "secret-app", hidden: true },
     ]);
     expect(await integrations.list()).toEqual([
-      { id: "notes", name: "Notes", app: "notes", description: "Note service", baseUrl: "https://notes.example.com", auth: "none", writes: false },
-      { id: "quiet", name: "Quiet API", app: "quiet", description: null, baseUrl: "https://quiet.example.com/api", auth: "none", writes: true },
+      { id: "notes", name: "Notes", app: "notes", description: "Note service", baseUrl: "https://notes.example.com", auth: "none", writes: false, source: "app" },
+      { id: "quiet", name: "Quiet API", app: "quiet", description: null, baseUrl: "https://quiet.example.com/api", auth: "none", writes: true, source: "app" },
     ]);
     await expect(integrations.describe("secret-app")).rejects.toMatchObject({ status: 404 });
   });
@@ -255,7 +255,7 @@ describe("integrations API", () => {
   }
   it("reports when integrations are not configured", async () => {
     const { call } = api(null);
-    expect(await (await call("/integrations")).json()).toEqual({ configured: false, integrations: [] });
+    expect(await (await call("/integrations")).json()).toEqual({ configured: false, forgegraph: false, integrations: [] });
     expect((await call("/integrations/notes")).status).toBe(404);
   });
   it("lists, describes, converts and calls, auditing writes only", async () => {
