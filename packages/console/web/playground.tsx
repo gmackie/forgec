@@ -31,6 +31,7 @@ import {
 import { VisualDocument } from "./editor/document.js";
 import { named, patch, textOf } from "./editor/model.js";
 import { OpenApiOnboarding, type DiscoveredApi, type PendingSpec } from "./openapi-onboarding.js";
+import { forgePackage } from "./forge-package.js";
 import { cutWire, deleteDeclaration, snapTargets, snapWire } from "./editor/playground-wires.js";
 import { Edit } from "./editor/document.js";
 import "./editor/editor.css";
@@ -1128,6 +1129,11 @@ function IntegrationsPlayground({
   api: Api;
   onUseInGraph: (spec: PendingSpec) => void;
 }) {
+  const { importSpec } = useCompiler(undefined);
+  const convertToForge = useCallback(async (request: OpenApiImportRequest) => {
+    const imported = await importSpec(request);
+    return forgePackage(request.package, imported);
+  }, [importSpec]);
   const [Explorer, setExplorer] = useState<typeof import("./integrations.js").IntegrationsExplorer | null>(null);
   useEffect(() => {
     let live = true;
@@ -1138,7 +1144,7 @@ function IntegrationsPlayground({
       live = false;
     };
   }, []);
-  return Explorer ? <Explorer api={api} onUseInGraph={onUseInGraph} /> : <p>Loading integrations…</p>;
+  return Explorer ? <Explorer api={api} onUseInGraph={onUseInGraph} convertToForge={convertToForge} /> : <p>Loading integrations…</p>;
 }
 
 function DeployedPlayground({

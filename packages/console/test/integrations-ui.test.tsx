@@ -5,7 +5,10 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import "@testing-library/jest-dom/vitest";
 import { IntegrationsExplorer, integrationDraftsKey } from "../web/integrations.js";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 beforeEach(() => localStorage.clear());
 
 const op = (operationId: string, method: string, path: string, extra: object = {}) => ({
@@ -35,7 +38,15 @@ const operations = [
   }),
   op("notes.admin.purge", "delete", "/admin/purge"),
 ];
-function setup({ configured = true, writes = false } = {}) {
+function setup({
+  configured = true,
+  writes = false,
+  convertToForge,
+}: {
+  configured?: boolean;
+  writes?: boolean;
+  convertToForge?: (request: { text: string; package: string; allowHosts?: string[] }) => Promise<{ files?: { path: string; text: string }[]; error?: string }>;
+} = {}) {
   const calls: { path: string; method?: string | undefined; body?: any }[] = [];
   const api = vi.fn(async (path: string, method?: string, body?: any) => {
     calls.push({ path, method, body });
@@ -58,7 +69,7 @@ function setup({ configured = true, writes = false } = {}) {
     throw Error(`unexpected ${path}`);
   });
   const onUseInGraph = vi.fn();
-  render(<IntegrationsExplorer api={api as any} onUseInGraph={onUseInGraph} />);
+  render(<IntegrationsExplorer api={api as any} onUseInGraph={onUseInGraph} convertToForge={convertToForge} />);
   return { calls, onUseInGraph };
 }
 
@@ -162,3 +173,87 @@ it("hands the selected operation's OpenAPI to the graph importer, pinned to the 
   expect(calls.at(-1)!.path).toBe("/integrations/notes/openapi?operation=notes.notes.get");
   expect(onUseInGraph.mock.calls[0]![0]).toMatchObject({ packageName: "@external/notes", host: "notes.example.com" });
 });
+
+it("downloads the whole integration as a forgec package, not one operation", async () => {
+  const created: { blob: Blob; name: string }[] = [];
+  vi.spyOn(URL, "createObjectURL").mockImplementation((blob) => {
+    created.push({ blob: blob as Blob, name: "" });
+    return "blob:forgec";
+  });
+  vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
+    created.at(-1)!.name = this.download;
+  });
+  const convertToForge = vi.fn(async () => ({
+    files: [
+      { path: "forge.toml", text: '[package]\nname = "@external/notes"\nedition = "2026"\n' },
+      { path: "src/index.forge", text: 'export function GetNote\n  @http(GET, "/notes/{id}")\n{\n}\n' },
+      { path: "import-report.json", text: '{"operations":3}\n' },
+    ],
+  }));
+  const { calls } = setup({ convertToForge });
+  await screen.findByRole("button", { name: /notes\.get/ });
+  fireEvent.click(screen.getByRole("button", { name: "Convert to forgec" }));
+  await waitFor(() => expect(created[0]?.name).toBe("notes-forgec.zip"));
+  expect(calls.some((call) => call.path === "/integrations/notes/openapi")).toBe(true);
+  expect(calls.some((call) => call.path.includes("operation="))).toBe(false);
+  expect(convertToForge).toHaveBeenCalledWith({
+    text: JSON.stringify({ openapi: "3.1.0", paths: {} }, null, 2),
+    package: "@external/notes",
+    allowHosts: ["notes.example.com"],
+  });
+  const packed = readStoreZip(new Uint8Array(await created[0]!.blob.arrayBuffer()));
+  expect(packed.get("src/index.forge")).toContain('@http(GET, "/notes/{id}")');
+  expect(packed.get("forge.toml")).toContain('name = "@external/notes"');
+  expect(packed.get("import-report.json")).toBe('{"operations":3}\n');
+  expect(created[0]!.blob.type).toBe("application/zip");
+});
+
+it("shows the importer error and does not download a package", async () => {
+  const created: unknown[] = [];
+  vi.spyOn(URL, "createObjectURL").mockImplementation((blob) => {
+    created.push(blob);
+    return "blob:forgec";
+  });
+  const { calls } = setup({
+    convertToForge: async () => ({ error: "OpenAPI document is larger than 200 KB" }),
+  });
+  await screen.findByRole("button", { name: /notes\.get/ });
+  fireEvent.click(screen.getByRole("button", { name: "Convert to forgec" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("larger than 200 KB");
+  expect(created).toEqual([]);
+  expect(calls.some((call) => call.path.endsWith("/call"))).toBe(false);
+});
+
+/** Read an uncompressed ZIP (method 0) and check each entry's CRC-32. */
+function readStoreZip(bytes: Uint8Array): Map<string, string> {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (view.getUint32(bytes.length - 22, true) !== 0x06054b50) throw new Error("zip is missing its end record");
+  const files = new Map<string, string>();
+  let offset = 0;
+  while (offset + 30 <= bytes.length && view.getUint32(offset, true) === 0x04034b50) {
+    const method = view.getUint16(offset + 8, true);
+    const crc = view.getUint32(offset + 14, true);
+    const nameLength = view.getUint16(offset + 26, true);
+    const extraLength = view.getUint16(offset + 28, true);
+    const size = view.getUint32(offset + 22, true);
+    const name = new TextDecoder().decode(bytes.subarray(offset + 30, offset + 30 + nameLength));
+    const start = offset + 30 + nameLength + extraLength;
+    const payload = bytes.subarray(start, start + size);
+    if (method !== 0) throw new Error(`compressed entry ${name}`);
+    if (crc32(payload) !== crc) throw new Error(`crc mismatch for ${name}`);
+    files.set(name, new TextDecoder().decode(payload));
+    offset = start + size;
+  }
+  if (!files.size) throw new Error("zip has no files");
+  return files;
+}
+
+function crc32(data: Uint8Array): number {
+  let c = ~0;
+  for (const byte of data) {
+    c ^= byte;
+    for (let i = 0; i < 8; i++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+  }
+  return ~c >>> 0;
+}
