@@ -135,10 +135,54 @@ describe("integration catalog", () => {
       { app: "secret-app", hidden: true },
     ]);
     expect(await integrations.list()).toEqual([
-      { id: "notes", name: "Notes", app: "notes", description: "Note service", baseUrl: "https://notes.example.com", auth: "none", writes: false },
-      { id: "quiet", name: "Quiet API", app: "quiet", description: null, baseUrl: "https://quiet.example.com/api", auth: "none", writes: true },
+      { id: "notes", name: "Notes", app: "notes", description: "Note service", baseUrl: "https://notes.example.com", auth: "none", writes: false, source: "app" },
+      { id: "quiet", name: "Quiet API", app: "quiet", description: null, baseUrl: "https://quiet.example.com/api", auth: "none", writes: true, source: "app" },
     ]);
     await expect(integrations.describe("secret-app")).rejects.toMatchObject({ status: 404 });
+  });
+  it("prefers a production stage URL over the health origin, and an override over both", async () => {
+    const registryFetch = (async (input: string | URL) => {
+      if (!String(input).endsWith("/api/fg/apps")) return new Response("no", { status: 404 });
+      return Response.json({
+        apps: [
+          {
+            slug: "notes",
+            name: "Notes",
+            healthCheckUrl: "https://health.example.com/.well-known/forge-health",
+            stages: [
+              { name: "staging", url: "https://staging.example.com" },
+              { name: "production", url: "https://books.example.com/api/" },
+            ],
+          },
+          {
+            slug: "beta-only",
+            name: "Beta",
+            healthCheckUrl: "https://beta-health.example.com/healthz",
+            stages: [{ name: "beta", url: "https://beta.example.com" }],
+          },
+          {
+            slug: "private-stage",
+            name: "Private",
+            healthCheckUrl: "https://private-health.example.com/health",
+            stages: [{ name: "production", url: "https://localhost/nope" }],
+          },
+        ],
+      });
+    }) as typeof fetch;
+    const integrations = new Integrations(
+      new ForgeGraphRegistry("https://fg.example.com", "fg-read-token", registryFetch),
+      [{ app: "notes", baseUrl: "https://override.example.com" }],
+      {},
+      registryFetch,
+      () => 1,
+    );
+    const listed = await integrations.list();
+    expect(listed.find((item) => item.id === "notes")!.baseUrl).toBe("https://override.example.com");
+    expect(listed.find((item) => item.id === "beta-only")!.baseUrl).toBe("https://beta.example.com");
+    expect(listed.find((item) => item.id === "private-stage")!.baseUrl).toBe("https://private-health.example.com");
+
+    const plain = new Integrations(new ForgeGraphRegistry("https://fg.example.com", "fg-read-token", registryFetch), [], {}, registryFetch, () => 1);
+    expect((await plain.list()).find((item) => item.id === "notes")!.baseUrl).toBe("https://books.example.com/api");
   });
   it("describes operations from the contract and caches it", async () => {
     const { integrations, registryCalls } = setup();
@@ -255,7 +299,7 @@ describe("integrations API", () => {
   }
   it("reports when integrations are not configured", async () => {
     const { call } = api(null);
-    expect(await (await call("/integrations")).json()).toEqual({ configured: false, integrations: [] });
+    expect(await (await call("/integrations")).json()).toEqual({ configured: false, forgegraph: false, integrations: [] });
     expect((await call("/integrations/notes")).status).toBe(404);
   });
   it("lists, describes, converts and calls, auditing writes only", async () => {

@@ -310,8 +310,8 @@ function route(request: Request) {
       }
     }
     if(path==='/integrations'&&method==='GET'){
-      if(!o.integrations)return json({configured:false,integrations:[]});
-      return json({configured:true,integrations:yield* attempt(()=>o.integrations!.list())});
+      if(!o.integrations)return json({configured:false,forgegraph:false,integrations:[]});
+      return json({configured:true,forgegraph:o.integrations.forgegraph,integrations:yield* attempt(()=>o.integrations!.list())});
     }
     const integrationRoute=path.match(/^\/integrations\/([a-z0-9][a-z0-9-]{0,62})(?:\/(openapi|call))?$/);
     if(integrationRoute){
