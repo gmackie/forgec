@@ -133,6 +133,8 @@ interface ForgeGraphApp {
   name: string;
   description?: string | null;
   healthCheckUrl?: string | null;
+  /** Stage URLs from ForgeGraph. Production wins; an unusable URL is skipped. */
+  stages?: { name?: string; url?: string | null }[] | null;
 }
 
 /** Read access to ForgeGraph's app list and contract registry with a read-scope token. */
@@ -182,6 +184,21 @@ export class ForgeGraphRegistry {
     if (!parsed.success) throw new Problem(502, `ForgeGraph returned an invalid contract for ${slug}.`);
     return parsed.data;
   }
+}
+
+/** A stage URL the console can call. Production wins. An unusable URL is skipped. */
+function stageOrigin(app: ForgeGraphApp, insecure: boolean): string | null {
+  const stages = Array.isArray(app.stages) ? app.stages : [];
+  const ranked = [...stages.filter((stage) => stage?.name === "production"), ...stages.filter((stage) => stage?.name !== "production")];
+  for (const stage of ranked) {
+    if (typeof stage?.url !== "string" || !stage.url) continue;
+    try {
+      return publicBaseUrl(stage.url, insecure);
+    } catch {
+      // A private or credentialed stage URL must not take down the catalog.
+    }
+  }
+  return null;
 }
 
 /** The origin of an app's health check: where its API is unless configured otherwise. */
@@ -284,7 +301,9 @@ export class Integrations {
       name: o?.name ?? app.name,
       app: app.slug,
       description: app.description ?? null,
-      baseUrl: o?.baseUrl ? publicBaseUrl(o.baseUrl, this.insecure) : healthOrigin(app.healthCheckUrl, this.insecure),
+      baseUrl: o?.baseUrl
+        ? publicBaseUrl(o.baseUrl, this.insecure)
+        : stageOrigin(app, this.insecure) ?? healthOrigin(app.healthCheckUrl, this.insecure),
       auth: o?.auth?.kind ?? "none",
       writes: o?.writes ?? false,
       source: "app",
