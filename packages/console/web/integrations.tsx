@@ -7,7 +7,26 @@ import { Badge } from "@cloudflare/kumo/components/badge";
 import { ArrowClockwiseIcon, GraphIcon, PaperPlaneTiltIcon, PlugsConnectedIcon } from "@phosphor-icons/react";
 import type { IntegrationResult, IntegrationSummary } from "../src/integrations.js";
 import type { OpenApiOperation } from "../src/contract-openapi.js";
+import { storeZip, type ZipFile } from "./zip-store.js";
 import "./operations.css";
+
+/** Browser OpenAPI importer result, already turned into a forgec package. */
+export interface ForgeConversion {
+  files?: ZipFile[];
+  error?: string;
+}
+export type ConvertToForge = (request: { text: string; package: string; allowHosts?: string[] }) => Promise<ForgeConversion>;
+
+function downloadPackage(name: string, bytes: Uint8Array) {
+  const body = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(body).set(bytes);
+  const url = URL.createObjectURL(new Blob([body], { type: "application/zip" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 type Api = <T>(path: string, method?: string, body?: unknown) => Promise<T>;
 type Values = Record<string, string>;
@@ -122,10 +141,13 @@ function Fields({
 export function IntegrationsExplorer({
   api,
   onUseInGraph,
+  convertToForge,
 }: {
   api: Api;
   /** Hand a trimmed OpenAPI document to the Graph tab's importer. */
   onUseInGraph?: ((spec: { text: string; packageName: string; host: string | null }) => void) | undefined;
+  /** Import the whole integration and download the forgec package. */
+  convertToForge?: ConvertToForge | undefined;
 }) {
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [forgegraph, setForgegraph] = useState(false);
@@ -141,6 +163,7 @@ export function IntegrationsExplorer({
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [converting, setConverting] = useState(false);
   const epoch = useRef(0);
 
   useEffect(() => {
@@ -250,6 +273,34 @@ export function IntegrationsExplorer({
       setError((e as Error).message);
     }
   }
+  async function convert() {
+    if (!described || !convertToForge || converting) return;
+    setConverting(true);
+    setError("");
+    try {
+      const spec = await api<unknown>(`/integrations/${selected}/openapi`);
+      const host = described.integration.baseUrl ? new URL(described.integration.baseUrl).hostname : null;
+      const packed = await convertToForge({
+        text: JSON.stringify(spec, null, 2),
+        package: `@external/${selected}`,
+        ...(host ? { allowHosts: [host] } : {}),
+      });
+      if (packed.error) {
+        setError(packed.error);
+        return;
+      }
+      const files = packed.files ?? [];
+      if (!files.some((file) => file.path.endsWith(".forge"))) {
+        setError("This document did not produce a Forge package.");
+        return;
+      }
+      downloadPackage(`${selected}-forgec.zip`, storeZip(files));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setConverting(false);
+    }
+  }
 
   const integration = described?.integration;
   const writeBlocked = !!op && isWrite(op) && !integration?.writes;
@@ -294,6 +345,11 @@ export function IntegrationsExplorer({
           <Button icon={<ArrowClockwiseIcon />} disabled={!selected || busy || loading} onClick={() => void load(selected)}>
             Reload contract
           </Button>
+          {convertToForge && (
+            <Button variant="ghost" disabled={!described || busy || loading || converting} onClick={() => void convert()}>
+              {converting ? "Converting…" : "Convert to forgec"}
+            </Button>
+          )}
         </div>
       )}
       <ErrorNote error={error} />
