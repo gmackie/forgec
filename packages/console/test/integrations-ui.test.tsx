@@ -62,6 +62,35 @@ function setup({ configured = true, writes = false } = {}) {
   return { calls, onUseInGraph };
 }
 
+it("opens a workspace app when pinned presets sort ahead of it", async () => {
+  const calls: string[] = [];
+  const api = vi.fn(async (path: string) => {
+    calls.push(path);
+    if (path === "/integrations")
+      return {
+        configured: true,
+        forgegraph: true,
+        integrations: [
+          { id: "cloudflare", name: "Cloudflare", app: "cloudflare", description: null, baseUrl: "https://api.cloudflare.com", auth: "bearer", writes: false, source: "preset" },
+          { id: "notes", name: "Notes", app: "notes", description: null, baseUrl: "https://notes.example.com", auth: "bearer", writes: false, source: "app" },
+        ],
+      };
+    if (path === "/integrations/notes")
+      return {
+        integration: { id: "notes", name: "Notes", app: "notes", description: null, baseUrl: "https://notes.example.com", auth: "bearer", writes: false, source: "app" },
+        contract: { fingerprint: "sha256:abcdef0123456789", serviceId: "notes", operationCount: 3 },
+        operations,
+      };
+    throw Error(`unexpected ${path}`);
+  });
+  render(<IntegrationsExplorer api={api as any} />);
+  await waitFor(() => {
+    if (!calls.includes("/integrations/notes")) throw new Error(`calls=${calls.join("|")}`);
+  });
+  expect(await screen.findByRole("button", { name: /notes\.get.*GET \/notes\/\{id\}/ })).toBeInTheDocument();
+  expect(calls).not.toContain("/integrations/cloudflare");
+});
+
 it("explains how to connect ForgeGraph when integrations are not configured", async () => {
   setup({ configured: false });
   expect(await screen.findByText("Connect ForgeGraph")).toBeInTheDocument();

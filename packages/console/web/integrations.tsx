@@ -151,7 +151,10 @@ export function IntegrationsExplorer({
         setConfigured(r.configured);
         setForgegraph(r.forgegraph === true);
         setIntegrations(r.integrations);
-        setSelected((s) => s || r.integrations[0]?.id || "");
+        // Presets sort beside apps by name. Open a workspace app when one exists
+        // so a pinned catalog does not hide the app the instance was connected for.
+        const first = r.integrations.find((item) => item.source === "app") ?? r.integrations[0];
+        setSelected((s) => s || first?.id || "");
       })
       .catch((e) => alive && setError((e as Error).message));
     return () => {
