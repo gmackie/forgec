@@ -463,8 +463,15 @@ export interface SitePolicyApi {
 }
 
 export interface FunctionsApi {
-  submitOrder(input: Record<string, unknown>, opts?: CallOptions): Promise<unknown>;
+  submitOrder(input: SubmitOrderInput, opts?: CallOptions): Promise<SubmitOrderOutput>;
 }
+
+export interface SubmitOrderInput {
+  order: string;
+  expectedVersion: number;
+}
+
+export type SubmitOrderOutput = unknown;
 
 export interface ForgeClient {
   functions: FunctionsApi;

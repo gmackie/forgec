@@ -782,7 +782,11 @@ fn type_schema(ir: &DomainIR, owner: &Resource, ty: &TypeSpec) -> Value {
                 .unwrap_or_default();
             json!({ "type": "string", "enum": values, "x-forge-enum": id })
         }
-        TypeBase::Shape { id } => json!({ "$ref": format!("#/$defs/{}", id) }),
+        // Shapes have no standalone component registry in Contracts. Emit the
+        // same closed object used for collection elements, including nested shapes.
+        TypeBase::Shape { .. } => {
+            serde_json::to_value(shape_or_record_schema(ir, &ty.base)).unwrap_or_else(|_| json!({}))
+        }
         TypeBase::Reference { resource } => {
             json!({ "type": "string", "x-forge-reference": resource })
         }
