@@ -50,6 +50,7 @@ pub struct Plans {
 
 pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
     validate(ir)?;
+    validate_shape_cycles(ir)?;
     let plans = Plans {
         contracts: contracts::plan(ir),
         sql: sql::plan(ir),
@@ -63,6 +64,54 @@ pub fn plan(ir: &DomainIR) -> Result<Plans, PlanError> {
     };
     validate_names(&plans)?;
     Ok(plans)
+}
+
+// Shape contracts are emitted as closed inline objects. Reject a recursive
+// declaration before emission rather than overflowing while expanding it.
+fn validate_shape_cycles(ir: &DomainIR) -> Result<(), PlanError> {
+    use forgegraph_semantic::ir::{TypeBase, TypeSpec};
+    fn visit(
+        ir: &DomainIR,
+        ty: &TypeSpec,
+        active: &mut std::collections::BTreeSet<String>,
+        done: &mut std::collections::BTreeSet<String>,
+    ) -> Result<(), PlanError> {
+        match &ty.base {
+            TypeBase::Collection { element, .. } => visit(ir, element, active, done),
+            TypeBase::Shape { id } => {
+                if done.contains(id) {
+                    return Ok(());
+                }
+                if !active.insert(id.clone()) {
+                    return Err(PlanError {
+                        code: "E-PLAN-SHAPE-001".into(),
+                        declaration: id.clone(),
+                        message: "recursive shapes cannot be emitted as inline contracts".into(),
+                    });
+                }
+                if let Some(shape) = ir.find_shape(id) {
+                    for field in &shape.fields {
+                        visit(ir, &field.ty, active, done)?;
+                    }
+                }
+                active.remove(id);
+                done.insert(id.clone());
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    }
+    let mut active = std::collections::BTreeSet::new();
+    let mut done = std::collections::BTreeSet::new();
+    for shape in ir.modules.iter().flat_map(|m| &m.shapes) {
+        active.insert(shape.id.clone());
+        for field in &shape.fields {
+            visit(ir, &field.ty, &mut active, &mut done)?;
+        }
+        active.remove(&shape.id);
+        done.insert(shape.id.clone());
+    }
+    Ok(())
 }
 
 /// Existing emitters use short physical/client names. Until namespacing is supported,

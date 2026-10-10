@@ -464,11 +464,22 @@ pub fn client_ts(c: &Contracts) -> String {
     for f in c.functions.iter().filter(|f| f.http.is_some()) {
         let _ = writeln!(
             out,
-            "  {}(input: Record<string, unknown>, opts?: CallOptions): Promise<unknown>;",
-            lower_first(&f.name)
+            "  {}(input: {}Input, opts?: CallOptions): Promise<{}Output>;",
+            lower_first(&f.name),
+            f.name,
+            f.name
         );
     }
     let _ = writeln!(out, "}}\n");
+    for f in c.functions.iter().filter(|f| f.http.is_some()) {
+        interface(&mut out, &format!("{}Input", f.name), &f.input);
+        let _ = writeln!(
+            out,
+            "export type {}Output = {};\n",
+            f.name,
+            ts_type(&f.output, false)
+        );
+    }
     let _ = writeln!(out, "export interface ForgeClient {{");
     let _ = writeln!(out, "  functions: FunctionsApi;");
     let _ = writeln!(
