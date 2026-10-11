@@ -33,7 +33,7 @@ describe("release manifest", () => {
     const pins = m["pins"] as Record<string, Record<string, unknown>>;
     expect(pins["compiler"]!["version"]).toMatch(/^\d+\.\d+\.\d+$/);
     expect(pins["compiler"]!["rustVersion"]).toBe("1.97");
-    expect(pins["runtime"]!["effect"]).toBe("4.0.0-rc.116");
+    expect(pins["runtime"]!["effect"]).toBe("4.0.3");
     expect(pins["interfaces"]!["mcp"]).toEqual(["2025-06-18", "2025-03-26"]);
     expect(pins["governance"]!["taxonomy"]).toBe("data-taxonomy/1");
     expect((pins["iac"] as { terraform: { cloudflare: string } }).terraform.cloudflare).toBe("5.4.0");
