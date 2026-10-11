@@ -18,7 +18,7 @@ date, and AWS runtime". Registry versions checked 2026-09-20.
 | AWS SDK | `@aws-sdk/*` 3.1136.x | validated by the Dynamo spike |
 | aws-cdk-lib | 2.270.x | current; not yet exercised (CDK CLI not installed locally) |
 | Alchemy | 2.0.0-beta.79 | **only beta exists**; the Alchemy adapter must pin an exact beta and expect churn |
-| Effect | **4.0.0-rc** (currently rc.116) | decided 2026-09-20: the plan's R10 cites v4 docs; adopting the RC now avoids a 3→4 migration of every generated service interface before 1.0. Pin an exact RC per commit and track breakage in M2–M3. |
+| Effect | **4.0.3** (stable; was rc.116) | decided 2026-09-20: the plan's R10 cites v4 docs; adopting the RC avoided a 3→4 migration of every generated service interface before 1.0. Moved to the stable 4.0.3 release on 2026-10-11 (FORG-2) with no runtime source changes; keep the pin exact and in lockstep with create-gmacko-app. |
 
 ## Open — needs a decision before M1/M2 code depends on it
 
