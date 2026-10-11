@@ -194,6 +194,8 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
   const model = new Model(bundle);
   const subscriptions: Record<string, string[]> = {};
   for (const s of model.bundle.messaging?.subscriptions ?? []) (subscriptions[s.channel] ??= []).push(s.name);
+  // Tenants already recorded in the schedule index by this isolate (FORG-3); a miss costs one point read.
+  const tracked = new Set<string>();
 
   const build = (env: WorkerEnv, baseUrl: string) => {
     const objects = env.BLOBS ? new R2ObjectStore(env.BLOBS, { baseUrl, secret: env.CURSOR_SECRET }) : null;
@@ -228,9 +230,10 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       const { storage, dispatcher, engine } = build(env, "https://scheduled.invalid");
       const tenants = await Effect.runPromise(storage.outboxTenants());
       // Schedules (plan §19): the trigger's scheduledTime is the intended instant; the ledger decides what is due.
+      // FORG-3: the schedule index, not the outbox, decides which tenants are due (idle and global ones included).
       const ev = (event ?? {}) as { cron?: string; scheduledTime?: number };
       const now = new Date(ev.scheduledTime ?? Date.now()).toISOString();
-      ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(engine.schedules.tick(t, now)))));
+      ctx.waitUntil(Effect.runPromise(engine.schedules.sweep(now, tenants)));
       ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(dispatcher.sweep(t, { now: Date.now() })))));
       // Crashed `running` instances resume here; native drivers own timers.
       ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(engine.workflows.sweep(t)))));
@@ -274,7 +277,13 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       // Object bytes: the Worker-served equivalent of presigned URLs (bearer token, one key, one method).
       const m = /^\/_forge\/objects\/([^/]+)$/.exec(url.pathname);
       if (m && objects) return objects.serve(request, m[1]!);
-      const handler = createHttpHandler(model, engine, { auth, requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) });
+      const observeTenant = (tenant: string) => {
+        if (tracked.has(tenant) || !engine.schedules.active) return;
+        tracked.add(tenant);
+        const p = Effect.runPromise(engine.schedules.track(tenant));
+        if (ctx) ctx.waitUntil(p);
+      };
+      const handler = createHttpHandler(model, engine, { auth, observeTenant, requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) });
       const res = await handler(request);
       // Prompt post-commit nudge for this tenant; the cron sweep is the guarantee.
       if (ctx && request.method !== "GET" && res.status < 300) {
