@@ -259,6 +259,40 @@ fn decorator_checks() {
         )],
     );
     assert_eq!(codes(http_path_param), vec!["E-HTTP-001"]);
+    // FORG-4: a segment may mix literals and parameters (git smart HTTP: `{repo}.git`).
+    let http_fn = |path: &str| {
+        inline(
+            "@t/x",
+            &[(
+                "src/a.forge",
+                &format!(
+                    "shape In {{\n  owner : text\n  repo : text\n}}\nfunction F\n  @http(GET, \"{path}\")\n{{\n  input In\n}}\n"
+                ),
+            )],
+        )
+    };
+    assert_eq!(
+        codes(http_fn("/git/{owner}/{repo}.git/info/refs")),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        codes(http_fn("/git/{owner}-{repo}.tar.gz")),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        codes(http_fn("/git/{owner}/{missing}.git")),
+        vec!["E-HTTP-001"]
+    );
+    for malformed in [
+        "/git/{owner}/{repo.git",
+        "/git/{owner}/repo}.git",
+        "/git/{owner}/{}.git",
+        "/git/{owner}/{re-po}.git",
+        "/git/{owner}{repo}.git",
+        "/git/{{owner}}/{repo}",
+    ] {
+        assert_eq!(codes(http_fn(malformed)), vec!["E-HTTP-002"], "{malformed}");
+    }
 }
 
 #[test]
