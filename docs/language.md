@@ -230,6 +230,11 @@ Cron compiles to an explicit recurrence (0/7 = Sunday, day-of-month OR
 day-of-week, IANA zone). Occurrence identity is schedule + intended instant;
 missed runs catch up in order within a window; overlapping runs are skipped.
 
+Schedules run per tenant, on that tenant's ledger, for every tenant the
+deployment has served, including tenants that are idle. A package with no
+`@tenant` resource is tenant-less: its schedules are global and run once per
+occurrence from the first trigger after deployment.
+
 ## Structural facets (edition 2027)
 
 Declare reusable fields with `facet ContactDetails { email : email? }` and apply

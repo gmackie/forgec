@@ -47,7 +47,10 @@ export interface ComposedRuntime {
   dispatcher: Dispatcher;
   /** One durable sweep: outbox deliveries, crashed workflow instances, due schedule occurrences. */
   sweep(tenant: string, now?: number): Promise<void>;
+  /** Every tenant's sweep; schedules fire for every tenant in the schedule index, idle ones included. */
   sweepAll(now?: number): Promise<void>;
+  /** Record an authenticated tenant in the schedule index (memoised per process; never throws). */
+  observeTenant(tenant: string): Promise<void>;
 }
 
 export function composeRuntime(c: RuntimeComposition): ComposedRuntime {
@@ -72,17 +75,28 @@ export function composeRuntime(c: RuntimeComposition): ComposedRuntime {
     send: (d) => Effect.tryPromise({ try: () => engine.consume(d.subscription, d.envelope).then(() => undefined), catch: (e) => new Error(String(e)) }),
   };
   const dispatcher = new Dispatcher(model, c.store, withProjections(engine, fallback), { subscriptions: internalSubscriptions(engine, c.subscriptions ?? defaultSubscriptions(model)), leaseMs: c.leaseMs ?? 30_000, maxAttempts: c.maxAttempts ?? 8 });
-  const sweep = async (tenant: string, now = Date.now()) => {
+  const drain = async (tenant: string, now: number) => {
     await Effect.runPromise(dispatcher.sweep(tenant, { now }));
     await Effect.runPromise(engine.workflows.sweep(tenant));
+  };
+  const sweep = async (tenant: string, now = Date.now()) => {
+    await drain(tenant, now);
     await Effect.runPromise(engine.schedules.tick(tenant, new Date(now).toISOString()));
   };
   const sweepAll = async (now = Date.now()) => {
     // Outbox tenants plus tenants with workflow instances (a sleeping instance has no outbox row).
-    const tenants = new Set([...(await Effect.runPromise(c.store.outboxTenants())), ...(await Effect.runPromise(engine.workflows.tenants()))]);
-    await Promise.all([...tenants].map((t) => sweep(t, now)));
+    const tenants = [...new Set([...(await Effect.runPromise(c.store.outboxTenants())), ...(await Effect.runPromise(engine.workflows.tenants()))])];
+    await Promise.all(tenants.map((t) => drain(t, now)));
+    // FORG-3: schedules fire from the index (idle and global tenants included), not from outbox activity.
+    await Effect.runPromise(engine.schedules.sweep(new Date(now).toISOString(), tenants));
   };
-  return { model, engine, store: c.store, dispatcher, sweep, sweepAll };
+  const tracked = new Set<string>();
+  const observeTenant = async (tenant: string) => {
+    if (tracked.has(tenant) || !engine.schedules.active) return;
+    tracked.add(tenant);
+    await Effect.runPromise(engine.schedules.track(tenant));
+  };
+  return { model, engine, store: c.store, dispatcher, sweep, sweepAll, observeTenant };
 }
 
 /**

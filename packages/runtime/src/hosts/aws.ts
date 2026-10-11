@@ -153,7 +153,13 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   const subscriptions: Record<string, string[]> = {};
   for (const s of model.bundle.messaging?.subscriptions ?? []) (subscriptions[s.channel] ??= []).push(s.name);
   const dispatcher = new Dispatcher(model, storage, withProjections(engine, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues)), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
-  const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
+  // Tenants this container has recorded in the schedule index (FORG-3); a miss costs one point read.
+  const tracked = new Set<string>();
+  let untracked: string | null = null;
+  const observeTenant = (tenant: string) => {
+    if (!tracked.has(tenant) && engine.schedules.active) untracked = tenant;
+  };
+  const handler = auth ? createHttpHandler(model, engine, { auth, observeTenant, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
 
   return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent | WorkflowDriverEvent | ScheduleTickEvent | WebSocketEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | WorkflowDriverResult | void> => {
     if ("requestContext" in ev && "routeKey" in ev.requestContext && ev.requestContext.eventType) {
@@ -220,9 +226,10 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
     }
     if ("forge" in ev && ev.forge === "schedule.tick") {
       // EventBridge delivers the intended instant in `time`; the ledger decides what is due.
+      // FORG-3: the schedule index, not the outbox, decides which tenants are due (idle and global ones included).
       const tenants = await Effect.runPromise(storage.outboxTenants());
       const now = new Date((ev as { time?: string }).time ?? Date.now()).toISOString();
-      await Promise.all(tenants.map((t: string) => Effect.runPromise(engine.schedules.tick(t, now))));
+      await Effect.runPromise(engine.schedules.sweep(now, tenants));
       return;
     }
     if ("source" in ev && ev.source === "aws.events") {
@@ -233,8 +240,14 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
     }
     const apiEv = ev as ApiGatewayV2Event;
     if (!handler) return { statusCode: 401, headers: { "content-type": "application/problem+json" }, body: JSON.stringify({ code: "Unauthenticated", detail: "no authentication host configured" }) };
+    untracked = null;
     const res = await handler(toRequest(apiEv));
     const out = await toResult(res);
+    if (untracked) {
+      const t: string = untracked;
+      tracked.add(t);
+      await Effect.runPromise(engine.schedules.track(t));
+    }
     out.headers["x-request-id"] = apiEv.requestContext.requestId;
     // Prompt nudge; the EventBridge sweep is the guarantee.
     const tenant = apiEv.headers?.["x-forge-tenant"];

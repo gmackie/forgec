@@ -220,6 +220,8 @@ export interface HttpOptions {
   adminMaxBodyBytes?: number;
   /** Allowed browser origins (exact, or "*"). Absent = no CORS headers. */
   cors?: { origins: string[] };
+  /** Called once per authenticated request with its tenant (hosts track tenants for schedules; must not block). */
+  observeTenant?: (tenant: string) => void;
   /** Extra authenticated endpoints by exact path (e.g. an MCP server at `/forge/mcp`). */
   mounts?: Record<string, (req: Request, principal: Principal, requestId: string) => Promise<Response>>;
 }
@@ -266,6 +268,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     // authenticate before routing: anonymous callers learn nothing about the API shape
     const principal = await options.auth.authenticate(req);
     if (principal instanceof ForgeError) return problem(principal, requestId);
+    options.observeTenant?.(principal.tenant);
 
     if (req.headers.has("x-forge-if-build") && req.headers.get("x-forge-if-build") !== model.bundle.buildHash)
       return new Response(JSON.stringify({code:"BuildChanged",detail:"Reload the runtime contract before invoking."}), {status:409,headers:{"content-type":"application/problem+json","x-request-id":requestId}});
