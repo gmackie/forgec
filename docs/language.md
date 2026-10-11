@@ -128,6 +128,15 @@ export channel OrderEvents
 on OrderEvents.OrderSubmitted -> FulfillOrder
 ```
 
+`@http` path parameters bind input fields by name (`E-HTTP-001` if a
+parameter is not an input field). A segment may be a whole parameter
+(`{order}`) or mix literals and parameters, as in git smart HTTP's
+`"/git/{owner}/{repo}.git/info/refs"` (`repo` binds `forgec` from
+`forgec.git`). At one position a literal segment wins over a mixed one, which
+wins over a whole parameter. Unbalanced or nested braces, an empty or
+non-identifier name, and two parameters with no literal between them are
+rejected (`E-HTTP-002`).
+
 The body lives in `impl/` (`defineFunction`) and sees exactly the declared
 capabilities. Writes and `send`s commit together at the end of the body. Each
 subscription is one durable delivery (outbox → Cloudflare Queue / SQS);

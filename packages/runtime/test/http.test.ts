@@ -5,7 +5,8 @@ import { Model, type AppBundle } from "../src/model.js";
 import { Engine } from "../src/engine.js";
 import { MemoryStorage } from "../src/adapters/memory.js";
 import { testLayer } from "../src/testing.js";
-import { createHttpHandler, devHeaderAuth } from "../src/http.js";
+import { compilePath, createHttpHandler, devHeaderAuth } from "../src/http.js";
+import { defineFunction } from "../src/functions.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;
 const model = new Model(bundle);
@@ -205,4 +206,64 @@ it("authenticates workspace discovery and exposes only record and changeset/impo
   expect(workspace.operations.some((o: any) => o.kind === "changeset.propose")).toBe(true);
   expect(workspace.operations.some((o: any) => o.kind.startsWith("admin.") || o.kind === "function")).toBe(false);
   expect((await handler(req("GET", "/forge/workspace.json", undefined, {"x-forge-if-build":"old"}))).status).toBe(409);
+});
+
+describe("mixed literal + parameter path segments (FORG-4)", () => {
+  // A path such as "/git/{owner}/{repo}.git/info/refs" carries a parameter and a literal in one segment.
+  // The compiler, OpenAPI projection and generated client all treat `{repo}` as the parameter; the router must too.
+  const withPath = (path: string) => {
+    const b = structuredClone(bundle);
+    for (const m of b.ir.modules) for (const f of m.functions ?? []) if (f.name === "SubmitOrder") f.http = { method: "POST", path };
+    const mm = new Model(b);
+    // Submits the order named by the bound `order` parameter, so a misparsed parameter cannot pass.
+    const submit = defineFunction("@acme/commerce/_/SubmitOrder", (deps) => {
+      const input = deps.input as { order: string; expectedVersion: number };
+      return deps.transitions.Order!.submit!(input.order, input.expectedVersion, {});
+    });
+    return createHttpHandler(mm, new Engine(mm, testLayer(new MemoryStorage()), { functions: [submit] }), { auth: devHeaderAuth() });
+  };
+  const seed = async (h: (r: Request) => Promise<Response>) => {
+    const cust = await (await h(req("POST", "/v1/customers", { code: "acme", name: "Acme" }))).json();
+    const site = await (await h(req("POST", "/v1/sites", { customer: cust.id, code: "hq", name: "HQ", timezone: "UTC" }))).json();
+    return (await (await h(req("POST", "/v1/orders", { customer: cust.id, site: site.id, subtotal: "10.00", tax: "0.50", requestedOn: "2026-09-20" }))).json()) as { id: string };
+  };
+
+  it("binds the parameter from a suffixed segment and requires the literal suffix", async () => {
+    const h = withPath("/v1/orders/{order}.json/submit");
+    const order = await seed(h);
+    const ok = await h(req("POST", `/v1/orders/${order.id}.json/submit`, {}, { "if-match": '"1"' }));
+    expect(ok.status).toBe(200);
+    expect((await ok.json()).status).toBe("Submitted");
+    expect((await h(req("POST", `/v1/orders/${order.id}/submit`, {}, { "if-match": '"2"' }))).status).toBe(404);
+    expect((await h(req("POST", `/v1/orders/${order.id}.xml/submit`, {}, { "if-match": '"2"' }))).status).toBe(404);
+  });
+
+  it("binds prefixed and infix parameters and rejects an empty value", async () => {
+    const pre = withPath("/v1/orders/order-{order}/submit");
+    const a = await seed(pre);
+    expect((await pre(req("POST", `/v1/orders/order-${a.id}/submit`, {}, { "if-match": '"1"' }))).status).toBe(200);
+    expect((await pre(req("POST", "/v1/orders/order-/submit", {}, { "if-match": '"1"' }))).status).toBe(404);
+    const infix = withPath("/v1/orders/x{order}.y/submit");
+    const b = await seed(infix);
+    const res = await infix(req("POST", `/v1/orders/x${encodeURIComponent(b.id)}.y/submit`, {}, { "if-match": '"1"' }));
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("compilePath (FORG-4)", () => {
+  it("compiles the git smart-HTTP template into literal, parameter and mixed segments", () => {
+    const segs = compilePath("/git/{owner}/{repo}.git/info/refs");
+    expect(segs.map((s) => s.literal ?? s.param ?? s.pattern!.params)).toEqual(["git", "owner", ["repo"], "info", "refs"]);
+    const re = segs[2]!.pattern!.regex;
+    expect(re.exec("forgec.git")?.[1]).toBe("forgec");
+    expect(re.exec("my.repo.git")?.[1]).toBe("my.repo");
+    expect(re.exec("forgecXgit")).toBeNull();
+    expect(re.exec(".git")).toBeNull();
+  });
+
+  it("rejects malformed templates instead of routing a mangled parameter name", () => {
+    expect(() => compilePath("/git/{repo.git")).toThrow(/malformed path template/);
+    expect(() => compilePath("/git/repo}.git")).toThrow(/malformed path template/);
+    expect(() => compilePath("/git/{}")).toThrow(/malformed path template/);
+  });
 });
