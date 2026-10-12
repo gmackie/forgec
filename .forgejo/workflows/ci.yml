@@ -30,6 +30,8 @@ jobs:
         with:
           toolchain: '1.97.1'
           targets: wasm32-unknown-unknown
+      - name: Compile the README tour and exercise documented CLI commands
+        run: cargo test --locked -p forgegraph-cli --test cli
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @forgegraph/console... build
       - run: pnpm --filter @forgegraph/console typecheck

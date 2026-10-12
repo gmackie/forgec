@@ -42,31 +42,33 @@ pnpm add @forgegraph/runtime       # the runtime your impl/ code imports
 
 ## A ten-line tour
 
+Create `acme/forge.toml` with `[package]`, `name = "@acme/commerce"` and
+`version = "1.0.0"`, then put this model in `acme/src/order.forge`:
+
 ```forge
-package acme.commerce@1.0.0
-
-resource Order {
-  id: Id
-  status: enum { pending, paid, shipped } = pending
-  total: Money
-  placedAt: Instant
-
-  view mine(actor: ActorId) = where { customer == actor }
-  transition pay(payment: PaymentRef) from pending to paid
+export resource Order @crud("/v1/orders") {
+  id : id
+  total : decimal
+  placedAt : datetime
+  lifecycle status {
+    initial Pending
+    terminal Paid
+    pay: Pending -> Paid
+  }
 }
 ```
 
 ```sh
 forgec check ./acme            # parse, resolve, type-check, resolve path deps
-forgec build ./acme --target cloudflare
-forgec build ./acme --target aws
-forgec migrate ./acme --from ./previous
+forgec build ./acme            # generates plans for the configured hosts
 ```
 
 `forgec build` emits the deployment plan, the SQL or DynamoDB access plan, the
 migrations, the typed TypeScript client, the OpenAPI document, the Smithy
 model and the ForgeGraph contract (`contract.json`, see
-[docs/contract-ir.md](docs/contract-ir.md)). Your handwritten code lives in `impl/` and never mentions a provider.
+[docs/contract-ir.md](docs/contract-ir.md)). Both physical plans are in the bundle.
+Host selection happens in deployment configuration. Your handwritten business
+code lives in `impl/` and never mentions a provider.
 
 Start with [docs/getting-started.md](docs/getting-started.md), then
 [docs/language.md](docs/language.md).
@@ -88,7 +90,7 @@ Start with [docs/getting-started.md](docs/getting-started.md), then
 | package | what it is | stability |
 | --- | --- | --- |
 | [`@forgegraph/runtime`](packages/runtime) | the engine: hosts, executors, policy, outbox, workflows, telemetry | stable candidate |
-| [`@forgegraph/react`](packages/react) | hooks and cache for generated clients | stable candidate |
+| [`@forgegraph/react`](packages/react) | descriptor-driven forms, edit buffers and gizmo workspaces | stable candidate |
 | [`@forgegraph/interfaces`](packages/interfaces) | OpenAPI/Smithy export, discovery, RPC bindings, MCP server, dashboards | stable candidate |
 | [`@forgegraph/capability-manifest`](packages/contracts/capability-manifest) | the capability manifest contract | stable candidate |
 | [`@forgegraph/registry`](packages/registry) | signed artifacts, catalog, deployment inventory, dependency grants | experimental |
@@ -102,7 +104,7 @@ recorded in each `package.json` under `forgegraph.stability`. Everything is
 0.x: the tiers say how much churn to expect, not that anything is frozen.
 
 **Reference application**: [`examples/acme`](examples/acme) is a real commerce
-application — orders, payments, fulfilment, a React workspace, a Next.js
+application — orders, payments, fulfilment, a React workspace, an edition-2027
 walkthrough — deployed to both clouds during certification. The conformance
 suite in [`conformance/`](conformance) runs against it.
 
