@@ -9,7 +9,9 @@ import { Effect } from "effect";
 import { expect, it } from "vitest";
 import { mqttTransport, mqttTopic } from "../src/mqtt.js";
 import { emitMqttBroker } from "../../adapters/src/mqtt-broker.js";
-import { connectMqttTransport } from "../src/mqtt-node.js";
+import { connectMqttTransport, connectMqttConsumer } from "../src/mqtt-node.js";
+import { setup } from "./mqtt-fixture.js";
+import { mqttConsumer } from "../src/mqtt-consumer.js";
 function available(): boolean { const result = spawnSync("mosquitto", ["-h"], { stdio: "ignore" }); return !result.error && !result.signal; }
 const hasBroker = available();
 if (process.env["FORGE_MQTT_TEST"] === "1" && !hasBroker) throw new Error("FORGE_MQTT_TEST requires mosquitto and mosquitto_passwd");
@@ -38,6 +40,7 @@ it.skipIf(!hasBroker)("publishes a Forge envelope through an authenticated broke
   const broker = spawn("mosquitto", ["-c", config], { stdio: ["ignore", "pipe", "pipe"] });
   let sub: Awaited<ReturnType<typeof connectAsync>> | undefined;
   let producer: Awaited<ReturnType<typeof connectMqttTransport>> | undefined;
+  let commands: Awaited<ReturnType<typeof connectMqttConsumer>> | undefined;
   try {
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error("test broker startup timeout")), 5000);
@@ -61,7 +64,30 @@ it.skipIf(!hasBroker)("publishes a Forge envelope through an authenticated broke
     expect(await received).toEqual({ body: envelope, qos: 1, retain: false });
     // Test direct mqtt.js structural compatibility too; no shim may acknowledge early.
     await Effect.runPromise(mqttTransport(sub, { "mqtt-events": { channel: "channel", prefix: "forge" } }).send({ subscription: "mqtt-events", envelope }));
+    // A failed handler must leave an unacknowledged broker packet for the same durable session.
+    const f = setup(), clientId = "forge-command-fixture";
+    f.fail(true);
+    commands = await connectMqttConsumer(url, f.engine, [f.route], { ...options, clientId });
+    await sub.publishAsync(f.topic, JSON.stringify(f.envelope), { qos: 1, retain: false });
+    expect(await commands.failure).toBeInstanceOf(Error);
+    expect(f.calls()).toBe(1);
+    f.fail(false);
+    // Resume the TCP session through WebSockets with a recreated Engine and shared durable storage.
+    commands = await connectMqttConsumer(`ws://127.0.0.1:${wsPort}`, f.create(), [f.route], { ...options, clientId });
+    await expect.poll(() => f.calls(), { timeout: 5000 }).toBe(2);
+    await expect.poll(async () => {
+      try { return await mqttConsumer(f.create(), [f.route]).receive(f.topic, JSON.stringify(f.envelope)); }
+      catch { return "pending"; }
+    }, { timeout: 5000 }).toBe("duplicate");
+    // Sending the same completed command again invokes no handler, including after restart.
+    await commands.close();
+    commands = await connectMqttConsumer(url, f.create(), [f.route], { ...options, clientId });
+    await sub.publishAsync(f.topic, JSON.stringify(f.envelope), { qos: 1, retain: false });
+    // A following packet is a processing barrier on this serialized MQTT session.
+    await sub.publishAsync(f.topic, JSON.stringify({ ...f.envelope, opId: "barrier", messageId: "barrier:0" }), { qos: 1, retain: false });
+    await expect.poll(() => f.calls(), { timeout: 5000 }).toBe(3);
   } finally {
+    await commands?.close();
     await producer?.close(); await sub?.endAsync(true);
     const exited = new Promise(resolve => broker.once("exit", resolve));
     if (broker.exitCode === null) { broker.kill("SIGTERM"); await exited; }

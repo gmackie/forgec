@@ -93,6 +93,64 @@ inject credentials. Its endpoint metadata uses the internal service name `mqtt`.
 It is a separate self-hosted broker pack, not an in-process Forge broker or a
 Cloudflare-native service. Nix/managed broker provisioning is not emitted.
 
-This release supports channel publication to either broker mode. MQTT inbound
-command bindings, typed language decorators, consumer completion acknowledgements,
-and production broker deployment/health certification remain separate work.
+Both broker modes support publication and inbound commands through the same
+connector. Production broker deployment and health certification remain separate work.
+
+## Typed bindings and inbound commands
+
+Declare `@mqtt("forge/events")` on a channel. Prefixes are concrete slash-separated
+ASCII letters, digits, underscores and hyphens, at most 128 bytes; wildcards and
+empty segments are rejected. The IR requires `mqtt/1`, and the messaging plan
+records QoS1, nonretained envelopes, a 64 KiB limit and
+`execution: "external-broker-connector"`. This describes an operator-wired
+connector, not a managed MQTT service on Cloudflare or AWS. MQTT.js is Node-only;
+other hosts need a compatible lifecycle and completion-aware broker client.
+
+For outbound bindings, use `mqttBindings(model)` from
+`@forgegraph/runtime/mqtt-consumer` and pass its routes to `connectMqttTransport`
+and its subscriptions to your dispatcher. Merge these subscriptions with other
+channel destinations. Receive-only channels have no outbound route.
+`composeRuntime` rejects outbound MQTT bindings without an explicit transport
+and channel subscription mapping, rather than silently using in-process delivery.
+
+For commands, declare a channel message and its subscription handler, then bind
+that subscription to a trusted tenant in deployment configuration:
+
+```ts
+import { connectMqttConsumer } from "@forgegraph/runtime/mqtt-node";
+const commands = await connectMqttConsumer(brokerUrl, engine, [
+  { tenant: trustedTenant, subscription: declaredSubscriptionName },
+], { clientId: stableDeploymentClientId, username: brokerUsername, password: brokerPassword });
+const failure = await commands.failure; // undefined when deliberately closed
+if (failure) reportFailure(failure); // restart the same durable session after remediation
+```
+
+The connection authenticates to either broker mode with operator-provisioned
+credentials. Broker ACLs must restrict each command producer to its tenant's
+exact topics; the connector does not receive a publisher identity from MQTT.
+Tenant and subscription routes come from trusted configuration, never payloads.
+Use separate credentials/sessions for separate trust boundaries. Send-only
+channels cannot receive commands.
+
+Inbound topics must exactly match `mqttTopic(prefix, tenant, channel, subscription)`.
+Envelopes must match that tenant, channel and message, provide a stable
+`messageId = opId + ":" + ordinal`, and pass the declared message field codecs and
+constraints before the handler runs. QoS0/2, retained commands, invalid UTF-8,
+oversized packets and malformed envelopes are rejected.
+MQTT 3.1.1 marks retained replay packets, but clears the retain flag for live
+delivery to existing subscriptions. Producers must use `retain: false`; broker
+policy must enforce that if retained publication is forbidden for the application.
+
+The Node connector installs its completion callback before opening the socket.
+It sends PUBACK only after `Engine.consume` commits handler writes and delivery
+completion, or confirms a completed duplicate. It enforces MQTT 3.1.1, `clean:
+false`, and a stable client ID. Failure or disconnect stops the connector;
+observe `failure` and explicitly restart with the same client ID after fixing
+the cause. The broker must retain durable sessions and unacknowledged QoS1
+packets. Invalid commands can block a session until an operator removes or
+remediates them; there is no automatic poison-message acknowledgement.
+
+Deduplication survives engine restart when storage persists. Reusing an identity
+with changed canonical content fails, and an ambiguous external side effect requires
+reconciliation rather than acknowledgement. Memory storage demonstrates the
+contract in tests; production requires the runtime's durable atomic storage.
