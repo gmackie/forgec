@@ -34,6 +34,10 @@ jobs:
         run: cargo test --locked -p forgegraph-cli --test cli
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @forgegraph/console... build
+      - name: Verify the runtime HTTP and signed webhook boundaries
+        run: |
+          pnpm --filter @forgegraph/runtime typecheck
+          pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/webhooks.test.ts
       - run: pnpm --filter @forgegraph/console typecheck
       - run: pnpm --filter @forgegraph/console test
 
@@ -91,6 +95,9 @@ jobs:
     needs: [console, acceptance]
     if: always()
     runs-on: ubuntu-latest
+    # Report needs only shell/curl, not a host-local forgegraph-act image.
+    container:
+      image: node:24.14.0
     steps:
       - name: Report CI result to ForgeGraph
         env:

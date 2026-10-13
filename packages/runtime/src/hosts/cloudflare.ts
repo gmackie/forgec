@@ -3,7 +3,7 @@ import { Effect, Layer } from "effect";
 import { D1Storage, type D1Like } from "../adapters/d1.js";
 import { R2ObjectStore, type R2Like } from "../adapters/r2.js";
 import { Engine } from "../engine.js";
-import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
+import { createHttpHandler, devHeaderAuth, type AuthHost, type SignedWebhook } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
 import { Dispatcher } from "../dispatch.js";
 import { internalSubscriptions, withProjections } from "../readmodels.js";
@@ -52,6 +52,8 @@ function queueBindings(model: Model, env: WorkerEnv): Record<string, QueueLike> 
 
 export interface WorkerOptions extends EngineOptions {
   auth?: AuthHost;
+  /** Explicit signed webhook POST bindings; never authenticates normal API routes. */
+  webhooks?: Record<string, SignedWebhook> | ((env: WorkerEnv) => Record<string, SignedWebhook>);
 }
 
 function nativeId(tenant: string, id: string): string {
@@ -274,10 +276,12 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       // Object bytes: the Worker-served equivalent of presigned URLs (bearer token, one key, one method).
       const m = /^\/_forge\/objects\/([^/]+)$/.exec(url.pathname);
       if (m && objects) return objects.serve(request, m[1]!);
-      const handler = createHttpHandler(model, engine, { auth, requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) });
+      const webhooks = typeof options.webhooks === "function" ? options.webhooks(env) : options.webhooks;
+      const signedWebhook = request.method === "POST" && webhooks && Object.hasOwn(webhooks, url.pathname);
+      const handler = createHttpHandler(model, engine, { auth, ...(webhooks ? { webhooks } : {}), requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) });
       const res = await handler(request);
       // Prompt post-commit nudge for this tenant; the cron sweep is the guarantee.
-      if (ctx && request.method !== "GET" && res.status < 300) {
+      if (ctx && !signedWebhook && request.method !== "GET" && res.status < 300) {
         const tenant = request.headers.get("x-forge-tenant");
         if (tenant) ctx.waitUntil(Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() })).catch(() => undefined));
       }

@@ -103,3 +103,9 @@ See [conformance.md](conformance.md) for the full certification run.
 
 `forgec lsp` is a stdio language server (diagnostics with suggestions on open and
 change, canonical formatting). Point any LSP client at it for `.forge` files.
+
+## Signed integration webhooks
+
+For POST callbacks authenticated by raw-body HMAC instead of user sessions,
+configure an explicit [signed webhook binding](signed-webhooks.md). Other routes
+retain the normal AuthHost boundary.

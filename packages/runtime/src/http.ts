@@ -7,6 +7,8 @@ import type { Engine, CallContext } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
 import { spanFromTraceparent, traceparent } from "./telemetry.js";
 import type { Model, OperationRef } from "./model.js";
+import { handleSignedWebhook, validateWebhooks, type SignedWebhook } from "./webhooks.js";
+export type { SignedWebhook } from "./webhooks.js";
 
 export interface Principal {
   tenant: string;
@@ -177,6 +179,8 @@ export interface HttpOptions {
   adminMaxBodyBytes?: number;
   /** Allowed browser origins (exact, or "*"). Absent = no CORS headers. */
   cors?: { origins: string[] };
+  /** Signed POST endpoints; each verifies a bounded raw body before session auth. */
+  webhooks?: Record<string, SignedWebhook>;
   /** Extra authenticated endpoints by exact path (e.g. an MCP server at `/forge/mcp`). */
   mounts?: Record<string, (req: Request, principal: Principal, requestId: string) => Promise<Response>>;
 }
@@ -184,6 +188,8 @@ export interface HttpOptions {
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 
 export function createHttpHandler(model: Model, engine: Engine, options: HttpOptions): (req: Request) => Promise<Response> {
+  const webhooks = options.webhooks ?? {};
+  validateWebhooks(webhooks);
   const routes = compile(model);
   const maxBody = options.maxBodyBytes ?? 1_048_576;
 
@@ -219,6 +225,9 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const requestId = options.requestId?.(req) ?? crypto.randomUUID();
     const url = new URL(req.url);
     const path = url.pathname.split("/").filter(Boolean);
+
+    if (req.method === "POST" && Object.hasOwn(webhooks, url.pathname))
+      return handleSignedWebhook(req, webhooks[url.pathname]!, requestId);
 
     // authenticate before routing: anonymous callers learn nothing about the API shape
     const principal = await options.auth.authenticate(req);

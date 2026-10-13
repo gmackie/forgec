@@ -13,7 +13,7 @@ import { Readable } from "node:stream";
 import { WebSocketServer, type WebSocket } from "ws";
 import { R2ObjectStore } from "../adapters/r2.js";
 import { FsBucket } from "../adapters/fs-objects.js";
-import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
+import { createHttpHandler, devHeaderAuth, type AuthHost, type SignedWebhook } from "../http.js";
 import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
 import { emfLine, workersLogLine, type OperationEvent } from "../telemetry.js";
 import { OtlpSink, type OtlpOptions } from "../otlp.js";
@@ -26,6 +26,8 @@ export interface NodeHostOptions extends Omit<RuntimeComposition, "realtimeHub" 
    * (or pass `devHeaderAuth()`) to trust `x-forge-tenant`/`x-forge-actor`.
    */
   auth?: AuthHost;
+  /** Explicit signed webhook POST bindings; never authenticates normal API routes. */
+  webhooks?: Record<string, SignedWebhook>;
   /** Object storage: a directory (served by this host through signed URLs) or any object store adapter (S3, R2). */
   objects?: RuntimeComposition["objects"] | { directory: string };
   /** Public base URL used inside signed object URLs; defaults to the bound address. */
@@ -100,7 +102,7 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
     );
   }
   if (auth.scheme === "dev-header") console.warn("forge: DEVELOPMENT AUTH ACTIVE — x-forge-tenant/x-forge-actor headers are trusted verbatim. Never run this configuration where untrusted callers can reach it.");
-  const handler = createHttpHandler(runtime.model, runtime.engine, { auth, requestId: () => crypto.randomUUID(), ...(options.cors ? { cors: { origins: options.cors } } : {}) });
+  const handler = createHttpHandler(runtime.model, runtime.engine, { auth, ...(options.webhooks ? { webhooks: options.webhooks } : {}), requestId: () => crypto.randomUUID(), ...(options.cors ? { cors: { origins: options.cors } } : {}) });
   const maxInFlight = options.maxInFlight ?? 256;
   let inFlight = 0;
   let stopping = false;
