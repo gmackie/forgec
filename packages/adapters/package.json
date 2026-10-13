@@ -25,6 +25,18 @@
     "LICENSE"
   ],
   "exports": {
+    "./tunnel-reconcile": {
+      "types": "./dist/tunnel-reconcile.d.ts",
+      "source": "./src/tunnel-reconcile.ts",
+      "import": "./dist/tunnel-reconcile.js",
+      "default": "./dist/tunnel-reconcile.js"
+    },
+    "./tunnel-connector-node": {
+      "types": "./dist/tunnel-connector-node.d.ts",
+      "source": "./src/tunnel-connector-node.ts",
+      "import": "./dist/tunnel-connector-node.js",
+      "default": "./dist/tunnel-connector-node.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "source": "./src/index.ts",
