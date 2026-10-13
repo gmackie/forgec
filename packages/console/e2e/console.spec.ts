@@ -58,11 +58,27 @@ test("operator manages apps, config, and OCI packages without off-origin browser
   await page
     .getByLabel("Compiled bundle")
     .setInputFiles(resolve("../../conformance/fixtures/acme-next.app.json"));
+  // Exercise a slow successful publication through the real registry. A DOM-only
+  // assertion's default five seconds must not race this multi-request operation.
+  await page.route("**/api/packages", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    const response = await route.fetch();
+    await new Promise((resolve) => setTimeout(resolve, 6000));
+    await route.fulfill({ response });
+  });
+  const publication = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === "/api/packages" &&
+      response.request().method() === "POST",
+    { timeout: 30_000 },
+  );
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Publish package", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const response = await publication;
+  expect(response.status(), await response.text()).toBe(201);
+  // Closing also awaits the registry refresh and signed artifact verification.
+  await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 30_000 });
   await page
     .getByRole("button", { name: "@acme/commerce-next", exact: true })
     .first()

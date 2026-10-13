@@ -101,7 +101,11 @@ jobs:
             if curl --fail --silent http://127.0.0.1:8787/healthz; then break; fi
             sleep 1
           done
-          pnpm exec playwright test || { tail -50 /tmp/forge-console.log; exit 1; }
+          pnpm exec playwright test || {
+            tail -50 /tmp/forge-console.log
+            find test-results -name error-context.md -exec cat {} \;
+            exit 1
+          }
 
   # ForgeGraph's deploy gate waits for this report; without it every deploy needs --break-glass.
   report:
