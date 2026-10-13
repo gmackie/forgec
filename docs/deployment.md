@@ -68,3 +68,6 @@ Bindings and secrets never enter the bundle. `FORGE_AUTH=dev-headers` is for
 development only; supply an `AuthHost` (`authenticate(req) → Principal`) for
 production. WebSocket upgrades carry auth in the query string (`?token=`),
 which `upgradeAuthRequest` lifts into headers for the same host.
+
+Cloudflare-first tunnel planning is available in the experimental adapters API;
+see [Cloudflare Tunnel primitive](tunnels.md) for ownership, ingress and connector credentials.

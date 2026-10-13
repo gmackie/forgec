@@ -94,6 +94,10 @@ export function emitTerraform(plan: DeploymentPlan): TerraformPack {
   const listed: TerraformPack["resources"] = [];
   const unsupported: TerraformPack["unsupported"] = [];
   for (const r of plan.resources) {
+    if (r.kind === "cloudflare_tunnel") {
+      unsupported.push({ id: r.id, kind: r.kind, reason: "Cloudflare Tunnel Terraform emission is not implemented; use a native-owned tunnel plan" });
+      continue;
+    }
     if (r.kind === "cloudflare_workflow") {
       unsupported.push({ id: r.id, kind: r.kind, reason: `cloudflare provider ${PROVIDER_VERSIONS.cloudflare} has no Workflows binding type; deploy workflows with wrangler (native owner) or a provider that supports them` });
       continue;

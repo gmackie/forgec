@@ -13,3 +13,9 @@ Managed providers and deployment portability packs (M18). Certification is per e
 | `self-hosted` | `emitSelfHosted(plan)` → Dockerfile (nonroot, health, SIGTERM), compose.yaml (external secrets, no workflow-engine claim), flake.nix + NixOS module (`LoadCredential`). |
 
 `FORGE_TF_VALIDATE=1` runs `terraform validate`; `FORGE_NIX_EVAL=1` evaluates the flake; `FORGE_PG_URL` enables the Postgres qualification.
+
+## Cloudflare Tunnel planning
+
+The experimental `./tunnels` export provides named Cloudflare Tunnel resources,
+ingress validation and native connector projections with external token references.
+See [the tunnel guide](../../docs/tunnels.md) for usage and current limits.
