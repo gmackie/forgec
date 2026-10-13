@@ -51,7 +51,7 @@ jobs:
         run: |
           pnpm --filter @forgegraph/adapters typecheck
           pnpm --filter @forgegraph/adapters build
-          pnpm --filter @forgegraph/adapters exec vitest run test/deployment.test.ts test/tunnels.test.ts test/mqtt-broker.test.ts
+          pnpm --filter @forgegraph/adapters exec vitest run test/deployment.test.ts test/tunnels.test.ts test/tunnel-executor.test.ts test/mqtt-broker.test.ts
       - run: pnpm --filter @forgegraph/console typecheck
       - run: pnpm --filter @forgegraph/console test
 
