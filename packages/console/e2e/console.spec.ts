@@ -4,6 +4,8 @@ test("operator manages apps, config, and OCI packages without off-origin browser
   page,
   request,
 }) => {
+  // This flow includes several real OCI uploads, signed reads and an injected delay.
+  test.setTimeout(180_000);
   const offOrigin: string[] = [],
     errors: string[] = [];
   page.on("request", (req) => {
@@ -51,7 +53,9 @@ test("operator manages apps, config, and OCI packages without off-origin browser
   await page
     .getByRole("button", { name: "Publish package", exact: true })
     .click();
-  await page.getByLabel("Package name", { exact: true }).fill("@acme/commerce-next");
+  await page
+    .getByLabel("Package name", { exact: true })
+    .fill("@acme/commerce-next");
   await page.getByLabel("Version", { exact: true }).fill(`1.0.${Date.now()}`);
   await page.getByLabel("Owner", { exact: true }).fill("Commerce team");
   await page.getByLabel("Source revision").fill("e2e-verification");
@@ -62,14 +66,15 @@ test("operator manages apps, config, and OCI packages without off-origin browser
   // assertion's default five seconds must not race this multi-request operation.
   await page.route("**/api/packages", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
-    const response = await route.fetch();
+    const response = await route.fetch({ timeout: 75_000 });
     await new Promise((resolve) => setTimeout(resolve, 6000));
     await route.fulfill({ response });
   });
   const publication = page.waitForResponse(
-    (response) => new URL(response.url()).pathname === "/api/packages" &&
+    (response) =>
+      new URL(response.url()).pathname === "/api/packages" &&
       response.request().method() === "POST",
-    { timeout: 30_000 },
+    { timeout: 90_000 },
   );
   await page
     .getByRole("dialog")
@@ -78,7 +83,7 @@ test("operator manages apps, config, and OCI packages without off-origin browser
   const response = await publication;
   expect(response.status(), await response.text()).toBe(201);
   // Closing also awaits the registry refresh and signed artifact verification.
-  await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 30_000 });
+  await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 45_000 });
   await page
     .getByRole("button", { name: "@acme/commerce-next", exact: true })
     .first()
@@ -86,11 +91,21 @@ test("operator manages apps, config, and OCI packages without off-origin browser
   await expect(
     page.getByText("OCI manifest digest", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Data classification" })).toBeVisible();
-  await expect(page.getByText("data-taxonomy/1", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Purposes and capability surfaces" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Data classification" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("data-taxonomy/1", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Purposes and capability surfaces" }),
+  ).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({
     path: "/tmp/forge-console-registry.png",

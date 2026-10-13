@@ -7,16 +7,39 @@ it.skipIf(!process.env.OCI_TEST_URL)(
   "publishes and reads signed packages through a real OCI Distribution server",
   async () => {
     const signer = await generateSigner("live-test");
+    let delayed = false;
     const registry = new OciRegistry({
       url: process.env.OCI_TEST_URL!,
       repository: `test-${Date.now()}`,
       authority: "test-independent.example",
       signer,
       allowHttp: true,
+      // Exercise a slow real server response when qualifying CI timing.
+      ...(process.env.OCI_TEST_DELAY_MS
+        ? {
+            fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+              const response = await fetch(input, init);
+              if (
+                !delayed &&
+                init?.method === "PUT" &&
+                response.status === 201
+              ) {
+                delayed = true;
+                await new Promise((resolve) =>
+                  setTimeout(resolve, Number(process.env.OCI_TEST_DELAY_MS)),
+                );
+              }
+              return response;
+            },
+          }
+        : {}),
     });
     const bundle = JSON.parse(
       readFileSync(
-        new URL("../../../conformance/fixtures/acme-next.app.json", import.meta.url),
+        new URL(
+          "../../../conformance/fixtures/acme-next.app.json",
+          import.meta.url,
+        ),
         "utf8",
       ),
     ) as AppBundle;
@@ -30,8 +53,12 @@ it.skipIf(!process.env.OCI_TEST_URL)(
     const listed = (await registry.list())[0]!;
     expect(listed.entry.name).toBe("@acme/commerce");
     expect(listed.governance.dataSemantics).toEqual(bundle.dataSemantics);
-    expect(listed.governance.surfaces).toEqual((bundle as any).capabilities.surfaces);
-    expect(listed.governance.purposes).toEqual(bundle.ir.modules.flatMap(m => m.purposes ?? []));
+    expect(listed.governance.surfaces).toEqual(
+      (bundle as any).capabilities.surfaces,
+    );
+    expect(listed.governance.purposes).toEqual(
+      bundle.ir.modules.flatMap((m) => m.purposes ?? []),
+    );
     expect((await registry.pull(published.ociDigest)).pulled.bundle).toEqual(
       bundle,
     );
@@ -45,4 +72,6 @@ it.skipIf(!process.env.OCI_TEST_URL)(
       }),
     ).rejects.toThrow(/already published/);
   },
+  // This roundtrip performs multiple signed uploads and reads against a real server.
+  60_000,
 );

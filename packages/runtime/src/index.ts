@@ -97,3 +97,5 @@ export * from "./foundation/access-governance.js";
 export * from "./mqtt.js";
 export * from "./mqtt-consumer.js";
 export * from "./http-streams.js";
+
+export * from "./workspace-auth.js";

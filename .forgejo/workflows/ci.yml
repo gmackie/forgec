@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      CARGO_BUILD_JOBS: '2'
+      CARGO_BUILD_JOBS: "2"
     steps:
       - uses: https://github.com/actions/checkout@v4
       - name: Ensure a C toolchain for Rust build scripts
@@ -25,10 +25,10 @@ jobs:
       - uses: https://github.com/pnpm/action-setup@v4
       - uses: https://github.com/actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
       - uses: https://github.com/dtolnay/rust-toolchain@master
         with:
-          toolchain: '1.97.1'
+          toolchain: "1.97.1"
           targets: wasm32-unknown-unknown
       - name: Compile the README tour and exercise documented CLI commands
         run: cargo test --locked -p forgegraph-cli --test cli
@@ -46,7 +46,7 @@ jobs:
         run: |
           pnpm --filter @forgegraph/runtime typecheck
           pnpm --filter @forgegraph/runtime build
-          FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/http-streaming.test.ts test/aws-host.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-consumer.test.ts test/mqtt-node-consumer.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
+          FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/workspace-auth.test.ts test/http.test.ts test/http-streaming.test.ts test/aws-host.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-consumer.test.ts test/mqtt-node-consumer.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
       - name: Verify deployment plans and Cloudflare Tunnel projections
         run: |
           pnpm --filter @forgegraph/adapters typecheck
@@ -69,7 +69,7 @@ jobs:
           OTEL_METRICS_EXPORTER: none
           OTEL_LOGS_EXPORTER: none
     env:
-      CARGO_BUILD_JOBS: '2'
+      CARGO_BUILD_JOBS: "2"
       OCI_TEST_URL: http://registry:5000
     steps:
       - uses: https://github.com/actions/checkout@v4
@@ -82,14 +82,16 @@ jobs:
       - uses: https://github.com/pnpm/action-setup@v4
       - uses: https://github.com/actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
       - uses: https://github.com/dtolnay/rust-toolchain@master
         with:
-          toolchain: '1.97.1'
+          toolchain: "1.97.1"
           targets: wasm32-unknown-unknown
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @forgegraph/console... build
       - run: pnpm --filter @forgegraph/console test
+      - name: Qualify OCI publication with a slow real registry response
+        run: OCI_TEST_DELAY_MS=6000 pnpm --filter @forgegraph/console exec vitest run test/oci-live.test.ts
       - run: pnpm --filter @forgegraph/console exec playwright install --with-deps chromium
       - name: Exercise the console against a real OCI registry
         working-directory: packages/console
