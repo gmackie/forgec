@@ -1,4 +1,7 @@
-# Acme-next walkthrough (FORGE-090)
+# Acme edition-2027 walkthrough (FORGE-090)
+
+“Next” names the next language edition in `examples/next/acme-next`; this is
+not a Next.js application tutorial.
 
 The same `.forge` package and the same `impl/` business code, on every certified profile, with no
 provider conditionals. Each step names the command or test that performs it; steps that cannot be

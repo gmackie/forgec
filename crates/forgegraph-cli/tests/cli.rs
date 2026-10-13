@@ -1472,3 +1472,62 @@ fn inspect_binds_foundation_semantics_to_compiled_fields() {
         );
     }
 }
+
+#[test]
+fn readme_tour_compiles_and_documented_commands_build_contracts() {
+    let readme = include_str!("../../../README.md");
+    let tour = readme
+        .split("## A ten-line tour")
+        .nth(1)
+        .expect("README tour");
+    let source = tour
+        .split("```forge\n")
+        .nth(1)
+        .unwrap()
+        .split("```")
+        .next()
+        .unwrap();
+    let commands = tour
+        .split("```sh\n")
+        .nth(1)
+        .unwrap()
+        .split("```")
+        .next()
+        .unwrap();
+    let dir = std::env::temp_dir().join(format!("forge-readme-tour-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::create_dir(dir.as_path().join("src")).unwrap();
+    std::fs::write(
+        dir.as_path().join("forge.toml"),
+        "[package]\nname = \"@acme/commerce\"\nversion = \"1.0.0\"\n",
+    )
+    .unwrap();
+    std::fs::write(dir.as_path().join("src/order.forge"), source).unwrap();
+    let mut count = 0;
+    for line in commands.lines() {
+        let command = line.split('#').next().unwrap().trim();
+        if command.is_empty() {
+            continue;
+        }
+        let mut args = command.split_whitespace();
+        assert_eq!(args.next(), Some("forgec"));
+        let args: Vec<String> = args
+            .map(|arg| arg.replace("./acme", dir.as_path().to_str().unwrap()))
+            .collect();
+        let out = forgec().args(&args).output().unwrap();
+        assert!(
+            out.status.success(),
+            "README command {command}: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        count += 1;
+    }
+    assert!(count >= 2, "README must demonstrate checking and building");
+    for artifact in ["app.json", "client.ts", "openapi.json", "contract.json"] {
+        assert!(
+            dir.as_path().join("generated").join(artifact).is_file(),
+            "missing {artifact}"
+        );
+    }
+    std::fs::remove_dir_all(dir).unwrap();
+}
