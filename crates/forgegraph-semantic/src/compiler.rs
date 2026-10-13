@@ -4954,6 +4954,7 @@ impl<'a> Ctx<'a> {
             messages.sort_by(|a, b| a.name.cmp(&b.name));
         }
         let mut websocket = None;
+        let mut mqtt = None;
         for d in c.decorators() {
             let Some(n) = d.name() else { continue };
             match n.text() {
@@ -4971,12 +4972,32 @@ impl<'a> Ctx<'a> {
                     }
                 }
                 "label" => {}
+                "mqtt" => {
+                    let args = d.args();
+                    let prefix = args.first().and_then(|a| a.value()).and_then(|v| {
+                        if let ArgValue::Literal(p) = v {
+                            if p.starts_with('"') && p.ends_with('"') {
+                                Some(unq(&p))
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
+                    });
+                    match prefix {
+                        Some(p) if mqtt.is_none() && args.len() == 1 && !p.is_empty() && p.len() <= 128 && p.split('/').all(|segment| !segment.is_empty() && segment.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')) => {
+                            mqtt = Some(MqttBinding { prefix: p });
+                        }
+                        _ => self.err("E-DEC-002", file, range_of(&d), "`@mqtt` requires one unique concrete topic prefix, e.g. `@mqtt(\"forge/events\")`", None),
+                    }
+                }
                 other => self.err(
                     "E-DEC-001",
                     file,
                     tok_range(&n),
                     format!("unknown channel decorator `@{other}`"),
-                    Some("channels accept `@websocket(path)` and `@label`".into()),
+                    Some("channels accept `@websocket(path)`, `@mqtt(prefix)` and `@label`".into()),
                 ),
             }
         }
@@ -4990,6 +5011,7 @@ impl<'a> Ctx<'a> {
             direction: c.direction(),
             messages,
             websocket,
+            mqtt,
         })
     }
 
@@ -5915,6 +5937,13 @@ impl<'a> Ctx<'a> {
         }
         if modules.iter().any(|m| !m.actors.is_empty()) {
             requires.push("actors/1".into());
+            requires.sort();
+        }
+        if modules
+            .iter()
+            .any(|m| m.channels.iter().any(|c| c.mqtt.is_some()))
+        {
+            requires.push("mqtt/1".into());
             requires.sort();
         }
         DomainIR {

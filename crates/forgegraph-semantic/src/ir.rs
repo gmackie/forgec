@@ -874,6 +874,15 @@ pub struct Channel {
     /// Realtime profile (plan §19): outbound fan-out of this channel's messages over WebSocket.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub websocket: Option<WebSocketBinding>,
+    /// MQTT QoS1 channel binding; credentials and tenant identity are deployment choices.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mqtt: Option<MqttBinding>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MqttBinding {
+    pub prefix: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -95,3 +95,4 @@ export * from "./foundation/challenge.js";
 export * from "./foundation/delegation.js";
 export * from "./foundation/access-governance.js";
 export * from "./mqtt.js";
+export * from "./mqtt-consumer.js";

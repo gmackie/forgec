@@ -87,7 +87,8 @@ export interface FunctionDecl {
   generated: boolean;
 }
 export interface WebSocketBinding { path: string }
-export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; websocket?: WebSocketBinding; messages: { name: string; fields: Field[] }[] }
+export interface MqttBinding { prefix: string }
+export interface ChannelDecl { id: string; name: string; contract?: string; direction?: string; websocket?: WebSocketBinding; mqtt?: MqttBinding; messages: { name: string; fields: Field[] }[] }
 export interface ViewDecl { id: string; name: string; source: string; by: string[]; where?: Expr; order: OrderKey[]; fields: string[] }
 export interface AggregateDecl { function: "count" | "sum" | "min" | "max" | "latest" | "exists" | "notExists"; field: string; alias: string; scale?: number; filter?: Expr; /** `latest x by t`: ordering field (#198). */ by?: string }
 export interface ProjectionDecl { id: string; name: string; source: string; by: string[]; where?: Expr; aggregates: AggregateDecl[]; crud?: { path: string; operations?: string[]; actions: string[] } }
@@ -112,14 +113,14 @@ export interface Module {
   actors?: import("./actors.js").ActorDefinition[];
   workQueues?: (import("./work-queues.js").QueueDefinition & {name:string;execute:string})[]; id: string; shapes?: { id: string; fields: Field[] }[]; enums: EnumDecl[]; resources: Resource[]; functions: FunctionDecl[]; channels: ChannelDecl[]; views?: ViewDecl[]; projections?: ProjectionDecl[]; caches?: CacheDecl[]; workflows?: WorkflowDecl[]; sources?: SourceDecl[]; purposes?: PurposeDecl[]; dataClasses?: DataClassDecl[] }
 export interface MessagingPlan {
-  channels: { id: string; name: string; implicit: boolean; direction?: string; messages: { name: string }[] }[];
+  channels: { id: string; name: string; implicit: boolean; direction?: string; mqtt?: MqttBinding & { qos: 1; retain: false; maxPayloadBytes: number; execution: "external-broker-connector" }; messages: { name: string }[] }[];
   subscriptions: { name: string; channel: string; message: string; handler: string; queue: string }[];
   senders: { function: string; sends: [string, string][] }[];
 }
 export interface PurposeDecl { id: string; name: string; exported: boolean; extends?: string }
 export interface DataClassDecl { id: string; name: string; exported: boolean; extends: string }
 /** Critical IR features this runtime understands; unknown `requires` entries fail closed (plan §4.2). */
-export const KNOWN_FEATURES = ["sealed-content/1", "append-only/1", "governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1", "actors/1"];
+export const KNOWN_FEATURES = ["sealed-content/1", "append-only/1", "governance/1", "conditional-unique/1", "projection-aggregates/1", "collections/1", "workflow-map/1", "sequences/1", "work-queues/1", "credentials/1", "search-exact/1", "actors/1", "mqtt/1"];
 export const DOMAIN_IR_VERSION = "domain-ir/1";
 export interface DomainIR { version: string; package: { name: string; version: string; edition?: string; profile?: string }; modules: Module[]; requires?: string[] }
 export interface DataSemanticsPlan { version: string; taxonomy: string; fields: { resource: string; field: string; class: string; ancestors: string[]; kinds: string[]; identifiability: string; handling: string; personal: string; evidence: string; completeness: string }[]; subjects: { resource: string; kind: string; via?: string; accessPath?: string; recordContext?: string }[]; summary: Record<string, number> }

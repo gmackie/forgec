@@ -132,6 +132,11 @@ The body lives in `impl/` (`defineFunction`) and sees exactly the declared
 capabilities. Writes and `send`s commit together at the end of the body. Each
 subscription is one durable delivery (outbox → Cloudflare Queue / SQS);
 consumers dedup by message id. `@websocket` makes the channel a realtime stream.
+`@mqtt("forge/events")` adds a typed MQTT binding to a channel; it can coexist
+with WebSockets. Prefixes use concrete slash-separated ASCII letters, digits,
+underscores and hyphens, with no wildcards or empty segments (128 bytes maximum).
+The plan requires an external broker connector; it does not provision a managed
+Cloudflare/AWS broker. See [MQTT configuration and command consumption](realtime-transports.md#typed-bindings-and-inbound-commands).
 
 ## Workflows
 

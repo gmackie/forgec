@@ -52,6 +52,11 @@ export interface ComposedRuntime {
 
 export function composeRuntime(c: RuntimeComposition): ComposedRuntime {
   const model = new Model(c.bundle);
+  for (const channel of model.channels) {
+    if (channel.mqtt && channel.direction !== "recv-only" && (!c.transport || !c.subscriptions?.[channel.id]?.length)) {
+      throw new Error("MQTT outbound bindings require an explicit broker connector and channel subscriptions");
+    }
+  }
   const layer = Layer.mergeAll(
     Layer.succeed(Clock)({ now: c.clock ?? (() => new Date().toISOString()) }),
     Layer.succeed(IdGen)(productionIds()),

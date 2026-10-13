@@ -28,6 +28,18 @@ pub struct ChannelPlan {
     /// True for `<Resource>.changes` channels synthesized for audited resources.
     pub implicit: bool,
     pub messages: Vec<MessagePlan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mqtt: Option<MqttChannelPlan>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MqttChannelPlan {
+    pub prefix: String,
+    pub qos: u8,
+    pub retain: bool,
+    pub max_payload_bytes: u32,
+    pub execution: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -77,6 +89,13 @@ pub fn plan(ir: &DomainIR) -> MessagingPlan {
                 delivery: c.delivery.clone(),
                 direction: c.direction.clone(),
                 implicit: false,
+                mqtt: c.mqtt.as_ref().map(|binding| MqttChannelPlan {
+                    prefix: binding.prefix.clone(),
+                    qos: 1,
+                    retain: false,
+                    max_payload_bytes: 65_536,
+                    execution: "external-broker-connector".into(),
+                }),
                 messages: c
                     .messages
                     .iter()
@@ -161,6 +180,7 @@ pub fn plan(ir: &DomainIR) -> MessagingPlan {
                     delivery: "at-least-once".into(),
                     direction: None,
                     implicit: true,
+                    mqtt: None,
                     messages,
                 });
             }
