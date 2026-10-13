@@ -34,15 +34,20 @@ jobs:
         run: cargo test --locked -p forgegraph-cli --test cli
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @forgegraph/console... build
+      - name: Install Mosquitto for the real MQTT broker roundtrip
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends mosquitto mosquitto-clients
       - name: Verify the runtime HTTP and signed webhook boundaries
         run: |
           pnpm --filter @forgegraph/runtime typecheck
-          pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/webhooks.test.ts
+          pnpm --filter @forgegraph/runtime build
+          FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
       - name: Verify deployment plans and Cloudflare Tunnel projections
         run: |
           pnpm --filter @forgegraph/adapters typecheck
           pnpm --filter @forgegraph/adapters build
-          pnpm --filter @forgegraph/adapters exec vitest run test/deployment.test.ts test/tunnels.test.ts
+          pnpm --filter @forgegraph/adapters exec vitest run test/deployment.test.ts test/tunnels.test.ts test/mqtt-broker.test.ts
       - run: pnpm --filter @forgegraph/console typecheck
       - run: pnpm --filter @forgegraph/console test
 

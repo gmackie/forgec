@@ -19,3 +19,6 @@ Managed providers and deployment portability packs (M18). Certification is per e
 The experimental `./tunnels` export provides named Cloudflare Tunnel resources,
 ingress validation and native connector projections with external token references.
 See [the tunnel guide](../../docs/tunnels.md) for usage and current limits.
+
+WebSocket and MQTT transport support is described in the
+[realtime transport guide](../../docs/realtime-transports.md).

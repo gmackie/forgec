@@ -5,3 +5,4 @@ export * from "./deployment-plan.js";
 export * from "./terraform.js";
 export * from "./self-hosted.js";
 export * from "./tunnels.js";
+export * from "./mqtt-broker.js";

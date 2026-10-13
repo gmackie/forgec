@@ -76,3 +76,6 @@ import { assessChangeset } from "@forgegraph/runtime/foundation/apps/forgegraph"
 Additional subpaths are `bob`, `kanbanger`, `latchflow`, and `stream-conductor`. They accept structural application ports. Bob and KanBanger accept an explicit Effect runner; the other adapters use the runtime's own Effect dependency internally. They do not install or enable an application. Compile the corresponding `examples/foundation/apps/<app>` schema into the application's Foundation deployment and supply authenticated tenant context and trusted bindings. Each example documents its integration seam and recovery boundaries. These optional adapters preserve application vocabulary; they are not new generic Foundation packages.
 
 `pnpm foundation:distribution` unpacks the real `pnpm pack` tarball into an external temporary consumer and checks all six JavaScript exports and TypeScript declarations. It rejects unresolved workspace dependency protocols.
+
+WebSocket and MQTT transport support is described in the
+[realtime transport guide](../../docs/realtime-transports.md).
