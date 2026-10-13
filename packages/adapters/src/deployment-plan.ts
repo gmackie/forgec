@@ -8,6 +8,7 @@
  * `retain` policy; nothing here ever emits a destroy for them.
  */
 import type { AppBundle } from "@forgegraph/runtime";
+import { resolveTunnelResources, type CloudflareTunnelSpec } from "./tunnels.js";
 
 export type TargetKind = "cloudflare" | "aws" | "self-hosted";
 export type Ownership = "managed" | "adopted";
@@ -47,6 +48,8 @@ export interface PlanOptions {
   stateOwner: DeploymentPlan["stateOwner"];
   adopt?: { database?: string; bucket?: string; table?: string };
   secrets?: string[];
+  /** Connector credentials are separate from app secrets. */
+  tunnels?: CloudflareTunnelSpec[];
   secretStore?: { path: string };
 }
 
@@ -55,6 +58,7 @@ const slug = (s: string) => s.replace(/^@/, "").replace(/[^a-z0-9]+/gi, "-").toL
 export function resolvePlan(bundle: AppBundle, o: PlanOptions): DeploymentPlan {
   const app = slug(bundle.ir.package.name);
   const name = (suffix: string) => `forge-${app}-${o.stage}-${suffix}`;
+  const tunnelResources = resolveTunnelResources(o.tunnels ?? [], o.target, `forge-${app}-${o.stage}`);
   const resources: ResourceSpec[] = [];
   const secrets: SecretRef[] = (o.secrets ?? ["FORGE_CURSOR_SECRET", "FORGE_JWT_SECRET"]).map((s) => ({ name: s, env: s, source: "external-secret-store", path: `${o.secretStore?.path ?? "forge"}/${app}/${o.stage}/${s}` }));
   const migrations: DeploymentPlan["migrations"] = [];
@@ -92,6 +96,7 @@ export function resolvePlan(bundle: AppBundle, o: PlanOptions): DeploymentPlan {
     resources.push({ id: "worker", kind: "container", name: name("worker"), ownership: "managed", bindings: {}, properties: { image: `forge-${app}:${bundle.buildHash.slice(0, 12)}`, role: "worker" }, retain: false });
     migrations.push({ kind: "postgres", job: name("migrate"), digest: bundle.buildHash });
   }
+  resources.push(...tunnelResources);
   return { version: "deployment-plan/1", target: o.target, app, stage: o.stage, artifact: bundle.buildHash, stateOwner: o.stateOwner, resources, secrets, migrations };
 }
 
@@ -102,7 +107,7 @@ export function destroyPlan(plan: DeploymentPlan, o: { approveDestroy?: string[]
   for (const r of plan.resources) {
     const approved = o.approveDestroy?.includes(r.id) ?? false;
     if (r.ownership === "adopted" && !approved) retained.push({ id: r.id, reason: `adopted from the customer (${r.adoptId ?? "external"}); externally owned resources are never destroyed without explicit approval` });
-    else if (r.retain && !approved) retained.push({ id: r.id, reason: "authoritative data store; retained unless explicitly approved for destruction" });
+    else if (r.retain && !approved) retained.push({ id: r.id, reason: "resource retention policy; retained unless explicitly approved for destruction" });
     else destroy.push(r.id);
   }
   return { destroy, retained };

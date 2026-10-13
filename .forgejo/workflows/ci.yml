@@ -38,6 +38,11 @@ jobs:
         run: |
           pnpm --filter @forgegraph/runtime typecheck
           pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/webhooks.test.ts
+      - name: Verify deployment plans and Cloudflare Tunnel projections
+        run: |
+          pnpm --filter @forgegraph/adapters typecheck
+          pnpm --filter @forgegraph/adapters build
+          pnpm --filter @forgegraph/adapters exec vitest run test/deployment.test.ts test/tunnels.test.ts
       - run: pnpm --filter @forgegraph/console typecheck
       - run: pnpm --filter @forgegraph/console test
 
