@@ -3,7 +3,7 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 60000,
   // Shared Forgejo runners expose more CPUs than this job can use sustainably.
-  workers: process.env.CI ? 2 : undefined,
+  ...(process.env.CI ? { workers: 2 } : {}),
   use: {
     baseURL: process.env.CONSOLE_TEST_URL || "http://127.0.0.1:8787",
     browserName: "chromium",

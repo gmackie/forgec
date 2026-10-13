@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   test: {
-    maxWorkers: process.env.CI ? 2 : undefined,
+    ...(process.env.CI ? { maxWorkers: 2 } : {}),
     include: ["test/**/*.test.{ts,tsx}"],
   },
 });
