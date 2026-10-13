@@ -61,7 +61,13 @@ export class Realtime {
       const docId = `${channel}:ledger`;
       for (let attempt = 0; attempt < 5; attempt++) {
         const cur = ((yield* storage.getDocument(tenant, KIND, docId)) ?? { seq: 0, ring: [], ids: [] }) as unknown as Ledger;
-        if (cur.ids.includes(env.messageId)) return null; // redelivery: already sequenced
+        if (cur.ids.includes(env.messageId)) {
+          // Durable sequencing may have succeeded before a hub failure. Retry the same
+          // frame; clients dedup by sequence/messageId. Never acknowledge a lost frame.
+          const previous = cur.ring.find(frame => frame.messageId === env.messageId);
+          if (previous) return previous;
+          return yield* Effect.fail(err("TransientConflict", "realtime retry fell outside replay window"));
+        }
         const frame: EventFrame = { type: "event", stream: channel, seq: cur.seq + 1, message: env.message, messageId: env.messageId, payload: env.payload as Wire, at: env.createdAt };
         const ring = [...cur.ring, frame].slice(-self.replayDepth);
         const ids = [...cur.ids, env.messageId].slice(-self.replayDepth * 4);

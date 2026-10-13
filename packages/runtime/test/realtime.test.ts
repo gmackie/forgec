@@ -49,6 +49,36 @@ const submit = async () => {
 };
 
 describe("stream ledger", () => {
+  it("retries a failed broadcast with the same durable sequence", async () => {
+    await submit();
+    let attempts = 0;
+    hub.broadcast = async (tenant, channel, frame) => {
+      attempts++;
+      if (attempts === 1) throw new Error("hub unavailable");
+      broadcasts.push({ tenant, channel, frame });
+    };
+    const d = new Dispatcher(model, storage, withProjections(engine, { name: "none", send: () => Effect.void }), { subscriptions: internalSubscriptions(engine), leaseMs: 1000, maxAttempts: 3 });
+    const now = Date.now();
+    expect((await run(d.sweep("acme", { now }))).failed).toBe(1);
+    expect((await run(d.sweep("acme", { now: now + 2000 }))).failed).toBe(0);
+    expect(attempts).toBe(2);
+    expect(broadcasts).toHaveLength(1);
+    expect(broadcasts[0]!.frame).toMatchObject({ type: "event", seq: 1 });
+    const replay = await run(engine.realtime.replay("acme", CH, 0).pipe(Effect.provide(engine.layer)));
+    expect(replay.frames).toHaveLength(1);
+  });
+  it("does not acknowledge a failed broadcast whose frame has left the replay window", async () => {
+    engine.realtime.replayDepth = 1;
+    await submit();
+    hub.broadcast = async () => { throw new Error("hub unavailable"); };
+    const d = new Dispatcher(model, storage, withProjections(engine, { name: "none", send: () => Effect.void }), { subscriptions: internalSubscriptions(engine), leaseMs: 1000, maxAttempts: 3 });
+    const now = Date.now();
+    await run(d.sweep("acme", { now }));
+    await submit();
+    await run(d.sweep("acme", { now: now + 1 }));
+    const retry = await run(d.sweep("acme", { now: now + 2000 }));
+    expect(retry.failed).toBe(2);
+  });
   it("bound channels are streams; publications get increasing per-stream sequence numbers and reach the hub through the outbox", async () => {
     expect(engine.realtime.streams().map((s) => [s.channel, s.path])).toEqual([[CH, "/v1/live/orders"]]);
     const o1 = await submit();

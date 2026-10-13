@@ -13,3 +13,5 @@
 | [../specs/](../specs/) | normative specs: grammar, identity, wire format, error catalogue, codecs and golden vectors, IR |
 
 The design rationale behind all of it is `../Forge_Dual_Target_Implementation_Plan.md`.
+
+[WebSockets and MQTT](realtime-transports.md): realtime replay, broker adapters and self-hosted Mosquitto.

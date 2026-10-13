@@ -216,6 +216,18 @@
       "source": "./src/artifact-functions.ts",
       "import": "./dist/artifact-functions.js",
       "default": "./dist/artifact-functions.js"
+    },
+    "./mqtt": {
+      "types": "./dist/mqtt.d.ts",
+      "source": "./src/mqtt.ts",
+      "import": "./dist/mqtt.js",
+      "default": "./dist/mqtt.js"
+    },
+    "./mqtt-node": {
+      "types": "./dist/mqtt-node.d.ts",
+      "source": "./src/mqtt-node.ts",
+      "import": "./dist/mqtt-node.js",
+      "default": "./dist/mqtt-node.js"
     }
   },
   "scripts": {
@@ -236,6 +248,7 @@
     "@forgegraph/capability-manifest": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "effect": "4.0.3",
+    "mqtt": "^5.16.0",
     "pg": "^8.23.0",
     "ws": "^8.21.3"
   },
