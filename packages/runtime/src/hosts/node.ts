@@ -10,10 +10,11 @@
  */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { WebSocketServer, type WebSocket } from "ws";
 import { R2ObjectStore } from "../adapters/r2.js";
 import { FsBucket } from "../adapters/fs-objects.js";
-import { createHttpHandler, devHeaderAuth, type AuthHost, type SignedWebhook } from "../http.js";
+import { createHttpHandler, devHeaderAuth, type AuthHost, type SignedWebhook, type HttpEndpoint } from "../http.js";
 import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
 import { emfLine, workersLogLine, type OperationEvent } from "../telemetry.js";
 import { OtlpSink, type OtlpOptions } from "../otlp.js";
@@ -26,6 +27,7 @@ export interface NodeHostOptions extends Omit<RuntimeComposition, "realtimeHub" 
    * (or pass `devHeaderAuth()`) to trust `x-forge-tenant`/`x-forge-actor`.
    */
   auth?: AuthHost;
+  endpoints?: HttpEndpoint[];
   /** Explicit signed webhook POST bindings; never authenticates normal API routes. */
   webhooks?: Record<string, SignedWebhook>;
   /** Object storage: a directory (served by this host through signed URLs) or any object store adapter (S3, R2). */
@@ -36,6 +38,8 @@ export interface NodeHostOptions extends Omit<RuntimeComposition, "realtimeHub" 
   /** Sweep period; 0 disables the loop (tests drive `sweepAll` themselves). */
   sweepIntervalMs?: number;
   maxInFlight?: number;
+  /** Long-lived responses are cancelled after this shutdown grace period (default 5s). */
+  drainTimeoutMs?: number;
   /** "json" (Workers-Logs shaped lines) or "emf" (CloudWatch EMF) on stdout, "otlp" (OTLP/HTTP to `otlp.endpoint`); default json. */
   telemetryFormat?: "json" | "emf" | "silent" | "otlp";
   otlp?: Omit<OtlpOptions, "serviceName" | "boundaries"> & { serviceName?: string };
@@ -53,7 +57,7 @@ export interface NodeHost {
 }
 
 /** Node request → Fetch Request. */
-export function toFetchRequest(req: IncomingMessage, base: string): Request {
+export function toFetchRequest(req: IncomingMessage, base: string, signal?: AbortSignal): Request {
   const url = new URL(req.url ?? "/", base);
   const headers = new Headers();
   for (const [k, v] of Object.entries(req.headers)) {
@@ -62,15 +66,15 @@ export function toFetchRequest(req: IncomingMessage, base: string): Request {
   }
   const method = req.method ?? "GET";
   const body = method === "GET" || method === "HEAD" ? null : (Readable.toWeb(req) as unknown as ReadableStream);
-  return new Request(url, { method, headers, body, ...(body ? { duplex: "half" } : {}) } as RequestInit);
+  return new Request(url, { method, headers, body, signal, ...(body ? { duplex: "half" } : {}) } as RequestInit);
 }
 
-export async function writeFetchResponse(res: ServerResponse, r: Response): Promise<void> {
+export async function writeFetchResponse(res: ServerResponse, r: Response, signal?: AbortSignal): Promise<void> {
   res.statusCode = r.status;
   r.headers.forEach((v, k) => res.setHeader(k, v));
   if (!r.body) return void res.end();
-  for await (const chunk of r.body as unknown as AsyncIterable<Uint8Array>) res.write(chunk);
-  res.end();
+  res.flushHeaders();
+  await pipeline(Readable.fromWeb(r.body as never), res, signal ? { signal } : {});
 }
 
 export function createNodeHost(options: NodeHostOptions): NodeHost {
@@ -102,8 +106,11 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
     );
   }
   if (auth.scheme === "dev-header") console.warn("forge: DEVELOPMENT AUTH ACTIVE — x-forge-tenant/x-forge-actor headers are trusted verbatim. Never run this configuration where untrusted callers can reach it.");
-  const handler = createHttpHandler(runtime.model, runtime.engine, { auth, ...(options.webhooks ? { webhooks: options.webhooks } : {}), requestId: () => crypto.randomUUID(), ...(options.cors ? { cors: { origins: options.cors } } : {}) });
+  const handler = createHttpHandler(runtime.model, runtime.engine, { auth, ...(options.endpoints ? { endpoints: options.endpoints } : {}), ...(options.webhooks ? { webhooks: options.webhooks } : {}), requestId: () => crypto.randomUUID(), ...(options.cors ? { cors: { origins: options.cors } } : {}) });
   const maxInFlight = options.maxInFlight ?? 256;
+  const drainTimeout = options.drainTimeoutMs ?? 5000;
+  if (!Number.isSafeInteger(drainTimeout) || drainTimeout < 0) throw new Error("drainTimeoutMs must be a nonnegative safe integer");
+  const activeRequests = new Set<AbortController>();
   let inFlight = 0;
   let stopping = false;
   const host: NodeHost = { runtime, server: undefined as unknown as Server, ready: false, address: () => bound!, listen, stop };
@@ -121,6 +128,9 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
       inFlight++;
       try {
         await writeFetchResponse(res, await fsStore.serve(toFetchRequest(req, base), obj[1]!));
+      } catch {
+        if (res.headersSent) res.destroy();
+        else { res.writeHead(500, { "content-type": "application/problem+json" }); res.end(JSON.stringify({ code: "Internal", status: 500, detail: "Object request failed" })); }
       } finally {
         inFlight--;
         if (inFlight === 0) for (const f of drained) f();
@@ -131,17 +141,24 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
     if (stopping) return void res.writeHead(503, { connection: "close", "retry-after": "1" }).end();
     if (inFlight >= maxInFlight) return void res.writeHead(503, { "retry-after": "1", "content-type": "application/problem+json" }).end(JSON.stringify({ code: "Overloaded", status: 503, retryable: true }));
     inFlight++;
+    const abort = new AbortController();
+    activeRequests.add(abort);
+    const disconnect = () => { if (!res.writableFinished) abort.abort(); };
+    req.once("aborted", disconnect);
+    res.once("close", disconnect);
     try {
-      const request = toFetchRequest(req, base);
+      const request = toFetchRequest(req, base, abort.signal);
       const response = await handler(request);
-      await writeFetchResponse(res, response);
+      await writeFetchResponse(res, response, abort.signal);
       // Prompt post-commit nudge; the periodic sweep is the guarantee.
       const tenant = request.headers.get("x-forge-tenant");
       if (tenant && request.method !== "GET" && response.status < 300) void runtime.sweep(tenant).catch(() => undefined);
     } catch (e) {
-      if (!res.headersSent) res.writeHead(500, { "content-type": "application/problem+json" });
-      res.end(JSON.stringify({ code: "Internal", status: 500, detail: String((e as Error).message ?? e) }));
+      if (res.headersSent) res.destroy();
+      else { res.writeHead(500, { "content-type": "application/problem+json" }); res.end(JSON.stringify({ code: "Internal", status: 500, detail: "HTTP request failed" })); }
     } finally {
+      req.off("aborted", disconnect); res.off("close", disconnect);
+      activeRequests.delete(abort);
       inFlight--;
       if (inFlight === 0) for (const f of drained) f();
     }
@@ -192,7 +209,9 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
     host.ready = false;
     if (sweepTimer) clearInterval(sweepTimer);
     for (const ws of sessions.keys()) ws.close(1001, "shutting down");
-    await new Promise<void>((resolve) => server.close(() => resolve()));
+    const deadline = setTimeout(() => { for (const request of activeRequests) request.abort(); server.closeAllConnections(); }, drainTimeout);
+    try { await new Promise<void>((resolve) => server.close(() => resolve())); }
+    finally { clearTimeout(deadline); }
     if (inFlight > 0) await new Promise<void>((resolve) => drained.add(resolve));
     if (sweeping) await sweeping;
     if (otlp) await otlp.flush(); // drain telemetry with the requests

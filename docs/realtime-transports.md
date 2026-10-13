@@ -1,5 +1,7 @@
 # WebSockets and MQTT
 
+For one-way HTTP log/event streams, see [streaming and binary HTTP](streaming-http.md).
+
 Forge channels publish through a transactional outbox. A channel may have queue
 consumers, WebSocket subscribers and MQTT deliveries together. These transports
 have different acknowledgements; a broker PUBACK does not prove that a device

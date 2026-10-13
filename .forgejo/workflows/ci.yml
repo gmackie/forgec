@@ -46,7 +46,7 @@ jobs:
         run: |
           pnpm --filter @forgegraph/runtime typecheck
           pnpm --filter @forgegraph/runtime build
-          FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-consumer.test.ts test/mqtt-node-consumer.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
+          FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/http-streaming.test.ts test/aws-host.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-consumer.test.ts test/mqtt-node-consumer.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
       - name: Verify deployment plans and Cloudflare Tunnel projections
         run: |
           pnpm --filter @forgegraph/adapters typecheck
@@ -101,7 +101,11 @@ jobs:
             if curl --fail --silent http://127.0.0.1:8787/healthz; then break; fi
             sleep 1
           done
-          pnpm exec playwright test || { tail -50 /tmp/forge-console.log; exit 1; }
+          pnpm exec playwright test || {
+            tail -50 /tmp/forge-console.log
+            find test-results -name error-context.md -exec cat {} \;
+            exit 1
+          }
 
   # ForgeGraph's deploy gate waits for this report; without it every deploy needs --break-glass.
   report:

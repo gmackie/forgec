@@ -8,6 +8,8 @@ import { err, ForgeError } from "./errors.js";
 import { spanFromTraceparent, traceparent } from "./telemetry.js";
 import type { Model, OperationRef } from "./model.js";
 import { handleSignedWebhook, validateWebhooks, type SignedWebhook } from "./webhooks.js";
+import { compileEndpoints, endpointRequest, type HttpEndpoint } from "./http-endpoints.js";
+export type { HttpEndpoint, HttpEndpointContext } from "./http-endpoints.js";
 export type { SignedWebhook } from "./webhooks.js";
 
 export interface Principal {
@@ -173,6 +175,7 @@ function match(route: Route, path: string[]): Record<string, string> | null {
 
 export interface HttpOptions {
   auth: AuthHost;
+  endpoints?: HttpEndpoint[];
   requestId?: (req: Request) => string;
   /** Default 1 MiB; admin import bodies are allowed `adminMaxBodyBytes` (default 64 MiB). */
   maxBodyBytes?: number;
@@ -190,6 +193,7 @@ const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 export function createHttpHandler(model: Model, engine: Engine, options: HttpOptions): (req: Request) => Promise<Response> {
   const webhooks = options.webhooks ?? {};
   validateWebhooks(webhooks);
+  const endpoints = compileEndpoints(options.endpoints ?? []);
   const routes = compile(model);
   const maxBody = options.maxBodyBytes ?? 1_048_576;
 
@@ -235,6 +239,21 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
 
     if (req.headers.has("x-forge-if-build") && req.headers.get("x-forge-if-build") !== model.bundle.buildHash)
       return new Response(JSON.stringify({code:"BuildChanged",detail:"Reload the runtime contract before invoking."}), {status:409,headers:{"content-type":"application/problem+json","x-request-id":requestId}});
+    const matchingEndpoints = endpoints.filter(e => e.regex.test(url.pathname));
+    if (matchingEndpoints.length) {
+      const binding = matchingEndpoints.find(e => e.endpoint.method === req.method);
+      if (!binding) return new Response(null, { status: 405, headers: { allow: matchingEndpoints.map(e => e.endpoint.method).join(", "), "x-request-id": requestId } });
+      try {
+        const matched = binding.regex.exec(url.pathname)!;
+        const params = Object.fromEntries(binding.names.map((name, i) => [name, decodeURIComponent(matched[i + 1]!)]));
+        const response = await binding.endpoint.handle(await endpointRequest(req, binding.limit), { principal, requestId, params });
+        const headers = new Headers(response.headers);
+        headers.set("x-request-id", requestId);
+        return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+      } catch (e) {
+        return problem(e instanceof ForgeError ? e : e instanceof URIError ? err("MalformedRequest", "invalid endpoint path encoding") : err("Internal", "HTTP endpoint failed"), requestId);
+      }
+    }
     const mount = options.mounts?.[url.pathname];
     if (mount) return mount(req, principal, requestId);
 

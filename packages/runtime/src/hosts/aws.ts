@@ -4,7 +4,7 @@ import { DynamoStorage } from "../adapters/dynamodb.js";
 import { S3ObjectStore } from "../adapters/s3.js";
 import { MemoryObjectStore } from "../adapters/memory-objects.js";
 import { Engine } from "../engine.js";
-import { createHttpHandler, devHeaderAuth, type AuthHost } from "../http.js";
+import { createHttpHandler, devHeaderAuth, type AuthHost, type HttpEndpoint } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
 import { Dispatcher } from "../dispatch.js";
 import { internalSubscriptions, withProjections } from "../readmodels.js";
@@ -31,6 +31,7 @@ export interface ApiGatewayV2Result {
   statusCode: number;
   headers: Record<string, string>;
   body: string;
+  isBase64Encoded?: boolean;
 }
 
 export function toRequest(ev: ApiGatewayV2Event): Request {
@@ -38,15 +39,40 @@ export function toRequest(ev: ApiGatewayV2Event): Request {
   const url = `https://${host}${ev.rawPath}${ev.rawQueryString ? `?${ev.rawQueryString}` : ""}`;
   const headers = new Headers();
   for (const [k, v] of Object.entries(ev.headers ?? {})) if (v !== undefined) headers.set(k, v);
-  const body = ev.body === undefined ? null : ev.isBase64Encoded ? Buffer.from(ev.body, "base64").toString("utf8") : ev.body;
+  const body = ev.body === undefined ? null : ev.isBase64Encoded ? new Uint8Array(Buffer.from(ev.body, "base64")) : ev.body;
   const method = ev.requestContext.http.method;
   return new Request(url, { method, headers, body: method === "GET" || method === "HEAD" ? null : body });
 }
 
 export async function toResult(res: Response): Promise<ApiGatewayV2Result> {
+  const contentType = res.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase() ?? "application/octet-stream";
+  if (contentType === "text/event-stream") { void res.body?.cancel().catch(() => {}); throw new Error("live streaming is unsupported by the buffered API Gateway host"); }
   const headers: Record<string, string> = {};
   res.headers.forEach((v, k) => (headers[k] = v));
-  return { statusCode: res.status, headers, body: await res.text() };
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  const reader = res.body?.getReader();
+  if (reader) {
+    try {
+      for (;;) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        size += chunk.value.byteLength;
+        // Leave room for base64 expansion and the Lambda response envelope.
+        if (size > 4_194_304) { void reader.cancel().catch(() => {}); throw new Error("buffered API Gateway response exceeds 4 MiB"); }
+        chunks.push(chunk.value);
+      }
+    } finally { reader.releaseLock(); }
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  const text = !res.headers.has("content-encoding") && (contentType.startsWith("text/") || contentType === "application/json" || contentType.endsWith("+json") || contentType === "application/xml" || contentType.endsWith("+xml"));
+  if (text) {
+    try { return { statusCode: res.status, headers, body: new TextDecoder("utf-8", { fatal: true }).decode(bytes) }; }
+    catch { /* Non-UTF8 text is still represented losslessly as binary. */ }
+  }
+  return { statusCode: res.status, headers, body: Buffer.from(bytes).toString("base64"), isBase64Encoded: true };
 }
 
 export interface LambdaEnv {
@@ -74,11 +100,13 @@ export interface WebSocketEvent {
 
 export interface LambdaOptions extends EngineOptions {
   auth?: AuthHost;
+  endpoints?: HttpEndpoint[];
   env?: LambdaEnv;
 }
 
 /** One handler for API Gateway requests, SQS batches (consumer) and EventBridge schedules (sweep). */
 export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = {}) {
+  if (options.endpoints?.some(e => e.responseMode === "stream")) throw new Error("live streaming endpoints are unsupported by the buffered API Gateway host");
   const model = new Model(bundle);
   const env = options.env ?? (process.env as unknown as LambdaEnv);
   const auth = options.auth ?? (env.FORGE_AUTH === "dev-headers" ? devHeaderAuth() : null);
@@ -153,7 +181,7 @@ export function createLambdaHandler(bundle: AppBundle, options: LambdaOptions = 
   const subscriptions: Record<string, string[]> = {};
   for (const s of model.bundle.messaging?.subscriptions ?? []) (subscriptions[s.channel] ??= []).push(s.name);
   const dispatcher = new Dispatcher(model, storage, withProjections(engine, sqsTransport({ send: async (url, body, dedup) => void (await sqs.send(new SendMessageCommand({ QueueUrl: url, MessageBody: body, MessageAttributes: { messageId: { DataType: "String", StringValue: dedup } } }))) }, queues)), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
-  const handler = auth ? createHttpHandler(model, engine, { auth, requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
+  const handler = auth ? createHttpHandler(model, engine, { auth, ...(options.endpoints ? { endpoints: options.endpoints } : {}), requestId: () => crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) }) : null;
 
   return async (ev: ApiGatewayV2Event | SqsEvent | ScheduledEvent | WorkflowDriverEvent | ScheduleTickEvent | WebSocketEvent): Promise<ApiGatewayV2Result | SqsBatchResponse | WorkflowDriverResult | void> => {
     if ("requestContext" in ev && "routeKey" in ev.requestContext && ev.requestContext.eventType) {

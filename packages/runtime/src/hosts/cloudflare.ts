@@ -3,7 +3,7 @@ import { Effect, Layer } from "effect";
 import { D1Storage, type D1Like } from "../adapters/d1.js";
 import { R2ObjectStore, type R2Like } from "../adapters/r2.js";
 import { Engine } from "../engine.js";
-import { createHttpHandler, devHeaderAuth, type AuthHost, type SignedWebhook } from "../http.js";
+import { createHttpHandler, devHeaderAuth, type AuthHost, type SignedWebhook, type HttpEndpoint } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
 import { Dispatcher } from "../dispatch.js";
 import { internalSubscriptions, withProjections } from "../readmodels.js";
@@ -52,6 +52,7 @@ function queueBindings(model: Model, env: WorkerEnv): Record<string, QueueLike> 
 
 export interface WorkerOptions extends EngineOptions {
   auth?: AuthHost;
+  endpoints?: HttpEndpoint[] | ((env: WorkerEnv) => HttpEndpoint[]);
   /** Explicit signed webhook POST bindings; never authenticates normal API routes. */
   webhooks?: Record<string, SignedWebhook> | ((env: WorkerEnv) => Record<string, SignedWebhook>);
 }
@@ -278,7 +279,8 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       if (m && objects) return objects.serve(request, m[1]!);
       const webhooks = typeof options.webhooks === "function" ? options.webhooks(env) : options.webhooks;
       const signedWebhook = request.method === "POST" && webhooks && Object.hasOwn(webhooks, url.pathname);
-      const handler = createHttpHandler(model, engine, { auth, ...(webhooks ? { webhooks } : {}), requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) });
+      const endpoints = typeof options.endpoints === "function" ? options.endpoints(env) : options.endpoints;
+      const handler = createHttpHandler(model, engine, { auth, ...(endpoints ? { endpoints } : {}), ...(webhooks ? { webhooks } : {}), requestId: (req) => req.headers.get("cf-ray") ?? crypto.randomUUID(), ...(env.FORGE_CORS ? { cors: { origins: env.FORGE_CORS.split(",") } } : {}) });
       const res = await handler(request);
       // Prompt post-commit nudge for this tenant; the cron sweep is the guarantee.
       if (ctx && !signedWebhook && request.method !== "GET" && res.status < 300) {
