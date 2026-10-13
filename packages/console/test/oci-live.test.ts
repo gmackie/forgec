@@ -73,5 +73,5 @@ it.skipIf(!process.env.OCI_TEST_URL)(
     ).rejects.toThrow(/already published/);
   },
   // This roundtrip performs multiple signed uploads and reads against a real server.
-  30_000,
+  60_000,
 );
