@@ -46,7 +46,7 @@ jobs:
         run: |
           pnpm --filter @forgegraph/runtime typecheck
           pnpm --filter @forgegraph/runtime build
-          FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-consumer.test.ts test/mqtt-node-consumer.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
+          FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/http.test.ts test/http-streaming.test.ts test/aws-host.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-consumer.test.ts test/mqtt-node-consumer.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
       - name: Verify deployment plans and Cloudflare Tunnel projections
         run: |
           pnpm --filter @forgegraph/adapters typecheck
