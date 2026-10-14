@@ -32,6 +32,7 @@ const RETRY_ATTEMPTS = 3;
 const D1_BATCH_STATEMENT_LIMIT = 100;
 
 export class D1Storage implements StorageAdapter {
+  readonly atomicComposition = true;
   readonly name: string;
   readonly atomicAbsenceGuards = true;
   readonly atomicCompletion = true;

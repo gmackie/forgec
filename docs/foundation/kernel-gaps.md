@@ -20,6 +20,13 @@ This verifies deterministic competing stale plans, not multithreaded or distribu
 
 ## Blocked: staged parent references
 
+Update: the explicit experimental `Engine.transaction` API now stages parent
+and child creation with point-read overlays. Memory/SQLite/libSQL regressions
+cover atomic publication and rollback; see [transactions](../transactions.md).
+The original standalone `planFor` and function-body reproductions below retain
+their historical limitations. Query/read-set overlays and deployed provider
+certification remain open.
+
 Desired invariant: a single transaction can create an aggregate and its referenced child without an intermediate committed parent. The current Engine validates child references against durable storage during `planFor`, before either plan reaches `commitAll`.
 
 Minimal reproduction, using the helpers and fixture in the regression test above:
@@ -40,6 +47,11 @@ This probe was executed and **failed**, with `ReferenceMissing`, `referenced rec
 The kernel needs a transaction-local view that resolves staged records during reference validation, while retaining race-safe commit-time validation for durable references and deletes. The provider lowering must preserve atomicity and enforce transaction limits. Committing the parent first would weaken the required invariant and is not an acceptable workaround.
 
 ## Blocked: sequential same-record updates
+
+Update: `Engine.transaction` supports bounded repeated versioned updates with
+stable unique/reference keys. It consolidates physical record writes and retains
+the first durable guard and every logical audit/outbox event. The broader
+composition and provider gates below remain open outside that explicit API.
 
 Desired invariant for transaction composition: the second operation sees the first staged record/version. Current planning validates each update independently against committed state.
 

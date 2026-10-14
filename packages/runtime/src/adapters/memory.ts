@@ -12,6 +12,7 @@ import type { List, Resource, Unique } from "../model.js";
 import type { AtomicAbsenceGuard, DocumentWrite, AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export class MemoryStorage implements StorageAdapter {
+  readonly atomicComposition = true;
   readonly name = "memory";
   readonly atomicAbsenceGuards = true;
   readonly atomicCompletion = true;
