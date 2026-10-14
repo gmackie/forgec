@@ -28,6 +28,8 @@ import { Suppression } from "./suppression.js";
 import { jumpTestClock } from "./testing.js";
 import type { Transport } from "./dispatch.js";
 import type { Envelope } from "./dispatch.js";
+import { TransactionView, lowerTransaction, type TransactionContext } from "./transaction.js";
+export type { TransactionContext } from "./transaction.js";
 
 export interface CallContext {
   tenant: string;
@@ -264,6 +266,55 @@ export class Engine {
   /** Canonical public result of a committed plan. */
   resultOf(plan: CommitPlan): Wire {
     return canonicalize(this.model, plan.resource, plan.hardDelete ? plan.before! : plan.after);
+  }
+
+  /** Bounded sequential composition. Point reads see staged writes; queries on
+   * touched resources fail closed. The durable adapter owns one final commit. */
+  transaction<A>(body: (tx: TransactionContext) => Effect.Effect<A, ForgeError>, ctx: CallContext): Effect.Effect<A, ForgeError> {
+    const self = this;
+    return Effect.gen(function* () {
+      if (ctx.idempotencyKey) return yield* Effect.fail(err("ValidationFailed", "Transactions require a durable application command key, not a per-operation receipt"));
+      const storage = yield* Storage;
+      if (!storage.atomicComposition) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support transaction composition"));
+      const view = new TransactionView(storage);
+      let active = true, busy = false;
+      const tx: TransactionContext = {
+        call: (operation, input) => Effect.suspend(() => {
+          if (!active || busy) return Effect.fail(err("ValidationFailed", "Transaction calls must be sequential and confined to their body"));
+          const ref = self.model.operation(operation);
+          if (!ref) return Effect.fail(err("MethodNotAllowed", "Transactions accept resource operations only"));
+          const { op, resource } = ref;
+          if (!["get", "find", "list", "create", "update", "transition", "delete", "restore"].includes(op.kind)) return Effect.fail(err("MethodNotAllowed", "Unsupported transaction operation"));
+          if (resource.fields.some(f => f.sequence || f.secret)) return Effect.fail(err("ValidationFailed", "Transactions do not support sequence allocation or credential sealing"));
+          if (view.plans.length >= 32 && !["get", "find", "list"].includes(op.kind)) return Effect.fail(err("BudgetExceeded", "Transactions support at most 32 mutations"));
+          busy = true;
+          const call = ["get", "find", "list"].includes(op.kind) ? self.callInternal(operation, input, ctx) : Effect.gen(function* () {
+            const surface = yield* self.scope.resolve(resource, ctx);
+            if (surface) {
+              switch (op.kind) {
+                case "create": yield* self.scope.checkCreate(surface, resource, input); break;
+                case "update": yield* self.scope.checkPatch(surface, resource, (input["patch"] ?? {}) as Wire); break;
+                default: yield* self.scope.checkAction(surface, resource, op.action ?? op.kind); break;
+              }
+            }
+            const plan = yield* self.authorizedPlan(operation, input, ctx);
+            if (!active) return yield* Effect.fail(err("ValidationFailed", "Transaction body has completed"));
+            view.stage(plan);
+            return surface ? self.scope.project(surface, self.resultOf(plan)) : self.resultOf(plan);
+          });
+          return call.pipe(Effect.provideService(Storage, view.storage), Effect.provide(self.layer), Effect.ensuring(Effect.sync(() => { busy = false; })));
+        }),
+      };
+      const result = yield* body(tx).pipe(Effect.ensuring(Effect.sync(() => { active = false; })));
+      if (busy) return yield* Effect.fail(err("ValidationFailed", "Transaction body must await every resource call"));
+      if (view.plans.length) {
+        const plans = yield* lowerTransaction(view.plans);
+        const budget = storage.budget(plans);
+        if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Transaction exceeds provider action budget"));
+        yield* storage.commitAll(plans);
+      }
+      return result;
+    }).pipe(Effect.provide(self.layer));
   }
 
   /** Authorized, bounded composition of independent mutations against durable references.

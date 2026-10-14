@@ -125,6 +125,8 @@ export interface AtomicAbsenceGuard {
 
 export interface StorageAdapter {
   readonly name: string;
+  /** Ordered grouped writes with references to earlier newly created records. */
+  readonly atomicComposition?: true;
   readonly atomicAbsenceGuards?: true;
   readonly atomicCompletion?: true;
   get(tenant: string, resource: Resource, id: string): Effect.Effect<StoredRecord | null, ForgeError>;
