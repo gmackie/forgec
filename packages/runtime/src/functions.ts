@@ -1,9 +1,8 @@
 /**
  * Implemented functions (plan §5.4, §8). The application supplies bodies with
  * defineFunction(); the runtime constructs a FunctionContext exposing exactly
- * the declared dependencies. Publications are staged and committed with the
- * function's next mutation (or in a final outbox-only commit), never sent
- * directly.
+ * the declared dependencies. Writes and publications are staged for a final
+ * atomic commit. Transactional functions additionally read their staged records.
  */
 import { Effect } from "effect";
 import type { Wire } from "./decode.js";
@@ -14,6 +13,7 @@ import type { FunctionDecl, Resource } from "./model.js";
 import { Clock, IdGen, Storage, type CommitPlan, type OutboxEntry, type RuntimeServices } from "./services.js";
 import { SubscriptionDelivery } from "./subscription-delivery.js";
 import type { Envelope } from "./dispatch.js";
+import { TransactionView, lowerTransaction } from "./transaction.js";
 
 export type ExternalResult = { ok: true; value: any } | { ok: false; code: string; detail?: string };
 export type ExternalBinding = (input: unknown, ctx: CallContext) => Promise<ExternalResult>;
@@ -47,10 +47,12 @@ export interface FunctionContext {
 export interface FunctionImpl {
   id: string;
   body: (deps: FunctionContext) => Effect.Effect<Wire | void, ForgeError, never>;
+  /** Opt in to staged point reads, references and bounded sequential updates. */
+  transactional?: boolean;
 }
 
-export function defineFunction(id: string, body: (deps: FunctionContext) => Effect.Effect<Wire | void, ForgeError, never>): FunctionImpl {
-  return { id, body };
+export function defineFunction(id: string, body: (deps: FunctionContext) => Effect.Effect<Wire | void, ForgeError, never>, options: { transactional?: boolean } = {}): FunctionImpl {
+  return { id, body, ...options };
 }
 
 export class Functions {
@@ -68,15 +70,18 @@ export class Functions {
     if (!impl) return Effect.fail(err("Internal", `no implementation registered for ${decl.id}; add one under impl/ (a production build refuses to deploy without it)`));
     const self = this;
     return Effect.gen(function* () {
-      // A function's own writes and its publications form ONE atomic commit at the end of the body
-      // (plan §9 step 6). Reads inside the body see committed state; planned writes are validated
-      // against current state when the body finishes and committed together, or not at all.
+      // A function's writes, receipt and publications form ONE final commit.
+      const storage = yield* Storage;
+      if (impl.transactional && !storage.atomicComposition) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support transactional functions"));
+      const view = impl.transactional ? new TransactionView(storage) : undefined;
       const pending: OutboxEntry[] = [];
-      const plans: CommitPlan[] = [];
-      const deps = self.context(decl, input, ctx, pending, plans, delivery);
-      const result = yield* impl.body(deps).pipe(Effect.provide(self.engine.layer));
-      if (plans.length || pending.length || delivery) {
-        const storage = yield* Storage;
+      let plans: CommitPlan[] = view?.plans ?? [];
+      const lifecycle = { active: true, busy: false };
+      const deps = self.context(decl, input, ctx, pending, plans, delivery, view, lifecycle);
+      const result = yield* impl.body(deps).pipe(Effect.provide(self.engine.layer), Effect.ensuring(Effect.sync(() => { lifecycle.active = false; })));
+      if (view && lifecycle.busy) return yield* Effect.fail(err("ValidationFailed", "Function body must await every resource call"));
+      if (view) plans = yield* lowerTransaction(plans);
+      if (plans.length || pending.length || delivery || (view && ctx.idempotencyKey)) {
         const now = (yield* Clock).now();
         const opId = plans[0]?.opId ?? (yield* IdGen).opId();
         const host = plans[0];
@@ -88,19 +93,28 @@ export class Functions {
             ? { receipt: { tenant: ctx.tenant, operation: decl.id, key: ctx.idempotencyKey, requestHash: yield* Effect.promise(() => sha256(stableJson((input ?? {}) as Wire))), status: 200, response: (result ?? {}) as Wire, createdAt: now } }
             : {};
           plans[0] = { ...host, outbox: [...host.outbox, ...outbox], ...receipt, ...(delivery ? { completion: delivery.completion() } : {}) };
+          if (view) {
+            const budget = storage.budget(plans);
+            if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Transactional function exceeds provider action budget"));
+          }
           yield* storage.commitAll(plans);
         } else {
-          yield* self.commitOutboxOnly(decl, ctx, outbox, opId, now, delivery);
+          yield* self.commitOutboxOnly(decl, ctx, outbox, opId, now, delivery, view ? { result: (result ?? {}) as Wire, input: (input ?? {}) as Wire } : undefined);
         }
       }
       return (result ?? {}) as Wire;
     });
   }
 
-  private context(decl: FunctionDecl, input: unknown, ctx: CallContext, pending: OutboxEntry[], plans: CommitPlan[], delivery?: SubscriptionDelivery): FunctionContext {
+  private context(decl: FunctionDecl, input: unknown, ctx: CallContext, pending: OutboxEntry[], plans: CommitPlan[], delivery?: SubscriptionDelivery, view?: TransactionView, lifecycle?: { active: boolean; busy: boolean }): FunctionContext {
     const engine = this.engine;
     const layer = engine.layer;
-    const run = <A>(e: Effect.Effect<A, ForgeError, RuntimeServices>): Effect.Effect<A, ForgeError> => e.pipe(Effect.provide(layer));
+    const run = <A>(e: Effect.Effect<A, ForgeError, RuntimeServices>): Effect.Effect<A, ForgeError> => Effect.suspend(() => {
+      if (!view) return e.pipe(Effect.provide(layer));
+      if (!lifecycle!.active || lifecycle!.busy) return Effect.fail(err("ValidationFailed", "Transactional function calls must be sequential and confined to their body"));
+      lifecycle!.busy = true;
+      return e.pipe(Effect.provideService(Storage, view.storage), Effect.provide(layer), Effect.ensuring(Effect.sync(() => { lifecycle!.busy = false; })));
+    });
     const resources: Record<string, ResourceWriter> = {};
     const transitions: Record<string, Record<string, (id: string, expectedVersion: number, input: Wire) => Effect.Effect<Wire, ForgeError>>> = {};
     const externalIds = new Set<string>();
@@ -109,6 +123,13 @@ export class Functions {
     const mutate = (op: string, body: Wire) =>
       run(
         Effect.gen(function* () {
+          if (view) {
+            if (plans.length >= 32) return yield* Effect.fail(err("BudgetExceeded", "Transactional functions support at most 32 mutations"));
+            const { plan, result } = yield* engine.planAuthorizedCall(op, body, ctx);
+            if (!lifecycle!.active) return yield* Effect.fail(err("ValidationFailed", "Function body has completed"));
+            view.stage(plan);
+            return result;
+          }
           const plan = yield* engine.planFor(op, body, ctx);
           plans.push(plan);
           return engine.resultOf(plan);
@@ -152,17 +173,20 @@ export class Functions {
         if (!externalIds.has(id)) return Effect.fail(err("Forbidden", `${decl.name} did not declare a dependency on ${id}`));
         const binding = self.externals[id];
         if (!binding) return Effect.fail(err("DependencyUnavailable", `no binding for external ${id}`));
-        return Effect.gen(function* () {
+        const call = Effect.gen(function* () {
           if (delivery) yield* delivery.beforeExternal();
           return yield* Effect.tryPromise({ try: () => binding(i, ctx), catch: (e) => err("DependencyUnavailable", String((e as Error).message ?? e)) });
         });
+        return view ? run(call) : call;
       },
       send: (channelRef, message, payload) => {
         const ch = engine.model.channel(channelRef);
         if (!ch) return Effect.fail(err("Forbidden", `unknown channel ${channelRef}`));
         if (!allowedSends.has(`${ch.id}#${message}`)) return Effect.fail(err("Forbidden", `${decl.name} may not send ${message} to ${channelRef}; declare it under sends { }`));
         if (ch.direction === "recv-only") return Effect.fail(err("Forbidden", `${channelRef} is recv-only`));
-        pending.push({ tenant: ctx.tenant, opId: "", ordinal: 0, channel: ch.id, message, payload, createdAt: "" });
+        const stage = () => { pending.push({ tenant: ctx.tenant, opId: "", ordinal: 0, channel: ch.id, message, payload, createdAt: "" }); };
+        if (view) return run(Effect.sync(stage));
+        stage();
         return Effect.void;
       },
       fail: (name, detail) => {
@@ -172,7 +196,7 @@ export class Functions {
     };
   }
 
-  private commitOutboxOnly(decl: FunctionDecl, ctx: CallContext, outbox: OutboxEntry[], opId: string, at: string, delivery?: SubscriptionDelivery): Effect.Effect<void, ForgeError, RuntimeServices> {
+  private commitOutboxOnly(decl: FunctionDecl, ctx: CallContext, outbox: OutboxEntry[], opId: string, at: string, delivery?: SubscriptionDelivery, transaction?: { input: Wire; result: Wire }): Effect.Effect<void, ForgeError, RuntimeServices> {
     const engine = this.engine;
     return Effect.gen(function* () {
       const storage = yield* Storage;
@@ -184,7 +208,13 @@ export class Functions {
         audit: { tenant: ctx.tenant, opId, resource: decl.id, recordId: decl.id, kind: "function.publish", newVersion: null, actor: ctx.actor, at },
         outbox,
         ...(delivery ? { completion: delivery.completion() } : {}),
+        ...(transaction && ctx.idempotencyKey ? { receipt: { tenant: ctx.tenant, operation: decl.id, key: ctx.idempotencyKey, requestHash: yield* Effect.promise(() => sha256(stableJson(transaction.input))), status: 200, response: transaction.result, createdAt: at } } : {}),
       };
+      if (transaction) {
+        const budget = storage.budget([plan]);
+        if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Transactional function exceeds provider action budget"));
+        return yield* storage.commitAll([plan]);
+      }
       yield* storage.commit(plan);
     });
   }

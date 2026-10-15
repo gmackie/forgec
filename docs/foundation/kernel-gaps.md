@@ -23,7 +23,7 @@ This verifies deterministic competing stale plans, not multithreaded or distribu
 Update: the explicit experimental `Engine.transaction` API now stages parent
 and child creation with point-read overlays. Memory/SQLite/libSQL regressions
 cover atomic publication and rollback; see [transactions](../transactions.md).
-The original standalone `planFor` and function-body reproductions below retain
+The original standalone `planFor` and legacy function-body reproductions below retain
 their historical limitations. Query/read-set overlays and deployed provider
 certification remain open.
 
@@ -75,7 +75,15 @@ For the current substrate algorithms, calculate one final update per pool/accoun
 
 ## Remaining limits
 
-`functions.ts` readers currently call the engine directly while mutations append plans. A transaction read overlay is not established by the passing tests above. General stale read-set validation, read-your-writes, atomic sibling creation, and provider physical budgets remain separate required probes. The three green memory tests must not be reported as completion of those gates.
+Declared functions can now explicitly opt in with `defineFunction(id, body,
+{ transactional: true })`. Their point reads and references use the transaction
+view, and lowered writes, messages, result receipts and subscription completion
+share a budgeted atomic commit. Tests cover staged updates/references and
+subscription completion on memory, SQLite and native libSQL, plus result replay,
+rollback, authorization, budget rejection and expired/concurrent calls. Legacy
+functions still plan against committed state. General predicate/read-set
+validation, broader repeated mutation lowering, DynamoDB and live provider
+certification remain open. See [transactions](../transactions.md).
 
 ## Implemented since the baseline: immutable facts and sealed content
 
