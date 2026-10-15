@@ -1,0 +1,38 @@
+{
+  "status": "failed",
+  "tests": [],
+  "diagnostics": [
+    {
+      "action": "publish",
+      "status": 404,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "platformCode": 1042
+    }
+  ],
+  "error": "Workers publication qualification failed",
+  "journalHost": "deployed Workers native D1 binding",
+  "workerSha256": "1bb4041d0f96c6ef7e43b30f3e2836f5354bb2a0aff5b7c5614af5783164f409",
+  "transportEvents": [],
+  "httpClientHost": "hetzner-fg",
+  "at": "2026-10-15T23:48:10Z",
+  "scope": "Native Worker preparation and HTTPS Git publication with Artifacts binding and D1 journal",
+  "sourceSha256": {
+    "scripts/qualify-artifact-publication.py": "a43ad539dce21aadfbbdcd8b955a41648f62ad61d2fd0b86509eb63f32d9bb00",
+    "packages/runtime/src/artifact-publication.ts": "ce5135cebd1893b1d2dbf34ef5ee61e10f720f2129e2a266eb0dcff947df0b8a",
+    "packages/runtime/src/adapters/artifact-publication-git.ts": "a43629153c42df92339ba4055d367b02cc59bf6ca726af1202c828b321a64684",
+    "packages/runtime/src/adapters/artifact-publication-sql.ts": "477e8f152f9523d3e137addbe620a2796c4659e1a6df07d314106b4fa4e66e16",
+    "conformance/artifacts/publish-live.mjs": "0cd8a0b4d3d97260f4061679422d2a2faa358511250da82c3e12cc500a59d23e",
+    "packages/runtime/src/adapters/artifact-publication-workers.ts": "5163907830c2df426d55a4d3cb55d98fd7ffb1d61b740faa8f3b092a485ec2b9",
+    "packages/runtime/src/adapters/artifact-workspace-workers.ts": "e8d41b14654adb1ccf6f31ef2e9666f6074462ccf1b2141cafcde333237f1f30",
+    "conformance/artifacts/publication-worker.ts": "5275021aea3c382c1bbdc6ce1c05a72e55b388aac9a193f7a0715530e530b3c7",
+    "conformance/artifacts/publish-workers-live.py": "5e5bd793887059443f49784ca70e7183f3cedd5561f507fc0f80fbba38cc29de",
+    "conformance/artifacts/journal-worker.ts": "0c42a4f83b77da360b63d007fde9cf1c5ca792733cc1d18a07826ba528cc1290",
+    "scripts/artifact_journal_worker.py": "8a7f46c275cc7d96535f140a4072f272be4a946a584ad619eb5986f00d31f387"
+  },
+  "cleanup": {
+    "remainingResources": [],
+    "errors": []
+  },
+  "nodeVersion": "v24.14.0",
+  "gitVersion": "git version 2.51.1"
+}

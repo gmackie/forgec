@@ -1,7 +1,11 @@
 """Separate Worker invocations exercise the native publication path, without Git."""
 
+import concurrent.futures
 import json
 import sys
+import hashlib
+import re
+import time
 import urllib.request
 import urllib.error
 
@@ -18,7 +22,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 opener = urllib.request.build_opener(NoRedirect)
 
 
-def send(action, key, expected, status=200):
+def send(action, key, expected, status=200, attempt=0):
     request = urllib.request.Request(
         config["journalWorker"]["url"],
         method="POST",
@@ -37,7 +41,27 @@ def send(action, key, expected, status=200):
         raw = response.read()
         diagnostic = dict(action=action, status=response.code)
         diagnostics.append(diagnostic)
-        body = json.loads(raw)
+        try:
+            body = json.loads(raw)
+        except ValueError:
+            match = re.fullmatch(rb"error code: ([0-9]+)\s*", raw)
+            diagnostic.update(
+                bodySha256=hashlib.sha256(raw).hexdigest(),
+                platformCode=int(match[1]) if match else None,
+            )
+            # Only retry provider-read-only reconciliation/denial probes on the
+            # documented transient routing code. Never retry a publication POST.
+            if (
+                action in ("recover", "denied", "foreign")
+                and match
+                and match[1] == b"1042"
+                and response.code in (404, 500)
+                and attempt < 4
+            ):
+                time.sleep(2 * (attempt + 1))
+                return send(action, key, expected, status, attempt + 1)
+            raise
+
         diagnostic.update({k: body[k] for k in ("stage", "transport") if k in body})
         if "receipt" in body:
             diagnostic["outcome"] = body["receipt"]["outcome"]
@@ -68,12 +92,26 @@ try:
     stale = send("publish", "stale", None)
     assert stale["receipt"]["outcome"] == "rejected" and stale["posts"] == 0
     tests.append({"name": "Stale expected-absent request rejected without dispatch"})
-    lost = send("lost", "lost", first["head"])
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        races = list(
+            pool.map(
+                lambda key: send("publish", key, first["head"]), ["race-a", "race-b"]
+            )
+        )
+    assert sorted(r["receipt"]["outcome"] for r in races) == ["accepted", "rejected"]
+    winner = next(r for r in races if r["receipt"]["outcome"] == "accepted")
+    current = winner["receipt"]["intent"]["revision"]["oid"]
+    tests.append(
+        {
+            "name": "Competing independent Worker requests admit exactly one expected-head writer"
+        }
+    )
+    lost = send("lost", "lost", current)
     assert lost["receipt"]["outcome"] == "pending" and lost["posts"] == 1
     assert lost["head"] == lost["receipt"]["intent"]["revision"]["oid"]
-    recovered = send("recover", "lost", first["head"])
+    recovered = send("recover", "lost", current)
     assert recovered["receipt"]["outcome"] == "observed" and recovered["posts"] == 0
-    repeated = send("publish", "lost", first["head"])
+    repeated = send("publish", "lost", current)
     assert repeated["receipt"]["outcome"] == "observed" and repeated["posts"] == 0
     tests.append(
         {

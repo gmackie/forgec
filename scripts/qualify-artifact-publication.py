@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Qualify the runtime publisher against disposable Cloudflare Artifacts and D1."""
 
-from artifact_journal_worker import deploy as deploy_journal_worker
+from artifact_journal_worker import deploy as deploy_journal_worker, http_client_config
 import argparse
 import re
 import hashlib
@@ -13,6 +13,7 @@ import subprocess
 import time
 import tomllib
 import sys
+import shlex
 import urllib.error
 import urllib.request
 
@@ -45,7 +46,18 @@ parser.add_argument(
     action="store_true",
     help="Prepare and publish inside a disposable Worker with Artifacts and D1 bindings",
 )
+parser.add_argument(
+    "--workers-runner-host",
+    help="Existing SSH host used only as the disposable Worker HTTP client",
+)
 args = parser.parse_args()
+if args.workers_runner_host and (
+    not args.workers_transport
+    or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.@-]*", args.workers_runner_host)
+):
+    parser.error(
+        "Workers runner requires Workers transport and a valid SSH host reference"
+    )
 if args.workers_transport:
     if args.bob_root:
         parser.error("Workers transport and Bob pilot are separate qualification modes")
@@ -202,6 +214,7 @@ try:
                 secrets.token_urlsafe(32),
                 api,
                 record_transport,
+                runner_host=args.workers_runner_host,
                 **(
                     {
                         "entry": "conformance/artifacts/publication-worker.ts",
@@ -299,9 +312,19 @@ try:
                 "node",
                 "/pilot.mjs",
             ]
+        if args.workers_runner_host:
+            command = [
+                "ssh",
+                "-o",
+                "BatchMode=yes",
+                args.workers_runner_host,
+                "python3 -c " + shlex.quote(runner.read_text()),
+            ]
         run = subprocess.run(
             command,
-            input=json.dumps(config),
+            input=json.dumps(
+                http_client_config(config) if args.workers_transport else config
+            ),
             capture_output=True,
             text=True,
             timeout=600,
@@ -331,6 +354,7 @@ finally:
     if failures:
         result["status"] = "cleanup_failed"
     sources = [
+        "scripts/qualify-artifact-publication.py",
         "packages/runtime/src/artifact-publication.ts",
         "packages/runtime/src/adapters/artifact-publication-git.ts",
         "packages/runtime/src/adapters/artifact-publication-sql.ts",
@@ -371,6 +395,8 @@ finally:
         result["journalHost"] = "deployed Workers native D1 binding"
         result["workerSha256"] = state.get("workerSha256")
         result["transportEvents"] = state.get("transportEvents", [])
+    if args.workers_runner_host:
+        result["httpClientHost"] = args.workers_runner_host
     if args.runner_host:
         result["pilotHost"] = (
             "isolated existing runner host, Node 24 container, loopback HTTP"

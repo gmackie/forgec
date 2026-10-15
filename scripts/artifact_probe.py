@@ -12,13 +12,16 @@ def probe(send, record, sleep=time.sleep):
         try:
             return status, json.loads(payload)
         except ValueError:
-            match = re.fullmatch(rb"error code: (1042)\s*", payload)
+            platform = re.fullmatch(rb"error code: ([0-9]+)\s*", payload)
+            match = (
+                platform if platform is not None and platform[1] == b"1042" else None
+            )
             retry = match is not None and status in (404, 500) and attempt < 4
-            if match:
+            if platform:
                 record(
                     {
                         "httpStatus": status,
-                        "platformCode": int(match[1]),
+                        "platformCode": int(platform[1]),
                         "bodySha256": hashlib.sha256(payload).hexdigest(),
                         "attempt": attempt + 1,
                         "retry": retry,

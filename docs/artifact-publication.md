@@ -149,8 +149,11 @@ optimization; it cannot replace the server guard.
 Only explicit `unpack ok` plus an `ok` for the exact requested branch confirms
 acceptance. A matching `ng` records rejection. Missing/malformed reports, network
 failures, HTTP errors and unsupported capabilities throw; the publisher retains
-the durable pending intent. Recovery uses the independent trusted read capability,
-never another write. There is no lease takeover, outbox dispatcher, expiry or
+the durable pending intent. Recovery reads the exact full branch name through authenticated Git ref discovery,
+never another write. Repository identity is still checked through the trusted
+Artifacts read capability. The binding history selector accepts short branch
+names but does not resolve full refs consistently; recovery must not reinterpret
+a full branch name as an ambiguous short selector. There is no lease takeover, outbox dispatcher, expiry or
 automatic resend. The pack is request-local; a restarted invocation can replay
 or reconcile a durable intent without retaining that pack.
 
@@ -174,11 +177,35 @@ Artifacts and D1 bindings. Preparation, Git HTTPS publication, durable replay an
 read-only reconciliation happen inside separate Worker invocations. The runner
 injects a lost acknowledgement and a claim-before-dispatch interruption, checks
 stale preconditions and tenant/policy denial, then removes its owned Worker,
-repository and database. It never activates a production application. A failed
+repository and database. Add `--workers-runner-host <existing-ssh-host>` to run
+readiness and HTTP assertions from an existing runner when local ingress differs;
+only the disposable HTTP client runs there, and credentials travel through stdin.
+It never activates a production application. A failed
 qualification is not certification; inspect its structured evidence and cleanup.
 
-Current [live attempt evidence](evidence/workers-publication-attempt-2026-10-15.json)
+Earlier [live attempt evidence](evidence/workers-publication-attempt-2026-10-15.json)
 is **incomplete**. A deployed Worker received an explicit accepted receive-pack
 report, but full readback/replay/conflict/recovery assertions did not pass.
 Subsequent calls encountered non-JSON ingress errors. All owned resources were
 removed. FORG-19 remains open; this evidence does not certify the live composition.
+
+
+The [2026-10-15 live qualification](evidence/workers-publication-live-2026-10-15.json)
+passed all seven checks after exact-ref recovery was corrected: binary publication,
+durable replay without another POST, stale preconditions, competing Worker
+requests with exactly one accepted writer, lost acknowledgement reconciliation,
+claim-before-dispatch interruption without takeover, and authorization/tenant
+denial. Preparation, hashing, pack creation, Git HTTPS requests, authorization and
+D1 receipts ran in the deployed Worker. An existing SSH host acted only as the
+HTTP client. The Worker, Artifacts repository and D1 database were removed with
+no cleanup errors. Evidence records bundle and source digests; this supersedes
+the earlier incomplete attempt for this scope. No production activation, automatic
+resend, general-purpose raw-object reader or Workers-native merge is qualified.
+
+
+Two later orchestration repetitions encountered platform `1042` ingress failures:
+[readiness](evidence/forg19-final-20261015.json) and
+[first publication request](evidence/forg19-final2-20261015.json). They did not
+complete the suite, did not retry a publication POST, and cleaned all owned
+resources. The passing evidence's runtime, Worker and assertion hashes still
+match the follow-up source; these repetitions do not establish ingress reliability.

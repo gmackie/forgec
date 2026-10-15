@@ -31,6 +31,17 @@ class ProbeTests(unittest.TestCase):
                 lambda: (500, b"unknown"), lambda _: self.fail("retry"), lambda _: None
             )
 
+    def test_other_platform_errors_are_identified_without_retry(self):
+        events = []
+        with self.assertRaisesRegex(RuntimeError, "non-JSON HTTP 500"):
+            probe(
+                lambda: (500, b"error code: 1104\n"),
+                events.append,
+                lambda _: self.fail("retry"),
+            )
+        self.assertEqual(events[0]["platformCode"], 1104)
+        self.assertFalse(events[0]["retry"])
+
     def test_retry_budget_is_finite(self):
         events = []
         with self.assertRaisesRegex(RuntimeError, "non-JSON HTTP 404"):
