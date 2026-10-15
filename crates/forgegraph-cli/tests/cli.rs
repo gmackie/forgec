@@ -1531,3 +1531,93 @@ fn readme_tour_compiles_and_documented_commands_build_contracts() {
     }
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn init_creates_a_self_contained_package_that_formats_checks_and_builds() {
+    let root = std::env::temp_dir().join(format!("forge-init-roundtrip-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir(&root).unwrap();
+    let path = root.join("task-app");
+    let out = forgec().arg("init").arg(&path).output().unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert!(
+        std::fs::read_to_string(path.join("forge.toml"))
+            .unwrap()
+            .contains("@local/task-app")
+    );
+    for command in [vec!["check"], vec!["fmt", "--check"], vec!["build"]] {
+        let out = forgec().args(command).arg(&path).output().unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+    let contract = std::fs::read_to_string(path.join("generated/contract.json")).unwrap();
+    assert!(contract.contains("Task"));
+    assert!(path.join("generated/app.json").is_file());
+    assert!(path.join("generated/client.ts").is_file());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn init_validates_identity_before_writing_and_never_overwrites_a_destination() {
+    let root = std::env::temp_dir().join(format!("forge-init-boundaries-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir(&root).unwrap();
+    let path = root.join("starter");
+    for name in [
+        "unscoped",
+        "@Scope/app",
+        "@scope/a/b",
+        "@scope/app\"\n[dependencies]",
+        "@scope/../escape",
+    ] {
+        let out = forgec()
+            .arg("init")
+            .arg(&path)
+            .args(["--name", name])
+            .output()
+            .unwrap();
+        assert!(!out.status.success());
+        assert!(!path.exists());
+    }
+    let out = forgec()
+        .arg("init")
+        .arg(&path)
+        .args(["--name", "@example/tasks"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let before = std::fs::read(path.join("forge.toml")).unwrap();
+    let out = forgec().arg("init").arg(&path).output().unwrap();
+    assert!(!out.status.success());
+    assert_eq!(before, std::fs::read(path.join("forge.toml")).unwrap());
+    let empty = root.join("empty");
+    std::fs::create_dir(&empty).unwrap();
+    assert!(!forgec().arg("init").arg(&empty).status().unwrap().success());
+    assert_eq!(std::fs::read_dir(&empty).unwrap().count(), 0);
+    #[cfg(unix)]
+    {
+        let link = root.join("linked");
+        std::os::unix::fs::symlink(&empty, &link).unwrap();
+        assert!(!forgec().arg("init").arg(&link).status().unwrap().success());
+        assert_eq!(std::fs::read_dir(&empty).unwrap().count(), 0);
+        let dangling = root.join("dangling");
+        std::os::unix::fs::symlink(root.join("missing"), &dangling).unwrap();
+        assert!(
+            !forgec()
+                .arg("init")
+                .arg(&dangling)
+                .status()
+                .unwrap()
+                .success()
+        );
+        assert!(!root.join("missing").exists());
+    }
+    std::fs::remove_dir_all(root).unwrap();
+}
