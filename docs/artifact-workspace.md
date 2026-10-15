@@ -61,3 +61,44 @@ filters and working-tree configuration are not used. Symlinks, gitlinks,
 non-UTF-8/unsafe paths and LFS pointers fail explicitly. Filesystem name collisions
 fail the operation and remove the incomplete output. This writes no `.git`
 metadata and does not grant a task lease or provision a remote fork.
+
+## Workers-compatible object preparation
+
+`@forgegraph/runtime/artifact-workspace-workers` exposes
+`WorkerArtifactWorkspace.prepare` with the same explicit base, file changes,
+message, timestamp and authorization contract as the Node preparer. It uses Web
+Crypto and byte arrays; it imports no Node APIs and never updates a ref. Its
+SHA-1 pins match Git and the existing Node preparer, including binary bytes,
+executable modes and Git's bytewise tree ordering. SHA-1 here identifies Git
+objects; it is not an authentication or evidence-signing mechanism.
+
+Supply a server-selected `WorkerGitObjectStore`. Reads return raw immutable Git
+objects, whose content hashes are checked before use. Writes store immutable
+objects and must return their exact content ID. Tenant, generation, repository,
+base tree, authorization and budgets are checked independently of that store.
+Inputs are copied before asynchronous authorization. Failed preparation never
+returns a successful pin, though already stored unreachable objects can remain.
+The store must retain these objects until publication or explicit expiry.
+
+`WorkerGitPackStore` is a request-local implementation which optionally delegates
+base reads to a trusted object reader. `pack()` produces a bounded v2 non-delta
+Git pack using `CompressionStream("deflate")`. Native `git index-pack --strict`
+tests verify these packs. The pack contains prepared objects; unchanged base
+objects must already exist at the destination. Retries deduplicate identical
+objects. This store is ephemeral: hosts must persist a prepared pack or regenerate
+it from its exact input before acknowledging durable preparation.
+
+Limits: 1,024 changes, 32 MiB changed bytes; at most 1,024 base tree entries,
+32 MiB base metadata and 64 tree levels; at most 2,048 prepared tree entries.
+The pack store admits 4,096 objects, 32 MiB uncompressed bytes and 30 MiB per
+object. Exceeding a limit fails explicitly. Untouched symlink/gitlink entries
+are preserved; creating either remains unsupported. No merge or checkout API is
+provided by the Workers class; those operations retain the Node path.
+
+This is the preparation slice of FORG-19, not live Artifacts publication. The
+Artifacts binding documentation checked on 2026-10-15 exposes read and management
+methods, but no object-write method. A future transport must read base objects,
+send the pack over authenticated Git receive-pack under the publication journal's
+exact expected-ref guard, and reconcile uncertain responses before finalizing a
+D1 receipt. Supplying a store does not authorize publication. No production
+binding, credential, ref, gateway backend or migration authority changes here.
