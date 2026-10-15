@@ -268,6 +268,28 @@ export class Engine {
     return canonicalize(this.model, plan.resource, plan.hardDelete ? plan.before! : plan.after);
   }
 
+  /** Shared authorized planning for explicit transactions and opted-in functions.
+   * Caller supplies the invocation-local Storage service and owns final commit. */
+  planAuthorizedCall(operation: string, input: Wire, ctx: CallContext): Effect.Effect<{ plan: CommitPlan; result: Wire }, ForgeError, RuntimeServices> {
+    const self = this;
+    return Effect.gen(function* () {
+      const ref = self.model.operation(operation);
+      if (!ref) return yield* Effect.fail(err("MethodNotAllowed", "Unknown resource operation"));
+      const { resource, op } = ref;
+      if (resource.fields.some(f => f.sequence || f.secret)) return yield* Effect.fail(err("ValidationFailed", "Transaction mutations do not support sequence allocation or credential sealing"));
+      const surface = yield* self.scope.resolve(resource, ctx);
+      if (surface) {
+        switch (op.kind) {
+          case "create": yield* self.scope.checkCreate(surface, resource, input); break;
+          case "update": yield* self.scope.checkPatch(surface, resource, (input["patch"] ?? {}) as Wire); break;
+          default: yield* self.scope.checkAction(surface, resource, op.action ?? op.kind); break;
+        }
+      }
+      const plan = yield* self.authorizedPlan(operation, input, ctx);
+      return { plan, result: surface ? self.scope.project(surface, self.resultOf(plan)) : self.resultOf(plan) };
+    });
+  }
+
   /** Bounded sequential composition. Point reads see staged writes; queries on
    * touched resources fail closed. The durable adapter owns one final commit. */
   transaction<A>(body: (tx: TransactionContext) => Effect.Effect<A, ForgeError>, ctx: CallContext): Effect.Effect<A, ForgeError> {
@@ -289,18 +311,10 @@ export class Engine {
           if (view.plans.length >= 32 && !["get", "find", "list"].includes(op.kind)) return Effect.fail(err("BudgetExceeded", "Transactions support at most 32 mutations"));
           busy = true;
           const call = ["get", "find", "list"].includes(op.kind) ? self.callInternal(operation, input, ctx) : Effect.gen(function* () {
-            const surface = yield* self.scope.resolve(resource, ctx);
-            if (surface) {
-              switch (op.kind) {
-                case "create": yield* self.scope.checkCreate(surface, resource, input); break;
-                case "update": yield* self.scope.checkPatch(surface, resource, (input["patch"] ?? {}) as Wire); break;
-                default: yield* self.scope.checkAction(surface, resource, op.action ?? op.kind); break;
-              }
-            }
-            const plan = yield* self.authorizedPlan(operation, input, ctx);
+            const { plan, result } = yield* self.planAuthorizedCall(operation, input, ctx);
             if (!active) return yield* Effect.fail(err("ValidationFailed", "Transaction body has completed"));
             view.stage(plan);
-            return surface ? self.scope.project(surface, self.resultOf(plan)) : self.resultOf(plan);
+            return result;
           });
           return call.pipe(Effect.provideService(Storage, view.storage), Effect.provide(self.layer), Effect.ensuring(Effect.sync(() => { busy = false; })));
         }),
@@ -875,6 +889,7 @@ export class Engine {
         // Explicit delegation: spreading a class instance would drop prototype methods.
         const wrapped: StorageAdapter = {
           name: storage.name,
+          ...(storage.atomicComposition ? { atomicComposition: true as const } : {}),
           ...(storage.atomicAbsenceGuards ? { atomicAbsenceGuards: true as const } : {}),
           get: (...a) => storage.get(...a),
           findUnique: (...a) => storage.findUnique(...a),
