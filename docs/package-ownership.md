@@ -7,7 +7,7 @@ not an npm registry server. Existing consumers need no import migration.
 
 ForgeGraph's `apps/registry` is a separate private Verdaccio service. Its intended
 identity is `@forgegraph/registry-service` (FORGE-117); the service rename and Nix
-selector updates must land separately. Until then both repositories still contain
+selector updates are in [ForgeGraph PR823](https://git.forgegraf.com/gmackie/ForgeGraph/pulls/823). Until that merges, both repositories still contain
 the overlapping name. A declaration in this policy alone does not fix that peer.
 
 Run `pnpm release:identities` to reject missing owners, unknown public names,
