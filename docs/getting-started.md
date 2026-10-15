@@ -11,6 +11,35 @@ forgec --version
 Prebuilt binaries with SHA-256 checksums are attached to every
 [release](https://github.com/gmackie/forgec/releases).
 
+## Create your first package
+
+With a compiler build that includes `init`:
+
+```sh
+forgec init task-app --name @example/tasks
+cd task-app
+forgec check .
+forgec fmt --check .
+forgec build .
+```
+
+This creates a dependency-free package with a `Task` resource and CRUD contract.
+The directory must not already exist, and its parent must exist. Without `--name`,
+the identity defaults to `@local/<directory-name>`; names use lowercase letters,
+digits and hyphens, with each component starting with a letter. Existing files,
+empty directories and symlink destinations are refused.
+
+Edit `src/index.forge` and rebuild. Inspect `generated/app.json`, `client.ts`,
+`openapi.json` and `contract.json` to see how the model becomes a runtime bundle
+and client contracts. Generated output and local secrets are ignored by Git.
+No JavaScript dependencies, credentials or cloud account are needed to compile.
+
+This is the compiler onboarding path. `build` does not start a server, apply
+migrations or deploy. Running the application requires a matching runtime release,
+a host/storage configuration and an AuthHost; the Acme reference below demonstrates
+those pieces. Public-beta release gates and the supported scope are tracked in
+[the beta delivery plan](plans/2026-10-15-public-beta.html).
+
 ## Toolchain for working on ForgeGraph itself
 
 - Rust 1.97+ (`cargo`), Node 24+, pnpm 10.

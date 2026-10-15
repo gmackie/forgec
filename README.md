@@ -40,6 +40,20 @@ with SHA-256 checksums.
 pnpm add @forgegraph/runtime       # the runtime your impl/ code imports
 ```
 
+## Start a package
+
+```sh
+forgec init task-app --name @example/tasks
+cd task-app
+forgec check .
+forgec build .
+```
+
+`init` creates a portable, dependency-free resource package in a new directory.
+It is available in compiler builds containing this change; published release
+availability remains tracked by FORG-6. See [getting started](docs/getting-started.md)
+for the compiler workflow and host setup.
+
 ## A ten-line tour
 
 Create `acme/forge.toml` with `[package]`, `name = "@acme/commerce"` and

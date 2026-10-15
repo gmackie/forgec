@@ -2,6 +2,7 @@
 
 | document | what it covers |
 | --- | --- |
+| [plans/2026-10-15-public-beta.html](plans/2026-10-15-public-beta.html) | beta scope, installation and certification gates, continuing language work |
 | [getting-started.md](getting-started.md) | install the toolchain, build the Acme reference, run it locally on both targets |
 | [language.md](language.md) | every declaration kind with the Acme examples: resources, lifecycle, functions, channels, workflows, views, projections, caches, schedules, realtime |
 | [portable-profile.md](portable-profile.md) | what `portable-v1` guarantees on both clouds, what it refuses, and the declared limits |

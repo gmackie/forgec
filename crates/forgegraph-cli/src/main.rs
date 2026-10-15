@@ -1,6 +1,8 @@
 //! `forge` — check, fmt, inspect. The compiler core is filesystem-free; this
 //! binary is the host that loads packages and their path dependencies.
 
+mod init;
+
 use anyhow::{Context, Result, anyhow, bail};
 use clap::{Parser, Subcommand};
 use forgegraph_semantic::{Compilation, DomainIR, Package, compile, load_package};
@@ -20,6 +22,13 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
+    /// Create a dependency-free Forge package in a new directory.
+    Init {
+        path: PathBuf,
+        /// Package identity (default: @local/<directory-name>).
+        #[arg(long)]
+        name: Option<String>,
+    },
     /// Validate, inspect, or compare explicit business-semantic contracts.
     Concept {
         #[command(subcommand)]
@@ -325,6 +334,7 @@ fn load_tree(
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
+        Cmd::Init { path, name } => init::create(&path, name.as_deref())?,
         Cmd::Concept { command } => {
             let value = match command {
                 ConceptCmd::Check { path, closed } => {
