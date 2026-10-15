@@ -8,6 +8,14 @@ import hashlib
 import json
 import secrets
 import subprocess
+import shlex
+import base64
+
+
+def http_client_config(config):
+    """Never transfer account management or repository credentials to the HTTP client."""
+    worker = config["journalWorker"]
+    return {"journalWorker": {"url": worker["url"], "secret": worker["secret"]}}
 
 
 def ready(send, record, sleep=time.sleep):
@@ -27,6 +35,7 @@ def deploy(
     *,
     entry="conformance/artifacts/journal-worker.ts",
     extra_bindings=(),
+    runner_host=None,
 ):
     bundle = state_dir / "journal-worker.mjs"
     code = "const {createRequire}=require('node:module');const runtime=createRequire(process.argv[1]);const r=createRequire(runtime.resolve('wrangler/package.json'));r('esbuild').buildSync({entryPoints:[process.argv[2]],outfile:process.argv[3],bundle:true,format:'esm',platform:'browser',target:'es2022',conditions:['source']});"
@@ -76,6 +85,31 @@ def deploy(
     url = "https://" + name + "." + subdomain + ".workers.dev"
 
     def send():
+        if runner_host:
+            code = """import sys,json,urllib.request,urllib.error,base64
+x=json.load(sys.stdin)
+r=urllib.request.Request(x['url'],headers={'Authorization':'Bearer '+x['secret'],'User-Agent':'Mozilla/5.0 ForgeArtifactQualification'})
+try: response=urllib.request.urlopen(r,timeout=30)
+except urllib.error.HTTPError as e: response=e
+with response: print(json.dumps({'status':response.status,'body':base64.b64encode(response.read()).decode()}))
+"""
+            run = subprocess.run(
+                [
+                    "ssh",
+                    "-o",
+                    "BatchMode=yes",
+                    runner_host,
+                    "python3 -c " + shlex.quote(code),
+                ],
+                input=json.dumps({"url": url, "secret": secret}),
+                capture_output=True,
+                text=True,
+                timeout=45,
+            )
+            if run.returncode:
+                raise RuntimeError("Remote read-only Worker probe failed")
+            value = json.loads(run.stdout)
+            return value["status"], base64.b64decode(value["body"])
         request = urllib.request.Request(
             url,
             headers={

@@ -232,6 +232,11 @@ it("guards a competing ref create after advertisement atomically on the server",
 it("recovers lost POST acknowledgement through the SQL journal without resending", async () => {
   const f = await fixture();
   try {
+    const originalOpen = f.options.identity.open;
+    f.options.identity.open = async () => ({
+      ...(await originalOpen()),
+      resolve: async () => null,
+    });
     f.after(() => {
       throw Error("lost acknowledgement");
     });
@@ -486,6 +491,35 @@ it("never follows a redirect or accepts it as a publication acknowledgement", as
       "pending",
     );
     expect(f.posts).toBe(0);
+  } finally {
+    f.db.close();
+  }
+});
+
+it("discovers only the exact full branch name when an identically named tag exists", async () => {
+  const f = await fixture();
+  try {
+    await f.publisher().publish(f.request, context);
+    const store = new WorkerGitPackStore();
+    const tag = await new WorkerArtifactWorkspace(
+      binding,
+      store,
+      async () => true,
+    ).prepare(
+      { base: null, changes: [], message: "tag", at: "2026-10-15T00:00:00Z" },
+      context,
+    );
+    f.git(["index-pack", "--stdin"], await store.pack());
+    f.git(["update-ref", "refs/tags/main", tag.oid]);
+    const repo = await f.provider.open();
+    try {
+      expect(await repo.head("refs/heads/main")).toBe(f.revision.oid);
+      expect(await repo.head("refs/heads/missing")).toBeNull();
+      await expect(repo.head("main")).rejects.toThrow("Invalid ref");
+    } finally {
+      repo.dispose();
+    }
+    expect(f.posts).toBe(1);
   } finally {
     f.db.close();
   }

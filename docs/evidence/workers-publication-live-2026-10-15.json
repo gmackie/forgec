@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "tests": [
+    {
+      "name": "Worker prepares and publishes binary Git pack with native Artifacts identity and D1 receipt"
+    },
+    {
+      "name": "Separate invocation replays durable receipt without a POST"
+    },
+    {
+      "name": "Stale expected-absent request rejected without dispatch"
+    },
+    {
+      "name": "Competing independent Worker requests admit exactly one expected-head writer"
+    },
+    {
+      "name": "Lost acknowledgement remains pending then reconciles observed without resending"
+    },
+    {
+      "name": "Claim-before-dispatch interruption remains pending without takeover"
+    },
+    {
+      "name": "Authorization and cross-tenant denial"
+    }
+  ],
+  "journalHost": "deployed Workers native D1 binding",
+  "workerSha256": "1bb4041d0f96c6ef7e43b30f3e2836f5354bb2a0aff5b7c5614af5783164f409",
+  "transportEvents": [],
+  "httpClientHost": "hetzner-fg",
+  "at": "2026-10-15T23:45:40Z",
+  "scope": "Native Worker preparation and HTTPS Git publication with Artifacts binding and D1 journal",
+  "sourceSha256": {
+    "packages/runtime/src/artifact-publication.ts": "ce5135cebd1893b1d2dbf34ef5ee61e10f720f2129e2a266eb0dcff947df0b8a",
+    "packages/runtime/src/adapters/artifact-publication-git.ts": "a43629153c42df92339ba4055d367b02cc59bf6ca726af1202c828b321a64684",
+    "packages/runtime/src/adapters/artifact-publication-sql.ts": "477e8f152f9523d3e137addbe620a2796c4659e1a6df07d314106b4fa4e66e16",
+    "conformance/artifacts/publish-live.mjs": "0cd8a0b4d3d97260f4061679422d2a2faa358511250da82c3e12cc500a59d23e",
+    "packages/runtime/src/adapters/artifact-publication-workers.ts": "5163907830c2df426d55a4d3cb55d98fd7ffb1d61b740faa8f3b092a485ec2b9",
+    "packages/runtime/src/adapters/artifact-workspace-workers.ts": "e8d41b14654adb1ccf6f31ef2e9666f6074462ccf1b2141cafcde333237f1f30",
+    "conformance/artifacts/publication-worker.ts": "5275021aea3c382c1bbdc6ce1c05a72e55b388aac9a193f7a0715530e530b3c7",
+    "conformance/artifacts/publish-workers-live.py": "5e5bd793887059443f49784ca70e7183f3cedd5561f507fc0f80fbba38cc29de",
+    "conformance/artifacts/journal-worker.ts": "0c42a4f83b77da360b63d007fde9cf1c5ca792733cc1d18a07826ba528cc1290",
+    "scripts/artifact_journal_worker.py": "bdfdcb5b07041eacf8b61bba8104477afe4620061242e2850c264725be735e85"
+  },
+  "cleanup": {
+    "remainingResources": [],
+    "errors": []
+  },
+  "nodeVersion": "v24.14.0",
+  "gitVersion": "git version 2.51.1"
+}

@@ -137,6 +137,51 @@ export function workerGitArtifactPublicationProvider(
           throw Error("Invalid Git response type");
         return bounded(response);
       };
+      // Read exact full ref names from Git discovery: binding log selectors may
+      // have different resolution semantics and must not weaken recovery.
+      const advertisedHead = async (ref: string): Promise<string | null> => {
+        if (!validArtifactBranch(ref)) throw Error("Invalid ref");
+        const advertisement = packets(
+          await request("/info/refs?service=git-receive-pack", "GET"),
+        );
+        if (
+          advertisement[0] !== "# service=git-receive-pack\n" ||
+          advertisement[1] !== null ||
+          advertisement.at(-1) !== null
+        )
+          throw Error("Invalid Git advertisement");
+        const refs = advertisement.slice(2, -1);
+        if (!refs.length || refs.some((r) => r === null))
+          throw Error("Invalid Git advertisement refs");
+        const first = refs[0]!,
+          nul = first.indexOf("\0");
+        if (nul < 0) throw Error("Missing Git capabilities");
+        const capabilities = first
+          .slice(nul + 1)
+          .trim()
+          .split(" ");
+        if (
+          !capabilities.includes("report-status") ||
+          capabilities.some(
+            (c) => c.startsWith("object-format=") && c !== "object-format=sha1",
+          )
+        )
+          throw Error("Unsupported Git capabilities");
+        let current: string | null = null;
+        const seen = new Set<string>();
+        for (let i = 0; i < refs.length; i++) {
+          const line = (i === 0 ? first.slice(0, nul) : refs[i]!).replace(
+            /\n$/,
+            "",
+          );
+          const match = /^([a-f0-9]{40}) ([^\x00-\x20\x7f]+)$/.exec(line);
+          if (!match || seen.has(match[2]!))
+            throw Error("Invalid advertised Git ref");
+          seen.add(match[2]!);
+          if (match[2] === ref) current = match[1]!;
+        }
+        return current;
+      };
       return {
         repositoryId: repo.repositoryId,
         objectFormat: "sha1" as const,
@@ -169,10 +214,7 @@ export function workerGitArtifactPublicationProvider(
             throw Error("Invalid prepared commit metadata");
           return { oid, tree, parents };
         },
-        head: async (ref: string) => {
-          if (!validArtifactBranch(ref)) throw Error("Invalid ref");
-          return repo.resolve(ref);
-        },
+        head: advertisedHead,
         async compareAndSwap(
           ref: string,
           expected: string | null,
@@ -185,46 +227,7 @@ export function workerGitArtifactPublicationProvider(
             next === zero
           )
             throw Error("Invalid conditional Git update");
-          const advertisement = packets(
-            await request("/info/refs?service=git-receive-pack", "GET"),
-          );
-          if (
-            advertisement[0] !== "# service=git-receive-pack\n" ||
-            advertisement[1] !== null ||
-            advertisement.at(-1) !== null
-          )
-            throw Error("Invalid Git advertisement");
-          const refs = advertisement.slice(2, -1);
-          if (!refs.length || refs.some((r) => r === null))
-            throw Error("Invalid Git advertisement refs");
-          const first = refs[0]!,
-            nul = first.indexOf("\0");
-          if (nul < 0) throw Error("Missing Git capabilities");
-          const capabilities = first
-            .slice(nul + 1)
-            .trim()
-            .split(" ");
-          if (
-            !capabilities.includes("report-status") ||
-            capabilities.some(
-              (c) =>
-                c.startsWith("object-format=") && c !== "object-format=sha1",
-            )
-          )
-            throw Error("Unsupported Git capabilities");
-          let current: string | null = null;
-          const seen = new Set<string>();
-          for (let i = 0; i < refs.length; i++) {
-            const line = (i === 0 ? first.slice(0, nul) : refs[i]!).replace(
-              /\n$/,
-              "",
-            );
-            const match = /^([a-f0-9]{40}) ([^\x00-\x20\x7f]+)$/.exec(line);
-            if (!match || seen.has(match[2]!))
-              throw Error("Invalid advertised Git ref");
-            seen.add(match[2]!);
-            if (match[2] === ref) current = match[1]!;
-          }
+          const current = await advertisedHead(ref);
           if (current !== expected) return "rejected" as const;
           const pack = new Uint8Array(await prepared.pack());
           if (

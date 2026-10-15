@@ -17,9 +17,7 @@ interface Env {
   EXPIRES_AT: string;
   DB: D1Like;
   ARTIFACTS: {
-    get(
-      name: string,
-    ): Promise<
+    get(name: string): Promise<
       CloudflareArtifactRepo & {
         createToken(
           scope: "write",
@@ -162,6 +160,13 @@ export default {
                 : context,
             );
       stage = "verify";
+      const published = await provider.open();
+      let head: string | null;
+      try {
+        head = await published.head(intent.ref);
+      } finally {
+        published.dispose();
+      }
       const repo = await identity.open();
       try {
         const file = await repo.file(revision.oid, "binary");
@@ -169,7 +174,7 @@ export default {
           transport,
           receipt,
           posts,
-          head: await repo.resolve(intent.ref),
+          head,
           binary: Array.from(
             new Uint8Array(
               file ? await file.arrayBuffer() : new ArrayBuffer(0),
