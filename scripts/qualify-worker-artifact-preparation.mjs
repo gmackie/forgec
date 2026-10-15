@@ -14,7 +14,10 @@ const wrangler = createRequire(runtime.resolve("wrangler/package.json"));
 const { build } = wrangler("esbuild"),
   { Miniflare, convertV4MiniflareOptions } = wrangler("miniflare");
 const directory = await mkdtemp(join(tmpdir(), "forge-worker-preparation-"));
-let mf;
+let mf,
+  posts = 0;
+const packet = (text) =>
+  (Buffer.byteLength(text) + 4).toString(16).padStart(4, "0") + text;
 try {
   const bundle = await build({
     entryPoints: [join(root, "conformance/artifacts/preparation-worker.ts")],
@@ -27,8 +30,10 @@ try {
     metafile: true,
   });
   assert(
-    !Object.keys(bundle.metafile.inputs).some((p) =>
-      p.includes("artifact-workspace-git"),
+    !Object.keys(bundle.metafile.inputs).some(
+      (p) =>
+        p.includes("artifact-workspace-git") ||
+        p.includes("artifact-publication-git"),
     ),
     "Node-only preparation must not enter the Worker bundle",
   );
@@ -37,10 +42,54 @@ try {
       modules: true,
       script: bundle.outputFiles[0].text,
       compatibilityDate: "2026-09-01",
+      outboundService: async (request) => {
+        assert.equal(new URL(request.url).origin, "https://artifacts.example");
+        assert.equal(
+          request.headers.get("authorization"),
+          "Bearer probe-token",
+        );
+        if (request.method === "POST") {
+          posts++;
+          const body = new Uint8Array(await request.arrayBuffer());
+          const length = parseInt(
+            Buffer.from(body.subarray(0, 4)).toString(),
+            16,
+          );
+          const command = Buffer.from(body.subarray(4, length)).toString();
+          assert.match(
+            command,
+            /^0{40} [a-f0-9]{40} refs\/heads\/main\0report-status\n$/,
+          );
+          assert.equal(
+            Buffer.from(body.subarray(length, length + 8)).toString(),
+            "0000PACK",
+          );
+          return new Response(
+            packet("unpack ok\n") + packet("ok refs/heads/main\n") + "0000",
+            {
+              headers: {
+                "content-type": "application/x-git-receive-pack-result",
+              },
+            },
+          );
+        }
+        return new Response(
+          packet("# service=git-receive-pack\n") +
+            "0000" +
+            packet("0".repeat(40) + " capabilities^{}\0report-status\n") +
+            "0000",
+          {
+            headers: {
+              "content-type": "application/x-git-receive-pack-advertisement",
+            },
+          },
+        );
+      },
     }),
   );
   const response = await mf.dispatchFetch("http://localhost/probe");
   assert.equal(response.status, 200);
+  assert.equal(posts, 1);
   const commit = response.headers.get("x-forge-commit"),
     tree = response.headers.get("x-forge-tree");
   assert.match(commit, /^[a-f0-9]{40}$/);
@@ -78,6 +127,7 @@ try {
         "binary-bytes",
         "executable-mode",
         "unchanged-refs",
+        "workers-guarded-http-transport-mock",
       ],
       liveArtifacts: false,
     }),

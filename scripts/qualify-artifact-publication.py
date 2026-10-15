@@ -12,6 +12,7 @@ import secrets
 import subprocess
 import time
 import tomllib
+import sys
 import urllib.error
 import urllib.request
 
@@ -39,7 +40,16 @@ parser.add_argument(
 parser.add_argument(
     "--local-pilot-bundle", help="Local copy used to verify the deployed bundle digest"
 )
+parser.add_argument(
+    "--workers-transport",
+    action="store_true",
+    help="Prepare and publish inside a disposable Worker with Artifacts and D1 bindings",
+)
 args = parser.parse_args()
+if args.workers_transport:
+    if args.bob_root:
+        parser.error("Workers transport and Bob pilot are separate qualification modes")
+    args.workers_journal = True
 remote_options = [args.runner_host, args.remote_pilot_bundle, args.local_pilot_bundle]
 if any(remote_options):
     if not all(remote_options) or not args.bob_root or args.workers_journal:
@@ -192,12 +202,50 @@ try:
                 secrets.token_urlsafe(32),
                 api,
                 record_transport,
+                **(
+                    {
+                        "entry": "conformance/artifacts/publication-worker.ts",
+                        "extra_bindings": [
+                            {
+                                "name": "ARTIFACTS",
+                                "type": "artifacts",
+                                "namespace": "forge-runtime-cert",
+                            },
+                            {
+                                "name": "REPO_NAME",
+                                "type": "plain_text",
+                                "text": state["name"],
+                            },
+                            {
+                                "name": "REPO_ID",
+                                "type": "plain_text",
+                                "text": repo["id"],
+                            },
+                            {
+                                "name": "REMOTE",
+                                "type": "plain_text",
+                                "text": repo["remote"],
+                            },
+                            {
+                                "name": "EXPIRES_AT",
+                                "type": "plain_text",
+                                "text": str(int((time.time() + 1800) * 1000)),
+                            },
+                        ],
+                    }
+                    if args.workers_transport
+                    else {}
+                ),
             )
             save()
             print(
                 "Disposable Worker deployed with native D1 journal binding", flush=True
             )
-        runner = root / "conformance/artifacts/publish-live.mjs"
+        runner = root / (
+            "conformance/artifacts/publish-workers-live.py"
+            if args.workers_transport
+            else "conformance/artifacts/publish-live.mjs"
+        )
         runner_env = dict(os.environ)
         if args.bob_root:
             runner = (
@@ -207,7 +255,7 @@ try:
             runner_env.update(
                 FORGE_RUNTIME_ROOT=str(root), FORGE_VAULT_LIVE_CONFIG="stdin"
             )
-        command = ["node", str(runner)]
+        command = [sys.executable if args.workers_transport else "node", str(runner)]
         if args.runner_host:
             local_digest = hashlib.sha256(
                 pathlib.Path(args.local_pilot_bundle).read_bytes()
@@ -289,6 +337,15 @@ finally:
     ]
     if not args.bob_root:
         sources.append("conformance/artifacts/publish-live.mjs")
+    if args.workers_transport:
+        sources.extend(
+            [
+                "packages/runtime/src/adapters/artifact-publication-workers.ts",
+                "packages/runtime/src/adapters/artifact-workspace-workers.ts",
+                "conformance/artifacts/publication-worker.ts",
+                "conformance/artifacts/publish-workers-live.py",
+            ]
+        )
     if args.bob_root:
         bob_root = pathlib.Path(args.bob_root).resolve()
         bob_files = [
@@ -322,7 +379,9 @@ finally:
     result.update(
         at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         scope=(
-            "Actual Bob vault composed with Forge publisher, Cloudflare Artifacts and live D1 journal"
+            "Native Worker preparation and HTTPS Git publication with Artifacts binding and D1 journal"
+            if args.workers_transport
+            else "Actual Bob vault composed with Forge publisher, Cloudflare Artifacts and live D1 journal"
             if args.bob_root
             else "Actual Node ArtifactPublisher and Git transport with live Cloudflare Artifacts plus deployed Workers D1 journal"
             if args.workers_journal

@@ -3,6 +3,7 @@ import {
   WorkerArtifactWorkspace,
   WorkerGitPackStore,
 } from "../../packages/runtime/src/adapters/artifact-workspace-workers.js";
+import { workerGitArtifactPublicationProvider } from "../../packages/runtime/src/adapters/artifact-publication-workers.js";
 export default {
   async fetch(): Promise<Response> {
     const store = new WorkerGitPackStore();
@@ -34,6 +35,32 @@ export default {
       { tenant: "probe", actor: "qualification", requestId: "probe" },
     );
     const pack = await store.pack();
+    const provider = workerGitArtifactPublicationProvider({
+      remote: "https://artifacts.example/probe.git",
+      prepared: store,
+      identity: {
+        open: async () => ({
+          repositoryId: "probe",
+          objectFormat: "sha1",
+          resolve: async () => null,
+          commit: async () => null,
+          file: async () => null,
+          dispose: () => {},
+        }),
+      },
+      token: async () => "probe-token",
+    });
+    const repo = await provider.open();
+    try {
+      if (
+        (await repo.commit(pin.oid))?.tree !== pin.tree ||
+        (await repo.compareAndSwap("refs/heads/main", null, pin.oid)) !==
+          "accepted"
+      )
+        throw Error("Workers transport probe failed");
+    } finally {
+      repo.dispose();
+    }
     return new Response(pack, {
       headers: {
         "content-type": "application/x-git-packed-objects",
